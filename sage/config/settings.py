@@ -2,7 +2,7 @@
 
 import os
 from typing import Optional, Any
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 
 
 class SageConfig(BaseSettings):
