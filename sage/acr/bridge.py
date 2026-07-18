@@ -1,6 +1,6 @@
 """ACR Continuity Bridge for maintaining state across sessions."""
 
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 
 
 class ACRBridge:
