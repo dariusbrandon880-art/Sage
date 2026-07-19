@@ -40,7 +40,7 @@ dev = [
 ]
 
 [tool.setuptools]
-packages = ["sage", "sage.runtime", "sage.memory", "sage.archive", "sage.acr", "sage.config"]
+packages = ["sage"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
