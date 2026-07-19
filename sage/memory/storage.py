@@ -44,7 +44,10 @@ class MemoryStore:
         if self.use_persistence and self.persistent_store:
             self.persistent_store.save_session(session)
         
-        return session
+         return {
+    "session_id": session.session_id,
+    "metadata": metadata or {},
+    "entries": session.entries
 
     def get_session(self, session_id: str) -> Optional[SessionMemory]:
         """Retrieve session data.
