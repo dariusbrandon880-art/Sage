@@ -1,38 +1,48 @@
-"""Pytest configuration and fixtures for SAGE test suite."""
+"""Test utilities and fixtures for SAGE tests."""
 
 import pytest
-from sage.runtime import SageRuntime
+import tempfile
+from pathlib import Path
+
+from sage.runtime import SAGERuntime
 from sage.memory import MemoryStore
-from sage.archive import ArchiveLog
-from sage.acr import ACRBridge
-from sage.config import SageConfig
+from sage.archive import Archive
+from sage.decision import DecisionTracker
+from sage.validation import ValidationSystem
 
 
 @pytest.fixture
-def runtime():
-    """Fixture providing a SageRuntime instance."""
-    return SageRuntime()
+def temp_workspace():
+    """Create a temporary workspace for testing."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        yield Path(tmpdir)
 
 
 @pytest.fixture
-def memory_store():
-    """Fixture providing a MemoryStore instance."""
-    return MemoryStore()
+def runtime(temp_workspace):
+    """Create a test runtime instance."""
+    return SAGERuntime(str(temp_workspace))
 
 
 @pytest.fixture
-def archive_log():
-    """Fixture providing an ArchiveLog instance."""
-    return ArchiveLog()
+def memory_store(temp_workspace):
+    """Create a test memory store."""
+    return MemoryStore(str(temp_workspace / "memory"))
 
 
 @pytest.fixture
-def acr_bridge():
-    """Fixture providing an ACRBridge instance."""
-    return ACRBridge()
+def archive(temp_workspace):
+    """Create a test archive."""
+    return Archive(str(temp_workspace / "archive"))
 
 
 @pytest.fixture
-def sage_config():
-    """Fixture providing a SageConfig instance."""
-    return SageConfig()
+def decision_tracker(temp_workspace):
+    """Create a test decision tracker."""
+    return DecisionTracker(str(temp_workspace / "decisions"))
+
+
+@pytest.fixture
+def validation_system(memory_store, archive):
+    """Create a test validation system."""
+    return ValidationSystem(memory_store, archive)
