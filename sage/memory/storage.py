@@ -36,7 +36,7 @@ class MemoryStore:
         """
         session = SessionMemory(session_id=session_id)
         if metadata:
-            session.entries[0].metadata = metadata if not session.entries else {}
+            session.metadata = metadata
         
         self.sessions[session_id] = session
         
