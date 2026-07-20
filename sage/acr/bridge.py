@@ -17,6 +17,8 @@ class ContinuityState(BaseModel):
     session_lineage: List[str] = Field(default_factory=list)
 
 
+import os
+
 class ACRBridge:
     """Bridge for Autonomous Continuity Runtime - manages cross-session state with persistence."""
 
@@ -30,7 +32,13 @@ class ACRBridge:
         self.continuity_state: Dict[str, Any] = {}
         self.session_lineage: List[str] = []
         self.use_persistence = use_persistence
-        self.persistence_path = Path(persistence_path or ".sage/continuity")
+
+        # Prevent test state leakage under pytest
+        if self.use_persistence and "PYTEST_CURRENT_TEST" in os.environ and not persistence_path:
+            import tempfile
+            self.persistence_path = Path(tempfile.mkdtemp(prefix="sage_test_continuity_"))
+        else:
+            self.persistence_path = Path(persistence_path or ".sage/continuity")
         
         if self.use_persistence:
             self.persistence_path.mkdir(parents=True, exist_ok=True)
