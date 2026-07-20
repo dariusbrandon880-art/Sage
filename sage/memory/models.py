@@ -43,6 +43,13 @@ class SessionMemory(BaseModel):
             if entry.key == key:
                 return entry
         return None
+
+    def __getitem__(self, key: str) -> Any:
+        """Allow subscriptable dict-like access for entries."""
+        entry = self.get_entry(key)
+        if entry is not None:
+            return entry.value
+        raise KeyError(key)
     
     def update_entry(self, key: str, value: Any) -> Optional[MemoryEntry]:
         """Update an entry by key."""
