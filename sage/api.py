@@ -279,6 +279,28 @@ async def create_checkpoint():
     return {"checkpoint_id": checkpoint_id, "status": "created"}
 
 
+# Handoff and Restore endpoints
+class RestoreRequest(BaseModel):
+    handoff_file: str
+
+
+@app.post("/handoff")
+async def generate_handoff(file_path: Optional[str] = None):
+    try:
+        saved_path = runtime.generate_handoff(file_path)
+        return {"status": "success", "handoff_file": saved_path}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to generate handoff: {str(e)}")
+
+
+@app.post("/restore")
+async def restore_session(req: RestoreRequest):
+    success = runtime.restore_session(req.handoff_file)
+    if not success:
+        raise HTTPException(status_code=400, detail=f"Failed to restore session from {req.handoff_file}")
+    return {"status": "success", "message": f"Session restored from {req.handoff_file}"}
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
