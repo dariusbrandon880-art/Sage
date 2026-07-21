@@ -77,3 +77,14 @@ class RuntimeState(BaseModel):
     active_task: Optional[str] = None
     blockers: List[str] = Field(default_factory=list)
     dependencies: List[str] = Field(default_factory=list)
+
+
+class ExternalSessionPayload(BaseModel):
+    """Payload representing an external engineering session to ingest."""
+
+    session_id: Optional[str] = None
+    objective: str
+    task: Optional[str] = None
+    memories: List[Dict[str, Any]] = Field(default_factory=list)
+    decisions: List[Dict[str, Any]] = Field(default_factory=list)
+    metadata: Dict[str, Any] = Field(default_factory=dict)
