@@ -1,20 +1,37 @@
 """FastAPI runtime server for SAGE."""
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Header
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
+from datetime import datetime
 
 from sage.runtime import SAGERuntime
 from sage.models import DecisionType, MemoryObject, ConfidenceLevel, ExternalSessionPayload
 from sage.validation import ValidationSystem
+from sage.service import LifecycleManager
+from sage.integration import (
+    ChatGPTClient,
+    GeminiJulesClient,
+    ToolIntegrationManager,
+    AIQueryRequest,
+    GitHubEvent,
+    GoogleWorkspaceArtifact,
+)
 
 app = FastAPI(
-    title="SAGE Runtime API", description="SAGE Autonomous Continuity Runtime API", version="0.1.0"
+    title="SAGE Runtime API", description="SAGE Autonomous Continuity Runtime API", version="1.0.0"
 )
 
 # Global runtime instance
 runtime = SAGERuntime()
 validation = ValidationSystem(runtime.memory, runtime.archive)
+
+# Instantiate Service & Integration managers
+lifecycle_mgr = LifecycleManager()
+lifecycle_mgr.startup()  # Default startup on initialization
+chatgpt_client = ChatGPTClient(runtime)
+gemini_jules_client = GeminiJulesClient(runtime)
+tool_mgr = ToolIntegrationManager(runtime)
 
 
 # Request/Response models
@@ -269,36 +286,82 @@ async def restore_session(req: RestoreRequest):
     return {"status": "success", "message": f"Session restored from {req.handoff_file}"}
 
 
+# Service lifecycle endpoints
+@app.post("/service/startup")
+async def service_startup(x_api_key: Optional[str] = Header(None)):
+    if not x_api_key or not lifecycle_mgr.authorize(x_api_key):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    return lifecycle_mgr.startup()
+
+
+@app.post("/service/shutdown")
+async def service_shutdown(x_api_key: Optional[str] = Header(None)):
+    if not x_api_key or not lifecycle_mgr.authorize(x_api_key):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    return lifecycle_mgr.shutdown()
+
+
+@app.get("/service/diagnostics")
+async def service_diagnostics():
+    return lifecycle_mgr.get_diagnostics()
+
+
+# AI query and continuation endpoints
+@app.post("/ai/query/chatgpt")
+async def ai_query_chatgpt(req: AIQueryRequest):
+    return chatgpt_client.execute_query(req)
+
+
+@app.post("/ai/query/gemini-jules")
+async def ai_query_gemini_jules(req: AIQueryRequest):
+    return gemini_jules_client.execute_query(req)
+
+
+@app.get("/ai/context")
+async def ai_context(prompt: str):
+    return chatgpt_client.retrieve_context(prompt)
+
+
+# Tool integration indexing and mapping endpoints
+@app.post("/tools/github/event")
+async def index_github_event(event: GitHubEvent):
+    event_id = tool_mgr.index_github_event(event)
+    return {"event_id": event_id, "status": "indexed"}
+
+
+@app.post("/tools/workspace/artifact")
+async def index_workspace_artifact(artifact: GoogleWorkspaceArtifact):
+    artifact_id = tool_mgr.index_workspace_artifact(artifact)
+    return {"doc_id": artifact_id, "status": "indexed"}
+
+
+@app.get("/tools/index/relationships")
+async def get_tool_relationships(query_tag: str):
+    return tool_mgr.get_relationship_index(query_tag)
+
+
 # Snapshot endpoints
-@app.post("/continuity/snapshot")
+@app.post("/snapshot")
 async def create_snapshot():
-    try:
-        snapshot_id = runtime.create_workspace_snapshot()
-        return {"status": "success", "snapshot_id": snapshot_id}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    snapshot_id = runtime.checkpoint()
+    return {"snapshot_id": snapshot_id, "status": "created"}
 
 
-@app.get("/continuity/snapshots")
+@app.get("/snapshots")
 async def list_snapshots():
-    try:
-        snapshots = runtime.list_workspace_snapshots()
-        return {"snapshots": snapshots}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.post("/continuity/restore/{id}")
-async def restore_snapshot(id: str):
-    success = runtime.restore_workspace_snapshot(id)
-    if not success:
-        raise HTTPException(
-            status_code=404, detail=f"Snapshot '{id}' not found or failed to restore"
-        )
-    return {
-        "status": "success",
-        "message": f"Workspace state successfully restored from snapshot '{id}'",
-    }
+    workspace = runtime.workspace_path
+    snapshots = []
+    if workspace.exists():
+        for path in workspace.glob("checkpoint_*.json"):
+            snapshots.append(
+                {
+                    "snapshot_id": path.stem,
+                    "file_path": str(path),
+                    "size_bytes": path.stat().st_size,
+                    "created_at": datetime.fromtimestamp(path.stat().st_mtime).isoformat(),
+                }
+            )
+    return {"count": len(snapshots), "snapshots": snapshots}
 
 
 # Ingestion, reasoning, and self-verification endpoints
@@ -327,6 +390,38 @@ async def verify_integrity():
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Self-verification failed: {str(e)}")
+
+
+# Continuity/Snapshot endpoints
+@app.post("/continuity/snapshot")
+async def create_continuity_snapshot():
+    try:
+        snapshot_id = runtime.create_workspace_snapshot()
+        return {"status": "success", "snapshot_id": snapshot_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/continuity/snapshots")
+async def list_continuity_snapshots():
+    try:
+        snapshots = runtime.list_workspace_snapshots()
+        return {"snapshots": snapshots}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/continuity/restore/{id}")
+async def restore_continuity_snapshot(id: str):
+    success = runtime.restore_workspace_snapshot(id)
+    if not success:
+        raise HTTPException(
+            status_code=404, detail=f"Snapshot '{id}' not found or failed to restore"
+        )
+    return {
+        "status": "success",
+        "message": f"Workspace state successfully restored from snapshot '{id}'",
+    }
 
 
 if __name__ == "__main__":

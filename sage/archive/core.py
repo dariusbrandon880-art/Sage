@@ -38,7 +38,7 @@ class Archive:
 
         # Persist to disk
         filepath = self.storage_path / f"{entry.id}.json"
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             json.dump(entry.model_dump(), f, indent=2, default=str)
 
         return entry.id
@@ -58,7 +58,7 @@ class Archive:
         # Try loading from disk
         filepath = self.storage_path / f"{entry_id}.json"
         if filepath.exists():
-            with open(filepath, 'r') as f:
+            with open(filepath, "r") as f:
                 data = json.load(f)
                 entry = ArchiveEntry(**data)
                 self.entries[entry_id] = entry
@@ -90,8 +90,11 @@ class Archive:
         Returns:
             List of matching ArchiveEntries
         """
-        return [entry for entry in self.entries.values()
-                if title_substring.lower() in entry.title.lower()]
+        return [
+            entry
+            for entry in self.entries.values()
+            if title_substring.lower() in entry.title.lower()
+        ]
 
     def get_lineage(self, entry_id: str) -> Dict[str, Any]:
         """Get full lineage of an archive entry.
@@ -112,7 +115,9 @@ class Archive:
             "decision_history": entry.decision_history,
             "memory_lineage": entry.lineage,
             "created_at": entry.created_at.isoformat(),
-            "validated_at": entry.validation_timestamp.isoformat() if entry.validation_timestamp else None,
+            "validated_at": (
+                entry.validation_timestamp.isoformat() if entry.validation_timestamp else None
+            ),
         }
 
     def list_all(self) -> List[ArchiveEntry]:
@@ -132,8 +137,7 @@ class Archive:
         Returns:
             List of ArchiveEntries with matching state
         """
-        return [entry for entry in self.entries.values()
-                if entry.knowledge_state == state]
+        return [entry for entry in self.entries.values() if entry.knowledge_state == state]
 
     def _load_all_entries(self):
         """Load all persisted archive entries from disk."""
@@ -142,7 +146,7 @@ class Archive:
 
         for filepath in self.storage_path.glob("*.json"):
             try:
-                with open(filepath, 'r') as f:
+                with open(filepath, "r") as f:
                     data = json.load(f)
                     entry = ArchiveEntry(**data)
                     self.entries[entry.id] = entry
@@ -158,5 +162,5 @@ class Archive:
         return {
             "timestamp": datetime.utcnow().isoformat(),
             "entry_count": len(self.entries),
-            "entries": [entry.model_dump() for entry in self.entries.values()]
+            "entries": [entry.model_dump() for entry in self.entries.values()],
         }

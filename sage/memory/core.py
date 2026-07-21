@@ -48,7 +48,7 @@ class Memory:
         filepath = self.storage_path / f"{memory_id}.json"
         if filepath.exists():
             try:
-                with open(filepath, 'r') as f:
+                with open(filepath, "r") as f:
                     data = json.load(f)
                     obj = MemoryObject(**data)
                     self.objects[memory_id] = obj
@@ -90,7 +90,7 @@ class Memory:
     def _save(self, obj: MemoryObject):
         """Persist a memory object to disk as JSON."""
         filepath = self.storage_path / f"{obj.id}.json"
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             json.dump(obj.model_dump(), f, indent=2, default=str)
 
     def _load_all(self):
@@ -99,7 +99,7 @@ class Memory:
             return
         for filepath in self.storage_path.glob("*.json"):
             try:
-                with open(filepath, 'r') as f:
+                with open(filepath, "r") as f:
                     data = json.load(f)
                     obj = MemoryObject(**data)
                     self.objects[obj.id] = obj

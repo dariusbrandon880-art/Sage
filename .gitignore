@@ -216,3 +216,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# SAGE temporary and session databases
+.sage/archive/
+.sage/memory/
+.sage/continuity/
+.sage/sage_state.json

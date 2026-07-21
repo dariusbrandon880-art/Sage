@@ -90,10 +90,7 @@ class ValidationSystem:
         return True, "Memory object successfully promoted to VALIDATED"
 
     def promote_to_archive(
-        self,
-        memory_id: str,
-        title: str,
-        tags: Optional[List[str]] = None
+        self, memory_id: str, title: str, tags: Optional[List[str]] = None
     ) -> Tuple[bool, str]:
         """Archive a validated memory object by promoting it to the Master Archive.
 
@@ -130,7 +127,7 @@ class ValidationSystem:
             tags=list(set((tags or []) + obj.tags)),
             knowledge_state=KnowledgeState.ARCHIVED,
             content=obj.content,
-            lineage=[obj.id]
+            lineage=[obj.id],
         )
 
         try:

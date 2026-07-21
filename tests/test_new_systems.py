@@ -3,7 +3,7 @@
 import pytest
 import tempfile
 from pathlib import Path
-from sage.models import MemoryObject, ConfidenceLevel, ArchiveEntry, KnowledgeState, DecisionType
+from sage.models import MemoryObject, ConfidenceLevel, DecisionType
 from sage.memory import Memory
 from sage.archive import Archive
 from sage.decision import DecisionTracker
@@ -24,7 +24,7 @@ def test_memory_and_models(temp_dir):
         object_type="rule",
         content={"key": "val"},
         tags=["test", "unit"],
-        confidence=ConfidenceLevel.HYPOTHESIS
+        confidence=ConfidenceLevel.HYPOTHESIS,
     )
 
     obj_id = memory_store.store(obj)
@@ -55,7 +55,7 @@ def test_decision_tracker(temp_dir):
         decision_type=DecisionType.ARCHITECTURAL,
         description="Migrate memory models",
         rationale="Improve modularity",
-        evidence=["benchmarks"]
+        evidence=["benchmarks"],
     )
 
     retrieved = tracker.retrieve_decision(decision_id)
@@ -81,7 +81,7 @@ def test_validation_and_archive_promotion(temp_dir):
         object_type="schema",
         content={"fields": ["id", "name"]},
         tags=["database"],
-        confidence=ConfidenceLevel.HYPOTHESIS
+        confidence=ConfidenceLevel.HYPOTHESIS,
     )
     memory_store.store(obj)
 
@@ -98,7 +98,9 @@ def test_validation_and_archive_promotion(temp_dir):
     assert reloaded.confidence == ConfidenceLevel.VALIDATED
 
     # Promote to archive
-    success, archive_id = validation.promote_to_archive(obj.id, "Validated Database Schema", ["core"])
+    success, archive_id = validation.promote_to_archive(
+        obj.id, "Validated Database Schema", ["core"]
+    )
     assert success is True
     assert archive_id.startswith("archive_")
 
@@ -130,7 +132,7 @@ def test_handoff_and_restoration(temp_dir):
         object_type="schema",
         content={"fields": ["id"]},
         tags=["test_tag"],
-        confidence=ConfidenceLevel.VALIDATED
+        confidence=ConfidenceLevel.VALIDATED,
     )
     runtime.memory.store(obj)
 
@@ -147,6 +149,9 @@ def test_handoff_and_restoration(temp_dir):
     assert success is True
 
     # Assert state restored correctly
-    assert new_runtime.current_state.current_objective == "Achieve world class automated AI development"
+    assert (
+        new_runtime.current_state.current_objective
+        == "Achieve world class automated AI development"
+    )
     assert new_runtime.current_state.active_task == "Implement handoff feature"
     assert "Lack of handoff test coverage" in new_runtime.current_state.blockers

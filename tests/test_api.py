@@ -1,17 +1,15 @@
 """Tests for SAGE FastAPI REST API server."""
 
-import pytest
 import os
 import tempfile
-from pathlib import Path
 from fastapi.testclient import TestClient
 
 # Mock the runtime's workspace path so the tests don't pollute the real workspace
-import tempfile
+
 tmp_dir_obj = tempfile.TemporaryDirectory()
 tmpdir = tmp_dir_obj.name
 
-from sage.api import app, runtime, validation
+from sage.api import app, runtime, validation  # noqa: E402
 
 # Configure the global runtime to use the temporary directory
 runtime.__init__(workspace_path=tmpdir)
@@ -71,7 +69,7 @@ def test_decision_endpoints():
             "decision_type": "architectural",
             "description": "Use FastAPI for core server",
             "rationale": "High performance and automatic documentation",
-            "evidence": ["fastapi_vs_flask_benchmarks"]
+            "evidence": ["fastapi_vs_flask_benchmarks"],
         }
 
         # Record decision
@@ -99,7 +97,7 @@ def test_memory_and_validation_and_archive_promotion_endpoints():
             "object_type": "fact",
             "content": {"subject": "SAGE Runtime", "status": "integrated"},
             "tags": ["fact", "test"],
-            "confidence": "hypothesis"
+            "confidence": "hypothesis",
         }
         response = client.post("/memory", json=memory_data)
         assert response.status_code == 200
@@ -135,7 +133,7 @@ def test_memory_and_validation_and_archive_promotion_endpoints():
         archive_data = {
             "memory_id": memory_id,
             "title": "Validated SAGE Integration Fact",
-            "tags": ["archived_fact"]
+            "tags": ["archived_fact"],
         }
         response = client.post("/promote/archive", json=archive_data)
         assert response.status_code == 200
@@ -170,7 +168,9 @@ def test_blocker_endpoints():
         assert "Database connection timeout" in response.json()["blockers"]
 
         # Resolve blocker
-        response = client.request("DELETE", "/blocker", json={"blocker": "Database connection timeout"})
+        response = client.request(
+            "DELETE", "/blocker", json={"blocker": "Database connection timeout"}
+        )
         assert response.status_code == 200
 
         # Check resolved in task status
@@ -211,3 +211,50 @@ def test_handoff_and_restore_endpoints():
         response = client.get("/objective")
         assert response.status_code == 200
         assert response.json()["objective"] == "Test SAGE API Handoff"
+
+
+def test_ingest_reason_verify_endpoints():
+    """Test the ingest, reason, and verify endpoints."""
+    with TestClient(app) as client:
+        # 1. Ingest Payload
+        payload = {
+            "session_id": "api_session_ingest_999",
+            "objective": "API objective",
+            "task": "API task",
+            "memories": [
+                {
+                    "id": "api_mem_001",
+                    "object_type": "rule",
+                    "content": {"title": "API rule", "archive": True},
+                    "tags": ["api"],
+                }
+            ],
+            "decisions": [
+                {
+                    "id": "api_dec_001",
+                    "decision_type": "technical",
+                    "description": "API decision",
+                    "rationale": "API rationale",
+                    "evidence": ["api_mem_001"],
+                }
+            ],
+        }
+        response = client.post("/ingest", json=payload)
+        assert response.status_code == 200
+        res_data = response.json()
+        assert res_data["session_id"] == "api_session_ingest_999"
+        assert "checkpoint_id" in res_data
+        assert "snapshot_id" in res_data
+
+        # 2. Reason Endpoint
+        response = client.get("/reason")
+        assert response.status_code == 200
+        res_reason = response.json()
+        assert res_reason["objective_alignment"] == "aligned"
+        assert res_reason["analyzed_memories_count"] >= 1
+
+        # 3. Verify Endpoint
+        response = client.get("/verify")
+        assert response.status_code == 200
+        res_verify = response.json()
+        assert "is_valid" in res_verify

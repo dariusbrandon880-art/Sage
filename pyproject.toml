@@ -29,7 +29,6 @@ dependencies = [
     "python-dotenv>=1.0",
     "uvicorn",
     "fastapi",
-    "httpx",
 ]
 
 [project.optional-dependencies]
@@ -40,6 +39,7 @@ dev = [
     "black>=23.0",
     "ruff>=0.1",
     "mypy>=1.0",
+    "httpx",
 ]
 
 [tool.setuptools]

@@ -1379,6 +1379,938 @@
         "session_3c4f64cd"
       ],
       "continuity_state": {}
+    },
+    "snapshot_e669d64c": {
+      "id": "snapshot_e669d64c",
+      "timestamp": "2026-07-21T09:01:16.725268",
+      "state": {
+        "current_objective": "API objective",
+        "active_task": "API task",
+        "blockers": [],
+        "dependencies": []
+      },
+      "memory": [
+        {
+          "id": "f5d6b3f2-59c8-4653-bde9-cf7ee93176fd",
+          "object_type": "fact",
+          "content": {
+            "subject": "SAGE Runtime",
+            "status": "integrated"
+          },
+          "tags": [
+            "fact",
+            "test"
+          ],
+          "confidence": "archived",
+          "created_at": "2026-07-21 09:01:16.654684",
+          "updated_at": "2026-07-21 09:01:16.654691"
+        },
+        {
+          "id": "api_mem_001",
+          "object_type": "rule",
+          "content": {
+            "title": "API rule",
+            "archive": true,
+            "decisions": [
+              "api_dec_001"
+            ]
+          },
+          "tags": [
+            "api"
+          ],
+          "confidence": "archived",
+          "created_at": "2026-07-21 09:01:16.721249",
+          "updated_at": "2026-07-21 09:01:16.721255"
+        }
+      ],
+      "archive": [
+        {
+          "id": "archive_f5d6b3f2-59c8-4653-bde9-cf7ee93176fd",
+          "title": "Validated SAGE Integration Fact",
+          "tags": [
+            "archived_fact",
+            "test",
+            "fact"
+          ],
+          "knowledge_state": "archived",
+          "created_at": "2026-07-21 09:01:16.667455",
+          "validation_timestamp": "2026-07-21 09:01:16.667475",
+          "decision_history": [],
+          "lineage": [
+            "f5d6b3f2-59c8-4653-bde9-cf7ee93176fd"
+          ],
+          "content": {
+            "subject": "SAGE Runtime",
+            "status": "integrated"
+          }
+        },
+        {
+          "id": "archive_api_mem_001",
+          "title": "API rule",
+          "tags": [
+            "api"
+          ],
+          "knowledge_state": "archived",
+          "created_at": "2026-07-21 09:01:16.722041",
+          "validation_timestamp": "2026-07-21 09:01:16.723598",
+          "decision_history": [
+            "api_dec_001"
+          ],
+          "lineage": [
+            "api_mem_001"
+          ],
+          "content": {
+            "title": "API rule",
+            "archive": true
+          }
+        }
+      ],
+      "decisions": [
+        {
+          "id": "0faabe20-230b-4b44-a5e9-c6cc93653f88",
+          "decision_type": "architectural",
+          "description": "Use FastAPI for core server",
+          "rationale": "High performance and automatic documentation",
+          "evidence": [
+            "fastapi_vs_flask_benchmarks"
+          ],
+          "timestamp": "2026-07-21 09:01:16.642279",
+          "outcome": null
+        },
+        {
+          "id": "api_dec_001",
+          "decision_type": "technical",
+          "description": "API decision",
+          "rationale": "API rationale",
+          "evidence": [
+            "api_mem_001"
+          ],
+          "timestamp": "2026-07-21 09:01:16.723018",
+          "outcome": null
+        }
+      ],
+      "checkpoints": {
+        "checkpoint_7d90077d": {
+          "timestamp": "2026-07-21T09:01:16.692943",
+          "state": {
+            "current_objective": "Test SAGE API Integration",
+            "active_task": "Implement API integration tests",
+            "blockers": [],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "f5d6b3f2-59c8-4653-bde9-cf7ee93176fd",
+              "object_type": "fact",
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              },
+              "tags": [
+                "fact",
+                "test"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 09:01:16.654684",
+              "updated_at": "2026-07-21 09:01:16.654691"
+            }
+          ],
+          "archive": [
+            {
+              "id": "archive_f5d6b3f2-59c8-4653-bde9-cf7ee93176fd",
+              "title": "Validated SAGE Integration Fact",
+              "tags": [
+                "archived_fact",
+                "test",
+                "fact"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 09:01:16.667455",
+              "validation_timestamp": "2026-07-21 09:01:16.667475",
+              "decision_history": [],
+              "lineage": [
+                "f5d6b3f2-59c8-4653-bde9-cf7ee93176fd"
+              ],
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              }
+            }
+          ],
+          "decisions": [
+            {
+              "id": "0faabe20-230b-4b44-a5e9-c6cc93653f88",
+              "decision_type": "architectural",
+              "description": "Use FastAPI for core server",
+              "rationale": "High performance and automatic documentation",
+              "evidence": [
+                "fastapi_vs_flask_benchmarks"
+              ],
+              "timestamp": "2026-07-21 09:01:16.642279",
+              "outcome": null
+            }
+          ],
+          "lineage": [
+            "session_3aac9151"
+          ]
+        },
+        "checkpoint_88f0a711": {
+          "timestamp": "2026-07-21T09:01:16.724340",
+          "state": {
+            "current_objective": "API objective",
+            "active_task": "API task",
+            "blockers": [],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "f5d6b3f2-59c8-4653-bde9-cf7ee93176fd",
+              "object_type": "fact",
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              },
+              "tags": [
+                "fact",
+                "test"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 09:01:16.654684",
+              "updated_at": "2026-07-21 09:01:16.654691"
+            },
+            {
+              "id": "api_mem_001",
+              "object_type": "rule",
+              "content": {
+                "title": "API rule",
+                "archive": true,
+                "decisions": [
+                  "api_dec_001"
+                ]
+              },
+              "tags": [
+                "api"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 09:01:16.721249",
+              "updated_at": "2026-07-21 09:01:16.721255"
+            }
+          ],
+          "archive": [
+            {
+              "id": "archive_f5d6b3f2-59c8-4653-bde9-cf7ee93176fd",
+              "title": "Validated SAGE Integration Fact",
+              "tags": [
+                "archived_fact",
+                "test",
+                "fact"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 09:01:16.667455",
+              "validation_timestamp": "2026-07-21 09:01:16.667475",
+              "decision_history": [],
+              "lineage": [
+                "f5d6b3f2-59c8-4653-bde9-cf7ee93176fd"
+              ],
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              }
+            },
+            {
+              "id": "archive_api_mem_001",
+              "title": "API rule",
+              "tags": [
+                "api"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 09:01:16.722041",
+              "validation_timestamp": "2026-07-21 09:01:16.723598",
+              "decision_history": [
+                "api_dec_001"
+              ],
+              "lineage": [
+                "api_mem_001"
+              ],
+              "content": {
+                "title": "API rule",
+                "archive": true
+              }
+            }
+          ],
+          "decisions": [
+            {
+              "id": "0faabe20-230b-4b44-a5e9-c6cc93653f88",
+              "decision_type": "architectural",
+              "description": "Use FastAPI for core server",
+              "rationale": "High performance and automatic documentation",
+              "evidence": [
+                "fastapi_vs_flask_benchmarks"
+              ],
+              "timestamp": "2026-07-21 09:01:16.642279",
+              "outcome": null
+            },
+            {
+              "id": "api_dec_001",
+              "decision_type": "technical",
+              "description": "API decision",
+              "rationale": "API rationale",
+              "evidence": [
+                "api_mem_001"
+              ],
+              "timestamp": "2026-07-21 09:01:16.723018",
+              "outcome": null
+            }
+          ],
+          "lineage": [
+            "session_3aac9151",
+            "session_c952248d",
+            "api_session_ingest_999"
+          ]
+        }
+      },
+      "lineage": [
+        "session_3aac9151",
+        "session_c952248d",
+        "api_session_ingest_999"
+      ],
+      "continuity_state": {}
+    },
+    "snapshot_6a8e6a67": {
+      "id": "snapshot_6a8e6a67",
+      "timestamp": "2026-07-21T09:01:16.785177",
+      "state": {
+        "current_objective": "Build the single unified SAGE platform",
+        "active_task": "Implement the core ingestion interface",
+        "blockers": [],
+        "dependencies": []
+      },
+      "memory": [
+        {
+          "id": "mem_rule_001",
+          "object_type": "rule",
+          "content": {
+            "title": "Ingestion Rule",
+            "description": "All payloads must follow the single authoritative path",
+            "archive": true,
+            "decisions": [
+              "dec_arch_001"
+            ]
+          },
+          "tags": [
+            "architecture",
+            "core"
+          ],
+          "confidence": "archived",
+          "created_at": "2026-07-21 09:01:16.781936",
+          "updated_at": "2026-07-21 09:01:16.781942"
+        },
+        {
+          "id": "mem_fact_002",
+          "object_type": "fact",
+          "content": {
+            "description": "Verification uses standard pytest-based test suites"
+          },
+          "tags": [
+            "testing"
+          ],
+          "confidence": "validated",
+          "created_at": "2026-07-21 09:01:16.781956",
+          "updated_at": "2026-07-21 09:01:16.781959"
+        }
+      ],
+      "archive": [
+        {
+          "id": "archive_mem_rule_001",
+          "title": "Ingestion Rule",
+          "tags": [
+            "core",
+            "architecture"
+          ],
+          "knowledge_state": "archived",
+          "created_at": "2026-07-21 09:01:16.782443",
+          "validation_timestamp": "2026-07-21 09:01:16.784233",
+          "decision_history": [
+            "dec_arch_001"
+          ],
+          "lineage": [
+            "mem_rule_001"
+          ],
+          "content": {
+            "title": "Ingestion Rule",
+            "description": "All payloads must follow the single authoritative path",
+            "archive": true
+          }
+        }
+      ],
+      "decisions": [
+        {
+          "id": "dec_arch_001",
+          "decision_type": "architectural",
+          "description": "Establish standard bridge pathway",
+          "rationale": "Enforces complete rehydration and validation rules with zero bypasses",
+          "evidence": [
+            "mem_rule_001"
+          ],
+          "timestamp": "2026-07-21 09:01:16.783813",
+          "outcome": null
+        }
+      ],
+      "checkpoints": {
+        "checkpoint_1499c7e6": {
+          "timestamp": "2026-07-21T09:01:16.784673",
+          "state": {
+            "current_objective": "Build the single unified SAGE platform",
+            "active_task": "Implement the core ingestion interface",
+            "blockers": [],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "mem_rule_001",
+              "object_type": "rule",
+              "content": {
+                "title": "Ingestion Rule",
+                "description": "All payloads must follow the single authoritative path",
+                "archive": true,
+                "decisions": [
+                  "dec_arch_001"
+                ]
+              },
+              "tags": [
+                "architecture",
+                "core"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 09:01:16.781936",
+              "updated_at": "2026-07-21 09:01:16.781942"
+            },
+            {
+              "id": "mem_fact_002",
+              "object_type": "fact",
+              "content": {
+                "description": "Verification uses standard pytest-based test suites"
+              },
+              "tags": [
+                "testing"
+              ],
+              "confidence": "validated",
+              "created_at": "2026-07-21 09:01:16.781956",
+              "updated_at": "2026-07-21 09:01:16.781959"
+            }
+          ],
+          "archive": [
+            {
+              "id": "archive_mem_rule_001",
+              "title": "Ingestion Rule",
+              "tags": [
+                "core",
+                "architecture"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 09:01:16.782443",
+              "validation_timestamp": "2026-07-21 09:01:16.784233",
+              "decision_history": [
+                "dec_arch_001"
+              ],
+              "lineage": [
+                "mem_rule_001"
+              ],
+              "content": {
+                "title": "Ingestion Rule",
+                "description": "All payloads must follow the single authoritative path",
+                "archive": true
+              }
+            }
+          ],
+          "decisions": [
+            {
+              "id": "dec_arch_001",
+              "decision_type": "architectural",
+              "description": "Establish standard bridge pathway",
+              "rationale": "Enforces complete rehydration and validation rules with zero bypasses",
+              "evidence": [
+                "mem_rule_001"
+              ],
+              "timestamp": "2026-07-21 09:01:16.783813",
+              "outcome": null
+            }
+          ],
+          "lineage": [
+            "session_external_123"
+          ]
+        }
+      },
+      "lineage": [
+        "session_external_123"
+      ],
+      "continuity_state": {}
+    },
+    "snapshot_8a8e2b21": {
+      "id": "snapshot_8a8e2b21",
+      "timestamp": "2026-07-21T09:03:18.853454",
+      "state": {
+        "current_objective": "API objective",
+        "active_task": "API task",
+        "blockers": [],
+        "dependencies": []
+      },
+      "memory": [
+        {
+          "id": "6c5f74c5-df11-4897-9ff7-1aca58545065",
+          "object_type": "fact",
+          "content": {
+            "subject": "SAGE Runtime",
+            "status": "integrated"
+          },
+          "tags": [
+            "fact",
+            "test"
+          ],
+          "confidence": "archived",
+          "created_at": "2026-07-21 09:03:18.784460",
+          "updated_at": "2026-07-21 09:03:18.784467"
+        },
+        {
+          "id": "api_mem_001",
+          "object_type": "rule",
+          "content": {
+            "title": "API rule",
+            "archive": true,
+            "decisions": [
+              "api_dec_001"
+            ]
+          },
+          "tags": [
+            "api"
+          ],
+          "confidence": "archived",
+          "created_at": "2026-07-21 09:03:18.850038",
+          "updated_at": "2026-07-21 09:03:18.850050"
+        }
+      ],
+      "archive": [
+        {
+          "id": "archive_6c5f74c5-df11-4897-9ff7-1aca58545065",
+          "title": "Validated SAGE Integration Fact",
+          "tags": [
+            "test",
+            "fact",
+            "archived_fact"
+          ],
+          "knowledge_state": "archived",
+          "created_at": "2026-07-21 09:03:18.796740",
+          "validation_timestamp": "2026-07-21 09:03:18.796760",
+          "decision_history": [],
+          "lineage": [
+            "6c5f74c5-df11-4897-9ff7-1aca58545065"
+          ],
+          "content": {
+            "subject": "SAGE Runtime",
+            "status": "integrated"
+          }
+        },
+        {
+          "id": "archive_api_mem_001",
+          "title": "API rule",
+          "tags": [
+            "api"
+          ],
+          "knowledge_state": "archived",
+          "created_at": "2026-07-21 09:03:18.850592",
+          "validation_timestamp": "2026-07-21 09:03:18.852214",
+          "decision_history": [
+            "api_dec_001"
+          ],
+          "lineage": [
+            "api_mem_001"
+          ],
+          "content": {
+            "title": "API rule",
+            "archive": true
+          }
+        }
+      ],
+      "decisions": [
+        {
+          "id": "7f3c868c-217b-4ba7-8212-42e52b65f449",
+          "decision_type": "architectural",
+          "description": "Use FastAPI for core server",
+          "rationale": "High performance and automatic documentation",
+          "evidence": [
+            "fastapi_vs_flask_benchmarks"
+          ],
+          "timestamp": "2026-07-21 09:03:18.771771",
+          "outcome": null
+        },
+        {
+          "id": "api_dec_001",
+          "decision_type": "technical",
+          "description": "API decision",
+          "rationale": "API rationale",
+          "evidence": [
+            "api_mem_001"
+          ],
+          "timestamp": "2026-07-21 09:03:18.851423",
+          "outcome": null
+        }
+      ],
+      "checkpoints": {
+        "checkpoint_4f14c60a": {
+          "timestamp": "2026-07-21T09:03:18.823707",
+          "state": {
+            "current_objective": "Test SAGE API Integration",
+            "active_task": "Implement API integration tests",
+            "blockers": [],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "6c5f74c5-df11-4897-9ff7-1aca58545065",
+              "object_type": "fact",
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              },
+              "tags": [
+                "fact",
+                "test"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 09:03:18.784460",
+              "updated_at": "2026-07-21 09:03:18.784467"
+            }
+          ],
+          "archive": [
+            {
+              "id": "archive_6c5f74c5-df11-4897-9ff7-1aca58545065",
+              "title": "Validated SAGE Integration Fact",
+              "tags": [
+                "test",
+                "fact",
+                "archived_fact"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 09:03:18.796740",
+              "validation_timestamp": "2026-07-21 09:03:18.796760",
+              "decision_history": [],
+              "lineage": [
+                "6c5f74c5-df11-4897-9ff7-1aca58545065"
+              ],
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              }
+            }
+          ],
+          "decisions": [
+            {
+              "id": "7f3c868c-217b-4ba7-8212-42e52b65f449",
+              "decision_type": "architectural",
+              "description": "Use FastAPI for core server",
+              "rationale": "High performance and automatic documentation",
+              "evidence": [
+                "fastapi_vs_flask_benchmarks"
+              ],
+              "timestamp": "2026-07-21 09:03:18.771771",
+              "outcome": null
+            }
+          ],
+          "lineage": [
+            "session_705681c8"
+          ]
+        },
+        "checkpoint_2f88a72d": {
+          "timestamp": "2026-07-21T09:03:18.852578",
+          "state": {
+            "current_objective": "API objective",
+            "active_task": "API task",
+            "blockers": [],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "6c5f74c5-df11-4897-9ff7-1aca58545065",
+              "object_type": "fact",
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              },
+              "tags": [
+                "fact",
+                "test"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 09:03:18.784460",
+              "updated_at": "2026-07-21 09:03:18.784467"
+            },
+            {
+              "id": "api_mem_001",
+              "object_type": "rule",
+              "content": {
+                "title": "API rule",
+                "archive": true,
+                "decisions": [
+                  "api_dec_001"
+                ]
+              },
+              "tags": [
+                "api"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 09:03:18.850038",
+              "updated_at": "2026-07-21 09:03:18.850050"
+            }
+          ],
+          "archive": [
+            {
+              "id": "archive_6c5f74c5-df11-4897-9ff7-1aca58545065",
+              "title": "Validated SAGE Integration Fact",
+              "tags": [
+                "test",
+                "fact",
+                "archived_fact"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 09:03:18.796740",
+              "validation_timestamp": "2026-07-21 09:03:18.796760",
+              "decision_history": [],
+              "lineage": [
+                "6c5f74c5-df11-4897-9ff7-1aca58545065"
+              ],
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              }
+            },
+            {
+              "id": "archive_api_mem_001",
+              "title": "API rule",
+              "tags": [
+                "api"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 09:03:18.850592",
+              "validation_timestamp": "2026-07-21 09:03:18.852214",
+              "decision_history": [
+                "api_dec_001"
+              ],
+              "lineage": [
+                "api_mem_001"
+              ],
+              "content": {
+                "title": "API rule",
+                "archive": true
+              }
+            }
+          ],
+          "decisions": [
+            {
+              "id": "7f3c868c-217b-4ba7-8212-42e52b65f449",
+              "decision_type": "architectural",
+              "description": "Use FastAPI for core server",
+              "rationale": "High performance and automatic documentation",
+              "evidence": [
+                "fastapi_vs_flask_benchmarks"
+              ],
+              "timestamp": "2026-07-21 09:03:18.771771",
+              "outcome": null
+            },
+            {
+              "id": "api_dec_001",
+              "decision_type": "technical",
+              "description": "API decision",
+              "rationale": "API rationale",
+              "evidence": [
+                "api_mem_001"
+              ],
+              "timestamp": "2026-07-21 09:03:18.851423",
+              "outcome": null
+            }
+          ],
+          "lineage": [
+            "session_705681c8",
+            "session_992d63fd",
+            "api_session_ingest_999"
+          ]
+        }
+      },
+      "lineage": [
+        "session_705681c8",
+        "session_992d63fd",
+        "api_session_ingest_999"
+      ],
+      "continuity_state": {}
+    },
+    "snapshot_8418304d": {
+      "id": "snapshot_8418304d",
+      "timestamp": "2026-07-21T09:03:18.909756",
+      "state": {
+        "current_objective": "Build the single unified SAGE platform",
+        "active_task": "Implement the core ingestion interface",
+        "blockers": [],
+        "dependencies": []
+      },
+      "memory": [
+        {
+          "id": "mem_rule_001",
+          "object_type": "rule",
+          "content": {
+            "title": "Ingestion Rule",
+            "description": "All payloads must follow the single authoritative path",
+            "archive": true,
+            "decisions": [
+              "dec_arch_001"
+            ]
+          },
+          "tags": [
+            "architecture",
+            "core"
+          ],
+          "confidence": "archived",
+          "created_at": "2026-07-21 09:03:18.905535",
+          "updated_at": "2026-07-21 09:03:18.905540"
+        },
+        {
+          "id": "mem_fact_002",
+          "object_type": "fact",
+          "content": {
+            "description": "Verification uses standard pytest-based test suites"
+          },
+          "tags": [
+            "testing"
+          ],
+          "confidence": "validated",
+          "created_at": "2026-07-21 09:03:18.905553",
+          "updated_at": "2026-07-21 09:03:18.905556"
+        }
+      ],
+      "archive": [
+        {
+          "id": "archive_mem_rule_001",
+          "title": "Ingestion Rule",
+          "tags": [
+            "architecture",
+            "core"
+          ],
+          "knowledge_state": "archived",
+          "created_at": "2026-07-21 09:03:18.905990",
+          "validation_timestamp": "2026-07-21 09:03:18.908963",
+          "decision_history": [
+            "dec_arch_001"
+          ],
+          "lineage": [
+            "mem_rule_001"
+          ],
+          "content": {
+            "title": "Ingestion Rule",
+            "description": "All payloads must follow the single authoritative path",
+            "archive": true
+          }
+        }
+      ],
+      "decisions": [
+        {
+          "id": "dec_arch_001",
+          "decision_type": "architectural",
+          "description": "Establish standard bridge pathway",
+          "rationale": "Enforces complete rehydration and validation rules with zero bypasses",
+          "evidence": [
+            "mem_rule_001"
+          ],
+          "timestamp": "2026-07-21 09:03:18.908497",
+          "outcome": null
+        }
+      ],
+      "checkpoints": {
+        "checkpoint_3b858818": {
+          "timestamp": "2026-07-21T09:03:18.909332",
+          "state": {
+            "current_objective": "Build the single unified SAGE platform",
+            "active_task": "Implement the core ingestion interface",
+            "blockers": [],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "mem_rule_001",
+              "object_type": "rule",
+              "content": {
+                "title": "Ingestion Rule",
+                "description": "All payloads must follow the single authoritative path",
+                "archive": true,
+                "decisions": [
+                  "dec_arch_001"
+                ]
+              },
+              "tags": [
+                "architecture",
+                "core"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 09:03:18.905535",
+              "updated_at": "2026-07-21 09:03:18.905540"
+            },
+            {
+              "id": "mem_fact_002",
+              "object_type": "fact",
+              "content": {
+                "description": "Verification uses standard pytest-based test suites"
+              },
+              "tags": [
+                "testing"
+              ],
+              "confidence": "validated",
+              "created_at": "2026-07-21 09:03:18.905553",
+              "updated_at": "2026-07-21 09:03:18.905556"
+            }
+          ],
+          "archive": [
+            {
+              "id": "archive_mem_rule_001",
+              "title": "Ingestion Rule",
+              "tags": [
+                "architecture",
+                "core"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 09:03:18.905990",
+              "validation_timestamp": "2026-07-21 09:03:18.908963",
+              "decision_history": [
+                "dec_arch_001"
+              ],
+              "lineage": [
+                "mem_rule_001"
+              ],
+              "content": {
+                "title": "Ingestion Rule",
+                "description": "All payloads must follow the single authoritative path",
+                "archive": true
+              }
+            }
+          ],
+          "decisions": [
+            {
+              "id": "dec_arch_001",
+              "decision_type": "architectural",
+              "description": "Establish standard bridge pathway",
+              "rationale": "Enforces complete rehydration and validation rules with zero bypasses",
+              "evidence": [
+                "mem_rule_001"
+              ],
+              "timestamp": "2026-07-21 09:03:18.908497",
+              "outcome": null
+            }
+          ],
+          "lineage": [
+            "session_external_123"
+          ]
+        }
+      },
+      "lineage": [
+        "session_external_123"
+      ],
+      "continuity_state": {}
     }
   }
 }

@@ -3,8 +3,7 @@
 import json
 import uuid
 from pathlib import Path
-from typing import List, Optional, Dict, Any
-from datetime import datetime
+from typing import List, Optional, Dict
 
 from sage.models import DecisionEntry, DecisionType
 
@@ -29,7 +28,7 @@ class DecisionTracker:
         description: str,
         rationale: str,
         evidence: Optional[List[str]] = None,
-        decision_id: Optional[str] = None
+        decision_id: Optional[str] = None,
     ) -> str:
         """Record a new decision.
 
@@ -49,7 +48,7 @@ class DecisionTracker:
             decision_type=decision_type,
             description=description,
             rationale=rationale,
-            evidence=evidence or []
+            evidence=evidence or [],
         )
 
         self.decisions[dec_id] = entry
@@ -73,7 +72,7 @@ class DecisionTracker:
         filepath = self.storage_path / f"{decision_id}.json"
         if filepath.exists():
             try:
-                with open(filepath, 'r') as f:
+                with open(filepath, "r") as f:
                     data = json.load(f)
                     entry = DecisionEntry(**data)
                     self.decisions[decision_id] = entry
@@ -94,7 +93,7 @@ class DecisionTracker:
     def _save_decision(self, entry: DecisionEntry):
         """Persist decision entry to disk."""
         filepath = self.storage_path / f"{entry.id}.json"
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             json.dump(entry.model_dump(), f, indent=2, default=str)
 
     def _load_all_decisions(self):
@@ -104,7 +103,7 @@ class DecisionTracker:
 
         for filepath in self.storage_path.glob("*.json"):
             try:
-                with open(filepath, 'r') as f:
+                with open(filepath, "r") as f:
                     data = json.load(f)
                     entry = DecisionEntry(**data)
                     self.decisions[entry.id] = entry

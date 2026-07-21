@@ -37,20 +37,16 @@ def main():
     )
 
     # snapshot subcommand
-    snapshot_parser = subparsers.add_parser("snapshot", help="Manage workspace snapshots")
-    snapshot_subparsers = snapshot_parser.add_subparsers(dest="action", help="Snapshot actions")
-
-    # snapshot create
-    snapshot_subparsers.add_parser("create", help="Create a new workspace snapshot")
-
-    # snapshot list
-    snapshot_subparsers.add_parser("list", help="List all workspace snapshots")
-
-    # snapshot restore [id]
-    snapshot_restore_parser = snapshot_subparsers.add_parser(
-        "restore", help="Restore workspace state from a snapshot"
+    snapshot_parser = subparsers.add_parser("snapshot", help="Manage SAGE workspace snapshots")
+    snapshot_parser.add_argument(
+        "--action",
+        choices=["create", "list", "restore"],
+        required=True,
+        help="Snapshot action to perform",
     )
-    snapshot_restore_parser.add_argument("id", type=str, help="The ID of the snapshot to restore")
+    snapshot_parser.add_argument(
+        "--file", type=str, help="Handoff/Snapshot file to restore from (for restore action)"
+    )
 
     # ingest subcommand
     ingest_parser = subparsers.add_parser("ingest", help="Ingest an external session payload")
@@ -105,24 +101,31 @@ def main():
 
     elif args.command == "snapshot":
         if args.action == "create":
-            snapshot_id = runtime.create_workspace_snapshot()
-            print(f"Success: Snapshot created successfully with ID: '{snapshot_id}'")
+            snapshot_id = runtime.checkpoint()
+            print(f"Success: Workspace snapshot created successfully. ID: {snapshot_id}")
         elif args.action == "list":
-            snapshots = runtime.list_workspace_snapshots()
-            if not snapshots:
-                print("No snapshots found.")
-            else:
-                for s in snapshots:
-                    print(f"- ID: {s['id']} (Created: {s['timestamp']})")
+            workspace = runtime.workspace_path
+            snapshots = []
+            if workspace.exists():
+                for path in workspace.glob("checkpoint_*.json"):
+                    snapshots.append(
+                        {
+                            "snapshot_id": path.stem,
+                            "file_path": str(path),
+                            "size_bytes": path.stat().st_size,
+                        }
+                    )
+            print(json.dumps(snapshots, indent=2))
         elif args.action == "restore":
-            success = runtime.restore_workspace_snapshot(args.id)
-            if success:
-                print(f"Success: SAGE workspace snapshot '{args.id}' restored successfully.")
-            else:
-                print(f"Error: Failed to restore snapshot '{args.id}'")
+            if not args.file:
+                print("Error: --file argument is required for snapshot restore action.")
                 sys.exit(1)
-        else:
-            snapshot_parser.print_help()
+            success = runtime.restore_session(args.file)
+            if success:
+                print(f"Success: Workspace state restored successfully from snapshot '{args.file}'")
+            else:
+                print(f"Error: Failed to restore snapshot from '{args.file}'")
+                sys.exit(1)
 
     elif args.command == "ingest":
         try:
