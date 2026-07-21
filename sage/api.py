@@ -279,6 +279,55 @@ async def create_checkpoint():
     return {"checkpoint_id": checkpoint_id, "status": "created"}
 
 
+# Handoff and Restore endpoints
+class RestoreRequest(BaseModel):
+    handoff_file: str
+
+
+@app.post("/handoff")
+async def generate_handoff(file_path: Optional[str] = None):
+    try:
+        saved_path = runtime.generate_handoff(file_path)
+        return {"status": "success", "handoff_file": saved_path}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to generate handoff: {str(e)}")
+
+
+@app.post("/restore")
+async def restore_session(req: RestoreRequest):
+    success = runtime.restore_session(req.handoff_file)
+    if not success:
+        raise HTTPException(status_code=400, detail=f"Failed to restore session from {req.handoff_file}")
+    return {"status": "success", "message": f"Session restored from {req.handoff_file}"}
+
+
+# Snapshot endpoints
+@app.post("/continuity/snapshot")
+async def create_snapshot():
+    try:
+        snapshot_id = runtime.create_workspace_snapshot()
+        return {"status": "success", "snapshot_id": snapshot_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/continuity/snapshots")
+async def list_snapshots():
+    try:
+        snapshots = runtime.list_workspace_snapshots()
+        return {"snapshots": snapshots}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/continuity/restore/{id}")
+async def restore_snapshot(id: str):
+    success = runtime.restore_workspace_snapshot(id)
+    if not success:
+        raise HTTPException(status_code=404, detail=f"Snapshot '{id}' not found or failed to restore")
+    return {"status": "success", "message": f"Workspace state successfully restored from snapshot '{id}'"}
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
