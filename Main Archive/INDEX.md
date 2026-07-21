@@ -1,0 +1,38 @@
+# SAGE MAIN ARCHIVE INDEX
+
+Welcome to SAGE's immutable Master Archive and research repository. This index lists, categorizes, and links all historical documents, architecture designs, research papers, and decision records.
+
+---
+
+## 1. Architecture Specs
+- [Organizational Operating System](architecture/organizational-operating-system.md) - Theoretical and structural overview of the organizational continuity system.
+- [Roadmap Spec](architecture/roadmap.md) - Current core architecture status and locked expansion plans.
+- [Dependency Graph](architecture/dependency-graph.md) - Class mappings and package relationship models.
+- [Architecture Index](architecture/architecture-index.md) - Directory layout index of the repository.
+
+---
+
+## 2. Strategic Research
+- [SME Spec](research/strategic/SME.md) - Subject Matter Expert Layer.
+- [SRL Spec](research/strategic/SRL.md) - Self-Referential Learning / Semantic Representation Layer.
+- [SKAL Spec](research/strategic/SKAL.md) - Semantic Knowledge Association Layer.
+- [BTQI Spec](research/strategic/BTQI.md) - Bidirectional Traceable Query Integration.
+- [CSC Spec](research/strategic/CSC.md) - Continuous State Control.
+- [EIL Spec](research/strategic/EIL.md) - Event Integration Layer.
+- [EIX Spec](research/strategic/EIX.md) - External Interface Gateway.
+- [DESP Spec](research/strategic/DESP.md) - Distributed Execution State Protocol.
+- [APM Spec](research/strategic/APM.md) - Autonomous Process Monitor.
+- [MEC Spec](research/strategic/MEC.md) - Multi-user Engineering Continuity.
+- [CIR Spec](research/strategic/CIR.md) - Canonical Index Registry.
+
+---
+
+## 3. Architecture Decision Records (ADRs)
+- [ADR-001: Core Architecture Baseline](adr/ADR-001-architecture-baseline.md) - Architectural definition of SAGE-ACR v1.0.0.
+- [ADR-002: Service and Integration Layers](adr/ADR-002-integration-layer.md) - External connector endpoints and security schemas.
+
+---
+
+## 4. Roadmaps
+- [Implementation Roadmap](roadmap/implementation-roadmap.md) - Concrete engineering tasks for SAGE v2.
+- [Research Roadmap](roadmap/research-roadmap.md) - Conceptual investigation plans for advanced multi-agent cognitive synchronization.
