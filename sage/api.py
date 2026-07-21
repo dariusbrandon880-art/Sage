@@ -10,6 +10,18 @@ from sage.validation import ValidationSystem
 from sage.registry.models import Capability
 from sage.business.core import ClientWorkspaceSandbox
 
+from sage.interfaces.integrations import (
+    SAGEIntegrationManager,
+    ChatGPTContextRequest,
+    ChatGPTReasonRequest,
+    ChatGPTSyncRequest,
+    GeminiFeedbackRequest,
+    GitHubCommitRequest,
+    GitHubPullRequestRequest,
+    GitHubCIRunRequest,
+    WorkspaceDocRequest,
+)
+
 app = FastAPI(
     title="SAGE Runtime API", description="SAGE Autonomous Continuity Runtime API", version="0.1.0"
 )
@@ -17,6 +29,7 @@ app = FastAPI(
 # Global runtime instance
 runtime = SAGERuntime()
 validation = ValidationSystem(runtime.memory, runtime.archive)
+integration_mgr = SAGEIntegrationManager(runtime)
 
 
 # Request/Response models
@@ -488,6 +501,101 @@ async def evaluate_compliance(req: EvaluateComplianceRequest):
 
     result = runtime.compliance.evaluate_compliance(req.decision_data)
     return result
+
+
+# ============================================================================
+# PHASE 2 INTEGRATION ENDPOINTS
+# ============================================================================
+
+
+# 1. SAGE Service Layer Diagnostics
+@app.get("/service/diagnostics")
+async def get_service_diagnostics():
+    return {
+        "status": "healthy",
+        "version": "1.0.0-candidate",
+        "diagnostics": {
+            "active_objective": runtime.current_state.current_objective,
+            "active_task": runtime.current_state.active_task,
+            "blockers_count": len(runtime.current_state.blockers),
+            "memory_size": len(runtime.memory.list_all()),
+            "archive_size": len(runtime.archive.list_all()),
+            "decision_count": len(runtime.decisions.list_all()),
+            "session_depth": runtime.acr.get_session_depth(),
+        },
+    }
+
+
+# 2. ChatGPT Integration Endpoints
+@app.post("/integration/chatgpt/context")
+async def chatgpt_context(req: ChatGPTContextRequest):
+    return integration_mgr.chatgpt_get_context(req.query)
+
+
+@app.post("/integration/chatgpt/lookup")
+async def chatgpt_lookup(req: ChatGPTContextRequest):
+    return integration_mgr.chatgpt_validated_lookup(req.query)
+
+
+@app.post("/integration/chatgpt/reason")
+async def chatgpt_reason(req: ChatGPTReasonRequest):
+    decision_id = integration_mgr.chatgpt_record_reasoning(req)
+    return {"decision_id": decision_id, "status": "recorded"}
+
+
+@app.post("/integration/chatgpt/sync")
+async def chatgpt_sync(req: ChatGPTSyncRequest):
+    success = integration_mgr.chatgpt_sync_context(req.session_id, req.chat_context)
+    return {"status": "success" if success else "failed"}
+
+
+# 3. Google AI (Gemini/Jules) Integration Endpoints
+@app.get("/integration/gemini/repository")
+async def gemini_repository():
+    return integration_mgr.gemini_get_repository_index()
+
+
+@app.get("/integration/gemini/context")
+async def gemini_context():
+    return integration_mgr.gemini_get_developer_context()
+
+
+@app.post("/integration/gemini/feedback")
+async def gemini_feedback(req: GeminiFeedbackRequest):
+    result = integration_mgr.gemini_register_feedback(req)
+    return result
+
+
+# 4. GitHub Integration Endpoints
+@app.post("/integration/github/commit")
+async def github_commit(req: GitHubCommitRequest):
+    memory_id = integration_mgr.github_sync_commit(req)
+    return {"memory_id": memory_id, "status": "indexed"}
+
+
+@app.post("/integration/github/pull-request")
+async def github_pull_request(req: GitHubPullRequestRequest):
+    result = integration_mgr.github_sync_pull_request(req)
+    return result
+
+
+@app.post("/integration/github/ci-run")
+async def github_ci_run(req: GitHubCIRunRequest):
+    result = integration_mgr.github_sync_ci_run(req)
+    return result
+
+
+# 5. Google Workspace Integration Endpoints
+@app.post("/integration/workspace/index")
+async def workspace_index(req: WorkspaceDocRequest):
+    memory_id = integration_mgr.workspace_index_document(req)
+    return {"memory_id": memory_id, "status": "indexed"}
+
+
+@app.get("/integration/workspace/documents")
+async def workspace_documents(doc_type: Optional[str] = None):
+    results = integration_mgr.workspace_query_documents(doc_type)
+    return {"documents": results}
 
 
 if __name__ == "__main__":
