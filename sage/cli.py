@@ -30,6 +30,11 @@ def main():
     restore_parser = subparsers.add_parser("restore", help="Restore SAGE session state from a handoff artifact")
     restore_parser.add_argument("--file", type=str, required=True, help="The path to the handoff JSON file to restore from")
 
+    # snapshot subcommand
+    snapshot_parser = subparsers.add_parser("snapshot", help="Manage SAGE workspace snapshots")
+    snapshot_parser.add_argument("--action", choices=["create", "list", "restore"], required=True, help="Snapshot action to perform")
+    snapshot_parser.add_argument("--file", type=str, help="Handoff/Snapshot file to restore from (for restore action)")
+
     args = parser.parse_args()
 
     # Initialize runtime
@@ -68,6 +73,32 @@ def main():
         else:
             print(f"Error: Failed to restore session from '{args.file}'")
             sys.exit(1)
+
+    elif args.command == "snapshot":
+        if args.action == "create":
+            snapshot_id = runtime.checkpoint()
+            print(f"Success: Workspace snapshot created successfully. ID: {snapshot_id}")
+        elif args.action == "list":
+            workspace = runtime.workspace_path
+            snapshots = []
+            if workspace.exists():
+                for path in workspace.glob("checkpoint_*.json"):
+                    snapshots.append({
+                        "snapshot_id": path.stem,
+                        "file_path": str(path),
+                        "size_bytes": path.stat().st_size,
+                    })
+            print(json.dumps(snapshots, indent=2))
+        elif args.action == "restore":
+            if not args.file:
+                print("Error: --file argument is required for snapshot restore action.")
+                sys.exit(1)
+            success = runtime.restore_session(args.file)
+            if success:
+                print(f"Success: Workspace state restored successfully from snapshot '{args.file}'")
+            else:
+                print(f"Error: Failed to restore snapshot from '{args.file}'")
+                sys.exit(1)
 
     else:
         parser.print_help()

@@ -321,14 +321,14 @@ async def restore_session(req: RestoreRequest):
 # Service lifecycle endpoints
 @app.post("/service/startup")
 async def service_startup(x_api_key: Optional[str] = Header(None)):
-    if x_api_key and not lifecycle_mgr.authorize(x_api_key):
+    if not x_api_key or not lifecycle_mgr.authorize(x_api_key):
         raise HTTPException(status_code=401, detail="Unauthorized")
     return lifecycle_mgr.startup()
 
 
 @app.post("/service/shutdown")
 async def service_shutdown(x_api_key: Optional[str] = Header(None)):
-    if x_api_key and not lifecycle_mgr.authorize(x_api_key):
+    if not x_api_key or not lifecycle_mgr.authorize(x_api_key):
         raise HTTPException(status_code=401, detail="Unauthorized")
     return lifecycle_mgr.shutdown()
 
