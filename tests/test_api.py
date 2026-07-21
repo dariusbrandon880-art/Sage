@@ -208,3 +208,87 @@ def test_handoff_and_restore_endpoints():
         response = client.get("/objective")
         assert response.status_code == 200
         assert response.json()["objective"] == "Test SAGE API Handoff"
+
+
+def test_strategic_roadmap_endpoints():
+    """Test REST API endpoints for all 5 strategic roadmap expansion layers."""
+    with TestClient(app) as client:
+        # 1. Capability Registry
+        cap_data = {
+            "id": "format_string",
+            "name": "Formatter",
+            "description": "Formats text fields",
+            "permissions": ["text-processing"],
+            "parameters": {"text": "string"}
+        }
+        res = client.post("/registry/capability", json=cap_data)
+        assert res.status_code == 200
+        assert res.json()["status"] == "success"
+
+        # List
+        res = client.get("/registry/capabilities")
+        assert res.status_code == 200
+        caps = res.json()["capabilities"]
+        assert any(c["id"] == "format_string" for c in caps)
+
+        # Invoke (unauthorized)
+        res = client.post("/registry/invoke", json={"id": "format_string", "args": {}, "scopes": ["user"]})
+        assert res.status_code == 403
+
+        # Invoke (authorized)
+        res = client.post("/registry/invoke", json={"id": "format_string", "args": {"val": "test"}, "scopes": ["text-processing"]})
+        assert res.status_code == 200
+        assert "success" in res.json()["status"]
+
+        # 2. Intelligence Layer
+        # Route context
+        res = client.post("/intelligence/route", json={"text": "Refresh postgres migrations"})
+        assert res.status_code == 200
+        assert res.json()["category"] == "default"  # Categories not initialized in global runtime yet, matches default
+
+        # Evaluate task
+        eval_data = {
+            "objective": "Complete SAGE",
+            "task": "diagnose RAM issues",
+            "context": {"ram": "99%"}
+        }
+        res = client.post("/intelligence/evaluate", json=eval_data)
+        assert res.status_code == 200
+        assert res.json()["recommended_action"] == "checkpoint"
+
+        # 3. Automation Layer
+        # Schedule
+        res = client.post("/automation/schedule", json={"name": "test_bg_job", "interval_seconds": 10})
+        assert res.status_code == 200
+        assert "scheduled" in res.json()["message"]
+
+        # Heal (no blockers)
+        res = client.post("/automation/heal")
+        assert res.status_code == 200
+        assert res.json()["healed"] is False
+
+        # 4. External Interfaces
+        # Webhook register
+        res = client.post("/interfaces/webhook", json={"event_type": "checkpoint_created", "url": "https://callback.com"})
+        assert res.status_code == 200
+
+        # Webhook trigger
+        res = client.post("/interfaces/webhook/trigger", json={"event_type": "checkpoint_created", "payload": {"foo": "bar"}})
+        assert res.status_code == 200
+        assert res.json()["delivered_count"] == 1
+
+        # OAuth token
+        res = client.post("/interfaces/oauth/token", json={"client_id": "test_client", "client_secret": "secret_abc"})
+        assert res.status_code == 200
+        assert "access_token" in res.json()
+
+        # 5. Business/Application Layer
+        # Workspace Sandbox
+        res = client.post("/business/workspace", json={"client_id": "enterprise_corp", "quota_bytes": 1024})
+        assert res.status_code == 200
+        assert res.json()["client_id"] == "enterprise_corp"
+
+        # Compliance
+        res = client.post("/business/compliance", json={"decision_data": {"description": "Save", "evidence": []}})
+        assert res.status_code == 200
+        assert res.json()["compliant"] is False  # Evidence missing

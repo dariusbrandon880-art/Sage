@@ -13,6 +13,13 @@ from sage.archive import Archive
 from sage.decision import DecisionTracker
 from sage.acr.bridge import ACRBridge
 
+# Strategic Roadmap Layers
+from sage.registry.core import CapabilityRegistry
+from sage.intelligence.core import LLMBridge, ContextAwareRouter, PatternMatcher, ReasoningLoop
+from sage.automation.core import AutomationScheduler, SelfHealingPolicy, ProactiveCheckpointer
+from sage.interfaces.core import OAuthSecurityGateway, WebhookListenerRegistry, EventQueue
+from sage.business.core import ClientWorkspaceSandbox, ComplianceRegistry
+
 
 class ExecutionContext(BaseModel):
     """Context for a single execution cycle."""
@@ -52,6 +59,21 @@ class SageRuntime:
         self.archive = Archive(str(self.archive_path))
         self.decisions = DecisionTracker(str(self.decisions_path))
         self.acr = ACRBridge(persistence_path=str(self.workspace_path / "continuity"))
+
+        # Strategic Layers
+        self.registry = CapabilityRegistry()
+        self.llm_bridge = LLMBridge(provider="mock")
+        self.router = ContextAwareRouter()
+        self.pattern_matcher = PatternMatcher()
+        self.reasoning = ReasoningLoop(self.llm_bridge)
+        self.scheduler = AutomationScheduler()
+        self.healing = SelfHealingPolicy(self)
+        self.proactive_checkpointer = ProactiveCheckpointer(self)
+        self.oauth_gateway = OAuthSecurityGateway()
+        self.webhooks = WebhookListenerRegistry()
+        self.event_queue = EventQueue()
+        self.client_workspaces: Dict[str, ClientWorkspaceSandbox] = {}
+        self.compliance = ComplianceRegistry()
 
         # Load existing state if available, otherwise init fresh
         self.current_state = RuntimeState()

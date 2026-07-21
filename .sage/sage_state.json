@@ -524,6 +524,181 @@
         "session_958fe8d1"
       ],
       "continuity_state": {}
+    },
+    "snapshot_df9cd4aa": {
+      "id": "snapshot_df9cd4aa",
+      "timestamp": "2026-07-21T03:56:28.017788",
+      "state": {
+        "current_objective": "Objective Alpha",
+        "active_task": "Task 1",
+        "blockers": [
+          "Blocker 1"
+        ],
+        "dependencies": []
+      },
+      "memory": [
+        {
+          "id": "84b42342-5910-4482-9687-8d8c19045223",
+          "object_type": "rule",
+          "content": {
+            "key": "val"
+          },
+          "tags": [
+            "test"
+          ],
+          "confidence": "hypothesis",
+          "created_at": "2026-07-21 03:56:28.014940",
+          "updated_at": "2026-07-21 03:56:28.014947"
+        }
+      ],
+      "archive": [],
+      "decisions": [
+        {
+          "id": "718059a5-296f-41dd-8c79-726e24f5dabe",
+          "decision_type": "architectural",
+          "description": "Choose Postgres",
+          "rationale": "Scalability",
+          "evidence": [],
+          "timestamp": "2026-07-21 03:56:28.015678",
+          "outcome": null
+        }
+      ],
+      "checkpoints": {
+        "checkpoint_698d8f36": {
+          "timestamp": "2026-07-21T03:56:28.016742",
+          "state": {
+            "current_objective": "Objective Alpha",
+            "active_task": "Task 1",
+            "blockers": [
+              "Blocker 1"
+            ],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "84b42342-5910-4482-9687-8d8c19045223",
+              "object_type": "rule",
+              "content": {
+                "key": "val"
+              },
+              "tags": [
+                "test"
+              ],
+              "confidence": "hypothesis",
+              "created_at": "2026-07-21 03:56:28.014940",
+              "updated_at": "2026-07-21 03:56:28.014947"
+            }
+          ],
+          "archive": [],
+          "decisions": [
+            {
+              "id": "718059a5-296f-41dd-8c79-726e24f5dabe",
+              "decision_type": "architectural",
+              "description": "Choose Postgres",
+              "rationale": "Scalability",
+              "evidence": [],
+              "timestamp": "2026-07-21 03:56:28.015678",
+              "outcome": null
+            }
+          ],
+          "lineage": [
+            "session_d85d514d"
+          ]
+        }
+      },
+      "lineage": [
+        "session_d85d514d"
+      ],
+      "continuity_state": {
+        "session_marker": "marker_abc"
+      }
+    },
+    "snapshot_c33b2bc8": {
+      "id": "snapshot_c33b2bc8",
+      "timestamp": "2026-07-21T03:56:28.030551",
+      "state": {
+        "current_objective": "Memory Survival Objective",
+        "active_task": null,
+        "blockers": [],
+        "dependencies": []
+      },
+      "memory": [
+        {
+          "id": "e3216996-98b1-4941-b530-d6bee4a5cdcf",
+          "object_type": "schema",
+          "content": {
+            "table": "users"
+          },
+          "tags": [
+            "database"
+          ],
+          "confidence": "validated",
+          "created_at": "2026-07-21 03:56:28.029850",
+          "updated_at": "2026-07-21 03:56:28.029855"
+        },
+        {
+          "id": "7fcdc982-50a6-4598-a450-e0367a57b964",
+          "object_type": "policy",
+          "content": {
+            "role": "admin"
+          },
+          "tags": [
+            "security"
+          ],
+          "confidence": "hypothesis",
+          "created_at": "2026-07-21 03:56:28.029881",
+          "updated_at": "2026-07-21 03:56:28.029884"
+        }
+      ],
+      "archive": [],
+      "decisions": [
+        {
+          "id": "f8c4a789-f74c-4d9e-850d-07a182aedca3",
+          "decision_type": "strategic",
+          "description": "Core Strategy",
+          "rationale": "Market conditions",
+          "evidence": [],
+          "timestamp": "2026-07-21 03:56:28.030310",
+          "outcome": null
+        }
+      ],
+      "checkpoints": {},
+      "lineage": [
+        "session_25342769"
+      ],
+      "continuity_state": {}
+    },
+    "snapshot_1957a921": {
+      "id": "snapshot_1957a921",
+      "timestamp": "2026-07-21T03:56:28.048551",
+      "state": {
+        "current_objective": "Mission Mars",
+        "active_task": "Build rocket",
+        "blockers": [],
+        "dependencies": []
+      },
+      "memory": [
+        {
+          "id": "8b3a735d-d199-44ae-b61e-dee5ea9c1414",
+          "object_type": "design",
+          "content": {
+            "fuel": "methane"
+          },
+          "tags": [
+            "rocket"
+          ],
+          "confidence": "hypothesis",
+          "created_at": "2026-07-21 03:56:28.047927",
+          "updated_at": "2026-07-21 03:56:28.047933"
+        }
+      ],
+      "archive": [],
+      "decisions": [],
+      "checkpoints": {},
+      "lineage": [
+        "session_12202aca"
+      ],
+      "continuity_state": {}
     }
   }
 }
