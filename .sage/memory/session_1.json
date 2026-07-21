@@ -1,0 +1,18 @@
+{
+  "session_id": "session_1",
+  "entries": [
+    {
+      "id": "session_1_0",
+      "session_id": "session_1",
+      "key": "metadata",
+      "value": {
+        "user_id": "user_1"
+      },
+      "created_at": "2026-07-21T06:42:23.556697",
+      "updated_at": "2026-07-21T06:42:23.556697",
+      "metadata": {}
+    }
+  ],
+  "created_at": "2026-07-21T06:42:23.556677",
+  "updated_at": "2026-07-21T06:42:23.556703"
+}
