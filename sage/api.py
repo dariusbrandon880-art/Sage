@@ -6,7 +6,7 @@ from typing import Optional, List, Dict, Any
 from datetime import datetime
 
 from sage.runtime import SAGERuntime
-from sage.models import DecisionType, MemoryObject, ConfidenceLevel
+from sage.models import DecisionType, MemoryObject, ConfidenceLevel, ExternalSessionPayload
 from sage.validation import ValidationSystem
 from sage.service import LifecycleManager
 from sage.integration import (
@@ -362,6 +362,66 @@ async def list_snapshots():
                 }
             )
     return {"count": len(snapshots), "snapshots": snapshots}
+
+
+# Ingestion, reasoning, and self-verification endpoints
+@app.post("/ingest")
+async def ingest_payload(payload: ExternalSessionPayload):
+    try:
+        result = runtime.ingest_session_payload(payload)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Ingestion failed: {str(e)}")
+
+
+@app.get("/reason")
+async def reason_over_continuity():
+    try:
+        result = runtime.reason_over_continuity()
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Reasoning failed: {str(e)}")
+
+
+@app.get("/verify")
+async def verify_integrity():
+    try:
+        result = runtime.verify_integrity()
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Self-verification failed: {str(e)}")
+
+
+# Continuity/Snapshot endpoints
+@app.post("/continuity/snapshot")
+async def create_continuity_snapshot():
+    try:
+        snapshot_id = runtime.create_workspace_snapshot()
+        return {"status": "success", "snapshot_id": snapshot_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/continuity/snapshots")
+async def list_continuity_snapshots():
+    try:
+        snapshots = runtime.list_workspace_snapshots()
+        return {"snapshots": snapshots}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/continuity/restore/{id}")
+async def restore_continuity_snapshot(id: str):
+    success = runtime.restore_workspace_snapshot(id)
+    if not success:
+        raise HTTPException(
+            status_code=404, detail=f"Snapshot '{id}' not found or failed to restore"
+        )
+    return {
+        "status": "success",
+        "message": f"Workspace state successfully restored from snapshot '{id}'",
+    }
 
 
 if __name__ == "__main__":
