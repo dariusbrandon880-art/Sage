@@ -103,5 +103,5 @@ class ProactiveCheckpointer:
         if self.task_counter >= self.max_tasks_before_checkpoint:
             checkpoint_id = self.runtime.checkpoint()
             self.task_counter = 0
-            return checkpoint_id
+            return str(checkpoint_id)
         return None

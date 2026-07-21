@@ -492,9 +492,10 @@ async def generate_oauth_token(req: OAuthTokenRequest):
 # 5. Business/Application Layer Endpoints
 @app.post("/business/workspace")
 async def create_workspace(req: CreateWorkspaceRequest):
-    workspace = ClientWorkspaceSandbox(req.client_id, req.quota_bytes)
+    quota = req.quota_bytes if req.quota_bytes is not None else 10485760
+    workspace = ClientWorkspaceSandbox(req.client_id, quota)
     runtime.client_workspaces[req.client_id] = workspace
-    return {"status": "success", "client_id": req.client_id, "quota_bytes": req.quota_bytes}
+    return {"status": "success", "client_id": req.client_id, "quota_bytes": quota}
 
 
 @app.post("/business/compliance")

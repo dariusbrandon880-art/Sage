@@ -78,7 +78,10 @@ class EventQueue:
     def pop_event(self) -> Optional[Dict[str, Any]]:
         """Pop the oldest event from the queue."""
         try:
-            return self.buffer.get_nowait()
+            item = self.buffer.get_nowait()
+            if isinstance(item, dict):
+                return item
+            return None
         except queue.Empty:
             return None
 

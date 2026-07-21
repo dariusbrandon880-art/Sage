@@ -334,7 +334,7 @@ class SageRuntime:
         state_path = Path(".sage/sage_state.json")
         state_path.parent.mkdir(parents=True, exist_ok=True)
 
-        snapshots_registry = {"snapshots": {}}
+        snapshots_registry: Dict[str, Any] = {"snapshots": {}}
         if state_path.exists():
             try:
                 with open(state_path, 'r') as f:
@@ -466,9 +466,9 @@ class SageRuntime:
         # 5. Restore decisions
         for item in snapshot_data.get("decisions", []):
             try:
-                entry = DecisionEntry(**item)
-                self.decisions.decisions[entry.id] = entry
-                self.decisions._save_decision(entry)
+                dec_entry = DecisionEntry(**item)
+                self.decisions.decisions[dec_entry.id] = dec_entry
+                self.decisions._save_decision(dec_entry)
             except Exception:
                 pass
 

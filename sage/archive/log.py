@@ -25,14 +25,16 @@ class ArchiveLog:
             if use_persistence
             else None
         )
-        self.event_log: Optional[EventLog] = None
+        event_log = None
         
         # Load existing event log if available
         if self.use_persistence and self.persistent_store:
-            self.event_log = self.persistent_store.load_event_log(session_id)
+            event_log = self.persistent_store.load_event_log(session_id)
         
-        if self.event_log is None:
-            self.event_log = EventLog(session_id=session_id)
+        if event_log is None:
+            event_log = EventLog(session_id=session_id)
+
+        self.event_log: EventLog = event_log
 
     def log_event(self, event_type: str, data: Dict[str, Any], source: str = "archive") -> None:
         """Log an event to archive.
@@ -105,7 +107,7 @@ class ArchiveLog:
         """
         return self.event_log.get_latest_event(event_type)
 
-    def query_events(self, event_types: List[str] = None, start_time: Optional[datetime] = None, end_time: Optional[datetime] = None) -> List[ArchiveEvent]:
+    def query_events(self, event_types: Optional[List[str]] = None, start_time: Optional[datetime] = None, end_time: Optional[datetime] = None) -> List[ArchiveEvent]:
         """Query events with multiple filters.
         
         Args:
