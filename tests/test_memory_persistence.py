@@ -4,7 +4,7 @@ import pytest
 import tempfile
 from pathlib import Path
 from datetime import datetime, timedelta
-from sage.memory.models import MemoryEntry, SessionMemory, RetrievalQuery
+from sage.memory.models import SessionMemory, RetrievalQuery
 from sage.memory.persistence import PersistentMemoryStore
 
 

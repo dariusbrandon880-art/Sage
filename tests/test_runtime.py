@@ -1,6 +1,5 @@
 """Tests for SAGE runtime engine."""
 
-import pytest
 from sage.runtime import SageRuntime
 
 

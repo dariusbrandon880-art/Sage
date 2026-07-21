@@ -1,6 +1,5 @@
 """Tests for SAGE ACR bridge."""
 
-import pytest
 from sage.acr import ACRBridge
 
 
@@ -9,14 +8,14 @@ class TestACRBridge:
 
     def test_acr_initialization(self):
         """Test ACR bridge initializes correctly."""
-        bridge = ACRBridge()
+        bridge = ACRBridge(use_persistence=False)
         assert bridge is not None
         assert len(bridge.continuity_state) == 0
         assert len(bridge.session_lineage) == 0
 
     def test_save_and_load_state(self):
         """Test saving and loading continuity state."""
-        bridge = ACRBridge()
+        bridge = ACRBridge(use_persistence=False)
         state = {"key_1": "value_1", "key_2": 42}
         
         bridge.save_state(state)
@@ -26,7 +25,7 @@ class TestACRBridge:
 
     def test_session_lineage(self):
         """Test session lineage tracking."""
-        bridge = ACRBridge()
+        bridge = ACRBridge(use_persistence=False)
         bridge.add_session_link("session_1")
         bridge.add_session_link("session_2")
         bridge.add_session_link("session_3")
@@ -36,7 +35,7 @@ class TestACRBridge:
 
     def test_lineage_independence(self):
         """Test that lineage copy is independent."""
-        bridge = ACRBridge()
+        bridge = ACRBridge(use_persistence=False)
         bridge.add_session_link("session_1")
         
         lineage = bridge.get_lineage()

@@ -1,6 +1,5 @@
 """Tests for SAGE memory layer."""
 
-import pytest
 from sage.memory import MemoryStore
 
 

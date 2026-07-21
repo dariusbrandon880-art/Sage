@@ -1,6 +1,6 @@
 """Persistent storage backend for memory layer."""
 
-from typing import Optional, Dict, Any, List
+from typing import Optional, List
 from pathlib import Path
 import json
 from datetime import datetime

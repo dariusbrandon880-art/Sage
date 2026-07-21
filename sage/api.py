@@ -7,6 +7,8 @@ from typing import Optional, List, Dict, Any
 from sage.runtime import SAGERuntime
 from sage.models import DecisionType, MemoryObject, ConfidenceLevel
 from sage.validation import ValidationSystem
+from sage.registry.models import Capability
+from sage.business.core import ClientWorkspaceSandbox
 
 app = FastAPI(
     title="SAGE Runtime API",
@@ -26,6 +28,60 @@ class ObjectiveRequest(BaseModel):
 
 class TaskRequest(BaseModel):
     task: str
+
+
+# Strategic Roadmap Request Models
+class CapabilityRegisterRequest(BaseModel):
+    id: str
+    name: str
+    description: str
+    permissions: List[str]
+    parameters: Optional[Dict[str, Any]] = None
+
+
+class CapabilityInvokeRequest(BaseModel):
+    id: str
+    args: Dict[str, Any]
+    scopes: List[str]
+
+
+class RouteContextRequest(BaseModel):
+    text: str
+
+
+class EvaluateTaskRequest(BaseModel):
+    objective: str
+    task: str
+    context: Dict[str, Any]
+
+
+class ScheduleJobRequest(BaseModel):
+    name: str
+    interval_seconds: int
+
+
+class RegisterWebhookRequest(BaseModel):
+    event_type: str
+    url: str
+
+
+class TriggerWebhookRequest(BaseModel):
+    event_type: str
+    payload: Dict[str, Any]
+
+
+class OAuthTokenRequest(BaseModel):
+    client_id: str
+    client_secret: str
+
+
+class CreateWorkspaceRequest(BaseModel):
+    client_id: str
+    quota_bytes: Optional[int] = 10485760
+
+
+class EvaluateComplianceRequest(BaseModel):
+    decision_data: Dict[str, Any]
 
 
 class DecisionRequest(BaseModel):
@@ -277,6 +333,182 @@ async def resolve_blocker(data: Dict[str, str]):
 async def create_checkpoint():
     checkpoint_id = runtime.checkpoint()
     return {"checkpoint_id": checkpoint_id, "status": "created"}
+
+
+# Handoff and Restore endpoints
+class RestoreRequest(BaseModel):
+    handoff_file: str
+
+
+@app.post("/handoff")
+async def generate_handoff(file_path: Optional[str] = None):
+    try:
+        saved_path = runtime.generate_handoff(file_path)
+        return {"status": "success", "handoff_file": saved_path}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to generate handoff: {str(e)}")
+
+
+@app.post("/restore")
+async def restore_session(req: RestoreRequest):
+    success = runtime.restore_session(req.handoff_file)
+    if not success:
+        raise HTTPException(status_code=400, detail=f"Failed to restore session from {req.handoff_file}")
+    return {"status": "success", "message": f"Session restored from {req.handoff_file}"}
+
+
+# Snapshot endpoints
+@app.post("/continuity/snapshot")
+async def create_snapshot():
+    try:
+        snapshot_id = runtime.create_workspace_snapshot()
+        return {"status": "success", "snapshot_id": snapshot_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/continuity/snapshots")
+async def list_snapshots():
+    try:
+        snapshots = runtime.list_workspace_snapshots()
+        return {"snapshots": snapshots}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/continuity/restore/{id}")
+async def restore_snapshot(id: str):
+    success = runtime.restore_workspace_snapshot(id)
+    if not success:
+        raise HTTPException(status_code=404, detail=f"Snapshot '{id}' not found or failed to restore")
+    return {"status": "success", "message": f"Workspace state successfully restored from snapshot '{id}'"}
+
+
+# ============================================================================
+# STRATEGIC ROADMAP ENDPOINTS
+# ============================================================================
+
+# 1. Capability Registry Endpoints
+@app.post("/registry/capability")
+async def register_capability(req: CapabilityRegisterRequest):
+    try:
+        cap = Capability(
+            id=req.id,
+            name=req.name,
+            description=req.description,
+            permissions=req.permissions,
+            parameters=req.parameters or {},
+            active=True
+        )
+        runtime.registry.register_capability(cap)
+        return {"status": "success", "message": f"Capability '{req.id}' registered."}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/registry/capabilities")
+async def list_capabilities():
+    caps = runtime.registry.list_capabilities(active_only=False)
+    return {"capabilities": [c.model_dump() for c in caps]}
+
+
+@app.post("/registry/invoke")
+async def invoke_capability(req: CapabilityInvokeRequest):
+    try:
+        # We can register dummy handlers for testing/invocation
+        if req.id not in runtime.registry.handlers:
+            runtime.registry.handlers[req.id] = lambda **kwargs: f"Mock invoked '{req.id}' successfully with args {kwargs}"
+
+        result = runtime.registry.invoke_capability(req.id, req.args, req.scopes)
+        return {"status": "success", "result": result}
+    except PermissionError as pe:
+        raise HTTPException(status_code=403, detail=str(pe))
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# 2. Intelligence Layer Endpoints
+@app.post("/intelligence/route")
+async def route_context(req: RouteContextRequest):
+    category = runtime.router.route_context(req.text)
+    return {"text": req.text, "category": category}
+
+
+@app.post("/intelligence/evaluate")
+async def evaluate_task(req: EvaluateTaskRequest):
+    try:
+        result = runtime.reasoning.evaluate_task(req.objective, req.task, req.context)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# 3. Automation Layer Endpoints
+@app.post("/automation/schedule")
+async def schedule_job(req: ScheduleJobRequest):
+    try:
+        runtime.scheduler.schedule_job(req.name, lambda: f"Executed '{req.name}'", req.interval_seconds)
+        return {"status": "success", "message": f"Job '{req.name}' scheduled every {req.interval_seconds}s."}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/automation/heal")
+async def trigger_self_healing():
+    try:
+        healed = runtime.healing.heal()
+        status = runtime.healing.run_health_check()
+        return {"healed": healed, "health_status": status}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# 4. External Interfaces Endpoints
+@app.post("/interfaces/webhook")
+async def register_webhook(req: RegisterWebhookRequest):
+    runtime.webhooks.register_listener(req.event_type, req.url)
+    return {"status": "success", "message": f"Webhook registered for '{req.event_type}'."}
+
+
+@app.post("/interfaces/webhook/trigger")
+async def trigger_webhook(req: TriggerWebhookRequest):
+    count = runtime.webhooks.trigger_event(req.event_type, req.payload)
+    return {"status": "success", "delivered_count": count}
+
+
+@app.post("/interfaces/oauth/token")
+async def generate_oauth_token(req: OAuthTokenRequest):
+    try:
+        # Register if not present for mock convenience
+        if req.client_id not in runtime.oauth_gateway.api_keys:
+            runtime.oauth_gateway.register_client(req.client_id, req.client_secret)
+
+        token = runtime.oauth_gateway.generate_token(req.client_id, req.client_secret)
+        return {"access_token": token, "token_type": "bearer"}
+    except Exception as e:
+        raise HTTPException(status_code=401, detail=str(e))
+
+
+# 5. Business/Application Layer Endpoints
+@app.post("/business/workspace")
+async def create_workspace(req: CreateWorkspaceRequest):
+    quota = req.quota_bytes if req.quota_bytes is not None else 10485760
+    workspace = ClientWorkspaceSandbox(req.client_id, quota)
+    runtime.client_workspaces[req.client_id] = workspace
+    return {"status": "success", "client_id": req.client_id, "quota_bytes": quota}
+
+
+@app.post("/business/compliance")
+async def evaluate_compliance(req: EvaluateComplianceRequest):
+    # Register basic compliance rule if none exist
+    if not runtime.compliance.rules:
+        runtime.compliance.add_rule(
+            name="Evidence presence",
+            validator_callable=lambda d: len(d.get("evidence", [])) > 0
+        )
+
+    result = runtime.compliance.evaluate_compliance(req.decision_data)
+    return result
 
 
 if __name__ == "__main__":

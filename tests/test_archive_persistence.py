@@ -4,7 +4,7 @@ import pytest
 import tempfile
 from pathlib import Path
 from datetime import datetime, timedelta
-from sage.archive.models import ArchiveEvent, EventLog, EventQuery
+from sage.archive.models import EventLog, EventQuery
 from sage.archive.persistence import PersistentArchiveStore
 
 

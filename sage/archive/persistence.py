@@ -147,7 +147,7 @@ class PersistentArchiveStore:
             results = [e for e in results if e.timestamp <= query.end_time]
         
         # Apply pagination
-        total = len(results)
+        len(results)
         results = results[query.offset:query.offset + query.limit]
         
         return results

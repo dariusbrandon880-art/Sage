@@ -43,6 +43,13 @@ class SessionMemory(BaseModel):
             if entry.key == key:
                 return entry
         return None
+
+    def __getitem__(self, key: str) -> Any:
+        """Allow subscript access to entries by key."""
+        entry = self.get_entry(key)
+        if entry is None:
+            raise KeyError(key)
+        return entry.value
     
     def update_entry(self, key: str, value: Any) -> Optional[MemoryEntry]:
         """Update an entry by key."""

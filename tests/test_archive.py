@@ -1,6 +1,5 @@
 """Tests for SAGE archive layer."""
 
-import pytest
 from sage.archive import ArchiveLog
 
 
