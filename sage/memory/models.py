@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 
 class MemoryEntry(BaseModel):
     """A single entry in memory storage."""
-    
+
     id: str
     session_id: str
     key: str
@@ -19,12 +19,12 @@ class MemoryEntry(BaseModel):
 
 class SessionMemory(BaseModel):
     """Complete memory context for a session."""
-    
+
     session_id: str
     entries: List[MemoryEntry] = Field(default_factory=list)
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
-    
+
     def add_entry(self, key: str, value: Any, entry_id: Optional[str] = None) -> MemoryEntry:
         """Add an entry to session memory."""
         entry = MemoryEntry(
@@ -36,14 +36,21 @@ class SessionMemory(BaseModel):
         self.entries.append(entry)
         self.updated_at = datetime.now()
         return entry
-    
+
     def get_entry(self, key: str) -> Optional[MemoryEntry]:
         """Retrieve an entry by key."""
         for entry in self.entries:
             if entry.key == key:
                 return entry
         return None
-    
+
+    def __getitem__(self, key: str) -> Any:
+        """Allow subscript access to entries by key."""
+        entry = self.get_entry(key)
+        if entry is None:
+            raise KeyError(key)
+        return entry.value
+
     def update_entry(self, key: str, value: Any) -> Optional[MemoryEntry]:
         """Update an entry by key."""
         for entry in self.entries:
@@ -57,7 +64,7 @@ class SessionMemory(BaseModel):
 
 class RetrievalQuery(BaseModel):
     """Query structure for memory retrieval."""
-    
+
     session_id: str
     key: Optional[str] = None
     start_time: Optional[datetime] = None
