@@ -1,6 +1,5 @@
 """Tests for SAGE configuration."""
 
-import pytest
 from sage.config import SageConfig
 
 

@@ -1,6 +1,5 @@
 """Tests for SAGE memory layer."""
 
-import pytest
 from sage.memory import MemoryStore
 
 
@@ -17,7 +16,7 @@ class TestMemoryStore:
         """Test creating a session."""
         store = MemoryStore()
         store.create_session("session_1", {"user_id": "user_1"})
-        
+
         session = store.get_session("session_1")
         assert session is not None
         assert session["metadata"]["user_id"] == "user_1"
@@ -26,7 +25,7 @@ class TestMemoryStore:
         """Test storing and retrieving context."""
         store = MemoryStore()
         store.store_context("key_1", "value_1")
-        
+
         value = store.get_context("key_1")
         assert value == "value_1"
 

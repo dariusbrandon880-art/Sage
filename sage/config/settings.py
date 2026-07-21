@@ -1,7 +1,5 @@
 """SAGE runtime configuration management."""
 
-import os
-from typing import Optional, Any
 from pydantic_settings import BaseSettings
 
 
@@ -29,7 +27,7 @@ class SageConfig(BaseSettings):
     @classmethod
     def from_env(cls) -> "SageConfig":
         """Load configuration from environment variables.
-        
+
         Returns:
             SageConfig instance.
         """
