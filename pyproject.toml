@@ -26,7 +26,9 @@ classifiers = [
 dependencies = [
     "pydantic>=2.0",
     "pydantic-settings>=2.0",
-    "python-dotenv>=1.0","uvicorn",
+    "python-dotenv>=1.0",
+    "uvicorn",
+    "fastapi",
 ]
 
 [project.optional-dependencies]
@@ -37,6 +39,7 @@ dev = [
     "black>=23.0",
     "ruff>=0.1",
     "mypy>=1.0",
+    "httpx",
 ]
 
 [tool.setuptools]
