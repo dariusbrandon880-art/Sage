@@ -1,6 +1,6 @@
 """Persistent storage backend for memory layer."""
 
-from typing import Optional, Dict, Any, List
+from typing import Optional, List
 from pathlib import Path
 import json
 from datetime import datetime
@@ -12,7 +12,7 @@ class PersistentMemoryStore:
 
     def __init__(self, storage_path: str = ".sage/memory"):
         """Initialize persistent memory store.
-        
+
         Args:
             storage_path: Root path for storing memory files.
         """
@@ -25,13 +25,13 @@ class PersistentMemoryStore:
 
     def save_session(self, session_memory: SessionMemory) -> None:
         """Persist a session's memory to storage.
-        
+
         Args:
             session_memory: SessionMemory object to save.
         """
         session_path = self._get_session_path(session_memory.session_id)
         session_path.parent.mkdir(parents=True, exist_ok=True)
-        
+
         # Convert to JSON-serializable format
         data = {
             "session_id": session_memory.session_id,
@@ -50,27 +50,27 @@ class PersistentMemoryStore:
             "created_at": session_memory.created_at.isoformat(),
             "updated_at": session_memory.updated_at.isoformat(),
         }
-        
+
         with open(session_path, "w") as f:
             json.dump(data, f, indent=2)
 
     def load_session(self, session_id: str) -> Optional[SessionMemory]:
         """Load a session's memory from storage.
-        
+
         Args:
             session_id: Session identifier.
-            
+
         Returns:
             SessionMemory object or None if not found.
         """
         session_path = self._get_session_path(session_id)
-        
+
         if not session_path.exists():
             return None
-        
+
         with open(session_path, "r") as f:
             data = json.load(f)
-        
+
         entries = [
             MemoryEntry(
                 id=entry["id"],
@@ -83,7 +83,7 @@ class PersistentMemoryStore:
             )
             for entry in data["entries"]
         ]
-        
+
         return SessionMemory(
             session_id=data["session_id"],
             entries=entries,
@@ -93,15 +93,15 @@ class PersistentMemoryStore:
 
     def delete_session(self, session_id: str) -> bool:
         """Delete a session's memory from storage.
-        
+
         Args:
             session_id: Session identifier.
-            
+
         Returns:
             True if deleted, False if not found.
         """
         session_path = self._get_session_path(session_id)
-        
+
         if session_path.exists():
             session_path.unlink()
             return True
@@ -109,45 +109,39 @@ class PersistentMemoryStore:
 
     def list_sessions(self) -> List[str]:
         """List all stored session IDs.
-        
+
         Returns:
             List of session identifiers.
         """
-        return [
-            f.stem 
-            for f in self.storage_path.glob("*.json")
-        ]
+        return [f.stem for f in self.storage_path.glob("*.json")]
 
     def query(self, query: RetrievalQuery) -> List[MemoryEntry]:
         """Retrieve memory entries matching a query.
-        
+
         Args:
             query: RetrievalQuery object.
-            
+
         Returns:
             List of matching MemoryEntry objects.
         """
         session = self.load_session(query.session_id)
         if not session:
             return []
-        
+
         results = session.entries
-        
+
         # Filter by key if specified
         if query.key:
             results = [e for e in results if e.key == query.key]
-        
+
         # Filter by time range if specified
         if query.start_time:
             results = [e for e in results if e.created_at >= query.start_time]
         if query.end_time:
             results = [e for e in results if e.created_at <= query.end_time]
-        
+
         # Filter by metadata if specified
         for meta_key, meta_value in query.metadata_filters.items():
-            results = [
-                e for e in results 
-                if e.metadata.get(meta_key) == meta_value
-            ]
-        
+            results = [e for e in results if e.metadata.get(meta_key) == meta_value]
+
         return results
