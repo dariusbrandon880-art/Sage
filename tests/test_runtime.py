@@ -1,6 +1,5 @@
 """Tests for SAGE runtime engine."""
 
-import pytest
 from sage.runtime import SageRuntime
 
 
@@ -17,10 +16,10 @@ class TestSageRuntime:
         """Test runtime start and stop."""
         runtime = SageRuntime()
         assert not runtime.is_running()
-        
+
         runtime.start()
         assert runtime.is_running()
-        
+
         runtime.stop()
         assert not runtime.is_running()
 

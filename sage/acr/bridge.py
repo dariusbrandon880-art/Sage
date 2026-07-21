@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 
 class ContinuityState(BaseModel):
     """Model for persistent continuity state."""
-    
+
     id: str
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
@@ -22,7 +22,7 @@ class ACRBridge:
 
     def __init__(self, persistence_path: Optional[str] = None, use_persistence: bool = True):
         """Initialize ACR bridge.
-        
+
         Args:
             persistence_path: Path for storing continuity state. Defaults to .sage/continuity
             use_persistence: Whether to use persistent storage.
@@ -31,10 +31,10 @@ class ACRBridge:
         self.session_lineage: List[str] = []
         self.use_persistence = use_persistence
         self.persistence_path = Path(persistence_path or ".sage/continuity")
-        
+
         if self.use_persistence:
             self.persistence_path.mkdir(parents=True, exist_ok=True)
-        
+
         # Load existing state if available
         self._load_persisted_state()
 
@@ -46,15 +46,15 @@ class ACRBridge:
         """Load continuity state from persistent storage."""
         if not self.use_persistence:
             return
-        
+
         state_file = self._get_state_file_path()
         if not state_file.exists():
             return
-        
+
         try:
             with open(state_file, "r") as f:
                 data = json.load(f)
-            
+
             self.continuity_state = data.get("data", {})
             self.session_lineage = data.get("session_lineage", [])
         except (json.JSONDecodeError, IOError):
@@ -64,9 +64,9 @@ class ACRBridge:
         """Persist continuity state to storage."""
         if not self.use_persistence:
             return
-        
+
         state_file = self._get_state_file_path()
-        
+
         data = {
             "id": "global_continuity",
             "created_at": datetime.now().isoformat(),
@@ -74,7 +74,7 @@ class ACRBridge:
             "data": self.continuity_state,
             "session_lineage": self.session_lineage,
         }
-        
+
         try:
             with open(state_file, "w") as f:
                 json.dump(data, f, indent=2)
@@ -83,7 +83,7 @@ class ACRBridge:
 
     def save_state(self, state: Dict[str, Any]) -> None:
         """Save continuity state for next session.
-        
+
         Args:
             state: State dictionary to persist.
         """
@@ -92,7 +92,7 @@ class ACRBridge:
 
     def load_state(self) -> Dict[str, Any]:
         """Load previously saved continuity state.
-        
+
         Returns:
             Continuity state dictionary.
         """
@@ -100,7 +100,7 @@ class ACRBridge:
 
     def add_session_link(self, session_id: str) -> None:
         """Add session to continuity lineage.
-        
+
         Args:
             session_id: Session identifier to link.
         """
@@ -109,7 +109,7 @@ class ACRBridge:
 
     def get_lineage(self) -> List[str]:
         """Get session lineage chain.
-        
+
         Returns:
             List of session IDs in order.
         """
@@ -117,7 +117,7 @@ class ACRBridge:
 
     def get_parent_session(self) -> Optional[str]:
         """Get the ID of the parent session.
-        
+
         Returns:
             Parent session ID or None if no lineage.
         """
@@ -125,7 +125,7 @@ class ACRBridge:
 
     def get_session_depth(self) -> int:
         """Get the depth of the session lineage.
-        
+
         Returns:
             Number of sessions in lineage.
         """
@@ -133,7 +133,7 @@ class ACRBridge:
 
     def update_state_value(self, key: str, value: Any) -> None:
         """Update a single value in continuity state.
-        
+
         Args:
             key: State key.
             value: New value.
@@ -143,11 +143,11 @@ class ACRBridge:
 
     def get_state_value(self, key: str, default: Any = None) -> Any:
         """Retrieve a single value from continuity state.
-        
+
         Args:
             key: State key.
             default: Default value if key not found.
-            
+
         Returns:
             State value or default.
         """
@@ -161,7 +161,7 @@ class ACRBridge:
 
     def export_lineage_graph(self) -> Dict[str, Any]:
         """Export the session lineage as a graph structure.
-        
+
         Returns:
             Lineage graph with metadata.
         """
