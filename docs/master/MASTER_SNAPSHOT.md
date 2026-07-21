@@ -1,9 +1,11 @@
 # SAGE MASTER SNAPSHOT - Current Operational State
 
-This snapshot represents the verified, activated, and fully operational state of SAGE Runtime v1.1.0 with the fully integrated Continuity Bridge.
+This snapshot represents the verified, activated, and fully operational state of SAGE Runtime v1.1.0 with completed Phase 3 Live External Connectors and Continuity Bridge.
 
 ## 1. System Overview
 SAGE (Autonomous Continuity Runtime) is an engineering continuity engine that preserves, organizes, retrieves, validates, and promotes engineering knowledge. It acts as the central coordinator between developers, LLM agents (ChatGPT and Gemini/Jules), and collaboration platforms (GitHub and Google Workspace).
+
+All external integrations utilize SAGE's single authoritative Continuity Bridge (`ingest_session_payload`) to persist data, routing all context, webhooks, and events through SAGE's Intake, Classification, Validation, Archive Routing, Persistence, Decision/Evidence Tracking, and Snapshotting pipeline. This prevents duplicate persistence or competing architectures.
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
@@ -75,12 +77,12 @@ sage/
 │   └── storage.py            # High-performance key-value backend
 ├── runtime/
 │   ├── __init__.py
-│   └── engine.py             # Main runtime core execution loop (SageRuntime)
+│   └── engine.py             # Main runtime core execution loop (SageRuntime, Continuity Bridge)
 ├── api.py                    # FastAPI server (REST endpoints)
 ├── cli.py                    # Command-line interface
 ├── decision.py               # Architectural & Technical decision ledger (DecisionTracker)
 ├── integration.py            # Connectors (ChatGPT, Gemini/Jules, GitHub, Workspace)
-├── models.py                 # Centralized system schemas and types (includes ExternalSessionPayload)
+├── models.py                 # Centralized system schemas and types (ExternalSessionPayload, RuntimeState, etc.)
 ├── service.py                # Service lifecycle management and authentication
 └── validation.py             # Multi-rule quality checker and promotion pipeline
 ```
@@ -91,10 +93,11 @@ sage/
 The REST API server exposes:
 - **System Diagnostics**: `/service/diagnostics` (Uptime, metrics, session depth)
 - **Continuity Engine**: `/objective`, `/task`, `/task/blocker`, `/checkpoint`, `/handoff`, `/restore`
-- **Continuity Bridge**: `/ingest` (session payloads ingestion), `/reason` (reasoning over continuity), `/verify` (integrity self-verification)
 - **Memory & Validation**: `/memory`, `/validate`, `/promote/validated`, `/promote/archive`
-- **AI Integrations**: `/ai/query/chatgpt`, `/ai/query/gemini-jules`
-- **Tool Integrations**: `/tools/github/event`, `/tools/workspace/artifact`, `/tools/index/relationships`
+- **AI Integrations**: `/ai/query/chatgpt`, `/ai/query/gemini-jules` (both route through Continuity Bridge)
+- **Tool Integrations**: `/tools/github/event`, `/tools/workspace/artifact`, `/tools/index/relationships` (all route through Continuity Bridge)
+- **Continuity Bridge Funnels**: `/ingest` (single, authoritative intake-validation-route pipeline), `/reason`, `/verify`
+- **Workspace State Snapshots**: `/continuity/snapshot`, `/continuity/snapshots`, `/continuity/restore/{id}`
 
 ---
 

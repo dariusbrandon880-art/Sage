@@ -92,6 +92,31 @@ class ChatGPTClient(BaseAIClient):
             f"Context analyzed: {len(context['matched_memories'])} active memories, {len(context['matched_archives'])} master archives."
         )
 
+        # Synchronize via the authoritative Continuity Bridge
+        from sage.models import ExternalSessionPayload
+
+        payload = ExternalSessionPayload(
+            session_id=session_id,
+            objective=self.runtime.current_state.current_objective
+            or f"AI Query: {request.prompt[:50]}",
+            task=self.runtime.current_state.active_task or "Process AI Query",
+            memories=[
+                {
+                    "object_type": "ai_query",
+                    "content": {
+                        "prompt": request.prompt,
+                        "response": response_text,
+                        "client": self.client_name,
+                        "reasoning_history": self.reasoning_history.copy(),
+                    },
+                    "tags": ["ai", self.client_name.lower(), "continuity"],
+                    "confidence": "validated",
+                }
+            ],
+            decisions=[],
+        )
+        self.runtime.ingest_session_payload(payload)
+
         return AIQueryResponse(
             response_text=response_text,
             reasoning_history=self.reasoning_history.copy(),
@@ -121,6 +146,31 @@ class GeminiJulesClient(BaseAIClient):
             f"Continuity state retrieved successfully. Running with SAGE runtime alignment.\n"
             f"Referenced SAGE keys: {referenced_ids}"
         )
+
+        # Synchronize via the authoritative Continuity Bridge
+        from sage.models import ExternalSessionPayload
+
+        payload = ExternalSessionPayload(
+            session_id=session_id,
+            objective=self.runtime.current_state.current_objective
+            or f"AI Query: {request.prompt[:50]}",
+            task=self.runtime.current_state.active_task or "Process AI Query",
+            memories=[
+                {
+                    "object_type": "ai_query",
+                    "content": {
+                        "prompt": request.prompt,
+                        "response": response_text,
+                        "client": self.client_name,
+                        "reasoning_history": self.reasoning_history.copy(),
+                    },
+                    "tags": ["ai", self.client_name.lower(), "continuity"],
+                    "confidence": "validated",
+                }
+            ],
+            decisions=[],
+        )
+        self.runtime.ingest_session_payload(payload)
 
         return AIQueryResponse(
             response_text=response_text,
@@ -166,35 +216,53 @@ class ToolIntegrationManager:
         self.indexed_workspace_artifacts: List[GoogleWorkspaceArtifact] = []
 
     def index_github_event(self, event: GitHubEvent) -> str:
-        """Index a GitHub engineering event into SAGE memory layer."""
+        """Index a GitHub engineering event into SAGE memory layer using the Continuity Bridge."""
         self.indexed_github_events.append(event)
 
-        # Record a SAGE MemoryObject for this github event
-        from sage.models import MemoryObject, ConfidenceLevel
+        # Build payload for the Continuity Bridge
+        from sage.models import ExternalSessionPayload
 
-        obj = MemoryObject(
-            object_type="github_event",
-            content=event.model_dump(),
-            tags=["github", event.event_type, event.repository],
-            confidence=ConfidenceLevel.VALIDATED,
+        payload = ExternalSessionPayload(
+            session_id=event.event_id,
+            objective=self.runtime.current_state.current_objective
+            or f"Index Github Event {event.event_id}",
+            task=self.runtime.current_state.active_task or f"Process {event.event_type}",
+            memories=[
+                {
+                    "id": event.event_id,
+                    "object_type": "github_event",
+                    "content": event.model_dump(),
+                    "tags": ["github", event.event_type, event.repository],
+                    "confidence": "validated",
+                }
+            ],
         )
-        self.runtime.memory.store(obj)
+        self.runtime.ingest_session_payload(payload)
         return event.event_id
 
     def index_workspace_artifact(self, artifact: GoogleWorkspaceArtifact) -> str:
-        """Index a Google Workspace document into SAGE memory layer."""
+        """Index a Google Workspace document into SAGE memory layer using the Continuity Bridge."""
         self.indexed_workspace_artifacts.append(artifact)
 
-        # Record a SAGE MemoryObject for this documentation artifact
-        from sage.models import MemoryObject, ConfidenceLevel
+        # Build payload for the Continuity Bridge
+        from sage.models import ExternalSessionPayload
 
-        obj = MemoryObject(
-            object_type="workspace_artifact",
-            content=artifact.model_dump(),
-            tags=["google_workspace", artifact.doc_type],
-            confidence=ConfidenceLevel.VALIDATED,
+        payload = ExternalSessionPayload(
+            session_id=artifact.doc_id,
+            objective=self.runtime.current_state.current_objective
+            or f"Index Workspace Document {artifact.title}",
+            task=self.runtime.current_state.active_task or "Process workspace artifact",
+            memories=[
+                {
+                    "id": artifact.doc_id,
+                    "object_type": "workspace_artifact",
+                    "content": artifact.model_dump(),
+                    "tags": ["google_workspace", artifact.doc_type],
+                    "confidence": "validated",
+                }
+            ],
         )
-        self.runtime.memory.store(obj)
+        self.runtime.ingest_session_payload(payload)
         return artifact.doc_id
 
     def get_relationship_index(self, query_tag: str) -> Dict[str, Any]:
