@@ -1,6 +1,6 @@
 # SAGE MASTER SNAPSHOT - Current Operational State
 
-This snapshot represents the verified, activated, and fully operational state of SAGE Runtime v1.1.0.
+This snapshot represents the verified, activated, and fully operational state of SAGE Runtime v1.1.0 with the fully integrated Continuity Bridge.
 
 ## 1. System Overview
 SAGE (Autonomous Continuity Runtime) is an engineering continuity engine that preserves, organizes, retrieves, validates, and promotes engineering knowledge. It acts as the central coordinator between developers, LLM agents (ChatGPT and Gemini/Jules), and collaboration platforms (GitHub and Google Workspace).
@@ -80,7 +80,7 @@ sage/
 ├── cli.py                    # Command-line interface
 ├── decision.py               # Architectural & Technical decision ledger (DecisionTracker)
 ├── integration.py            # Connectors (ChatGPT, Gemini/Jules, GitHub, Workspace)
-├── models.py                 # Centralized system schemas and types
+├── models.py                 # Centralized system schemas and types (includes ExternalSessionPayload)
 ├── service.py                # Service lifecycle management and authentication
 └── validation.py             # Multi-rule quality checker and promotion pipeline
 ```
@@ -91,6 +91,7 @@ sage/
 The REST API server exposes:
 - **System Diagnostics**: `/service/diagnostics` (Uptime, metrics, session depth)
 - **Continuity Engine**: `/objective`, `/task`, `/task/blocker`, `/checkpoint`, `/handoff`, `/restore`
+- **Continuity Bridge**: `/ingest` (session payloads ingestion), `/reason` (reasoning over continuity), `/verify` (integrity self-verification)
 - **Memory & Validation**: `/memory`, `/validate`, `/promote/validated`, `/promote/archive`
 - **AI Integrations**: `/ai/query/chatgpt`, `/ai/query/gemini-jules`
 - **Tool Integrations**: `/tools/github/event`, `/tools/workspace/artifact`, `/tools/index/relationships`
@@ -98,6 +99,6 @@ The REST API server exposes:
 ---
 
 ## 4. Operational Integrity Metrics
-- **Tests Passing**: 59/59
+- **Tests Passing**: 63/63
 - **Code Style Compliance**: 100% Black Formatted, 100% Ruff Clean.
 - **Deprecation Warnings**: 0 (all class Config and legacy utcnow deprecations successfully resolved).
