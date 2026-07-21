@@ -9,21 +9,37 @@ All external integrations utilize the single authoritative Continuity Bridge (`i
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
-│                      SAGE EXTERNAL CONNECTORS                          │
-│  (ChatGPT Client, Gemini/Jules Client, GitHub Events, Workspace Doc)   │
+│                      SAGE EXTERNAL INTERFACES                          │
+│     (OAuth Security Gateway, Webhook Listener, Event Queue)            │
 └──────────────────────────────────┬─────────────────────────────────────┘
                                    │
-                     Uses Authoritative Bridge Path
+                                   ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                      SAGE AUTOMATION LAYER                             │
+│       (Automation Scheduler, Self-Healing, Proactive Checkpointing)    │
+└──────────────────────────────────┬─────────────────────────────────────┘
+                                   │
+                                   ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                      SAGE INTELLIGENCE LAYER                           │
+│   (LLM Bridge, Context-Aware Router, Pattern Matcher, Reasoning Loop)  │
+└──────────────────────────────────┬─────────────────────────────────────┘
+                                   │
+                                   ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                      SAGE BUSINESS/APPLICATION LAYER                   │
+│   (Client Sandbox, Continuous Pipeline, Compliance Registry)           │
+└──────────────────────────────────┬─────────────────────────────────────┘
+                                   │
+                                   ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                      SAGE CAPABILITY REGISTRY                          │
+│               (Capability Models, Security/Permission Scopes)          │
+└──────────────────────────────────┬─────────────────────────────────────┘
                                    │
                                    ▼
 ┌────────────────────────────────────────────────────────────────────────┐
 │                     SAGE AUTONOMOUS CONTINUITY RUNTIME                 │
-│                      (ingest_session_payload Bridge)                   │
-└──────────────────────────────────┬─────────────────────────────────────┘
-                                   │
-                                   ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                    PERSISTENCE & SYSTEMS ENGINE                        │
 │         (MemoryStore, Master Archive, DecisionTracker, Validation)     │
 └──────────────────────────────────┬─────────────────────────────────────┘
                                    │
@@ -43,7 +59,7 @@ The implementation is cleanly organized into specialized, decoupled subsystems i
 sage/
 ├── acr/
 │   ├── __init__.py
-│   └── bridge.py             # Session lineage and dependency graph tracking (ACR Bridge)
+│   └── bridge.py             # Session lineage and dependency graph tracking
 ├── archive/
 │   ├── __init__.py
 │   ├── core.py               # Master Archive validated knowledge engine
@@ -52,7 +68,7 @@ sage/
 │   └── persistence.py        # Archive storage operations
 ├── config/
 │   ├── __init__.py
-│   └── settings.py           # Unified environment variables manager
+│   └── settings.py           # Unified environment variables manager (Pydantic settings)
 ├── memory/
 │   ├── __init__.py
 │   ├── core.py               # Lab memory indexing and tag querying
@@ -62,11 +78,11 @@ sage/
 ├── runtime/
 │   ├── __init__.py
 │   └── engine.py             # Main runtime core execution loop (SageRuntime, Continuity Bridge)
-├── api.py                    # FastAPI server (REST endpoints for ingestion, reasoning, verification)
+├── api.py                    # FastAPI server (REST endpoints)
 ├── cli.py                    # Command-line interface
 ├── decision.py               # Architectural & Technical decision ledger (DecisionTracker)
-├── integration.py            # Phase 3 connectors (ChatGPT, Gemini/Jules, GitHub events, Google Workspace)
-├── models.py                 # Centralized system schemas (ExternalSessionPayload, RuntimeState, etc.)
+├── integration.py            # Connectors (ChatGPT, Gemini/Jules, GitHub, Workspace)
+├── models.py                 # Centralized system schemas and types (ExternalSessionPayload, RuntimeState, etc.)
 ├── service.py                # Service lifecycle management and authentication
 └── validation.py             # Multi-rule quality checker and promotion pipeline
 ```
@@ -78,10 +94,10 @@ The REST API server exposes:
 - **System Diagnostics**: `/service/diagnostics` (Uptime, metrics, session depth)
 - **Continuity Engine**: `/objective`, `/task`, `/task/blocker`, `/checkpoint`, `/handoff`, `/restore`
 - **Memory & Validation**: `/memory`, `/validate`, `/promote/validated`, `/promote/archive`
-- **AI Integrations**: `/ai/query/chatgpt`, `/ai/query/gemini-jules` (linked to Continuity Bridge)
-- **Tool Integrations**: `/tools/github/event`, `/tools/workspace/artifact` (linked to Continuity Bridge), `/tools/index/relationships`
-- **Ingestion & Reasoning**: `/ingest`, `/reason`, `/verify` (the Continuity Bridge REST API funnel)
-- **State Restoration Snapshots**: `/continuity/snapshot`, `/continuity/snapshots`, `/continuity/restore/{id}`
+- **AI Integrations**: `/ai/query/chatgpt`, `/ai/query/gemini-jules`
+- **Tool Integrations**: `/tools/github/event`, `/tools/workspace/artifact`, `/tools/index/relationships`
+- **Continuity Bridge Funnels**: `/ingest` (single, authoritative intake-validation-route pipeline), `/reason`, `/verify`
+- **Workspace State Snapshots**: `/continuity/snapshot`, `/continuity/snapshots`, `/continuity/restore/{id}`
 
 ---
 
