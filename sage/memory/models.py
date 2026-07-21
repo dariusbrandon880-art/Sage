@@ -25,6 +25,13 @@ class SessionMemory(BaseModel):
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
     
+    def __getitem__(self, key: str) -> Any:
+        """Allow dict-like indexing to retrieve entry values."""
+        entry = self.get_entry(key)
+        if entry is None:
+            raise KeyError(key)
+        return entry.value
+
     def add_entry(self, key: str, value: Any, entry_id: Optional[str] = None) -> MemoryEntry:
         """Add an entry to session memory."""
         entry = MemoryEntry(
