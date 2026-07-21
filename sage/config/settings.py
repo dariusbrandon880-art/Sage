@@ -19,10 +19,11 @@ class SageConfig(BaseSettings):
     enable_continuity: bool = True
     continuity_timeout: int = 3600  # seconds
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = False
+    model_config = {
+        "env_file": ".env",
+        "env_file_encoding": "utf-8",
+        "case_sensitive": False,
+    }
 
     @classmethod
     def from_env(cls) -> "SageConfig":

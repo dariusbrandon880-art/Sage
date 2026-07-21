@@ -3,7 +3,7 @@
 import json
 from pathlib import Path
 from typing import List, Optional, Dict, Any
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sage.models import ArchiveEntry, KnowledgeState
 
@@ -31,7 +31,7 @@ class Archive:
         Returns:
             ID of archived entry
         """
-        entry.validation_timestamp = datetime.utcnow()
+        entry.validation_timestamp = datetime.now(timezone.utc)
         entry.knowledge_state = KnowledgeState.ARCHIVED
 
         self.entries[entry.id] = entry
@@ -160,7 +160,7 @@ class Archive:
             Dictionary representation of all archive entries
         """
         return {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "entry_count": len(self.entries),
             "entries": [entry.model_dump() for entry in self.entries.values()],
         }

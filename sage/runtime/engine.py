@@ -2,7 +2,7 @@
 
 import json
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional, Dict, Any, List
 from pydantic import BaseModel
@@ -195,7 +195,7 @@ class SageRuntime:
             Dictionary representation of all runtime state and databases.
         """
         return {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "state": self.current_state.model_dump(),
             "memory": [obj.model_dump() for obj in self.memory.list_all()],
             "archive": [entry.model_dump() for entry in self.archive.list_all()],
@@ -213,7 +213,7 @@ class SageRuntime:
             The handoff JSON path.
         """
         handoff_data = {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "state": self.current_state.model_dump(),
             "lineage": self.acr.get_lineage(),
             "metadata": {

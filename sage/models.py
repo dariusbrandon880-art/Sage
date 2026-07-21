@@ -2,7 +2,7 @@
 
 import uuid
 from enum import Enum
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional
 from pydantic import BaseModel, Field
 
@@ -40,8 +40,8 @@ class MemoryObject(BaseModel):
     content: Dict[str, Any]
     tags: List[str] = Field(default_factory=list)
     confidence: ConfidenceLevel = ConfidenceLevel.HYPOTHESIS
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class ArchiveEntry(BaseModel):
@@ -51,7 +51,7 @@ class ArchiveEntry(BaseModel):
     title: str
     tags: List[str] = Field(default_factory=list)
     knowledge_state: KnowledgeState = KnowledgeState.ARCHIVED
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     validation_timestamp: Optional[datetime] = None
     decision_history: List[str] = Field(default_factory=list)
     lineage: List[str] = Field(default_factory=list)
@@ -66,7 +66,7 @@ class DecisionEntry(BaseModel):
     description: str
     rationale: str
     evidence: List[str] = Field(default_factory=list)
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     outcome: Optional[str] = None
 
 
