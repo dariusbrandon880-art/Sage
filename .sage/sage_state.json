@@ -10745,6 +10745,3990 @@
         "spec_sheet"
       ],
       "continuity_state": {}
+    },
+    "snapshot_958673e4": {
+      "id": "snapshot_958673e4",
+      "timestamp": "2026-07-21T10:31:15.798861",
+      "state": {
+        "current_objective": "API objective",
+        "active_task": "API task",
+        "blockers": [],
+        "dependencies": []
+      },
+      "memory": [
+        {
+          "id": "0be31bfa-e035-4e01-bf39-28766c88cd61",
+          "object_type": "fact",
+          "content": {
+            "subject": "SAGE Runtime",
+            "status": "integrated"
+          },
+          "tags": [
+            "fact",
+            "test"
+          ],
+          "confidence": "archived",
+          "created_at": "2026-07-21 10:31:15.664842",
+          "updated_at": "2026-07-21 10:31:15.664859"
+        },
+        {
+          "id": "api_mem_001",
+          "object_type": "rule",
+          "content": {
+            "title": "API rule",
+            "archive": true,
+            "decisions": [
+              "api_dec_001"
+            ]
+          },
+          "tags": [
+            "api"
+          ],
+          "confidence": "archived",
+          "created_at": "2026-07-21 10:31:15.789399",
+          "updated_at": "2026-07-21 10:31:15.789408"
+        }
+      ],
+      "archive": [
+        {
+          "id": "archive_0be31bfa-e035-4e01-bf39-28766c88cd61",
+          "title": "Validated SAGE Integration Fact",
+          "tags": [
+            "fact",
+            "archived_fact",
+            "test"
+          ],
+          "knowledge_state": "archived",
+          "created_at": "2026-07-21 10:31:15.689301",
+          "validation_timestamp": "2026-07-21 10:31:15.689418",
+          "decision_history": [],
+          "lineage": [
+            "0be31bfa-e035-4e01-bf39-28766c88cd61"
+          ],
+          "content": {
+            "subject": "SAGE Runtime",
+            "status": "integrated"
+          }
+        },
+        {
+          "id": "archive_api_mem_001",
+          "title": "API rule",
+          "tags": [
+            "api"
+          ],
+          "knowledge_state": "archived",
+          "created_at": "2026-07-21 10:31:15.790957",
+          "validation_timestamp": "2026-07-21 10:31:15.795680",
+          "decision_history": [
+            "api_dec_001"
+          ],
+          "lineage": [
+            "api_mem_001"
+          ],
+          "content": {
+            "title": "API rule",
+            "archive": true
+          }
+        }
+      ],
+      "decisions": [
+        {
+          "id": "4550836f-59b9-4718-8362-2aaf52751b20",
+          "decision_type": "architectural",
+          "description": "Use FastAPI for core server",
+          "rationale": "High performance and automatic documentation",
+          "evidence": [
+            "fastapi_vs_flask_benchmarks"
+          ],
+          "timestamp": "2026-07-21 10:31:15.639575",
+          "outcome": null
+        },
+        {
+          "id": "api_dec_001",
+          "decision_type": "technical",
+          "description": "API decision",
+          "rationale": "API rationale",
+          "evidence": [
+            "api_mem_001"
+          ],
+          "timestamp": "2026-07-21 10:31:15.793664",
+          "outcome": null
+        }
+      ],
+      "checkpoints": {
+        "checkpoint_92a7402e": {
+          "timestamp": "2026-07-21T10:31:15.737602",
+          "state": {
+            "current_objective": "Test SAGE API Integration",
+            "active_task": "Implement API integration tests",
+            "blockers": [],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "object_type": "fact",
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              },
+              "tags": [
+                "fact",
+                "test"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 10:31:15.664842",
+              "updated_at": "2026-07-21 10:31:15.664859"
+            }
+          ],
+          "archive": [
+            {
+              "id": "archive_0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "title": "Validated SAGE Integration Fact",
+              "tags": [
+                "fact",
+                "archived_fact",
+                "test"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 10:31:15.689301",
+              "validation_timestamp": "2026-07-21 10:31:15.689418",
+              "decision_history": [],
+              "lineage": [
+                "0be31bfa-e035-4e01-bf39-28766c88cd61"
+              ],
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              }
+            }
+          ],
+          "decisions": [
+            {
+              "id": "4550836f-59b9-4718-8362-2aaf52751b20",
+              "decision_type": "architectural",
+              "description": "Use FastAPI for core server",
+              "rationale": "High performance and automatic documentation",
+              "evidence": [
+                "fastapi_vs_flask_benchmarks"
+              ],
+              "timestamp": "2026-07-21 10:31:15.639575",
+              "outcome": null
+            }
+          ],
+          "lineage": [
+            "session_3b4495dc"
+          ]
+        },
+        "checkpoint_99532e39": {
+          "timestamp": "2026-07-21T10:31:15.797378",
+          "state": {
+            "current_objective": "API objective",
+            "active_task": "API task",
+            "blockers": [],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "object_type": "fact",
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              },
+              "tags": [
+                "fact",
+                "test"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 10:31:15.664842",
+              "updated_at": "2026-07-21 10:31:15.664859"
+            },
+            {
+              "id": "api_mem_001",
+              "object_type": "rule",
+              "content": {
+                "title": "API rule",
+                "archive": true,
+                "decisions": [
+                  "api_dec_001"
+                ]
+              },
+              "tags": [
+                "api"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 10:31:15.789399",
+              "updated_at": "2026-07-21 10:31:15.789408"
+            }
+          ],
+          "archive": [
+            {
+              "id": "archive_0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "title": "Validated SAGE Integration Fact",
+              "tags": [
+                "fact",
+                "archived_fact",
+                "test"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 10:31:15.689301",
+              "validation_timestamp": "2026-07-21 10:31:15.689418",
+              "decision_history": [],
+              "lineage": [
+                "0be31bfa-e035-4e01-bf39-28766c88cd61"
+              ],
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              }
+            },
+            {
+              "id": "archive_api_mem_001",
+              "title": "API rule",
+              "tags": [
+                "api"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 10:31:15.790957",
+              "validation_timestamp": "2026-07-21 10:31:15.795680",
+              "decision_history": [
+                "api_dec_001"
+              ],
+              "lineage": [
+                "api_mem_001"
+              ],
+              "content": {
+                "title": "API rule",
+                "archive": true
+              }
+            }
+          ],
+          "decisions": [
+            {
+              "id": "4550836f-59b9-4718-8362-2aaf52751b20",
+              "decision_type": "architectural",
+              "description": "Use FastAPI for core server",
+              "rationale": "High performance and automatic documentation",
+              "evidence": [
+                "fastapi_vs_flask_benchmarks"
+              ],
+              "timestamp": "2026-07-21 10:31:15.639575",
+              "outcome": null
+            },
+            {
+              "id": "api_dec_001",
+              "decision_type": "technical",
+              "description": "API decision",
+              "rationale": "API rationale",
+              "evidence": [
+                "api_mem_001"
+              ],
+              "timestamp": "2026-07-21 10:31:15.793664",
+              "outcome": null
+            }
+          ],
+          "lineage": [
+            "session_3b4495dc",
+            "session_e44e5048",
+            "api_session_ingest_999"
+          ]
+        }
+      },
+      "lineage": [
+        "session_3b4495dc",
+        "session_e44e5048",
+        "api_session_ingest_999"
+      ],
+      "continuity_state": {}
+    },
+    "snapshot_1d2087ec": {
+      "id": "snapshot_1d2087ec",
+      "timestamp": "2026-07-21T10:31:15.971029",
+      "state": {
+        "current_objective": "Build the single unified SAGE platform",
+        "active_task": "Implement the core ingestion interface",
+        "blockers": [],
+        "dependencies": []
+      },
+      "memory": [
+        {
+          "id": "mem_rule_001",
+          "object_type": "rule",
+          "content": {
+            "title": "Ingestion Rule",
+            "description": "All payloads must follow the single authoritative path",
+            "archive": true,
+            "decisions": [
+              "dec_arch_001"
+            ]
+          },
+          "tags": [
+            "architecture",
+            "core"
+          ],
+          "confidence": "archived",
+          "created_at": "2026-07-21 10:31:15.964650",
+          "updated_at": "2026-07-21 10:31:15.964667"
+        },
+        {
+          "id": "mem_fact_002",
+          "object_type": "fact",
+          "content": {
+            "description": "Verification uses standard pytest-based test suites"
+          },
+          "tags": [
+            "testing"
+          ],
+          "confidence": "validated",
+          "created_at": "2026-07-21 10:31:15.964703",
+          "updated_at": "2026-07-21 10:31:15.964707"
+        }
+      ],
+      "archive": [
+        {
+          "id": "archive_mem_rule_001",
+          "title": "Ingestion Rule",
+          "tags": [
+            "core",
+            "architecture"
+          ],
+          "knowledge_state": "archived",
+          "created_at": "2026-07-21 10:31:15.965869",
+          "validation_timestamp": "2026-07-21 10:31:15.969539",
+          "decision_history": [
+            "dec_arch_001"
+          ],
+          "lineage": [
+            "mem_rule_001"
+          ],
+          "content": {
+            "title": "Ingestion Rule",
+            "description": "All payloads must follow the single authoritative path",
+            "archive": true
+          }
+        }
+      ],
+      "decisions": [
+        {
+          "id": "dec_arch_001",
+          "decision_type": "architectural",
+          "description": "Establish standard bridge pathway",
+          "rationale": "Enforces complete rehydration and validation rules with zero bypasses",
+          "evidence": [
+            "mem_rule_001"
+          ],
+          "timestamp": "2026-07-21 10:31:15.968155",
+          "outcome": null
+        }
+      ],
+      "checkpoints": {
+        "checkpoint_f44a2bf1": {
+          "timestamp": "2026-07-21T10:31:15.970247",
+          "state": {
+            "current_objective": "Build the single unified SAGE platform",
+            "active_task": "Implement the core ingestion interface",
+            "blockers": [],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "mem_rule_001",
+              "object_type": "rule",
+              "content": {
+                "title": "Ingestion Rule",
+                "description": "All payloads must follow the single authoritative path",
+                "archive": true,
+                "decisions": [
+                  "dec_arch_001"
+                ]
+              },
+              "tags": [
+                "architecture",
+                "core"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 10:31:15.964650",
+              "updated_at": "2026-07-21 10:31:15.964667"
+            },
+            {
+              "id": "mem_fact_002",
+              "object_type": "fact",
+              "content": {
+                "description": "Verification uses standard pytest-based test suites"
+              },
+              "tags": [
+                "testing"
+              ],
+              "confidence": "validated",
+              "created_at": "2026-07-21 10:31:15.964703",
+              "updated_at": "2026-07-21 10:31:15.964707"
+            }
+          ],
+          "archive": [
+            {
+              "id": "archive_mem_rule_001",
+              "title": "Ingestion Rule",
+              "tags": [
+                "core",
+                "architecture"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 10:31:15.965869",
+              "validation_timestamp": "2026-07-21 10:31:15.969539",
+              "decision_history": [
+                "dec_arch_001"
+              ],
+              "lineage": [
+                "mem_rule_001"
+              ],
+              "content": {
+                "title": "Ingestion Rule",
+                "description": "All payloads must follow the single authoritative path",
+                "archive": true
+              }
+            }
+          ],
+          "decisions": [
+            {
+              "id": "dec_arch_001",
+              "decision_type": "architectural",
+              "description": "Establish standard bridge pathway",
+              "rationale": "Enforces complete rehydration and validation rules with zero bypasses",
+              "evidence": [
+                "mem_rule_001"
+              ],
+              "timestamp": "2026-07-21 10:31:15.968155",
+              "outcome": null
+            }
+          ],
+          "lineage": [
+            "session_external_123"
+          ]
+        }
+      },
+      "lineage": [
+        "session_external_123"
+      ],
+      "continuity_state": {}
+    },
+    "snapshot_7b1a1828": {
+      "id": "snapshot_7b1a1828",
+      "timestamp": "2026-07-21T10:31:16.163986",
+      "state": {
+        "current_objective": "AI Query: Continue the v1_activation work",
+        "active_task": "Process AI Query",
+        "blockers": [],
+        "dependencies": []
+      },
+      "memory": [
+        {
+          "id": "9528898f-1687-4e99-b2ed-814ca049b464",
+          "object_type": "fact",
+          "content": {
+            "message": "System v1 activation is successful"
+          },
+          "tags": [
+            "continuity",
+            "v1_activation"
+          ],
+          "confidence": "validated",
+          "created_at": "2026-07-21 10:31:16.160687",
+          "updated_at": "2026-07-21 10:31:16.160704"
+        },
+        {
+          "id": "f09f4c92-3ab9-4f8f-bb23-218ed504525b",
+          "object_type": "ai_query",
+          "content": {
+            "prompt": "Continue the v1_activation work",
+            "response": "Response from ChatGPT for prompt: 'Continue the v1_activation work'.\nSuccessfully synchronized with SAGE session 'session_test_1'.\nContext analyzed: 1 active memories, 0 master archives.",
+            "client": "ChatGPT",
+            "reasoning_history": [
+              "ChatGPT analyzed prompt: 'Continue the v1_activation work' and retrieved 1 relevant engineering artifacts."
+            ]
+          },
+          "tags": [
+            "ai",
+            "chatgpt",
+            "continuity"
+          ],
+          "confidence": "validated",
+          "created_at": "2026-07-21 10:31:16.161595",
+          "updated_at": "2026-07-21 10:31:16.161608"
+        }
+      ],
+      "archive": [],
+      "decisions": [],
+      "checkpoints": {
+        "checkpoint_c10735f8": {
+          "timestamp": "2026-07-21T10:31:16.163479",
+          "state": {
+            "current_objective": "AI Query: Continue the v1_activation work",
+            "active_task": "Process AI Query",
+            "blockers": [],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "9528898f-1687-4e99-b2ed-814ca049b464",
+              "object_type": "fact",
+              "content": {
+                "message": "System v1 activation is successful"
+              },
+              "tags": [
+                "continuity",
+                "v1_activation"
+              ],
+              "confidence": "validated",
+              "created_at": "2026-07-21 10:31:16.160687",
+              "updated_at": "2026-07-21 10:31:16.160704"
+            },
+            {
+              "id": "f09f4c92-3ab9-4f8f-bb23-218ed504525b",
+              "object_type": "ai_query",
+              "content": {
+                "prompt": "Continue the v1_activation work",
+                "response": "Response from ChatGPT for prompt: 'Continue the v1_activation work'.\nSuccessfully synchronized with SAGE session 'session_test_1'.\nContext analyzed: 1 active memories, 0 master archives.",
+                "client": "ChatGPT",
+                "reasoning_history": [
+                  "ChatGPT analyzed prompt: 'Continue the v1_activation work' and retrieved 1 relevant engineering artifacts."
+                ]
+              },
+              "tags": [
+                "ai",
+                "chatgpt",
+                "continuity"
+              ],
+              "confidence": "validated",
+              "created_at": "2026-07-21 10:31:16.161595",
+              "updated_at": "2026-07-21 10:31:16.161608"
+            }
+          ],
+          "archive": [],
+          "decisions": [],
+          "lineage": [
+            "session_test_1"
+          ]
+        }
+      },
+      "lineage": [
+        "session_test_1"
+      ],
+      "continuity_state": {}
+    },
+    "snapshot_6dbead01": {
+      "id": "snapshot_6dbead01",
+      "timestamp": "2026-07-21T10:31:16.206405",
+      "state": {
+        "current_objective": "AI Query: Continue the v1_activation work",
+        "active_task": "Process AI Query",
+        "blockers": [],
+        "dependencies": []
+      },
+      "memory": [
+        {
+          "id": "9528898f-1687-4e99-b2ed-814ca049b464",
+          "object_type": "fact",
+          "content": {
+            "message": "System v1 activation is successful"
+          },
+          "tags": [
+            "continuity",
+            "v1_activation"
+          ],
+          "confidence": "validated",
+          "created_at": "2026-07-21 10:31:16.160687",
+          "updated_at": "2026-07-21 10:31:16.160704"
+        },
+        {
+          "id": "f09f4c92-3ab9-4f8f-bb23-218ed504525b",
+          "object_type": "ai_query",
+          "content": {
+            "prompt": "Continue the v1_activation work",
+            "response": "Response from ChatGPT for prompt: 'Continue the v1_activation work'.\nSuccessfully synchronized with SAGE session 'session_test_1'.\nContext analyzed: 1 active memories, 0 master archives.",
+            "client": "ChatGPT",
+            "reasoning_history": [
+              "ChatGPT analyzed prompt: 'Continue the v1_activation work' and retrieved 1 relevant engineering artifacts."
+            ]
+          },
+          "tags": [
+            "ai",
+            "chatgpt",
+            "continuity"
+          ],
+          "confidence": "validated",
+          "created_at": "2026-07-21 10:31:16.161595",
+          "updated_at": "2026-07-21 10:31:16.161608"
+        },
+        {
+          "id": "81d34cff-578a-4b75-b479-3cbdbea3ae4f",
+          "object_type": "ai_query",
+          "content": {
+            "prompt": "Continue the v1_activation work",
+            "response": "Deep continuation response from Gemini/Jules.\nContinuity state retrieved successfully. Running with SAGE runtime alignment.\nReferenced SAGE keys: ['9528898f-1687-4e99-b2ed-814ca049b464']",
+            "client": "GeminiJules",
+            "reasoning_history": [
+              "Gemini/Jules established high-fidelity alignment with SAGE knowledge graph for session 'session_test_1'."
+            ]
+          },
+          "tags": [
+            "ai",
+            "geminijules",
+            "continuity"
+          ],
+          "confidence": "validated",
+          "created_at": "2026-07-21 10:31:16.203888",
+          "updated_at": "2026-07-21 10:31:16.203895"
+        }
+      ],
+      "archive": [],
+      "decisions": [],
+      "checkpoints": {
+        "checkpoint_cd303d67": {
+          "timestamp": "2026-07-21T10:31:16.205489",
+          "state": {
+            "current_objective": "AI Query: Continue the v1_activation work",
+            "active_task": "Process AI Query",
+            "blockers": [],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "9528898f-1687-4e99-b2ed-814ca049b464",
+              "object_type": "fact",
+              "content": {
+                "message": "System v1 activation is successful"
+              },
+              "tags": [
+                "continuity",
+                "v1_activation"
+              ],
+              "confidence": "validated",
+              "created_at": "2026-07-21 10:31:16.160687",
+              "updated_at": "2026-07-21 10:31:16.160704"
+            },
+            {
+              "id": "f09f4c92-3ab9-4f8f-bb23-218ed504525b",
+              "object_type": "ai_query",
+              "content": {
+                "prompt": "Continue the v1_activation work",
+                "response": "Response from ChatGPT for prompt: 'Continue the v1_activation work'.\nSuccessfully synchronized with SAGE session 'session_test_1'.\nContext analyzed: 1 active memories, 0 master archives.",
+                "client": "ChatGPT",
+                "reasoning_history": [
+                  "ChatGPT analyzed prompt: 'Continue the v1_activation work' and retrieved 1 relevant engineering artifacts."
+                ]
+              },
+              "tags": [
+                "ai",
+                "chatgpt",
+                "continuity"
+              ],
+              "confidence": "validated",
+              "created_at": "2026-07-21 10:31:16.161595",
+              "updated_at": "2026-07-21 10:31:16.161608"
+            },
+            {
+              "id": "81d34cff-578a-4b75-b479-3cbdbea3ae4f",
+              "object_type": "ai_query",
+              "content": {
+                "prompt": "Continue the v1_activation work",
+                "response": "Deep continuation response from Gemini/Jules.\nContinuity state retrieved successfully. Running with SAGE runtime alignment.\nReferenced SAGE keys: ['9528898f-1687-4e99-b2ed-814ca049b464']",
+                "client": "GeminiJules",
+                "reasoning_history": [
+                  "Gemini/Jules established high-fidelity alignment with SAGE knowledge graph for session 'session_test_1'."
+                ]
+              },
+              "tags": [
+                "ai",
+                "geminijules",
+                "continuity"
+              ],
+              "confidence": "validated",
+              "created_at": "2026-07-21 10:31:16.203888",
+              "updated_at": "2026-07-21 10:31:16.203895"
+            }
+          ],
+          "archive": [],
+          "decisions": [],
+          "lineage": [
+            "session_test_1",
+            "session_test_1"
+          ]
+        },
+        "checkpoint_c10735f8": {
+          "timestamp": "2026-07-21T10:31:16.163479",
+          "state": {
+            "current_objective": "AI Query: Continue the v1_activation work",
+            "active_task": "Process AI Query",
+            "blockers": [],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "9528898f-1687-4e99-b2ed-814ca049b464",
+              "object_type": "fact",
+              "content": {
+                "message": "System v1 activation is successful"
+              },
+              "tags": [
+                "continuity",
+                "v1_activation"
+              ],
+              "confidence": "validated",
+              "created_at": "2026-07-21 10:31:16.160687",
+              "updated_at": "2026-07-21 10:31:16.160704"
+            },
+            {
+              "id": "f09f4c92-3ab9-4f8f-bb23-218ed504525b",
+              "object_type": "ai_query",
+              "content": {
+                "prompt": "Continue the v1_activation work",
+                "response": "Response from ChatGPT for prompt: 'Continue the v1_activation work'.\nSuccessfully synchronized with SAGE session 'session_test_1'.\nContext analyzed: 1 active memories, 0 master archives.",
+                "client": "ChatGPT",
+                "reasoning_history": [
+                  "ChatGPT analyzed prompt: 'Continue the v1_activation work' and retrieved 1 relevant engineering artifacts."
+                ]
+              },
+              "tags": [
+                "ai",
+                "chatgpt",
+                "continuity"
+              ],
+              "confidence": "validated",
+              "created_at": "2026-07-21 10:31:16.161595",
+              "updated_at": "2026-07-21 10:31:16.161608"
+            }
+          ],
+          "archive": [],
+          "decisions": [],
+          "lineage": [
+            "session_test_1"
+          ]
+        }
+      },
+      "lineage": [
+        "session_test_1",
+        "session_test_1"
+      ],
+      "continuity_state": {}
+    },
+    "snapshot_8800d006": {
+      "id": "snapshot_8800d006",
+      "timestamp": "2026-07-21T10:31:16.255746",
+      "state": {
+        "current_objective": "Index Github Event gh_802c57c3",
+        "active_task": "Process commit",
+        "blockers": [],
+        "dependencies": []
+      },
+      "memory": [
+        {
+          "id": "gh_802c57c3",
+          "object_type": "github_event",
+          "content": {
+            "event_id": "gh_802c57c3",
+            "event_type": "commit",
+            "repository": "dariusbrandon880-art/Sage",
+            "ref": "refs/heads/main",
+            "author": "Jules",
+            "timestamp": "2026-07-21 10:31:16.252684+00:00",
+            "payload": {
+              "message": "Initial activation of Phase 2 Service Layer"
+            }
+          },
+          "tags": [
+            "github",
+            "commit",
+            "dariusbrandon880-art/Sage"
+          ],
+          "confidence": "validated",
+          "created_at": "2026-07-21 10:31:16.253138",
+          "updated_at": "2026-07-21 10:31:16.253146"
+        }
+      ],
+      "archive": [],
+      "decisions": [],
+      "checkpoints": {
+        "checkpoint_dfa55d14": {
+          "timestamp": "2026-07-21T10:31:16.255108",
+          "state": {
+            "current_objective": "Index Github Event gh_802c57c3",
+            "active_task": "Process commit",
+            "blockers": [],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "gh_802c57c3",
+              "object_type": "github_event",
+              "content": {
+                "event_id": "gh_802c57c3",
+                "event_type": "commit",
+                "repository": "dariusbrandon880-art/Sage",
+                "ref": "refs/heads/main",
+                "author": "Jules",
+                "timestamp": "2026-07-21 10:31:16.252684+00:00",
+                "payload": {
+                  "message": "Initial activation of Phase 2 Service Layer"
+                }
+              },
+              "tags": [
+                "github",
+                "commit",
+                "dariusbrandon880-art/Sage"
+              ],
+              "confidence": "validated",
+              "created_at": "2026-07-21 10:31:16.253138",
+              "updated_at": "2026-07-21 10:31:16.253146"
+            }
+          ],
+          "archive": [],
+          "decisions": [],
+          "lineage": [
+            "gh_802c57c3"
+          ]
+        }
+      },
+      "lineage": [
+        "gh_802c57c3"
+      ],
+      "continuity_state": {}
+    },
+    "snapshot_44954317": {
+      "id": "snapshot_44954317",
+      "timestamp": "2026-07-21T10:31:16.299150",
+      "state": {
+        "current_objective": "Index Github Event gh_802c57c3",
+        "active_task": "Process commit",
+        "blockers": [],
+        "dependencies": []
+      },
+      "memory": [
+        {
+          "id": "gh_802c57c3",
+          "object_type": "github_event",
+          "content": {
+            "event_id": "gh_802c57c3",
+            "event_type": "commit",
+            "repository": "dariusbrandon880-art/Sage",
+            "ref": "refs/heads/main",
+            "author": "Jules",
+            "timestamp": "2026-07-21 10:31:16.252684+00:00",
+            "payload": {
+              "message": "Initial activation of Phase 2 Service Layer"
+            }
+          },
+          "tags": [
+            "github",
+            "commit",
+            "dariusbrandon880-art/Sage"
+          ],
+          "confidence": "validated",
+          "created_at": "2026-07-21 10:31:16.253138",
+          "updated_at": "2026-07-21 10:31:16.253146"
+        },
+        {
+          "id": "doc_v1_specs",
+          "object_type": "workspace_artifact",
+          "content": {
+            "doc_id": "doc_v1_specs",
+            "title": "SAGE Platform Spec Sheet",
+            "doc_type": "doc",
+            "last_modified_by": "dariusbrandon880-art",
+            "last_modified_at": "2026-07-21 10:31:16.295928+00:00",
+            "url": "https://docs.google.com/document/d/doc_v1_specs",
+            "metadata": {
+              "description": "Detailed specs for platform activation"
+            }
+          },
+          "tags": [
+            "google_workspace",
+            "doc"
+          ],
+          "confidence": "validated",
+          "created_at": "2026-07-21 10:31:16.296634",
+          "updated_at": "2026-07-21 10:31:16.296642"
+        }
+      ],
+      "archive": [],
+      "decisions": [],
+      "checkpoints": {
+        "checkpoint_dfa55d14": {
+          "timestamp": "2026-07-21T10:31:16.255108",
+          "state": {
+            "current_objective": "Index Github Event gh_802c57c3",
+            "active_task": "Process commit",
+            "blockers": [],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "gh_802c57c3",
+              "object_type": "github_event",
+              "content": {
+                "event_id": "gh_802c57c3",
+                "event_type": "commit",
+                "repository": "dariusbrandon880-art/Sage",
+                "ref": "refs/heads/main",
+                "author": "Jules",
+                "timestamp": "2026-07-21 10:31:16.252684+00:00",
+                "payload": {
+                  "message": "Initial activation of Phase 2 Service Layer"
+                }
+              },
+              "tags": [
+                "github",
+                "commit",
+                "dariusbrandon880-art/Sage"
+              ],
+              "confidence": "validated",
+              "created_at": "2026-07-21 10:31:16.253138",
+              "updated_at": "2026-07-21 10:31:16.253146"
+            }
+          ],
+          "archive": [],
+          "decisions": [],
+          "lineage": [
+            "gh_802c57c3"
+          ]
+        },
+        "checkpoint_b0789b54": {
+          "timestamp": "2026-07-21T10:31:16.298322",
+          "state": {
+            "current_objective": "Index Github Event gh_802c57c3",
+            "active_task": "Process commit",
+            "blockers": [],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "gh_802c57c3",
+              "object_type": "github_event",
+              "content": {
+                "event_id": "gh_802c57c3",
+                "event_type": "commit",
+                "repository": "dariusbrandon880-art/Sage",
+                "ref": "refs/heads/main",
+                "author": "Jules",
+                "timestamp": "2026-07-21 10:31:16.252684+00:00",
+                "payload": {
+                  "message": "Initial activation of Phase 2 Service Layer"
+                }
+              },
+              "tags": [
+                "github",
+                "commit",
+                "dariusbrandon880-art/Sage"
+              ],
+              "confidence": "validated",
+              "created_at": "2026-07-21 10:31:16.253138",
+              "updated_at": "2026-07-21 10:31:16.253146"
+            },
+            {
+              "id": "doc_v1_specs",
+              "object_type": "workspace_artifact",
+              "content": {
+                "doc_id": "doc_v1_specs",
+                "title": "SAGE Platform Spec Sheet",
+                "doc_type": "doc",
+                "last_modified_by": "dariusbrandon880-art",
+                "last_modified_at": "2026-07-21 10:31:16.295928+00:00",
+                "url": "https://docs.google.com/document/d/doc_v1_specs",
+                "metadata": {
+                  "description": "Detailed specs for platform activation"
+                }
+              },
+              "tags": [
+                "google_workspace",
+                "doc"
+              ],
+              "confidence": "validated",
+              "created_at": "2026-07-21 10:31:16.296634",
+              "updated_at": "2026-07-21 10:31:16.296642"
+            }
+          ],
+          "archive": [],
+          "decisions": [],
+          "lineage": [
+            "gh_802c57c3",
+            "doc_v1_specs"
+          ]
+        }
+      },
+      "lineage": [
+        "gh_802c57c3",
+        "doc_v1_specs"
+      ],
+      "continuity_state": {}
+    },
+    "snapshot_08688b35": {
+      "id": "snapshot_08688b35",
+      "timestamp": "2026-07-21T10:31:16.363845",
+      "state": {
+        "current_objective": "API objective",
+        "active_task": "API task",
+        "blockers": [],
+        "dependencies": []
+      },
+      "memory": [
+        {
+          "id": "0be31bfa-e035-4e01-bf39-28766c88cd61",
+          "object_type": "fact",
+          "content": {
+            "subject": "SAGE Runtime",
+            "status": "integrated"
+          },
+          "tags": [
+            "fact",
+            "test"
+          ],
+          "confidence": "archived",
+          "created_at": "2026-07-21 10:31:15.664842",
+          "updated_at": "2026-07-21 10:31:15.664859"
+        },
+        {
+          "id": "api_mem_001",
+          "object_type": "rule",
+          "content": {
+            "title": "API rule",
+            "archive": true,
+            "decisions": [
+              "api_dec_001"
+            ]
+          },
+          "tags": [
+            "api"
+          ],
+          "confidence": "archived",
+          "created_at": "2026-07-21 10:31:15.789399",
+          "updated_at": "2026-07-21 10:31:15.789408"
+        },
+        {
+          "id": "628b23f5-f6a0-4200-9c6a-0ebf2b7efa43",
+          "object_type": "ai_query",
+          "content": {
+            "prompt": "continuity of platform validation",
+            "response": "Response from ChatGPT for prompt: 'continuity of platform validation'.\nSuccessfully synchronized with SAGE session 'api_session_1'.\nContext analyzed: 0 active memories, 0 master archives.",
+            "client": "ChatGPT",
+            "reasoning_history": [
+              "ChatGPT analyzed prompt: 'continuity of platform validation' and retrieved 0 relevant engineering artifacts."
+            ]
+          },
+          "tags": [
+            "ai",
+            "chatgpt",
+            "continuity"
+          ],
+          "confidence": "validated",
+          "created_at": "2026-07-21 10:31:16.359784",
+          "updated_at": "2026-07-21 10:31:16.359791"
+        }
+      ],
+      "archive": [
+        {
+          "id": "archive_0be31bfa-e035-4e01-bf39-28766c88cd61",
+          "title": "Validated SAGE Integration Fact",
+          "tags": [
+            "fact",
+            "archived_fact",
+            "test"
+          ],
+          "knowledge_state": "archived",
+          "created_at": "2026-07-21 10:31:15.689301",
+          "validation_timestamp": "2026-07-21 10:31:15.689418",
+          "decision_history": [],
+          "lineage": [
+            "0be31bfa-e035-4e01-bf39-28766c88cd61"
+          ],
+          "content": {
+            "subject": "SAGE Runtime",
+            "status": "integrated"
+          }
+        },
+        {
+          "id": "archive_api_mem_001",
+          "title": "API rule",
+          "tags": [
+            "api"
+          ],
+          "knowledge_state": "archived",
+          "created_at": "2026-07-21 10:31:15.790957",
+          "validation_timestamp": "2026-07-21 10:31:15.795680",
+          "decision_history": [
+            "api_dec_001"
+          ],
+          "lineage": [
+            "api_mem_001"
+          ],
+          "content": {
+            "title": "API rule",
+            "archive": true
+          }
+        }
+      ],
+      "decisions": [
+        {
+          "id": "4550836f-59b9-4718-8362-2aaf52751b20",
+          "decision_type": "architectural",
+          "description": "Use FastAPI for core server",
+          "rationale": "High performance and automatic documentation",
+          "evidence": [
+            "fastapi_vs_flask_benchmarks"
+          ],
+          "timestamp": "2026-07-21 10:31:15.639575",
+          "outcome": null
+        },
+        {
+          "id": "api_dec_001",
+          "decision_type": "technical",
+          "description": "API decision",
+          "rationale": "API rationale",
+          "evidence": [
+            "api_mem_001"
+          ],
+          "timestamp": "2026-07-21 10:31:15.793664",
+          "outcome": null
+        }
+      ],
+      "checkpoints": {
+        "checkpoint_2cdf0273": {
+          "timestamp": "2026-07-21T10:31:16.361937",
+          "state": {
+            "current_objective": "API objective",
+            "active_task": "API task",
+            "blockers": [],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "object_type": "fact",
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              },
+              "tags": [
+                "fact",
+                "test"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 10:31:15.664842",
+              "updated_at": "2026-07-21 10:31:15.664859"
+            },
+            {
+              "id": "api_mem_001",
+              "object_type": "rule",
+              "content": {
+                "title": "API rule",
+                "archive": true,
+                "decisions": [
+                  "api_dec_001"
+                ]
+              },
+              "tags": [
+                "api"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 10:31:15.789399",
+              "updated_at": "2026-07-21 10:31:15.789408"
+            },
+            {
+              "id": "628b23f5-f6a0-4200-9c6a-0ebf2b7efa43",
+              "object_type": "ai_query",
+              "content": {
+                "prompt": "continuity of platform validation",
+                "response": "Response from ChatGPT for prompt: 'continuity of platform validation'.\nSuccessfully synchronized with SAGE session 'api_session_1'.\nContext analyzed: 0 active memories, 0 master archives.",
+                "client": "ChatGPT",
+                "reasoning_history": [
+                  "ChatGPT analyzed prompt: 'continuity of platform validation' and retrieved 0 relevant engineering artifacts."
+                ]
+              },
+              "tags": [
+                "ai",
+                "chatgpt",
+                "continuity"
+              ],
+              "confidence": "validated",
+              "created_at": "2026-07-21 10:31:16.359784",
+              "updated_at": "2026-07-21 10:31:16.359791"
+            }
+          ],
+          "archive": [
+            {
+              "id": "archive_0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "title": "Validated SAGE Integration Fact",
+              "tags": [
+                "fact",
+                "archived_fact",
+                "test"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 10:31:15.689301",
+              "validation_timestamp": "2026-07-21 10:31:15.689418",
+              "decision_history": [],
+              "lineage": [
+                "0be31bfa-e035-4e01-bf39-28766c88cd61"
+              ],
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              }
+            },
+            {
+              "id": "archive_api_mem_001",
+              "title": "API rule",
+              "tags": [
+                "api"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 10:31:15.790957",
+              "validation_timestamp": "2026-07-21 10:31:15.795680",
+              "decision_history": [
+                "api_dec_001"
+              ],
+              "lineage": [
+                "api_mem_001"
+              ],
+              "content": {
+                "title": "API rule",
+                "archive": true
+              }
+            }
+          ],
+          "decisions": [
+            {
+              "id": "4550836f-59b9-4718-8362-2aaf52751b20",
+              "decision_type": "architectural",
+              "description": "Use FastAPI for core server",
+              "rationale": "High performance and automatic documentation",
+              "evidence": [
+                "fastapi_vs_flask_benchmarks"
+              ],
+              "timestamp": "2026-07-21 10:31:15.639575",
+              "outcome": null
+            },
+            {
+              "id": "api_dec_001",
+              "decision_type": "technical",
+              "description": "API decision",
+              "rationale": "API rationale",
+              "evidence": [
+                "api_mem_001"
+              ],
+              "timestamp": "2026-07-21 10:31:15.793664",
+              "outcome": null
+            }
+          ],
+          "lineage": [
+            "session_3b4495dc",
+            "session_e44e5048",
+            "api_session_ingest_999",
+            "api_session_1"
+          ]
+        },
+        "checkpoint_92a7402e": {
+          "timestamp": "2026-07-21T10:31:15.737602",
+          "state": {
+            "current_objective": "Test SAGE API Integration",
+            "active_task": "Implement API integration tests",
+            "blockers": [],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "object_type": "fact",
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              },
+              "tags": [
+                "fact",
+                "test"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 10:31:15.664842",
+              "updated_at": "2026-07-21 10:31:15.664859"
+            }
+          ],
+          "archive": [
+            {
+              "id": "archive_0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "title": "Validated SAGE Integration Fact",
+              "tags": [
+                "fact",
+                "archived_fact",
+                "test"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 10:31:15.689301",
+              "validation_timestamp": "2026-07-21 10:31:15.689418",
+              "decision_history": [],
+              "lineage": [
+                "0be31bfa-e035-4e01-bf39-28766c88cd61"
+              ],
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              }
+            }
+          ],
+          "decisions": [
+            {
+              "id": "4550836f-59b9-4718-8362-2aaf52751b20",
+              "decision_type": "architectural",
+              "description": "Use FastAPI for core server",
+              "rationale": "High performance and automatic documentation",
+              "evidence": [
+                "fastapi_vs_flask_benchmarks"
+              ],
+              "timestamp": "2026-07-21 10:31:15.639575",
+              "outcome": null
+            }
+          ],
+          "lineage": [
+            "session_3b4495dc"
+          ]
+        },
+        "checkpoint_99532e39": {
+          "timestamp": "2026-07-21T10:31:15.797378",
+          "state": {
+            "current_objective": "API objective",
+            "active_task": "API task",
+            "blockers": [],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "object_type": "fact",
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              },
+              "tags": [
+                "fact",
+                "test"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 10:31:15.664842",
+              "updated_at": "2026-07-21 10:31:15.664859"
+            },
+            {
+              "id": "api_mem_001",
+              "object_type": "rule",
+              "content": {
+                "title": "API rule",
+                "archive": true,
+                "decisions": [
+                  "api_dec_001"
+                ]
+              },
+              "tags": [
+                "api"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 10:31:15.789399",
+              "updated_at": "2026-07-21 10:31:15.789408"
+            }
+          ],
+          "archive": [
+            {
+              "id": "archive_0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "title": "Validated SAGE Integration Fact",
+              "tags": [
+                "fact",
+                "archived_fact",
+                "test"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 10:31:15.689301",
+              "validation_timestamp": "2026-07-21 10:31:15.689418",
+              "decision_history": [],
+              "lineage": [
+                "0be31bfa-e035-4e01-bf39-28766c88cd61"
+              ],
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              }
+            },
+            {
+              "id": "archive_api_mem_001",
+              "title": "API rule",
+              "tags": [
+                "api"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 10:31:15.790957",
+              "validation_timestamp": "2026-07-21 10:31:15.795680",
+              "decision_history": [
+                "api_dec_001"
+              ],
+              "lineage": [
+                "api_mem_001"
+              ],
+              "content": {
+                "title": "API rule",
+                "archive": true
+              }
+            }
+          ],
+          "decisions": [
+            {
+              "id": "4550836f-59b9-4718-8362-2aaf52751b20",
+              "decision_type": "architectural",
+              "description": "Use FastAPI for core server",
+              "rationale": "High performance and automatic documentation",
+              "evidence": [
+                "fastapi_vs_flask_benchmarks"
+              ],
+              "timestamp": "2026-07-21 10:31:15.639575",
+              "outcome": null
+            },
+            {
+              "id": "api_dec_001",
+              "decision_type": "technical",
+              "description": "API decision",
+              "rationale": "API rationale",
+              "evidence": [
+                "api_mem_001"
+              ],
+              "timestamp": "2026-07-21 10:31:15.793664",
+              "outcome": null
+            }
+          ],
+          "lineage": [
+            "session_3b4495dc",
+            "session_e44e5048",
+            "api_session_ingest_999"
+          ]
+        }
+      },
+      "lineage": [
+        "session_3b4495dc",
+        "session_e44e5048",
+        "api_session_ingest_999",
+        "api_session_1"
+      ],
+      "continuity_state": {}
+    },
+    "snapshot_8823c021": {
+      "id": "snapshot_8823c021",
+      "timestamp": "2026-07-21T10:31:16.415996",
+      "state": {
+        "current_objective": "API objective",
+        "active_task": "API task",
+        "blockers": [],
+        "dependencies": []
+      },
+      "memory": [
+        {
+          "id": "0be31bfa-e035-4e01-bf39-28766c88cd61",
+          "object_type": "fact",
+          "content": {
+            "subject": "SAGE Runtime",
+            "status": "integrated"
+          },
+          "tags": [
+            "fact",
+            "test"
+          ],
+          "confidence": "archived",
+          "created_at": "2026-07-21 10:31:15.664842",
+          "updated_at": "2026-07-21 10:31:15.664859"
+        },
+        {
+          "id": "api_mem_001",
+          "object_type": "rule",
+          "content": {
+            "title": "API rule",
+            "archive": true,
+            "decisions": [
+              "api_dec_001"
+            ]
+          },
+          "tags": [
+            "api"
+          ],
+          "confidence": "archived",
+          "created_at": "2026-07-21 10:31:15.789399",
+          "updated_at": "2026-07-21 10:31:15.789408"
+        },
+        {
+          "id": "628b23f5-f6a0-4200-9c6a-0ebf2b7efa43",
+          "object_type": "ai_query",
+          "content": {
+            "prompt": "continuity of platform validation",
+            "response": "Response from ChatGPT for prompt: 'continuity of platform validation'.\nSuccessfully synchronized with SAGE session 'api_session_1'.\nContext analyzed: 0 active memories, 0 master archives.",
+            "client": "ChatGPT",
+            "reasoning_history": [
+              "ChatGPT analyzed prompt: 'continuity of platform validation' and retrieved 0 relevant engineering artifacts."
+            ]
+          },
+          "tags": [
+            "ai",
+            "chatgpt",
+            "continuity"
+          ],
+          "confidence": "validated",
+          "created_at": "2026-07-21 10:31:16.359784",
+          "updated_at": "2026-07-21 10:31:16.359791"
+        },
+        {
+          "id": "8c603cc2-ef72-4e9b-9572-17e35d35260d",
+          "object_type": "ai_query",
+          "content": {
+            "prompt": "continuity of platform validation",
+            "response": "Deep continuation response from Gemini/Jules.\nContinuity state retrieved successfully. Running with SAGE runtime alignment.\nReferenced SAGE keys: ['628b23f5-f6a0-4200-9c6a-0ebf2b7efa43']",
+            "client": "GeminiJules",
+            "reasoning_history": [
+              "Gemini/Jules established high-fidelity alignment with SAGE knowledge graph for session 'api_session_1'."
+            ]
+          },
+          "tags": [
+            "ai",
+            "geminijules",
+            "continuity"
+          ],
+          "confidence": "validated",
+          "created_at": "2026-07-21 10:31:16.411983",
+          "updated_at": "2026-07-21 10:31:16.411998"
+        }
+      ],
+      "archive": [
+        {
+          "id": "archive_0be31bfa-e035-4e01-bf39-28766c88cd61",
+          "title": "Validated SAGE Integration Fact",
+          "tags": [
+            "fact",
+            "archived_fact",
+            "test"
+          ],
+          "knowledge_state": "archived",
+          "created_at": "2026-07-21 10:31:15.689301",
+          "validation_timestamp": "2026-07-21 10:31:15.689418",
+          "decision_history": [],
+          "lineage": [
+            "0be31bfa-e035-4e01-bf39-28766c88cd61"
+          ],
+          "content": {
+            "subject": "SAGE Runtime",
+            "status": "integrated"
+          }
+        },
+        {
+          "id": "archive_api_mem_001",
+          "title": "API rule",
+          "tags": [
+            "api"
+          ],
+          "knowledge_state": "archived",
+          "created_at": "2026-07-21 10:31:15.790957",
+          "validation_timestamp": "2026-07-21 10:31:15.795680",
+          "decision_history": [
+            "api_dec_001"
+          ],
+          "lineage": [
+            "api_mem_001"
+          ],
+          "content": {
+            "title": "API rule",
+            "archive": true
+          }
+        }
+      ],
+      "decisions": [
+        {
+          "id": "4550836f-59b9-4718-8362-2aaf52751b20",
+          "decision_type": "architectural",
+          "description": "Use FastAPI for core server",
+          "rationale": "High performance and automatic documentation",
+          "evidence": [
+            "fastapi_vs_flask_benchmarks"
+          ],
+          "timestamp": "2026-07-21 10:31:15.639575",
+          "outcome": null
+        },
+        {
+          "id": "api_dec_001",
+          "decision_type": "technical",
+          "description": "API decision",
+          "rationale": "API rationale",
+          "evidence": [
+            "api_mem_001"
+          ],
+          "timestamp": "2026-07-21 10:31:15.793664",
+          "outcome": null
+        }
+      ],
+      "checkpoints": {
+        "checkpoint_2cdf0273": {
+          "timestamp": "2026-07-21T10:31:16.361937",
+          "state": {
+            "current_objective": "API objective",
+            "active_task": "API task",
+            "blockers": [],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "object_type": "fact",
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              },
+              "tags": [
+                "fact",
+                "test"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 10:31:15.664842",
+              "updated_at": "2026-07-21 10:31:15.664859"
+            },
+            {
+              "id": "api_mem_001",
+              "object_type": "rule",
+              "content": {
+                "title": "API rule",
+                "archive": true,
+                "decisions": [
+                  "api_dec_001"
+                ]
+              },
+              "tags": [
+                "api"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 10:31:15.789399",
+              "updated_at": "2026-07-21 10:31:15.789408"
+            },
+            {
+              "id": "628b23f5-f6a0-4200-9c6a-0ebf2b7efa43",
+              "object_type": "ai_query",
+              "content": {
+                "prompt": "continuity of platform validation",
+                "response": "Response from ChatGPT for prompt: 'continuity of platform validation'.\nSuccessfully synchronized with SAGE session 'api_session_1'.\nContext analyzed: 0 active memories, 0 master archives.",
+                "client": "ChatGPT",
+                "reasoning_history": [
+                  "ChatGPT analyzed prompt: 'continuity of platform validation' and retrieved 0 relevant engineering artifacts."
+                ]
+              },
+              "tags": [
+                "ai",
+                "chatgpt",
+                "continuity"
+              ],
+              "confidence": "validated",
+              "created_at": "2026-07-21 10:31:16.359784",
+              "updated_at": "2026-07-21 10:31:16.359791"
+            }
+          ],
+          "archive": [
+            {
+              "id": "archive_0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "title": "Validated SAGE Integration Fact",
+              "tags": [
+                "fact",
+                "archived_fact",
+                "test"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 10:31:15.689301",
+              "validation_timestamp": "2026-07-21 10:31:15.689418",
+              "decision_history": [],
+              "lineage": [
+                "0be31bfa-e035-4e01-bf39-28766c88cd61"
+              ],
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              }
+            },
+            {
+              "id": "archive_api_mem_001",
+              "title": "API rule",
+              "tags": [
+                "api"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 10:31:15.790957",
+              "validation_timestamp": "2026-07-21 10:31:15.795680",
+              "decision_history": [
+                "api_dec_001"
+              ],
+              "lineage": [
+                "api_mem_001"
+              ],
+              "content": {
+                "title": "API rule",
+                "archive": true
+              }
+            }
+          ],
+          "decisions": [
+            {
+              "id": "4550836f-59b9-4718-8362-2aaf52751b20",
+              "decision_type": "architectural",
+              "description": "Use FastAPI for core server",
+              "rationale": "High performance and automatic documentation",
+              "evidence": [
+                "fastapi_vs_flask_benchmarks"
+              ],
+              "timestamp": "2026-07-21 10:31:15.639575",
+              "outcome": null
+            },
+            {
+              "id": "api_dec_001",
+              "decision_type": "technical",
+              "description": "API decision",
+              "rationale": "API rationale",
+              "evidence": [
+                "api_mem_001"
+              ],
+              "timestamp": "2026-07-21 10:31:15.793664",
+              "outcome": null
+            }
+          ],
+          "lineage": [
+            "session_3b4495dc",
+            "session_e44e5048",
+            "api_session_ingest_999",
+            "api_session_1"
+          ]
+        },
+        "checkpoint_92a7402e": {
+          "timestamp": "2026-07-21T10:31:15.737602",
+          "state": {
+            "current_objective": "Test SAGE API Integration",
+            "active_task": "Implement API integration tests",
+            "blockers": [],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "object_type": "fact",
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              },
+              "tags": [
+                "fact",
+                "test"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 10:31:15.664842",
+              "updated_at": "2026-07-21 10:31:15.664859"
+            }
+          ],
+          "archive": [
+            {
+              "id": "archive_0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "title": "Validated SAGE Integration Fact",
+              "tags": [
+                "fact",
+                "archived_fact",
+                "test"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 10:31:15.689301",
+              "validation_timestamp": "2026-07-21 10:31:15.689418",
+              "decision_history": [],
+              "lineage": [
+                "0be31bfa-e035-4e01-bf39-28766c88cd61"
+              ],
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              }
+            }
+          ],
+          "decisions": [
+            {
+              "id": "4550836f-59b9-4718-8362-2aaf52751b20",
+              "decision_type": "architectural",
+              "description": "Use FastAPI for core server",
+              "rationale": "High performance and automatic documentation",
+              "evidence": [
+                "fastapi_vs_flask_benchmarks"
+              ],
+              "timestamp": "2026-07-21 10:31:15.639575",
+              "outcome": null
+            }
+          ],
+          "lineage": [
+            "session_3b4495dc"
+          ]
+        },
+        "checkpoint_99532e39": {
+          "timestamp": "2026-07-21T10:31:15.797378",
+          "state": {
+            "current_objective": "API objective",
+            "active_task": "API task",
+            "blockers": [],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "object_type": "fact",
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              },
+              "tags": [
+                "fact",
+                "test"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 10:31:15.664842",
+              "updated_at": "2026-07-21 10:31:15.664859"
+            },
+            {
+              "id": "api_mem_001",
+              "object_type": "rule",
+              "content": {
+                "title": "API rule",
+                "archive": true,
+                "decisions": [
+                  "api_dec_001"
+                ]
+              },
+              "tags": [
+                "api"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 10:31:15.789399",
+              "updated_at": "2026-07-21 10:31:15.789408"
+            }
+          ],
+          "archive": [
+            {
+              "id": "archive_0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "title": "Validated SAGE Integration Fact",
+              "tags": [
+                "fact",
+                "archived_fact",
+                "test"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 10:31:15.689301",
+              "validation_timestamp": "2026-07-21 10:31:15.689418",
+              "decision_history": [],
+              "lineage": [
+                "0be31bfa-e035-4e01-bf39-28766c88cd61"
+              ],
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              }
+            },
+            {
+              "id": "archive_api_mem_001",
+              "title": "API rule",
+              "tags": [
+                "api"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 10:31:15.790957",
+              "validation_timestamp": "2026-07-21 10:31:15.795680",
+              "decision_history": [
+                "api_dec_001"
+              ],
+              "lineage": [
+                "api_mem_001"
+              ],
+              "content": {
+                "title": "API rule",
+                "archive": true
+              }
+            }
+          ],
+          "decisions": [
+            {
+              "id": "4550836f-59b9-4718-8362-2aaf52751b20",
+              "decision_type": "architectural",
+              "description": "Use FastAPI for core server",
+              "rationale": "High performance and automatic documentation",
+              "evidence": [
+                "fastapi_vs_flask_benchmarks"
+              ],
+              "timestamp": "2026-07-21 10:31:15.639575",
+              "outcome": null
+            },
+            {
+              "id": "api_dec_001",
+              "decision_type": "technical",
+              "description": "API decision",
+              "rationale": "API rationale",
+              "evidence": [
+                "api_mem_001"
+              ],
+              "timestamp": "2026-07-21 10:31:15.793664",
+              "outcome": null
+            }
+          ],
+          "lineage": [
+            "session_3b4495dc",
+            "session_e44e5048",
+            "api_session_ingest_999"
+          ]
+        },
+        "checkpoint_afc92a97": {
+          "timestamp": "2026-07-21T10:31:16.414315",
+          "state": {
+            "current_objective": "API objective",
+            "active_task": "API task",
+            "blockers": [],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "object_type": "fact",
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              },
+              "tags": [
+                "fact",
+                "test"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 10:31:15.664842",
+              "updated_at": "2026-07-21 10:31:15.664859"
+            },
+            {
+              "id": "api_mem_001",
+              "object_type": "rule",
+              "content": {
+                "title": "API rule",
+                "archive": true,
+                "decisions": [
+                  "api_dec_001"
+                ]
+              },
+              "tags": [
+                "api"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 10:31:15.789399",
+              "updated_at": "2026-07-21 10:31:15.789408"
+            },
+            {
+              "id": "628b23f5-f6a0-4200-9c6a-0ebf2b7efa43",
+              "object_type": "ai_query",
+              "content": {
+                "prompt": "continuity of platform validation",
+                "response": "Response from ChatGPT for prompt: 'continuity of platform validation'.\nSuccessfully synchronized with SAGE session 'api_session_1'.\nContext analyzed: 0 active memories, 0 master archives.",
+                "client": "ChatGPT",
+                "reasoning_history": [
+                  "ChatGPT analyzed prompt: 'continuity of platform validation' and retrieved 0 relevant engineering artifacts."
+                ]
+              },
+              "tags": [
+                "ai",
+                "chatgpt",
+                "continuity"
+              ],
+              "confidence": "validated",
+              "created_at": "2026-07-21 10:31:16.359784",
+              "updated_at": "2026-07-21 10:31:16.359791"
+            },
+            {
+              "id": "8c603cc2-ef72-4e9b-9572-17e35d35260d",
+              "object_type": "ai_query",
+              "content": {
+                "prompt": "continuity of platform validation",
+                "response": "Deep continuation response from Gemini/Jules.\nContinuity state retrieved successfully. Running with SAGE runtime alignment.\nReferenced SAGE keys: ['628b23f5-f6a0-4200-9c6a-0ebf2b7efa43']",
+                "client": "GeminiJules",
+                "reasoning_history": [
+                  "Gemini/Jules established high-fidelity alignment with SAGE knowledge graph for session 'api_session_1'."
+                ]
+              },
+              "tags": [
+                "ai",
+                "geminijules",
+                "continuity"
+              ],
+              "confidence": "validated",
+              "created_at": "2026-07-21 10:31:16.411983",
+              "updated_at": "2026-07-21 10:31:16.411998"
+            }
+          ],
+          "archive": [
+            {
+              "id": "archive_0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "title": "Validated SAGE Integration Fact",
+              "tags": [
+                "fact",
+                "archived_fact",
+                "test"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 10:31:15.689301",
+              "validation_timestamp": "2026-07-21 10:31:15.689418",
+              "decision_history": [],
+              "lineage": [
+                "0be31bfa-e035-4e01-bf39-28766c88cd61"
+              ],
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              }
+            },
+            {
+              "id": "archive_api_mem_001",
+              "title": "API rule",
+              "tags": [
+                "api"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 10:31:15.790957",
+              "validation_timestamp": "2026-07-21 10:31:15.795680",
+              "decision_history": [
+                "api_dec_001"
+              ],
+              "lineage": [
+                "api_mem_001"
+              ],
+              "content": {
+                "title": "API rule",
+                "archive": true
+              }
+            }
+          ],
+          "decisions": [
+            {
+              "id": "4550836f-59b9-4718-8362-2aaf52751b20",
+              "decision_type": "architectural",
+              "description": "Use FastAPI for core server",
+              "rationale": "High performance and automatic documentation",
+              "evidence": [
+                "fastapi_vs_flask_benchmarks"
+              ],
+              "timestamp": "2026-07-21 10:31:15.639575",
+              "outcome": null
+            },
+            {
+              "id": "api_dec_001",
+              "decision_type": "technical",
+              "description": "API decision",
+              "rationale": "API rationale",
+              "evidence": [
+                "api_mem_001"
+              ],
+              "timestamp": "2026-07-21 10:31:15.793664",
+              "outcome": null
+            }
+          ],
+          "lineage": [
+            "session_3b4495dc",
+            "session_e44e5048",
+            "api_session_ingest_999",
+            "api_session_1",
+            "api_session_1"
+          ]
+        }
+      },
+      "lineage": [
+        "session_3b4495dc",
+        "session_e44e5048",
+        "api_session_ingest_999",
+        "api_session_1",
+        "api_session_1"
+      ],
+      "continuity_state": {}
+    },
+    "snapshot_ff40e355": {
+      "id": "snapshot_ff40e355",
+      "timestamp": "2026-07-21T10:31:16.472695",
+      "state": {
+        "current_objective": "API objective",
+        "active_task": "API task",
+        "blockers": [],
+        "dependencies": []
+      },
+      "memory": [
+        {
+          "id": "0be31bfa-e035-4e01-bf39-28766c88cd61",
+          "object_type": "fact",
+          "content": {
+            "subject": "SAGE Runtime",
+            "status": "integrated"
+          },
+          "tags": [
+            "fact",
+            "test"
+          ],
+          "confidence": "archived",
+          "created_at": "2026-07-21 10:31:15.664842",
+          "updated_at": "2026-07-21 10:31:15.664859"
+        },
+        {
+          "id": "api_mem_001",
+          "object_type": "rule",
+          "content": {
+            "title": "API rule",
+            "archive": true,
+            "decisions": [
+              "api_dec_001"
+            ]
+          },
+          "tags": [
+            "api"
+          ],
+          "confidence": "archived",
+          "created_at": "2026-07-21 10:31:15.789399",
+          "updated_at": "2026-07-21 10:31:15.789408"
+        },
+        {
+          "id": "628b23f5-f6a0-4200-9c6a-0ebf2b7efa43",
+          "object_type": "ai_query",
+          "content": {
+            "prompt": "continuity of platform validation",
+            "response": "Response from ChatGPT for prompt: 'continuity of platform validation'.\nSuccessfully synchronized with SAGE session 'api_session_1'.\nContext analyzed: 0 active memories, 0 master archives.",
+            "client": "ChatGPT",
+            "reasoning_history": [
+              "ChatGPT analyzed prompt: 'continuity of platform validation' and retrieved 0 relevant engineering artifacts."
+            ]
+          },
+          "tags": [
+            "ai",
+            "chatgpt",
+            "continuity"
+          ],
+          "confidence": "validated",
+          "created_at": "2026-07-21 10:31:16.359784",
+          "updated_at": "2026-07-21 10:31:16.359791"
+        },
+        {
+          "id": "8c603cc2-ef72-4e9b-9572-17e35d35260d",
+          "object_type": "ai_query",
+          "content": {
+            "prompt": "continuity of platform validation",
+            "response": "Deep continuation response from Gemini/Jules.\nContinuity state retrieved successfully. Running with SAGE runtime alignment.\nReferenced SAGE keys: ['628b23f5-f6a0-4200-9c6a-0ebf2b7efa43']",
+            "client": "GeminiJules",
+            "reasoning_history": [
+              "Gemini/Jules established high-fidelity alignment with SAGE knowledge graph for session 'api_session_1'."
+            ]
+          },
+          "tags": [
+            "ai",
+            "geminijules",
+            "continuity"
+          ],
+          "confidence": "validated",
+          "created_at": "2026-07-21 10:31:16.411983",
+          "updated_at": "2026-07-21 10:31:16.411998"
+        },
+        {
+          "id": "gh_2ad38d83",
+          "object_type": "github_event",
+          "content": {
+            "event_id": "gh_2ad38d83",
+            "event_type": "pull_request",
+            "repository": "dariusbrandon880-art/Sage",
+            "ref": null,
+            "author": "Jules",
+            "timestamp": "2026-07-21 10:31:16.466721+00:00",
+            "payload": {
+              "message": "Merge Phase 2 changes"
+            }
+          },
+          "tags": [
+            "github",
+            "pull_request",
+            "dariusbrandon880-art/Sage"
+          ],
+          "confidence": "validated",
+          "created_at": "2026-07-21 10:31:16.467625",
+          "updated_at": "2026-07-21 10:31:16.467631"
+        }
+      ],
+      "archive": [
+        {
+          "id": "archive_0be31bfa-e035-4e01-bf39-28766c88cd61",
+          "title": "Validated SAGE Integration Fact",
+          "tags": [
+            "fact",
+            "archived_fact",
+            "test"
+          ],
+          "knowledge_state": "archived",
+          "created_at": "2026-07-21 10:31:15.689301",
+          "validation_timestamp": "2026-07-21 10:31:15.689418",
+          "decision_history": [],
+          "lineage": [
+            "0be31bfa-e035-4e01-bf39-28766c88cd61"
+          ],
+          "content": {
+            "subject": "SAGE Runtime",
+            "status": "integrated"
+          }
+        },
+        {
+          "id": "archive_api_mem_001",
+          "title": "API rule",
+          "tags": [
+            "api"
+          ],
+          "knowledge_state": "archived",
+          "created_at": "2026-07-21 10:31:15.790957",
+          "validation_timestamp": "2026-07-21 10:31:15.795680",
+          "decision_history": [
+            "api_dec_001"
+          ],
+          "lineage": [
+            "api_mem_001"
+          ],
+          "content": {
+            "title": "API rule",
+            "archive": true
+          }
+        }
+      ],
+      "decisions": [
+        {
+          "id": "4550836f-59b9-4718-8362-2aaf52751b20",
+          "decision_type": "architectural",
+          "description": "Use FastAPI for core server",
+          "rationale": "High performance and automatic documentation",
+          "evidence": [
+            "fastapi_vs_flask_benchmarks"
+          ],
+          "timestamp": "2026-07-21 10:31:15.639575",
+          "outcome": null
+        },
+        {
+          "id": "api_dec_001",
+          "decision_type": "technical",
+          "description": "API decision",
+          "rationale": "API rationale",
+          "evidence": [
+            "api_mem_001"
+          ],
+          "timestamp": "2026-07-21 10:31:15.793664",
+          "outcome": null
+        }
+      ],
+      "checkpoints": {
+        "checkpoint_2cdf0273": {
+          "timestamp": "2026-07-21T10:31:16.361937",
+          "state": {
+            "current_objective": "API objective",
+            "active_task": "API task",
+            "blockers": [],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "object_type": "fact",
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              },
+              "tags": [
+                "fact",
+                "test"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 10:31:15.664842",
+              "updated_at": "2026-07-21 10:31:15.664859"
+            },
+            {
+              "id": "api_mem_001",
+              "object_type": "rule",
+              "content": {
+                "title": "API rule",
+                "archive": true,
+                "decisions": [
+                  "api_dec_001"
+                ]
+              },
+              "tags": [
+                "api"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 10:31:15.789399",
+              "updated_at": "2026-07-21 10:31:15.789408"
+            },
+            {
+              "id": "628b23f5-f6a0-4200-9c6a-0ebf2b7efa43",
+              "object_type": "ai_query",
+              "content": {
+                "prompt": "continuity of platform validation",
+                "response": "Response from ChatGPT for prompt: 'continuity of platform validation'.\nSuccessfully synchronized with SAGE session 'api_session_1'.\nContext analyzed: 0 active memories, 0 master archives.",
+                "client": "ChatGPT",
+                "reasoning_history": [
+                  "ChatGPT analyzed prompt: 'continuity of platform validation' and retrieved 0 relevant engineering artifacts."
+                ]
+              },
+              "tags": [
+                "ai",
+                "chatgpt",
+                "continuity"
+              ],
+              "confidence": "validated",
+              "created_at": "2026-07-21 10:31:16.359784",
+              "updated_at": "2026-07-21 10:31:16.359791"
+            }
+          ],
+          "archive": [
+            {
+              "id": "archive_0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "title": "Validated SAGE Integration Fact",
+              "tags": [
+                "fact",
+                "archived_fact",
+                "test"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 10:31:15.689301",
+              "validation_timestamp": "2026-07-21 10:31:15.689418",
+              "decision_history": [],
+              "lineage": [
+                "0be31bfa-e035-4e01-bf39-28766c88cd61"
+              ],
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              }
+            },
+            {
+              "id": "archive_api_mem_001",
+              "title": "API rule",
+              "tags": [
+                "api"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 10:31:15.790957",
+              "validation_timestamp": "2026-07-21 10:31:15.795680",
+              "decision_history": [
+                "api_dec_001"
+              ],
+              "lineage": [
+                "api_mem_001"
+              ],
+              "content": {
+                "title": "API rule",
+                "archive": true
+              }
+            }
+          ],
+          "decisions": [
+            {
+              "id": "4550836f-59b9-4718-8362-2aaf52751b20",
+              "decision_type": "architectural",
+              "description": "Use FastAPI for core server",
+              "rationale": "High performance and automatic documentation",
+              "evidence": [
+                "fastapi_vs_flask_benchmarks"
+              ],
+              "timestamp": "2026-07-21 10:31:15.639575",
+              "outcome": null
+            },
+            {
+              "id": "api_dec_001",
+              "decision_type": "technical",
+              "description": "API decision",
+              "rationale": "API rationale",
+              "evidence": [
+                "api_mem_001"
+              ],
+              "timestamp": "2026-07-21 10:31:15.793664",
+              "outcome": null
+            }
+          ],
+          "lineage": [
+            "session_3b4495dc",
+            "session_e44e5048",
+            "api_session_ingest_999",
+            "api_session_1"
+          ]
+        },
+        "checkpoint_92a7402e": {
+          "timestamp": "2026-07-21T10:31:15.737602",
+          "state": {
+            "current_objective": "Test SAGE API Integration",
+            "active_task": "Implement API integration tests",
+            "blockers": [],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "object_type": "fact",
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              },
+              "tags": [
+                "fact",
+                "test"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 10:31:15.664842",
+              "updated_at": "2026-07-21 10:31:15.664859"
+            }
+          ],
+          "archive": [
+            {
+              "id": "archive_0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "title": "Validated SAGE Integration Fact",
+              "tags": [
+                "fact",
+                "archived_fact",
+                "test"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 10:31:15.689301",
+              "validation_timestamp": "2026-07-21 10:31:15.689418",
+              "decision_history": [],
+              "lineage": [
+                "0be31bfa-e035-4e01-bf39-28766c88cd61"
+              ],
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              }
+            }
+          ],
+          "decisions": [
+            {
+              "id": "4550836f-59b9-4718-8362-2aaf52751b20",
+              "decision_type": "architectural",
+              "description": "Use FastAPI for core server",
+              "rationale": "High performance and automatic documentation",
+              "evidence": [
+                "fastapi_vs_flask_benchmarks"
+              ],
+              "timestamp": "2026-07-21 10:31:15.639575",
+              "outcome": null
+            }
+          ],
+          "lineage": [
+            "session_3b4495dc"
+          ]
+        },
+        "checkpoint_99532e39": {
+          "timestamp": "2026-07-21T10:31:15.797378",
+          "state": {
+            "current_objective": "API objective",
+            "active_task": "API task",
+            "blockers": [],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "object_type": "fact",
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              },
+              "tags": [
+                "fact",
+                "test"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 10:31:15.664842",
+              "updated_at": "2026-07-21 10:31:15.664859"
+            },
+            {
+              "id": "api_mem_001",
+              "object_type": "rule",
+              "content": {
+                "title": "API rule",
+                "archive": true,
+                "decisions": [
+                  "api_dec_001"
+                ]
+              },
+              "tags": [
+                "api"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 10:31:15.789399",
+              "updated_at": "2026-07-21 10:31:15.789408"
+            }
+          ],
+          "archive": [
+            {
+              "id": "archive_0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "title": "Validated SAGE Integration Fact",
+              "tags": [
+                "fact",
+                "archived_fact",
+                "test"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 10:31:15.689301",
+              "validation_timestamp": "2026-07-21 10:31:15.689418",
+              "decision_history": [],
+              "lineage": [
+                "0be31bfa-e035-4e01-bf39-28766c88cd61"
+              ],
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              }
+            },
+            {
+              "id": "archive_api_mem_001",
+              "title": "API rule",
+              "tags": [
+                "api"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 10:31:15.790957",
+              "validation_timestamp": "2026-07-21 10:31:15.795680",
+              "decision_history": [
+                "api_dec_001"
+              ],
+              "lineage": [
+                "api_mem_001"
+              ],
+              "content": {
+                "title": "API rule",
+                "archive": true
+              }
+            }
+          ],
+          "decisions": [
+            {
+              "id": "4550836f-59b9-4718-8362-2aaf52751b20",
+              "decision_type": "architectural",
+              "description": "Use FastAPI for core server",
+              "rationale": "High performance and automatic documentation",
+              "evidence": [
+                "fastapi_vs_flask_benchmarks"
+              ],
+              "timestamp": "2026-07-21 10:31:15.639575",
+              "outcome": null
+            },
+            {
+              "id": "api_dec_001",
+              "decision_type": "technical",
+              "description": "API decision",
+              "rationale": "API rationale",
+              "evidence": [
+                "api_mem_001"
+              ],
+              "timestamp": "2026-07-21 10:31:15.793664",
+              "outcome": null
+            }
+          ],
+          "lineage": [
+            "session_3b4495dc",
+            "session_e44e5048",
+            "api_session_ingest_999"
+          ]
+        },
+        "checkpoint_afc92a97": {
+          "timestamp": "2026-07-21T10:31:16.414315",
+          "state": {
+            "current_objective": "API objective",
+            "active_task": "API task",
+            "blockers": [],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "object_type": "fact",
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              },
+              "tags": [
+                "fact",
+                "test"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 10:31:15.664842",
+              "updated_at": "2026-07-21 10:31:15.664859"
+            },
+            {
+              "id": "api_mem_001",
+              "object_type": "rule",
+              "content": {
+                "title": "API rule",
+                "archive": true,
+                "decisions": [
+                  "api_dec_001"
+                ]
+              },
+              "tags": [
+                "api"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 10:31:15.789399",
+              "updated_at": "2026-07-21 10:31:15.789408"
+            },
+            {
+              "id": "628b23f5-f6a0-4200-9c6a-0ebf2b7efa43",
+              "object_type": "ai_query",
+              "content": {
+                "prompt": "continuity of platform validation",
+                "response": "Response from ChatGPT for prompt: 'continuity of platform validation'.\nSuccessfully synchronized with SAGE session 'api_session_1'.\nContext analyzed: 0 active memories, 0 master archives.",
+                "client": "ChatGPT",
+                "reasoning_history": [
+                  "ChatGPT analyzed prompt: 'continuity of platform validation' and retrieved 0 relevant engineering artifacts."
+                ]
+              },
+              "tags": [
+                "ai",
+                "chatgpt",
+                "continuity"
+              ],
+              "confidence": "validated",
+              "created_at": "2026-07-21 10:31:16.359784",
+              "updated_at": "2026-07-21 10:31:16.359791"
+            },
+            {
+              "id": "8c603cc2-ef72-4e9b-9572-17e35d35260d",
+              "object_type": "ai_query",
+              "content": {
+                "prompt": "continuity of platform validation",
+                "response": "Deep continuation response from Gemini/Jules.\nContinuity state retrieved successfully. Running with SAGE runtime alignment.\nReferenced SAGE keys: ['628b23f5-f6a0-4200-9c6a-0ebf2b7efa43']",
+                "client": "GeminiJules",
+                "reasoning_history": [
+                  "Gemini/Jules established high-fidelity alignment with SAGE knowledge graph for session 'api_session_1'."
+                ]
+              },
+              "tags": [
+                "ai",
+                "geminijules",
+                "continuity"
+              ],
+              "confidence": "validated",
+              "created_at": "2026-07-21 10:31:16.411983",
+              "updated_at": "2026-07-21 10:31:16.411998"
+            }
+          ],
+          "archive": [
+            {
+              "id": "archive_0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "title": "Validated SAGE Integration Fact",
+              "tags": [
+                "fact",
+                "archived_fact",
+                "test"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 10:31:15.689301",
+              "validation_timestamp": "2026-07-21 10:31:15.689418",
+              "decision_history": [],
+              "lineage": [
+                "0be31bfa-e035-4e01-bf39-28766c88cd61"
+              ],
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              }
+            },
+            {
+              "id": "archive_api_mem_001",
+              "title": "API rule",
+              "tags": [
+                "api"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 10:31:15.790957",
+              "validation_timestamp": "2026-07-21 10:31:15.795680",
+              "decision_history": [
+                "api_dec_001"
+              ],
+              "lineage": [
+                "api_mem_001"
+              ],
+              "content": {
+                "title": "API rule",
+                "archive": true
+              }
+            }
+          ],
+          "decisions": [
+            {
+              "id": "4550836f-59b9-4718-8362-2aaf52751b20",
+              "decision_type": "architectural",
+              "description": "Use FastAPI for core server",
+              "rationale": "High performance and automatic documentation",
+              "evidence": [
+                "fastapi_vs_flask_benchmarks"
+              ],
+              "timestamp": "2026-07-21 10:31:15.639575",
+              "outcome": null
+            },
+            {
+              "id": "api_dec_001",
+              "decision_type": "technical",
+              "description": "API decision",
+              "rationale": "API rationale",
+              "evidence": [
+                "api_mem_001"
+              ],
+              "timestamp": "2026-07-21 10:31:15.793664",
+              "outcome": null
+            }
+          ],
+          "lineage": [
+            "session_3b4495dc",
+            "session_e44e5048",
+            "api_session_ingest_999",
+            "api_session_1",
+            "api_session_1"
+          ]
+        },
+        "checkpoint_3e09c010": {
+          "timestamp": "2026-07-21T10:31:16.470154",
+          "state": {
+            "current_objective": "API objective",
+            "active_task": "API task",
+            "blockers": [],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "object_type": "fact",
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              },
+              "tags": [
+                "fact",
+                "test"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 10:31:15.664842",
+              "updated_at": "2026-07-21 10:31:15.664859"
+            },
+            {
+              "id": "api_mem_001",
+              "object_type": "rule",
+              "content": {
+                "title": "API rule",
+                "archive": true,
+                "decisions": [
+                  "api_dec_001"
+                ]
+              },
+              "tags": [
+                "api"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 10:31:15.789399",
+              "updated_at": "2026-07-21 10:31:15.789408"
+            },
+            {
+              "id": "628b23f5-f6a0-4200-9c6a-0ebf2b7efa43",
+              "object_type": "ai_query",
+              "content": {
+                "prompt": "continuity of platform validation",
+                "response": "Response from ChatGPT for prompt: 'continuity of platform validation'.\nSuccessfully synchronized with SAGE session 'api_session_1'.\nContext analyzed: 0 active memories, 0 master archives.",
+                "client": "ChatGPT",
+                "reasoning_history": [
+                  "ChatGPT analyzed prompt: 'continuity of platform validation' and retrieved 0 relevant engineering artifacts."
+                ]
+              },
+              "tags": [
+                "ai",
+                "chatgpt",
+                "continuity"
+              ],
+              "confidence": "validated",
+              "created_at": "2026-07-21 10:31:16.359784",
+              "updated_at": "2026-07-21 10:31:16.359791"
+            },
+            {
+              "id": "8c603cc2-ef72-4e9b-9572-17e35d35260d",
+              "object_type": "ai_query",
+              "content": {
+                "prompt": "continuity of platform validation",
+                "response": "Deep continuation response from Gemini/Jules.\nContinuity state retrieved successfully. Running with SAGE runtime alignment.\nReferenced SAGE keys: ['628b23f5-f6a0-4200-9c6a-0ebf2b7efa43']",
+                "client": "GeminiJules",
+                "reasoning_history": [
+                  "Gemini/Jules established high-fidelity alignment with SAGE knowledge graph for session 'api_session_1'."
+                ]
+              },
+              "tags": [
+                "ai",
+                "geminijules",
+                "continuity"
+              ],
+              "confidence": "validated",
+              "created_at": "2026-07-21 10:31:16.411983",
+              "updated_at": "2026-07-21 10:31:16.411998"
+            },
+            {
+              "id": "gh_2ad38d83",
+              "object_type": "github_event",
+              "content": {
+                "event_id": "gh_2ad38d83",
+                "event_type": "pull_request",
+                "repository": "dariusbrandon880-art/Sage",
+                "ref": null,
+                "author": "Jules",
+                "timestamp": "2026-07-21 10:31:16.466721+00:00",
+                "payload": {
+                  "message": "Merge Phase 2 changes"
+                }
+              },
+              "tags": [
+                "github",
+                "pull_request",
+                "dariusbrandon880-art/Sage"
+              ],
+              "confidence": "validated",
+              "created_at": "2026-07-21 10:31:16.467625",
+              "updated_at": "2026-07-21 10:31:16.467631"
+            }
+          ],
+          "archive": [
+            {
+              "id": "archive_0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "title": "Validated SAGE Integration Fact",
+              "tags": [
+                "fact",
+                "archived_fact",
+                "test"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 10:31:15.689301",
+              "validation_timestamp": "2026-07-21 10:31:15.689418",
+              "decision_history": [],
+              "lineage": [
+                "0be31bfa-e035-4e01-bf39-28766c88cd61"
+              ],
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              }
+            },
+            {
+              "id": "archive_api_mem_001",
+              "title": "API rule",
+              "tags": [
+                "api"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 10:31:15.790957",
+              "validation_timestamp": "2026-07-21 10:31:15.795680",
+              "decision_history": [
+                "api_dec_001"
+              ],
+              "lineage": [
+                "api_mem_001"
+              ],
+              "content": {
+                "title": "API rule",
+                "archive": true
+              }
+            }
+          ],
+          "decisions": [
+            {
+              "id": "4550836f-59b9-4718-8362-2aaf52751b20",
+              "decision_type": "architectural",
+              "description": "Use FastAPI for core server",
+              "rationale": "High performance and automatic documentation",
+              "evidence": [
+                "fastapi_vs_flask_benchmarks"
+              ],
+              "timestamp": "2026-07-21 10:31:15.639575",
+              "outcome": null
+            },
+            {
+              "id": "api_dec_001",
+              "decision_type": "technical",
+              "description": "API decision",
+              "rationale": "API rationale",
+              "evidence": [
+                "api_mem_001"
+              ],
+              "timestamp": "2026-07-21 10:31:15.793664",
+              "outcome": null
+            }
+          ],
+          "lineage": [
+            "session_3b4495dc",
+            "session_e44e5048",
+            "api_session_ingest_999",
+            "api_session_1",
+            "api_session_1",
+            "gh_2ad38d83"
+          ]
+        }
+      },
+      "lineage": [
+        "session_3b4495dc",
+        "session_e44e5048",
+        "api_session_ingest_999",
+        "api_session_1",
+        "api_session_1",
+        "gh_2ad38d83"
+      ],
+      "continuity_state": {}
+    },
+    "snapshot_b814163b": {
+      "id": "snapshot_b814163b",
+      "timestamp": "2026-07-21T10:31:16.532878",
+      "state": {
+        "current_objective": "API objective",
+        "active_task": "API task",
+        "blockers": [],
+        "dependencies": []
+      },
+      "memory": [
+        {
+          "id": "0be31bfa-e035-4e01-bf39-28766c88cd61",
+          "object_type": "fact",
+          "content": {
+            "subject": "SAGE Runtime",
+            "status": "integrated"
+          },
+          "tags": [
+            "fact",
+            "test"
+          ],
+          "confidence": "archived",
+          "created_at": "2026-07-21 10:31:15.664842",
+          "updated_at": "2026-07-21 10:31:15.664859"
+        },
+        {
+          "id": "api_mem_001",
+          "object_type": "rule",
+          "content": {
+            "title": "API rule",
+            "archive": true,
+            "decisions": [
+              "api_dec_001"
+            ]
+          },
+          "tags": [
+            "api"
+          ],
+          "confidence": "archived",
+          "created_at": "2026-07-21 10:31:15.789399",
+          "updated_at": "2026-07-21 10:31:15.789408"
+        },
+        {
+          "id": "628b23f5-f6a0-4200-9c6a-0ebf2b7efa43",
+          "object_type": "ai_query",
+          "content": {
+            "prompt": "continuity of platform validation",
+            "response": "Response from ChatGPT for prompt: 'continuity of platform validation'.\nSuccessfully synchronized with SAGE session 'api_session_1'.\nContext analyzed: 0 active memories, 0 master archives.",
+            "client": "ChatGPT",
+            "reasoning_history": [
+              "ChatGPT analyzed prompt: 'continuity of platform validation' and retrieved 0 relevant engineering artifacts."
+            ]
+          },
+          "tags": [
+            "ai",
+            "chatgpt",
+            "continuity"
+          ],
+          "confidence": "validated",
+          "created_at": "2026-07-21 10:31:16.359784",
+          "updated_at": "2026-07-21 10:31:16.359791"
+        },
+        {
+          "id": "8c603cc2-ef72-4e9b-9572-17e35d35260d",
+          "object_type": "ai_query",
+          "content": {
+            "prompt": "continuity of platform validation",
+            "response": "Deep continuation response from Gemini/Jules.\nContinuity state retrieved successfully. Running with SAGE runtime alignment.\nReferenced SAGE keys: ['628b23f5-f6a0-4200-9c6a-0ebf2b7efa43']",
+            "client": "GeminiJules",
+            "reasoning_history": [
+              "Gemini/Jules established high-fidelity alignment with SAGE knowledge graph for session 'api_session_1'."
+            ]
+          },
+          "tags": [
+            "ai",
+            "geminijules",
+            "continuity"
+          ],
+          "confidence": "validated",
+          "created_at": "2026-07-21 10:31:16.411983",
+          "updated_at": "2026-07-21 10:31:16.411998"
+        },
+        {
+          "id": "gh_2ad38d83",
+          "object_type": "github_event",
+          "content": {
+            "event_id": "gh_2ad38d83",
+            "event_type": "pull_request",
+            "repository": "dariusbrandon880-art/Sage",
+            "ref": null,
+            "author": "Jules",
+            "timestamp": "2026-07-21 10:31:16.466721+00:00",
+            "payload": {
+              "message": "Merge Phase 2 changes"
+            }
+          },
+          "tags": [
+            "github",
+            "pull_request",
+            "dariusbrandon880-art/Sage"
+          ],
+          "confidence": "validated",
+          "created_at": "2026-07-21 10:31:16.467625",
+          "updated_at": "2026-07-21 10:31:16.467631"
+        },
+        {
+          "id": "spec_sheet",
+          "object_type": "workspace_artifact",
+          "content": {
+            "doc_id": "spec_sheet",
+            "title": "Phase 2 design spec",
+            "doc_type": "doc",
+            "last_modified_by": "Jules",
+            "last_modified_at": "2026-07-21 10:31:16.526893+00:00",
+            "url": "https://google.com/spec_sheet",
+            "metadata": {}
+          },
+          "tags": [
+            "google_workspace",
+            "doc"
+          ],
+          "confidence": "validated",
+          "created_at": "2026-07-21 10:31:16.527866",
+          "updated_at": "2026-07-21 10:31:16.527881"
+        }
+      ],
+      "archive": [
+        {
+          "id": "archive_0be31bfa-e035-4e01-bf39-28766c88cd61",
+          "title": "Validated SAGE Integration Fact",
+          "tags": [
+            "fact",
+            "archived_fact",
+            "test"
+          ],
+          "knowledge_state": "archived",
+          "created_at": "2026-07-21 10:31:15.689301",
+          "validation_timestamp": "2026-07-21 10:31:15.689418",
+          "decision_history": [],
+          "lineage": [
+            "0be31bfa-e035-4e01-bf39-28766c88cd61"
+          ],
+          "content": {
+            "subject": "SAGE Runtime",
+            "status": "integrated"
+          }
+        },
+        {
+          "id": "archive_api_mem_001",
+          "title": "API rule",
+          "tags": [
+            "api"
+          ],
+          "knowledge_state": "archived",
+          "created_at": "2026-07-21 10:31:15.790957",
+          "validation_timestamp": "2026-07-21 10:31:15.795680",
+          "decision_history": [
+            "api_dec_001"
+          ],
+          "lineage": [
+            "api_mem_001"
+          ],
+          "content": {
+            "title": "API rule",
+            "archive": true
+          }
+        }
+      ],
+      "decisions": [
+        {
+          "id": "4550836f-59b9-4718-8362-2aaf52751b20",
+          "decision_type": "architectural",
+          "description": "Use FastAPI for core server",
+          "rationale": "High performance and automatic documentation",
+          "evidence": [
+            "fastapi_vs_flask_benchmarks"
+          ],
+          "timestamp": "2026-07-21 10:31:15.639575",
+          "outcome": null
+        },
+        {
+          "id": "api_dec_001",
+          "decision_type": "technical",
+          "description": "API decision",
+          "rationale": "API rationale",
+          "evidence": [
+            "api_mem_001"
+          ],
+          "timestamp": "2026-07-21 10:31:15.793664",
+          "outcome": null
+        }
+      ],
+      "checkpoints": {
+        "checkpoint_2cdf0273": {
+          "timestamp": "2026-07-21T10:31:16.361937",
+          "state": {
+            "current_objective": "API objective",
+            "active_task": "API task",
+            "blockers": [],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "object_type": "fact",
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              },
+              "tags": [
+                "fact",
+                "test"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 10:31:15.664842",
+              "updated_at": "2026-07-21 10:31:15.664859"
+            },
+            {
+              "id": "api_mem_001",
+              "object_type": "rule",
+              "content": {
+                "title": "API rule",
+                "archive": true,
+                "decisions": [
+                  "api_dec_001"
+                ]
+              },
+              "tags": [
+                "api"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 10:31:15.789399",
+              "updated_at": "2026-07-21 10:31:15.789408"
+            },
+            {
+              "id": "628b23f5-f6a0-4200-9c6a-0ebf2b7efa43",
+              "object_type": "ai_query",
+              "content": {
+                "prompt": "continuity of platform validation",
+                "response": "Response from ChatGPT for prompt: 'continuity of platform validation'.\nSuccessfully synchronized with SAGE session 'api_session_1'.\nContext analyzed: 0 active memories, 0 master archives.",
+                "client": "ChatGPT",
+                "reasoning_history": [
+                  "ChatGPT analyzed prompt: 'continuity of platform validation' and retrieved 0 relevant engineering artifacts."
+                ]
+              },
+              "tags": [
+                "ai",
+                "chatgpt",
+                "continuity"
+              ],
+              "confidence": "validated",
+              "created_at": "2026-07-21 10:31:16.359784",
+              "updated_at": "2026-07-21 10:31:16.359791"
+            }
+          ],
+          "archive": [
+            {
+              "id": "archive_0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "title": "Validated SAGE Integration Fact",
+              "tags": [
+                "fact",
+                "archived_fact",
+                "test"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 10:31:15.689301",
+              "validation_timestamp": "2026-07-21 10:31:15.689418",
+              "decision_history": [],
+              "lineage": [
+                "0be31bfa-e035-4e01-bf39-28766c88cd61"
+              ],
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              }
+            },
+            {
+              "id": "archive_api_mem_001",
+              "title": "API rule",
+              "tags": [
+                "api"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 10:31:15.790957",
+              "validation_timestamp": "2026-07-21 10:31:15.795680",
+              "decision_history": [
+                "api_dec_001"
+              ],
+              "lineage": [
+                "api_mem_001"
+              ],
+              "content": {
+                "title": "API rule",
+                "archive": true
+              }
+            }
+          ],
+          "decisions": [
+            {
+              "id": "4550836f-59b9-4718-8362-2aaf52751b20",
+              "decision_type": "architectural",
+              "description": "Use FastAPI for core server",
+              "rationale": "High performance and automatic documentation",
+              "evidence": [
+                "fastapi_vs_flask_benchmarks"
+              ],
+              "timestamp": "2026-07-21 10:31:15.639575",
+              "outcome": null
+            },
+            {
+              "id": "api_dec_001",
+              "decision_type": "technical",
+              "description": "API decision",
+              "rationale": "API rationale",
+              "evidence": [
+                "api_mem_001"
+              ],
+              "timestamp": "2026-07-21 10:31:15.793664",
+              "outcome": null
+            }
+          ],
+          "lineage": [
+            "session_3b4495dc",
+            "session_e44e5048",
+            "api_session_ingest_999",
+            "api_session_1"
+          ]
+        },
+        "checkpoint_92a7402e": {
+          "timestamp": "2026-07-21T10:31:15.737602",
+          "state": {
+            "current_objective": "Test SAGE API Integration",
+            "active_task": "Implement API integration tests",
+            "blockers": [],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "object_type": "fact",
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              },
+              "tags": [
+                "fact",
+                "test"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 10:31:15.664842",
+              "updated_at": "2026-07-21 10:31:15.664859"
+            }
+          ],
+          "archive": [
+            {
+              "id": "archive_0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "title": "Validated SAGE Integration Fact",
+              "tags": [
+                "fact",
+                "archived_fact",
+                "test"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 10:31:15.689301",
+              "validation_timestamp": "2026-07-21 10:31:15.689418",
+              "decision_history": [],
+              "lineage": [
+                "0be31bfa-e035-4e01-bf39-28766c88cd61"
+              ],
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              }
+            }
+          ],
+          "decisions": [
+            {
+              "id": "4550836f-59b9-4718-8362-2aaf52751b20",
+              "decision_type": "architectural",
+              "description": "Use FastAPI for core server",
+              "rationale": "High performance and automatic documentation",
+              "evidence": [
+                "fastapi_vs_flask_benchmarks"
+              ],
+              "timestamp": "2026-07-21 10:31:15.639575",
+              "outcome": null
+            }
+          ],
+          "lineage": [
+            "session_3b4495dc"
+          ]
+        },
+        "checkpoint_99532e39": {
+          "timestamp": "2026-07-21T10:31:15.797378",
+          "state": {
+            "current_objective": "API objective",
+            "active_task": "API task",
+            "blockers": [],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "object_type": "fact",
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              },
+              "tags": [
+                "fact",
+                "test"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 10:31:15.664842",
+              "updated_at": "2026-07-21 10:31:15.664859"
+            },
+            {
+              "id": "api_mem_001",
+              "object_type": "rule",
+              "content": {
+                "title": "API rule",
+                "archive": true,
+                "decisions": [
+                  "api_dec_001"
+                ]
+              },
+              "tags": [
+                "api"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 10:31:15.789399",
+              "updated_at": "2026-07-21 10:31:15.789408"
+            }
+          ],
+          "archive": [
+            {
+              "id": "archive_0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "title": "Validated SAGE Integration Fact",
+              "tags": [
+                "fact",
+                "archived_fact",
+                "test"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 10:31:15.689301",
+              "validation_timestamp": "2026-07-21 10:31:15.689418",
+              "decision_history": [],
+              "lineage": [
+                "0be31bfa-e035-4e01-bf39-28766c88cd61"
+              ],
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              }
+            },
+            {
+              "id": "archive_api_mem_001",
+              "title": "API rule",
+              "tags": [
+                "api"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 10:31:15.790957",
+              "validation_timestamp": "2026-07-21 10:31:15.795680",
+              "decision_history": [
+                "api_dec_001"
+              ],
+              "lineage": [
+                "api_mem_001"
+              ],
+              "content": {
+                "title": "API rule",
+                "archive": true
+              }
+            }
+          ],
+          "decisions": [
+            {
+              "id": "4550836f-59b9-4718-8362-2aaf52751b20",
+              "decision_type": "architectural",
+              "description": "Use FastAPI for core server",
+              "rationale": "High performance and automatic documentation",
+              "evidence": [
+                "fastapi_vs_flask_benchmarks"
+              ],
+              "timestamp": "2026-07-21 10:31:15.639575",
+              "outcome": null
+            },
+            {
+              "id": "api_dec_001",
+              "decision_type": "technical",
+              "description": "API decision",
+              "rationale": "API rationale",
+              "evidence": [
+                "api_mem_001"
+              ],
+              "timestamp": "2026-07-21 10:31:15.793664",
+              "outcome": null
+            }
+          ],
+          "lineage": [
+            "session_3b4495dc",
+            "session_e44e5048",
+            "api_session_ingest_999"
+          ]
+        },
+        "checkpoint_afc92a97": {
+          "timestamp": "2026-07-21T10:31:16.414315",
+          "state": {
+            "current_objective": "API objective",
+            "active_task": "API task",
+            "blockers": [],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "object_type": "fact",
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              },
+              "tags": [
+                "fact",
+                "test"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 10:31:15.664842",
+              "updated_at": "2026-07-21 10:31:15.664859"
+            },
+            {
+              "id": "api_mem_001",
+              "object_type": "rule",
+              "content": {
+                "title": "API rule",
+                "archive": true,
+                "decisions": [
+                  "api_dec_001"
+                ]
+              },
+              "tags": [
+                "api"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 10:31:15.789399",
+              "updated_at": "2026-07-21 10:31:15.789408"
+            },
+            {
+              "id": "628b23f5-f6a0-4200-9c6a-0ebf2b7efa43",
+              "object_type": "ai_query",
+              "content": {
+                "prompt": "continuity of platform validation",
+                "response": "Response from ChatGPT for prompt: 'continuity of platform validation'.\nSuccessfully synchronized with SAGE session 'api_session_1'.\nContext analyzed: 0 active memories, 0 master archives.",
+                "client": "ChatGPT",
+                "reasoning_history": [
+                  "ChatGPT analyzed prompt: 'continuity of platform validation' and retrieved 0 relevant engineering artifacts."
+                ]
+              },
+              "tags": [
+                "ai",
+                "chatgpt",
+                "continuity"
+              ],
+              "confidence": "validated",
+              "created_at": "2026-07-21 10:31:16.359784",
+              "updated_at": "2026-07-21 10:31:16.359791"
+            },
+            {
+              "id": "8c603cc2-ef72-4e9b-9572-17e35d35260d",
+              "object_type": "ai_query",
+              "content": {
+                "prompt": "continuity of platform validation",
+                "response": "Deep continuation response from Gemini/Jules.\nContinuity state retrieved successfully. Running with SAGE runtime alignment.\nReferenced SAGE keys: ['628b23f5-f6a0-4200-9c6a-0ebf2b7efa43']",
+                "client": "GeminiJules",
+                "reasoning_history": [
+                  "Gemini/Jules established high-fidelity alignment with SAGE knowledge graph for session 'api_session_1'."
+                ]
+              },
+              "tags": [
+                "ai",
+                "geminijules",
+                "continuity"
+              ],
+              "confidence": "validated",
+              "created_at": "2026-07-21 10:31:16.411983",
+              "updated_at": "2026-07-21 10:31:16.411998"
+            }
+          ],
+          "archive": [
+            {
+              "id": "archive_0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "title": "Validated SAGE Integration Fact",
+              "tags": [
+                "fact",
+                "archived_fact",
+                "test"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 10:31:15.689301",
+              "validation_timestamp": "2026-07-21 10:31:15.689418",
+              "decision_history": [],
+              "lineage": [
+                "0be31bfa-e035-4e01-bf39-28766c88cd61"
+              ],
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              }
+            },
+            {
+              "id": "archive_api_mem_001",
+              "title": "API rule",
+              "tags": [
+                "api"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 10:31:15.790957",
+              "validation_timestamp": "2026-07-21 10:31:15.795680",
+              "decision_history": [
+                "api_dec_001"
+              ],
+              "lineage": [
+                "api_mem_001"
+              ],
+              "content": {
+                "title": "API rule",
+                "archive": true
+              }
+            }
+          ],
+          "decisions": [
+            {
+              "id": "4550836f-59b9-4718-8362-2aaf52751b20",
+              "decision_type": "architectural",
+              "description": "Use FastAPI for core server",
+              "rationale": "High performance and automatic documentation",
+              "evidence": [
+                "fastapi_vs_flask_benchmarks"
+              ],
+              "timestamp": "2026-07-21 10:31:15.639575",
+              "outcome": null
+            },
+            {
+              "id": "api_dec_001",
+              "decision_type": "technical",
+              "description": "API decision",
+              "rationale": "API rationale",
+              "evidence": [
+                "api_mem_001"
+              ],
+              "timestamp": "2026-07-21 10:31:15.793664",
+              "outcome": null
+            }
+          ],
+          "lineage": [
+            "session_3b4495dc",
+            "session_e44e5048",
+            "api_session_ingest_999",
+            "api_session_1",
+            "api_session_1"
+          ]
+        },
+        "checkpoint_ca1f007c": {
+          "timestamp": "2026-07-21T10:31:16.530683",
+          "state": {
+            "current_objective": "API objective",
+            "active_task": "API task",
+            "blockers": [],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "object_type": "fact",
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              },
+              "tags": [
+                "fact",
+                "test"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 10:31:15.664842",
+              "updated_at": "2026-07-21 10:31:15.664859"
+            },
+            {
+              "id": "api_mem_001",
+              "object_type": "rule",
+              "content": {
+                "title": "API rule",
+                "archive": true,
+                "decisions": [
+                  "api_dec_001"
+                ]
+              },
+              "tags": [
+                "api"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 10:31:15.789399",
+              "updated_at": "2026-07-21 10:31:15.789408"
+            },
+            {
+              "id": "628b23f5-f6a0-4200-9c6a-0ebf2b7efa43",
+              "object_type": "ai_query",
+              "content": {
+                "prompt": "continuity of platform validation",
+                "response": "Response from ChatGPT for prompt: 'continuity of platform validation'.\nSuccessfully synchronized with SAGE session 'api_session_1'.\nContext analyzed: 0 active memories, 0 master archives.",
+                "client": "ChatGPT",
+                "reasoning_history": [
+                  "ChatGPT analyzed prompt: 'continuity of platform validation' and retrieved 0 relevant engineering artifacts."
+                ]
+              },
+              "tags": [
+                "ai",
+                "chatgpt",
+                "continuity"
+              ],
+              "confidence": "validated",
+              "created_at": "2026-07-21 10:31:16.359784",
+              "updated_at": "2026-07-21 10:31:16.359791"
+            },
+            {
+              "id": "8c603cc2-ef72-4e9b-9572-17e35d35260d",
+              "object_type": "ai_query",
+              "content": {
+                "prompt": "continuity of platform validation",
+                "response": "Deep continuation response from Gemini/Jules.\nContinuity state retrieved successfully. Running with SAGE runtime alignment.\nReferenced SAGE keys: ['628b23f5-f6a0-4200-9c6a-0ebf2b7efa43']",
+                "client": "GeminiJules",
+                "reasoning_history": [
+                  "Gemini/Jules established high-fidelity alignment with SAGE knowledge graph for session 'api_session_1'."
+                ]
+              },
+              "tags": [
+                "ai",
+                "geminijules",
+                "continuity"
+              ],
+              "confidence": "validated",
+              "created_at": "2026-07-21 10:31:16.411983",
+              "updated_at": "2026-07-21 10:31:16.411998"
+            },
+            {
+              "id": "gh_2ad38d83",
+              "object_type": "github_event",
+              "content": {
+                "event_id": "gh_2ad38d83",
+                "event_type": "pull_request",
+                "repository": "dariusbrandon880-art/Sage",
+                "ref": null,
+                "author": "Jules",
+                "timestamp": "2026-07-21 10:31:16.466721+00:00",
+                "payload": {
+                  "message": "Merge Phase 2 changes"
+                }
+              },
+              "tags": [
+                "github",
+                "pull_request",
+                "dariusbrandon880-art/Sage"
+              ],
+              "confidence": "validated",
+              "created_at": "2026-07-21 10:31:16.467625",
+              "updated_at": "2026-07-21 10:31:16.467631"
+            },
+            {
+              "id": "spec_sheet",
+              "object_type": "workspace_artifact",
+              "content": {
+                "doc_id": "spec_sheet",
+                "title": "Phase 2 design spec",
+                "doc_type": "doc",
+                "last_modified_by": "Jules",
+                "last_modified_at": "2026-07-21 10:31:16.526893+00:00",
+                "url": "https://google.com/spec_sheet",
+                "metadata": {}
+              },
+              "tags": [
+                "google_workspace",
+                "doc"
+              ],
+              "confidence": "validated",
+              "created_at": "2026-07-21 10:31:16.527866",
+              "updated_at": "2026-07-21 10:31:16.527881"
+            }
+          ],
+          "archive": [
+            {
+              "id": "archive_0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "title": "Validated SAGE Integration Fact",
+              "tags": [
+                "fact",
+                "archived_fact",
+                "test"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 10:31:15.689301",
+              "validation_timestamp": "2026-07-21 10:31:15.689418",
+              "decision_history": [],
+              "lineage": [
+                "0be31bfa-e035-4e01-bf39-28766c88cd61"
+              ],
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              }
+            },
+            {
+              "id": "archive_api_mem_001",
+              "title": "API rule",
+              "tags": [
+                "api"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 10:31:15.790957",
+              "validation_timestamp": "2026-07-21 10:31:15.795680",
+              "decision_history": [
+                "api_dec_001"
+              ],
+              "lineage": [
+                "api_mem_001"
+              ],
+              "content": {
+                "title": "API rule",
+                "archive": true
+              }
+            }
+          ],
+          "decisions": [
+            {
+              "id": "4550836f-59b9-4718-8362-2aaf52751b20",
+              "decision_type": "architectural",
+              "description": "Use FastAPI for core server",
+              "rationale": "High performance and automatic documentation",
+              "evidence": [
+                "fastapi_vs_flask_benchmarks"
+              ],
+              "timestamp": "2026-07-21 10:31:15.639575",
+              "outcome": null
+            },
+            {
+              "id": "api_dec_001",
+              "decision_type": "technical",
+              "description": "API decision",
+              "rationale": "API rationale",
+              "evidence": [
+                "api_mem_001"
+              ],
+              "timestamp": "2026-07-21 10:31:15.793664",
+              "outcome": null
+            }
+          ],
+          "lineage": [
+            "session_3b4495dc",
+            "session_e44e5048",
+            "api_session_ingest_999",
+            "api_session_1",
+            "api_session_1",
+            "gh_2ad38d83",
+            "spec_sheet"
+          ]
+        },
+        "checkpoint_3e09c010": {
+          "timestamp": "2026-07-21T10:31:16.470154",
+          "state": {
+            "current_objective": "API objective",
+            "active_task": "API task",
+            "blockers": [],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "object_type": "fact",
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              },
+              "tags": [
+                "fact",
+                "test"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 10:31:15.664842",
+              "updated_at": "2026-07-21 10:31:15.664859"
+            },
+            {
+              "id": "api_mem_001",
+              "object_type": "rule",
+              "content": {
+                "title": "API rule",
+                "archive": true,
+                "decisions": [
+                  "api_dec_001"
+                ]
+              },
+              "tags": [
+                "api"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 10:31:15.789399",
+              "updated_at": "2026-07-21 10:31:15.789408"
+            },
+            {
+              "id": "628b23f5-f6a0-4200-9c6a-0ebf2b7efa43",
+              "object_type": "ai_query",
+              "content": {
+                "prompt": "continuity of platform validation",
+                "response": "Response from ChatGPT for prompt: 'continuity of platform validation'.\nSuccessfully synchronized with SAGE session 'api_session_1'.\nContext analyzed: 0 active memories, 0 master archives.",
+                "client": "ChatGPT",
+                "reasoning_history": [
+                  "ChatGPT analyzed prompt: 'continuity of platform validation' and retrieved 0 relevant engineering artifacts."
+                ]
+              },
+              "tags": [
+                "ai",
+                "chatgpt",
+                "continuity"
+              ],
+              "confidence": "validated",
+              "created_at": "2026-07-21 10:31:16.359784",
+              "updated_at": "2026-07-21 10:31:16.359791"
+            },
+            {
+              "id": "8c603cc2-ef72-4e9b-9572-17e35d35260d",
+              "object_type": "ai_query",
+              "content": {
+                "prompt": "continuity of platform validation",
+                "response": "Deep continuation response from Gemini/Jules.\nContinuity state retrieved successfully. Running with SAGE runtime alignment.\nReferenced SAGE keys: ['628b23f5-f6a0-4200-9c6a-0ebf2b7efa43']",
+                "client": "GeminiJules",
+                "reasoning_history": [
+                  "Gemini/Jules established high-fidelity alignment with SAGE knowledge graph for session 'api_session_1'."
+                ]
+              },
+              "tags": [
+                "ai",
+                "geminijules",
+                "continuity"
+              ],
+              "confidence": "validated",
+              "created_at": "2026-07-21 10:31:16.411983",
+              "updated_at": "2026-07-21 10:31:16.411998"
+            },
+            {
+              "id": "gh_2ad38d83",
+              "object_type": "github_event",
+              "content": {
+                "event_id": "gh_2ad38d83",
+                "event_type": "pull_request",
+                "repository": "dariusbrandon880-art/Sage",
+                "ref": null,
+                "author": "Jules",
+                "timestamp": "2026-07-21 10:31:16.466721+00:00",
+                "payload": {
+                  "message": "Merge Phase 2 changes"
+                }
+              },
+              "tags": [
+                "github",
+                "pull_request",
+                "dariusbrandon880-art/Sage"
+              ],
+              "confidence": "validated",
+              "created_at": "2026-07-21 10:31:16.467625",
+              "updated_at": "2026-07-21 10:31:16.467631"
+            }
+          ],
+          "archive": [
+            {
+              "id": "archive_0be31bfa-e035-4e01-bf39-28766c88cd61",
+              "title": "Validated SAGE Integration Fact",
+              "tags": [
+                "fact",
+                "archived_fact",
+                "test"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 10:31:15.689301",
+              "validation_timestamp": "2026-07-21 10:31:15.689418",
+              "decision_history": [],
+              "lineage": [
+                "0be31bfa-e035-4e01-bf39-28766c88cd61"
+              ],
+              "content": {
+                "subject": "SAGE Runtime",
+                "status": "integrated"
+              }
+            },
+            {
+              "id": "archive_api_mem_001",
+              "title": "API rule",
+              "tags": [
+                "api"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 10:31:15.790957",
+              "validation_timestamp": "2026-07-21 10:31:15.795680",
+              "decision_history": [
+                "api_dec_001"
+              ],
+              "lineage": [
+                "api_mem_001"
+              ],
+              "content": {
+                "title": "API rule",
+                "archive": true
+              }
+            }
+          ],
+          "decisions": [
+            {
+              "id": "4550836f-59b9-4718-8362-2aaf52751b20",
+              "decision_type": "architectural",
+              "description": "Use FastAPI for core server",
+              "rationale": "High performance and automatic documentation",
+              "evidence": [
+                "fastapi_vs_flask_benchmarks"
+              ],
+              "timestamp": "2026-07-21 10:31:15.639575",
+              "outcome": null
+            },
+            {
+              "id": "api_dec_001",
+              "decision_type": "technical",
+              "description": "API decision",
+              "rationale": "API rationale",
+              "evidence": [
+                "api_mem_001"
+              ],
+              "timestamp": "2026-07-21 10:31:15.793664",
+              "outcome": null
+            }
+          ],
+          "lineage": [
+            "session_3b4495dc",
+            "session_e44e5048",
+            "api_session_ingest_999",
+            "api_session_1",
+            "api_session_1",
+            "gh_2ad38d83"
+          ]
+        }
+      },
+      "lineage": [
+        "session_3b4495dc",
+        "session_e44e5048",
+        "api_session_ingest_999",
+        "api_session_1",
+        "api_session_1",
+        "gh_2ad38d83",
+        "spec_sheet"
+      ],
+      "continuity_state": {}
     }
   }
 }
