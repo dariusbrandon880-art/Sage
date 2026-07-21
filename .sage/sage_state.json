@@ -1,0 +1,1039 @@
+{
+  "snapshots": {
+    "snapshot_6062f453": {
+      "id": "snapshot_6062f453",
+      "timestamp": "2026-07-20T11:58:52.681366",
+      "state": {
+        "current_objective": "Objective Alpha",
+        "active_task": "Task 1",
+        "blockers": [
+          "Blocker 1"
+        ],
+        "dependencies": []
+      },
+      "memory": [
+        {
+          "id": "c7902cb0-0156-4c13-9c68-f76c5269bb3d",
+          "object_type": "rule",
+          "content": {
+            "key": "val"
+          },
+          "tags": [
+            "test"
+          ],
+          "confidence": "hypothesis",
+          "created_at": "2026-07-20 11:58:52.679910",
+          "updated_at": "2026-07-20 11:58:52.679916"
+        }
+      ],
+      "archive": [],
+      "decisions": [
+        {
+          "id": "7b7e8a73-7e1a-4038-a3ea-29e80482e35d",
+          "decision_type": "architectural",
+          "description": "Choose Postgres",
+          "rationale": "Scalability",
+          "evidence": [],
+          "timestamp": "2026-07-20 11:58:52.680147",
+          "outcome": null
+        }
+      ],
+      "checkpoints": {
+        "checkpoint_420d426a": {
+          "timestamp": "2026-07-20T11:58:52.680393",
+          "state": {
+            "current_objective": "Objective Alpha",
+            "active_task": "Task 1",
+            "blockers": [
+              "Blocker 1"
+            ],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "c7902cb0-0156-4c13-9c68-f76c5269bb3d",
+              "object_type": "rule",
+              "content": {
+                "key": "val"
+              },
+              "tags": [
+                "test"
+              ],
+              "confidence": "hypothesis",
+              "created_at": "2026-07-20 11:58:52.679910",
+              "updated_at": "2026-07-20 11:58:52.679916"
+            }
+          ],
+          "archive": [],
+          "decisions": [
+            {
+              "id": "7b7e8a73-7e1a-4038-a3ea-29e80482e35d",
+              "decision_type": "architectural",
+              "description": "Choose Postgres",
+              "rationale": "Scalability",
+              "evidence": [],
+              "timestamp": "2026-07-20 11:58:52.680147",
+              "outcome": null
+            }
+          ],
+          "lineage": [
+            "session_6231ee34"
+          ]
+        }
+      },
+      "lineage": [
+        "session_6231ee34"
+      ],
+      "continuity_state": {
+        "session_marker": "marker_abc"
+      }
+    },
+    "snapshot_a21f5b35": {
+      "id": "snapshot_a21f5b35",
+      "timestamp": "2026-07-20T11:58:52.687878",
+      "state": {
+        "current_objective": "Memory Survival Objective",
+        "active_task": null,
+        "blockers": [],
+        "dependencies": []
+      },
+      "memory": [
+        {
+          "id": "04d29364-476d-426f-8066-a482043e8665",
+          "object_type": "schema",
+          "content": {
+            "table": "users"
+          },
+          "tags": [
+            "database"
+          ],
+          "confidence": "validated",
+          "created_at": "2026-07-20 11:58:52.687262",
+          "updated_at": "2026-07-20 11:58:52.687268"
+        },
+        {
+          "id": "311b9a87-13cf-4227-aa4c-585b3afd468e",
+          "object_type": "policy",
+          "content": {
+            "role": "admin"
+          },
+          "tags": [
+            "security"
+          ],
+          "confidence": "hypothesis",
+          "created_at": "2026-07-20 11:58:52.687288",
+          "updated_at": "2026-07-20 11:58:52.687291"
+        }
+      ],
+      "archive": [],
+      "decisions": [
+        {
+          "id": "2d8f996e-0330-4557-8f82-4c079e2ced5f",
+          "decision_type": "strategic",
+          "description": "Core Strategy",
+          "rationale": "Market conditions",
+          "evidence": [],
+          "timestamp": "2026-07-20 11:58:52.687645",
+          "outcome": null
+        }
+      ],
+      "checkpoints": {},
+      "lineage": [
+        "session_0a090a4c"
+      ],
+      "continuity_state": {}
+    },
+    "snapshot_0c0ac3b1": {
+      "id": "snapshot_0c0ac3b1",
+      "timestamp": "2026-07-20T11:58:52.694475",
+      "state": {
+        "current_objective": "Mission Mars",
+        "active_task": "Build rocket",
+        "blockers": [],
+        "dependencies": []
+      },
+      "memory": [
+        {
+          "id": "aa5939d9-c9d0-46ca-be23-f9c3b8198612",
+          "object_type": "design",
+          "content": {
+            "fuel": "methane"
+          },
+          "tags": [
+            "rocket"
+          ],
+          "confidence": "hypothesis",
+          "created_at": "2026-07-20 11:58:52.694230",
+          "updated_at": "2026-07-20 11:58:52.694235"
+        }
+      ],
+      "archive": [],
+      "decisions": [],
+      "checkpoints": {},
+      "lineage": [
+        "session_4e18ca82"
+      ],
+      "continuity_state": {}
+    },
+    "snapshot_139f9314": {
+      "id": "snapshot_139f9314",
+      "timestamp": "2026-07-21T07:47:25.518523",
+      "state": {
+        "current_objective": "Build the single unified SAGE platform",
+        "active_task": "Implement the core ingestion interface",
+        "blockers": [],
+        "dependencies": []
+      },
+      "memory": [
+        {
+          "id": "mem_rule_001",
+          "object_type": "rule",
+          "content": {
+            "title": "Ingestion Rule",
+            "description": "All payloads must follow the single authoritative path",
+            "archive": true,
+            "decisions": [
+              "dec_arch_001"
+            ]
+          },
+          "tags": [
+            "architecture",
+            "core"
+          ],
+          "confidence": "archived",
+          "created_at": "2026-07-21 07:47:25.512600",
+          "updated_at": "2026-07-21 07:47:25.512610"
+        },
+        {
+          "id": "mem_fact_002",
+          "object_type": "fact",
+          "content": {
+            "description": "Verification uses standard pytest-based test suites"
+          },
+          "tags": [
+            "testing"
+          ],
+          "confidence": "validated",
+          "created_at": "2026-07-21 07:47:25.512629",
+          "updated_at": "2026-07-21 07:47:25.512632"
+        }
+      ],
+      "archive": [
+        {
+          "id": "archive_mem_rule_001",
+          "title": "Ingestion Rule",
+          "tags": [
+            "core",
+            "architecture"
+          ],
+          "knowledge_state": "archived",
+          "created_at": "2026-07-21 07:47:25.513966",
+          "validation_timestamp": "2026-07-21 07:47:25.516704",
+          "decision_history": [
+            "dec_arch_001"
+          ],
+          "lineage": [
+            "mem_rule_001"
+          ],
+          "content": {
+            "title": "Ingestion Rule",
+            "description": "All payloads must follow the single authoritative path",
+            "archive": true
+          }
+        }
+      ],
+      "decisions": [
+        {
+          "id": "dec_arch_001",
+          "decision_type": "architectural",
+          "description": "Establish standard bridge pathway",
+          "rationale": "Enforces complete rehydration and validation rules with zero bypasses",
+          "evidence": [
+            "mem_rule_001"
+          ],
+          "timestamp": "2026-07-21 07:47:25.515573",
+          "outcome": null
+        }
+      ],
+      "checkpoints": {
+        "checkpoint_99a41f16": {
+          "timestamp": "2026-07-21T07:47:25.517547",
+          "state": {
+            "current_objective": "Build the single unified SAGE platform",
+            "active_task": "Implement the core ingestion interface",
+            "blockers": [],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "mem_rule_001",
+              "object_type": "rule",
+              "content": {
+                "title": "Ingestion Rule",
+                "description": "All payloads must follow the single authoritative path",
+                "archive": true,
+                "decisions": [
+                  "dec_arch_001"
+                ]
+              },
+              "tags": [
+                "architecture",
+                "core"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 07:47:25.512600",
+              "updated_at": "2026-07-21 07:47:25.512610"
+            },
+            {
+              "id": "mem_fact_002",
+              "object_type": "fact",
+              "content": {
+                "description": "Verification uses standard pytest-based test suites"
+              },
+              "tags": [
+                "testing"
+              ],
+              "confidence": "validated",
+              "created_at": "2026-07-21 07:47:25.512629",
+              "updated_at": "2026-07-21 07:47:25.512632"
+            }
+          ],
+          "archive": [
+            {
+              "id": "archive_mem_rule_001",
+              "title": "Ingestion Rule",
+              "tags": [
+                "core",
+                "architecture"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 07:47:25.513966",
+              "validation_timestamp": "2026-07-21 07:47:25.516704",
+              "decision_history": [
+                "dec_arch_001"
+              ],
+              "lineage": [
+                "mem_rule_001"
+              ],
+              "content": {
+                "title": "Ingestion Rule",
+                "description": "All payloads must follow the single authoritative path",
+                "archive": true
+              }
+            }
+          ],
+          "decisions": [
+            {
+              "id": "dec_arch_001",
+              "decision_type": "architectural",
+              "description": "Establish standard bridge pathway",
+              "rationale": "Enforces complete rehydration and validation rules with zero bypasses",
+              "evidence": [
+                "mem_rule_001"
+              ],
+              "timestamp": "2026-07-21 07:47:25.515573",
+              "outcome": null
+            }
+          ],
+          "lineage": [
+            "session_external_123"
+          ]
+        }
+      },
+      "lineage": [
+        "session_external_123"
+      ],
+      "continuity_state": {}
+    },
+    "snapshot_fdf61d8d": {
+      "id": "snapshot_fdf61d8d",
+      "timestamp": "2026-07-21T07:48:02.440557",
+      "state": {
+        "current_objective": "Build the single unified SAGE platform",
+        "active_task": "Implement the core ingestion interface",
+        "blockers": [],
+        "dependencies": []
+      },
+      "memory": [
+        {
+          "id": "mem_rule_001",
+          "object_type": "rule",
+          "content": {
+            "title": "Ingestion Rule",
+            "description": "All payloads must follow the single authoritative path",
+            "archive": true,
+            "decisions": [
+              "dec_arch_001"
+            ]
+          },
+          "tags": [
+            "architecture",
+            "core"
+          ],
+          "confidence": "archived",
+          "created_at": "2026-07-21 07:48:02.436087",
+          "updated_at": "2026-07-21 07:48:02.436094"
+        },
+        {
+          "id": "mem_fact_002",
+          "object_type": "fact",
+          "content": {
+            "description": "Verification uses standard pytest-based test suites"
+          },
+          "tags": [
+            "testing"
+          ],
+          "confidence": "validated",
+          "created_at": "2026-07-21 07:48:02.436160",
+          "updated_at": "2026-07-21 07:48:02.436167"
+        }
+      ],
+      "archive": [
+        {
+          "id": "archive_mem_rule_001",
+          "title": "Ingestion Rule",
+          "tags": [
+            "architecture",
+            "core"
+          ],
+          "knowledge_state": "archived",
+          "created_at": "2026-07-21 07:48:02.437145",
+          "validation_timestamp": "2026-07-21 07:48:02.439108",
+          "decision_history": [
+            "dec_arch_001"
+          ],
+          "lineage": [
+            "mem_rule_001"
+          ],
+          "content": {
+            "title": "Ingestion Rule",
+            "description": "All payloads must follow the single authoritative path",
+            "archive": true
+          }
+        }
+      ],
+      "decisions": [
+        {
+          "id": "dec_arch_001",
+          "decision_type": "architectural",
+          "description": "Establish standard bridge pathway",
+          "rationale": "Enforces complete rehydration and validation rules with zero bypasses",
+          "evidence": [
+            "mem_rule_001"
+          ],
+          "timestamp": "2026-07-21 07:48:02.438640",
+          "outcome": null
+        }
+      ],
+      "checkpoints": {
+        "checkpoint_72b0a2a8": {
+          "timestamp": "2026-07-21T07:48:02.439716",
+          "state": {
+            "current_objective": "Build the single unified SAGE platform",
+            "active_task": "Implement the core ingestion interface",
+            "blockers": [],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "mem_rule_001",
+              "object_type": "rule",
+              "content": {
+                "title": "Ingestion Rule",
+                "description": "All payloads must follow the single authoritative path",
+                "archive": true,
+                "decisions": [
+                  "dec_arch_001"
+                ]
+              },
+              "tags": [
+                "architecture",
+                "core"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 07:48:02.436087",
+              "updated_at": "2026-07-21 07:48:02.436094"
+            },
+            {
+              "id": "mem_fact_002",
+              "object_type": "fact",
+              "content": {
+                "description": "Verification uses standard pytest-based test suites"
+              },
+              "tags": [
+                "testing"
+              ],
+              "confidence": "validated",
+              "created_at": "2026-07-21 07:48:02.436160",
+              "updated_at": "2026-07-21 07:48:02.436167"
+            }
+          ],
+          "archive": [
+            {
+              "id": "archive_mem_rule_001",
+              "title": "Ingestion Rule",
+              "tags": [
+                "architecture",
+                "core"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 07:48:02.437145",
+              "validation_timestamp": "2026-07-21 07:48:02.439108",
+              "decision_history": [
+                "dec_arch_001"
+              ],
+              "lineage": [
+                "mem_rule_001"
+              ],
+              "content": {
+                "title": "Ingestion Rule",
+                "description": "All payloads must follow the single authoritative path",
+                "archive": true
+              }
+            }
+          ],
+          "decisions": [
+            {
+              "id": "dec_arch_001",
+              "decision_type": "architectural",
+              "description": "Establish standard bridge pathway",
+              "rationale": "Enforces complete rehydration and validation rules with zero bypasses",
+              "evidence": [
+                "mem_rule_001"
+              ],
+              "timestamp": "2026-07-21 07:48:02.438640",
+              "outcome": null
+            }
+          ],
+          "lineage": [
+            "session_external_123"
+          ]
+        }
+      },
+      "lineage": [
+        "session_external_123"
+      ],
+      "continuity_state": {}
+    },
+    "snapshot_c90240b5": {
+      "id": "snapshot_c90240b5",
+      "timestamp": "2026-07-21T07:48:02.459963",
+      "state": {
+        "current_objective": "Objective Alpha",
+        "active_task": "Task 1",
+        "blockers": [
+          "Blocker 1"
+        ],
+        "dependencies": []
+      },
+      "memory": [
+        {
+          "id": "46e692f9-f1a9-4985-9476-7f1b14671bae",
+          "object_type": "rule",
+          "content": {
+            "key": "val"
+          },
+          "tags": [
+            "test"
+          ],
+          "confidence": "hypothesis",
+          "created_at": "2026-07-21 07:48:02.458891",
+          "updated_at": "2026-07-21 07:48:02.458898"
+        }
+      ],
+      "archive": [],
+      "decisions": [
+        {
+          "id": "526ed919-1099-49e8-ac51-08538721670a",
+          "decision_type": "architectural",
+          "description": "Choose Postgres",
+          "rationale": "Scalability",
+          "evidence": [],
+          "timestamp": "2026-07-21 07:48:02.459127",
+          "outcome": null
+        }
+      ],
+      "checkpoints": {
+        "checkpoint_025e24c0": {
+          "timestamp": "2026-07-21T07:48:02.459403",
+          "state": {
+            "current_objective": "Objective Alpha",
+            "active_task": "Task 1",
+            "blockers": [
+              "Blocker 1"
+            ],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "46e692f9-f1a9-4985-9476-7f1b14671bae",
+              "object_type": "rule",
+              "content": {
+                "key": "val"
+              },
+              "tags": [
+                "test"
+              ],
+              "confidence": "hypothesis",
+              "created_at": "2026-07-21 07:48:02.458891",
+              "updated_at": "2026-07-21 07:48:02.458898"
+            }
+          ],
+          "archive": [],
+          "decisions": [
+            {
+              "id": "526ed919-1099-49e8-ac51-08538721670a",
+              "decision_type": "architectural",
+              "description": "Choose Postgres",
+              "rationale": "Scalability",
+              "evidence": [],
+              "timestamp": "2026-07-21 07:48:02.459127",
+              "outcome": null
+            }
+          ],
+          "lineage": [
+            "session_6527cffc"
+          ]
+        }
+      },
+      "lineage": [
+        "session_6527cffc"
+      ],
+      "continuity_state": {
+        "session_marker": "marker_abc"
+      }
+    },
+    "snapshot_52c65581": {
+      "id": "snapshot_52c65581",
+      "timestamp": "2026-07-21T07:48:02.469665",
+      "state": {
+        "current_objective": "Memory Survival Objective",
+        "active_task": null,
+        "blockers": [],
+        "dependencies": []
+      },
+      "memory": [
+        {
+          "id": "85d8451e-015c-4cb1-a652-aab1bf03cb02",
+          "object_type": "schema",
+          "content": {
+            "table": "users"
+          },
+          "tags": [
+            "database"
+          ],
+          "confidence": "validated",
+          "created_at": "2026-07-21 07:48:02.469019",
+          "updated_at": "2026-07-21 07:48:02.469024"
+        },
+        {
+          "id": "c8e18ad5-0305-40f8-a672-cf1d818c792c",
+          "object_type": "policy",
+          "content": {
+            "role": "admin"
+          },
+          "tags": [
+            "security"
+          ],
+          "confidence": "hypothesis",
+          "created_at": "2026-07-21 07:48:02.469045",
+          "updated_at": "2026-07-21 07:48:02.469048"
+        }
+      ],
+      "archive": [],
+      "decisions": [
+        {
+          "id": "55179c2d-fe94-4b1e-80ee-67f495514b4d",
+          "decision_type": "strategic",
+          "description": "Core Strategy",
+          "rationale": "Market conditions",
+          "evidence": [],
+          "timestamp": "2026-07-21 07:48:02.469420",
+          "outcome": null
+        }
+      ],
+      "checkpoints": {},
+      "lineage": [
+        "session_ae756bf0"
+      ],
+      "continuity_state": {}
+    },
+    "snapshot_7ae0dedc": {
+      "id": "snapshot_7ae0dedc",
+      "timestamp": "2026-07-21T07:48:02.481106",
+      "state": {
+        "current_objective": "Mission Mars",
+        "active_task": "Build rocket",
+        "blockers": [],
+        "dependencies": []
+      },
+      "memory": [
+        {
+          "id": "da2f6bbc-9a97-4f98-834d-39762d2d4887",
+          "object_type": "design",
+          "content": {
+            "fuel": "methane"
+          },
+          "tags": [
+            "rocket"
+          ],
+          "confidence": "hypothesis",
+          "created_at": "2026-07-21 07:48:02.480837",
+          "updated_at": "2026-07-21 07:48:02.480843"
+        }
+      ],
+      "archive": [],
+      "decisions": [],
+      "checkpoints": {},
+      "lineage": [
+        "session_a125740d"
+      ],
+      "continuity_state": {}
+    },
+    "snapshot_f07e598a": {
+      "id": "snapshot_f07e598a",
+      "timestamp": "2026-07-21T07:49:01.862500",
+      "state": {
+        "current_objective": "Build the single unified SAGE platform",
+        "active_task": "Implement the core ingestion interface",
+        "blockers": [],
+        "dependencies": []
+      },
+      "memory": [
+        {
+          "id": "mem_rule_001",
+          "object_type": "rule",
+          "content": {
+            "title": "Ingestion Rule",
+            "description": "All payloads must follow the single authoritative path",
+            "archive": true,
+            "decisions": [
+              "dec_arch_001"
+            ]
+          },
+          "tags": [
+            "architecture",
+            "core"
+          ],
+          "confidence": "archived",
+          "created_at": "2026-07-21 07:49:01.857691",
+          "updated_at": "2026-07-21 07:49:01.857698"
+        },
+        {
+          "id": "mem_fact_002",
+          "object_type": "fact",
+          "content": {
+            "description": "Verification uses standard pytest-based test suites"
+          },
+          "tags": [
+            "testing"
+          ],
+          "confidence": "validated",
+          "created_at": "2026-07-21 07:49:01.857714",
+          "updated_at": "2026-07-21 07:49:01.857717"
+        }
+      ],
+      "archive": [
+        {
+          "id": "archive_mem_rule_001",
+          "title": "Ingestion Rule",
+          "tags": [
+            "architecture",
+            "core"
+          ],
+          "knowledge_state": "archived",
+          "created_at": "2026-07-21 07:49:01.858750",
+          "validation_timestamp": "2026-07-21 07:49:01.861243",
+          "decision_history": [
+            "dec_arch_001"
+          ],
+          "lineage": [
+            "mem_rule_001"
+          ],
+          "content": {
+            "title": "Ingestion Rule",
+            "description": "All payloads must follow the single authoritative path",
+            "archive": true
+          }
+        }
+      ],
+      "decisions": [
+        {
+          "id": "dec_arch_001",
+          "decision_type": "architectural",
+          "description": "Establish standard bridge pathway",
+          "rationale": "Enforces complete rehydration and validation rules with zero bypasses",
+          "evidence": [
+            "mem_rule_001"
+          ],
+          "timestamp": "2026-07-21 07:49:01.860460",
+          "outcome": null
+        }
+      ],
+      "checkpoints": {
+        "checkpoint_6cd5a315": {
+          "timestamp": "2026-07-21T07:49:01.861790",
+          "state": {
+            "current_objective": "Build the single unified SAGE platform",
+            "active_task": "Implement the core ingestion interface",
+            "blockers": [],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "mem_rule_001",
+              "object_type": "rule",
+              "content": {
+                "title": "Ingestion Rule",
+                "description": "All payloads must follow the single authoritative path",
+                "archive": true,
+                "decisions": [
+                  "dec_arch_001"
+                ]
+              },
+              "tags": [
+                "architecture",
+                "core"
+              ],
+              "confidence": "archived",
+              "created_at": "2026-07-21 07:49:01.857691",
+              "updated_at": "2026-07-21 07:49:01.857698"
+            },
+            {
+              "id": "mem_fact_002",
+              "object_type": "fact",
+              "content": {
+                "description": "Verification uses standard pytest-based test suites"
+              },
+              "tags": [
+                "testing"
+              ],
+              "confidence": "validated",
+              "created_at": "2026-07-21 07:49:01.857714",
+              "updated_at": "2026-07-21 07:49:01.857717"
+            }
+          ],
+          "archive": [
+            {
+              "id": "archive_mem_rule_001",
+              "title": "Ingestion Rule",
+              "tags": [
+                "architecture",
+                "core"
+              ],
+              "knowledge_state": "archived",
+              "created_at": "2026-07-21 07:49:01.858750",
+              "validation_timestamp": "2026-07-21 07:49:01.861243",
+              "decision_history": [
+                "dec_arch_001"
+              ],
+              "lineage": [
+                "mem_rule_001"
+              ],
+              "content": {
+                "title": "Ingestion Rule",
+                "description": "All payloads must follow the single authoritative path",
+                "archive": true
+              }
+            }
+          ],
+          "decisions": [
+            {
+              "id": "dec_arch_001",
+              "decision_type": "architectural",
+              "description": "Establish standard bridge pathway",
+              "rationale": "Enforces complete rehydration and validation rules with zero bypasses",
+              "evidence": [
+                "mem_rule_001"
+              ],
+              "timestamp": "2026-07-21 07:49:01.860460",
+              "outcome": null
+            }
+          ],
+          "lineage": [
+            "session_external_123"
+          ]
+        }
+      },
+      "lineage": [
+        "session_external_123"
+      ],
+      "continuity_state": {}
+    },
+    "snapshot_2e2854f8": {
+      "id": "snapshot_2e2854f8",
+      "timestamp": "2026-07-21T07:49:01.879530",
+      "state": {
+        "current_objective": "Objective Alpha",
+        "active_task": "Task 1",
+        "blockers": [
+          "Blocker 1"
+        ],
+        "dependencies": []
+      },
+      "memory": [
+        {
+          "id": "0903af86-662c-45d4-aa55-4348a0329631",
+          "object_type": "rule",
+          "content": {
+            "key": "val"
+          },
+          "tags": [
+            "test"
+          ],
+          "confidence": "hypothesis",
+          "created_at": "2026-07-21 07:49:01.877590",
+          "updated_at": "2026-07-21 07:49:01.877596"
+        }
+      ],
+      "archive": [],
+      "decisions": [
+        {
+          "id": "867798fd-4349-406f-8a2c-756353997940",
+          "decision_type": "architectural",
+          "description": "Choose Postgres",
+          "rationale": "Scalability",
+          "evidence": [],
+          "timestamp": "2026-07-21 07:49:01.878036",
+          "outcome": null
+        }
+      ],
+      "checkpoints": {
+        "checkpoint_21dabc7e": {
+          "timestamp": "2026-07-21T07:49:01.878800",
+          "state": {
+            "current_objective": "Objective Alpha",
+            "active_task": "Task 1",
+            "blockers": [
+              "Blocker 1"
+            ],
+            "dependencies": []
+          },
+          "memory": [
+            {
+              "id": "0903af86-662c-45d4-aa55-4348a0329631",
+              "object_type": "rule",
+              "content": {
+                "key": "val"
+              },
+              "tags": [
+                "test"
+              ],
+              "confidence": "hypothesis",
+              "created_at": "2026-07-21 07:49:01.877590",
+              "updated_at": "2026-07-21 07:49:01.877596"
+            }
+          ],
+          "archive": [],
+          "decisions": [
+            {
+              "id": "867798fd-4349-406f-8a2c-756353997940",
+              "decision_type": "architectural",
+              "description": "Choose Postgres",
+              "rationale": "Scalability",
+              "evidence": [],
+              "timestamp": "2026-07-21 07:49:01.878036",
+              "outcome": null
+            }
+          ],
+          "lineage": [
+            "session_de410e98"
+          ]
+        }
+      },
+      "lineage": [
+        "session_de410e98"
+      ],
+      "continuity_state": {
+        "session_marker": "marker_abc"
+      }
+    },
+    "snapshot_bab83b0b": {
+      "id": "snapshot_bab83b0b",
+      "timestamp": "2026-07-21T07:49:01.890862",
+      "state": {
+        "current_objective": "Memory Survival Objective",
+        "active_task": null,
+        "blockers": [],
+        "dependencies": []
+      },
+      "memory": [
+        {
+          "id": "96364a4d-5e46-4b7a-8741-0caba29b0fc7",
+          "object_type": "schema",
+          "content": {
+            "table": "users"
+          },
+          "tags": [
+            "database"
+          ],
+          "confidence": "validated",
+          "created_at": "2026-07-21 07:49:01.889855",
+          "updated_at": "2026-07-21 07:49:01.889860"
+        },
+        {
+          "id": "01b65ec6-ef83-4c2d-95f5-9bb8d383fdca",
+          "object_type": "policy",
+          "content": {
+            "role": "admin"
+          },
+          "tags": [
+            "security"
+          ],
+          "confidence": "hypothesis",
+          "created_at": "2026-07-21 07:49:01.889882",
+          "updated_at": "2026-07-21 07:49:01.889885"
+        }
+      ],
+      "archive": [],
+      "decisions": [
+        {
+          "id": "6ee8de14-ce52-4d2b-8bda-dd9f87f20a6f",
+          "decision_type": "strategic",
+          "description": "Core Strategy",
+          "rationale": "Market conditions",
+          "evidence": [],
+          "timestamp": "2026-07-21 07:49:01.890630",
+          "outcome": null
+        }
+      ],
+      "checkpoints": {},
+      "lineage": [
+        "session_d95b7d0b"
+      ],
+      "continuity_state": {}
+    },
+    "snapshot_3345da11": {
+      "id": "snapshot_3345da11",
+      "timestamp": "2026-07-21T07:49:01.903476",
+      "state": {
+        "current_objective": "Mission Mars",
+        "active_task": "Build rocket",
+        "blockers": [],
+        "dependencies": []
+      },
+      "memory": [
+        {
+          "id": "7065ee60-78a9-4086-bf8d-518be7a8220a",
+          "object_type": "design",
+          "content": {
+            "fuel": "methane"
+          },
+          "tags": [
+            "rocket"
+          ],
+          "confidence": "hypothesis",
+          "created_at": "2026-07-21 07:49:01.903185",
+          "updated_at": "2026-07-21 07:49:01.903191"
+        }
+      ],
+      "archive": [],
+      "decisions": [],
+      "checkpoints": {},
+      "lineage": [
+        "session_0be19d92"
+      ],
+      "continuity_state": {}
+    }
+  }
+}

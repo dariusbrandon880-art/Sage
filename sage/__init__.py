@@ -9,4 +9,6 @@ __author__ = "SAGE Development Team"
 
 from sage.runtime.engine import SageRuntime
 
-__all__ = ["SageRuntime"]
+SAGERuntime = SageRuntime
+
+__all__ = ["SageRuntime", "SAGERuntime"]
