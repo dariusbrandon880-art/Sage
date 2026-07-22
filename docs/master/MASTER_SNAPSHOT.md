@@ -1,6 +1,6 @@
 # SAGE MASTER SNAPSHOT - Current Operational State
 
-This snapshot represents the verified, activated, and fully operational state of SAGE Runtime v1.1.0.
+This snapshot represents the verified, activated, and fully operational state of SAGE Runtime v1.2.0 (Activated Baseline).
 
 ## 1. System Overview
 SAGE (Autonomous Continuity Runtime) is an engineering continuity engine that preserves, organizes, retrieves, validates, and promotes engineering knowledge. It acts as the central coordinator between developers, LLM agents (ChatGPT and Gemini/Jules), and collaboration platforms (GitHub and Google Workspace).
@@ -98,6 +98,9 @@ The REST API server exposes:
 ---
 
 ## 4. Operational Integrity Metrics
-- **Tests Passing**: 59/59
+- **Tests Passing**: 59/59 (100% pass rate)
 - **Code Style Compliance**: 100% Black Formatted, 100% Ruff Clean.
+- **Merge Convergence Policy**: Active (Established in `ADR-003` / `docs/master/MERGE_CONVERGENCE_POLICY.md`).
+- **Verification Tooling**: Enabled (`scripts/verify_convergence.py` checks tests, style, CLI, documentation, and archive links).
 - **Deprecation Warnings**: 0 (all class Config and legacy utcnow deprecations successfully resolved).
+- **Activation Status**: ACTIVATED & RUNNING inside Operational Engineering Mode.
