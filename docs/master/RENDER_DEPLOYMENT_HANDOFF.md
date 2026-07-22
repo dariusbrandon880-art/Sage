@@ -14,26 +14,34 @@ As no direct Render API connection is active within the automated sandbox, follo
 | **Language / Environment**| `Docker` | Leverages SAGE's optimized multi-stage `Dockerfile`. |
 | **Region** | `Oregon (US West)` (or your preferred region) | Deploy closest to your target users/services. |
 | **Branch** | `main` | The stable production-ready branch. |
-| **Plan** | `Starter` or higher | Recommended due to persistent disk requirements. |
+| Plan | `Free` (Standard free tier) | Zero cost tier. |
 | **Health Check Path** | `/health` | Informs Render's load balancer of container status. |
 
 ---
 
-## 2. Repository Configuration
+## 2. Free Tier vs Paid Tier Tradeoffs
+
+### 2.1 Free Tier (Default Configuration)
+* **Cost:** $0.00/month.
+* **Storage:** Ephemeral (in-memory backend).
+* **State Loss:** SAGE states, memories, active sessions, and checkpoints will be **lost on container restarts, idle sleep cycles, and redeployments**.
+* **Configuration:** `MEMORY_BACKEND=in-memory` and `ARCHIVE_BACKEND=in-memory`.
+* **Use Case:** Suitable for testing, staging, and lightweight ephemeral pipelines.
+
+### 2.2 Paid Tier (Durable Execution)
+* **Cost:** Starting from $7.00/month (Starter Web Service) + $2.50/month (10GB Persistent Disk volume). Total: **$9.50/month**.
+* **Storage:** Durable (persistent disk attached at `/app/sage_data`).
+* **State Loss:** State is **permanently preserved** across redeployments, restarts, and server reboot cycles.
+* **Configuration:** Change `MEMORY_BACKEND=disk`, `ARCHIVE_BACKEND=disk`, and attach a persistent disk volume named `sage-data` in your Render service or Blueprint settings.
+* **Use Case:** Recommended for actual production use where state continuity is required.
+
+---
+
+## 3. Repository Configuration
 
 * **Canonical Repository URL:** `https://github.com/dariusbrandon880-art/Sage`
 * **Root Directory:** `./` (Repository root)
 * **Dockerfile Path:** `Dockerfile`
-
----
-
-## 3. Persistent Disk Setup
-SAGE operates with filesystem persistence (`MEMORY_BACKEND=disk`, `ARCHIVE_BACKEND=disk`) to guarantee state retention across container restart and redeployment cycles.
-
-* **Disk Name:** `sage-data`
-* **Mount Path:** `/app/sage_data`
-* **Size:** `10 GB` (or desired minimum)
-* **Configuration Sync:** Ensure `GOOGLE_WORKSPACE_CREDENTIALS_PATH` is configured as `sage_data/credentials.json` so OAuth files are persisted inside this volume instead of the ephemeral container layer.
 
 ---
 
@@ -61,10 +69,10 @@ Configure the following variables in the **Environment** tab of your Render serv
 | **`HOST`** | `0.0.0.0` | Bind host address. |
 | **`SAGE_REQUIRE_AUTH`** | `true` | Enforces `x-api-key` header verification. |
 | **`SAGE_API_KEYS`** | *[Click "Generate Value" or insert secret]* | Secret API token(s) used for Custom GPT & API auth. |
-| **`MEMORY_BACKEND`** | `disk` | Enables filesystem state persistence. |
-| **`ARCHIVE_BACKEND`** | `disk` | Enables filesystem archive logging. |
+| **`MEMORY_BACKEND`** | `in-memory` | Enables in-memory state store (defaults to `in-memory` for free tier, change to `disk` for paid tier). |
+| **`ARCHIVE_BACKEND`** | `in-memory` | Enables in-memory archive store (defaults to `in-memory` for free tier, change to `disk` for paid tier). |
 | **`ENABLE_CONTINUITY`** | `true` | Activates autonomous workspace capturing. |
-| **`GOOGLE_WORKSPACE_CREDENTIALS_PATH`** | `sage_data/credentials.json` | Stores OAuth secrets on the persistent volume. |
+| **`GOOGLE_WORKSPACE_CREDENTIALS_PATH`** | `sage_data/credentials.json` | Stores OAuth secrets path. |
 | **`GITHUB_WEBHOOK_SECRET`** | *[Insert secure secret]* | HMAC validation key for raw GitHub events. |
 | **`GEMINI_API_KEY`** | *[Insert Gemini API Key]* | API key for Gemini / Jules reasoning loops. |
 
@@ -72,12 +80,12 @@ Configure the following variables in the **Environment** tab of your Render serv
 
 ## 6. Blueprint Deployment (Declarative YAML)
 
-SAGE provides a pre-configured `render.yaml` Blueprint specification at the repository root. You can deploy this service instantly via **Render Blueprints**:
+SAGE provides a pre-configured, free-tier compatible `render.yaml` Blueprint specification at the repository root. You can deploy this service instantly via **Render Blueprints**:
 
 1. Log in to your [Render Dashboard](https://dashboard.render.com/).
 2. Click **New +** and select **Blueprint**.
 3. Connect your GitHub repository (`dariusbrandon880-art/Sage`).
-4. Render will automatically parse `render.yaml` and prompt you to confirm the creation of the **`sage-runtime`** web service and its **`sage-data`** persistent disk volume.
+4. Render will automatically parse `render.yaml` and prompt you to confirm the creation of the **`sage-runtime`** web service on the **Free** plan.
 5. Click **Approve** to initiate build.
 
 ---
@@ -96,10 +104,10 @@ curl -f https://your-sage-service.onrender.com/health
 ### Step 7.2: Workspace Authorization Flow (If using Google Workspace sync)
 To complete the initial OAuth loop headlessly on Render:
 1. Log into your Render dashboard, find your `sage-runtime` service, and open the **Shell** tab.
-2. Ensure you have uploaded your GCP `credentials.json` file to `/app/sage_data/credentials.json` (you can place this file directly onto the persistent disk or trigger it via custom volume mounts).
+2. Ensure you have uploaded your GCP `credentials.json` file to `/app/sage_data/credentials.json` (you can place this file directly or trigger it via volume mounts). Note: on the Free plan, files written here are ephemeral and will be lost when the container restarts.
 3. Run the initial interactive authorization command:
    ```bash
    python3 -c "from sage.api import workspace_sync_mgr; workspace_sync_mgr.sync_to_google_workspace('sage_data/credentials.json')"
    ```
 4. Copy the generated Google login URL from the logs, paste it into your browser, accept scopes, and authorize the SAGE app.
-5. SAGE will write `token.json` directly into `sage_data/` on the persistent disk. Subsequent scheduled syncs will run completely headlessly without requiring manual intervention.
+5. SAGE will write `token.json` directly into `sage_data/`. On the Free plan, subsequent scheduled syncs will run completely headlessly within the current container lifecycle. For persistent token storage, upgrade to a Paid tier with a persistent disk volume.
