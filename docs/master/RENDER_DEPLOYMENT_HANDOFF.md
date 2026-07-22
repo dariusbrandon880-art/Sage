@@ -11,7 +11,7 @@ As no direct Render API connection is active within the automated sandbox, follo
 | Parameter | Recommended Value / Setting | Description |
 | :--- | :--- | :--- |
 | **Service Type** | `Web Service` | To host the FastAPI REST API. |
-| **Language / Environment**| `Docker` | Leverages SAGE's optimized multi-stage `Dockerfile`. |
+| **Language / Environment**| `Python 3` | Native Python runtime on Render. |
 | **Region** | `Oregon (US West)` (or your preferred region) | Deploy closest to your target users/services. |
 | **Branch** | `main` | The stable production-ready branch. |
 | **Plan** | `Free` (Standard free tier) | Zero cost tier. |
@@ -47,9 +47,12 @@ As no direct Render API connection is active within the automated sandbox, follo
 
 ## 4. Build and Start Commands
 
-Because we use the native **Docker** environment:
-* **Build Command:** Handled automatically by Render using the repo's `Dockerfile`.
-* **Start Command:** Handled automatically by the `CMD` instruction inside the `Dockerfile`:
+Because we use the native **Python 3** environment on Render:
+* **Build Command:**
+  ```bash
+  pip install --upgrade pip && pip install . google-api-python-client google-auth-oauthlib google-auth-httplib2
+  ```
+* **Start Command:**
   ```bash
   uvicorn sage.api:app --host 0.0.0.0 --port 8000
   ```
