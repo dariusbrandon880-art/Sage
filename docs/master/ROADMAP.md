@@ -22,21 +22,21 @@ This document tracks the strategic progression of SAGE through its major operati
 
 ---
 
-## 2. Next Milestones: SAGE v2.0 - Live Connected Ecosystem
+## 2. Completed Milestones: SAGE v2.0 - Live Connected Ecosystem
 
-Once repository-side interfaces are fully consolidated, SAGE will pivot immediately into **Live External Integration Hooks**:
+SAGE repository-side interfaces are fully consolidated, and Phase 3 Live Connected Ecosystem features are successfully activated and validated:
 
-### Milestone 2.1: Secure OAuth Gateway (`OAuthSecurityGateway`)
-- **Objective**: Implement robust client-side and server-side OAuth 2.0 flow handling.
-- **Scope**: Secure REST API connections from ChatGPT Actions or third-party webhooks using JWT tokens and scope-level permission checks.
+### Milestone 2.1: Unified Continuity Bridge Ingestion (Completed)
+- **Objective**: Standardize all external inputs through the single authoritative ingestion endpoint.
+- **Scope**: ChatGPT, Gemini, GitHub webhooks, and Google Workspace are routed directly through `ingest_session_payload()` to prevent duplicate persistence or routing.
 
-### Milestone 2.2: Automated Google Drive Syncer
-- **Objective**: Embed Google Client SDK in the business layer.
-- **Scope**: Automatically generate/update official Google Docs upon knowledge promotion to SAGE Master Archive.
+### Milestone 2.2: Automated Google Workspace Syncer (Completed)
+- **Objective**: Build the `GoogleWorkspaceSyncManager` in the business layer.
+- **Scope**: Automatically maps and schedules syncs of repository documents (Snapshot, Roadmap, Session State) into Google Docs and health tracking status/metrics into Google Sheets. Includes full dynamic import guards and a fallback dry-run diagnostic mode for credential-free development.
 
-### Milestone 2.3: Live GitHub Actions Event Hook
-- **Objective**: Deploy public-facing Webhook listeners.
-- **Scope**: Listen to actual repository push/pull events in real-time, matching commit messages with active SAGE tasks.
+### Milestone 2.3: SAGE CLI Continuity Commands (Completed)
+- **Objective**: Provide a CLI interface for the core Continuity Bridge.
+- **Scope**: Expose terminal-accessible subcommands `ingest`, `reason`, and `verify` mapping to the same validated runtime capabilities.
 
 ---
 
