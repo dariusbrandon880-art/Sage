@@ -1,0 +1,6 @@
+{
+  "current_objective": "Index GitHub events for test/repo",
+  "active_task": "Ingest GitHub Event: push",
+  "blockers": [],
+  "dependencies": []
+}
