@@ -13,6 +13,7 @@ from sage.api import app, runtime, validation  # noqa: E402
 
 # Configure the global runtime to use the temporary directory
 runtime.__init__(workspace_path=tmpdir)
+runtime.start()
 validation.__init__(runtime.memory, runtime.archive)
 
 
@@ -29,7 +30,14 @@ def test_health_endpoint():
     with TestClient(app) as client:
         response = client.get("/health")
         assert response.status_code == 200
-        assert response.json() == {"status": "healthy", "runtime": "active"}
+        data = response.json()
+        assert data["status"] == "healthy"
+        assert data["runtime"] == "active"
+        assert "components" in data
+        assert data["components"]["acr"] == "available"
+        assert data["components"]["archive"] == "available"
+        assert data["components"]["memory"] == "available"
+        assert data["components"]["configuration"] == "available"
 
 
 def test_objective_endpoints():

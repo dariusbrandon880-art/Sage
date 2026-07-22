@@ -10,7 +10,13 @@ from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 
-from sage.runtime import SAGERuntime
+from sage.runtime import (
+    SAGERuntime,
+    check_health,
+    generate_diagnostic_report,
+    generate_capability_report,
+    get_metrics_collector,
+)
 from sage.models import DecisionType, MemoryObject, ConfidenceLevel, ExternalSessionPayload
 from sage.validation import ValidationSystem
 from sage.service import LifecycleManager
@@ -30,6 +36,7 @@ app = FastAPI(
 
 # Global runtime instance
 runtime = SAGERuntime()
+runtime.start()
 validation = ValidationSystem(runtime.memory, runtime.archive)
 
 # Instantiate Service & Integration managers
@@ -99,12 +106,27 @@ async def root():
 
 @app.get("/health")
 async def health():
-    return {"status": "healthy", "runtime": "active"}
+    return check_health(runtime)
 
 
 @app.get("/status")
 async def get_status():
     return runtime.get_status()
+
+
+@app.get("/runtime/diagnostics")
+async def get_runtime_diagnostics():
+    return generate_diagnostic_report(runtime)
+
+
+@app.get("/runtime/capabilities")
+async def get_runtime_capabilities():
+    return generate_capability_report(runtime)
+
+
+@app.get("/runtime/metrics")
+async def get_runtime_metrics():
+    return get_metrics_collector().get_metrics()
 
 
 @app.get("/export")
