@@ -97,6 +97,7 @@ def verify_documentation_integrity() -> bool:
         "docs/master/MASTER_SNAPSHOT.md",
         "docs/master/SESSION_STATE.md",
         "docs/master/MERGE_CONVERGENCE_POLICY.md",
+        "docs/master/FINAL_ACTIVATION_REPORT.md",
     ]
     all_exist = True
     for doc in required_docs:
