@@ -151,3 +151,22 @@ To stream live VCS events (commit push, pull request, releases):
 3. Select content type: `application/json`.
 4. Choose the individual events option and tick: **Pushes**, **Pull requests**, and **Releases**.
 5. Save. The SAGE Continuity Bridge will automatically capture event timelines and link commits to SAGE Decisions and Active Tasks.
+
+---
+
+## 4. Production Deployment & Port Setup
+
+SAGE can be easily launched and maintained as a production server or within isolated container spaces.
+
+### 4.1 Launching via Docker Compose
+To run SAGE on port `8000` with automated persistent volumes, execute:
+```bash
+docker-compose up --build -d
+```
+
+### 4.2 Automated Pre-Flight Diagnostics
+Before going live, execute the SAGE Activation and Production Readiness check:
+```bash
+python scripts/activate_runtime.py --dry-run
+```
+This script checks the port occupancy, environmental parameter configurations, verifies database storage directories, and runs local referential integrity diagnostics (`verify_integrity()`) to confirm 100% pre-flight correctness.

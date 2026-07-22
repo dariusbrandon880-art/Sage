@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  sage-runtime:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sage_runtime_server
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+      - LOG_LEVEL=INFO
+      - MEMORY_BACKEND=local
+      - ARCHIVE_BACKEND=local
+    volumes:
+      - .sage:/app/.sage
+      - sage_data:/app/sage_data
+    restart: unless-stopped
+
+volumes:
+  sage_data:
