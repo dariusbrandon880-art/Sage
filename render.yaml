@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: sage-runtime
+    name: sage-1
     env: python
     plan: free
     healthCheckPath: /health

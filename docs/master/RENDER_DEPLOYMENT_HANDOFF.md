@@ -88,7 +88,7 @@ SAGE provides a pre-configured, free-tier compatible `render.yaml` Blueprint spe
 1. Log in to your [Render Dashboard](https://dashboard.render.com/).
 2. Click **New +** and select **Blueprint**.
 3. Connect your GitHub repository (`dariusbrandon880-art/Sage`).
-4. Render will automatically parse `render.yaml` and prompt you to confirm the creation of the **`sage-runtime`** web service on the **Free** plan.
+4. Render will automatically parse `render.yaml` and prompt you to confirm the creation of the **`sage-1`** web service on the **Free** plan.
 5. Click **Approve** to initiate build.
 
 ---
@@ -106,7 +106,7 @@ curl -f https://your-sage-service.onrender.com/health
 
 ### Step 7.2: Workspace Authorization Flow (If using Google Workspace sync)
 To complete the initial OAuth loop headlessly on Render:
-1. Log into your Render dashboard, find your `sage-runtime` service, and open the **Shell** tab.
+1. Log into your Render dashboard, find your `sage-1` service, and open the **Shell** tab.
 2. Ensure you have uploaded your GCP `credentials.json` file to `/app/sage_data/credentials.json` (you can place this file directly or trigger it via volume mounts). Note: on the Free plan, files written here are ephemeral and will be lost when the container restarts.
 3. Run the initial interactive authorization command:
    ```bash
