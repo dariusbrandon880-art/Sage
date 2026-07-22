@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: sage-runtime
+    env: docker
+    dockerfilePath: Dockerfile
+    plan: starter
+    healthCheckPath: /health
+    disk:
+      name: sage-data
+      mountPath: /app/sage_data
+      sizeGB: 10
+    envVars:
+      - key: ENV
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: PORT
+        value: 8000
+      - key: HOST
+        value: 0.0.0.0
+      - key: SAGE_REQUIRE_AUTH
+        value: "true"
+      - key: SAGE_API_KEYS
+        generateValue: true
+      - key: MEMORY_BACKEND
+        value: disk
+      - key: ARCHIVE_BACKEND
+        value: disk
+      - key: ENABLE_CONTINUITY
+        value: "true"
+      - key: GOOGLE_WORKSPACE_CREDENTIALS_PATH
+        value: sage_data/credentials.json
+      - key: GITHUB_WEBHOOK_SECRET
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
