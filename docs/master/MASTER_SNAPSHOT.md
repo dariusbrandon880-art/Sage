@@ -76,7 +76,7 @@ sage/
 ├── runtime/
 │   ├── __init__.py
 │   └── engine.py             # Main runtime core execution loop (SageRuntime)
-├── api.py                    # FastAPI server (REST endpoints)
+├── api.py                    # FastAPI server (REST endpoints & global middleware)
 ├── cli.py                    # Command-line interface
 ├── decision.py               # Architectural & Technical decision ledger (DecisionTracker)
 ├── integration.py            # Connectors (ChatGPT, Gemini/Jules, GitHub, Workspace)
@@ -97,7 +97,16 @@ The REST API server exposes:
 
 ---
 
-## 4. Operational Integrity Metrics
-- **Tests Passing**: 66/66
+## 4. Live Activation & Production Tooling
+- **Global API Key Middlewares**: Optional security boundary enforced via `SAGE_REQUIRE_AUTH` configuration.
+- **GitHub Signature Validation**: Validates webhooks using SHA256 HMAC signature headers.
+- **Production Check Scripts**: `scripts/production_check.py` automates verification of host environment, dependencies, and credential configuration.
+- **Launch Tooling**: `scripts/activate_sage.sh` automates container-ready local or production deployment.
+- **Deployment Templates**: `Dockerfile` and `docker-compose.yml` enable secure, isolated container virtualization.
+
+---
+
+## 5. Operational Integrity Metrics
+- **Tests Passing**: 72/72 (100% success rate, including new global security boundaries)
 - **Code Style Compliance**: 100% Black Formatted, 100% Ruff Clean.
 - **Deprecation Warnings**: 0 (all class Config and legacy utcnow deprecations successfully resolved).
