@@ -119,7 +119,52 @@ class ValidationSystem:
             if hasattr(self.memory, "retrieve"):
                 obj = self.memory.retrieve(memory_id)
 
-        # Construct Archive Entry
+        # Construct Archive Entry with ArchiveIntelligence
+        from sage.archive.intelligence import ArchiveIntelligence
+        from sage.archive.lineage import KnowledgeLineage, ValidationRecord
+        from sage.archive.confidence import ConfidenceTracker, ReviewHistoryItem
+        import datetime
+        from datetime import timezone
+
+        # Automatic generation of lineage & validation record
+        val_rec = ValidationRecord(
+            validated_by="ValidationSystem",
+            timestamp=datetime.datetime.now(timezone.utc),
+            rules_applied=["non_empty_content", "object_type_specified", "content_substance"],
+            success=True,
+        )
+
+        lineage_record = KnowledgeLineage(
+            source=obj.content.get("source") or "memory_store",
+            created_at=obj.created_at,
+            validation_record=val_rec,
+            dependent_decisions=obj.content.get("decisions") or [],
+            metadata={"original_memory_id": obj.id, "object_type": obj.object_type},
+        )
+
+        # Confidence state
+        confidence_level_val = 1.0 if obj.confidence == ConfidenceLevel.VALIDATED else 0.5
+        conf_tracker = ConfidenceTracker(
+            confidence_level=confidence_level_val,
+            validation_status="validated",
+            evidence_references=[obj.id],
+            review_history=[
+                ReviewHistoryItem(
+                    reviewer="ValidationSystem",
+                    timestamp=datetime.datetime.now(timezone.utc),
+                    status="validated",
+                    notes="Promoted through SAGE Autonomous Continuity Bridge validation loop",
+                )
+            ],
+        )
+
+        intelligence_bundle = ArchiveIntelligence(
+            lineage=lineage_record,
+            confidence=conf_tracker,
+            relationships=[],
+            decisions=[],
+        )
+
         entry_id = f"archive_{obj.id}"
         archive_entry = ArchiveEntry(
             id=entry_id,
@@ -128,6 +173,7 @@ class ValidationSystem:
             knowledge_state=KnowledgeState.ARCHIVED,
             content=obj.content,
             lineage=[obj.id],
+            intelligence=intelligence_bundle,
         )
 
         try:
