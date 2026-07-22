@@ -66,6 +66,12 @@ def main():
         "verify", help="Run repository-side self-verification and referential integrity checks"
     )
 
+    # auto-capture subcommand
+    subparsers.add_parser(
+        "auto-capture",
+        help="Automatically capture the local git workspace & ADR context and ingest it",
+    )
+
     args = parser.parse_args()
 
     # Initialize runtime
@@ -162,6 +168,14 @@ def main():
                 sys.exit(1)
         except Exception as e:
             print(f"Error: Verification failed: {str(e)}")
+            sys.exit(1)
+
+    elif args.command == "auto-capture":
+        try:
+            result = runtime.auto_capture_git_session()
+            print(json.dumps(result, indent=2))
+        except Exception as e:
+            print(f"Error: Automated capture failed: {str(e)}")
             sys.exit(1)
 
     else:

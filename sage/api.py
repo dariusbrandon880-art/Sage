@@ -353,6 +353,17 @@ async def sync_workspace(credentials_path: Optional[str] = None):
         )
 
 
+@app.post("/continuity/auto-capture")
+async def auto_capture_continuity():
+    try:
+        result = runtime.auto_capture_git_session()
+        return result
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Automated continuity capture failed: {str(e)}"
+        )
+
+
 # Snapshot endpoints
 @app.post("/snapshot")
 async def create_snapshot():

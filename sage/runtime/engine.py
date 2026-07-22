@@ -742,3 +742,119 @@ class SageRuntime:
             "lineage_valid": lineage_valid,
             "issues": issues,
         }
+
+    def auto_capture_git_session(self) -> Dict[str, Any]:
+        """Automatically analyze the local git workspace (changed files, diff, active branch, and ADRs)
+        and ingest this engineering session context through the authoritative Continuity Bridge.
+        """
+        import subprocess
+
+        # 1. Gather Git Workspace metrics
+        changed_files = []
+        git_diff = ""
+        active_branch = "unknown"
+        latest_commit = "unknown"
+
+        try:
+            # Changed files
+            status_proc = subprocess.run(
+                ["git", "status", "--porcelain"], capture_output=True, text=True, check=True
+            )
+            for line in status_proc.stdout.strip().split("\n"):
+                if line:
+                    changed_files.append(line.strip())
+
+            # Git diff
+            diff_proc = subprocess.run(["git", "diff"], capture_output=True, text=True, check=True)
+            git_diff = diff_proc.stdout
+
+            # Active branch
+            branch_proc = subprocess.run(
+                ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            active_branch = branch_proc.stdout.strip()
+
+            # Latest commit
+            commit_proc = subprocess.run(
+                ["git", "log", "-n", "1", "--oneline"], capture_output=True, text=True, check=True
+            )
+            latest_commit = commit_proc.stdout.strip()
+        except Exception:
+            pass
+
+        # 2. Automatically scan for repository ADRs
+        detected_decisions = []
+        adr_path = Path("Main Archive/adr")
+        if adr_path.exists():
+            for p in adr_path.glob("ADR-*.md"):
+                try:
+                    title = p.stem
+                    with open(p, "r") as f:
+                        content = f.read()
+
+                    # Try to extract description and rationale from markdown
+                    description = f"Repository ADR: {title}"
+                    rationale = "Recorded as part of architecture baseline"
+                    for line in content.split("\n"):
+                        if line.startswith("# "):
+                            description = line.replace("# ", "").strip()
+                        elif line.lower().startswith("rationale:") or line.lower().startswith(
+                            "context:"
+                        ):
+                            rationale = line.strip()
+
+                    detected_decisions.append(
+                        {
+                            "id": f"dec_{p.stem.lower()}",
+                            "decision_type": "architectural",
+                            "description": description,
+                            "rationale": rationale,
+                            "evidence": [],
+                        }
+                    )
+                except Exception:
+                    pass
+
+        # 3. Construct Ingestion Payload
+        session_id = f"auto_session_{uuid.uuid4().hex[:8]}"
+        payload_data = {
+            "session_id": session_id,
+            "objective": self.current_state.current_objective
+            or "Automated Engineering Context Capture",
+            "task": self.current_state.active_task
+            or f"Auto-capture workspace on branch {active_branch}",
+            "memories": [
+                {
+                    "id": f"git_snapshot_{uuid.uuid4().hex[:8]}",
+                    "object_type": "git_session_snapshot",
+                    "content": {
+                        "branch": active_branch,
+                        "latest_commit": latest_commit,
+                        "changed_files": changed_files,
+                        "git_diff_summary": git_diff[:2000],  # Truncate if extremely large
+                    },
+                    "tags": ["git_session", "auto_capture", active_branch],
+                    "confidence": "validated",
+                }
+            ],
+            "decisions": detected_decisions,
+            "metadata": {
+                "source": "auto_capture_git_session",
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            },
+        }
+
+        # 4. Ingest through Continuity Bridge
+        payload = ExternalSessionPayload(**payload_data)
+        ingest_res = self.ingest_session_payload(payload)
+
+        return {
+            "session_id": session_id,
+            "branch": active_branch,
+            "changed_files_count": len(changed_files),
+            "detected_decisions_count": len(detected_decisions),
+            "ingest_result": ingest_res,
+        }

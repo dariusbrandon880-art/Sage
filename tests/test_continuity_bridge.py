@@ -336,3 +336,25 @@ def test_google_workspace_sync_dry_run_diagnostics(temp_workspace):
     google_sheets = result["sync_mappings"]["google_sheets"]
     assert google_sheets["Engineering Tracker"]["current_objective"] == "Testing Workspace Sync"
     assert google_sheets["Engineering Tracker"]["active_task"] == "Verify Sync Mapper"
+
+
+def test_auto_capture_git_session(temp_workspace):
+    """Test automated continuity capture of local git workspace and ADR decisions."""
+    runtime = SageRuntime(str(temp_workspace))
+    runtime.set_objective("Automated Capture Verification")
+    runtime.set_task("Verify Auto-capture Pipeline")
+
+    # Call auto_capture_git_session
+    result = runtime.auto_capture_git_session()
+
+    assert result["session_id"] is not None
+    assert result["branch"] is not None
+    assert "ingest_result" in result
+    assert result["ingest_result"]["status"] == "success"
+
+    # Verify that a git snapshot memory object was indeed created and stored
+    memories = runtime.memory.list_all()
+    git_snapshots = [m for m in memories if m.object_type == "git_session_snapshot"]
+    assert len(git_snapshots) == 1
+    assert "git_session" in git_snapshots[0].tags
+    assert git_snapshots[0].content["branch"] == result["branch"]
