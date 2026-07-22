@@ -222,3 +222,6 @@ __marimo__/
 .sage/memory/
 .sage/continuity/
 .sage/sage_state.json
+
+# Local workspace SAGE data
+sage_data/

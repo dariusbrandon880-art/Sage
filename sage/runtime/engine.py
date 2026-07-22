@@ -90,30 +90,22 @@ class SageRuntime:
 
         # Telemetry
         from sage.runtime.metrics import get_metrics_collector
-        metrics = get_metrics_collector()
-        metrics.increment("runtime.initialization")
-        metrics.record_event("runtime_initialized", {"workspace": str(self.workspace_path)})
-
-        # Controlled Initialization Sequence
-        from sage.runtime.diagnostics import InitializationManager
-        self.init_mgr = InitializationManager(self)
-        self.init_summary = self.init_mgr.run_init_sequence()
+        get_metrics_collector().increment("runtime.initialization")
+        get_metrics_collector().record_event("runtime_initialized")
 
     def start(self) -> None:
         """Start the SAGE runtime."""
         self.active = True
         from sage.runtime.metrics import get_metrics_collector
-        metrics = get_metrics_collector()
-        metrics.set_gauge("runtime.active", 1.0)
-        metrics.record_event("runtime_started")
+        get_metrics_collector().set_gauge("runtime.active", 1.0)
+        get_metrics_collector().record_event("runtime_started")
 
     def stop(self) -> None:
         """Stop the SAGE runtime."""
         self.active = False
         from sage.runtime.metrics import get_metrics_collector
-        metrics = get_metrics_collector()
-        metrics.set_gauge("runtime.active", 0.0)
-        metrics.record_event("runtime_stopped")
+        get_metrics_collector().set_gauge("runtime.active", 0.0)
+        get_metrics_collector().record_event("runtime_stopped")
 
     def is_running(self) -> bool:
         """Check if runtime is active."""
@@ -154,9 +146,8 @@ class SageRuntime:
         )
 
         from sage.runtime.metrics import get_metrics_collector
-        metrics = get_metrics_collector()
-        metrics.increment("objectives.total")
-        metrics.record_event("objective_set", {"objective": objective, "session_id": session_id})
+        get_metrics_collector().increment("objectives.total")
+        get_metrics_collector().record_event("objective_set", {"objective": objective})
 
         return session_id
 
@@ -196,9 +187,8 @@ class SageRuntime:
         self.session_manager.save_session(session_state)
 
         from sage.runtime.metrics import get_metrics_collector
-        metrics = get_metrics_collector()
-        metrics.increment("tasks.total")
-        metrics.record_event("task_set", {"task": task, "session_id": session_id})
+        get_metrics_collector().increment("tasks.total")
+        get_metrics_collector().record_event("task_set", {"task": task})
 
         return session_id
 
@@ -271,9 +261,8 @@ class SageRuntime:
             pass
 
         from sage.runtime.metrics import get_metrics_collector
-        metrics = get_metrics_collector()
-        metrics.increment("checkpoints.total")
-        metrics.record_event("checkpoint_created", {"checkpoint_id": checkpoint_id})
+        get_metrics_collector().increment("checkpoints.total")
+        get_metrics_collector().record_event("checkpoint_created", {"checkpoint_id": checkpoint_id})
 
         return checkpoint_id
 
@@ -815,11 +804,6 @@ class SageRuntime:
                 "snapshot_id": snapshot_id,
             },
         )
-
-        from sage.runtime.metrics import get_metrics_collector
-        metrics = get_metrics_collector()
-        metrics.increment("ingestions.total")
-        metrics.record_event("payload_ingested", {"session_id": session_id, "checkpoint_id": checkpoint_id, "snapshot_id": snapshot_id})
 
         return {
             "session_id": session_id,

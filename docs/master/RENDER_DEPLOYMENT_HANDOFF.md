@@ -11,10 +11,10 @@ As no direct Render API connection is active within the automated sandbox, follo
 | Parameter | Recommended Value / Setting | Description |
 | :--- | :--- | :--- |
 | **Service Type** | `Web Service` | To host the FastAPI REST API. |
-| **Language / Environment**| `Python` | Optimized python environment with PEP 621 pyproject.toml support. |
+| **Language / Environment**| `Docker` | Leverages SAGE's optimized multi-stage `Dockerfile`. |
 | **Region** | `Oregon (US West)` (or your preferred region) | Deploy closest to your target users/services. |
 | **Branch** | `main` | The stable production-ready branch. |
-| **Plan** | `Free` | Highly compatible with Render's Free tier. |
+| **Plan** | `Starter` or higher | Recommended due to persistent disk requirements. |
 | **Health Check Path** | `/health` | Informs Render's load balancer of container status. |
 
 ---
@@ -23,26 +23,25 @@ As no direct Render API connection is active within the automated sandbox, follo
 
 * **Canonical Repository URL:** `https://github.com/dariusbrandon880-art/Sage`
 * **Root Directory:** `./` (Repository root)
+* **Dockerfile Path:** `Dockerfile`
 
 ---
 
-## 3. Storage Setup
-To support Render's Free Tier completely without requiring paid, disk-mounted resources, the runtime uses stateless in-memory backends.
+## 3. Persistent Disk Setup
+SAGE operates with filesystem persistence (`MEMORY_BACKEND=disk`, `ARCHIVE_BACKEND=disk`) to guarantee state retention across container restart and redeployment cycles.
 
-* **Disk Storage:** None (No paid disk mounts required).
-* **InMemory Configuration:** Ensure `MEMORY_BACKEND` and `ARCHIVE_BACKEND` are set to `in-memory`.
-* **Configuration Sync:** Ensure `GOOGLE_WORKSPACE_CREDENTIALS_PATH` is configured as `.sage/credentials.json`.
+* **Disk Name:** `sage-data`
+* **Mount Path:** `/app/sage_data`
+* **Size:** `10 GB` (or desired minimum)
+* **Configuration Sync:** Ensure `GOOGLE_WORKSPACE_CREDENTIALS_PATH` is configured as `sage_data/credentials.json` so OAuth files are persisted inside this volume instead of the ephemeral container layer.
 
 ---
 
 ## 4. Build and Start Commands
 
-Because we use the native **Python** environment with pyproject.toml:
-* **Build Command:** Overrides the default requirements.txt command to install packages using SAGE's PEP 621 packaging:
-  ```bash
-  pip install --upgrade pip && pip install .
-  ```
-* **Start Command:** Runs SAGE's FastAPI app using uvicorn:
+Because we use the native **Docker** environment:
+* **Build Command:** Handled automatically by Render using the repo's `Dockerfile`.
+* **Start Command:** Handled automatically by the `CMD` instruction inside the `Dockerfile`:
   ```bash
   uvicorn sage.api:app --host 0.0.0.0 --port 8000
   ```
@@ -62,10 +61,10 @@ Configure the following variables in the **Environment** tab of your Render serv
 | **`HOST`** | `0.0.0.0` | Bind host address. |
 | **`SAGE_REQUIRE_AUTH`** | `true` | Enforces `x-api-key` header verification. |
 | **`SAGE_API_KEYS`** | *[Click "Generate Value" or insert secret]* | Secret API token(s) used for Custom GPT & API auth. |
-| **`MEMORY_BACKEND`** | `in-memory` | Enables in-memory stateless persistence. |
-| **`ARCHIVE_BACKEND`** | `in-memory` | Enables in-memory historical event logging. |
+| **`MEMORY_BACKEND`** | `disk` | Enables filesystem state persistence. |
+| **`ARCHIVE_BACKEND`** | `disk` | Enables filesystem archive logging. |
 | **`ENABLE_CONTINUITY`** | `true` | Activates autonomous workspace capturing. |
-| **`GOOGLE_WORKSPACE_CREDENTIALS_PATH`** | `.sage/credentials.json` | Stores OAuth secrets on the local repo directory. |
+| **`GOOGLE_WORKSPACE_CREDENTIALS_PATH`** | `sage_data/credentials.json` | Stores OAuth secrets on the persistent volume. |
 | **`GITHUB_WEBHOOK_SECRET`** | *[Insert secure secret]* | HMAC validation key for raw GitHub events. |
 | **`GEMINI_API_KEY`** | *[Insert Gemini API Key]* | API key for Gemini / Jules reasoning loops. |
 
@@ -78,7 +77,7 @@ SAGE provides a pre-configured `render.yaml` Blueprint specification at the repo
 1. Log in to your [Render Dashboard](https://dashboard.render.com/).
 2. Click **New +** and select **Blueprint**.
 3. Connect your GitHub repository (`dariusbrandon880-art/Sage`).
-4. Render will automatically parse `render.yaml` and prompt you to confirm the creation of the **`sage-runtime`** web service.
+4. Render will automatically parse `render.yaml` and prompt you to confirm the creation of the **`sage-runtime`** web service and its **`sage-data`** persistent disk volume.
 5. Click **Approve** to initiate build.
 
 ---
@@ -94,9 +93,13 @@ curl -f https://your-sage-service.onrender.com/health
 # Expected Output: {"status":"healthy","runtime":"active"}
 ```
 
-### Step 7.2: Google Workspace Sync Dry-Run
-Since in-memory mode is stateless, you can verify Workspace Sync integrity using dry-run diagnostics on startup:
-```bash
-python3 -c "from sage.api import workspace_sync_mgr; workspace_sync_mgr.sync_to_google_workspace('.sage/credentials.json')"
-```
-This is fully supported on Render's Free tier.
+### Step 7.2: Workspace Authorization Flow (If using Google Workspace sync)
+To complete the initial OAuth loop headlessly on Render:
+1. Log into your Render dashboard, find your `sage-runtime` service, and open the **Shell** tab.
+2. Ensure you have uploaded your GCP `credentials.json` file to `/app/sage_data/credentials.json` (you can place this file directly onto the persistent disk or trigger it via custom volume mounts).
+3. Run the initial interactive authorization command:
+   ```bash
+   python3 -c "from sage.api import workspace_sync_mgr; workspace_sync_mgr.sync_to_google_workspace('sage_data/credentials.json')"
+   ```
+4. Copy the generated Google login URL from the logs, paste it into your browser, accept scopes, and authorize the SAGE app.
+5. SAGE will write `token.json` directly into `sage_data/` on the persistent disk. Subsequent scheduled syncs will run completely headlessly without requiring manual intervention.
