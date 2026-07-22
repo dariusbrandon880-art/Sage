@@ -20,6 +20,14 @@ from sage.memory import Memory
 from sage.archive import Archive
 from sage.decision import DecisionTracker
 from sage.acr.bridge import ACRBridge
+from sage.acr.session import (
+    SessionStateManager,
+    ContextTracker,
+    CheckpointManager,
+    SessionState,
+    ContinuityContext,
+    ContinuityCheckpoint,
+)
 
 
 class ExecutionContext(BaseModel):
@@ -64,6 +72,13 @@ class SageRuntime:
         self.decisions = DecisionTracker(str(self.decisions_path))
         self.acr = ACRBridge(persistence_path=str(self.workspace_path / "continuity"))
 
+        # Initialize continuity intelligence subsystems
+        self.session_manager = SessionStateManager(str(self.workspace_path / "sessions"))
+        self.context_tracker = ContextTracker(
+            str(self.workspace_path / "context"), session_manager=self.session_manager
+        )
+        self.checkpoint_manager = CheckpointManager(str(self.workspace_path / "checkpoints"))
+
         # Initialize validation system
         from sage.validation import ValidationSystem
 
@@ -94,11 +109,24 @@ class SageRuntime:
         Returns:
             The generated session ID.
         """
+        old_objective = self.current_state.current_objective or "None"
         self.current_state.current_objective = objective
         self._save_state()
 
         session_id = f"session_{uuid.uuid4().hex[:8]}"
         self.acr.add_session_link(session_id)
+
+        # Create structured SessionState and transition context
+        self.session_manager.create_session(
+            session_id=session_id,
+            active_objectives=[objective],
+            metadata={"source": "set_objective"}
+        )
+        self.context_tracker.record_transition(
+            from_state=f"objective:{old_objective}",
+            to_state=f"objective:{objective}",
+            reason="Objective updated via set_objective"
+        )
 
         self.context = ExecutionContext(
             session_id=session_id,
@@ -131,6 +159,17 @@ class SageRuntime:
                 turn_number=self.acr.get_session_depth(),
                 metadata={"task": task},
             )
+
+        # Update SessionState
+        session_state = self.session_manager.retrieve_session(session_id)
+        if not session_state:
+            session_state = self.session_manager.create_session(
+                session_id=session_id,
+                active_objectives=[self.current_state.current_objective] if self.current_state.current_objective else [],
+            )
+        session_state.add_pending_action(f"task:{task}")
+        self.session_manager.save_session(session_state)
+
         return session_id
 
     def add_blocker(self, blocker: str) -> None:
@@ -186,6 +225,21 @@ class SageRuntime:
         except Exception:
             pass
 
+        # Create structured ContinuityCheckpoint
+        try:
+            self.checkpoint_manager.create_checkpoint(
+                current_sage_state=self.current_state.model_dump(),
+                active_goals=[
+                    self.current_state.current_objective or "",
+                    self.current_state.active_task or "",
+                ],
+                recent_decisions=[d.id for d in self.decisions.list_all()[-5:]],
+                validation_status=self.verify_integrity(),
+                checkpoint_id=checkpoint_id,
+            )
+        except Exception:
+            pass
+
         return checkpoint_id
 
     def export_all(self) -> Dict[str, Any]:
@@ -201,6 +255,9 @@ class SageRuntime:
             "archive": [entry.model_dump() for entry in self.archive.list_all()],
             "decisions": [d.model_dump() for d in self.decisions.list_all()],
             "lineage": self.acr.get_lineage(),
+            "sessions": [s.model_dump() for s in self.session_manager.list_all()],
+            "context": self.context_tracker.get_current_context().model_dump() if self.context_tracker.get_current_context() else None,
+            "continuity_checkpoints": [c.model_dump() for c in self.checkpoint_manager.list_all()],
         }
 
     def generate_handoff(self, target_path: Optional[str] = None) -> str:
@@ -221,6 +278,9 @@ class SageRuntime:
                 "archive_count": len(self.archive.list_all()),
                 "decision_count": len(self.decisions.list_all()),
             },
+            "sessions": [s.model_dump() for s in self.session_manager.list_all()],
+            "context": self.context_tracker.get_current_context().model_dump() if self.context_tracker.get_current_context() else None,
+            "continuity_checkpoints": [c.model_dump() for c in self.checkpoint_manager.list_all()],
         }
 
         path = Path(target_path or self.workspace_path / "handoff.json")
@@ -257,6 +317,31 @@ class SageRuntime:
             self.acr.clear_state()
             for session_id in handoff_data.get("lineage", []):
                 self.acr.add_session_link(session_id)
+
+            # Restore sessions
+            for item in handoff_data.get("sessions", []):
+                try:
+                    sess = SessionState(**item)
+                    self.session_manager.save_session(sess)
+                except Exception:
+                    pass
+
+            # Restore context
+            context_data = handoff_data.get("context")
+            if context_data:
+                try:
+                    ctx = ContinuityContext(**context_data)
+                    self.context_tracker.save_context(ctx)
+                except Exception:
+                    pass
+
+            # Restore checkpoints
+            for item in handoff_data.get("continuity_checkpoints", []):
+                try:
+                    chk = ContinuityCheckpoint(**item)
+                    self.checkpoint_manager.save_checkpoint(chk)
+                except Exception:
+                    pass
 
             # Initialize context
             if self.current_state.current_objective:
@@ -322,6 +407,9 @@ class SageRuntime:
             "checkpoints": checkpoints_data,
             "lineage": self.acr.get_lineage(),
             "continuity_state": self.acr.continuity_state,
+            "sessions": [s.model_dump() for s in self.session_manager.list_all()],
+            "context": self.context_tracker.get_current_context().model_dump() if self.context_tracker.get_current_context() else None,
+            "continuity_checkpoints": [c.model_dump() for c in self.checkpoint_manager.list_all()],
         }
 
         # Save to .sage/sage_state.json
@@ -422,6 +510,33 @@ class SageRuntime:
                 except Exception:
                     pass
 
+        # Sessions
+        if self.session_manager.storage_path.exists():
+            for p in self.session_manager.storage_path.glob("*.json"):
+                try:
+                    p.unlink()
+                except Exception:
+                    pass
+        self.session_manager.sessions.clear()
+
+        # Context
+        if self.context_tracker.storage_path.exists():
+            for p in self.context_tracker.storage_path.glob("*.json"):
+                try:
+                    p.unlink()
+                except Exception:
+                    pass
+        self.context_tracker.context = None
+
+        # Checkpoints (Continuity)
+        if self.checkpoint_manager.storage_path.exists():
+            for p in self.checkpoint_manager.storage_path.glob("*.json"):
+                try:
+                    p.unlink()
+                except Exception:
+                    pass
+        self.checkpoint_manager.checkpoints.clear()
+
         # State file
         if self.state_file.exists():
             try:
@@ -483,6 +598,31 @@ class SageRuntime:
         except Exception:
             pass
 
+        # Restore sessions
+        for item in snapshot_data.get("sessions", []):
+            try:
+                sess = SessionState(**item)
+                self.session_manager.save_session(sess)
+            except Exception:
+                pass
+
+        # Restore context
+        context_data = snapshot_data.get("context")
+        if context_data:
+            try:
+                ctx = ContinuityContext(**context_data)
+                self.context_tracker.save_context(ctx)
+            except Exception:
+                pass
+
+        # Restore continuity checkpoints
+        for item in snapshot_data.get("continuity_checkpoints", []):
+            try:
+                chk = ContinuityCheckpoint(**item)
+                self.checkpoint_manager.save_checkpoint(chk)
+            except Exception:
+                pass
+
         # 8. Re-initialize context if needed
         if self.current_state.current_objective:
             self.context = ExecutionContext(
@@ -504,6 +644,16 @@ class SageRuntime:
         # --- 1. Intake ---
         session_id = payload.session_id or f"session_{uuid.uuid4().hex[:8]}"
         self.acr.add_session_link(session_id)
+
+        # Initialize structured session state
+        session_state = self.session_manager.create_session(
+            session_id=session_id,
+            active_objectives=[payload.objective],
+            metadata=payload.metadata,
+        )
+        if payload.task:
+            session_state.add_pending_action(f"task:{payload.task}")
+            self.context_tracker.add_unresolved_item(f"task:{payload.task}")
 
         # --- 2. Classification ---
         self.current_state.current_objective = payload.objective
@@ -550,6 +700,10 @@ class SageRuntime:
             is_valid, failed_rules = self.validation.validate_memory(m_obj.id)
             validation_results[m_obj.id] = {"is_valid": is_valid, "failed_rules": failed_rules}
 
+            # Record action completion
+            session_state.add_completed_action(f"ingest_memory:{m_obj.id}")
+            self.context_tracker.add_recent_change(f"Ingested memory: {m_obj.id}")
+
         # --- 4. Archive Routing & 5. Persistence ---
         routed_archive_ids = []
         for m_obj in ingested_memories:
@@ -567,6 +721,8 @@ class SageRuntime:
                     )
                     if success:
                         routed_archive_ids.append(archive_id_or_err)
+                        session_state.add_archive_reference(archive_id_or_err)
+                        self.context_tracker.add_recent_change(f"Promoted {m_obj.id} to archive: {archive_id_or_err}")
                 else:
                     self.validation.promote_to_validated(m_obj.id)
 
@@ -584,6 +740,8 @@ class SageRuntime:
                 decision_id=d_entry.id,
             )
             tracked_decision_ids.append(dec_id)
+            session_state.add_decision(dec_id)
+            self.context_tracker.add_recent_change(f"Recorded decision: {dec_id}")
 
             # Evidence tracking
             for ev_id in d_entry.evidence:
@@ -601,6 +759,9 @@ class SageRuntime:
                     if dec_id not in arch_entry.decision_history:
                         arch_entry.decision_history.append(dec_id)
                         self.archive.promote_to_archive(arch_entry)
+
+        # Persist the updated SessionState
+        self.session_manager.save_session(session_state)
 
         # --- 8. Checkpoint ---
         checkpoint_id = self.checkpoint()

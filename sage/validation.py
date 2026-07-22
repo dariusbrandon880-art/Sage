@@ -1,6 +1,6 @@
 """Validation system for SAGE memory promotion to Master Archive."""
 
-from typing import Tuple, List, Optional
+from typing import Tuple, List, Optional, Any
 from sage.models import MemoryObject, ConfidenceLevel, ArchiveEntry, KnowledgeState
 
 
@@ -90,7 +90,7 @@ class ValidationSystem:
         return True, "Memory object successfully promoted to VALIDATED"
 
     def promote_to_archive(
-        self, memory_id: str, title: str, tags: Optional[List[str]] = None
+        self, memory_id: str, title: str, tags: Optional[List[str]] = None, session_state: Optional[Any] = None
     ) -> Tuple[bool, str]:
         """Archive a validated memory object by promoting it to the Master Archive.
 
@@ -98,6 +98,7 @@ class ValidationSystem:
             memory_id: ID of the validated memory object
             title: Title for the archived entry
             tags: Optional tags to merge with original tags
+            session_state: Optional SessionState to update with archive reference
 
         Returns:
             Tuple of (success, archive_entry_id or error_message)
@@ -138,6 +139,10 @@ class ValidationSystem:
             obj.confidence = ConfidenceLevel.ARCHIVED
             if hasattr(self.memory, "store"):
                 self.memory.store(obj)
+
+            # If session state is provided, link the reference
+            if session_state is not None and hasattr(session_state, "add_archive_reference"):
+                session_state.add_archive_reference(archive_id)
 
             return True, archive_id
         except Exception as e:
