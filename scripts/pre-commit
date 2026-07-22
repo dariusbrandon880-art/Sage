@@ -1,0 +1,21 @@
+#!/bin/sh
+# SAGE Git Pre-Commit Hook
+# Forces verification of the workspace via verify_convergence.py and creates an automatic SAGE checkpoint.
+
+echo "SAGE: Initiating pre-commit convergence verification..."
+
+# 1. Run convergence check
+python scripts/verify_convergence.py
+RESULT=$?
+
+if [ $RESULT -ne 0 ]; then
+    echo "SAGE: [ERROR] Verification failed. Commit aborted."
+    exit 1
+fi
+
+# 2. Run automatic SAGE CLI checkpoint to record this snapshot in memory
+echo "SAGE: Creating automatic workspace snapshot..."
+python -m sage.cli snapshot --action create
+
+echo "SAGE: Pre-commit checks passed and snapshot created successfully."
+exit 0
