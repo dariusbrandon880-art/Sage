@@ -30,6 +30,7 @@ Welcome to SAGE's immutable Master Archive and research repository. This index l
 ## 3. Architecture Decision Records (ADRs)
 - [ADR-001: Core Architecture Baseline](adr/ADR-001-architecture-baseline.md) - Architectural definition of SAGE-ACR v1.0.0.
 - [ADR-002: Service and Integration Layers](adr/ADR-002-integration-layer.md) - External connector endpoints and security schemas.
+- [ADR-003: Merge Convergence Policy and Automated Quality Gates](adr/ADR-003-merge-convergence-policy.md) - Procedures and gates for automated milestone verification.
 
 ---
 
