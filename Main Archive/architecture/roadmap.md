@@ -5,12 +5,7 @@ This document locks the architectural design of SAGE to prevent future drift whi
 ---
 
 ## 1. Foundational Architecture (Current State)
-The SAGE system contains the foundational Autonomous Continuity Runtime (ACR) supporting:
-- State serialization and persistent session handoffs.
-- Multi-tier memory indexing (short-term and persistent).
-- Tech-decision recording and validation quality gates.
-- System-level checkpoints and robust rehydration snapshots (`.sage/sage_state.json`).
-- **Continuity Intelligence**: Structured session states, context trackers with history traversal, and dynamic repository checkpoints (capturing branches, commit SHAs, and dirty states).
+The SAGE system contains the foundational Autonomous Continuity Runtime (ACR) supporting state serialization, persistent sessions, memory indexing, decisions, and system checkpoint/restoration.
 
 ---
 

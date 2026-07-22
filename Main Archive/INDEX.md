@@ -9,7 +9,7 @@ Welcome to SAGE's immutable Master Archive and research repository. This index l
 - [Roadmap Spec](architecture/roadmap.md) - Current core architecture status and locked expansion plans.
 - [Dependency Graph](architecture/dependency-graph.md) - Class mappings and package relationship models.
 - [Architecture Index](architecture/architecture-index.md) - Directory layout index of the repository.
-- [Intelligence & Continuity Layers](architecture/intelligence-layers.md) - SAGE's specialized Runtime, Continuity, and Master Archive Intelligence Layers.
+- [SAGE Archive Intelligence Layer](../docs/master/ARCHIVE_INTELLIGENCE.md) - Design and operational specification of SAGE's relational knowledge graph and metadata tracking.
 
 ---
 
