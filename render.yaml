@@ -1,11 +1,11 @@
 services:
   - type: web
     name: sage-runtime
-    env: docker
-    dockerfilePath: Dockerfile
+    env: python
     plan: free
     healthCheckPath: /health
-    
+    buildCommand: "pip install --upgrade pip && pip install ."
+    startCommand: "uvicorn sage.api:app --host 0.0.0.0 --port 8000"
     envVars:
       - key: ENV
         value: production
@@ -20,13 +20,13 @@ services:
       - key: SAGE_API_KEYS
         generateValue: true
       - key: MEMORY_BACKEND
-        value: disk
+        value: in-memory
       - key: ARCHIVE_BACKEND
-        value: disk
+        value: in-memory
       - key: ENABLE_CONTINUITY
         value: "true"
       - key: GOOGLE_WORKSPACE_CREDENTIALS_PATH
-        value: sage_data/credentials.json
+        value: .sage/credentials.json
       - key: GITHUB_WEBHOOK_SECRET
         sync: false
       - key: GEMINI_API_KEY
