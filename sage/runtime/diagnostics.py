@@ -1,4 +1,4 @@
-"""SAGE Diagnostics Engine - dynamic diagnostic reporting and autonomous evaluation."""
+"""SAGE Diagnostics Engine & Initialization Manager - controlled startup and status reporting."""
 
 import os
 import sys
@@ -8,6 +8,122 @@ from typing import Dict, Any, List, Optional
 from pathlib import Path
 
 from sage.runtime.metrics import get_metrics_collector
+
+
+class InitializationManager:
+    """Manages the controlled, sequential startup sequence of SAGE."""
+
+    def __init__(self, runtime: Optional[Any] = None):
+        """Initialize the InitializationManager.
+
+        Args:
+            runtime: SAGE runtime instance to initialize.
+        """
+        self.runtime = runtime
+        self.init_state = "uninitialized"
+
+    def run_init_sequence(self) -> Dict[str, Any]:
+        """Perform SAGE's controlled startup sequence: load config, discover capabilities, verify required components.
+
+        Returns:
+            Structured initialization summary.
+        """
+        self.init_state = "initializing"
+        metrics = get_metrics_collector()
+        metrics.record_event("init_sequence.started")
+
+        steps_executed = []
+        failures = []
+
+        # 1. Load configuration
+        try:
+            from sage.config.settings import SageConfig
+            SageConfig.from_env()
+            steps_executed.append("load_configuration")
+            metrics.increment("init.step.load_configuration")
+        except Exception as e:
+            failures.append(f"load_configuration_failed: {str(e)}")
+
+        # 2. Discover available capabilities
+        try:
+            from sage.runtime.capability_report import generate_capability_report
+            generate_capability_report(self.runtime)
+            steps_executed.append("discover_capabilities")
+            metrics.increment("init.step.discover_capabilities")
+        except Exception as e:
+            failures.append(f"discover_capabilities_failed: {str(e)}")
+
+        # 3. Verify required components (ACR, Memory, Archive)
+        try:
+            from sage.runtime.health import check_health
+            h = check_health(self.runtime)
+            if h.get("status") in ["unhealthy", "degraded"]:
+                failures.append("required_components_unavailable")
+            steps_executed.append("verify_components")
+            metrics.increment("init.step.verify_components")
+        except Exception as e:
+            failures.append(f"verify_components_failed: {str(e)}")
+
+        # 4. Update SAGE instance state
+        if failures:
+            self.init_state = "failed"
+            metrics.record_event("init_sequence.failed", {"failures": failures})
+            if self.runtime is not None:
+                self.runtime._init_failed = True
+        else:
+            self.init_state = "initialized"
+            metrics.record_event("init_sequence.success")
+            if self.runtime is not None:
+                self.runtime._init_failed = False
+
+        return {
+            "status": "success" if not failures else "failed",
+            "initialization_state": self.init_state,
+            "steps_executed": steps_executed,
+            "failures": failures,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+
+
+def generate_system_status_report(runtime: Optional[Any] = None) -> str:
+    """Generate a unified SAGE runtime status report matching the required text layout.
+
+    Args:
+        runtime: Active SAGE runtime instance to inspect.
+
+    Returns:
+        Formatted SAGE Status text report string.
+    """
+    from sage.runtime.health import check_health
+    from sage.runtime.capability_report import generate_capability_report
+
+    health_info = check_health(runtime)
+    components = health_info.get("components", {})
+
+    runtime_state = "active" if health_info.get("runtime") == "active" else "inactive"
+    archive_state = "available" if components.get("archive") == "available" else "unavailable"
+    continuity_state = "available" if components.get("acr") == "available" else "unavailable"
+
+    capabilities_state = "loaded"
+    try:
+        generate_capability_report(runtime)
+    except Exception:
+        capabilities_state = "failed"
+
+    validation_state = "ready"
+    if runtime is None or getattr(runtime, "validation", None) is None or components.get("memory") != "available":
+        validation_state = "uninitialized"
+
+    report_lines = [
+        "SAGE Status:",
+        f"- Runtime: {runtime_state}",
+        f"- Archive: {archive_state}",
+        f"- Continuity: {continuity_state}",
+        f"- Capabilities: {capabilities_state}",
+        f"- Validation: {validation_state}"
+    ]
+
+    return "\n".join(report_lines)
 
 
 def generate_diagnostic_report(runtime: Optional[Any] = None) -> Dict[str, Any]:
@@ -186,7 +302,8 @@ def generate_diagnostic_report(runtime: Optional[Any] = None) -> Dict[str, Any]:
 
     metrics.set_gauge("diagnostics.readiness_passed", 1.0 if is_ready else 0.0)
 
-    return {
+    # Compile report
+    report = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "runtime_version": version,
         "runtime_state": "running" if state_info["active"] else "stopped",
@@ -197,3 +314,11 @@ def generate_diagnostic_report(runtime: Optional[Any] = None) -> Dict[str, Any]:
         "component_readiness": component_readiness,
         "readiness_passed": is_ready,
     }
+
+    # Add SAGE text status report for quick reference
+    try:
+        report["status_text_report"] = generate_system_status_report(runtime)
+    except Exception:
+        pass
+
+    return report

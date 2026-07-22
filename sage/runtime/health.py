@@ -1,8 +1,77 @@
-"""SAGE Runtime Health System - dynamic health monitoring for core sub-systems."""
+"""SAGE Runtime Health System & Identity Model - dynamic health monitoring and identity representation."""
 
 import os
-from typing import Dict, Any, Optional
+import sys
+from typing import Dict, Any, Optional, List
+from pydantic import BaseModel, Field
+
 from sage.runtime.metrics import get_metrics_collector
+
+
+class SageIdentity(BaseModel):
+    """Structured representation of the running SAGE instance."""
+
+    system_name: str = "SAGE Autonomous Continuity Platform"
+    version: str = "1.1.0"
+    active_modules: List[str] = Field(default_factory=list)
+    initialization_state: str = "uninitialized"  # uninitialized, initializing, initialized, failed
+    capability_summary: Dict[str, Any] = Field(default_factory=dict)
+    health_state: str = "unknown"
+
+
+def get_sage_identity(runtime: Optional[Any] = None) -> Dict[str, Any]:
+    """Retrieve the dynamic structural representation of SAGE's identity.
+
+    Args:
+        runtime: Active SAGE runtime instance to inspect.
+
+    Returns:
+        Structured SAGE identity dictionary.
+    """
+    # 1. Discover active modules
+    active_mods = []
+    for mod in ["sage.acr", "sage.archive", "sage.memory", "sage.validation", "sage.service", "sage.integration", "sage.decision", "sage.runtime"]:
+        if mod in sys.modules:
+            active_mods.append(mod)
+
+    # 2. Get capability summary
+    total_caps = 0
+    active_caps = 0
+    try:
+        from sage.runtime.capability_report import generate_capability_report
+        cap_report = generate_capability_report(runtime)
+        total_caps = cap_report.get("total_capabilities", 0)
+        active_caps = cap_report.get("active_capabilities", 0)
+    except Exception:
+        pass
+
+    # 3. Determine health state
+    health_status = "unknown"
+    try:
+        health_status = check_health(runtime).get("status", "unknown")
+    except Exception:
+        pass
+
+    # 4. Determine initialization state
+    init_state = "uninitialized"
+    if runtime is not None:
+        if getattr(runtime, "_init_failed", False):
+            init_state = "failed"
+        elif getattr(runtime, "active", False):
+            init_state = "initialized"
+        else:
+            init_state = "initializing"
+
+    identity = SageIdentity(
+        system_name="SAGE Autonomous Continuity Platform",
+        version="1.1.0",
+        active_modules=active_mods,
+        initialization_state=init_state,
+        capability_summary={"total": total_caps, "active": active_caps},
+        health_state=health_status
+    )
+
+    return identity.model_dump()
 
 
 def check_health(runtime: Optional[Any] = None) -> Dict[str, Any]:

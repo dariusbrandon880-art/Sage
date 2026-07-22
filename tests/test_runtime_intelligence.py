@@ -8,6 +8,10 @@ from sage.runtime import (
     generate_diagnostic_report,
     generate_capability_report,
     get_metrics_collector,
+    get_sage_identity,
+    InitializationManager,
+    generate_system_status_report,
+    discover_capabilities,
 )
 
 
@@ -158,3 +162,68 @@ class TestRuntimeIntelligence:
         assert "objective_set" in event_types
         assert "task_set" in event_types
         assert "checkpoint_created" in event_types
+
+    def test_sage_identity_model(self):
+        """Test SAGE Identity Model retrieves core properties correctly."""
+        runtime = SageRuntime()
+        runtime.start()
+
+        identity = get_sage_identity(runtime)
+        assert identity["system_name"] == "SAGE Autonomous Continuity Platform"
+        assert identity["version"] == "1.1.0"
+        assert "active_modules" in identity
+        assert "sage.runtime" in identity["active_modules"]
+        assert identity["initialization_state"] == "initialized"
+        assert "capability_summary" in identity
+        assert "health_state" in identity
+        assert identity["health_state"] == "healthy"
+
+    def test_controlled_initialization_flow(self):
+        """Test the sequential controlled initialization sequence."""
+        runtime = SageRuntime()
+        init_mgr = InitializationManager(runtime)
+
+        assert init_mgr.init_state == "uninitialized"
+        summary = init_mgr.run_init_sequence()
+
+        assert summary["status"] == "success"
+        assert summary["initialization_state"] == "initialized"
+        assert "load_configuration" in summary["steps_executed"]
+        assert "discover_capabilities" in summary["steps_executed"]
+        assert "verify_components" in summary["steps_executed"]
+        assert init_mgr.init_state == "initialized"
+
+    def test_initialization_failure_handling(self):
+        """Test failure handling during initialization sequence when runtime is missing components."""
+        # Test with a mock runtime with missing ACR
+        mock_runtime = MagicMock()
+        mock_runtime.is_running.return_value = False
+        mock_runtime.acr = None  # Missing ACR
+
+        init_mgr = InitializationManager(mock_runtime)
+        summary = init_mgr.run_init_sequence()
+
+        assert summary["status"] == "failed"
+        assert summary["initialization_state"] == "failed"
+        assert "required_components_unavailable" in summary["failures"]
+        assert init_mgr.init_state == "failed"
+
+    def test_system_status_report(self):
+        """Test generation of the SAGE status report matches expected format."""
+        runtime = SageRuntime()
+        runtime.start()
+
+        report = generate_system_status_report(runtime)
+        assert "SAGE Status:" in report
+        assert "- Runtime: active" in report
+        assert "- Archive: available" in report
+        assert "- Continuity: available" in report
+        assert "- Capabilities: loaded" in report
+        assert "- Validation: ready" in report
+
+    def test_capability_flat_discovery(self):
+        """Test discover_capabilities function returns list of active capability names."""
+        runtime = SageRuntime()
+        discovered = discover_capabilities(runtime)
+        assert len(discovered) > 0
+        assert "state_persistence" in discovered

@@ -6,6 +6,27 @@ from typing import Dict, Any, List, Optional
 from sage.runtime.metrics import get_metrics_collector
 
 
+def discover_capabilities(runtime: Optional[Any] = None) -> List[str]:
+    """Discover a flat list of active or enabled capability names on the SAGE platform.
+
+    Args:
+        runtime: Active SAGE runtime instance to inspect.
+
+    Returns:
+        List of discovered active capability keys.
+    """
+    report = generate_capability_report(runtime)
+    discovered = []
+
+    # Map reports to list
+    for category in ["runtime_capabilities", "acr_capabilities", "archive_capabilities", "memory_capabilities", "integration_capabilities"]:
+        for cap in report.get(category, []):
+            if cap.get("status") in ["active", "enabled"]:
+                discovered.append(cap.get("name"))
+
+    return discovered
+
+
 def generate_capability_report(runtime: Optional[Any] = None) -> Dict[str, Any]:
     """Assess and return the dynamic availability of SAGE platform capabilities.
 
