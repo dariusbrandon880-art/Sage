@@ -1,14 +1,11 @@
 services:
   - type: web
     name: sage-runtime
-    env: docker
-    dockerfilePath: Dockerfile
-    plan: starter
+    env: python
+    plan: free
+    buildCommand: "pip install poetry && poetry config virtualenvs.create false && poetry install --no-interaction --no-ansi --only main"
+    startCommand: "python -m uvicorn sage.api:app --host 0.0.0.0 --port 8000"
     healthCheckPath: /health
-    disk:
-      name: sage-data
-      mountPath: /app/sage_data
-      sizeGB: 10
     envVars:
       - key: ENV
         value: production
@@ -23,9 +20,9 @@ services:
       - key: SAGE_API_KEYS
         generateValue: true
       - key: MEMORY_BACKEND
-        value: disk
+        value: in-memory
       - key: ARCHIVE_BACKEND
-        value: disk
+        value: in-memory
       - key: ENABLE_CONTINUITY
         value: "true"
       - key: GOOGLE_WORKSPACE_CREDENTIALS_PATH
