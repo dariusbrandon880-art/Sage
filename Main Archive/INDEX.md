@@ -36,3 +36,8 @@ Welcome to SAGE's immutable Master Archive and research repository. This index l
 ## 4. Roadmaps
 - [Implementation Roadmap](roadmap/implementation-roadmap.md) - Concrete engineering tasks for SAGE v2.
 - [Research Roadmap](roadmap/research-roadmap.md) - Conceptual investigation plans for advanced multi-agent cognitive synchronization.
+
+---
+
+## 5. Engineering Reports and Activations
+- [SAGE Final Operational Completion Report](research/archive/SAGE_FINAL_ACTIVATION_REPORT.md) - Formal activation and engineering report for SAGE Runtime v1 Phase 3.

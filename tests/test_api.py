@@ -211,3 +211,50 @@ def test_handoff_and_restore_endpoints():
         response = client.get("/objective")
         assert response.status_code == 200
         assert response.json()["objective"] == "Test SAGE API Handoff"
+
+
+def test_ingest_reason_verify_endpoints():
+    """Test the ingest, reason, and verify endpoints."""
+    with TestClient(app) as client:
+        # 1. Ingest Payload
+        payload = {
+            "session_id": "api_session_ingest_999",
+            "objective": "API objective",
+            "task": "API task",
+            "memories": [
+                {
+                    "id": "api_mem_001",
+                    "object_type": "rule",
+                    "content": {"title": "API rule", "archive": True},
+                    "tags": ["api"],
+                }
+            ],
+            "decisions": [
+                {
+                    "id": "api_dec_001",
+                    "decision_type": "technical",
+                    "description": "API decision",
+                    "rationale": "API rationale",
+                    "evidence": ["api_mem_001"],
+                }
+            ],
+        }
+        response = client.post("/ingest", json=payload)
+        assert response.status_code == 200
+        res_data = response.json()
+        assert res_data["session_id"] == "api_session_ingest_999"
+        assert "checkpoint_id" in res_data
+        assert "snapshot_id" in res_data
+
+        # 2. Reason Endpoint
+        response = client.get("/reason")
+        assert response.status_code == 200
+        res_reason = response.json()
+        assert res_reason["objective_alignment"] == "aligned"
+        assert res_reason["analyzed_memories_count"] >= 1
+
+        # 3. Verify Endpoint
+        response = client.get("/verify")
+        assert response.status_code == 200
+        res_verify = response.json()
+        assert "is_valid" in res_verify

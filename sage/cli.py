@@ -48,6 +48,24 @@ def main():
         "--file", type=str, help="Handoff/Snapshot file to restore from (for restore action)"
     )
 
+    # ingest subcommand
+    ingest_parser = subparsers.add_parser(
+        "ingest", help="Ingest an external session payload using the Continuity Bridge"
+    )
+    ingest_parser.add_argument(
+        "--file", type=str, required=True, help="Path to the JSON file representing the payload"
+    )
+
+    # reason subcommand
+    subparsers.add_parser(
+        "reason", help="Perform reasoning over continuity databases and active context"
+    )
+
+    # verify subcommand
+    subparsers.add_parser(
+        "verify", help="Run repository-side self-verification and referential integrity checks"
+    )
+
     args = parser.parse_args()
 
     # Initialize runtime
@@ -114,6 +132,37 @@ def main():
             else:
                 print(f"Error: Failed to restore snapshot from '{args.file}'")
                 sys.exit(1)
+
+    elif args.command == "ingest":
+        try:
+            with open(args.file, "r") as f:
+                payload_data = json.load(f)
+            from sage.models import ExternalSessionPayload
+
+            payload = ExternalSessionPayload(**payload_data)
+            result = runtime.ingest_session_payload(payload)
+            print(json.dumps(result, indent=2))
+        except Exception as e:
+            print(f"Error: Ingestion failed: {str(e)}")
+            sys.exit(1)
+
+    elif args.command == "reason":
+        try:
+            result = runtime.reason_over_continuity()
+            print(json.dumps(result, indent=2))
+        except Exception as e:
+            print(f"Error: Reasoning failed: {str(e)}")
+            sys.exit(1)
+
+    elif args.command == "verify":
+        try:
+            result = runtime.verify_integrity()
+            print(json.dumps(result, indent=2))
+            if not result.get("is_valid", False):
+                sys.exit(1)
+        except Exception as e:
+            print(f"Error: Verification failed: {str(e)}")
+            sys.exit(1)
 
     else:
         parser.print_help()
