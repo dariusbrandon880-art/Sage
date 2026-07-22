@@ -199,6 +199,7 @@ class SageRuntime:
         metrics = get_metrics_collector()
         metrics.increment("tasks.total")
         metrics.record_event("task_set", {"task": task, "session_id": session_id})
+
         return session_id
 
     def add_blocker(self, blocker: str) -> None:
@@ -273,6 +274,7 @@ class SageRuntime:
         metrics = get_metrics_collector()
         metrics.increment("checkpoints.total")
         metrics.record_event("checkpoint_created", {"checkpoint_id": checkpoint_id})
+
         return checkpoint_id
 
     def export_all(self) -> Dict[str, Any]:
