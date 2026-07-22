@@ -3,8 +3,12 @@ services:
     name: sage-runtime
     env: docker
     dockerfilePath: Dockerfile
-    plan: free
+    plan: starter
     healthCheckPath: /health
+    disk:
+      name: sage-data
+      mountPath: /app/sage_data
+      sizeGB: 10
     envVars:
       - key: ENV
         value: production
@@ -19,9 +23,9 @@ services:
       - key: SAGE_API_KEYS
         generateValue: true
       - key: MEMORY_BACKEND
-        value: in-memory
+        value: disk
       - key: ARCHIVE_BACKEND
-        value: in-memory
+        value: disk
       - key: ENABLE_CONTINUITY
         value: "true"
       - key: GOOGLE_WORKSPACE_CREDENTIALS_PATH
