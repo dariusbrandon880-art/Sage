@@ -38,8 +38,37 @@ SAGE repository-side interfaces are fully consolidated, and Phase 3 Live Connect
 - **Objective**: Provide a CLI interface for the core Continuity Bridge.
 - **Scope**: Expose terminal-accessible subcommands `ingest`, `reason`, and `verify` mapping to the same validated runtime capabilities.
 
+### Milestone 2.4: Continuity Intelligence Layer Expansion (Completed)
+- **Objective**: Add structured session awareness, checkpoints, and active context tracking.
+- **Scope**: Implemented `SessionState`, `ContextTracker`, and `ContinuityCheckpoint` inside `sage/acr/session/` to allow SAGE to maintain awareness of ongoing work across sessions.
+
 ---
 
-## 3. Long-Term Vision: SAGE v3.0 - Distributed Collaborative Mind
+## 3. SAGE Continuity Intelligence Layer Overview
+
+### Purpose of Continuity Intelligence
+The SAGE Continuity Intelligence Layer extends SAGE's capabilities by adding structured session awareness and active context tracking. It allows SAGE to maintain a deep understanding of ongoing work across multi-turn sessions, answering key temporal questions like: *"What was happening before this session?"* or *"What pending tasks must be resumed?"* without needing to ingest raw conversation logs.
+
+### Relationship to Autonomous Continuity Runtime (ACR)
+This is an intelligence layer that wraps and complements, rather than replaces, the existing ACR state persistence, memory, decisions, and archive stores:
+- **Session State**: Maintains a structured ledger of active objectives, completed/pending actions, and linked decisions/archives per session.
+- **Context Tracker**: Tracks active milestones, unresolved items, recent changes, and transitions across session boundaries via history traversal.
+- **Continuity Checkpoints**: Captures system state, goals, recent decisions, repository state references (dynamic branch, commit, dirty files), and validation status for future automated recovery.
+
+It integrates natively with:
+1. **Ingestion**: Tracks transitions and updates actions/decisions during `ingest_session_payload`.
+2. **Recovery**: Rehydrates sessions and context during `restore_session`.
+3. **Archive Promotion**: Dynamically links promoted archives to the active session.
+4. **Validation Flow**: Restores and verifies referential integrity across the snapshot/continuity systems.
+
+### Future Expansion Path
+The Continuity Intelligence Layer serves as an extensible foundation for:
+- **Automated Self-Recovery**: Enabling SAGE to automatically revert or heal repository states if compilation or verification fails.
+- **Multi-Session Task Planning**: Orchestrating complex, long-running agent workflows with high accuracy.
+- **Cognitive Tree Traversals**: Modeling non-linear session trees for multi-agent software engineering.
+
+---
+
+## 4. Long-Term Vision: SAGE v3.0 - Distributed Collaborative Mind
 - **Objective**: Transition SAGE from single-workspace deployment to a multi-tenant, distributed continuity network.
 - **Scope**: Peer-to-peer state sharing, compliance ledger integration, and multi-user cross-session reasoning trees.

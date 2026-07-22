@@ -1,6 +1,6 @@
 """Validation system for SAGE memory promotion to Master Archive."""
 
-from typing import Tuple, List, Optional
+from typing import Tuple, List, Optional, Any
 from sage.models import MemoryObject, ConfidenceLevel, ArchiveEntry, KnowledgeState
 
 
@@ -90,7 +90,7 @@ class ValidationSystem:
         return True, "Memory object successfully promoted to VALIDATED"
 
     def promote_to_archive(
-        self, memory_id: str, title: str, tags: Optional[List[str]] = None
+        self, memory_id: str, title: str, tags: Optional[List[str]] = None, session_state: Optional[Any] = None
     ) -> Tuple[bool, str]:
         """Archive a validated memory object by promoting it to the Master Archive.
 
@@ -98,6 +98,7 @@ class ValidationSystem:
             memory_id: ID of the validated memory object
             title: Title for the archived entry
             tags: Optional tags to merge with original tags
+            session_state: Optional SessionState to update with archive reference
 
         Returns:
             Tuple of (success, archive_entry_id or error_message)
@@ -119,7 +120,52 @@ class ValidationSystem:
             if hasattr(self.memory, "retrieve"):
                 obj = self.memory.retrieve(memory_id)
 
-        # Construct Archive Entry
+        # Construct Archive Entry with ArchiveIntelligence
+        from sage.archive.intelligence import ArchiveIntelligence
+        from sage.archive.lineage import KnowledgeLineage, ValidationRecord
+        from sage.archive.confidence import ConfidenceTracker, ReviewHistoryItem
+        import datetime
+        from datetime import timezone
+
+        # Automatic generation of lineage & validation record
+        val_rec = ValidationRecord(
+            validated_by="ValidationSystem",
+            timestamp=datetime.datetime.now(timezone.utc),
+            rules_applied=["non_empty_content", "object_type_specified", "content_substance"],
+            success=True,
+        )
+
+        lineage_record = KnowledgeLineage(
+            source=obj.content.get("source") or "memory_store",
+            created_at=obj.created_at,
+            validation_record=val_rec,
+            dependent_decisions=obj.content.get("decisions") or [],
+            metadata={"original_memory_id": obj.id, "object_type": obj.object_type},
+        )
+
+        # Confidence state
+        confidence_level_val = 1.0 if obj.confidence == ConfidenceLevel.VALIDATED else 0.5
+        conf_tracker = ConfidenceTracker(
+            confidence_level=confidence_level_val,
+            validation_status="validated",
+            evidence_references=[obj.id],
+            review_history=[
+                ReviewHistoryItem(
+                    reviewer="ValidationSystem",
+                    timestamp=datetime.datetime.now(timezone.utc),
+                    status="validated",
+                    notes="Promoted through SAGE Autonomous Continuity Bridge validation loop",
+                )
+            ],
+        )
+
+        intelligence_bundle = ArchiveIntelligence(
+            lineage=lineage_record,
+            confidence=conf_tracker,
+            relationships=[],
+            decisions=[],
+        )
+
         entry_id = f"archive_{obj.id}"
         archive_entry = ArchiveEntry(
             id=entry_id,
@@ -128,6 +174,7 @@ class ValidationSystem:
             knowledge_state=KnowledgeState.ARCHIVED,
             content=obj.content,
             lineage=[obj.id],
+            intelligence=intelligence_bundle,
         )
 
         try:
@@ -138,6 +185,10 @@ class ValidationSystem:
             obj.confidence = ConfidenceLevel.ARCHIVED
             if hasattr(self.memory, "store"):
                 self.memory.store(obj)
+
+            # If session state is provided, link the reference
+            if session_state is not None and hasattr(session_state, "add_archive_reference"):
+                session_state.add_archive_reference(archive_id)
 
             return True, archive_id
         except Exception as e:

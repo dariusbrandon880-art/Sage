@@ -276,9 +276,19 @@ async def promote_to_validated(req: ValidationRequest):
 
 @app.post("/promote/archive")
 async def promote_to_archive(req: ArchivePromotionRequest):
-    success, result = validation.promote_to_archive(req.memory_id, title=req.title, tags=req.tags)
+    session_state = None
+    if runtime.context and runtime.context.session_id:
+        session_state = runtime.session_manager.retrieve_session(runtime.context.session_id)
+
+    success, result = validation.promote_to_archive(
+        req.memory_id, title=req.title, tags=req.tags, session_state=session_state
+    )
     if not success:
         raise HTTPException(status_code=400, detail=result)
+
+    if session_state:
+        runtime.session_manager.save_session(session_state)
+
     return {"archive_id": result, "status": "promoted"}
 
 
