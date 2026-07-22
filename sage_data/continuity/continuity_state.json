@@ -1,0 +1,12 @@
+{
+  "id": "global_continuity",
+  "created_at": "2026-07-22T14:25:55.979055",
+  "updated_at": "2026-07-22T14:25:55.979061",
+  "data": {},
+  "session_lineage": [
+    "session_5b366d59",
+    "session_3d9e4e2d",
+    "session_63b0f6bf",
+    "session_b2a632b2"
+  ]
+}

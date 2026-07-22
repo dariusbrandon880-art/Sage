@@ -73,13 +73,27 @@ class SageRuntime:
         self.current_state = RuntimeState()
         self._load_state()
 
+        # Telemetry
+        from sage.runtime.metrics import get_metrics_collector
+        metrics = get_metrics_collector()
+        metrics.increment("runtime.initialization")
+        metrics.record_event("runtime_initialized", {"workspace": str(self.workspace_path)})
+
     def start(self) -> None:
         """Start the SAGE runtime."""
         self.active = True
+        from sage.runtime.metrics import get_metrics_collector
+        metrics = get_metrics_collector()
+        metrics.set_gauge("runtime.active", 1.0)
+        metrics.record_event("runtime_started")
 
     def stop(self) -> None:
         """Stop the SAGE runtime."""
         self.active = False
+        from sage.runtime.metrics import get_metrics_collector
+        metrics = get_metrics_collector()
+        metrics.set_gauge("runtime.active", 0.0)
+        metrics.record_event("runtime_stopped")
 
     def is_running(self) -> bool:
         """Check if runtime is active."""
@@ -105,6 +119,12 @@ class SageRuntime:
             turn_number=self.acr.get_session_depth(),
             metadata={"objective": objective},
         )
+
+        from sage.runtime.metrics import get_metrics_collector
+        metrics = get_metrics_collector()
+        metrics.increment("objectives.total")
+        metrics.record_event("objective_set", {"objective": objective, "session_id": session_id})
+
         return session_id
 
     def set_task(self, task: str) -> str:
@@ -131,6 +151,12 @@ class SageRuntime:
                 turn_number=self.acr.get_session_depth(),
                 metadata={"task": task},
             )
+
+        from sage.runtime.metrics import get_metrics_collector
+        metrics = get_metrics_collector()
+        metrics.increment("tasks.total")
+        metrics.record_event("task_set", {"task": task, "session_id": session_id})
+
         return session_id
 
     def add_blocker(self, blocker: str) -> None:
@@ -185,6 +211,11 @@ class SageRuntime:
                 json.dump(self.export_all(), f, indent=2, default=str)
         except Exception:
             pass
+
+        from sage.runtime.metrics import get_metrics_collector
+        metrics = get_metrics_collector()
+        metrics.increment("checkpoints.total")
+        metrics.record_event("checkpoint_created", {"checkpoint_id": checkpoint_id})
 
         return checkpoint_id
 
@@ -619,6 +650,11 @@ class SageRuntime:
                 "snapshot_id": snapshot_id,
             },
         )
+
+        from sage.runtime.metrics import get_metrics_collector
+        metrics = get_metrics_collector()
+        metrics.increment("ingestions.total")
+        metrics.record_event("payload_ingested", {"session_id": session_id, "checkpoint_id": checkpoint_id, "snapshot_id": snapshot_id})
 
         return {
             "session_id": session_id,

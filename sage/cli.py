@@ -66,6 +66,18 @@ def main():
         "verify", help="Run repository-side self-verification and referential integrity checks"
     )
 
+    # health subcommand
+    subparsers.add_parser("health", help="Check SAGE runtime and component health status")
+
+    # diagnostics subcommand
+    subparsers.add_parser("diagnostics", help="Generate SAGE runtime diagnostic report")
+
+    # capabilities subcommand
+    subparsers.add_parser("capabilities", help="Get report of SAGE platform capabilities")
+
+    # metrics subcommand
+    subparsers.add_parser("metrics", help="Show collected runtime telemetry metrics")
+
     args = parser.parse_args()
 
     # Initialize runtime
@@ -162,6 +174,42 @@ def main():
                 sys.exit(1)
         except Exception as e:
             print(f"Error: Verification failed: {str(e)}")
+            sys.exit(1)
+
+    elif args.command == "health":
+        try:
+            from sage.runtime import check_health
+            result = check_health(runtime)
+            print(json.dumps(result, indent=2))
+        except Exception as e:
+            print(f"Error: Health check failed: {str(e)}")
+            sys.exit(1)
+
+    elif args.command == "diagnostics":
+        try:
+            from sage.runtime import generate_diagnostic_report
+            result = generate_diagnostic_report(runtime)
+            print(json.dumps(result, indent=2))
+        except Exception as e:
+            print(f"Error: Diagnostics failed: {str(e)}")
+            sys.exit(1)
+
+    elif args.command == "capabilities":
+        try:
+            from sage.runtime import generate_capability_report
+            result = generate_capability_report(runtime)
+            print(json.dumps(result, indent=2))
+        except Exception as e:
+            print(f"Error: Capability reporting failed: {str(e)}")
+            sys.exit(1)
+
+    elif args.command == "metrics":
+        try:
+            from sage.runtime import get_metrics_collector
+            result = get_metrics_collector().get_metrics()
+            print(json.dumps(result, indent=2))
+        except Exception as e:
+            print(f"Error: Metrics gathering failed: {str(e)}")
             sys.exit(1)
 
     else:
