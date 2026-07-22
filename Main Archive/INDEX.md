@@ -42,3 +42,4 @@ Welcome to SAGE's immutable Master Archive and research repository. This index l
 ## 5. Engineering Reports and Activations
 - [SAGE Final Operational Completion Report](research/archive/SAGE_FINAL_ACTIVATION_REPORT.md) - Formal activation and engineering report for SAGE Runtime v1 Phase 3.
 - [SAGE Final Live Activation Checklist](../docs/master/FINAL_LIVE_ACTIVATION_CHECKLIST.md) - Definitive step-by-step operational setup instructions to bridge the permission boundary for hosting, APIs, webhooks, and integrations.
+- [SAGE Final Live Activation Report](../docs/master/FINAL_LIVE_ACTIVATION_REPORT.md) - Formal deployment status report and condition B verification detailing completed local systems and external integration blockers.
