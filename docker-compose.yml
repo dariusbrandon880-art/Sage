@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  sage-runtime:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sage-continuity-runtime
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount persistent SAGE storage directories
+      - ./sage_data:/app/sage_data
+      - ./.sage:/app/.sage
+    env_file:
+      - .env
+    environment:
+      - ENV=production
+      - DEBUG=false

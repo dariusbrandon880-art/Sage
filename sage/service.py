@@ -94,4 +94,10 @@ class LifecycleManager:
         """Validate requests against the system's security boundary."""
         if not api_key:
             return False
-        return api_key in self.api_keys
+        # Support dynamic live API key updates from OS environment
+        keys_str = os.getenv("SAGE_API_KEYS", "")
+        if keys_str:
+            keys = keys_str.split(",")
+        else:
+            keys = self.api_keys
+        return api_key in keys
