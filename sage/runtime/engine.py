@@ -79,6 +79,11 @@ class SageRuntime:
         metrics.increment("runtime.initialization")
         metrics.record_event("runtime_initialized", {"workspace": str(self.workspace_path)})
 
+        # Controlled Initialization Sequence
+        from sage.runtime.diagnostics import InitializationManager
+        self.init_mgr = InitializationManager(self)
+        self.init_summary = self.init_mgr.run_init_sequence()
+
     def start(self) -> None:
         """Start the SAGE runtime."""
         self.active = True
