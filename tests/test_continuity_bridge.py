@@ -336,3 +336,77 @@ def test_google_workspace_sync_dry_run_diagnostics(temp_workspace):
     google_sheets = result["sync_mappings"]["google_sheets"]
     assert google_sheets["Engineering Tracker"]["current_objective"] == "Testing Workspace Sync"
     assert google_sheets["Engineering Tracker"]["active_task"] == "Verify Sync Mapper"
+
+
+def test_live_continuity_path_e2e(temp_workspace):
+    """Verify live continuity path: Session input -> Continuity Bridge -> validation -> archive/state persistence."""
+    runtime = SageRuntime(str(temp_workspace))
+
+    # 1. Session Input
+    payload_data = {
+        "session_id": "activation_test_session_001",
+        "objective": "Verify SAGE Final Activation Checkpoint",
+        "task": "Test live continuity path end-to-end",
+        "memories": [
+            {
+                "id": "mem_activation_001",
+                "object_type": "rule",
+                "content": {
+                    "title": "Activation Rules",
+                    "description": "SAGE is fully operational under python 3.12+ and Pydantic v2",
+                    "archive": True,
+                },
+                "tags": ["activation", "verify"],
+                "confidence": "validated",
+            }
+        ],
+        "decisions": [
+            {
+                "id": "dec_activation_001",
+                "decision_type": "technical",
+                "description": "Approve final activation",
+                "rationale": "All verification criteria are fully met on the repository-side",
+                "evidence": ["mem_activation_001"],
+            }
+        ],
+    }
+    payload = ExternalSessionPayload(**payload_data)
+
+    # 2. Continuity Bridge
+    result = runtime.ingest_session_payload(payload)
+
+    # Assert success and correct registration
+    assert result["status"] == "success"
+    assert result["session_id"] == "activation_test_session_001"
+    assert "checkpoint_id" in result
+    assert "snapshot_id" in result
+
+    # 3. Validation and Promotion
+    assert "mem_activation_001" in result["validation_results"]
+    assert result["validation_results"]["mem_activation_001"]["is_valid"] is True
+
+    # Check memory store persistence
+    mem = runtime.memory.retrieve("mem_activation_001")
+    assert mem is not None
+    assert mem.confidence == ConfidenceLevel.ARCHIVED
+
+    # Check archive routing persistence
+    assert "archive_mem_activation_001" in result["routed_archive_entries"]
+    arch_entry = runtime.archive.retrieve_entry("archive_mem_activation_001")
+    assert arch_entry is not None
+    assert arch_entry.title == "Activation Rules"
+
+    # Check decision and evidence tracking
+    dec = runtime.decisions.retrieve_decision("dec_activation_001")
+    assert dec is not None
+    assert "dec_activation_001" in result["tracked_decisions"]
+    assert "dec_activation_001" in arch_entry.decision_history
+
+    # 4. State Persistence (checkpoints/snapshots)
+    checkpoint_file = temp_workspace / f"{result['checkpoint_id']}.json"
+    assert checkpoint_file.exists()
+
+    # Verify that the created snapshot can be loaded back
+    snapshot_id = result["snapshot_id"]
+    snapshots_list = runtime.list_workspace_snapshots()
+    assert any(s["id"] == snapshot_id for s in snapshots_list)
