@@ -3,12 +3,9 @@ services:
     name: sage-runtime
     env: docker
     dockerfilePath: Dockerfile
-    plan: starter
+    plan: free
     healthCheckPath: /health
-    disk:
-      name: sage-data
-      mountPath: /app/sage_data
-      sizeGB: 10
+    
     envVars:
       - key: ENV
         value: production
