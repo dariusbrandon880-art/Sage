@@ -187,7 +187,7 @@ class Archive:
                             metadata={
                                 "affected_components": dec.affected_components,
                                 "validation_outcome": dec.validation_outcome,
-                            }
+                            },
                         )
                     )
         return graph

@@ -3,16 +3,13 @@
 import tempfile
 import shutil
 from pathlib import Path
-from datetime import datetime, timezone
+from datetime import datetime
 import pytest
 
 from sage.acr.session import (
     SessionState,
     SessionStateManager,
-    ContinuityContext,
-    ContextTransition,
     ContextTracker,
-    ContinuityCheckpoint,
     CheckpointManager,
 )
 from sage.runtime import SageRuntime
@@ -178,7 +175,7 @@ def test_sageruntime_continuity_intelligence_integration(temp_dir):
     assert "Launch Continuity Intelligence Layer" in sess_state.active_objectives
 
     runtime.set_task("Write comprehensive tests")
-    assert f"task:Write comprehensive tests" in sess_state.pending_actions
+    assert "task:Write comprehensive tests" in sess_state.pending_actions
 
     # 3. Payload ingestion
     payload = ExternalSessionPayload(
@@ -212,7 +209,10 @@ def test_sageruntime_continuity_intelligence_integration(temp_dir):
     ing_sess = runtime.session_manager.retrieve_session("ingested_sess_01")
     assert ing_sess is not None
     assert "Verify system capabilities" in ing_sess.active_objectives
-    assert f"task:Test checkpointing" in ing_sess.completed_actions or f"task:Test checkpointing" in ing_sess.pending_actions
+    assert (
+        "task:Test checkpointing" in ing_sess.completed_actions
+        or "task:Test checkpointing" in ing_sess.pending_actions
+    )
     assert "dec_001" in ing_sess.important_decisions
     assert "archive_mem_001" in ing_sess.related_archive_references
 

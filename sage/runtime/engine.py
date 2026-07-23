@@ -120,12 +120,12 @@ class SageRuntime:
         self.session_manager.create_session(
             session_id=session_id,
             active_objectives=[objective],
-            metadata={"source": "set_objective"}
+            metadata={"source": "set_objective"},
         )
         self.context_tracker.record_transition(
             from_state=f"objective:{old_objective}",
             to_state=f"objective:{objective}",
-            reason="Objective updated via set_objective"
+            reason="Objective updated via set_objective",
         )
 
         self.context = ExecutionContext(
@@ -165,7 +165,11 @@ class SageRuntime:
         if not session_state:
             session_state = self.session_manager.create_session(
                 session_id=session_id,
-                active_objectives=[self.current_state.current_objective] if self.current_state.current_objective else [],
+                active_objectives=(
+                    [self.current_state.current_objective]
+                    if self.current_state.current_objective
+                    else []
+                ),
             )
         session_state.add_pending_action(f"task:{task}")
         self.session_manager.save_session(session_state)
@@ -256,7 +260,11 @@ class SageRuntime:
             "decisions": [d.model_dump() for d in self.decisions.list_all()],
             "lineage": self.acr.get_lineage(),
             "sessions": [s.model_dump() for s in self.session_manager.list_all()],
-            "context": self.context_tracker.get_current_context().model_dump() if self.context_tracker.get_current_context() else None,
+            "context": (
+                self.context_tracker.get_current_context().model_dump()
+                if self.context_tracker.get_current_context()
+                else None
+            ),
             "continuity_checkpoints": [c.model_dump() for c in self.checkpoint_manager.list_all()],
         }
 
@@ -279,7 +287,11 @@ class SageRuntime:
                 "decision_count": len(self.decisions.list_all()),
             },
             "sessions": [s.model_dump() for s in self.session_manager.list_all()],
-            "context": self.context_tracker.get_current_context().model_dump() if self.context_tracker.get_current_context() else None,
+            "context": (
+                self.context_tracker.get_current_context().model_dump()
+                if self.context_tracker.get_current_context()
+                else None
+            ),
             "continuity_checkpoints": [c.model_dump() for c in self.checkpoint_manager.list_all()],
         }
 
@@ -408,7 +420,11 @@ class SageRuntime:
             "lineage": self.acr.get_lineage(),
             "continuity_state": self.acr.continuity_state,
             "sessions": [s.model_dump() for s in self.session_manager.list_all()],
-            "context": self.context_tracker.get_current_context().model_dump() if self.context_tracker.get_current_context() else None,
+            "context": (
+                self.context_tracker.get_current_context().model_dump()
+                if self.context_tracker.get_current_context()
+                else None
+            ),
             "continuity_checkpoints": [c.model_dump() for c in self.checkpoint_manager.list_all()],
         }
 
@@ -722,7 +738,9 @@ class SageRuntime:
                     if success:
                         routed_archive_ids.append(archive_id_or_err)
                         session_state.add_archive_reference(archive_id_or_err)
-                        self.context_tracker.add_recent_change(f"Promoted {m_obj.id} to archive: {archive_id_or_err}")
+                        self.context_tracker.add_recent_change(
+                            f"Promoted {m_obj.id} to archive: {archive_id_or_err}"
+                        )
                 else:
                     self.validation.promote_to_validated(m_obj.id)
 

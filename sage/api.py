@@ -12,7 +12,7 @@ from datetime import datetime
 
 from sage.runtime import SAGERuntime
 from sage.models import DecisionType, MemoryObject, ConfidenceLevel, ExternalSessionPayload
-from sage.validation import ValidationSystem
+from sage.validation import ValidationSystem, ReliabilityIncidentTracker
 from sage.service import LifecycleManager
 from sage.integration import (
     ChatGPTClient,
@@ -25,12 +25,15 @@ from sage.integration import (
 )
 
 app = FastAPI(
-    title="SAGE Runtime API", description="SAGE Autonomous Continuity Runtime API with Live Webhooks", version="1.1.0"
+    title="SAGE Runtime API",
+    description="SAGE Autonomous Continuity Runtime API with Live Webhooks",
+    version="1.1.0",
 )
 
 # Global runtime instance
 runtime = SAGERuntime()
 validation = ValidationSystem(runtime.memory, runtime.archive)
+incident_tracker = ReliabilityIncidentTracker(runtime.memory)
 
 # Instantiate Service & Integration managers
 lifecycle_mgr = LifecycleManager()
@@ -51,14 +54,25 @@ async def api_key_auth_middleware(request: Request, call_next):
         x_api_key = request.headers.get("x-api-key")
         if not x_api_key or not lifecycle_mgr.authorize(x_api_key):
             return JSONResponse(
-                status_code=401,
-                content={"detail": "Unauthorized: Invalid or missing API key."}
+                status_code=401, content={"detail": "Unauthorized: Invalid or missing API key."}
             )
 
     return await call_next(request)
 
 
 # Request/Response models
+class IncidentCreateRequest(BaseModel):
+    incident_type: str
+    source: str
+    affected_component: str
+    reproduction: Dict[str, Any] = {}
+
+
+class ResolveIncidentRequest(BaseModel):
+    status: str
+    validation_evidence: Optional[List[str]] = None
+
+
 class ObjectiveRequest(BaseModel):
     objective: str
 
@@ -270,6 +284,40 @@ async def promote_to_archive(req: ArchivePromotionRequest):
     return {"archive_id": result, "status": "promoted"}
 
 
+# Reliability Incident Tracking endpoints
+@app.post("/validation/incident")
+async def record_reliability_incident(req: IncidentCreateRequest):
+    try:
+        from sage.models import ReliabilityIncident, ReliabilityIncidentType
+
+        incident = ReliabilityIncident(
+            incident_type=ReliabilityIncidentType(req.incident_type),
+            source=req.source,
+            affected_component=req.affected_component,
+            reproduction=req.reproduction,
+        )
+        incident_id = incident_tracker.record_incident(incident)
+        return {"incident_id": incident_id, "status": "recorded"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/validation/incidents")
+async def list_reliability_incidents():
+    incidents = incident_tracker.list_incidents()
+    return {"count": len(incidents), "incidents": [inc.model_dump() for inc in incidents]}
+
+
+@app.post("/validation/incident/{incident_id}/resolve")
+async def resolve_reliability_incident(incident_id: str, req: ResolveIncidentRequest):
+    success = incident_tracker.resolve_incident(
+        incident_id, status=req.status, validation_evidence=req.validation_evidence
+    )
+    if not success:
+        raise HTTPException(status_code=404, detail="Incident not found")
+    return {"status": "success", "message": f"Incident {incident_id} updated to {req.status}"}
+
+
 # Blocker endpoints
 @app.post("/blocker")
 async def add_blocker(data: Dict[str, str]):
@@ -365,7 +413,9 @@ async def index_github_event(request: Request):
     if webhook_secret:
         signature = request.headers.get("X-Hub-Signature-256")
         if not signature or not signature.startswith("sha256="):
-            raise HTTPException(status_code=401, detail="GitHub signature header missing or invalid.")
+            raise HTTPException(
+                status_code=401, detail="GitHub signature header missing or invalid."
+            )
         expected_sig = signature.split("=")[1]
         mac = hmac.new(webhook_secret.encode(), msg=body, digestmod=hashlib.sha256)
         if not hmac.compare_digest(mac.hexdigest(), expected_sig):
@@ -378,7 +428,9 @@ async def index_github_event(request: Request):
         raise HTTPException(status_code=400, detail="Invalid JSON payload")
 
     # 3. Handle raw webhooks from GitHub or direct GitHubEvent models
-    is_raw_gh = "repository" in data and ("pusher" in data or "sender" in data or "pull_request" in data)
+    is_raw_gh = "repository" in data and (
+        "pusher" in data or "sender" in data or "pull_request" in data
+    )
 
     if is_raw_gh:
         # Extract metadata from raw GitHub structure
@@ -394,18 +446,16 @@ async def index_github_event(request: Request):
 
         # Map directly to canonical GitHubEvent schema
         event = GitHubEvent(
-            event_type=event_type,
-            repository=repo_name,
-            ref=ref,
-            author=author,
-            payload=data
+            event_type=event_type, repository=repo_name, ref=ref, author=author, payload=data
         )
     else:
         # Standard repository payload validation
         try:
             event = GitHubEvent(**data)
         except Exception as e:
-            raise HTTPException(status_code=422, detail=f"Unprocessable GitHubEvent payload: {str(e)}")
+            raise HTTPException(
+                status_code=422, detail=f"Unprocessable GitHubEvent payload: {str(e)}"
+            )
 
     event_id = tool_mgr.index_github_event(event)
     return {"event_id": event_id, "status": "indexed"}
@@ -490,7 +540,7 @@ async def get_system_frame(x_api_key: Optional[str] = Header(None)):
             "file_path": str(session_state_path),
             "content": session_state_content,
             "character_count": len(session_state_content),
-        }
+        },
     }
 
 

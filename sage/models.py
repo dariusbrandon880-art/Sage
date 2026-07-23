@@ -87,7 +87,9 @@ class KnowledgeRelationship(BaseModel):
 
     source_id: str
     target_id: str
-    relationship_type: str  # e.g., "related_to", "depends_on", "derived_from", "replaces", "validated_by"
+    relationship_type: (
+        str  # e.g., "related_to", "depends_on", "derived_from", "replaces", "validated_by"
+    )
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
@@ -156,3 +158,27 @@ class ExternalSessionPayload(BaseModel):
     memories: List[Dict[str, Any]] = Field(default_factory=list)
     decisions: List[Dict[str, Any]] = Field(default_factory=list)
     metadata: Dict[str, Any] = Field(default_factory=dict)
+
+
+class ReliabilityIncidentType(str, Enum):
+    """Types of reliability incidents tracked in SAGE."""
+
+    EXCEPTION = "exception"
+    LINT_FAILURE = "lint_failure"
+    FORMAT_FAILURE = "format_failure"
+    TEST_FAILURE = "test_failure"
+    DEPLOYMENT_FAILURE = "deployment_failure"
+    SECURITY_VULNERABILITY = "security_vulnerability"
+
+
+class ReliabilityIncident(BaseModel):
+    """Structured SAGE incident record tracking failures and their validated improvements."""
+
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    incident_type: ReliabilityIncidentType
+    source: str
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    affected_component: str
+    reproduction: Dict[str, Any] = Field(default_factory=dict)
+    status: str = "PENDING"  # PENDING, RESOLVED, VALIDATED
+    validation_evidence: List[str] = Field(default_factory=list)

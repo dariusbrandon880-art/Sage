@@ -90,7 +90,11 @@ class ValidationSystem:
         return True, "Memory object successfully promoted to VALIDATED"
 
     def promote_to_archive(
-        self, memory_id: str, title: str, tags: Optional[List[str]] = None, session_state: Optional[Any] = None
+        self,
+        memory_id: str,
+        title: str,
+        tags: Optional[List[str]] = None,
+        session_state: Optional[Any] = None,
     ) -> Tuple[bool, str]:
         """Archive a validated memory object by promoting it to the Master Archive.
 
@@ -193,3 +197,74 @@ class ValidationSystem:
             return True, archive_id
         except Exception as e:
             return False, f"Failed to promote to archive: {str(e)}"
+
+
+class ReliabilityIncidentTracker:
+    """Manages recording, updating, and querying of structured reliability incidents
+
+    utilizing SAGE's canonical MemoryObjects to prevent database duplication.
+    """
+
+    def __init__(self, memory_store):
+        """Initialize tracker with canonical Memory backend."""
+        self.memory = memory_store
+
+    def record_incident(self, incident: Any) -> str:
+        """Convert and store a ReliabilityIncident as a standard SAGE MemoryObject."""
+        from sage.models import MemoryObject, ConfidenceLevel
+
+        # If incident is a dict, parse it
+        if isinstance(incident, dict):
+            from sage.models import ReliabilityIncident
+
+            incident = ReliabilityIncident(**incident)
+
+        obj = MemoryObject(
+            id=incident.id,
+            object_type="reliability_incident",
+            content=incident.model_dump(),
+            tags=["reliability", incident.incident_type.value, incident.source],
+            confidence=ConfidenceLevel.VALIDATED,
+        )
+        self.memory.store(obj)
+        return incident.id
+
+    def retrieve_incident(self, incident_id: str) -> Optional[Any]:
+        """Retrieve a registered reliability incident from memory."""
+        from sage.models import ReliabilityIncident
+
+        obj = self.memory.retrieve(incident_id)
+        if not obj or obj.object_type != "reliability_incident":
+            return None
+        return ReliabilityIncident(**obj.content)
+
+    def list_incidents(self) -> List[Any]:
+        """List all tracked reliability incidents."""
+        from sage.models import ReliabilityIncident
+
+        incidents = []
+        for obj in self.memory.list_all():
+            if obj.object_type == "reliability_incident":
+                try:
+                    incidents.append(ReliabilityIncident(**obj.content))
+                except Exception:
+                    pass
+        return incidents
+
+    def resolve_incident(
+        self, incident_id: str, status: str, validation_evidence: List[str] = None
+    ) -> bool:
+        """Update resolution status and validation evidence of an incident."""
+        incident = self.retrieve_incident(incident_id)
+        if not incident:
+            return False
+
+        incident.status = status
+        if validation_evidence:
+            incident.validation_evidence = list(
+                set(incident.validation_evidence + validation_evidence)
+            )
+
+        # Resave in memory
+        self.record_incident(incident)
+        return True
