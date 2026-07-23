@@ -25,6 +25,7 @@ Welcome to SAGE's immutable Master Archive and research repository. This index l
 - [APM Spec](research/strategic/APM.md) - Autonomous Process Monitor.
 - [MEC Spec](research/strategic/MEC.md) - Multi-user Engineering Continuity.
 - [CIR Spec](research/strategic/CIR.md) - Canonical Index Registry.
+- [Project Prometheus Spec](research/project-prometheus.md) - SAGE Research & Invention Engine.
 
 ---
 
