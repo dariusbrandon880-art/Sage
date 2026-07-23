@@ -51,3 +51,4 @@ Welcome to SAGE's immutable Master Archive and research repository. This index l
 - [SAGE Final Live Activation Checklist](../docs/master/FINAL_LIVE_ACTIVATION_CHECKLIST.md) - Definitive step-by-step operational setup instructions to bridge the permission boundary for hosting, APIs, webhooks, and integrations.
 - [SAGE Render Deployment Handoff Spec](../docs/master/RENDER_DEPLOYMENT_HANDOFF.md) - Comprehensive Render deployment settings, repository reference, required env variables, and health checks.
 - [SAGE 2 STP & CIV-001 Proof](../docs/master/SAGE2_STP_CIV_PROOF.md) - Formal validation report proving State Transition Protocol (STP) integrity and CIV-001 clean-environment rehydration.
+- [SAGE 2 Live Operational Activation Proof](../docs/master/SAGE2_LIVE_ACTIVATION_PROOF.md) - Definitive verification report documenting live activation status, operational connectors, and zero blockers.
