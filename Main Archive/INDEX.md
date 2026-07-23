@@ -25,6 +25,7 @@ Welcome to SAGE's immutable Master Archive and research repository. This index l
 - [APM Spec](research/strategic/APM.md) - Autonomous Process Monitor.
 - [MEC Spec](research/strategic/MEC.md) - Multi-user Engineering Continuity.
 - [CIR Spec](research/strategic/CIR.md) - Canonical Index Registry.
+- [CIC Spec](research/strategic/CIC.md) - SAGE Continuity Independence Check theoretical model and proposed validation standard.
 
 ---
 
