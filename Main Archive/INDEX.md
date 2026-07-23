@@ -9,6 +9,7 @@ Welcome to SAGE's immutable Master Archive and research repository. This index l
 - [Roadmap Spec](architecture/roadmap.md) - Current core architecture status and locked expansion plans.
 - [Dependency Graph](architecture/dependency-graph.md) - Class mappings and package relationship models.
 - [Architecture Index](architecture/architecture-index.md) - Directory layout index of the repository.
+- [SAGE Archive Intelligence Layer](../docs/master/ARCHIVE_INTELLIGENCE.md) - Design and operational specification of SAGE's relational knowledge graph and metadata tracking.
 
 ---
 
@@ -30,7 +31,6 @@ Welcome to SAGE's immutable Master Archive and research repository. This index l
 ## 3. Architecture Decision Records (ADRs)
 - [ADR-001: Core Architecture Baseline](adr/ADR-001-architecture-baseline.md) - Architectural definition of SAGE-ACR v1.0.0.
 - [ADR-002: Service and Integration Layers](adr/ADR-002-integration-layer.md) - External connector endpoints and security schemas.
-- [ADR-003: Merge Convergence Policy and Automated Quality Gates](adr/ADR-003-merge-convergence-policy.md) - Procedures and gates for automated milestone verification.
 
 ---
 
@@ -42,3 +42,6 @@ Welcome to SAGE's immutable Master Archive and research repository. This index l
 
 ## 5. Engineering Reports and Activations
 - [SAGE Final Operational Completion Report](research/archive/SAGE_FINAL_ACTIVATION_REPORT.md) - Formal activation and engineering report for SAGE Runtime v1 Phase 3.
+- [SAGE Final Live Activation Checklist](../docs/master/FINAL_LIVE_ACTIVATION_CHECKLIST.md) - Definitive step-by-step operational setup instructions to bridge the permission boundary for hosting, APIs, webhooks, and integrations.
+- [SAGE 2 Combined Integration Status Report](../docs/master/SAGE2_INTEGRATION_STATUS_REPORT.md) - Fuse of External Connectivity and Runtime Intelligence layers into a unified operational loop.
+- [SAGE Render Deployment Handoff Spec](../docs/master/RENDER_DEPLOYMENT_HANDOFF.md) - Comprehensive Render deployment settings, repository reference, required env variables, and health checks.

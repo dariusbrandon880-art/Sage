@@ -1,6 +1,11 @@
-"""FastAPI runtime server for SAGE."""
+"""FastAPI runtime server for SAGE with robust authentication boundaries and live webhook validation."""
 
-from fastapi import FastAPI, HTTPException, Header
+import json
+import hmac
+import hashlib
+import os
+from fastapi import FastAPI, HTTPException, Header, Request
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 from datetime import datetime
@@ -20,7 +25,7 @@ from sage.integration import (
 )
 
 app = FastAPI(
-    title="SAGE Runtime API", description="SAGE Autonomous Continuity Runtime API", version="1.0.0"
+    title="SAGE Runtime API", description="SAGE Autonomous Continuity Runtime API with Live Webhooks", version="1.1.0"
 )
 
 # Global runtime instance
@@ -34,6 +39,23 @@ chatgpt_client = ChatGPTClient(runtime)
 gemini_jules_client = GeminiJulesClient(runtime)
 tool_mgr = ToolIntegrationManager(runtime)
 workspace_sync_mgr = GoogleWorkspaceSyncManager(runtime)
+
+
+# Global Middleware for SAGE API Key Authentication Boundaries
+@app.middleware("http")
+async def api_key_auth_middleware(request: Request, call_next):
+    require_auth = os.getenv("SAGE_REQUIRE_AUTH", "false").lower() == "true"
+    bypass_paths = ["/", "/health", "/docs", "/redoc", "/openapi.json"]
+
+    if require_auth and request.url.path not in bypass_paths:
+        x_api_key = request.headers.get("x-api-key")
+        if not x_api_key or not lifecycle_mgr.authorize(x_api_key):
+            return JSONResponse(
+                status_code=401,
+                content={"detail": "Unauthorized: Invalid or missing API key."}
+            )
+
+    return await call_next(request)
 
 
 # Request/Response models
@@ -72,7 +94,7 @@ class ArchivePromotionRequest(BaseModel):
 # Health and Status endpoints
 @app.get("/")
 async def root():
-    return {"status": "SAGE Runtime online", "version": "0.1.0"}
+    return {"status": "SAGE Runtime online", "version": "1.1.0"}
 
 
 @app.get("/health")
@@ -232,9 +254,19 @@ async def promote_to_validated(req: ValidationRequest):
 
 @app.post("/promote/archive")
 async def promote_to_archive(req: ArchivePromotionRequest):
-    success, result = validation.promote_to_archive(req.memory_id, title=req.title, tags=req.tags)
+    session_state = None
+    if runtime.context and runtime.context.session_id:
+        session_state = runtime.session_manager.retrieve_session(runtime.context.session_id)
+
+    success, result = validation.promote_to_archive(
+        req.memory_id, title=req.title, tags=req.tags, session_state=session_state
+    )
     if not success:
         raise HTTPException(status_code=400, detail=result)
+
+    if session_state:
+        runtime.session_manager.save_session(session_state)
+
     return {"archive_id": result, "status": "promoted"}
 
 
@@ -324,9 +356,57 @@ async def ai_context(prompt: str):
     return chatgpt_client.retrieve_context(prompt)
 
 
-# Tool integration indexing and mapping endpoints
+# Secure GitHub Webhook event ingestion endpoint with HMAC validation and raw payload support
 @app.post("/tools/github/event")
-async def index_github_event(event: GitHubEvent):
+async def index_github_event(request: Request):
+    # 1. Signature validation
+    body = await request.body()
+    webhook_secret = os.getenv("GITHUB_WEBHOOK_SECRET")
+    if webhook_secret:
+        signature = request.headers.get("X-Hub-Signature-256")
+        if not signature or not signature.startswith("sha256="):
+            raise HTTPException(status_code=401, detail="GitHub signature header missing or invalid.")
+        expected_sig = signature.split("=")[1]
+        mac = hmac.new(webhook_secret.encode(), msg=body, digestmod=hashlib.sha256)
+        if not hmac.compare_digest(mac.hexdigest(), expected_sig):
+            raise HTTPException(status_code=401, detail="GitHub signature verification failed.")
+
+    # 2. Parse payload JSON
+    try:
+        data = json.loads(body) if body else {}
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON payload")
+
+    # 3. Handle raw webhooks from GitHub or direct GitHubEvent models
+    is_raw_gh = "repository" in data and ("pusher" in data or "sender" in data or "pull_request" in data)
+
+    if is_raw_gh:
+        # Extract metadata from raw GitHub structure
+        event_type = request.headers.get("X-GitHub-Event", "push")
+        repo_name = data.get("repository", {}).get("full_name", "unknown/repo")
+        author = "unknown"
+        if "sender" in data:
+            author = data["sender"].get("login", "unknown")
+        elif "pusher" in data:
+            author = data["pusher"].get("name", "unknown")
+
+        ref = data.get("ref")
+
+        # Map directly to canonical GitHubEvent schema
+        event = GitHubEvent(
+            event_type=event_type,
+            repository=repo_name,
+            ref=ref,
+            author=author,
+            payload=data
+        )
+    else:
+        # Standard repository payload validation
+        try:
+            event = GitHubEvent(**data)
+        except Exception as e:
+            raise HTTPException(status_code=422, detail=f"Unprocessable GitHubEvent payload: {str(e)}")
+
     event_id = tool_mgr.index_github_event(event)
     return {"event_id": event_id, "status": "indexed"}
 
@@ -350,17 +430,6 @@ async def sync_workspace(credentials_path: Optional[str] = None):
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Google Workspace synchronization failed: {str(e)}"
-        )
-
-
-@app.post("/continuity/auto-capture")
-async def auto_capture_continuity():
-    try:
-        result = runtime.auto_capture_git_session()
-        return result
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Automated continuity capture failed: {str(e)}"
         )
 
 
@@ -421,7 +490,7 @@ async def get_system_frame(x_api_key: Optional[str] = Header(None)):
             "file_path": str(session_state_path),
             "content": session_state_content,
             "character_count": len(session_state_content),
-        },
+        }
     }
 
 

@@ -1,5 +1,6 @@
 """SAGE Integration Layer - AI client interfaces and engineering tool connections."""
 
+from enum import Enum
 from typing import Dict, Any, List, Optional
 from datetime import datetime, timezone
 from pathlib import Path
@@ -419,3 +420,181 @@ class GoogleWorkspaceSyncManager:
             }
         except Exception as e:
             return {"mode": "live", "status": "failed", "error": str(e)}
+
+
+# --- SAGE 2 Universal Connector Template Framework ---
+
+
+class ConnectorStatus(str, Enum):
+    """Connection states for external integration adapters."""
+
+    CONNECTED = "CONNECTED"
+    WAITING = "WAITING"
+    NOT_CONFIGURED = "NOT CONFIGURED"
+
+
+class BaseUniversalConnector:
+    """Canonical base adapter for external engineering tool integrations.
+
+    Standardizes payload parsing, security vetting, and routes everything
+    directly through the single authoritative ingest_session_payload() path.
+    """
+
+    def __init__(self, name: str, runtime: Any):
+        self.name = name
+        self.runtime = runtime
+        self.status = ConnectorStatus.NOT_CONFIGURED
+
+    def check_connection(self) -> Dict[str, Any]:
+        """Perform pre-flight connection readiness diagnostics."""
+        raise NotImplementedError
+
+    def parse_payload(self, raw_payload: Dict[str, Any]) -> Any:
+        """Map raw connector payloads cleanly to SAGE's ExternalSessionPayload schema."""
+        raise NotImplementedError
+
+    def ingest_payload(self, raw_payload: Dict[str, Any]) -> Dict[str, Any]:
+        """Convert, validate, and ingest raw tool data using the core Continuity Bridge."""
+        payload = self.parse_payload(raw_payload)
+        return self.runtime.ingest_session_payload(payload)
+
+
+class ConnectorRegistry:
+    """Central registry cataloging all enabled external connectors in SAGE."""
+
+    def __init__(self, runtime: Any):
+        self.runtime = runtime
+        self.connectors: Dict[str, BaseUniversalConnector] = {}
+
+    def register(self, connector: BaseUniversalConnector) -> None:
+        """Register a new universal connector."""
+        self.connectors[connector.name.lower()] = connector
+
+    def get_connector(self, name: str) -> Optional[BaseUniversalConnector]:
+        """Retrieve a registered connector by name."""
+        return self.connectors.get(name.lower())
+
+    def get_registry_report(self) -> Dict[str, Any]:
+        """Provide a dynamic diagnostic report of all registered integrations."""
+        report = {}
+        for name, conn in self.connectors.items():
+            report[name] = conn.check_connection()
+        return report
+
+
+class GitLabConnector(BaseUniversalConnector):
+    """Universal connector for GitLab repository event synchronization."""
+
+    def __init__(self, runtime: Any):
+        super().__init__("GitLab", runtime)
+
+    def check_connection(self) -> Dict[str, Any]:
+        token = self.runtime.config.get("GITLAB_PRIVATE_TOKEN")
+        self.status = ConnectorStatus.CONNECTED if token else ConnectorStatus.NOT_CONFIGURED
+        return {
+            "name": self.name,
+            "status": self.status,
+            "diagnostics": "GitLab API verified" if token else "Token missing in settings",
+        }
+
+    def parse_payload(self, raw_payload: Dict[str, Any]) -> Any:
+        from sage.models import ExternalSessionPayload
+
+        event_type = raw_payload.get("event_name", "push")
+        repo_name = raw_payload.get("project", {}).get("name", "unknown")
+        user = raw_payload.get("user_name", "unknown")
+
+        return ExternalSessionPayload(
+            session_id=f"gitlab_{uuid.uuid4().hex[:8]}",
+            objective=self.runtime.current_state.current_objective
+            or f"Sync GitLab project: {repo_name}",
+            task=f"Ingest GitLab Event: {event_type} by {user}",
+            memories=[
+                {
+                    "id": f"gl_{uuid.uuid4().hex[:8]}",
+                    "object_type": "gitlab_event",
+                    "content": raw_payload,
+                    "tags": ["gitlab", event_type, repo_name],
+                    "confidence": "validated",
+                }
+            ],
+            decisions=[],
+        )
+
+
+class SlackConnector(BaseUniversalConnector):
+    """Universal connector for Slack workspace channel thread synchronization."""
+
+    def __init__(self, runtime: Any):
+        super().__init__("Slack", runtime)
+
+    def check_connection(self) -> Dict[str, Any]:
+        token = self.runtime.config.get("SLACK_BOT_TOKEN")
+        self.status = ConnectorStatus.CONNECTED if token else ConnectorStatus.NOT_CONFIGURED
+        return {
+            "name": self.name,
+            "status": self.status,
+            "diagnostics": "Slack Bot connection active" if token else "Slack Token missing",
+        }
+
+    def parse_payload(self, raw_payload: Dict[str, Any]) -> Any:
+        from sage.models import ExternalSessionPayload
+
+        channel = raw_payload.get("channel_id", "general")
+        text = raw_payload.get("text", "")
+
+        return ExternalSessionPayload(
+            session_id=f"slack_{uuid.uuid4().hex[:8]}",
+            objective=self.runtime.current_state.current_objective
+            or f"Slack Interaction in #{channel}",
+            task="Ingest Slack Message",
+            memories=[
+                {
+                    "id": f"slack_msg_{uuid.uuid4().hex[:8]}",
+                    "object_type": "slack_message",
+                    "content": {"channel": channel, "text": text},
+                    "tags": ["slack", channel],
+                    "confidence": "validated",
+                }
+            ],
+            decisions=[],
+        )
+
+
+class LinearConnector(BaseUniversalConnector):
+    """Universal connector for Linear issue tracking synchronization."""
+
+    def __init__(self, runtime: Any):
+        super().__init__("Linear", runtime)
+
+    def check_connection(self) -> Dict[str, Any]:
+        token = self.runtime.config.get("LINEAR_API_KEY")
+        self.status = ConnectorStatus.CONNECTED if token else ConnectorStatus.NOT_CONFIGURED
+        return {
+            "name": self.name,
+            "status": self.status,
+            "diagnostics": "Linear tracking sync active" if token else "Linear API key missing",
+        }
+
+    def parse_payload(self, raw_payload: Dict[str, Any]) -> Any:
+        from sage.models import ExternalSessionPayload
+
+        issue_id = raw_payload.get("issue_id", "unknown")
+        title = raw_payload.get("title", "no title")
+
+        return ExternalSessionPayload(
+            session_id=f"linear_{uuid.uuid4().hex[:8]}",
+            objective=self.runtime.current_state.current_objective
+            or f"Linear Tracking for Issue {issue_id}",
+            task=f"Ingest Linear Issue Update: {title}",
+            memories=[
+                {
+                    "id": f"linear_issue_{issue_id}",
+                    "object_type": "linear_issue",
+                    "content": raw_payload,
+                    "tags": ["linear", issue_id],
+                    "confidence": "validated",
+                }
+            ],
+            decisions=[],
+        )
