@@ -47,3 +47,4 @@ Welcome to SAGE's immutable Master Archive and research repository. This index l
 - [SAGE Render Deployment Handoff Spec](../docs/master/RENDER_DEPLOYMENT_HANDOFF.md) - Comprehensive Render deployment settings, repository reference, required env variables, and health checks.
 - [SAGE Custom GPT Action OpenAPI Schema](../docs/master/CUSTOM_GPT_OPENAPI_SCHEMA.json) - Complete pre-configured OpenAPI 3.0 specification for secure Custom GPT Action integration.
 - [SAGE Milestone 4 Integration Report](research/archive/MILESTONE_4_INTEGRATION_REPORT.md) - Operational validation and integration report for Runtime Intelligence, SAGE platform nodes, and zero-copy-paste continuity.
+- [SAGE 2 Combined Integration Status & Hardening Report](../docs/master/SAGE2_INTEGRATION_STATUS_REPORT.md) - Definitive operational status and hardening pass results for SAGE 2.
