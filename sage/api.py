@@ -31,7 +31,9 @@ from sage.integration import (
 )
 
 app = FastAPI(
-    title="SAGE Runtime API", description="SAGE Autonomous Continuity Runtime API with Live Webhooks", version="1.1.0"
+    title="SAGE Runtime API",
+    description="SAGE Autonomous Continuity Runtime API with Live Webhooks",
+    version="1.1.0",
 )
 
 # Global runtime instance
@@ -58,8 +60,7 @@ async def api_key_auth_middleware(request: Request, call_next):
         x_api_key = request.headers.get("x-api-key")
         if not x_api_key or not lifecycle_mgr.authorize(x_api_key):
             return JSONResponse(
-                status_code=401,
-                content={"detail": "Unauthorized: Invalid or missing API key."}
+                status_code=401, content={"detail": "Unauthorized: Invalid or missing API key."}
             )
 
     return await call_next(request)
@@ -387,7 +388,9 @@ async def index_github_event(request: Request):
     if webhook_secret:
         signature = request.headers.get("X-Hub-Signature-256")
         if not signature or not signature.startswith("sha256="):
-            raise HTTPException(status_code=401, detail="GitHub signature header missing or invalid.")
+            raise HTTPException(
+                status_code=401, detail="GitHub signature header missing or invalid."
+            )
         expected_sig = signature.split("=")[1]
         mac = hmac.new(webhook_secret.encode(), msg=body, digestmod=hashlib.sha256)
         if not hmac.compare_digest(mac.hexdigest(), expected_sig):
@@ -400,7 +403,9 @@ async def index_github_event(request: Request):
         raise HTTPException(status_code=400, detail="Invalid JSON payload")
 
     # 3. Handle raw webhooks from GitHub or direct GitHubEvent models
-    is_raw_gh = "repository" in data and ("pusher" in data or "sender" in data or "pull_request" in data)
+    is_raw_gh = "repository" in data and (
+        "pusher" in data or "sender" in data or "pull_request" in data
+    )
 
     if is_raw_gh:
         # Extract metadata from raw GitHub structure
@@ -416,18 +421,16 @@ async def index_github_event(request: Request):
 
         # Map directly to canonical GitHubEvent schema
         event = GitHubEvent(
-            event_type=event_type,
-            repository=repo_name,
-            ref=ref,
-            author=author,
-            payload=data
+            event_type=event_type, repository=repo_name, ref=ref, author=author, payload=data
         )
     else:
         # Standard repository payload validation
         try:
             event = GitHubEvent(**data)
         except Exception as e:
-            raise HTTPException(status_code=422, detail=f"Unprocessable GitHubEvent payload: {str(e)}")
+            raise HTTPException(
+                status_code=422, detail=f"Unprocessable GitHubEvent payload: {str(e)}"
+            )
 
     event_id = tool_mgr.index_github_event(event)
     return {"event_id": event_id, "status": "indexed"}
