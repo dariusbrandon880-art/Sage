@@ -1,0 +1,16 @@
+{
+  "session_id": "session_6141937a",
+  "timestamp": "2026-07-23 13:37:07.262894+00:00",
+  "active_objectives": [
+    "Expand Intelligence"
+  ],
+  "completed_actions": [],
+  "pending_actions": [
+    "task:Create tests"
+  ],
+  "important_decisions": [],
+  "related_archive_references": [],
+  "metadata": {
+    "source": "set_objective"
+  }
+}
