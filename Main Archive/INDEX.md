@@ -10,6 +10,7 @@ Welcome to SAGE's immutable Master Archive and research repository. This index l
 - [Dependency Graph](architecture/dependency-graph.md) - Class mappings and package relationship models.
 - [Architecture Index](architecture/architecture-index.md) - Directory layout index of the repository.
 - [SAGE Archive Intelligence Layer](../docs/master/ARCHIVE_INTELLIGENCE.md) - Design and operational specification of SAGE's relational knowledge graph and metadata tracking.
+- [SAGE Constitution Records](../docs/master/CONSTITUTION.md) - Immutable core governance laws, mission, and guiding architectural principles of SAGE.
 
 ---
 
@@ -48,3 +49,4 @@ Welcome to SAGE's immutable Master Archive and research repository. This index l
 - [SAGE Custom GPT Action OpenAPI Schema](../docs/master/CUSTOM_GPT_OPENAPI_SCHEMA.json) - Complete pre-configured OpenAPI 3.0 specification for secure Custom GPT Action integration.
 - [SAGE Milestone 4 Integration Report](research/archive/MILESTONE_4_INTEGRATION_REPORT.md) - Operational validation and integration report for Runtime Intelligence, SAGE platform nodes, and zero-copy-paste continuity.
 - [SAGE 2 Combined Integration Status & Hardening Report](../docs/master/SAGE2_INTEGRATION_STATUS_REPORT.md) - Definitive operational status and hardening pass results for SAGE 2.
+- [SAGE Validation Protocol v1.0](../tests/VALIDATION_PROTOCOL.md) - Zero-trust validation protocols, break tests, and human evaluation scoring indexes.
