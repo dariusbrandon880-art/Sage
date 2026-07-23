@@ -714,9 +714,25 @@ class SageRuntime:
             self.context_tracker.add_unresolved_item(f"task:{payload.task}")
 
         # --- 2. Classification ---
+        old_objective = self.current_state.current_objective or "None"
+        old_task = self.current_state.active_task or "None"
+
         self.current_state.current_objective = payload.objective
         if payload.task:
             self.current_state.active_task = payload.task
+
+        if payload.objective != old_objective:
+            self.context_tracker.record_transition(
+                from_state=f"objective:{old_objective}",
+                to_state=f"objective:{payload.objective}",
+                reason=f"Objective updated via ingestion of session '{session_id}'",
+            )
+        if payload.task and payload.task != old_task:
+            self.context_tracker.record_transition(
+                from_state=f"task:{old_task}",
+                to_state=f"task:{payload.task}",
+                reason=f"Task updated via ingestion of session '{session_id}'",
+            )
 
         # Process and classify memories
         ingested_memories = []
