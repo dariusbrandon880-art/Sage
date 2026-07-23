@@ -8,6 +8,8 @@ from sage.memory import Memory
 from sage.archive import Archive
 from sage.decision import DecisionTracker
 from sage.validation import ValidationSystem
+from sage.acr.skal import SKALPayload, SKALIntakeBoundary
+from sage.acr.reliability import ReliabilityIncidentTracker
 
 
 @pytest.fixture
@@ -155,3 +157,70 @@ def test_handoff_and_restoration(temp_dir):
     )
     assert new_runtime.current_state.active_task == "Implement handoff feature"
     assert "Lack of handoff test coverage" in new_runtime.current_state.blockers
+
+
+def test_skal_intake_boundary_validation(temp_dir):
+    """Test that SAGE-SKAL enforces schemas and captures evidence with no auto-promotion."""
+    from sage.runtime import SageRuntime
+
+    runtime = SageRuntime(str(temp_dir))
+    boundary = SKALIntakeBoundary(runtime)
+
+    # 1. Valid intake payload
+    payload = SKALPayload(
+        object_type="fact",
+        content={"statement": "SAGE-SKAL is fully operational"},
+        tags=["skal", "proof"],
+    )
+
+    report = boundary.process_incoming_payload(payload)
+    assert report.is_valid is True
+    assert len(report.rejection_reasons) == 0
+    assert report.suggested_confidence == ConfidenceLevel.HYPOTHESIS
+
+    # Confirm created as hypothesis in the Memory store (Strictly maintain: Human gate mandatory)
+    stored_memories = runtime.memory.list_all()
+    assert len(stored_memories) == 1
+    assert stored_memories[0].confidence == ConfidenceLevel.HYPOTHESIS
+    assert "skal_intake" in stored_memories[0].tags
+
+    # 2. Invalid intake payload (invalid object_type)
+    invalid_payload = SKALPayload(
+        object_type="invalid_category",
+        content={"data": "unsupported"},
+    )
+    report_invalid = boundary.process_incoming_payload(invalid_payload)
+    assert report_invalid.is_valid is False
+    assert any("Invalid object_type" in r for r in report_invalid.rejection_reasons)
+
+
+def test_reliability_incident_tracker_logging(temp_dir):
+    """Test logging and listing active incidents in ReliabilityIncidentTracker."""
+    tracker = ReliabilityIncidentTracker(storage_path=str(temp_dir / "reliability"))
+
+    # Log exception
+    try:
+        raise ValueError("Simulated database anomaly")
+    except Exception as e:
+        incident = tracker.log_incident(
+            severity="high",
+            subsystem="database",
+            error_message=f"Failed to load checkpoint: {str(e)}",
+            exc=e,
+            metadata={"code": 500},
+        )
+
+    assert incident.severity == "high"
+    assert incident.subsystem == "database"
+    assert "database anomaly" in incident.error_message
+    assert "ValueError" in incident.traceback_log
+    assert incident.metadata == {"code": 500}
+
+    # Retrieve active incidents
+    active_high = tracker.get_active_incidents("high")
+    assert len(active_high) == 1
+    assert active_high[0].id == incident.id
+
+    # Retrieve active low (which should include high as well)
+    active_low = tracker.get_active_incidents("low")
+    assert len(active_low) == 1

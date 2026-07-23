@@ -31,6 +31,8 @@ from sage.integration import (
     GitHubEvent,
     GoogleWorkspaceArtifact,
 )
+from sage.acr.skal import SKALPayload, SKALIntakeBoundary
+from sage.acr.reliability import ReliabilityIncidentTracker
 
 app = FastAPI(
     title="SAGE Runtime API",
@@ -43,13 +45,15 @@ runtime = SAGERuntime()
 runtime.start()
 validation = ValidationSystem(runtime.memory, runtime.archive)
 
-# Instantiate Service & Integration managers
+# Instantiate Service, Integration & Reliability managers
 lifecycle_mgr = LifecycleManager()
 lifecycle_mgr.startup()  # Default startup on initialization
 chatgpt_client = ChatGPTClient(runtime)
 gemini_jules_client = GeminiJulesClient(runtime)
 tool_mgr = ToolIntegrationManager(runtime)
 workspace_sync_mgr = GoogleWorkspaceSyncManager(runtime)
+skal_intake = SKALIntakeBoundary(runtime)
+reliability_tracker = ReliabilityIncidentTracker()
 
 
 # Global Middleware for SAGE API Key Authentication Boundaries
@@ -105,6 +109,13 @@ class ArchivePromotionRequest(BaseModel):
     memory_id: str
     title: str
     tags: Optional[List[str]] = None
+
+
+class IncidentLogRequest(BaseModel):
+    severity: str
+    subsystem: str
+    error_message: str
+    metadata: Optional[Dict[str, Any]] = None
 
 
 # Health and Status endpoints
@@ -535,6 +546,41 @@ async def sync_workspace(credentials_path: Optional[str] = None):
         raise HTTPException(
             status_code=500, detail=f"Google Workspace synchronization failed: {str(e)}"
         )
+
+
+# SAGE-SKAL Intake endpoint
+@app.post("/tools/skal/intake")
+async def process_skal_intake(payload: SKALPayload):
+    try:
+        report = skal_intake.process_incoming_payload(payload)
+        return report.model_dump()
+    except Exception as e:
+        reliability_tracker.log_incident("high", "runtime", f"SKAL intake failed: {str(e)}", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Reliability endpoints
+@app.post("/reliability/incident")
+async def log_reliability_incident(req: IncidentLogRequest):
+    try:
+        incident = reliability_tracker.log_incident(
+            severity=req.severity,
+            subsystem=req.subsystem,
+            error_message=req.error_message,
+            metadata=req.metadata,
+        )
+        return incident.model_dump()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/reliability/incidents")
+async def get_reliability_incidents(min_severity: Optional[str] = None):
+    try:
+        incidents = reliability_tracker.get_active_incidents(min_severity)
+        return [inc.model_dump() for inc in incidents]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # Snapshot endpoints

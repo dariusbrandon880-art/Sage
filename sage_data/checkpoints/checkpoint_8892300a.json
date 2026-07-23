@@ -1,0 +1,33 @@
+{
+  "id": "checkpoint_8892300a",
+  "timestamp": "2026-07-23 07:16:40.271684+00:00",
+  "current_sage_state": {
+    "current_objective": "Expand Intelligence",
+    "active_task": "Create tests",
+    "blockers": [],
+    "dependencies": []
+  },
+  "active_goals": [
+    "Expand Intelligence",
+    "Create tests"
+  ],
+  "recent_decisions": [],
+  "repository_state_reference": {
+    "branch": "jules-4702221855820316727-4f3d05c7",
+    "commit": "84c9fd3df1ec0a830dc000c554b4383ecd1fb651",
+    "is_dirty": true,
+    "status_output": "M  \"Main Archive/INDEX.md\"\nA  \"Main Archive/research/archive/MILESTONE_4_INTEGRATION_REPORT.md\"\nA  \"Main Archive/research/strategic/CIC.md\"\nA  docs/master/CONSTITUTION.md\nA  docs/master/CUSTOM_GPT_OPENAPI_SCHEMA.json\nM  docs/master/EXTERNAL_SETUP.md\nM  docs/master/MASTER_SNAPSHOT.md\nM  docs/master/ROADMAP.md\nA  docs/master/SAGE2_INTEGRATION_STATUS_REPORT.md\nM  docs/master/SESSION_STATE.md\nA  sage/acr/README.md\nA  sage/acr/reliability.py\nM  sage/acr/session/checkpoint.py\nM  sage/acr/session/context_tracker.py\nA  sage/acr/skal.py\nM  sage/api.py\nM  sage/archive/core.py\nM  sage/archive/knowledge_graph/__init__.py\nM  sage/cli.py\nM  sage/integration.py\nM  sage/models.py\nA  sage/runtime/README.md\nM  sage/runtime/__init__.py\nM  sage/runtime/capability_report.py\nM  sage/runtime/diagnostics.py\nM  sage/runtime/engine.py\nM  sage/runtime/health.py\nM  sage/validation.py\n M sage_data/context/continuity_context.json\n M sage_data/continuity/continuity_state.json\nM  scripts/production_check.py\nA  tests/VALIDATION_PROTOCOL.md\nM  tests/test_api.py\nM  tests/test_archive_intelligence.py\nM  tests/test_continuity_intelligence.py\nM  tests/test_new_systems.py\nM  tests/test_runtime_intelligence.py\n?? sage_data/checkpoint_8892300a.json\n?? sage_data/sessions/session_391d2601.json"
+  },
+  "validation_status": {
+    "is_valid": true,
+    "loaded_files_count": 16,
+    "corrupted_files": [],
+    "referential_integrity": {
+      "missing_evidence_links": [],
+      "decisions_analyzed": 0
+    },
+    "lineage_valid": true,
+    "issues": []
+  },
+  "metadata": {}
+}
