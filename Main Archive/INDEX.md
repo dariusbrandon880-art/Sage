@@ -45,3 +45,4 @@ Welcome to SAGE's immutable Master Archive and research repository. This index l
 - [SAGE Final Live Activation Checklist](../docs/master/FINAL_LIVE_ACTIVATION_CHECKLIST.md) - Definitive step-by-step operational setup instructions to bridge the permission boundary for hosting, APIs, webhooks, and integrations.
 - [SAGE Render Deployment Handoff Spec](../docs/master/RENDER_DEPLOYMENT_HANDOFF.md) - Comprehensive Render deployment settings, repository reference, required env variables, and health checks.
 - [SAGE Custom GPT Action OpenAPI Schema](../docs/master/CUSTOM_GPT_OPENAPI_SCHEMA.json) - Complete pre-configured OpenAPI 3.0 specification for secure Custom GPT Action integration.
+- [SAGE Milestone 4 Integration Report](research/archive/MILESTONE_4_INTEGRATION_REPORT.md) - Operational validation and integration report for Runtime Intelligence, SAGE platform nodes, and zero-copy-paste continuity.
