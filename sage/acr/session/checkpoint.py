@@ -39,15 +39,23 @@ class CheckpointManager:
     def _get_git_reference(self) -> Dict[str, Any]:
         """Safely fetch git repository state reference, falling back gracefully on failure."""
         try:
-            branch = subprocess.check_output(
-                ["git", "rev-parse", "--abbrev-ref", "HEAD"], stderr=subprocess.DEVNULL
-            ).decode().strip()
-            commit = subprocess.check_output(
-                ["git", "rev-parse", "HEAD"], stderr=subprocess.DEVNULL
-            ).decode().strip()
-            status = subprocess.check_output(
-                ["git", "status", "--porcelain"], stderr=subprocess.DEVNULL
-            ).decode().strip()
+            branch = (
+                subprocess.check_output(
+                    ["git", "rev-parse", "--abbrev-ref", "HEAD"], stderr=subprocess.DEVNULL
+                )
+                .decode()
+                .strip()
+            )
+            commit = (
+                subprocess.check_output(["git", "rev-parse", "HEAD"], stderr=subprocess.DEVNULL)
+                .decode()
+                .strip()
+            )
+            status = (
+                subprocess.check_output(["git", "status", "--porcelain"], stderr=subprocess.DEVNULL)
+                .decode()
+                .strip()
+            )
             return {
                 "branch": branch,
                 "commit": commit,

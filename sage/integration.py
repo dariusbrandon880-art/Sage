@@ -9,6 +9,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from pydantic import BaseModel, Field
 
+from sage.models import ExternalSessionPayload
+
 # --- AI Integration Models & Clients ---
 
 
@@ -96,9 +98,6 @@ class ChatGPTClient(BaseAIClient):
             f"Context analyzed: {len(context['matched_memories'])} active memories, {len(context['matched_archives'])} master archives."
         )
 
-        # Route through unified Continuity Bridge
-        from sage.models import ExternalSessionPayload
-
         payload = ExternalSessionPayload(
             session_id=session_id,
             objective=self.runtime.current_state.current_objective or "AI Query Execution",
@@ -169,18 +168,14 @@ class GeminiJulesClient(BaseAIClient):
             context_str = f"SAGE Context Memories: {json.dumps(context['matched_memories'])}\nSAGE Context Archives: {json.dumps(context['matched_archives'])}"
             full_prompt = f"{system_instruction}\n\nContext:\n{context_str}\n\nEngineer Prompt: {request.prompt}"
 
-            payload = {
-                "contents": [{
-                    "parts": [{"text": full_prompt}]
-                }]
-            }
+            payload = {"contents": [{"parts": [{"text": full_prompt}]}]}
 
             try:
                 req = urllib.request.Request(
                     url,
                     data=json.dumps(payload).encode("utf-8"),
                     headers={"Content-Type": "application/json"},
-                    method="POST"
+                    method="POST",
                 )
                 with urllib.request.urlopen(req, timeout=15) as response:
                     res_body = json.loads(response.read().decode("utf-8"))
@@ -195,9 +190,6 @@ class GeminiJulesClient(BaseAIClient):
                     f"Prompt: '{request.prompt}'\n"
                     f"Referenced SAGE keys: {referenced_ids}"
                 )
-
-        # Route through unified Continuity Bridge
-        from sage.models import ExternalSessionPayload
 
         payload = ExternalSessionPayload(
             session_id=session_id,
@@ -236,7 +228,9 @@ class ConnectorInfo(BaseModel):
     """Configuration, credentials, connection state, capabilities, and node identity of a SAGE connector."""
 
     provider_name: str
-    node_identity: str  # e.g., SAGE Cognitive Node, Google AI-SAGE Node, SAGE Engineering Node, etc.
+    node_identity: (
+        str  # e.g., SAGE Cognitive Node, Google AI-SAGE Node, SAGE Engineering Node, etc.
+    )
     connection_state: str  # CONNECTED, WAITING, NOT CONFIGURED
     required_credentials: List[str]
     permissions_required: List[str]
@@ -261,106 +255,137 @@ class ConnectorRegistry:
         # 1. OpenAI / ChatGPT (SAGE Cognitive Node)
         openai_key = os.getenv("OPENAI_API_KEY")
         chatgpt_state = "CONNECTED" if openai_key else "NOT CONFIGURED"
-        connectors.append(ConnectorInfo(
-            provider_name="OpenAI / ChatGPT",
-            node_identity="SAGE Cognitive Node",
-            connection_state=chatgpt_state,
-            required_credentials=["OPENAI_API_KEY"],
-            permissions_required=["Chat completion and embeddings access"],
-            health_status="healthy" if openai_key else "unavailable",
-            capabilities=["Autonomous State Extraction", "Context-Aware Reasoner", "Memory Recommendation"],
-            authentication_state="configured" if openai_key else "unconfigured",
-            last_sync=now_str if openai_key else "never",
-            validation_status="validated" if openai_key else "not_validated"
-        ))
+        connectors.append(
+            ConnectorInfo(
+                provider_name="OpenAI / ChatGPT",
+                node_identity="SAGE Cognitive Node",
+                connection_state=chatgpt_state,
+                required_credentials=["OPENAI_API_KEY"],
+                permissions_required=["Chat completion and embeddings access"],
+                health_status="healthy" if openai_key else "unavailable",
+                capabilities=[
+                    "Autonomous State Extraction",
+                    "Context-Aware Reasoner",
+                    "Memory Recommendation",
+                ],
+                authentication_state="configured" if openai_key else "unconfigured",
+                last_sync=now_str if openai_key else "never",
+                validation_status="validated" if openai_key else "not_validated",
+            )
+        )
 
         # 2. Google AI / Gemini (Google AI-SAGE Node)
         gemini_key = os.getenv("GEMINI_API_KEY")
         gemini_state = "CONNECTED" if gemini_key else "WAITING"
-        connectors.append(ConnectorInfo(
-            provider_name="Google AI / Gemini",
-            node_identity="Google AI-SAGE Node",
-            connection_state=gemini_state,
-            required_credentials=["GEMINI_API_KEY"],
-            permissions_required=["Generative language API invocation"],
-            health_status="healthy" if gemini_key else "unavailable",
-            capabilities=["High-Fidelity Context Mapping", "Reasoning Bridge Loop", "Zero-Copy State Parsing"],
-            authentication_state="configured" if gemini_key else "missing",
-            last_sync=now_str if gemini_key else "never",
-            validation_status="ready" if gemini_key else "not_validated"
-        ))
+        connectors.append(
+            ConnectorInfo(
+                provider_name="Google AI / Gemini",
+                node_identity="Google AI-SAGE Node",
+                connection_state=gemini_state,
+                required_credentials=["GEMINI_API_KEY"],
+                permissions_required=["Generative language API invocation"],
+                health_status="healthy" if gemini_key else "unavailable",
+                capabilities=[
+                    "High-Fidelity Context Mapping",
+                    "Reasoning Bridge Loop",
+                    "Zero-Copy State Parsing",
+                ],
+                authentication_state="configured" if gemini_key else "missing",
+                last_sync=now_str if gemini_key else "never",
+                validation_status="ready" if gemini_key else "not_validated",
+            )
+        )
 
         # 3. Jules (SAGE Engineering Node)
         # Jules shares Gemini's generative capability but represents our core engineering node.
-        connectors.append(ConnectorInfo(
-            provider_name="Jules",
-            node_identity="SAGE Engineering Node",
-            connection_state=gemini_state,
-            required_credentials=["GEMINI_API_KEY"],
-            permissions_required=["SAGE workflow and reasoning continuity orchestration"],
-            health_status="healthy" if gemini_key else "unavailable",
-            capabilities=["Codebase Alignment", "Self-Verification Executions", "Proactive Checkpointing"],
-            authentication_state="configured" if gemini_key else "missing",
-            last_sync=now_str if gemini_key else "never",
-            validation_status="ready" if gemini_key else "not_validated"
-        ))
+        connectors.append(
+            ConnectorInfo(
+                provider_name="Jules",
+                node_identity="SAGE Engineering Node",
+                connection_state=gemini_state,
+                required_credentials=["GEMINI_API_KEY"],
+                permissions_required=["SAGE workflow and reasoning continuity orchestration"],
+                health_status="healthy" if gemini_key else "unavailable",
+                capabilities=[
+                    "Codebase Alignment",
+                    "Self-Verification Executions",
+                    "Proactive Checkpointing",
+                ],
+                authentication_state="configured" if gemini_key else "missing",
+                last_sync=now_str if gemini_key else "never",
+                validation_status="ready" if gemini_key else "not_validated",
+            )
+        )
 
         # 4. Google Workspace (SAGE Workspace Node)
         creds_path = os.getenv("GOOGLE_WORKSPACE_CREDENTIALS_PATH", ".sage/credentials.json")
         gw_exists = Path(creds_path).exists()
         gw_state = "CONNECTED" if gw_exists else "NOT CONFIGURED"
-        connectors.append(ConnectorInfo(
-            provider_name="Google Workspace",
-            node_identity="SAGE Workspace Node",
-            connection_state=gw_state,
-            required_credentials=["GOOGLE_WORKSPACE_CREDENTIALS_PATH (.sage/credentials.json)"],
-            permissions_required=["Google Docs (documents), Google Sheets (spreadsheets), Google Drive (file metadata)"],
-            health_status="healthy" if gw_exists else "unavailable",
-            capabilities=["State Mirroring", "Documentation Archiving", "Metrics Syncing"],
-            authentication_state="configured" if gw_exists else "unconfigured",
-            last_sync=now_str if gw_exists else "never",
-            validation_status="validated" if gw_exists else "not_validated"
-        ))
+        connectors.append(
+            ConnectorInfo(
+                provider_name="Google Workspace",
+                node_identity="SAGE Workspace Node",
+                connection_state=gw_state,
+                required_credentials=["GOOGLE_WORKSPACE_CREDENTIALS_PATH (.sage/credentials.json)"],
+                permissions_required=[
+                    "Google Docs (documents), Google Sheets (spreadsheets), Google Drive (file metadata)"
+                ],
+                health_status="healthy" if gw_exists else "unavailable",
+                capabilities=["State Mirroring", "Documentation Archiving", "Metrics Syncing"],
+                authentication_state="configured" if gw_exists else "unconfigured",
+                last_sync=now_str if gw_exists else "never",
+                validation_status="validated" if gw_exists else "not_validated",
+            )
+        )
 
         # 5. GitHub (SAGE Repository Node)
         gh_secret = os.getenv("GITHUB_WEBHOOK_SECRET")
         gh_state = "CONNECTED" if gh_secret else "NOT CONFIGURED"
-        connectors.append(ConnectorInfo(
-            provider_name="GitHub",
-            node_identity="SAGE Repository Node",
-            connection_state=gh_state,
-            required_credentials=["GITHUB_WEBHOOK_SECRET"],
-            permissions_required=["Repository push, pull_request, release webhooks validation"],
-            health_status="healthy" if gh_secret else "unavailable",
-            capabilities=["Secure HMAC-SHA256 Hook Listener", "Continuous Integration Logging", "Event Tracking"],
-            authentication_state="configured" if gh_secret else "unconfigured",
-            last_sync=now_str if gh_secret else "never",
-            validation_status="validated" if gh_secret else "not_validated"
-        ))
+        connectors.append(
+            ConnectorInfo(
+                provider_name="GitHub",
+                node_identity="SAGE Repository Node",
+                connection_state=gh_state,
+                required_credentials=["GITHUB_WEBHOOK_SECRET"],
+                permissions_required=["Repository push, pull_request, release webhooks validation"],
+                health_status="healthy" if gh_secret else "unavailable",
+                capabilities=[
+                    "Secure HMAC-SHA256 Hook Listener",
+                    "Continuous Integration Logging",
+                    "Event Tracking",
+                ],
+                authentication_state="configured" if gh_secret else "unconfigured",
+                last_sync=now_str if gh_secret else "never",
+                validation_status="validated" if gh_secret else "not_validated",
+            )
+        )
 
         # 6. Render (SAGE Runtime Node)
         # Render represents our production environment and status reporting node
         render_env = os.getenv("ENV") == "production"
-        connectors.append(ConnectorInfo(
-            provider_name="Render",
-            node_identity="SAGE Runtime Node",
-            connection_state="CONNECTED" if render_env else "NOT CONFIGURED",
-            required_credentials=[],
-            permissions_required=["Runtime server hosting", "Public API gateway"],
-            health_status="healthy" if self.runtime.active else "unavailable",
-            capabilities=["Continuous Deployment Integration", "Stateless In-Memory Storage", "Health Metrics Tracking"],
-            authentication_state="configured",
-            last_sync=now_str,
-            validation_status="validated" if self.runtime.active else "not_validated"
-        ))
+        connectors.append(
+            ConnectorInfo(
+                provider_name="Render",
+                node_identity="SAGE Runtime Node",
+                connection_state="CONNECTED" if render_env else "NOT CONFIGURED",
+                required_credentials=[],
+                permissions_required=["Runtime server hosting", "Public API gateway"],
+                health_status="healthy" if self.runtime.active else "unavailable",
+                capabilities=[
+                    "Continuous Deployment Integration",
+                    "Stateless In-Memory Storage",
+                    "Health Metrics Tracking",
+                ],
+                authentication_state="configured",
+                last_sync=now_str,
+                validation_status="validated" if self.runtime.active else "not_validated",
+            )
+        )
 
         return connectors
 
 
 # --- Extensible Future Connector Framework ---
-
-
-from sage.models import ExternalSessionPayload
 
 
 class BaseUniversalConnector:
@@ -379,48 +404,59 @@ class GitLabConnector(BaseUniversalConnector):
     """GitLab Webhook and Repository Event Integration Interface."""
 
     def handle_webhook(self, event_type: str, data: Dict[str, Any]) -> Dict[str, Any]:
-        raise NotImplementedError("GitLab Connector is ready for activation upon credential provisioning.")
+        raise NotImplementedError(
+            "GitLab Connector is ready for activation upon credential provisioning."
+        )
 
 
 class SlackConnector(BaseUniversalConnector):
     """Slack App Chat Command and Notification Integration Interface."""
 
     def handle_message(self, team_id: str, channel_id: str, text: str) -> Dict[str, Any]:
-        raise NotImplementedError("Slack Connector is ready for activation upon credential provisioning.")
+        raise NotImplementedError(
+            "Slack Connector is ready for activation upon credential provisioning."
+        )
 
 
 class DiscordConnector(BaseUniversalConnector):
     """Discord Bot Chat Command and Notification Integration Interface."""
+
     pass
 
 
 class NotionConnector(BaseUniversalConnector):
     """Notion Database Sync and Document Indexing Integration Interface."""
+
     pass
 
 
 class LinearConnector(BaseUniversalConnector):
     """Linear Issue Tracking and Milestone Sync Integration Interface."""
+
     pass
 
 
 class Microsoft365Connector(BaseUniversalConnector):
     """Microsoft Office 365, Teams and SharePoint Integration Interface."""
+
     pass
 
 
 class AWSConnector(BaseUniversalConnector):
     """Amazon Web Services (AWS) Deployment Logs and Resource Indexing Interface."""
+
     pass
 
 
 class AzureConnector(BaseUniversalConnector):
     """Microsoft Azure Deployment Logs and Resource Indexing Interface."""
+
     pass
 
 
 class ContainerOrchestrationConnector(BaseUniversalConnector):
     """Docker and Kubernetes Cluster State Monitoring and Recovery Interface."""
+
     pass
 
 
@@ -463,8 +499,6 @@ class ToolIntegrationManager:
         """Index a GitHub engineering event into SAGE memory layer via Continuity Bridge."""
         self.indexed_github_events.append(event)
 
-        from sage.models import ExternalSessionPayload
-
         payload = ExternalSessionPayload(
             session_id=f"gh_session_{event.event_id}",
             objective=self.runtime.current_state.current_objective
@@ -487,8 +521,6 @@ class ToolIntegrationManager:
     def index_workspace_artifact(self, artifact: GoogleWorkspaceArtifact) -> str:
         """Index a Google Workspace document into SAGE memory layer via Continuity Bridge."""
         self.indexed_workspace_artifacts.append(artifact)
-
-        from sage.models import ExternalSessionPayload
 
         payload = ExternalSessionPayload(
             session_id=f"ws_session_{artifact.doc_id}",

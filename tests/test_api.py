@@ -329,10 +329,10 @@ def test_end_to_end_cross_platform_continuity_proof():
                     "object_type": "fact",
                     "content": {
                         "statement": "SAGE Cross-Platform Continuity Layer is active",
-                        "verification_code": "SECURE_ALIGNMENT_OK"
+                        "verification_code": "SECURE_ALIGNMENT_OK",
                     },
                     "tags": ["continuity_proof", "google_ai_sage"],
-                    "confidence": "validated"
+                    "confidence": "validated",
                 }
             ],
             "decisions": [
@@ -341,9 +341,9 @@ def test_end_to_end_cross_platform_continuity_proof():
                     "decision_type": "technical",
                     "description": "Approve automated system-frame context rehydration",
                     "rationale": "Allows nodes to pull memory securely without copy-paste",
-                    "evidence": ["e2e_continuity_proof_artifact_777"]
+                    "evidence": ["e2e_continuity_proof_artifact_777"],
                 }
-            ]
+            ],
         }
 
         ingest_res = client.post("/ingest", json=proof_payload)
@@ -368,7 +368,9 @@ def test_end_to_end_cross_platform_continuity_proof():
         assert "e2e_continuity_proof_artifact_777" in proof_ids
 
         # Ensure the content and node definitions are perfectly aligned
-        proof_item = [k for k in synchronized_knowledge if k["id"] == "e2e_continuity_proof_artifact_777"][0]
+        proof_item = [
+            k for k in synchronized_knowledge if k["id"] == "e2e_continuity_proof_artifact_777"
+        ][0]
         assert proof_item["content"]["verification_code"] == "SECURE_ALIGNMENT_OK"
 
         print("\n[SUCCESS] E2E CROSS-PLATFORM ZERO-COPY-PASTE CONTINUITY PROVED!")

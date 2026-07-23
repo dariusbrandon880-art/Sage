@@ -42,7 +42,9 @@ def run_checks() -> bool:
     if py_major == 3 and py_minor >= 10:
         print_success(f"Python version is compatible: {sys.version.split()[0]}")
     else:
-        print_error(f"Incompatible Python version: {sys.version.split()[0]}. Python 3.10+ required.")
+        print_error(
+            f"Incompatible Python version: {sys.version.split()[0]}. Python 3.10+ required."
+        )
         has_errors = True
 
     # 2. Check Package Dependencies
@@ -50,7 +52,11 @@ def run_checks() -> bool:
         import fastapi
         import pydantic
         import pydantic_settings
-        print_success(f"FastAPI ({fastapi.__version__}) and Pydantic ({pydantic.__version__}) installed.")
+
+        _ = pydantic_settings
+        print_success(
+            f"FastAPI ({fastapi.__version__}) and Pydantic ({pydantic.__version__}) installed."
+        )
     except ImportError as e:
         print_error(f"Missing core runtime dependency: {str(e)}")
         has_errors = True
@@ -59,6 +65,8 @@ def run_checks() -> bool:
     try:
         import googleapiclient
         import google_auth_oauthlib
+
+        _ = (googleapiclient, google_auth_oauthlib)
         print_success("Google Workspace API clients successfully verified.")
     except ImportError:
         print_warn("Google Workspace API packages are missing. Google Sync will use dry-run mode.")
@@ -70,13 +78,17 @@ def run_checks() -> bool:
     api_keys = os.getenv("SAGE_API_KEYS", "sage-default-key-2026")
 
     if not require_auth:
-        print_warn("SAGE_REQUIRE_AUTH is set to 'false'. API endpoints are open without authentication.")
+        print_warn(
+            "SAGE_REQUIRE_AUTH is set to 'false'. API endpoints are open without authentication."
+        )
         has_warnings = True
     else:
         print_success("SAGE_REQUIRE_AUTH is enabled. Strict global API key verification active.")
 
     if api_keys == "sage-default-key-2026":
-        print_error("SAGE_API_KEYS is using the default development key. Overwrite this in production!")
+        print_error(
+            "SAGE_API_KEYS is using the default development key. Overwrite this in production!"
+        )
         has_errors = True
     elif len(api_keys.split(",")) >= 1 and api_keys.strip() != "":
         print_success("Custom SAGE_API_KEYS are securely configured.")
@@ -87,10 +99,14 @@ def run_checks() -> bool:
     # Check GitHub webhook secret security
     gh_webhook_secret = os.getenv("GITHUB_WEBHOOK_SECRET")
     if not gh_webhook_secret:
-        print_warn("GITHUB_WEBHOOK_SECRET is not set. GitHub webhooks will bypass signature verification.")
+        print_warn(
+            "GITHUB_WEBHOOK_SECRET is not set. GitHub webhooks will bypass signature verification."
+        )
         has_warnings = True
     else:
-        print_success("GITHUB_WEBHOOK_SECRET configured. HMAC-SHA256 payload signature validation active.")
+        print_success(
+            "GITHUB_WEBHOOK_SECRET configured. HMAC-SHA256 payload signature validation active."
+        )
 
     # 4. Storage & Directory Structure
     print("\n--- 3. File System & Persistent Directories ---")
@@ -119,7 +135,9 @@ def run_checks() -> bool:
     if creds_path.exists():
         print_success("Google Workspace credentials found at '.sage/credentials.json'.")
     else:
-        print_warn("Google Workspace credentials missing at '.sage/credentials.json'. Only dry-run sync is possible.")
+        print_warn(
+            "Google Workspace credentials missing at '.sage/credentials.json'. Only dry-run sync is possible."
+        )
         has_warnings = True
 
     # 5. Final Decision
@@ -131,7 +149,9 @@ def run_checks() -> bool:
         return False
     elif has_warnings:
         print_warn("SAGE STATUS: READY WITH WARNINGS.")
-        print("SAGE is functional, but review warnings for optimal production security/integration.")
+        print(
+            "SAGE is functional, but review warnings for optimal production security/integration."
+        )
         print("=" * 60)
         return True
     else:

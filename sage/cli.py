@@ -179,6 +179,7 @@ def main():
     elif args.command == "health":
         try:
             from sage.runtime import check_health
+
             result = check_health(runtime)
             print(json.dumps(result, indent=2))
         except Exception as e:
@@ -188,6 +189,7 @@ def main():
     elif args.command == "diagnostics":
         try:
             from sage.runtime import generate_diagnostic_report
+
             result = generate_diagnostic_report(runtime)
             print(json.dumps(result, indent=2))
         except Exception as e:
@@ -197,6 +199,7 @@ def main():
     elif args.command == "capabilities":
         try:
             from sage.runtime import generate_capability_report
+
             result = generate_capability_report(runtime)
             print(json.dumps(result, indent=2))
         except Exception as e:
@@ -206,6 +209,7 @@ def main():
     elif args.command == "metrics":
         try:
             from sage.runtime import get_metrics_collector
+
             result = get_metrics_collector().get_metrics()
             print(json.dumps(result, indent=2))
         except Exception as e:

@@ -33,7 +33,9 @@ from sage.integration import (
 )
 
 app = FastAPI(
-    title="SAGE Runtime API", description="SAGE Autonomous Continuity Runtime API with Live Webhooks", version="1.1.0"
+    title="SAGE Runtime API",
+    description="SAGE Autonomous Continuity Runtime API with Live Webhooks",
+    version="1.1.0",
 )
 
 # Global runtime instance
@@ -54,7 +56,6 @@ workspace_sync_mgr = GoogleWorkspaceSyncManager(runtime)
 @app.middleware("http")
 async def api_key_auth_middleware(request: Request, call_next):
     require_auth = os.getenv("SAGE_REQUIRE_AUTH", "false").lower() == "true"
-    bypass_paths = ["/", "/health", "/docs", "/redoc", "/openapi.json", "/system-frame"]
 
     # /system-frame is read-only but we can bypass or enforce depending on config.
     # The requirement: "Respect authentication boundaries."
@@ -67,8 +68,7 @@ async def api_key_auth_middleware(request: Request, call_next):
         x_api_key = request.headers.get("x-api-key")
         if not x_api_key or not lifecycle_mgr.authorize(x_api_key):
             return JSONResponse(
-                status_code=401,
-                content={"detail": "Unauthorized: Invalid or missing API key."}
+                status_code=401, content={"detail": "Unauthorized: Invalid or missing API key."}
             )
 
     return await call_next(request)
@@ -161,8 +161,12 @@ async def get_system_frame():
             session_state_content = f.read()
 
     # Retrieve all structured state elements for automatic zero-copy platform rehydration
-    active_objectives = [runtime.current_state.current_objective] if runtime.current_state.current_objective else []
-    current_milestone = "Milestone 3.3 - Universal SAGE Connector Layer fully integrated and validated"
+    active_objectives = (
+        [runtime.current_state.current_objective] if runtime.current_state.current_objective else []
+    )
+    current_milestone = (
+        "Milestone 3.3 - Universal SAGE Connector Layer fully integrated and validated"
+    )
     active_task = runtime.current_state.active_task or "None"
     blockers = runtime.current_state.blockers or []
 
@@ -189,7 +193,7 @@ async def get_system_frame():
         "archive": "Master Archive validated knowledge engine and auditable logs",
         "memory": "Lab memory indexing and tag querying with high-performance key-value backend",
         "validation": "Multi-rule quality checker and promotion pipeline",
-        "continuity_bridge": "Unified single-transaction ingestion, classification, and validation pathway"
+        "continuity_bridge": "Unified single-transaction ingestion, classification, and validation pathway",
     }
 
     frame = {
@@ -205,7 +209,7 @@ async def get_system_frame():
         "master_archive_references": master_archive_references,
         "validated_architecture_summary": architecture_summary,
         "connectors": connectors,
-        "runtime_health": check_health(runtime)
+        "runtime_health": check_health(runtime),
     }
     return frame
 
@@ -463,7 +467,9 @@ async def index_github_event(request: Request):
     if webhook_secret:
         signature = request.headers.get("X-Hub-Signature-256")
         if not signature or not signature.startswith("sha256="):
-            raise HTTPException(status_code=401, detail="GitHub signature header missing or invalid.")
+            raise HTTPException(
+                status_code=401, detail="GitHub signature header missing or invalid."
+            )
         expected_sig = signature.split("=")[1]
         mac = hmac.new(webhook_secret.encode(), msg=body, digestmod=hashlib.sha256)
         if not hmac.compare_digest(mac.hexdigest(), expected_sig):
@@ -476,7 +482,9 @@ async def index_github_event(request: Request):
         raise HTTPException(status_code=400, detail="Invalid JSON payload")
 
     # 3. Handle raw webhooks from GitHub or direct GitHubEvent models
-    is_raw_gh = "repository" in data and ("pusher" in data or "sender" in data or "pull_request" in data)
+    is_raw_gh = "repository" in data and (
+        "pusher" in data or "sender" in data or "pull_request" in data
+    )
 
     if is_raw_gh:
         # Extract metadata from raw GitHub structure
@@ -492,18 +500,16 @@ async def index_github_event(request: Request):
 
         # Map directly to canonical GitHubEvent schema
         event = GitHubEvent(
-            event_type=event_type,
-            repository=repo_name,
-            ref=ref,
-            author=author,
-            payload=data
+            event_type=event_type, repository=repo_name, ref=ref, author=author, payload=data
         )
     else:
         # Standard repository payload validation
         try:
             event = GitHubEvent(**data)
         except Exception as e:
-            raise HTTPException(status_code=422, detail=f"Unprocessable GitHubEvent payload: {str(e)}")
+            raise HTTPException(
+                status_code=422, detail=f"Unprocessable GitHubEvent payload: {str(e)}"
+            )
 
     event_id = tool_mgr.index_github_event(event)
     return {"event_id": event_id, "status": "indexed"}
