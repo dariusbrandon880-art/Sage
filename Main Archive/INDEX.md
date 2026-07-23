@@ -29,6 +29,8 @@ Welcome to SAGE's immutable Master Archive and research repository. This index l
 - [CIC Spec](research/strategic/CIC.md) - Continuity Independence Validation (CIV-001) strategic framework and rehydration validation.
 - [HSI Spec](research/strategic/HSI.md) - Human-SAGE Interaction (SAGE-HSI-001) specifying trust boundaries and pacing.
 - [SAGE 2 Knowledge Governance Study](research/strategic/SAGE_Research_Track_Comparative_Intelligence_Architecture_Study_Review.md) - SAGE-RF-2026-004 Comparative Intelligence Architecture Study Review (ACCEPTED).
+- [PEF Spec](research/strategic/PEF.md) - SAGE-RF-PEF-001 Parallel Cognitive Evolution Infrastructure Framework (SPRO, HSE, Reliability Arena, ESI v2).
+- [SP_REV2 Spec](research/strategic/SP_REV2.md) - SAGE-RF-SP-001-REV-2.0 Deep Security & Information Physics Expansion Study (ITF, ZKI, QKSS, SIMG, Adaptive Security Field Theory).
 
 ---
 

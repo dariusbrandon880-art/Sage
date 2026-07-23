@@ -1,0 +1,33 @@
+{
+  "id": "checkpoint_eaaa5dca",
+  "timestamp": "2026-07-23 12:55:37.578392+00:00",
+  "current_sage_state": {
+    "current_objective": "Expand Intelligence",
+    "active_task": "Create tests",
+    "blockers": [],
+    "dependencies": []
+  },
+  "active_goals": [
+    "Expand Intelligence",
+    "Create tests"
+  ],
+  "recent_decisions": [],
+  "repository_state_reference": {
+    "branch": "jules-1383941536195240828-4dabfdd0",
+    "commit": "d58e0015cfda5524e0c0b9aba36a008d19f5b2c4",
+    "is_dirty": true,
+    "status_output": "M sage_data/context/continuity_context.json\n M sage_data/continuity/continuity_state.json\n?? sage_data/checkpoint_eaaa5dca.json\n?? sage_data/sessions/session_7ca5e3b5.json"
+  },
+  "validation_status": {
+    "is_valid": true,
+    "loaded_files_count": 16,
+    "corrupted_files": [],
+    "referential_integrity": {
+      "missing_evidence_links": [],
+      "decisions_analyzed": 0
+    },
+    "lineage_valid": true,
+    "issues": []
+  },
+  "metadata": {}
+}
