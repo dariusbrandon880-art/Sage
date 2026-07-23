@@ -1,7 +1,5 @@
 """Tests for SAGE Merge Convergence and Milestone Verification logic."""
 
-import pytest
-import tempfile
 from pathlib import Path
 from unittest.mock import patch
 from scripts.verify_convergence import (
@@ -37,8 +35,10 @@ def test_scan_for_merge_conflict_markers(tmp_path):
         encoding="utf-8",
     )
 
-    with patch("scripts.verify_convergence.Path.glob") as mock_glob, \
-         patch("scripts.verify_convergence.Path.exists", return_value=True):
+    with (
+        patch("scripts.verify_convergence.Path.glob") as mock_glob,
+        patch("scripts.verify_convergence.Path.exists", return_value=True),
+    ):
         mock_glob.return_value = [clean_file, conflict_file]
 
         res = scan_for_merge_conflict_markers()

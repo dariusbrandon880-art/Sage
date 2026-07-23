@@ -90,7 +90,7 @@ sage/
 ## 3. Endpoints & Integrations
 The REST API server exposes:
 - **System Diagnostics**: `/service/diagnostics` (Uptime, metrics, session depth)
-- **Continuity Engine**: `/objective`, `/task`, `/task/blocker`, `/checkpoint`, `/handoff`, `/restore`, `/ingest`, `/reason`, `/verify`
+- **Continuity Engine**: `/objective`, `/task`, `/task/blocker`, `/checkpoint`, `/handoff`, `/restore`, `/ingest`, `/reason`, `/verify`, `/system-frame`
 - **Memory & Validation**: `/memory`, `/validate`, `/promote/validated`, `/promote/archive`
 - **AI Integrations**: `/ai/query/chatgpt`, `/ai/query/gemini-jules`
 - **Tool Integrations**: `/tools/github/event`, `/tools/workspace/artifact`, `/tools/workspace/sync`, `/tools/index/relationships`
@@ -98,6 +98,6 @@ The REST API server exposes:
 ---
 
 ## 4. Operational Integrity Metrics
-- **Tests Passing**: 66/66
+- **Tests Passing**: 106/106
 - **Code Style Compliance**: 100% Black Formatted, 100% Ruff Clean.
 - **Deprecation Warnings**: 0 (all class Config and legacy utcnow deprecations successfully resolved).

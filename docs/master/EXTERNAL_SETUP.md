@@ -170,3 +170,30 @@ Before going live, execute the SAGE Activation and Production Readiness check:
 python scripts/activate_runtime.py --dry-run
 ```
 This script checks the port occupancy, environmental parameter configurations, verifies database storage directories, and runs local referential integrity diagnostics (`verify_integrity()`) to confirm 100% pre-flight correctness.
+
+---
+
+## 5. System Frame Endpoint Spec
+
+The `/system-frame` GET endpoint provides an authorized way to serialize state documents (`docs/master/MASTER_SNAPSHOT.md` and `docs/master/SESSION_STATE.md`) in one structured, secure JSON payload.
+
+- **Endpoint**: `GET /system-frame`
+- **Headers Required**:
+  - `x-api-key`: SAGE API authorization key.
+- **JSON Response Structure**:
+  ```json
+  {
+    "status": "success",
+    "timestamp": "2026-07-22T22:00:00.000000",
+    "master_snapshot": {
+      "file_path": "docs/master/MASTER_SNAPSHOT.md",
+      "content": "...",
+      "character_count": 1234
+    },
+    "session_state": {
+      "file_path": "docs/master/SESSION_STATE.md",
+      "content": "...",
+      "character_count": 567
+    }
+  }
+  ```

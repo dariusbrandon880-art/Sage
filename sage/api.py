@@ -388,6 +388,43 @@ async def list_snapshots():
     return {"count": len(snapshots), "snapshots": snapshots}
 
 
+@app.get("/system-frame")
+async def get_system_frame(x_api_key: Optional[str] = Header(None)):
+    if not x_api_key or not lifecycle_mgr.authorize(x_api_key):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    from pathlib import Path
+
+    snapshot_path = Path("docs/master/MASTER_SNAPSHOT.md")
+    session_state_path = Path("docs/master/SESSION_STATE.md")
+
+    snapshot_content = ""
+    session_state_content = ""
+
+    if snapshot_path.exists():
+        with open(snapshot_path, "r", encoding="utf-8") as f:
+            snapshot_content = f.read()
+
+    if session_state_path.exists():
+        with open(session_state_path, "r", encoding="utf-8") as f:
+            session_state_content = f.read()
+
+    return {
+        "status": "success",
+        "timestamp": datetime.now().isoformat(),
+        "master_snapshot": {
+            "file_path": str(snapshot_path),
+            "content": snapshot_content,
+            "character_count": len(snapshot_content),
+        },
+        "session_state": {
+            "file_path": str(session_state_path),
+            "content": session_state_content,
+            "character_count": len(session_state_content),
+        },
+    }
+
+
 # Ingestion, reasoning, and self-verification endpoints
 @app.post("/ingest")
 async def ingest_payload(payload: ExternalSessionPayload):
