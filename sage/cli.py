@@ -78,6 +78,12 @@ def main():
     # metrics subcommand
     subparsers.add_parser("metrics", help="Show collected runtime telemetry metrics")
 
+    # command-center subcommand
+    cmd_parser = subparsers.add_parser(
+        "command-center", help="Launch SAGE Command Center operational visibility dashboard"
+    )
+    cmd_parser.add_argument("--json", action="store_true", help="Print raw JSON visibility payload")
+
     args = parser.parse_args()
 
     # Initialize runtime
@@ -214,6 +220,100 @@ def main():
             print(json.dumps(result, indent=2))
         except Exception as e:
             print(f"Error: Metrics gathering failed: {str(e)}")
+            sys.exit(1)
+
+    elif args.command == "command-center":
+        try:
+            from sage.command_center import CommandCenter
+
+            cmd_center = CommandCenter(runtime)
+            payload = cmd_center.get_visibility_payload()
+
+            if args.json:
+                print(json.dumps(payload, indent=2))
+            else:
+                # Beautiful, styled terminal dashboard for SAGE Command Center v1
+                GREEN = "\033[92m"
+                YELLOW = "\033[93m"
+                RED = "\033[91m"
+                CYAN = "\033[96m"
+                BOLD = "\033[1m"
+                RESET = "\033[0m"
+
+                sys_view = payload["current_system_view"]
+                arch_view = payload["archive_view"]
+                rt_view = payload["runtime_view"]
+                cont_view = payload["continuity_view"]
+
+                print("=" * 70)
+                print(
+                    f"{BOLD}{GREEN}      SAGE COMMAND CENTER v1 - OPERATIONAL VISIBILITY INTERFACE{RESET}"
+                )
+                print("=" * 70)
+                print(f"Timestamp: {payload['timestamp']}")
+                print("-" * 70)
+
+                # 1. Current System View
+                status_color = GREEN if sys_view["runtime_status"] == "active" else RED
+                print(f"{BOLD}{CYAN}[1. CURRENT SYSTEM VIEW]{RESET}")
+                print(
+                    f"  Runtime Status  : {status_color}{sys_view['runtime_status'].upper()}{RESET}"
+                )
+                print(f"  Milestone       : {YELLOW}{sys_view['current_milestone']}{RESET}")
+                print(f"  Active Task     : {sys_view['active_task']}")
+                print(f"  Blockers        : {sys_view['blockers'] or 'None'}")
+                print(f"  Last Checkpoint : {sys_view['last_checkpoint']}")
+                val_color = GREEN if sys_view["validation_state"].get("is_valid") else RED
+                print(
+                    f"  Validation State: {val_color}{'VALID' if sys_view['validation_state'].get('is_valid') else 'INVALID'}{RESET}"
+                )
+                print("-" * 70)
+
+                # 2. Archive View
+                print(f"{BOLD}{CYAN}[2. ARCHIVE VIEW]{RESET}")
+                print(
+                    f"  Master Archive Status: {GREEN}{arch_view['master_archive_status'].upper()}{RESET}"
+                )
+                print(f"  Latest Reports Count : {len(arch_view['latest_reports'])}")
+                print(f"  Recent Decisions     : {len(arch_view['recent_decisions'])} recorded")
+                print(
+                    f"  Recent Archive Logs  : {len(arch_view['recent_operational_records'])} logged"
+                )
+                print("-" * 70)
+
+                # 3. Runtime View
+                print(f"{BOLD}{CYAN}[3. RUNTIME VIEW]{RESET}")
+                h_color = (
+                    GREEN
+                    if rt_view["health_status"]["status"] == "healthy"
+                    else (YELLOW if rt_view["health_status"]["status"] == "degraded" else RED)
+                )
+                print(
+                    f"  Health Status        : {h_color}{rt_view['health_status']['status'].upper()}{RESET}"
+                )
+                print(f"  API Port             : {rt_view['api_status']['port']}")
+                print("  Active Connectors    :")
+                for provider, state in rt_view["active_connectors"].items():
+                    c_color = GREEN if state == "CONNECTED" else RED
+                    print(f"    - {provider:<20}: {c_color}{state}{RESET}")
+                print("-" * 70)
+
+                # 4. Continuity View
+                print(f"{BOLD}{CYAN}[4. CONTINUITY VIEW]{RESET}")
+                print(
+                    f"  Lineage Objective    : {cont_view['latest_session_state'].get('current_objective') or 'None'}"
+                )
+                print(
+                    f"  Checkpoint History   : {len(cont_view['checkpoint_history'])} checkpoints available"
+                )
+                ready_color = GREEN if cont_view["restoration_readiness"]["can_restore"] else YELLOW
+                print(
+                    f"  Restoration Readiness: {ready_color}{'READY' if cont_view['restoration_readiness']['can_restore'] else 'MOCK READY (NO CHECKPOINTS)'}{RESET}"
+                )
+                print("=" * 70)
+
+        except Exception as e:
+            print(f"Error: Command Center failed: {str(e)}")
             sys.exit(1)
 
     else:

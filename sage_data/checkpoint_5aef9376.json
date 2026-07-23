@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-07-23T13:37:07.264162+00:00",
+  "timestamp": "2026-07-23T14:33:03.467528+00:00",
   "state": {
     "current_objective": "Expand Intelligence",
     "active_task": "Create tests",
@@ -21,26 +21,9 @@
     "session_bb029f10",
     "session_7ca5e3b5",
     "session_c83c8675",
-    "session_75ddc879",
-    "session_6141937a"
+    "session_115993cf"
   ],
   "sessions": [
-    {
-      "session_id": "session_75ddc879",
-      "timestamp": "2026-07-23 13:32:45.344400+00:00",
-      "active_objectives": [
-        "Expand Intelligence"
-      ],
-      "completed_actions": [],
-      "pending_actions": [
-        "task:Create tests"
-      ],
-      "important_decisions": [],
-      "related_archive_references": [],
-      "metadata": {
-        "source": "set_objective"
-      }
-    },
     {
       "session_id": "session_bb029f10",
       "timestamp": "2026-07-22 16:59:31.097291+00:00",
@@ -90,8 +73,8 @@
       }
     },
     {
-      "session_id": "session_6141937a",
-      "timestamp": "2026-07-23 13:37:07.262894+00:00",
+      "session_id": "session_115993cf",
+      "timestamp": "2026-07-23 14:33:03.466166+00:00",
       "active_objectives": [
         "Expand Intelligence"
       ],
@@ -134,13 +117,7 @@
         "from_state": "objective:Expand Intelligence",
         "to_state": "objective:Expand Intelligence",
         "reason": "Objective updated via set_objective",
-        "timestamp": "2026-07-23 13:32:45.344693+00:00"
-      },
-      {
-        "from_state": "objective:Expand Intelligence",
-        "to_state": "objective:Expand Intelligence",
-        "reason": "Objective updated via set_objective",
-        "timestamp": "2026-07-23 13:37:07.263120+00:00"
+        "timestamp": "2026-07-23 14:33:03.466422+00:00"
       }
     ],
     "metadata": {}
@@ -169,39 +146,6 @@
       "validation_status": {
         "is_valid": true,
         "loaded_files_count": 16,
-        "corrupted_files": [],
-        "referential_integrity": {
-          "missing_evidence_links": [],
-          "decisions_analyzed": 0
-        },
-        "lineage_valid": true,
-        "issues": []
-      },
-      "metadata": {}
-    },
-    {
-      "id": "checkpoint_2c92c05e",
-      "timestamp": "2026-07-23 13:32:45.361026+00:00",
-      "current_sage_state": {
-        "current_objective": "Expand Intelligence",
-        "active_task": "Create tests",
-        "blockers": [],
-        "dependencies": []
-      },
-      "active_goals": [
-        "Expand Intelligence",
-        "Create tests"
-      ],
-      "recent_decisions": [],
-      "repository_state_reference": {
-        "branch": "jules-13411082758300234853-cae0ad1f",
-        "commit": "94a2eee4629e801088025cfedb27e42201693ca8",
-        "is_dirty": true,
-        "status_output": "M sage_data/context/continuity_context.json\n M sage_data/continuity/continuity_state.json\n?? sage_data/checkpoint_2c92c05e.json\n?? sage_data/sessions/session_75ddc879.json"
-      },
-      "validation_status": {
-        "is_valid": true,
-        "loaded_files_count": 22,
         "corrupted_files": [],
         "referential_integrity": {
           "missing_evidence_links": [],

@@ -19,6 +19,7 @@ from sage.runtime import (
 )
 from sage.models import DecisionType, MemoryObject, ConfidenceLevel, ExternalSessionPayload
 from sage.validation import ValidationSystem
+from sage.command_center import CommandCenter
 from sage.service import LifecycleManager
 from sage.integration import (
     ChatGPTClient,
@@ -113,6 +114,12 @@ async def health():
 @app.get("/status")
 async def get_status():
     return runtime.get_status()
+
+
+@app.get("/command-center")
+async def get_command_center():
+    cmd_center = CommandCenter(runtime)
+    return cmd_center.get_visibility_payload()
 
 
 @app.get("/runtime/diagnostics")
