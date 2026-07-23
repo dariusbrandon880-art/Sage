@@ -19,7 +19,13 @@ def discover_capabilities(runtime: Optional[Any] = None) -> List[str]:
     discovered = []
 
     # Map reports to list
-    for category in ["runtime_capabilities", "acr_capabilities", "archive_capabilities", "memory_capabilities", "integration_capabilities"]:
+    for category in [
+        "runtime_capabilities",
+        "acr_capabilities",
+        "archive_capabilities",
+        "memory_capabilities",
+        "integration_capabilities",
+    ]:
         for cap in report.get(category, []):
             if cap.get("status") in ["active", "enabled"]:
                 discovered.append(cap.get("name"))
@@ -46,26 +52,26 @@ def generate_capability_report(runtime: Optional[Any] = None) -> Dict[str, Any]:
             "name": "state_persistence",
             "description": "Continuous, atomic serialization of active objectives and task states",
             "status": "enabled" if runtime is not None else "supported",
-            "details": {}
+            "details": {},
         },
         {
             "name": "checkpointing",
             "description": "On-demand, full database and state serialization checkpoints",
             "status": "enabled" if runtime is not None else "supported",
-            "details": {}
+            "details": {},
         },
         {
             "name": "handoff_generation",
             "description": "Exporting full system context and session lineage for handoff transitions",
             "status": "enabled" if runtime is not None else "supported",
-            "details": {}
+            "details": {},
         },
         {
             "name": "workspace_snapshots",
             "description": "Granular snapshots stored under .sage/sage_state.json for fast reboot hydration",
             "status": "enabled" if runtime is not None else "supported",
-            "details": {}
-        }
+            "details": {},
+        },
     ]
 
     # 2. ACR Capabilities
@@ -77,21 +83,25 @@ def generate_capability_report(runtime: Optional[Any] = None) -> Dict[str, Any]:
         {
             "name": "continuity_bridge",
             "description": "A single authoritative ingestion pipeline mapping raw interactions into state",
-            "status": "active" if (runtime is not None and enable_continuity) else "disabled" if not enable_continuity else "supported",
-            "details": {"enable_continuity": enable_continuity}
+            "status": (
+                "active"
+                if (runtime is not None and enable_continuity)
+                else "disabled" if not enable_continuity else "supported"
+            ),
+            "details": {"enable_continuity": enable_continuity},
         },
         {
             "name": "session_lineage",
             "description": "Tracing chain of custody and sessions through persistent DAG links",
             "status": "active" if runtime is not None else "supported",
-            "details": {}
+            "details": {},
         },
         {
             "name": "auto_git_continuity_capture",
             "description": "Auto-capture of workspace branch/diff state and formatting as external payloads",
             "status": "active" if runtime is not None else "supported",
-            "details": {}
-        }
+            "details": {},
+        },
     ]
 
     # 3. Archive Capabilities
@@ -99,21 +109,33 @@ def generate_capability_report(runtime: Optional[Any] = None) -> Dict[str, Any]:
         {
             "name": "historical_logging",
             "description": "Write-once timeline logging of validated and promoted platform milestones",
-            "status": "active" if (runtime is not None and getattr(runtime, "archive", None) is not None) else "supported",
-            "details": {}
+            "status": (
+                "active"
+                if (runtime is not None and getattr(runtime, "archive", None) is not None)
+                else "supported"
+            ),
+            "details": {},
         },
         {
             "name": "archive_promotion",
             "description": "Structured rules promoting verified memories to the canonical long-term archive",
-            "status": "active" if (runtime is not None and getattr(runtime, "validation", None) is not None) else "supported",
-            "details": {}
+            "status": (
+                "active"
+                if (runtime is not None and getattr(runtime, "validation", None) is not None)
+                else "supported"
+            ),
+            "details": {},
         },
         {
             "name": "filtered_search",
             "description": "Advanced querying over historical events by type, title, and timestamp boundaries",
-            "status": "active" if (runtime is not None and getattr(runtime, "archive", None) is not None) else "supported",
-            "details": {}
-        }
+            "status": (
+                "active"
+                if (runtime is not None and getattr(runtime, "archive", None) is not None)
+                else "supported"
+            ),
+            "details": {},
+        },
     ]
 
     # 4. Memory Capabilities
@@ -121,65 +143,86 @@ def generate_capability_report(runtime: Optional[Any] = None) -> Dict[str, Any]:
         {
             "name": "short_term_context",
             "description": "Ephemeral execution context tracking active tasks and current turn number",
-            "status": "active" if (runtime is not None and getattr(runtime, "context", None) is not None) else "supported",
-            "details": {}
+            "status": (
+                "active"
+                if (runtime is not None and getattr(runtime, "context", None) is not None)
+                else "supported"
+            ),
+            "details": {},
         },
         {
             "name": "long_term_storage",
             "description": "Database memory objects categorized by confidence scores and tags",
-            "status": "active" if (runtime is not None and getattr(runtime, "memory", None) is not None) else "supported",
-            "details": {}
+            "status": (
+                "active"
+                if (runtime is not None and getattr(runtime, "memory", None) is not None)
+                else "supported"
+            ),
+            "details": {},
         },
         {
             "name": "tag_based_search",
             "description": "Fast retrieval of memory nodes by indexed tags and object types",
-            "status": "active" if (runtime is not None and getattr(runtime, "memory", None) is not None) else "supported",
-            "details": {}
-        }
+            "status": (
+                "active"
+                if (runtime is not None and getattr(runtime, "memory", None) is not None)
+                else "supported"
+            ),
+            "details": {},
+        },
     ]
 
     # 5. Integration Capabilities
     # Read environment to assess live integrations
     import os
+
     has_chatgpt = bool(os.getenv("OPENAI_API_KEY"))
     has_gemini = bool(os.getenv("GEMINI_API_KEY"))
     has_gh_secret = bool(os.getenv("GITHUB_WEBHOOK_SECRET"))
-    has_google_creds = os.path.exists(".sage/credentials.json") or bool(os.getenv("GOOGLE_APPLICATION_CREDENTIALS"))
+    has_google_creds = os.path.exists(".sage/credentials.json") or bool(
+        os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+    )
 
     integration_caps = [
         {
             "name": "chatgpt_connector",
             "description": "Dynamic context-retrieval routing through ChatGPT Custom Actions",
             "status": "active" if has_chatgpt else "unconfigured",
-            "details": {"has_api_key": has_chatgpt}
+            "details": {"has_api_key": has_chatgpt},
         },
         {
             "name": "gemini_jules_connector",
             "description": "Native multi-turn reasoning and agent execution through Gemini/Jules APIs",
             "status": "active" if has_gemini else "unconfigured",
-            "details": {"has_api_key": has_gemini}
+            "details": {"has_api_key": has_gemini},
         },
         {
             "name": "github_webhook_listener",
             "description": "Secure, HMAC-verified webhook handler for inbound push, pr, and repo events",
             "status": "active" if has_gh_secret else "supported_unsecure",
-            "details": {"hmac_verification_enabled": has_gh_secret}
+            "details": {"hmac_verification_enabled": has_gh_secret},
         },
         {
             "name": "google_workspace_sync",
             "description": "Bidirectional synchronizer exporting docs to Google Docs and trackers to Sheets",
             "status": "active" if has_google_creds else "dry_run_only",
-            "details": {"credentials_found": has_google_creds}
-        }
+            "details": {"credentials_found": has_google_creds},
+        },
     ]
 
-    total_capabilities = len(runtime_caps) + len(acr_caps) + len(archive_caps) + len(memory_caps) + len(integration_caps)
+    total_capabilities = (
+        len(runtime_caps)
+        + len(acr_caps)
+        + len(archive_caps)
+        + len(memory_caps)
+        + len(integration_caps)
+    )
     active_capabilities = (
-        sum(1 for c in runtime_caps if c["status"] == "active" or c["status"] == "enabled") +
-        sum(1 for c in acr_caps if c["status"] == "active" or c["status"] == "enabled") +
-        sum(1 for c in archive_caps if c["status"] == "active" or c["status"] == "enabled") +
-        sum(1 for c in memory_caps if c["status"] == "active" or c["status"] == "enabled") +
-        sum(1 for c in integration_caps if c["status"] == "active" or c["status"] == "enabled")
+        sum(1 for c in runtime_caps if c["status"] == "active" or c["status"] == "enabled")
+        + sum(1 for c in acr_caps if c["status"] == "active" or c["status"] == "enabled")
+        + sum(1 for c in archive_caps if c["status"] == "active" or c["status"] == "enabled")
+        + sum(1 for c in memory_caps if c["status"] == "active" or c["status"] == "enabled")
+        + sum(1 for c in integration_caps if c["status"] == "active" or c["status"] == "enabled")
     )
 
     metrics.set_gauge("capabilities.total_count", float(total_capabilities))

@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field
 
-from sage.acr.session.session_state import SessionState, SessionStateManager
+from sage.acr.session.session_state import SessionStateManager
 
 
 class ContextTransition(BaseModel):
@@ -32,7 +32,11 @@ class ContinuityContext(BaseModel):
 class ContextTracker:
     """Manages context tracking, transition logging, and previous session queries."""
 
-    def __init__(self, storage_path: str = "sage_data/context", session_manager: Optional[SessionStateManager] = None):
+    def __init__(
+        self,
+        storage_path: str = "sage_data/context",
+        session_manager: Optional[SessionStateManager] = None,
+    ):
         """Initialize Context Tracker.
 
         Args:
@@ -77,7 +81,9 @@ class ContextTracker:
         with open(filepath, "w") as f:
             json.dump(current.model_dump(), f, indent=2, default=str)
 
-    def record_transition(self, from_state: str, to_state: str, reason: Optional[str] = None) -> None:
+    def record_transition(
+        self, from_state: str, to_state: str, reason: Optional[str] = None
+    ) -> None:
         """Record an important context transition."""
         transition = ContextTransition(
             from_state=from_state,

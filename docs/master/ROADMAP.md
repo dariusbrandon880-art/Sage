@@ -4,6 +4,40 @@ This document tracks the strategic progression of SAGE through its major operati
 
 ---
 
+## SAGE 2 Unified Architecture Alignment (Locked)
+
+```
+SAGE 2
+├── Continuity Layer
+│   ├── ACR (Adaptive Continuity Runtime)
+│   │   Purpose: Preserve operational state across sessions.
+│   └── CIV (Continuity Independence Validation)
+│       Purpose: Prove recovery and rehydration from validated records.
+│
+├── Intelligence Layer
+│   ├── SKAL (SAGE Knowledge Acquisition Layer)
+│   │   Purpose: Validate incoming information through structured intake.
+│   ├── HSI-001 (Human-SAGE Interaction)
+│   │   Purpose: Define transparent collaboration, capability awareness,
+│   │            and human trust boundaries.
+│   └── KL (Knowledge Longevity)
+│       Purpose: Convert validated experience into reusable system wisdom.
+│
+└── Discovery Layer
+    └── SAGE-X
+        Purpose: Explore future concepts through mathematics, history,
+                 science, engineering, and validated experimentation.
+```
+
+### Governed Knowledge Promotion Contract (SAGE-RT-KL-002)
+**Core Rule**: SAGE may identify patterns and generate Rule Candidates, but SAGE must never autonomously write permanent architectural knowledge.
+
+```
+Layer 2 Working Evidence ──► SAGE Rule Candidate ──► Validation Review Gate ──► Human/Authorized Signature ──► Layer 3 Immutable Ledger
+```
+
+---
+
 ## 1. Architectural Layers & Current Status
 
 ```

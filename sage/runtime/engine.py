@@ -90,12 +90,14 @@ class SageRuntime:
 
         # Telemetry
         from sage.runtime.metrics import get_metrics_collector
+
         metrics = get_metrics_collector()
         metrics.increment("runtime.initialization")
         metrics.record_event("runtime_initialized", {"workspace": str(self.workspace_path)})
 
         # Controlled Initialization Sequence
         from sage.runtime.diagnostics import InitializationManager
+
         self.init_mgr = InitializationManager(self)
         self.init_summary = self.init_mgr.run_init_sequence()
 
@@ -103,6 +105,7 @@ class SageRuntime:
         """Start the SAGE runtime."""
         self.active = True
         from sage.runtime.metrics import get_metrics_collector
+
         metrics = get_metrics_collector()
         metrics.set_gauge("runtime.active", 1.0)
         metrics.record_event("runtime_started")
@@ -111,6 +114,7 @@ class SageRuntime:
         """Stop the SAGE runtime."""
         self.active = False
         from sage.runtime.metrics import get_metrics_collector
+
         metrics = get_metrics_collector()
         metrics.set_gauge("runtime.active", 0.0)
         metrics.record_event("runtime_stopped")
@@ -139,12 +143,12 @@ class SageRuntime:
         self.session_manager.create_session(
             session_id=session_id,
             active_objectives=[objective],
-            metadata={"source": "set_objective"}
+            metadata={"source": "set_objective"},
         )
         self.context_tracker.record_transition(
             from_state=f"objective:{old_objective}",
             to_state=f"objective:{objective}",
-            reason="Objective updated via set_objective"
+            reason="Objective updated via set_objective",
         )
 
         self.context = ExecutionContext(
@@ -154,6 +158,7 @@ class SageRuntime:
         )
 
         from sage.runtime.metrics import get_metrics_collector
+
         metrics = get_metrics_collector()
         metrics.increment("objectives.total")
         metrics.record_event("objective_set", {"objective": objective, "session_id": session_id})
@@ -190,12 +195,17 @@ class SageRuntime:
         if not session_state:
             session_state = self.session_manager.create_session(
                 session_id=session_id,
-                active_objectives=[self.current_state.current_objective] if self.current_state.current_objective else [],
+                active_objectives=(
+                    [self.current_state.current_objective]
+                    if self.current_state.current_objective
+                    else []
+                ),
             )
         session_state.add_pending_action(f"task:{task}")
         self.session_manager.save_session(session_state)
 
         from sage.runtime.metrics import get_metrics_collector
+
         metrics = get_metrics_collector()
         metrics.increment("tasks.total")
         metrics.record_event("task_set", {"task": task, "session_id": session_id})
@@ -271,6 +281,7 @@ class SageRuntime:
             pass
 
         from sage.runtime.metrics import get_metrics_collector
+
         metrics = get_metrics_collector()
         metrics.increment("checkpoints.total")
         metrics.record_event("checkpoint_created", {"checkpoint_id": checkpoint_id})
@@ -291,7 +302,11 @@ class SageRuntime:
             "decisions": [d.model_dump() for d in self.decisions.list_all()],
             "lineage": self.acr.get_lineage(),
             "sessions": [s.model_dump() for s in self.session_manager.list_all()],
-            "context": self.context_tracker.get_current_context().model_dump() if self.context_tracker.get_current_context() else None,
+            "context": (
+                self.context_tracker.get_current_context().model_dump()
+                if self.context_tracker.get_current_context()
+                else None
+            ),
             "continuity_checkpoints": [c.model_dump() for c in self.checkpoint_manager.list_all()],
         }
 
@@ -314,7 +329,11 @@ class SageRuntime:
                 "decision_count": len(self.decisions.list_all()),
             },
             "sessions": [s.model_dump() for s in self.session_manager.list_all()],
-            "context": self.context_tracker.get_current_context().model_dump() if self.context_tracker.get_current_context() else None,
+            "context": (
+                self.context_tracker.get_current_context().model_dump()
+                if self.context_tracker.get_current_context()
+                else None
+            ),
             "continuity_checkpoints": [c.model_dump() for c in self.checkpoint_manager.list_all()],
         }
 
@@ -443,7 +462,11 @@ class SageRuntime:
             "lineage": self.acr.get_lineage(),
             "continuity_state": self.acr.continuity_state,
             "sessions": [s.model_dump() for s in self.session_manager.list_all()],
-            "context": self.context_tracker.get_current_context().model_dump() if self.context_tracker.get_current_context() else None,
+            "context": (
+                self.context_tracker.get_current_context().model_dump()
+                if self.context_tracker.get_current_context()
+                else None
+            ),
             "continuity_checkpoints": [c.model_dump() for c in self.checkpoint_manager.list_all()],
         }
 
@@ -757,7 +780,9 @@ class SageRuntime:
                     if success:
                         routed_archive_ids.append(archive_id_or_err)
                         session_state.add_archive_reference(archive_id_or_err)
-                        self.context_tracker.add_recent_change(f"Promoted {m_obj.id} to archive: {archive_id_or_err}")
+                        self.context_tracker.add_recent_change(
+                            f"Promoted {m_obj.id} to archive: {archive_id_or_err}"
+                        )
                 else:
                     self.validation.promote_to_validated(m_obj.id)
 
@@ -817,9 +842,13 @@ class SageRuntime:
         )
 
         from sage.runtime.metrics import get_metrics_collector
+
         metrics = get_metrics_collector()
         metrics.increment("ingestions.total")
-        metrics.record_event("payload_ingested", {"session_id": session_id, "checkpoint_id": checkpoint_id, "snapshot_id": snapshot_id})
+        metrics.record_event(
+            "payload_ingested",
+            {"session_id": session_id, "checkpoint_id": checkpoint_id, "snapshot_id": snapshot_id},
+        )
 
         return {
             "session_id": session_id,

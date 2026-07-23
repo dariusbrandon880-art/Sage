@@ -5,6 +5,7 @@ Welcome to SAGE's immutable Master Archive and research repository. This index l
 ---
 
 ## 1. Architecture Specs
+- [SAGE Constitution](../docs/master/CONSTITUTION.md) - SAGE Constitutional and Master Architecture records, including SAGE 2 core governance laws and architectural update.
 - [Organizational Operating System](architecture/organizational-operating-system.md) - Theoretical and structural overview of the organizational continuity system.
 - [Roadmap Spec](architecture/roadmap.md) - Current core architecture status and locked expansion plans.
 - [Dependency Graph](architecture/dependency-graph.md) - Class mappings and package relationship models.
@@ -25,6 +26,9 @@ Welcome to SAGE's immutable Master Archive and research repository. This index l
 - [APM Spec](research/strategic/APM.md) - Autonomous Process Monitor.
 - [MEC Spec](research/strategic/MEC.md) - Multi-user Engineering Continuity.
 - [CIR Spec](research/strategic/CIR.md) - Canonical Index Registry.
+- [CIC Spec](research/strategic/CIC.md) - Continuity Independence Validation (CIV-001) strategic framework and rehydration validation.
+- [HSI Spec](research/strategic/HSI.md) - Human-SAGE Interaction (SAGE-HSI-001) specifying trust boundaries and pacing.
+- [SAGE 2 Knowledge Governance Study](research/strategic/SAGE_Research_Track_Comparative_Intelligence_Architecture_Study_Review.md) - SAGE-RF-2026-004 Comparative Intelligence Architecture Study Review (ACCEPTED).
 
 ---
 
