@@ -87,7 +87,9 @@ class KnowledgeRelationship(BaseModel):
 
     source_id: str
     target_id: str
-    relationship_type: str  # e.g., "related_to", "depends_on", "derived_from", "replaces", "validated_by"
+    relationship_type: (
+        str  # e.g., "related_to", "depends_on", "derived_from", "replaces", "validated_by"
+    )
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
 

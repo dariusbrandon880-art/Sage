@@ -1,10 +1,8 @@
 """SAGE Diagnostics Engine & Initialization Manager - controlled startup and status reporting."""
 
-import os
-import sys
 import importlib
 from datetime import datetime, timezone
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, Optional
 from pathlib import Path
 
 from sage.runtime.metrics import get_metrics_collector
@@ -38,6 +36,7 @@ class InitializationManager:
         # 1. Load configuration
         try:
             from sage.config.settings import SageConfig
+
             SageConfig.from_env()
             steps_executed.append("load_configuration")
             metrics.increment("init.step.load_configuration")
@@ -47,6 +46,7 @@ class InitializationManager:
         # 2. Discover available capabilities
         try:
             from sage.runtime.capability_report import generate_capability_report
+
             generate_capability_report(self.runtime)
             steps_executed.append("discover_capabilities")
             metrics.increment("init.step.discover_capabilities")
@@ -56,6 +56,7 @@ class InitializationManager:
         # 3. Verify required components (ACR, Memory, Archive)
         try:
             from sage.runtime.health import check_health
+
             h = check_health(self.runtime)
             if h.get("status") in ["unhealthy", "degraded"]:
                 failures.append("required_components_unavailable")
@@ -81,7 +82,7 @@ class InitializationManager:
             "initialization_state": self.init_state,
             "steps_executed": steps_executed,
             "failures": failures,
-            "timestamp": datetime.now(timezone.utc).isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
 
 
@@ -111,7 +112,11 @@ def generate_system_status_report(runtime: Optional[Any] = None) -> str:
         capabilities_state = "failed"
 
     validation_state = "ready"
-    if runtime is None or getattr(runtime, "validation", None) is None or components.get("memory") != "available":
+    if (
+        runtime is None
+        or getattr(runtime, "validation", None) is None
+        or components.get("memory") != "available"
+    ):
         validation_state = "uninitialized"
 
     report_lines = [
@@ -120,7 +125,7 @@ def generate_system_status_report(runtime: Optional[Any] = None) -> str:
         f"- Archive: {archive_state}",
         f"- Continuity: {continuity_state}",
         f"- Capabilities: {capabilities_state}",
-        f"- Validation: {validation_state}"
+        f"- Validation: {validation_state}",
     ]
 
     return "\n".join(report_lines)
@@ -144,6 +149,7 @@ def generate_diagnostic_report(runtime: Optional[Any] = None) -> Dict[str, Any]:
     version = "1.1.0"
     try:
         from sage.service import VERSION
+
         version = VERSION
     except Exception:
         pass
@@ -217,6 +223,7 @@ def generate_diagnostic_report(runtime: Optional[Any] = None) -> Dict[str, Any]:
     # Try to load current SageConfig settings if available
     try:
         from sage.config.settings import SageConfig
+
         config = SageConfig.from_env()
         config_status["loaded"] = True
         config_status["debug_mode"] = config.debug
@@ -225,7 +232,9 @@ def generate_diagnostic_report(runtime: Optional[Any] = None) -> Dict[str, Any]:
             "memory": config.memory_backend,
             "archive": config.archive_backend,
         }
-        config_status["security_configured"] = bool(config.sage_api_keys and config.sage_api_keys != "sage-default-key-2026")
+        config_status["security_configured"] = bool(
+            config.sage_api_keys and config.sage_api_keys != "sage-default-key-2026"
+        )
     except Exception as e:
         config_status["error"] = f"Failed to inspect configuration: {str(e)}"
 
@@ -258,7 +267,7 @@ def generate_diagnostic_report(runtime: Optional[Any] = None) -> Dict[str, Any]:
                     "status": "ready",
                     "path": str(mem_path),
                     "exists": mem_path.exists(),
-                    "cached_count": len(runtime.memory.list_all())
+                    "cached_count": len(runtime.memory.list_all()),
                 }
             except Exception as e:
                 component_readiness["memory_store"] = f"error: {str(e)}"
@@ -271,7 +280,7 @@ def generate_diagnostic_report(runtime: Optional[Any] = None) -> Dict[str, Any]:
                     "status": "ready",
                     "path": str(arch_path),
                     "exists": arch_path.exists(),
-                    "cached_count": len(runtime.archive.list_all())
+                    "cached_count": len(runtime.archive.list_all()),
                 }
             except Exception as e:
                 component_readiness["archive_store"] = f"error: {str(e)}"
@@ -284,7 +293,7 @@ def generate_diagnostic_report(runtime: Optional[Any] = None) -> Dict[str, Any]:
                     "status": "ready",
                     "path": str(dec_path),
                     "exists": dec_path.exists(),
-                    "cached_count": len(runtime.decisions.list_all())
+                    "cached_count": len(runtime.decisions.list_all()),
                 }
             except Exception as e:
                 component_readiness["decision_tracker"] = f"error: {str(e)}"

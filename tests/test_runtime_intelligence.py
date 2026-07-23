@@ -1,6 +1,5 @@
 """Tests for SAGE Runtime Intelligence, Diagnostics, and Telemetry layers."""
 
-import pytest
 from unittest.mock import MagicMock
 from sage.runtime import (
     SageRuntime,

@@ -1,6 +1,6 @@
 """Intelligent Knowledge Graph representing connected nodes and edges in SAGE archive."""
 
-from typing import Dict, Any, List, Optional, Set
+from typing import List, Optional, Set
 from pydantic import BaseModel, Field
 from sage.archive.relationships import KnowledgeRelationship
 

@@ -1,6 +1,5 @@
 """SAGE Runtime Health System & Identity Model - dynamic health monitoring and identity representation."""
 
-import os
 import sys
 from typing import Dict, Any, Optional, List
 from pydantic import BaseModel, Field
@@ -30,7 +29,16 @@ def get_sage_identity(runtime: Optional[Any] = None) -> Dict[str, Any]:
     """
     # 1. Discover active modules
     active_mods = []
-    for mod in ["sage.acr", "sage.archive", "sage.memory", "sage.validation", "sage.service", "sage.integration", "sage.decision", "sage.runtime"]:
+    for mod in [
+        "sage.acr",
+        "sage.archive",
+        "sage.memory",
+        "sage.validation",
+        "sage.service",
+        "sage.integration",
+        "sage.decision",
+        "sage.runtime",
+    ]:
         if mod in sys.modules:
             active_mods.append(mod)
 
@@ -39,6 +47,7 @@ def get_sage_identity(runtime: Optional[Any] = None) -> Dict[str, Any]:
     active_caps = 0
     try:
         from sage.runtime.capability_report import generate_capability_report
+
         cap_report = generate_capability_report(runtime)
         total_caps = cap_report.get("total_capabilities", 0)
         active_caps = cap_report.get("active_capabilities", 0)
@@ -68,7 +77,7 @@ def get_sage_identity(runtime: Optional[Any] = None) -> Dict[str, Any]:
         active_modules=active_mods,
         initialization_state=init_state,
         capability_summary={"total": total_caps, "active": active_caps},
-        health_state=health_status
+        health_state=health_status,
     )
 
     return identity.model_dump()
@@ -92,7 +101,7 @@ def check_health(runtime: Optional[Any] = None) -> Dict[str, Any]:
         "acr": "unavailable",
         "archive": "unavailable",
         "memory": "unavailable",
-        "configuration": "unavailable"
+        "configuration": "unavailable",
     }
 
     runtime_active = "inactive"
@@ -154,8 +163,4 @@ def check_health(runtime: Optional[Any] = None) -> Dict[str, Any]:
     # Record health status metric
     metrics.set_gauge("health.status_score", float(available_count) / len(essential_components))
 
-    return {
-        "status": status,
-        "runtime": runtime_active,
-        "components": components
-    }
+    return {"status": status, "runtime": runtime_active, "components": components}

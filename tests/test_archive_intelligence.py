@@ -3,9 +3,8 @@
 import pytest
 import tempfile
 from pathlib import Path
-from datetime import datetime, timezone
 
-from sage.models import MemoryObject, ConfidenceLevel, ArchiveEntry, KnowledgeState
+from sage.models import MemoryObject, ConfidenceLevel, ArchiveEntry
 from sage.archive import Archive
 from sage.validation import ValidationSystem
 from sage.memory import Memory
@@ -97,7 +96,9 @@ def test_archive_intelligence_manual_updates(temp_workspace):
     reloaded_a = archive_store.retrieve_entry("archive_node_a")
     assert reloaded_a.intelligence.lineage.source == "System DB Spec v2"
     assert "dec_database_selection" in reloaded_a.intelligence.lineage.dependent_decisions
-    assert reloaded_a.intelligence.lineage.validation_record.rules_applied == ["custom_schema_check"]
+    assert reloaded_a.intelligence.lineage.validation_record.rules_applied == [
+        "custom_schema_check"
+    ]
 
     # 2. Test Relationship Update (add relationship: entry_b depends_on entry_a)
     archive_store.add_entry_relationship(
