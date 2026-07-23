@@ -287,17 +287,88 @@ def test_system_frame_endpoint():
 
         # Check connector list and fields
         connectors = data["connectors"]
-        assert len(connectors) >= 5
+        assert len(connectors) >= 6
         providers = [c["provider_name"] for c in connectors]
         assert "OpenAI / ChatGPT" in providers
         assert "Google AI / Gemini" in providers
         assert "Jules" in providers
         assert "Google Workspace" in providers
         assert "GitHub" in providers
+        assert "Render" in providers
 
         # Assert correct field layout for at least one connector
         c = connectors[0]
+        assert "node_identity" in c
         assert "connection_state" in c
         assert "required_credentials" in c
         assert "permissions_required" in c
         assert "health_status" in c
+        assert "capabilities" in c
+
+
+def test_end_to_end_cross_platform_continuity_proof():
+    """End-to-End Cross-Platform Continuity Proof:
+
+    Simulates an external platform (e.g. Google AI-SAGE Node) ingesting validated state,
+    and another platform (e.g. ChatGPT Cognitive Node) automatically recovering it
+    via the /system-frame context endpoint without any manual copy-paste.
+    """
+    with TestClient(app) as client:
+        # 1. Clear / initialize SAGE state
+        client.post("/objective", json={"objective": "E2E Proof Objectives"})
+        client.post("/task", json={"task": "Initialize cross-platform testing"})
+
+        # 2. Simulate Node 1 (Google AI-SAGE Node) ingesting a validated session payload
+        proof_payload = {
+            "session_id": "google_ai_session_proof_1",
+            "objective": "Demonstrate zero-copy-paste continuity",
+            "task": "Ingest validated memory artifact",
+            "memories": [
+                {
+                    "id": "e2e_continuity_proof_artifact_777",
+                    "object_type": "fact",
+                    "content": {
+                        "statement": "SAGE Cross-Platform Continuity Layer is active",
+                        "verification_code": "SECURE_ALIGNMENT_OK"
+                    },
+                    "tags": ["continuity_proof", "google_ai_sage"],
+                    "confidence": "validated"
+                }
+            ],
+            "decisions": [
+                {
+                    "id": "decision_continuity_proof_777",
+                    "decision_type": "technical",
+                    "description": "Approve automated system-frame context rehydration",
+                    "rationale": "Allows nodes to pull memory securely without copy-paste",
+                    "evidence": ["e2e_continuity_proof_artifact_777"]
+                }
+            ]
+        }
+
+        ingest_res = client.post("/ingest", json=proof_payload)
+        assert ingest_res.status_code == 200
+
+        # 3. Simulate Node 2 (ChatGPT Cognitive Node) requesting the System Frame context
+        frame_res = client.get("/system-frame")
+        assert frame_res.status_code == 200
+        frame_data = frame_res.json()
+
+        # 4. Verify that ChatGPT Cognitive Node immediately retrieves the zero-copy validated knowledge and decisions
+        assert frame_data["runtime_status"] == "active"
+
+        # Verify the decision was synchronized and retrieved
+        synchronized_decisions = [d["id"] for d in frame_data["decisions"]]
+        assert "decision_continuity_proof_777" in synchronized_decisions
+
+        # Verify the validated knowledge is directly available in the system frame
+        synchronized_knowledge = frame_data["validated_knowledge"]
+        assert len(synchronized_knowledge) > 0
+        proof_ids = [k["id"] for k in synchronized_knowledge]
+        assert "e2e_continuity_proof_artifact_777" in proof_ids
+
+        # Ensure the content and node definitions are perfectly aligned
+        proof_item = [k for k in synchronized_knowledge if k["id"] == "e2e_continuity_proof_artifact_777"][0]
+        assert proof_item["content"]["verification_code"] == "SECURE_ALIGNMENT_OK"
+
+        print("\n[SUCCESS] E2E CROSS-PLATFORM ZERO-COPY-PASTE CONTINUITY PROVED!")

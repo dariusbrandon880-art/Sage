@@ -6,16 +6,18 @@ SAGE is designed to run in a secured live environment, bridging local state pers
 
 ---
 
-## 1. Live Integration Audit
+## 1. Live Integration Audit & Node Identity Mapping
 
-| Connection Endpoint | Protocol / Flow | Auth Mechanism | Current Readiness | Target Live State |
+SAGE defines a unified Platform Identity Layer that maps each connecting tool and AI platform as a native SAGE node. This prevents separate sources of truth and eliminates the need for manual copy/paste.
+
+| Connecting Platform | SAGE Node Identity | Role / Capabilities | Connection State | Required Credentials |
 | :--- | :--- | :--- | :--- | :--- |
-| **SAGE System Frame** | GET HTTP HTTPS | Header `x-api-key` | **Fully Activated**. Exposed at `/system-frame`. | Live status, snapshotted context, and connector registry feed |
-| **OpenAI Custom GPT Actions** | REST HTTP HTTPS | Header `x-api-key` (Bearer / Custom) | **Fully Activated**. Schema provided in Sec 2. | Connected to public HTTPS Gateway |
-| **Gemini / Jules Connector** | REST Endpoint | Secure API Key + Local SDK / REST routing | **Fully Activated**. Native REST API integrated with error boundaries. | Direct automated multiline reasoning sync |
-| **GitHub Webhook Listener** | HTTP POST Webhook | `X-Hub-Signature-256` (HMAC-SHA256) | **Ready**. Signature validation built-in. | Automatic ingestion of PRs & commits |
-| **Google Workspace Sync** | OAuth 2.0 Web flow | `credentials.json` Client Secret / Access Token | **Ready**. Features auto-dryrun fallback. | Live mirroring of State Docs to Docs/Sheets |
-| **HTTPS API Gateway** | ASGI HTTPS Port 8000 | Reverse-proxy (Nginx / Caddy) + SSL certs | **Ready**. Docker/Uvicorn config ready. | Hosted on public domain with Let's Encrypt |
+| **OpenAI / ChatGPT** | `SAGE Cognitive Node` | Task tracking, architectural decision logs, validated memory rehydration | CONNECTED / WAITING | `OPENAI_API_KEY` + `SAGE_API_KEYS` |
+| **Google AI / Gemini** | `Google AI-SAGE Node` | Deep context mapping, multiline reasoning synchronizations | CONNECTED / WAITING | `GEMINI_API_KEY` |
+| **Jules** | `SAGE Engineering Node` | Codebase alignment, self-verification checks, proactive checkpointing | CONNECTED / WAITING | `GEMINI_API_KEY` |
+| **Google Workspace** | `SAGE Workspace Node` | File indexing and mirror-only document/sheet synchronizations | CONNECTED / WAITING | `.sage/credentials.json` |
+| **GitHub** | `SAGE Repository Node` | Pull request and repository push events validation | CONNECTED / WAITING | `GITHUB_WEBHOOK_SECRET` |
+| **Render** | `SAGE Runtime Node` | Production ASGI web server hosting and live health status gateway | CONNECTED | None (Built-in) |
 
 ---
 

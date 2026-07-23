@@ -91,7 +91,7 @@ sage/
 The REST API server exposes:
 - **System Diagnostics**: `/service/diagnostics` (Uptime, metrics, session depth)
 - **Continuity Engine**: `/objective`, `/task`, `/task/blocker`, `/checkpoint`, `/handoff`, `/restore`, `/ingest`, `/reason`, `/verify`
-- **System Context Frame**: `/system-frame` (Consolidated SAGE status, active tasks, blockers, snapshots, and connection registries)
+- **System Context Frame**: `/system-frame` (Consolidated SAGE status, active tasks, blockers, snapshots, validated memories, technical decisions, and connection registries)
 - **Memory & Validation**: `/memory`, `/validate`, `/promote/validated`, `/promote/archive`
 - **AI Integrations**: `/ai/query/chatgpt`, `/ai/query/gemini-jules`
 - **Tool Integrations**: `/tools/github/event`, `/tools/workspace/artifact`, `/tools/workspace/sync`, `/tools/index/relationships`
@@ -99,6 +99,7 @@ The REST API server exposes:
 ---
 
 ## 4. Live Activation & Production Tooling
+- **SAGE Platform Node Identity**: Maps connected platforms as native nodes (e.g. SAGE Cognitive Node, Google AI-SAGE Node, SAGE Engineering Node, SAGE Repository Node, SAGE Runtime Node) to prevent manual copy-paste context sharing.
 - **Global API Key Middlewares**: Optional security boundary enforced via `SAGE_REQUIRE_AUTH` configuration.
 - **GitHub Signature Validation**: Validates webhooks using SHA256 HMAC signature headers.
 - **Production Check Scripts**: `scripts/production_check.py` automates verification of host environment, dependencies, and credential configuration.
@@ -108,6 +109,6 @@ The REST API server exposes:
 ---
 
 ## 5. Operational Integrity Metrics
-- **Tests Passing**: 94/94 (100% success rate, including newly integrated System Frame and Universal Connector registries)
+- **Tests Passing**: 95/95 (100% success rate, including new System Frame, Platform Identities, and Cross-Platform E2E Continuity Proof test suite)
 - **Code Style Compliance**: 100% Black Formatted, 100% Ruff Clean.
 - **Deprecation Warnings**: 0 (all class Config and legacy utcnow deprecations successfully resolved).

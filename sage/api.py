@@ -160,10 +160,24 @@ async def get_system_frame():
         with open(session_state_path, "r", encoding="utf-8") as f:
             session_state_content = f.read()
 
-    # Extract current milestone, active tasks and blockers
-    current_milestone = "Milestone 3.2 - Live Continuity Path and Final Activation Checkpoint end-to-end validation"
+    # Retrieve all structured state elements for automatic zero-copy platform rehydration
+    active_objectives = [runtime.current_state.current_objective] if runtime.current_state.current_objective else []
+    current_milestone = "Milestone 3.3 - Universal SAGE Connector Layer fully integrated and validated"
     active_task = runtime.current_state.active_task or "None"
     blockers = runtime.current_state.blockers or []
+
+    # Decisions
+    decisions = [d.model_dump() for d in runtime.decisions.list_all()]
+
+    # Validated Knowledge (Memory Store with validated/archived confidence levels)
+    validated_knowledge = [
+        obj.model_dump()
+        for obj in runtime.memory.list_all()
+        if obj.confidence in [ConfidenceLevel.VALIDATED, ConfidenceLevel.ARCHIVED]
+    ]
+
+    # Master Archive References
+    master_archive_references = [entry.model_dump() for entry in runtime.archive.list_all()]
 
     # Get connector availability from registry
     registry = ConnectorRegistry(runtime)
@@ -183,8 +197,12 @@ async def get_system_frame():
         "master_snapshot_markdown": master_snapshot_content,
         "session_state_markdown": session_state_content,
         "current_milestone": current_milestone,
+        "active_objectives": active_objectives,
         "active_task": active_task,
         "blockers": blockers,
+        "decisions": decisions,
+        "validated_knowledge": validated_knowledge,
+        "master_archive_references": master_archive_references,
         "validated_architecture_summary": architecture_summary,
         "connectors": connectors,
         "runtime_health": check_health(runtime)

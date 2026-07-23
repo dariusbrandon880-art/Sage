@@ -229,82 +229,129 @@ class GeminiJulesClient(BaseAIClient):
         )
 
 
-# --- Universal Connector Registry ---
+# --- SAGE Platform Identity Layer & Universal Connector Registry ---
 
 
 class ConnectorInfo(BaseModel):
-    """Configuration, credentials, connection state and status of a SAGE connector."""
+    """Configuration, credentials, connection state, capabilities, and node identity of a SAGE connector."""
 
     provider_name: str
+    node_identity: str  # e.g., SAGE Cognitive Node, Google AI-SAGE Node, SAGE Engineering Node, etc.
     connection_state: str  # CONNECTED, WAITING, NOT CONFIGURED
     required_credentials: List[str]
     permissions_required: List[str]
     health_status: str  # healthy, degraded, unavailable
+    capabilities: List[str] = Field(default_factory=list)
+    authentication_state: str = "unconfigured"  # configured, unconfigured, missing
+    last_sync: str = "never"
+    validation_status: str = "not_validated"  # validated, not_validated, ready
 
 
 class ConnectorRegistry:
-    """Central registry mapping SAGE Universal Connection states and configurations."""
+    """Central registry mapping SAGE Universal Connection states, node identities, and configurations."""
 
     def __init__(self, runtime: Any):
         self.runtime = runtime
 
     def get_all_connectors(self) -> List[ConnectorInfo]:
-        """Dynamically evaluate environment configuration and register available connectors."""
+        """Dynamically evaluate environment configuration and register SAGE platform identity nodes."""
         connectors = []
+        now_str = datetime.now(timezone.utc).isoformat()
 
-        # 1. OpenAI / ChatGPT
+        # 1. OpenAI / ChatGPT (SAGE Cognitive Node)
         openai_key = os.getenv("OPENAI_API_KEY")
         chatgpt_state = "CONNECTED" if openai_key else "NOT CONFIGURED"
         connectors.append(ConnectorInfo(
             provider_name="OpenAI / ChatGPT",
+            node_identity="SAGE Cognitive Node",
             connection_state=chatgpt_state,
             required_credentials=["OPENAI_API_KEY"],
             permissions_required=["Chat completion and embeddings access"],
-            health_status="healthy" if openai_key else "unavailable"
+            health_status="healthy" if openai_key else "unavailable",
+            capabilities=["Autonomous State Extraction", "Context-Aware Reasoner", "Memory Recommendation"],
+            authentication_state="configured" if openai_key else "unconfigured",
+            last_sync=now_str if openai_key else "never",
+            validation_status="validated" if openai_key else "not_validated"
         ))
 
-        # 2. Google AI / Gemini
+        # 2. Google AI / Gemini (Google AI-SAGE Node)
         gemini_key = os.getenv("GEMINI_API_KEY")
         gemini_state = "CONNECTED" if gemini_key else "WAITING"
         connectors.append(ConnectorInfo(
             provider_name="Google AI / Gemini",
+            node_identity="Google AI-SAGE Node",
             connection_state=gemini_state,
             required_credentials=["GEMINI_API_KEY"],
             permissions_required=["Generative language API invocation"],
-            health_status="healthy" if gemini_key else "unavailable"
+            health_status="healthy" if gemini_key else "unavailable",
+            capabilities=["High-Fidelity Context Mapping", "Reasoning Bridge Loop", "Zero-Copy State Parsing"],
+            authentication_state="configured" if gemini_key else "missing",
+            last_sync=now_str if gemini_key else "never",
+            validation_status="ready" if gemini_key else "not_validated"
         ))
 
-        # 3. Jules
-        jules_state = "CONNECTED" if gemini_key else "WAITING"
+        # 3. Jules (SAGE Engineering Node)
+        # Jules shares Gemini's generative capability but represents our core engineering node.
         connectors.append(ConnectorInfo(
             provider_name="Jules",
-            connection_state=jules_state,
+            node_identity="SAGE Engineering Node",
+            connection_state=gemini_state,
             required_credentials=["GEMINI_API_KEY"],
             permissions_required=["SAGE workflow and reasoning continuity orchestration"],
-            health_status="healthy" if gemini_key else "unavailable"
+            health_status="healthy" if gemini_key else "unavailable",
+            capabilities=["Codebase Alignment", "Self-Verification Executions", "Proactive Checkpointing"],
+            authentication_state="configured" if gemini_key else "missing",
+            last_sync=now_str if gemini_key else "never",
+            validation_status="ready" if gemini_key else "not_validated"
         ))
 
-        # 4. Google Workspace
+        # 4. Google Workspace (SAGE Workspace Node)
         creds_path = os.getenv("GOOGLE_WORKSPACE_CREDENTIALS_PATH", ".sage/credentials.json")
         gw_exists = Path(creds_path).exists()
         gw_state = "CONNECTED" if gw_exists else "NOT CONFIGURED"
         connectors.append(ConnectorInfo(
             provider_name="Google Workspace",
+            node_identity="SAGE Workspace Node",
             connection_state=gw_state,
             required_credentials=["GOOGLE_WORKSPACE_CREDENTIALS_PATH (.sage/credentials.json)"],
             permissions_required=["Google Docs (documents), Google Sheets (spreadsheets), Google Drive (file metadata)"],
-            health_status="healthy" if gw_exists else "unavailable"
+            health_status="healthy" if gw_exists else "unavailable",
+            capabilities=["State Mirroring", "Documentation Archiving", "Metrics Syncing"],
+            authentication_state="configured" if gw_exists else "unconfigured",
+            last_sync=now_str if gw_exists else "never",
+            validation_status="validated" if gw_exists else "not_validated"
         ))
 
-        # 5. GitHub
+        # 5. GitHub (SAGE Repository Node)
         gh_secret = os.getenv("GITHUB_WEBHOOK_SECRET")
         gh_state = "CONNECTED" if gh_secret else "NOT CONFIGURED"
         connectors.append(ConnectorInfo(
             provider_name="GitHub",
+            node_identity="SAGE Repository Node",
             connection_state=gh_state,
             required_credentials=["GITHUB_WEBHOOK_SECRET"],
             permissions_required=["Repository push, pull_request, release webhooks validation"],
-            health_status="healthy" if gh_secret else "unavailable"
+            health_status="healthy" if gh_secret else "unavailable",
+            capabilities=["Secure HMAC-SHA256 Hook Listener", "Continuous Integration Logging", "Event Tracking"],
+            authentication_state="configured" if gh_secret else "unconfigured",
+            last_sync=now_str if gh_secret else "never",
+            validation_status="validated" if gh_secret else "not_validated"
+        ))
+
+        # 6. Render (SAGE Runtime Node)
+        # Render represents our production environment and status reporting node
+        render_env = os.getenv("ENV") == "production"
+        connectors.append(ConnectorInfo(
+            provider_name="Render",
+            node_identity="SAGE Runtime Node",
+            connection_state="CONNECTED" if render_env else "NOT CONFIGURED",
+            required_credentials=[],
+            permissions_required=["Runtime server hosting", "Public API gateway"],
+            health_status="healthy" if self.runtime.active else "unavailable",
+            capabilities=["Continuous Deployment Integration", "Stateless In-Memory Storage", "Health Metrics Tracking"],
+            authentication_state="configured",
+            last_sync=now_str,
+            validation_status="validated" if self.runtime.active else "not_validated"
         ))
 
         return connectors

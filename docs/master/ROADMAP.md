@@ -46,6 +46,10 @@ SAGE repository-side interfaces are fully consolidated, and Phase 3 Live Connect
 - **Objective**: Complete production-ready orchestration interfaces connecting ChatGPT, Google AI/Gemini, Jules, Google Workspace, GitHub, and future platforms.
 - **Scope**: Implemented `/system-frame` to provide authorized, read-only SAGE operational context; built a dynamic `ConnectorRegistry` for unified connection/credential monitoring; integrated live Gemini REST APIs; and established extensible connector placeholders for GitLab, Slack, Discord, Notion, Linear, Microsoft 365, AWS, Azure, and Docker/Kubernetes.
 
+### Milestone 2.6: SAGE Platform Identity Layer & Zero-Copy Continuity (Completed)
+- **Objective**: Eliminate manual copy/paste dependencies by implementing SAGE Platform Node identities and automated state rehydration.
+- **Scope**: Fully mapped ChatGPT as `SAGE Cognitive Node`, Gemini as `Google AI-SAGE Node`, Jules as `SAGE Engineering Node`, GitHub as `SAGE Repository Node`, and Render as `SAGE Runtime Node` with structured zero-copy context exchange via `/system-frame`. Added end-to-end automated proof tests validating multi-platform recovery without copy-paste.
+
 ---
 
 ## 3. SAGE Continuity Intelligence Layer Overview
