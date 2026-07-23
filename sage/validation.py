@@ -1,7 +1,85 @@
 """Validation system for SAGE memory promotion to Master Archive."""
 
-from typing import Tuple, List, Optional, Any
+from datetime import datetime, timezone
+from typing import Tuple, List, Optional, Any, Dict
 from sage.models import MemoryObject, ConfidenceLevel, ArchiveEntry, KnowledgeState
+
+
+class ReliabilityIncidentTracker:
+    """Tracks, serializes, queries and resolves structured reliability incidents in SAGE memory ledger."""
+
+    def __init__(self, memory_store):
+        """Initialize tracker with memory store.
+
+        Args:
+            memory_store: Memory database/store instance
+        """
+        self.memory = memory_store
+
+    def record_incident(
+        self, incident_type: str, description: str, metadata: Optional[Dict[str, Any]] = None
+    ) -> str:
+        """Create and store a new reliability incident as a MemoryObject.
+
+        Args:
+            incident_type: Type of incident (e.g. exception, lint, test, deployment)
+            description: Detailed description of the incident
+            metadata: Optional dictionary of metadata
+
+        Returns:
+            The memory ID of the newly logged incident
+        """
+        content = {
+            "incident_type": incident_type,
+            "description": description,
+            "resolved": False,
+            "resolution_details": None,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "metadata": metadata or {},
+        }
+        obj = MemoryObject(
+            object_type="reliability_incident",
+            content=content,
+            tags=["reliability", incident_type],
+            confidence=ConfidenceLevel.HYPOTHESIS,
+        )
+        self.memory.store(obj)
+        return obj.id
+
+    def list_incidents(self, resolved: Optional[bool] = None) -> List[MemoryObject]:
+        """List and optionally filter recorded reliability incidents.
+
+        Args:
+            resolved: Optional resolution status filter
+
+        Returns:
+            List of matching MemoryObjects of type reliability_incident
+        """
+        incidents = self.memory.search_by_type("reliability_incident")
+        if resolved is not None:
+            incidents = [inc for inc in incidents if inc.content.get("resolved") == resolved]
+        return incidents
+
+    def resolve_incident(self, incident_id: str, resolution_details: str) -> bool:
+        """Resolve a recorded reliability incident.
+
+        Args:
+            incident_id: ID of the reliability incident to resolve
+            resolution_details: Details on how the incident was resolved
+
+        Returns:
+            True if successfully resolved, False otherwise
+        """
+        obj = self.memory.retrieve(incident_id)
+        if not obj or obj.object_type != "reliability_incident":
+            return False
+
+        obj.content["resolved"] = True
+        obj.content["resolution_details"] = resolution_details
+        obj.content["resolved_at"] = datetime.now(timezone.utc).isoformat()
+        obj.confidence = ConfidenceLevel.VALIDATED
+        self.memory.store(obj)
+        return True
 
 
 class ValidationSystem:

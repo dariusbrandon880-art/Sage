@@ -18,7 +18,8 @@ from sage.runtime import (
     get_metrics_collector,
 )
 from sage.models import DecisionType, MemoryObject, ConfidenceLevel, ExternalSessionPayload
-from sage.validation import ValidationSystem
+from sage.validation import ValidationSystem, ReliabilityIncidentTracker
+from sage.acr.skal import SKALIntakeManager
 from sage.service import LifecycleManager
 from sage.integration import (
     ChatGPTClient,
@@ -40,6 +41,8 @@ app = FastAPI(
 runtime = SAGERuntime()
 runtime.start()
 validation = ValidationSystem(runtime.memory, runtime.archive)
+incident_tracker = ReliabilityIncidentTracker(runtime.memory)
+skal_manager = SKALIntakeManager(runtime.memory, runtime)
 
 # Instantiate Service & Integration managers
 lifecycle_mgr = LifecycleManager()
@@ -80,6 +83,16 @@ class DecisionRequest(BaseModel):
     description: str
     rationale: str
     evidence: Optional[List[str]] = None
+
+
+class IncidentCreateRequest(BaseModel):
+    incident_type: str
+    description: str
+    metadata: Optional[Dict[str, Any]] = None
+
+
+class IncidentResolveRequest(BaseModel):
+    resolution_details: str
 
 
 class MemoryCreateRequest(BaseModel):
@@ -258,6 +271,39 @@ async def search_archive_by_title(title: str):
         "count": len(results),
         "results": [entry.model_dump() for entry in results],
     }
+
+
+# Incident and SKAL endpoints
+@app.post("/validation/incident")
+async def create_incident(req: IncidentCreateRequest):
+    incident_id = incident_tracker.record_incident(
+        incident_type=req.incident_type,
+        description=req.description,
+        metadata=req.metadata,
+    )
+    return {"incident_id": incident_id, "status": "recorded"}
+
+
+@app.get("/validation/incidents")
+async def list_incidents(resolved: Optional[bool] = None):
+    incidents = incident_tracker.list_incidents(resolved=resolved)
+    return {"count": len(incidents), "incidents": [inc.model_dump() for inc in incidents]}
+
+
+@app.post("/validation/incident/{incident_id}/resolve")
+async def resolve_incident(incident_id: str, req: IncidentResolveRequest):
+    success = incident_tracker.resolve_incident(incident_id, req.resolution_details)
+    if not success:
+        raise HTTPException(status_code=404, detail="Incident not found or failed to resolve")
+    return {"status": "resolved", "incident_id": incident_id}
+
+
+@app.post("/tools/skal/intake")
+async def skal_intake_endpoint(payload: Dict[str, Any]):
+    result = skal_manager.process_incoming_payload(payload)
+    if not result.get("success"):
+        raise HTTPException(status_code=400, detail=result.get("error"))
+    return result
 
 
 # Validation endpoints
