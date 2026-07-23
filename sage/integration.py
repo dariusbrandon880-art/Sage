@@ -1,10 +1,13 @@
 """SAGE Integration Layer - AI client interfaces and engineering tool connections."""
 
+import json
+import os
+import uuid
+import urllib.request
 from typing import Dict, Any, List, Optional
 from datetime import datetime, timezone
 from pathlib import Path
 from pydantic import BaseModel, Field
-import uuid
 
 # --- AI Integration Models & Clients ---
 
@@ -139,14 +142,59 @@ class GeminiJulesClient(BaseAIClient):
             a["id"] for a in context["matched_archives"]
         ]
 
+        gemini_api_key = os.getenv("GEMINI_API_KEY")
+
         reasoning = f"Gemini/Jules established high-fidelity alignment with SAGE knowledge graph for session '{session_id}'."
         self.reasoning_history.append(reasoning)
 
-        response_text = (
-            f"Deep continuation response from Gemini/Jules.\n"
-            f"Continuity state retrieved successfully. Running with SAGE runtime alignment.\n"
-            f"Referenced SAGE keys: {referenced_ids}"
-        )
+        response_text = ""
+
+        if not gemini_api_key:
+            # Fallback dry-run diagnostic mode
+            response_text = (
+                f"Deep continuation response from Gemini/Jules (DRY-RUN / DIAGNOSTIC MODE).\n"
+                f"Reason: GEMINI_API_KEY is not configured.\n"
+                f"Continuity state retrieved successfully. Running with SAGE runtime alignment.\n"
+                f"Referenced SAGE keys: {referenced_ids}"
+            )
+        else:
+            # Production live Gemini integration using raw HTTP request
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={gemini_api_key}"
+
+            # Construct system prompt + context + prompt
+            system_instruction = (
+                "You are SAGE Gemini/Jules, a highly-integrated AI continuity connector. "
+                "You must assist the engineer using SAGE's canonical state and workspace memory context."
+            )
+            context_str = f"SAGE Context Memories: {json.dumps(context['matched_memories'])}\nSAGE Context Archives: {json.dumps(context['matched_archives'])}"
+            full_prompt = f"{system_instruction}\n\nContext:\n{context_str}\n\nEngineer Prompt: {request.prompt}"
+
+            payload = {
+                "contents": [{
+                    "parts": [{"text": full_prompt}]
+                }]
+            }
+
+            try:
+                req = urllib.request.Request(
+                    url,
+                    data=json.dumps(payload).encode("utf-8"),
+                    headers={"Content-Type": "application/json"},
+                    method="POST"
+                )
+                with urllib.request.urlopen(req, timeout=15) as response:
+                    res_body = json.loads(response.read().decode("utf-8"))
+                    # Extract Gemini's text response safely
+                    text = res_body["candidates"][0]["content"]["parts"][0]["text"]
+                    response_text = text
+            except Exception as e:
+                # Error Boundary Fallback
+                response_text = (
+                    f"Gemini API Live request failed due to an error: {str(e)}.\n"
+                    f"Falling back to SAGE continuity-aware default response.\n"
+                    f"Prompt: '{request.prompt}'\n"
+                    f"Referenced SAGE keys: {referenced_ids}"
+                )
 
         # Route through unified Continuity Bridge
         from sage.models import ExternalSessionPayload
@@ -179,6 +227,154 @@ class GeminiJulesClient(BaseAIClient):
             referenced_memories=referenced_ids,
             session_id=session_id,
         )
+
+
+# --- Universal Connector Registry ---
+
+
+class ConnectorInfo(BaseModel):
+    """Configuration, credentials, connection state and status of a SAGE connector."""
+
+    provider_name: str
+    connection_state: str  # CONNECTED, WAITING, NOT CONFIGURED
+    required_credentials: List[str]
+    permissions_required: List[str]
+    health_status: str  # healthy, degraded, unavailable
+
+
+class ConnectorRegistry:
+    """Central registry mapping SAGE Universal Connection states and configurations."""
+
+    def __init__(self, runtime: Any):
+        self.runtime = runtime
+
+    def get_all_connectors(self) -> List[ConnectorInfo]:
+        """Dynamically evaluate environment configuration and register available connectors."""
+        connectors = []
+
+        # 1. OpenAI / ChatGPT
+        openai_key = os.getenv("OPENAI_API_KEY")
+        chatgpt_state = "CONNECTED" if openai_key else "NOT CONFIGURED"
+        connectors.append(ConnectorInfo(
+            provider_name="OpenAI / ChatGPT",
+            connection_state=chatgpt_state,
+            required_credentials=["OPENAI_API_KEY"],
+            permissions_required=["Chat completion and embeddings access"],
+            health_status="healthy" if openai_key else "unavailable"
+        ))
+
+        # 2. Google AI / Gemini
+        gemini_key = os.getenv("GEMINI_API_KEY")
+        gemini_state = "CONNECTED" if gemini_key else "WAITING"
+        connectors.append(ConnectorInfo(
+            provider_name="Google AI / Gemini",
+            connection_state=gemini_state,
+            required_credentials=["GEMINI_API_KEY"],
+            permissions_required=["Generative language API invocation"],
+            health_status="healthy" if gemini_key else "unavailable"
+        ))
+
+        # 3. Jules
+        jules_state = "CONNECTED" if gemini_key else "WAITING"
+        connectors.append(ConnectorInfo(
+            provider_name="Jules",
+            connection_state=jules_state,
+            required_credentials=["GEMINI_API_KEY"],
+            permissions_required=["SAGE workflow and reasoning continuity orchestration"],
+            health_status="healthy" if gemini_key else "unavailable"
+        ))
+
+        # 4. Google Workspace
+        creds_path = os.getenv("GOOGLE_WORKSPACE_CREDENTIALS_PATH", ".sage/credentials.json")
+        gw_exists = Path(creds_path).exists()
+        gw_state = "CONNECTED" if gw_exists else "NOT CONFIGURED"
+        connectors.append(ConnectorInfo(
+            provider_name="Google Workspace",
+            connection_state=gw_state,
+            required_credentials=["GOOGLE_WORKSPACE_CREDENTIALS_PATH (.sage/credentials.json)"],
+            permissions_required=["Google Docs (documents), Google Sheets (spreadsheets), Google Drive (file metadata)"],
+            health_status="healthy" if gw_exists else "unavailable"
+        ))
+
+        # 5. GitHub
+        gh_secret = os.getenv("GITHUB_WEBHOOK_SECRET")
+        gh_state = "CONNECTED" if gh_secret else "NOT CONFIGURED"
+        connectors.append(ConnectorInfo(
+            provider_name="GitHub",
+            connection_state=gh_state,
+            required_credentials=["GITHUB_WEBHOOK_SECRET"],
+            permissions_required=["Repository push, pull_request, release webhooks validation"],
+            health_status="healthy" if gh_secret else "unavailable"
+        ))
+
+        return connectors
+
+
+# --- Extensible Future Connector Framework ---
+
+
+from sage.models import ExternalSessionPayload
+
+
+class BaseUniversalConnector:
+    """Base interface for all Universal Connector extensions."""
+
+    def __init__(self, name: str, runtime: Any):
+        self.name = name
+        self.runtime = runtime
+
+    def ingest_to_bridge(self, payload: ExternalSessionPayload) -> Dict[str, Any]:
+        """Routes any connector event payload directly through SAGE's single authoritative Continuity Bridge."""
+        return self.runtime.ingest_session_payload(payload)
+
+
+class GitLabConnector(BaseUniversalConnector):
+    """GitLab Webhook and Repository Event Integration Interface."""
+
+    def handle_webhook(self, event_type: str, data: Dict[str, Any]) -> Dict[str, Any]:
+        raise NotImplementedError("GitLab Connector is ready for activation upon credential provisioning.")
+
+
+class SlackConnector(BaseUniversalConnector):
+    """Slack App Chat Command and Notification Integration Interface."""
+
+    def handle_message(self, team_id: str, channel_id: str, text: str) -> Dict[str, Any]:
+        raise NotImplementedError("Slack Connector is ready for activation upon credential provisioning.")
+
+
+class DiscordConnector(BaseUniversalConnector):
+    """Discord Bot Chat Command and Notification Integration Interface."""
+    pass
+
+
+class NotionConnector(BaseUniversalConnector):
+    """Notion Database Sync and Document Indexing Integration Interface."""
+    pass
+
+
+class LinearConnector(BaseUniversalConnector):
+    """Linear Issue Tracking and Milestone Sync Integration Interface."""
+    pass
+
+
+class Microsoft365Connector(BaseUniversalConnector):
+    """Microsoft Office 365, Teams and SharePoint Integration Interface."""
+    pass
+
+
+class AWSConnector(BaseUniversalConnector):
+    """Amazon Web Services (AWS) Deployment Logs and Resource Indexing Interface."""
+    pass
+
+
+class AzureConnector(BaseUniversalConnector):
+    """Microsoft Azure Deployment Logs and Resource Indexing Interface."""
+    pass
+
+
+class ContainerOrchestrationConnector(BaseUniversalConnector):
+    """Docker and Kubernetes Cluster State Monitoring and Recovery Interface."""
+    pass
 
 
 # --- Engineering Tool Integration Models ---

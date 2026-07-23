@@ -266,3 +266,38 @@ def test_ingest_reason_verify_endpoints():
         assert response.status_code == 200
         res_verify = response.json()
         assert "is_valid" in res_verify
+
+
+def test_system_frame_endpoint():
+    """Test SAGE System Frame endpoint compiles context, metadata, and connector availability."""
+    with TestClient(app) as client:
+        response = client.get("/system-frame")
+        assert response.status_code == 200
+
+        data = response.json()
+        assert "runtime_status" in data
+        assert "master_snapshot_markdown" in data
+        assert "session_state_markdown" in data
+        assert "current_milestone" in data
+        assert "active_task" in data
+        assert "blockers" in data
+        assert "validated_architecture_summary" in data
+        assert "connectors" in data
+        assert "runtime_health" in data
+
+        # Check connector list and fields
+        connectors = data["connectors"]
+        assert len(connectors) >= 5
+        providers = [c["provider_name"] for c in connectors]
+        assert "OpenAI / ChatGPT" in providers
+        assert "Google AI / Gemini" in providers
+        assert "Jules" in providers
+        assert "Google Workspace" in providers
+        assert "GitHub" in providers
+
+        # Assert correct field layout for at least one connector
+        c = connectors[0]
+        assert "connection_state" in c
+        assert "required_credentials" in c
+        assert "permissions_required" in c
+        assert "health_status" in c

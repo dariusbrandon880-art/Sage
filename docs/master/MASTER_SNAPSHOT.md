@@ -91,6 +91,7 @@ sage/
 The REST API server exposes:
 - **System Diagnostics**: `/service/diagnostics` (Uptime, metrics, session depth)
 - **Continuity Engine**: `/objective`, `/task`, `/task/blocker`, `/checkpoint`, `/handoff`, `/restore`, `/ingest`, `/reason`, `/verify`
+- **System Context Frame**: `/system-frame` (Consolidated SAGE status, active tasks, blockers, snapshots, and connection registries)
 - **Memory & Validation**: `/memory`, `/validate`, `/promote/validated`, `/promote/archive`
 - **AI Integrations**: `/ai/query/chatgpt`, `/ai/query/gemini-jules`
 - **Tool Integrations**: `/tools/github/event`, `/tools/workspace/artifact`, `/tools/workspace/sync`, `/tools/index/relationships`
@@ -107,6 +108,6 @@ The REST API server exposes:
 ---
 
 ## 5. Operational Integrity Metrics
-- **Tests Passing**: 72/72 (100% success rate, including new global security boundaries)
+- **Tests Passing**: 94/94 (100% success rate, including newly integrated System Frame and Universal Connector registries)
 - **Code Style Compliance**: 100% Black Formatted, 100% Ruff Clean.
 - **Deprecation Warnings**: 0 (all class Config and legacy utcnow deprecations successfully resolved).

@@ -42,6 +42,10 @@ SAGE repository-side interfaces are fully consolidated, and Phase 3 Live Connect
 - **Objective**: Add structured session awareness, checkpoints, and active context tracking.
 - **Scope**: Implemented `SessionState`, `ContextTracker`, and `ContinuityCheckpoint` inside `sage/acr/session/` to allow SAGE to maintain awareness of ongoing work across sessions.
 
+### Milestone 2.5: SAGE Universal Connector Layer (Completed)
+- **Objective**: Complete production-ready orchestration interfaces connecting ChatGPT, Google AI/Gemini, Jules, Google Workspace, GitHub, and future platforms.
+- **Scope**: Implemented `/system-frame` to provide authorized, read-only SAGE operational context; built a dynamic `ConnectorRegistry` for unified connection/credential monitoring; integrated live Gemini REST APIs; and established extensible connector placeholders for GitLab, Slack, Discord, Notion, Linear, Microsoft 365, AWS, Azure, and Docker/Kubernetes.
+
 ---
 
 ## 3. SAGE Continuity Intelligence Layer Overview

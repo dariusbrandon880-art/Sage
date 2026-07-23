@@ -1,0 +1,255 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "SAGE Autonomous Continuity Runtime API",
+    "description": "API schema for SAGE Actions in ChatGPT Custom GPTs. Allows secure system context retrieval and ingestion of continuity states.",
+    "version": "1.1.0"
+  },
+  "servers": [
+    {
+      "url": "https://sage-runtime.onrender.com",
+      "description": "Production SAGE Server"
+    }
+  ],
+  "paths": {
+    "/system-frame": {
+      "get": {
+        "summary": "Retrieve complete SAGE Operational Context",
+        "description": "Provides a read-only snapshot of current SAGE status, milestones, active tasks, blockers, and connector states.",
+        "operationId": "getSystemFrame",
+        "responses": {
+          "200": {
+            "description": "Successful retrieval of SAGE Context Frame",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "runtime_status": {
+                      "type": "string",
+                      "example": "active"
+                    },
+                    "master_snapshot_markdown": {
+                      "type": "string"
+                    },
+                    "session_state_markdown": {
+                      "type": "string"
+                    },
+                    "current_milestone": {
+                      "type": "string"
+                    },
+                    "active_task": {
+                      "type": "string"
+                    },
+                    "blockers": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "validated_architecture_summary": {
+                      "type": "object"
+                    },
+                    "connectors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "runtime_health": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ingest": {
+      "post": {
+        "summary": "Ingest Session Payload into SAGE Continuity Bridge",
+        "description": "Saves active engineering tasks, context, validated memories, and technical decisions under a unified single-transaction workflow.",
+        "operationId": "ingestPayload",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExternalSessionPayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payload successfully ingested",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "session_id": {
+                      "type": "string"
+                    },
+                    "checkpoint_id": {
+                      "type": "string"
+                    },
+                    "snapshot_id": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Retrieve System Health",
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "description": "Healthy response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "healthy"
+                    },
+                    "runtime": {
+                      "type": "string",
+                      "example": "active"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ExternalSessionPayload": {
+        "type": "object",
+        "required": [
+          "session_id",
+          "objective",
+          "task"
+        ],
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "example": "session_a1b2c3d4"
+          },
+          "objective": {
+            "type": "string",
+            "example": "Implement Universal SAGE Connection Layer"
+          },
+          "task": {
+            "type": "string",
+            "example": "Deploy live FastAPI server on Render"
+          },
+          "memories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MemoryObject"
+            }
+          },
+          "decisions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DecisionRecord"
+            }
+          }
+        }
+      },
+      "MemoryObject": {
+        "type": "object",
+        "required": [
+          "object_type",
+          "content"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "object_type": {
+            "type": "string",
+            "example": "fact"
+          },
+          "content": {
+            "type": "object"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "hypothesis",
+              "validated"
+            ]
+          }
+        }
+      },
+      "DecisionRecord": {
+        "type": "object",
+        "required": [
+          "decision_type",
+          "description",
+          "rationale"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "decision_type": {
+            "type": "string",
+            "enum": [
+              "architectural",
+              "technical",
+              "process",
+              "organizational"
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "rationale": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key"
+      }
+    }
+  },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ]
+}

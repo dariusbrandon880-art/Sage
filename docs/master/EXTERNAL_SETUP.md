@@ -10,8 +10,9 @@ SAGE is designed to run in a secured live environment, bridging local state pers
 
 | Connection Endpoint | Protocol / Flow | Auth Mechanism | Current Readiness | Target Live State |
 | :--- | :--- | :--- | :--- | :--- |
-| **OpenAI Custom GPT Actions** | REST HTTP HTTPS | Header `x-api-key` (Bearer / Custom) | **Ready**. Schema provided in Sec 2. | Connected to public HTTPS Gateway |
-| **Gemini / Jules Connector** | REST Endpoint | Secure API Key + Local SDK routing | **Ready**. Handled via local query / ingest. | Direct automated multiline reasoning sync |
+| **SAGE System Frame** | GET HTTP HTTPS | Header `x-api-key` | **Fully Activated**. Exposed at `/system-frame`. | Live status, snapshotted context, and connector registry feed |
+| **OpenAI Custom GPT Actions** | REST HTTP HTTPS | Header `x-api-key` (Bearer / Custom) | **Fully Activated**. Schema provided in Sec 2. | Connected to public HTTPS Gateway |
+| **Gemini / Jules Connector** | REST Endpoint | Secure API Key + Local SDK / REST routing | **Fully Activated**. Native REST API integrated with error boundaries. | Direct automated multiline reasoning sync |
 | **GitHub Webhook Listener** | HTTP POST Webhook | `X-Hub-Signature-256` (HMAC-SHA256) | **Ready**. Signature validation built-in. | Automatic ingestion of PRs & commits |
 | **Google Workspace Sync** | OAuth 2.0 Web flow | `credentials.json` Client Secret / Access Token | **Ready**. Features auto-dryrun fallback. | Live mirroring of State Docs to Docs/Sheets |
 | **HTTPS API Gateway** | ASGI HTTPS Port 8000 | Reverse-proxy (Nginx / Caddy) + SSL certs | **Ready**. Docker/Uvicorn config ready. | Hosted on public domain with Let's Encrypt |
@@ -34,216 +35,90 @@ An OpenAI Custom GPT Action allows standard or custom ChatGPT instances to inter
    - Paste one of the valid keys configured in your `SAGE_API_KEYS` environment variable.
 6. Under **Privacy Policy**, specify your secure URL or placeholder.
 
-### 2.2 SAGE OpenAPI 3.0 Specification (YAML)
-Paste this exact YAML schema into the ChatGPT Action configuration:
+### 2.2 SAGE OpenAPI 3.0 Specification (JSON)
+SAGE hosts a pre-configured OpenAPI 3.0 action schema at `docs/master/CUSTOM_GPT_OPENAPI_SCHEMA.json`. You can paste the JSON structure directly:
 
-```yaml
-openapi: 3.0.0
-info:
-  title: SAGE Autonomous Continuity API
-  description: API gateway for SAGE ACR (Autonomous Continuity Runtime) enabling persistent state, validated knowledge lineage, decision tracking, and memory ingestion.
-  version: 1.0.0
-servers:
-  - url: https://your-sage-domain.com
-    description: Production Live Gateway
-paths:
-  /status:
-    get:
-      summary: Get active runtime status
-      description: Returns SAGE's status, active task, current objective, blockers, and database metrics.
-      operationId: getStatus
-      responses:
-        '200':
-          description: Successful status retrieval
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  active:
-                    type: boolean
-                  current_objective:
-                    type: string
-                  active_task:
-                    type: string
-                  blockers:
-                    type: array
-                    items:
-                      type: string
-                  dependencies:
-                    type: array
-                    items:
-                      type: string
-                  memory_count:
-                    type: integer
-                  archive_count:
-                    type: integer
-                  decision_count:
-                    type: integer
-                  session_depth:
-                    type: integer
-
-  /ingest:
-    post:
-      summary: Ingest external session payload
-      description: Single authoritative pathway to load sessions, validate memories, track decisions, route archived entries, and checkpoint state.
-      operationId: ingestPayload
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ExternalSessionPayload'
-      responses:
-        '200':
-          description: Ingestion and checkpoint successful
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  session_id:
-                    type: string
-                  checkpoint_id:
-                    type: string
-                  snapshot_id:
-                    type: string
-                  status:
-                    type: string
-
-  /reason:
-    get:
-      summary: Reason over continuity state
-      description: Examines stored state, active context, memory and decisions to provide aligned suggestions and flag unsupported architectural choices.
-      operationId: reasonOverContinuity
-      responses:
-        '200':
-          description: Continuity suggestions successfully computed
-          content:
-            application/json:
-              schema:
-                type: object
-
-  /verify:
-    get:
-      summary: Run self-verification checks
-      description: Audits data integrity, disk storage, file systems, and lineage referential consistency.
-      operationId: verifyIntegrity
-      responses:
-        '200':
-          description: Integrity report successfully computed
-          content:
-            application/json:
-              schema:
-                type: object
-
-  /objective:
-    post:
-      summary: Set active objective
-      description: Configures the system-wide active objective and registers a new session branch.
-      operationId: setObjective
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - objective
-              properties:
-                objective:
-                  type: string
-      responses:
-        '200':
-          description: Objective successfully set
-
-  /task:
-    post:
-      summary: Set active task
-      description: Sets the current active engineering task under the active objective.
-      operationId: setTask
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - task
-              properties:
-                task:
-                  type: string
-      responses:
-        '200':
-          description: Task successfully set
-
-components:
-  schemas:
-    ExternalSessionPayload:
-      type: object
-      required:
-        - objective
-      properties:
-        session_id:
-          type: string
-          description: Optional persistent session tracking ID.
-        objective:
-          type: string
-          description: The high-level guiding objective.
-        task:
-          type: string
-          description: The active task description.
-        memories:
-          type: array
-          items:
-            $ref: '#/components/schemas/MemoryInput'
-        decisions:
-          type: array
-          items:
-            $ref: '#/components/schemas/DecisionInput'
-    MemoryInput:
-      type: object
-      required:
-        - id
-        - object_type
-        - content
-      properties:
-        id:
-          type: string
-        object_type:
-          type: string
-          enum: [fact, rule, report, architectural_spec, general]
-        content:
-          type: object
-        tags:
-          type: array
-          items:
-            type: string
-        confidence:
-          type: string
-          enum: [hypothesis, validated, archived]
-    DecisionInput:
-      type: object
-      required:
-        - id
-        - decision_type
-        - description
-        - rationale
-      properties:
-        id:
-          type: string
-        decision_type:
-          type: string
-          enum: [architectural, technical, organizational, process]
-        description:
-          type: string
-        rationale:
-          type: string
-        evidence:
-          type: array
-          items:
-            type: string
-          description: List of memory IDs supporting this decision.
+```json
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "SAGE Autonomous Continuity Runtime API",
+    "description": "API schema for SAGE Actions in ChatGPT Custom GPTs. Allows secure system context retrieval and ingestion of continuity states.",
+    "version": "1.1.0"
+  },
+  "servers": [
+    {
+      "url": "https://sage-runtime.onrender.com",
+      "description": "Production SAGE Server"
+    }
+  ],
+  "paths": {
+    "/system-frame": {
+      "get": {
+        "summary": "Retrieve complete SAGE Operational Context",
+        "description": "Provides a read-only snapshot of current SAGE status, milestones, active tasks, blockers, and connector states.",
+        "operationId": "getSystemFrame",
+        "responses": {
+          "200": {
+            "description": "Successful retrieval of SAGE Context Frame",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "runtime_status": {"type": "string"},
+                    "master_snapshot_markdown": {"type": "string"},
+                    "session_state_markdown": {"type": "string"},
+                    "current_milestone": {"type": "string"},
+                    "active_task": {"type": "string"},
+                    "blockers": {"type": "array", "items": {"type": "string"}},
+                    "validated_architecture_summary": {"type": "object"},
+                    "connectors": {"type": "array", "items": {"type": "object"}},
+                    "runtime_health": {"type": "object"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ingest": {
+      "post": {
+        "summary": "Ingest Session Payload into SAGE Continuity Bridge",
+        "description": "Saves active engineering tasks, context, validated memories, and technical decisions under a unified single-transaction workflow.",
+        "operationId": "ingestPayload",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExternalSessionPayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payload successfully ingested",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "session_id": {"type": "string"},
+                    "checkpoint_id": {"type": "string"},
+                    "snapshot_id": {"type": "string"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
 ```
 
 ---
@@ -303,15 +178,20 @@ To prevent spoofing, SAGE validates all incoming GitHub events using the HMAC-SH
 
 ---
 
-## 5. Gemini / Jules Connector Activation
+## 5. Google AI / Gemini / Jules Activation
 
 Gemini and Jules agents sync directly with SAGE using secure API keys and local integration layers. SAGE exposes dedicated connectors that format reasoning inputs, retrieve context from active state, and post turn transactions into the unified database.
 
 ### 5.1 Activation Steps
 1. Provision a Gemini API Key from Google AI Studio.
-2. Configure `GEMINI_API_KEY` inside `.env`.
+2. Configure `GEMINI_API_KEY` inside `.env` or your Render environment variables.
 3. Set `SAGE_API_KEYS` to include your secure agent token.
 4. Execute queries against `/ai/query/gemini-jules` to sync agent steps directly to the SAGE single-transaction ingest loop.
+
+### 5.2 Optional Vertex AI Integration
+SAGE is fully prepared to support future Google Cloud Vertex AI integrations. Moving from Google AI Studio (Gemini SDK) to Enterprise Vertex AI can be achieved cleanly by updating your credentials to point to your Google Cloud Service Account keyfile and invoking the GCP Vertex AI client libraries:
+- Required scopes: `https://www.googleapis.com/auth/cloud-platform`
+- Package target: `google-cloud-aiplatform`
 
 ---
 

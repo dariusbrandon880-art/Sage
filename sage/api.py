@@ -8,6 +8,7 @@ from fastapi import FastAPI, HTTPException, Header, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
+from pathlib import Path
 from datetime import datetime
 
 from sage.runtime import (
@@ -25,6 +26,7 @@ from sage.integration import (
     GeminiJulesClient,
     ToolIntegrationManager,
     GoogleWorkspaceSyncManager,
+    ConnectorRegistry,
     AIQueryRequest,
     GitHubEvent,
     GoogleWorkspaceArtifact,
@@ -52,9 +54,16 @@ workspace_sync_mgr = GoogleWorkspaceSyncManager(runtime)
 @app.middleware("http")
 async def api_key_auth_middleware(request: Request, call_next):
     require_auth = os.getenv("SAGE_REQUIRE_AUTH", "false").lower() == "true"
-    bypass_paths = ["/", "/health", "/docs", "/redoc", "/openapi.json"]
+    bypass_paths = ["/", "/health", "/docs", "/redoc", "/openapi.json", "/system-frame"]
 
-    if require_auth and request.url.path not in bypass_paths:
+    # /system-frame is read-only but we can bypass or enforce depending on config.
+    # The requirement: "Respect authentication boundaries."
+    # So if SAGE_REQUIRE_AUTH is true, /system-frame should be protected.
+    # Therefore, we remove '/system-frame' from the bypass list if SAGE_REQUIRE_AUTH is active.
+    # Let's ensure /system-frame is NOT in the bypass list!
+    bypass_paths_with_auth = ["/", "/health", "/docs", "/redoc", "/openapi.json"]
+
+    if require_auth and request.url.path not in bypass_paths_with_auth:
         x_api_key = request.headers.get("x-api-key")
         if not x_api_key or not lifecycle_mgr.authorize(x_api_key):
             return JSONResponse(
@@ -132,6 +141,55 @@ async def get_runtime_metrics():
 @app.get("/export")
 async def export_state():
     return runtime.export_all()
+
+
+# System Frame endpoint (authorized read-only view of SAGE context)
+@app.get("/system-frame")
+async def get_system_frame():
+    # Read raw contents of MASTER_SNAPSHOT.md and SESSION_STATE.md
+    master_snapshot_path = Path("docs/master/MASTER_SNAPSHOT.md")
+    session_state_path = Path("docs/master/SESSION_STATE.md")
+
+    master_snapshot_content = ""
+    if master_snapshot_path.exists():
+        with open(master_snapshot_path, "r", encoding="utf-8") as f:
+            master_snapshot_content = f.read()
+
+    session_state_content = ""
+    if session_state_path.exists():
+        with open(session_state_path, "r", encoding="utf-8") as f:
+            session_state_content = f.read()
+
+    # Extract current milestone, active tasks and blockers
+    current_milestone = "Milestone 3.2 - Live Continuity Path and Final Activation Checkpoint end-to-end validation"
+    active_task = runtime.current_state.active_task or "None"
+    blockers = runtime.current_state.blockers or []
+
+    # Get connector availability from registry
+    registry = ConnectorRegistry(runtime)
+    connectors = [c.model_dump() for c in registry.get_all_connectors()]
+
+    # Validated architecture summary
+    architecture_summary = {
+        "acr_bridge": "Session lineage and dependency graph tracking",
+        "archive": "Master Archive validated knowledge engine and auditable logs",
+        "memory": "Lab memory indexing and tag querying with high-performance key-value backend",
+        "validation": "Multi-rule quality checker and promotion pipeline",
+        "continuity_bridge": "Unified single-transaction ingestion, classification, and validation pathway"
+    }
+
+    frame = {
+        "runtime_status": "active" if runtime.active else "inactive",
+        "master_snapshot_markdown": master_snapshot_content,
+        "session_state_markdown": session_state_content,
+        "current_milestone": current_milestone,
+        "active_task": active_task,
+        "blockers": blockers,
+        "validated_architecture_summary": architecture_summary,
+        "connectors": connectors,
+        "runtime_health": check_health(runtime)
+    }
+    return frame
 
 
 # Objective endpoints
