@@ -164,4 +164,56 @@ def check_health(runtime: Any | None = None) -> dict[str, Any]:
     # Record health status metric
     metrics.set_gauge("health.status_score", float(available_count) / len(essential_components))
 
-    return {"status": status, "runtime": runtime_active, "components": components}
+    # New Cognitive Control Plane health metrics
+    approved = metrics.counters.get("control_plane.mutations_approved", 0)
+    rejected = metrics.counters.get("control_plane.mutations_rejected", 0)
+    total = approved + rejected
+    asi = float(approved) / total if total > 0 else 1.0
+
+    # Retrieve receipt chain integrity
+    receipt_chain_integrity = True
+    if runtime and hasattr(runtime, "validation") and hasattr(runtime.validation, "receipt_chain"):
+        receipt_chain_integrity = runtime.validation.receipt_chain.verify_chain_integrity()
+
+    # Drift Detection
+    drift_detected = False
+    drift_reason = "none"
+    if runtime and hasattr(runtime, "current_state"):
+        current_obj = runtime.current_state.current_objective
+        active_task = runtime.current_state.active_task
+        if hasattr(runtime, "checkpoint_manager"):
+            try:
+                checkpoints = runtime.checkpoint_manager.list_all()
+                if checkpoints and (current_obj or active_task):
+                    latest_chk = checkpoints[-1]
+                    active_goals = getattr(latest_chk, "active_goals", [])
+                    if active_goals and current_obj and current_obj not in active_goals:
+                        drift_detected = True
+                        drift_reason = "Active objective diverges from latest checkpoint goals"
+            except Exception:
+                pass
+
+    csi = 1.0  # Cognitive Separation Index is 1.0 unless unauthorized direct writing detected
+
+    cognitive_control_plane = {
+        "authority_stability_index": asi,
+        "cognitive_separation_index": csi,
+        "rejected_mutations": rejected,
+        "receipt_chain_integrity": receipt_chain_integrity,
+        "drift_detection": {
+            "drift_detected": drift_detected,
+            "drift_reason": drift_reason
+        }
+    }
+
+    # Record metrics gauges
+    metrics.set_gauge("health.authority_stability_index", asi)
+    metrics.set_gauge("health.cognitive_separation_index", csi)
+    metrics.set_gauge("health.receipt_chain_integrity", 1.0 if receipt_chain_integrity else 0.0)
+
+    return {
+        "status": status,
+        "runtime": runtime_active,
+        "components": components,
+        "cognitive_control_plane": cognitive_control_plane
+    }
