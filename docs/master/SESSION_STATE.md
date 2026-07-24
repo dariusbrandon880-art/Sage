@@ -70,3 +70,26 @@ The SAGE Runtime Integrity Layer (SRIL) has been fully validated with robust evi
 ### 5. Production Baseline Lock Status
 - **Baseline Status**: **LOCKED & VERIFIED**
 - **Architecture Drift**: Zero (0.0%). All core systems are finalized and frozen under d58e001 constraints.
+
+---
+
+## SAGE PHASE 4.2 AGENT LEARNING RUNTIME ACTIVATION
+
+### 1. Proposal Overview (Phase 4.2)
+SAGE Phase 4.2 implements a secure, bounded Learning Layer under `sage/agents/learning/` to safely observe system execution, identify patterns, and propose parameter/policy improvements. To maintain strict governance, learning systems operate under the "Observer-Only Principle," ensuring they cannot directly mutate any production configurations, state files, or codebase files on disk.
+
+### 2. Operational Status
+- **Learning Runtime Status**: **VALIDATION READY** (or **ARCHITECTURE IMPLEMENTATION CANDIDATE**)
+- **State Promotion**: Locked and governed. All proposed changes must flow through the SPEK Policy Bridge.
+
+### 3. Validation Boundaries
+- **Strict Observer Isolation**: The learning agent observes events in a read-only fashion. No disk writes or directory operations can be executed by the agent directly.
+- **Fail-Closed Boundary Protection**: Any attempt to propose direct file or configuration mutation (e.g., injecting system file paths inside proposed payloads) raises a runtime `PermissionError`.
+- **Contract Integrity**: Runtime contract is permanently preserved: `sage.runtime:app` matches `sage.api:app` exactly.
+
+### 4. Evidence Requirements
+Any proposed policy or configuration update must form an immutable receipt chain:
+- **Agent Identity Auth**: The agent proposing the delta must match an allowed identifier registered in the `AgentPolicyBridge`.
+- **Proposed Delta**: Must be fully structured and traceable.
+- **SHA-256 Receipt**: Generated deterministically by serializing the proposed delta and hashing it.
+- **EAS Validation State**: Receipts map status to `PENDING_VALIDATION` or `AUTHORIZED`, while unauthorized attempts result in `REJECTED`.

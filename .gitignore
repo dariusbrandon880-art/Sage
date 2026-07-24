@@ -222,3 +222,6 @@ __marimo__/
 .sage/memory/
 .sage/continuity/
 .sage/sage_state.json
+
+# Local execution/test databases
+sage_data/
