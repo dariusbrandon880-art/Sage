@@ -23,4 +23,25 @@ __all__ = [
     "generate_capability_report",
     "discover_capabilities",
     "get_metrics_collector",
+    "app",
 ]
+
+
+def __getattr__(name: str):
+    """Lazy-load app to prevent circular imports during runtime startup."""
+    if name == "app":
+        try:
+            from sage.api import app as fastapi_app
+
+            return fastapi_app
+        except Exception as e:
+            import sys
+            import logging
+
+            logger = logging.getLogger("sage.runtime")
+            logger.error(
+                f"FATAL: SAGE Runtime failed to load invariant entry boundary: {str(e)}",
+                exc_info=True,
+            )
+            sys.exit(1)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
