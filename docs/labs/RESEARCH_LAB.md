@@ -29,3 +29,27 @@ SAGE research explores 11 strategic conceptual models for cognitive continuity:
 - **APM (Autonomous Process Monitor)**: Proactively measures process velocity and raises blockers when progress stalls.
 - **MEC (Multi-user Engineering Continuity)**: Reconciles concurrent or conflicting developer-agent decision trees.
 - **CIR (Canonical Index Registry)**: Tracks knowledge lineage from draft hypothesis to Master Archive.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_architecture_decision_4b02dd92
+- **Timestamp**: 2026-07-24T03:18:21.392236+00:00
+- **Payload Type**: `architecture_decision`
+- **Title/Subject**: SAGE-RF-FutureExpansion
+- **Lineage Details**: Unapproved/draft item categorized as research. Processed by Jules.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_architecture_decision_5a35936f
+- **Timestamp**: 2026-07-24T03:19:50.229282+00:00
+- **Payload Type**: `architecture_decision`
+- **Title/Subject**: SAGE-RF-FutureExpansion
+- **Lineage Details**: Unapproved/draft item categorized as research. Processed by Jules.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_architecture_decision_9d131f6c
+- **Timestamp**: 2026-07-24T03:27:08.467892+00:00
+- **Payload Type**: `architecture_decision`
+- **Title/Subject**: SAGE-RF-FutureExpansion
+- **Lineage Details**: Unapproved/draft item categorized as research. Processed by Jules.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_architecture_decision_3678d575
+- **Timestamp**: 2026-07-24T03:30:52.619995+00:00
+- **Payload Type**: `architecture_decision`
+- **Title/Subject**: SAGE-RF-FutureExpansion
+- **Lineage Details**: Unapproved/draft item categorized as research. Processed by Jules.

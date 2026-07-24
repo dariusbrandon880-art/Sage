@@ -42,3 +42,27 @@ SAGE features a complete automated verification test suite:
   ruff check sage/ tests/
   ```
 - **Timezone Safety**: Python 3.12+ compliant timezone-aware datetimes are enforced via `datetime.now(timezone.utc)`.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_architecture_decision_bd3f2b63
+- **Timestamp**: 2026-07-24T03:18:21.380183+00:00
+- **Payload Type**: `architecture_decision`
+- **Title/Subject**: Draft Decision: ADR-011-experimental
+- **Lineage Details**: Unapproved decision routed to Engineering Lab.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_architecture_decision_21328e2a
+- **Timestamp**: 2026-07-24T03:19:50.217793+00:00
+- **Payload Type**: `architecture_decision`
+- **Title/Subject**: Draft Decision: ADR-011-experimental
+- **Lineage Details**: Unapproved decision routed to Engineering Lab.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_architecture_decision_79bbf261
+- **Timestamp**: 2026-07-24T03:27:08.457654+00:00
+- **Payload Type**: `architecture_decision`
+- **Title/Subject**: Draft Decision: ADR-011-experimental
+- **Lineage Details**: Unapproved decision routed to Engineering Lab.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_architecture_decision_f038d6d5
+- **Timestamp**: 2026-07-24T03:30:52.609165+00:00
+- **Payload Type**: `architecture_decision`
+- **Title/Subject**: Draft Decision: ADR-011-experimental
+- **Lineage Details**: Unapproved decision routed to Engineering Lab.

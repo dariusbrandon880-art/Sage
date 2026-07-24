@@ -79,3 +79,27 @@ The server provides a standard set of endpoints under `/docs` (interactive Swagg
 - `POST /tools/github/event` - Index commit or PR event.
 - `POST /tools/workspace/artifact` - Index a Google Workspace documentation url.
 - `GET /tools/index/relationships` - Cross-reference commits and documents.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_deployment_event_d9742fac
+- **Timestamp**: 2026-07-24T03:18:21.386460+00:00
+- **Payload Type**: `deployment_event`
+- **Title/Subject**: Deployment to production-onrender (synchronized)
+- **Lineage Details**: Deployment event parsed. Operational state updated by Jules.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_deployment_event_a677c4be
+- **Timestamp**: 2026-07-24T03:19:50.223822+00:00
+- **Payload Type**: `deployment_event`
+- **Title/Subject**: Deployment to production-onrender (synchronized)
+- **Lineage Details**: Deployment event parsed. Operational state updated by Jules.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_deployment_event_bc770957
+- **Timestamp**: 2026-07-24T03:27:08.462969+00:00
+- **Payload Type**: `deployment_event`
+- **Title/Subject**: Deployment to production-onrender (synchronized)
+- **Lineage Details**: Deployment event parsed. Operational state updated by Jules.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_deployment_event_014be154
+- **Timestamp**: 2026-07-24T03:30:52.614990+00:00
+- **Payload Type**: `deployment_event`
+- **Title/Subject**: Deployment to production-onrender (synchronized)
+- **Lineage Details**: Deployment event parsed. Operational state updated by Jules.

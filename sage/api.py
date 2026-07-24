@@ -11,7 +11,7 @@ from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from sage.acr.skal import process_incoming_payload
+from sage.acr.skal import process_incoming_payload, promote_skal_payload
 from sage.integration import (
     AIQueryRequest,
     ChatGPTClient,
@@ -481,6 +481,33 @@ async def skal_intake(req: SKALIntakeRequest):
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"SAGE-SKAL intake ingestion failed: {e!s}")
+
+
+class SKALPromoteRequest(BaseModel):
+    """Request model for SAGE-SKAL knowledge promotion."""
+
+    memory_id: str
+    approved: bool
+    approver: str
+    is_research: bool = False
+
+
+@app.post("/tools/skal/promote")
+async def skal_promote(req: SKALPromoteRequest):
+    """REST endpoint for SAGE-SKAL knowledge promotion contract."""
+    try:
+        result = promote_skal_payload(
+            memory_id=req.memory_id,
+            approved=req.approved,
+            approver=req.approver,
+            runtime=runtime,
+            is_research=req.is_research,
+        )
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"SAGE-SKAL promotion failed: {e!s}")
 
 
 # Snapshot endpoints

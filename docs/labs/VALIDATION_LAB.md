@@ -28,3 +28,27 @@ The `ValidationSystem` (`sage/validation.py`) enforces:
 Decisions must be accompanied by supporting proof before they are approved:
 - **Evidence List**: Linkages to GitHub Pull Requests, automated test reports, benchmark results, or design documents.
 - **Outcome Assessment**: Post-implementation reviews documenting retrospective lessons and performance outcomes.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_validation_report_dcc803a5
+- **Timestamp**: 2026-07-24T03:18:21.291290+00:00
+- **Payload Type**: `validation_report`
+- **Title/Subject**: Draft Report: manual-ci
+- **Lineage Details**: Unapproved validation report routed to Validation Lab.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_validation_report_1651c386
+- **Timestamp**: 2026-07-24T03:19:50.203445+00:00
+- **Payload Type**: `validation_report`
+- **Title/Subject**: Draft Report: manual-ci
+- **Lineage Details**: Unapproved validation report routed to Validation Lab.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_validation_report_e3d02e03
+- **Timestamp**: 2026-07-24T03:27:08.443298+00:00
+- **Payload Type**: `validation_report`
+- **Title/Subject**: Draft Report: manual-ci
+- **Lineage Details**: Unapproved validation report routed to Validation Lab.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_validation_report_ec6a86c0
+- **Timestamp**: 2026-07-24T03:30:52.596847+00:00
+- **Payload Type**: `validation_report`
+- **Title/Subject**: Draft Report: manual-ci
+- **Lineage Details**: Unapproved validation report routed to Validation Lab.
