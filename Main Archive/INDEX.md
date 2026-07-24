@@ -11,6 +11,7 @@ Welcome to SAGE's immutable Master Archive and research repository. This index l
 - [Dependency Graph](architecture/dependency-graph.md) - Class mappings and package relationship models.
 - [Architecture Index](architecture/architecture-index.md) - Directory layout index of the repository.
 - [SAGE Archive Intelligence Layer](../docs/master/ARCHIVE_INTELLIGENCE.md) - Design and operational specification of SAGE's relational knowledge graph and metadata tracking.
+- [SAGE Agent Workflow Layer v1 Foundation Spec](https://github.com/sage-cos-core/docs/AGENT_WORKFLOW_v1_SPEC.md) - Production specification for governed SAGE agents and task routing.
 
 ---
 
@@ -51,3 +52,4 @@ Welcome to SAGE's immutable Master Archive and research repository. This index l
 - [SAGE Final Live Activation Checklist](../docs/master/FINAL_LIVE_ACTIVATION_CHECKLIST.md) - Definitive step-by-step operational setup instructions to bridge the permission boundary for hosting, APIs, webhooks, and integrations.
 - [SAGE Render Deployment Handoff Spec](../docs/master/RENDER_DEPLOYMENT_HANDOFF.md) - Comprehensive Render deployment settings, repository reference, required env variables, and health checks.
 - [SAGE 2 Production Readiness & Live Activation Report](../docs/master/SAGE2_PRODUCTION_READINESS_REPORT.md) - Detailed production readiness verification, environmental parameters audit, and health status.
+- [SAGE SPEK v1.1 Production Specification](https://github.com/sage-cos-core/docs/SPEK_v1.1_SPEC.md) - Production specification for the SAGE Policy Enforcement Kernel.
