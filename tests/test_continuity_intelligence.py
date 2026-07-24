@@ -1,19 +1,20 @@
 """Tests for SAGE Continuity Intelligence Layer expansion."""
 
-import tempfile
 import shutil
-from pathlib import Path
+import tempfile
 from datetime import datetime
+from pathlib import Path
+
 import pytest
 
 from sage.acr.session import (
+    CheckpointManager,
+    ContextTracker,
     SessionState,
     SessionStateManager,
-    ContextTracker,
-    CheckpointManager,
 )
-from sage.runtime import SageRuntime
 from sage.models import ExternalSessionPayload
+from sage.runtime import SageRuntime
 
 
 @pytest.fixture

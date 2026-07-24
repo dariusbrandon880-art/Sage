@@ -1,9 +1,9 @@
 """Archive system for permanent, validated knowledge."""
 
 import json
-from pathlib import Path
-from typing import List, Optional, Dict, Any
 from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
 
 from sage.models import ArchiveEntry, KnowledgeState
 
@@ -19,7 +19,7 @@ class Archive:
         """
         self.storage_path = Path(storage_path)
         self.storage_path.mkdir(parents=True, exist_ok=True)
-        self.entries: Dict[str, ArchiveEntry] = {}
+        self.entries: dict[str, ArchiveEntry] = {}
         self._load_all_entries()
 
     def promote_to_archive(self, entry: ArchiveEntry) -> str:
@@ -43,7 +43,7 @@ class Archive:
 
         return entry.id
 
-    def retrieve_entry(self, entry_id: str) -> Optional[ArchiveEntry]:
+    def retrieve_entry(self, entry_id: str) -> ArchiveEntry | None:
         """Retrieve an archive entry.
 
         Args:
@@ -66,7 +66,7 @@ class Archive:
 
         return None
 
-    def search_by_tag(self, tag: str) -> List[ArchiveEntry]:
+    def search_by_tag(self, tag: str) -> list[ArchiveEntry]:
         """Search archive entries by tag.
 
         Args:
@@ -81,7 +81,7 @@ class Archive:
                 results.append(entry)
         return results
 
-    def search_by_title(self, title_substring: str) -> List[ArchiveEntry]:
+    def search_by_title(self, title_substring: str) -> list[ArchiveEntry]:
         """Search archive entries by title substring.
 
         Args:
@@ -96,7 +96,7 @@ class Archive:
             if title_substring.lower() in entry.title.lower()
         ]
 
-    def get_lineage(self, entry_id: str) -> Dict[str, Any]:
+    def get_lineage(self, entry_id: str) -> dict[str, Any]:
         """Get full lineage of an archive entry.
 
         Args:
@@ -120,7 +120,7 @@ class Archive:
             ),
         }
 
-    def list_all(self) -> List[ArchiveEntry]:
+    def list_all(self) -> list[ArchiveEntry]:
         """List all archive entries.
 
         Returns:
@@ -128,7 +128,7 @@ class Archive:
         """
         return list(self.entries.values())
 
-    def get_by_state(self, state: KnowledgeState) -> List[ArchiveEntry]:
+    def get_by_state(self, state: KnowledgeState) -> list[ArchiveEntry]:
         """Get archive entries by knowledge state.
 
         Args:
@@ -153,7 +153,7 @@ class Archive:
             except Exception as e:
                 print(f"Error loading archive entry from {filepath}: {e}")
 
-    def export_state(self) -> Dict[str, Any]:
+    def export_state(self) -> dict[str, Any]:
         """Export current archive state.
 
         Returns:
@@ -196,9 +196,9 @@ class Archive:
         self,
         entry_id: str,
         source: str,
-        validation_rules: Optional[List[str]] = None,
-        dependent_decisions: Optional[List[str]] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        validation_rules: list[str] | None = None,
+        dependent_decisions: list[str] | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         """Set or update lineage details for an archive entry."""
         entry = self.retrieve_entry(entry_id)
@@ -236,7 +236,7 @@ class Archive:
         source_id: str,
         target_id: str,
         relationship_type: str,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         """Add a relationship connection between archive entries."""
         entry = self.retrieve_entry(source_id)
@@ -296,8 +296,8 @@ class Archive:
         entry_id: str,
         confidence_level: float,
         validation_status: str = "archived",
-        evidence_references: Optional[List[str]] = None,
-        review_notes: Optional[str] = None,
+        evidence_references: list[str] | None = None,
+        review_notes: str | None = None,
         reviewer: str = "system",
     ) -> None:
         """Explicitly assign/update confidence level, validation status, and review history."""
@@ -305,8 +305,8 @@ class Archive:
         if not entry:
             raise ValueError(f"Archive entry {entry_id} not found.")
 
-        from sage.archive.intelligence import ArchiveIntelligence
         from sage.archive.confidence import ConfidenceTracker, ReviewHistoryItem
+        from sage.archive.intelligence import ArchiveIntelligence
 
         if not entry.intelligence:
             entry.intelligence = ArchiveIntelligence()
@@ -340,11 +340,11 @@ class Archive:
         self,
         entry_id: str,
         decision_id: str,
-        affected_components: Optional[List[str]] = None,
-        reasoning_reference: Optional[str] = None,
-        validation_outcome: Optional[str] = None,
-        successor_decisions: Optional[List[str]] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        affected_components: list[str] | None = None,
+        reasoning_reference: str | None = None,
+        validation_outcome: str | None = None,
+        successor_decisions: list[str] | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         """Connect an architecture decision to an archive entry."""
         entry = self.retrieve_entry(entry_id)

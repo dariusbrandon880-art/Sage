@@ -1,9 +1,9 @@
 """Persistent storage backend for archive layer."""
 
-from typing import Optional, List
-from pathlib import Path
 import json
 from datetime import datetime
+from pathlib import Path
+
 from sage.archive.models import ArchiveEvent, EventLog, EventQuery
 
 
@@ -54,7 +54,7 @@ class PersistentArchiveStore:
         with open(session_path, "w") as f:
             json.dump(data, f, indent=2)
 
-    def load_event_log(self, session_id: str) -> Optional[EventLog]:
+    def load_event_log(self, session_id: str) -> EventLog | None:
         """Load an event log from storage.
 
         Args:
@@ -107,7 +107,7 @@ class PersistentArchiveStore:
             return True
         return False
 
-    def list_sessions(self) -> List[str]:
+    def list_sessions(self) -> list[str]:
         """List all stored session IDs.
 
         Returns:
@@ -115,7 +115,7 @@ class PersistentArchiveStore:
         """
         return [f.stem for f in self.storage_path.glob("*.json")]
 
-    def query(self, query: EventQuery) -> List[ArchiveEvent]:
+    def query(self, query: EventQuery) -> list[ArchiveEvent]:
         """Retrieve events matching a query.
 
         Args:
@@ -145,7 +145,7 @@ class PersistentArchiveStore:
 
         return results
 
-    def export_session_timeline(self, session_id: str) -> List[dict]:
+    def export_session_timeline(self, session_id: str) -> list[dict]:
         """Export a session's events as a timeline.
 
         Args:

@@ -1,28 +1,29 @@
 """Tests for SAGE Autonomous Continuity Runtime (ACR) Continuity Bridge (ingest, reason, verify)."""
 
-import pytest
-import tempfile
 import json
+import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
+
+from sage.cli import main as cli_main
+from sage.integration import (
+    AIQueryRequest,
+    ChatGPTClient,
+    GeminiJulesClient,
+    GitHubEvent,
+    GoogleWorkspaceArtifact,
+    GoogleWorkspaceSyncManager,
+    ToolIntegrationManager,
+)
 from sage.models import (
-    MemoryObject,
     ConfidenceLevel,
     DecisionType,
     ExternalSessionPayload,
+    MemoryObject,
 )
 from sage.runtime import SageRuntime
-from sage.cli import main as cli_main
-from sage.integration import (
-    ChatGPTClient,
-    GeminiJulesClient,
-    GoogleWorkspaceSyncManager,
-    AIQueryRequest,
-    GitHubEvent,
-    GoogleWorkspaceArtifact,
-    ToolIntegrationManager,
-)
 
 
 @pytest.fixture

@@ -2,6 +2,7 @@
 
 import os
 import tempfile
+
 from fastapi.testclient import TestClient
 
 # Mock the runtime's workspace path so the tests don't pollute the real workspace
@@ -9,7 +10,7 @@ from fastapi.testclient import TestClient
 tmp_dir_obj = tempfile.TemporaryDirectory()
 tmpdir = tmp_dir_obj.name
 
-from sage.api import app, runtime, validation  # noqa: E402
+from sage.api import app, runtime, validation
 
 # Configure the global runtime to use the temporary directory
 runtime.__init__(workspace_path=tmpdir)

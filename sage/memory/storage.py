@@ -1,22 +1,23 @@
 """Memory storage for session and context persistence."""
 
-from typing import Optional, Dict, Any, List
-from sage.memory.models import SessionMemory, RetrievalQuery
+from typing import Any
+
+from sage.memory.models import RetrievalQuery, SessionMemory
 from sage.memory.persistence import PersistentMemoryStore
 
 
 class MemoryStore:
     """Unified memory storage with both in-memory and persistent backends."""
 
-    def __init__(self, persistent_path: Optional[str] = None, use_persistence: bool = True):
+    def __init__(self, persistent_path: str | None = None, use_persistence: bool = True):
         """Initialize memory store.
 
         Args:
             persistent_path: Path for persistent storage. Defaults to .sage/memory
             use_persistence: Whether to use persistent storage backend.
         """
-        self.sessions: Dict[str, SessionMemory] = {}
-        self.context: Dict[str, Any] = {}
+        self.sessions: dict[str, SessionMemory] = {}
+        self.context: dict[str, Any] = {}
         self.use_persistence = use_persistence
         self.persistent_store = (
             PersistentMemoryStore(storage_path=persistent_path or ".sage/memory")
@@ -25,7 +26,7 @@ class MemoryStore:
         )
 
     def create_session(
-        self, session_id: str, metadata: Optional[Dict[str, Any]] = None
+        self, session_id: str, metadata: dict[str, Any] | None = None
     ) -> SessionMemory:
         """Create a new session in memory.
 
@@ -48,7 +49,7 @@ class MemoryStore:
 
         return session
 
-    def get_session(self, session_id: str) -> Optional[SessionMemory]:
+    def get_session(self, session_id: str) -> SessionMemory | None:
         """Retrieve session data.
 
         Args:
@@ -79,7 +80,7 @@ class MemoryStore:
         """
         self.context[key] = value
 
-    def get_context(self, key: str) -> Optional[Any]:
+    def get_context(self, key: str) -> Any | None:
         """Retrieve context data.
 
         Args:
@@ -127,7 +128,7 @@ class MemoryStore:
         session.add_entry(key, value)
         return self.save_session(session_id)
 
-    def get_memory_entry(self, session_id: str, key: str) -> Optional[Any]:
+    def get_memory_entry(self, session_id: str, key: str) -> Any | None:
         """Retrieve a memory entry from a session.
 
         Args:
@@ -164,7 +165,7 @@ class MemoryStore:
             return self.save_session(session_id)
         return False
 
-    def query_memory(self, query: RetrievalQuery) -> List[Any]:
+    def query_memory(self, query: RetrievalQuery) -> list[Any]:
         """Query memory entries using a retrieval query.
 
         Args:
@@ -179,7 +180,7 @@ class MemoryStore:
 
         return []
 
-    def list_sessions(self) -> List[str]:
+    def list_sessions(self) -> list[str]:
         """List all session IDs.
 
         Returns:

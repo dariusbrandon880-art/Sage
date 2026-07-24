@@ -1,8 +1,9 @@
 """Command Line Interface for SAGE."""
 
 import argparse
-import sys
 import json
+import sys
+
 from sage.runtime import SageRuntime
 
 
@@ -155,7 +156,7 @@ def main():
             result = runtime.ingest_session_payload(payload)
             print(json.dumps(result, indent=2))
         except Exception as e:
-            print(f"Error: Ingestion failed: {str(e)}")
+            print(f"Error: Ingestion failed: {e!s}")
             sys.exit(1)
 
     elif args.command == "reason":
@@ -163,7 +164,7 @@ def main():
             result = runtime.reason_over_continuity()
             print(json.dumps(result, indent=2))
         except Exception as e:
-            print(f"Error: Reasoning failed: {str(e)}")
+            print(f"Error: Reasoning failed: {e!s}")
             sys.exit(1)
 
     elif args.command == "verify":
@@ -173,7 +174,7 @@ def main():
             if not result.get("is_valid", False):
                 sys.exit(1)
         except Exception as e:
-            print(f"Error: Verification failed: {str(e)}")
+            print(f"Error: Verification failed: {e!s}")
             sys.exit(1)
 
     elif args.command == "health":
@@ -183,7 +184,7 @@ def main():
             result = check_health(runtime)
             print(json.dumps(result, indent=2))
         except Exception as e:
-            print(f"Error: Health check failed: {str(e)}")
+            print(f"Error: Health check failed: {e!s}")
             sys.exit(1)
 
     elif args.command == "diagnostics":
@@ -193,7 +194,7 @@ def main():
             result = generate_diagnostic_report(runtime)
             print(json.dumps(result, indent=2))
         except Exception as e:
-            print(f"Error: Diagnostics failed: {str(e)}")
+            print(f"Error: Diagnostics failed: {e!s}")
             sys.exit(1)
 
     elif args.command == "capabilities":
@@ -203,7 +204,7 @@ def main():
             result = generate_capability_report(runtime)
             print(json.dumps(result, indent=2))
         except Exception as e:
-            print(f"Error: Capability reporting failed: {str(e)}")
+            print(f"Error: Capability reporting failed: {e!s}")
             sys.exit(1)
 
     elif args.command == "metrics":
@@ -213,7 +214,7 @@ def main():
             result = get_metrics_collector().get_metrics()
             print(json.dumps(result, indent=2))
         except Exception as e:
-            print(f"Error: Metrics gathering failed: {str(e)}")
+            print(f"Error: Metrics gathering failed: {e!s}")
             sys.exit(1)
 
     else:

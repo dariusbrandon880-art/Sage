@@ -1,8 +1,9 @@
 """Archive logging system for SAGE operations history."""
 
-from typing import List, Dict, Any, Optional
 from datetime import datetime
-from sage.archive.models import EventLog, ArchiveEvent, EventQuery
+from typing import Any
+
+from sage.archive.models import ArchiveEvent, EventLog, EventQuery
 from sage.archive.persistence import PersistentArchiveStore
 
 
@@ -12,7 +13,7 @@ class ArchiveLog:
     def __init__(
         self,
         session_id: str = "default",
-        persistent_path: Optional[str] = None,
+        persistent_path: str | None = None,
         use_persistence: bool = True,
     ):
         """Initialize archive log.
@@ -23,14 +24,14 @@ class ArchiveLog:
             use_persistence: Whether to use persistent storage backend.
         """
         self.session_id = session_id
-        self.events: List[Dict[str, Any]] = []
+        self.events: list[dict[str, Any]] = []
         self.use_persistence = use_persistence
         self.persistent_store = (
             PersistentArchiveStore(storage_path=persistent_path or ".sage/archive")
             if use_persistence
             else None
         )
-        self.event_log: Optional[EventLog] = None
+        self.event_log: EventLog | None = None
 
         # Load existing event log if available
         if self.use_persistence and self.persistent_store:
@@ -39,7 +40,7 @@ class ArchiveLog:
         if self.event_log is None:
             self.event_log = EventLog(session_id=session_id)
 
-    def log_event(self, event_type: str, data: Dict[str, Any], source: str = "archive") -> None:
+    def log_event(self, event_type: str, data: dict[str, Any], source: str = "archive") -> None:
         """Log an event to archive.
 
         Args:
@@ -63,7 +64,7 @@ class ArchiveLog:
         if self.use_persistence and self.persistent_store:
             self.persistent_store.save_event_log(self.event_log)
 
-    def get_events(self, event_type: Optional[str] = None) -> List[Dict[str, Any]]:
+    def get_events(self, event_type: str | None = None) -> list[dict[str, Any]]:
         """Retrieve events from archive.
 
         Args:
@@ -76,7 +77,7 @@ class ArchiveLog:
             return [e for e in self.events if e["type"] == event_type]
         return self.events
 
-    def get_events_by_type(self, event_type: str) -> List[ArchiveEvent]:
+    def get_events_by_type(self, event_type: str) -> list[ArchiveEvent]:
         """Retrieve events of a specific type.
 
         Args:
@@ -87,7 +88,7 @@ class ArchiveLog:
         """
         return self.event_log.get_events_by_type(event_type)
 
-    def get_events_in_range(self, start_time: datetime, end_time: datetime) -> List[ArchiveEvent]:
+    def get_events_in_range(self, start_time: datetime, end_time: datetime) -> list[ArchiveEvent]:
         """Retrieve events within a time range.
 
         Args:
@@ -99,7 +100,7 @@ class ArchiveLog:
         """
         return self.event_log.get_events_in_range(start_time, end_time)
 
-    def get_latest_event(self, event_type: Optional[str] = None) -> Optional[ArchiveEvent]:
+    def get_latest_event(self, event_type: str | None = None) -> ArchiveEvent | None:
         """Get the most recent event.
 
         Args:
@@ -112,10 +113,10 @@ class ArchiveLog:
 
     def query_events(
         self,
-        event_types: List[str] = None,
-        start_time: Optional[datetime] = None,
-        end_time: Optional[datetime] = None,
-    ) -> List[ArchiveEvent]:
+        event_types: list[str] = None,
+        start_time: datetime | None = None,
+        end_time: datetime | None = None,
+    ) -> list[ArchiveEvent]:
         """Query events with multiple filters.
 
         Args:
@@ -137,7 +138,7 @@ class ArchiveLog:
 
         return []
 
-    def export_timeline(self) -> List[dict]:
+    def export_timeline(self) -> list[dict]:
         """Export events as a chronological timeline.
 
         Returns:
@@ -167,7 +168,7 @@ class ArchiveLog:
             return True
         return False
 
-    def get_session_summary(self) -> Dict[str, Any]:
+    def get_session_summary(self) -> dict[str, Any]:
         """Get a summary of the session's activity.
 
         Returns:

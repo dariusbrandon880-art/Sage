@@ -4,7 +4,8 @@ import json
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
@@ -13,12 +14,12 @@ class SessionState(BaseModel):
 
     session_id: str = Field(default_factory=lambda: f"session_{uuid.uuid4().hex[:8]}")
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    active_objectives: List[str] = Field(default_factory=list)
-    completed_actions: List[str] = Field(default_factory=list)
-    pending_actions: List[str] = Field(default_factory=list)
-    important_decisions: List[str] = Field(default_factory=list)
-    related_archive_references: List[str] = Field(default_factory=list)
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    active_objectives: list[str] = Field(default_factory=list)
+    completed_actions: list[str] = Field(default_factory=list)
+    pending_actions: list[str] = Field(default_factory=list)
+    important_decisions: list[str] = Field(default_factory=list)
+    related_archive_references: list[str] = Field(default_factory=list)
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
     def add_objective(self, objective: str) -> None:
         """Add an active objective to the session."""
@@ -59,14 +60,14 @@ class SessionStateManager:
         """
         self.storage_path = Path(storage_path)
         self.storage_path.mkdir(parents=True, exist_ok=True)
-        self.sessions: Dict[str, SessionState] = {}
+        self.sessions: dict[str, SessionState] = {}
         self._load_all_sessions()
 
     def create_session(
         self,
-        session_id: Optional[str] = None,
-        active_objectives: Optional[List[str]] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        session_id: str | None = None,
+        active_objectives: list[str] | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> SessionState:
         """Create and record a new session state."""
         sess_id = session_id or f"session_{uuid.uuid4().hex[:8]}"
@@ -79,7 +80,7 @@ class SessionStateManager:
         self.save_session(state)
         return state
 
-    def retrieve_session(self, session_id: str) -> Optional[SessionState]:
+    def retrieve_session(self, session_id: str) -> SessionState | None:
         """Retrieve session state by ID."""
         if session_id in self.sessions:
             return self.sessions[session_id]
@@ -103,7 +104,7 @@ class SessionStateManager:
         with open(filepath, "w") as f:
             json.dump(state.model_dump(), f, indent=2, default=str)
 
-    def list_all(self) -> List[SessionState]:
+    def list_all(self) -> list[SessionState]:
         """List all managed session states."""
         return list(self.sessions.values())
 

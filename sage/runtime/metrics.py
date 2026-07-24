@@ -2,7 +2,7 @@
 
 import threading
 from datetime import datetime, timezone
-from typing import Dict, Any, List, Optional
+from typing import Any
 
 
 class MetricsCollector:
@@ -23,9 +23,9 @@ class MetricsCollector:
             return
         self._initialized = True
         self._lock = threading.RLock()  # Use Reentrant Lock to prevent deadlocks
-        self.counters: Dict[str, int] = {}
-        self.gauges: Dict[str, float] = {}
-        self.events: List[Dict[str, Any]] = []
+        self.counters: dict[str, int] = {}
+        self.gauges: dict[str, float] = {}
+        self.events: list[dict[str, Any]] = []
         self.startup_time = datetime.now(timezone.utc)
         self.record_event("system_startup", {"timestamp": self.startup_time.isoformat()})
 
@@ -49,7 +49,7 @@ class MetricsCollector:
         with self._lock:
             self.gauges[name] = float(value)
 
-    def record_event(self, event_type: str, details: Optional[Dict[str, Any]] = None) -> None:
+    def record_event(self, event_type: str, details: dict[str, Any] | None = None) -> None:
         """Record a structured diagnostic event.
 
         Args:
@@ -68,7 +68,7 @@ class MetricsCollector:
             if len(self.events) > 1000:
                 self.events.pop(0)
 
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         """Compile and return current snapshot of collected metrics.
 
         Returns:

@@ -1,0 +1,276 @@
+"""Comprehensive unit and integration tests for SAGE-SKAL deterministic intake boundary."""
+
+import tempfile
+
+import pytest
+from fastapi.testclient import TestClient
+from pydantic import ValidationError
+
+from sage.acr.skal import (
+    ArchitectureDecision,
+    DeploymentEvent,
+    ValidationReport,
+    process_incoming_payload,
+)
+from sage.models import ConfidenceLevel
+from sage.runtime import SAGERuntime
+
+
+@pytest.fixture
+def temp_runtime():
+    """Create a clean SAGE runtime instance using a temporary directory."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        runtime = SAGERuntime(workspace_path=tmpdir)
+        runtime.start()
+        yield runtime
+        runtime.stop()
+
+
+def test_validation_report_schema_snake_case():
+    """Test ValidationReport parses correct snake_case payload."""
+    data = {
+        "source": "ci-pipeline",
+        "timestamp": "2026-03-31T12:00:00Z",
+        "commit_identifier": "feat-1234",
+        "validation_results": {"tests_passed": True, "coverage": 95.5},
+        "evidence_references": ["link-to-logs-1", "link-to-logs-2"],
+        "confidence_metadata": {"score": 0.99, "method": "automated-test-suite"},
+    }
+    report = ValidationReport(**data)
+    assert report.source == "ci-pipeline"
+    assert report.commit_identifier == "feat-1234"
+    assert report.validation_results["coverage"] == 95.5
+    assert len(report.evidence_references) == 2
+    assert report.confidence_metadata["score"] == 0.99
+
+
+def test_validation_report_schema_spaced_keys():
+    """Test ValidationReport parses correct spaced-key payload."""
+    data = {
+        "source": "manual-audit",
+        "timestamp": "2026-03-31T15:30:00Z",
+        "commit identifier": "perf-8888",
+        "validation results": {"security_clear": True},
+        "evidence references": ["audit-doc-v1"],
+        "confidence metadata": {"human_reviewer": "Jules"},
+    }
+    report = ValidationReport(**data)
+    assert report.source == "manual-audit"
+    assert report.commit_identifier == "perf-8888"
+    assert report.validation_results["security_clear"] is True
+    assert report.evidence_references == ["audit-doc-v1"]
+    assert report.confidence_metadata["human_reviewer"] == "Jules"
+
+
+def test_validation_report_invalid_payload():
+    """Test ValidationReport validation failures on malformed data."""
+    # Missing source
+    bad_data = {
+        "timestamp": "2026-03-31T12:00:00Z",
+        "commit_identifier": "feat-1234",
+        "validation_results": {},
+        "evidence_references": [],
+        "confidence_metadata": {},
+    }
+    with pytest.raises(ValidationError):
+        ValidationReport(**bad_data)
+
+
+def test_deployment_event_schema_snake_case():
+    """Test DeploymentEvent parses correct snake_case payload."""
+    data = {
+        "source": "github-actions",
+        "deployment_target": "production-cluster",
+        "status": "success",
+        "commit_identifier": "deploy-5678",
+        "log_payload": {"duration_seconds": 120, "errors": []},
+    }
+    event = DeploymentEvent(**data)
+    assert event.source == "github-actions"
+    assert event.deployment_target == "production-cluster"
+    assert event.status == "success"
+    assert event.commit_identifier == "deploy-5678"
+    assert event.log_payload["duration_seconds"] == 120
+
+
+def test_deployment_event_schema_spaced_keys():
+    """Test DeploymentEvent parses correct spaced-key payload."""
+    data = {
+        "source": "gitlab-ci",
+        "deployment target": "staging-environment",
+        "status": "failed",
+        "commit identifier": "rollback-1111",
+        "log payload": {"reason": "health check timeout"},
+    }
+    event = DeploymentEvent(**data)
+    assert event.source == "gitlab-ci"
+    assert event.deployment_target == "staging-environment"
+    assert event.status == "failed"
+    assert event.commit_identifier == "rollback-1111"
+    assert event.log_payload["reason"] == "health check timeout"
+
+
+def test_deployment_event_invalid():
+    """Test DeploymentEvent validation failures on malformed data."""
+    bad_data = {
+        "source": "github-actions",
+        "deployment_target": "production-cluster",
+        "status": "success",
+        # Missing commit identifier and log payload
+    }
+    with pytest.raises(ValidationError):
+        DeploymentEvent(**bad_data)
+
+
+def test_architecture_decision_schema_snake_case():
+    """Test ArchitectureDecision parses correct snake_case payload."""
+    data = {
+        "proposal": "ADR-005-use-postgres",
+        "reasoning": "Postgres is highly robust and matches relational needs.",
+        "validation_requirements": ["compliance-audit", "stress-test-1000-qps"],
+        "approval_state": "accepted",
+    }
+    decision = ArchitectureDecision(**data)
+    assert decision.proposal == "ADR-005-use-postgres"
+    assert decision.reasoning == "Postgres is highly robust and matches relational needs."
+    assert decision.validation_requirements == ["compliance-audit", "stress-test-1000-qps"]
+    assert decision.approval_state == "accepted"
+
+
+def test_architecture_decision_schema_spaced_keys():
+    """Test ArchitectureDecision parses correct spaced-key payload."""
+    data = {
+        "proposal": "ADR-006-migration",
+        "reasoning": "Decouple services",
+        "validation requirements": ["e2e-suite"],
+        "approval state": "pending-review",
+    }
+    decision = ArchitectureDecision(**data)
+    assert decision.proposal == "ADR-006-migration"
+    assert decision.reasoning == "Decouple services"
+    assert decision.validation_requirements == ["e2e-suite"]
+    assert decision.approval_state == "pending-review"
+
+
+def test_architecture_decision_invalid():
+    """Test ArchitectureDecision validation failures on malformed data."""
+    bad_data = {
+        "proposal": "ADR-007",
+        # Missing reasoning and approval state
+    }
+    with pytest.raises(ValidationError):
+        ArchitectureDecision(**bad_data)
+
+
+def test_process_incoming_payload_valid_report(temp_runtime):
+    """Test process_incoming_payload handles valid validation reports, preserves lineage and does not write to archive."""
+    payload_data = {
+        "source": "github-actions-ci",
+        "timestamp": "2026-03-31T20:15:00Z",
+        "commit_identifier": "98a7c6f",
+        "validation_results": {"is_passing": True, "failed_tests": []},
+        "evidence_references": ["run-id-12345"],
+        "confidence_metadata": {"reliability_score": 1.0},
+    }
+
+    initial_memory_count = len(temp_runtime.memory.list_all())
+    initial_archive_count = len(temp_runtime.archive.list_all())
+
+    # Process ingestion via deterministic intake gateway
+    result = process_incoming_payload("validation_report", payload_data, temp_runtime)
+
+    # Verify result
+    assert result["status"] == "success"
+    assert "memory_id" in result
+    assert result["payload_type"] == "validation_report"
+
+    # Verify memory store contains the newly created hypothesis memory object
+    memories = temp_runtime.memory.list_all()
+    assert len(memories) == initial_memory_count + 1
+
+    stored_obj = temp_runtime.memory.retrieve(result["memory_id"])
+    assert stored_obj is not None
+    assert stored_obj.object_type == "skal_validation_report"
+    assert stored_obj.confidence == ConfidenceLevel.HYPOTHESIS
+    assert stored_obj.content["source"] == "github-actions-ci"
+    assert stored_obj.content["commit_identifier"] == "98a7c6f"
+
+    # Metadata preservation & tags verification
+    assert "skal" in stored_obj.tags
+    assert "validation_report" in stored_obj.tags
+    assert "github-actions-ci" in stored_obj.tags
+    assert "98a7c6f" in stored_obj.tags
+
+    # Evidence tracking & Lineage preservation verification
+    # Ensure permanent archive has NOT been modified
+    assert len(temp_runtime.archive.list_all()) == initial_archive_count
+
+
+def test_process_incoming_payload_invalid_type(temp_runtime):
+    """Test process_incoming_payload rejects unsupported payload types."""
+    with pytest.raises(ValueError, match="Unsupported SAGE-SKAL payload type"):
+        process_incoming_payload("unknown_type", {}, temp_runtime)
+
+
+def test_process_incoming_payload_malformed_data(temp_runtime):
+    """Test process_incoming_payload rejects malformed data with ValueError."""
+    bad_payload = {
+        "source": "faulty-src",
+        # missing mandatory fields
+    }
+    with pytest.raises(ValueError, match="SAGE-SKAL schema validation failed"):
+        process_incoming_payload("validation_report", bad_payload, temp_runtime)
+
+
+def test_skal_api_intake_integration():
+    """Test API integration for the /tools/skal/intake endpoint."""
+    from sage.api import app, runtime, validation
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        # Override the global API runtime
+        runtime.__init__(workspace_path=tmpdir)
+        runtime.start()
+        validation.__init__(runtime.memory, runtime.archive)
+
+        with TestClient(app) as client:
+            # 1. Test valid deployment event (spaced keys)
+            payload = {
+                "payload_type": "deployment_event",
+                "payload_data": {
+                    "source": "argocd",
+                    "deployment target": "kubernetes-prod",
+                    "status": "active-live",
+                    "commit identifier": "sha-abcde123",
+                    "log payload": {"replications": 3, "healthy": True},
+                },
+            }
+            response = client.post("/tools/skal/intake", json=payload)
+            assert response.status_code == 200
+            res_data = response.json()
+            assert res_data["status"] == "success"
+            assert res_data["payload_type"] == "deployment_event"
+            assert "memory_id" in res_data
+            assert res_data["data"]["deployment_target"] == "kubernetes-prod"
+
+            # 2. Test invalid / malformed payload (missing approval state)
+            bad_payload = {
+                "payload_type": "architecture_decision",
+                "payload_data": {
+                    "proposal": "ADR-009-graphql",
+                    "reasoning": "Decouple API queries",
+                    "validation_requirements": ["perf-benchmarks"],
+                    # missing approval_state
+                },
+            }
+            response = client.post("/tools/skal/intake", json=bad_payload)
+            assert response.status_code == 400
+            assert "SAGE-SKAL schema validation failed" in response.json()["detail"]
+
+            # 3. Test invalid payload type
+            bad_type_payload = {
+                "payload_type": "wrong_type_here",
+                "payload_data": {"some": "data"},
+            }
+            response = client.post("/tools/skal/intake", json=bad_type_payload)
+            assert response.status_code == 400
+            assert "Unsupported SAGE-SKAL payload type" in response.json()["detail"]

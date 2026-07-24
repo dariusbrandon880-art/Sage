@@ -3,7 +3,8 @@
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 from sage.acr.session.session_state import SessionStateManager
@@ -14,7 +15,7 @@ class ContextTransition(BaseModel):
 
     from_state: str
     to_state: str
-    reason: Optional[str] = None
+    reason: str | None = None
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
@@ -22,11 +23,11 @@ class ContinuityContext(BaseModel):
     """Structured continuity information representing the active project context."""
 
     current_project_state: str = "active"
-    active_milestone: Optional[str] = None
-    unresolved_items: List[str] = Field(default_factory=list)
-    recent_changes: List[str] = Field(default_factory=list)
-    important_context_transitions: List[ContextTransition] = Field(default_factory=list)
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    active_milestone: str | None = None
+    unresolved_items: list[str] = Field(default_factory=list)
+    recent_changes: list[str] = Field(default_factory=list)
+    important_context_transitions: list[ContextTransition] = Field(default_factory=list)
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 class ContextTracker:
@@ -35,7 +36,7 @@ class ContextTracker:
     def __init__(
         self,
         storage_path: str = "sage_data/context",
-        session_manager: Optional[SessionStateManager] = None,
+        session_manager: SessionStateManager | None = None,
     ):
         """Initialize Context Tracker.
 
@@ -46,7 +47,7 @@ class ContextTracker:
         self.storage_path = Path(storage_path)
         self.storage_path.mkdir(parents=True, exist_ok=True)
         self.session_manager = session_manager or SessionStateManager()
-        self.context: Optional[ContinuityContext] = None
+        self.context: ContinuityContext | None = None
         self._load_context()
 
     def get_current_context(self) -> ContinuityContext:
@@ -72,7 +73,7 @@ class ContextTracker:
         else:
             self.context = ContinuityContext()
 
-    def save_context(self, context: Optional[ContinuityContext] = None) -> None:
+    def save_context(self, context: ContinuityContext | None = None) -> None:
         """Save context to disk."""
         if context is not None:
             self.context = context
@@ -82,7 +83,7 @@ class ContextTracker:
             json.dump(current.model_dump(), f, indent=2, default=str)
 
     def record_transition(
-        self, from_state: str, to_state: str, reason: Optional[str] = None
+        self, from_state: str, to_state: str, reason: str | None = None
     ) -> None:
         """Record an important context transition."""
         transition = ContextTransition(
@@ -94,7 +95,7 @@ class ContextTracker:
         ctx.important_context_transitions.append(transition)
         self.save_context()
 
-    def set_milestone(self, milestone: str, reason: Optional[str] = None) -> None:
+    def set_milestone(self, milestone: str, reason: str | None = None) -> None:
         """Update active milestone with a transition log."""
         ctx = self.get_current_context()
         old_milestone = ctx.active_milestone or "None"
@@ -122,7 +123,7 @@ class ContextTracker:
         ctx.recent_changes.append(change)
         self.save_context()
 
-    def get_previous_context(self, lineage: List[str]) -> Optional[Dict[str, Any]]:
+    def get_previous_context(self, lineage: list[str]) -> dict[str, Any] | None:
         """Understand "What was happening before this session?" by traversing session history.
 
         Args:

@@ -1,16 +1,17 @@
 """Tests for SAGE Runtime Intelligence, Diagnostics, and Telemetry layers."""
 
 from unittest.mock import MagicMock
+
 from sage.runtime import (
+    InitializationManager,
     SageRuntime,
     check_health,
-    generate_diagnostic_report,
+    discover_capabilities,
     generate_capability_report,
+    generate_diagnostic_report,
+    generate_system_status_report,
     get_metrics_collector,
     get_sage_identity,
-    InitializationManager,
-    generate_system_status_report,
-    discover_capabilities,
 )
 
 

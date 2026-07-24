@@ -3,7 +3,6 @@
 import json
 import uuid
 from pathlib import Path
-from typing import List, Optional, Dict
 
 from sage.models import DecisionEntry, DecisionType
 
@@ -19,7 +18,7 @@ class DecisionTracker:
         """
         self.storage_path = Path(storage_path)
         self.storage_path.mkdir(parents=True, exist_ok=True)
-        self.decisions: Dict[str, DecisionEntry] = {}
+        self.decisions: dict[str, DecisionEntry] = {}
         self._load_all_decisions()
 
     def record_decision(
@@ -27,8 +26,8 @@ class DecisionTracker:
         decision_type: DecisionType,
         description: str,
         rationale: str,
-        evidence: Optional[List[str]] = None,
-        decision_id: Optional[str] = None,
+        evidence: list[str] | None = None,
+        decision_id: str | None = None,
     ) -> str:
         """Record a new decision.
 
@@ -56,7 +55,7 @@ class DecisionTracker:
 
         return dec_id
 
-    def retrieve_decision(self, decision_id: str) -> Optional[DecisionEntry]:
+    def retrieve_decision(self, decision_id: str) -> DecisionEntry | None:
         """Retrieve a decision by ID.
 
         Args:
@@ -82,7 +81,7 @@ class DecisionTracker:
 
         return None
 
-    def list_all(self) -> List[DecisionEntry]:
+    def list_all(self) -> list[DecisionEntry]:
         """List all tracked decisions.
 
         Returns:
