@@ -86,6 +86,21 @@ def process_incoming_payload(
             f"Unsupported SAGE-SKAL payload type: '{payload_type}'. Must be one of {valid_types}."
         )
 
+    # Nonce Replay Protection Check
+    nonce = payload_data.get("nonce")
+    if nonce:
+        nonce_ledger = getattr(runtime, "nonce_ledger", None)
+        if not nonce_ledger:
+            from sage.acr.nonce_ledger import NonceLedger
+            workspace = getattr(runtime, "workspace_path", "sage_data")
+            nonce_ledger = NonceLedger(storage_path=f"{workspace}/nonces.json")
+            try:
+                runtime.nonce_ledger = nonce_ledger
+            except Exception:
+                pass
+        if not nonce_ledger.verify_and_record(nonce, f"skal_intake:{payload_type}"):
+            raise ValueError(f"SAGE Replay Attack Detected: Nonce '{nonce}' has already been used.")
+
     # Validate schema
     try:
         if payload_type == "validation_report":

@@ -117,6 +117,39 @@ async def get_status():
     return runtime.get_status()
 
 
+@app.get("/runtime/control-plane")
+async def get_control_plane_status():
+    """Retrieve detailed SAGE Cognitive Control Plane status."""
+    metrics = get_metrics_collector()
+    approved = metrics.counters.get("control_plane.mutations_approved", 0)
+    rejected = metrics.counters.get("control_plane.mutations_rejected", 0)
+
+    # Verify receipt chain
+    receipt_chain_integrity = True
+    receipts_count = 0
+    if hasattr(runtime, "validation") and hasattr(runtime.validation, "receipt_chain"):
+        receipt_chain_integrity = runtime.validation.receipt_chain.verify_chain_integrity()
+        receipts_count = len(runtime.validation.receipt_chain.receipts)
+
+    return {
+        "status": "active",
+        "observer": {
+            "name": "CognitiveHypervisor",
+            "provider_type": runtime.hypervisor.attestation.get_provider_type()
+        },
+        "enforcer": {
+            "name": "ExternalAuthorityGate",
+            "authority_stability_index": runtime.authority_gate.get_authority_stability_index(),
+            "approved_mutations": approved,
+            "rejected_mutations": rejected,
+        },
+        "receipt_chain": {
+            "receipts_count": receipts_count,
+            "integrity_valid": receipt_chain_integrity
+        }
+    }
+
+
 @app.get("/runtime/diagnostics")
 async def get_runtime_diagnostics():
     return generate_diagnostic_report(runtime)

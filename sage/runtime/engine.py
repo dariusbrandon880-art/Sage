@@ -85,6 +85,15 @@ class SageRuntime:
 
         self.validation = ValidationSystem(self.memory, self.archive)
 
+        # Initialize nonce ledger
+        from sage.acr.nonce_ledger import NonceLedger
+        self.nonce_ledger = NonceLedger(str(self.workspace_path / "nonces.json"))
+
+        # Initialize Cognitive Control Plane components (Observer / Enforcer)
+        from sage.acr.control_plane import CognitiveHypervisor, ExternalAuthorityGate
+        self.hypervisor = CognitiveHypervisor(attestation=self.validation.attestation)
+        self.authority_gate = ExternalAuthorityGate(hypervisor=self.hypervisor)
+
         # Load existing state if available, otherwise init fresh
         self.current_state = RuntimeState()
         self._load_state()
@@ -700,6 +709,12 @@ class SageRuntime:
               -> Persistence -> Decision Tracking -> Evidence Tracking
               -> Checkpoint -> Workspace Snapshot -> Restoration
         """
+        # Nonce verification for replay protection
+        nonce = payload.metadata.get("nonce") if payload.metadata else None
+        if nonce:
+            if not self.nonce_ledger.verify_and_record(nonce, f"ingest_payload:{payload.objective}"):
+                raise ValueError(f"SAGE Replay Attack Detected: Nonce '{nonce}' has already been used.")
+
         # --- 1. Intake ---
         session_id = payload.session_id or f"session_{uuid.uuid4().hex[:8]}"
         self.acr.add_session_link(session_id)
