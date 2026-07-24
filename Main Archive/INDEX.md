@@ -51,3 +51,4 @@ Welcome to SAGE's immutable Master Archive and research repository. This index l
 - [SAGE Final Live Activation Checklist](../docs/master/FINAL_LIVE_ACTIVATION_CHECKLIST.md) - Definitive step-by-step operational setup instructions to bridge the permission boundary for hosting, APIs, webhooks, and integrations.
 - [SAGE Render Deployment Handoff Spec](../docs/master/RENDER_DEPLOYMENT_HANDOFF.md) - Comprehensive Render deployment settings, repository reference, required env variables, and health checks.
 - [SAGE 2 Production Readiness & Live Activation Report](../docs/master/SAGE2_PRODUCTION_READINESS_REPORT.md) - Detailed production readiness verification, environmental parameters audit, and health status.
+- [SAGE SPEK v1.1 Production Specification](../sage_cos_core/docs/SPEK_v1.1_SPEC.md) - Definitive specification and validation controls of the SAGE Policy Enforcement Kernel v1.1 Hardened Core.
