@@ -29,7 +29,10 @@ __all__ = [
 def __getattr__(name: str):
     """Lazy-load the FastAPI app to prevent circular dependencies on initialization."""
     if name == "app":
+        import sys
         from sage.api import app as fastapi_app
+        # Cache it directly inside the module to optimize subsequent lookups
+        setattr(sys.modules[__name__], "app", fastapi_app)
         return list_all_exports_if_needed(fastapi_app)
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 

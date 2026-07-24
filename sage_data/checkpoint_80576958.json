@@ -1,0 +1,940 @@
+{
+  "timestamp": "2026-07-24T15:21:52.149365+00:00",
+  "state": {
+    "current_objective": "Expand Intelligence",
+    "active_task": "Create tests",
+    "blockers": [],
+    "dependencies": []
+  },
+  "memory": [],
+  "archive": [],
+  "decisions": [],
+  "lineage": [
+    "session_5b366d59",
+    "session_3d9e4e2d",
+    "session_63b0f6bf",
+    "session_b2a632b2",
+    "session_705b039c",
+    "session_4892ffbc",
+    "session_a826a2f0",
+    "session_693e7da6",
+    "session_bb029f10",
+    "session_7ca5e3b5",
+    "session_c83c8675",
+    "session_c91ffa65",
+    "session_79d0ea5b",
+    "session_8a0b058a",
+    "session_6509fd93",
+    "session_0abd8bca",
+    "session_867e1b07",
+    "session_cafdb59b",
+    "session_4cb95a9e",
+    "session_4ae97cb4",
+    "session_2f5da713",
+    "session_6453aed4",
+    "session_af46206d",
+    "session_dfbd156d",
+    "session_5e70117d",
+    "session_e9cd1808",
+    "session_eb58065a",
+    "session_22b84ada",
+    "session_cd240ef0",
+    "session_add52101"
+  ],
+  "sessions": [
+    {
+      "session_id": "session_867e1b07",
+      "timestamp": "2026-07-24 07:41:21.607291+00:00",
+      "active_objectives": [
+        "Expand Intelligence"
+      ],
+      "completed_actions": [],
+      "pending_actions": [
+        "task:Create tests"
+      ],
+      "important_decisions": [],
+      "related_archive_references": [],
+      "metadata": {
+        "source": "set_objective"
+      }
+    },
+    {
+      "session_id": "session_5e70117d",
+      "timestamp": "2026-07-24 13:48:52.849304+00:00",
+      "active_objectives": [
+        "Expand Intelligence"
+      ],
+      "completed_actions": [],
+      "pending_actions": [
+        "task:Create tests"
+      ],
+      "important_decisions": [],
+      "related_archive_references": [],
+      "metadata": {
+        "source": "set_objective"
+      }
+    },
+    {
+      "session_id": "session_22b84ada",
+      "timestamp": "2026-07-24 14:00:58.813369+00:00",
+      "active_objectives": [
+        "Expand Intelligence"
+      ],
+      "completed_actions": [],
+      "pending_actions": [
+        "task:Create tests"
+      ],
+      "important_decisions": [],
+      "related_archive_references": [],
+      "metadata": {
+        "source": "set_objective"
+      }
+    },
+    {
+      "session_id": "session_cd240ef0",
+      "timestamp": "2026-07-24 14:09:45.799560+00:00",
+      "active_objectives": [
+        "Expand Intelligence"
+      ],
+      "completed_actions": [],
+      "pending_actions": [
+        "task:Create tests"
+      ],
+      "important_decisions": [],
+      "related_archive_references": [],
+      "metadata": {
+        "source": "set_objective"
+      }
+    },
+    {
+      "session_id": "session_cafdb59b",
+      "timestamp": "2026-07-24 07:54:11.153761+00:00",
+      "active_objectives": [
+        "Expand Intelligence"
+      ],
+      "completed_actions": [],
+      "pending_actions": [
+        "task:Create tests"
+      ],
+      "important_decisions": [],
+      "related_archive_references": [],
+      "metadata": {
+        "source": "set_objective"
+      }
+    },
+    {
+      "session_id": "session_e9cd1808",
+      "timestamp": "2026-07-24 13:55:57.068589+00:00",
+      "active_objectives": [
+        "Expand Intelligence"
+      ],
+      "completed_actions": [],
+      "pending_actions": [
+        "task:Create tests"
+      ],
+      "important_decisions": [],
+      "related_archive_references": [],
+      "metadata": {
+        "source": "set_objective"
+      }
+    },
+    {
+      "session_id": "session_eb58065a",
+      "timestamp": "2026-07-24 13:58:52.460760+00:00",
+      "active_objectives": [
+        "Expand Intelligence"
+      ],
+      "completed_actions": [],
+      "pending_actions": [
+        "task:Create tests"
+      ],
+      "important_decisions": [],
+      "related_archive_references": [],
+      "metadata": {
+        "source": "set_objective"
+      }
+    },
+    {
+      "session_id": "session_2f5da713",
+      "timestamp": "2026-07-24 08:53:39.230871+00:00",
+      "active_objectives": [
+        "Expand Intelligence"
+      ],
+      "completed_actions": [],
+      "pending_actions": [
+        "task:Create tests"
+      ],
+      "important_decisions": [],
+      "related_archive_references": [],
+      "metadata": {
+        "source": "set_objective"
+      }
+    },
+    {
+      "session_id": "session_0abd8bca",
+      "timestamp": "2026-07-24 03:13:17.931795+00:00",
+      "active_objectives": [
+        "Expand Intelligence"
+      ],
+      "completed_actions": [],
+      "pending_actions": [
+        "task:Create tests"
+      ],
+      "important_decisions": [],
+      "related_archive_references": [],
+      "metadata": {
+        "source": "set_objective"
+      }
+    },
+    {
+      "session_id": "session_6453aed4",
+      "timestamp": "2026-07-24 11:33:53.159159+00:00",
+      "active_objectives": [
+        "Expand Intelligence"
+      ],
+      "completed_actions": [],
+      "pending_actions": [
+        "task:Create tests"
+      ],
+      "important_decisions": [],
+      "related_archive_references": [],
+      "metadata": {
+        "source": "set_objective"
+      }
+    },
+    {
+      "session_id": "session_dfbd156d",
+      "timestamp": "2026-07-24 13:20:49.462160+00:00",
+      "active_objectives": [
+        "Expand Intelligence"
+      ],
+      "completed_actions": [],
+      "pending_actions": [
+        "task:Create tests"
+      ],
+      "important_decisions": [],
+      "related_archive_references": [],
+      "metadata": {
+        "source": "set_objective"
+      }
+    },
+    {
+      "session_id": "session_4cb95a9e",
+      "timestamp": "2026-07-24 07:55:10.757883+00:00",
+      "active_objectives": [
+        "Expand Intelligence"
+      ],
+      "completed_actions": [],
+      "pending_actions": [
+        "task:Create tests"
+      ],
+      "important_decisions": [],
+      "related_archive_references": [],
+      "metadata": {
+        "source": "set_objective"
+      }
+    },
+    {
+      "session_id": "session_6509fd93",
+      "timestamp": "2026-07-24 03:03:55.532215+00:00",
+      "active_objectives": [
+        "Expand Intelligence"
+      ],
+      "completed_actions": [],
+      "pending_actions": [
+        "task:Create tests"
+      ],
+      "important_decisions": [],
+      "related_archive_references": [],
+      "metadata": {
+        "source": "set_objective"
+      }
+    },
+    {
+      "session_id": "session_af46206d",
+      "timestamp": "2026-07-24 12:05:03.973118+00:00",
+      "active_objectives": [
+        "Expand Intelligence"
+      ],
+      "completed_actions": [],
+      "pending_actions": [
+        "task:Create tests"
+      ],
+      "important_decisions": [],
+      "related_archive_references": [],
+      "metadata": {
+        "source": "set_objective"
+      }
+    },
+    {
+      "session_id": "session_4ae97cb4",
+      "timestamp": "2026-07-24 08:45:03.148507+00:00",
+      "active_objectives": [
+        "Expand Intelligence"
+      ],
+      "completed_actions": [],
+      "pending_actions": [
+        "task:Create tests"
+      ],
+      "important_decisions": [],
+      "related_archive_references": [],
+      "metadata": {
+        "source": "set_objective"
+      }
+    },
+    {
+      "session_id": "session_add52101",
+      "timestamp": "2026-07-24 15:21:52.146321+00:00",
+      "active_objectives": [
+        "Expand Intelligence"
+      ],
+      "completed_actions": [],
+      "pending_actions": [
+        "task:Create tests"
+      ],
+      "important_decisions": [],
+      "related_archive_references": [],
+      "metadata": {
+        "source": "set_objective"
+      }
+    }
+  ],
+  "context": {
+    "current_project_state": "active",
+    "active_milestone": null,
+    "unresolved_items": [],
+    "recent_changes": [],
+    "important_context_transitions": [
+      {
+        "from_state": "objective:Expand Intelligence",
+        "to_state": "objective:Expand Intelligence",
+        "reason": "Objective updated via set_objective",
+        "timestamp": "2026-07-22 16:59:31.097521+00:00"
+      },
+      {
+        "from_state": "objective:Expand Intelligence",
+        "to_state": "objective:Expand Intelligence",
+        "reason": "Objective updated via set_objective",
+        "timestamp": "2026-07-23 12:55:37.562954+00:00"
+      },
+      {
+        "from_state": "objective:Expand Intelligence",
+        "to_state": "objective:Expand Intelligence",
+        "reason": "Objective updated via set_objective",
+        "timestamp": "2026-07-23 13:00:30.816016+00:00"
+      },
+      {
+        "from_state": "objective:Expand Intelligence",
+        "to_state": "objective:Expand Intelligence",
+        "reason": "Objective updated via set_objective",
+        "timestamp": "2026-07-24 00:26:14.340901+00:00"
+      },
+      {
+        "from_state": "objective:Expand Intelligence",
+        "to_state": "objective:Expand Intelligence",
+        "reason": "Objective updated via set_objective",
+        "timestamp": "2026-07-24 00:31:24.109395+00:00"
+      },
+      {
+        "from_state": "objective:Expand Intelligence",
+        "to_state": "objective:Expand Intelligence",
+        "reason": "Objective updated via set_objective",
+        "timestamp": "2026-07-24 00:40:17.778458+00:00"
+      },
+      {
+        "from_state": "objective:Expand Intelligence",
+        "to_state": "objective:Expand Intelligence",
+        "reason": "Objective updated via set_objective",
+        "timestamp": "2026-07-24 03:03:55.532517+00:00"
+      },
+      {
+        "from_state": "objective:Expand Intelligence",
+        "to_state": "objective:Expand Intelligence",
+        "reason": "Objective updated via set_objective",
+        "timestamp": "2026-07-24 03:13:17.932104+00:00"
+      },
+      {
+        "from_state": "objective:Expand Intelligence",
+        "to_state": "objective:Expand Intelligence",
+        "reason": "Objective updated via set_objective",
+        "timestamp": "2026-07-24 07:41:21.607585+00:00"
+      },
+      {
+        "from_state": "objective:Expand Intelligence",
+        "to_state": "objective:Expand Intelligence",
+        "reason": "Objective updated via set_objective",
+        "timestamp": "2026-07-24 07:54:11.154020+00:00"
+      },
+      {
+        "from_state": "objective:Expand Intelligence",
+        "to_state": "objective:Expand Intelligence",
+        "reason": "Objective updated via set_objective",
+        "timestamp": "2026-07-24 07:55:10.758118+00:00"
+      },
+      {
+        "from_state": "objective:Expand Intelligence",
+        "to_state": "objective:Expand Intelligence",
+        "reason": "Objective updated via set_objective",
+        "timestamp": "2026-07-24 08:45:03.149087+00:00"
+      },
+      {
+        "from_state": "objective:Expand Intelligence",
+        "to_state": "objective:Expand Intelligence",
+        "reason": "Objective updated via set_objective",
+        "timestamp": "2026-07-24 08:53:39.231423+00:00"
+      },
+      {
+        "from_state": "objective:Expand Intelligence",
+        "to_state": "objective:Expand Intelligence",
+        "reason": "Objective updated via set_objective",
+        "timestamp": "2026-07-24 11:33:53.159721+00:00"
+      },
+      {
+        "from_state": "objective:Expand Intelligence",
+        "to_state": "objective:Expand Intelligence",
+        "reason": "Objective updated via set_objective",
+        "timestamp": "2026-07-24 12:05:03.973684+00:00"
+      },
+      {
+        "from_state": "objective:Expand Intelligence",
+        "to_state": "objective:Expand Intelligence",
+        "reason": "Objective updated via set_objective",
+        "timestamp": "2026-07-24 13:20:49.462722+00:00"
+      },
+      {
+        "from_state": "objective:Expand Intelligence",
+        "to_state": "objective:Expand Intelligence",
+        "reason": "Objective updated via set_objective",
+        "timestamp": "2026-07-24 13:48:52.849818+00:00"
+      },
+      {
+        "from_state": "objective:Expand Intelligence",
+        "to_state": "objective:Expand Intelligence",
+        "reason": "Objective updated via set_objective",
+        "timestamp": "2026-07-24 13:55:57.068958+00:00"
+      },
+      {
+        "from_state": "objective:Expand Intelligence",
+        "to_state": "objective:Expand Intelligence",
+        "reason": "Objective updated via set_objective",
+        "timestamp": "2026-07-24 13:58:52.460985+00:00"
+      },
+      {
+        "from_state": "objective:Expand Intelligence",
+        "to_state": "objective:Expand Intelligence",
+        "reason": "Objective updated via set_objective",
+        "timestamp": "2026-07-24 14:00:58.813584+00:00"
+      },
+      {
+        "from_state": "objective:Expand Intelligence",
+        "to_state": "objective:Expand Intelligence",
+        "reason": "Objective updated via set_objective",
+        "timestamp": "2026-07-24 14:09:45.799824+00:00"
+      },
+      {
+        "from_state": "objective:Expand Intelligence",
+        "to_state": "objective:Expand Intelligence",
+        "reason": "Objective updated via set_objective",
+        "timestamp": "2026-07-24 15:21:52.147002+00:00"
+      }
+    ],
+    "metadata": {}
+  },
+  "continuity_checkpoints": [
+    {
+      "id": "checkpoint_0f4322a4",
+      "timestamp": "2026-07-24 07:54:11.170858+00:00",
+      "current_sage_state": {
+        "current_objective": "Expand Intelligence",
+        "active_task": "Create tests",
+        "blockers": [],
+        "dependencies": []
+      },
+      "active_goals": [
+        "Expand Intelligence",
+        "Create tests"
+      ],
+      "recent_decisions": [],
+      "repository_state_reference": {
+        "branch": "jules-4852023650264641684-8f90d7fc",
+        "commit": "cf6c4f969e705e66c365a18e8a3d358b06c7d6c6",
+        "is_dirty": true,
+        "status_output": "A  poetry.lock\nA  sage/acr/attestation.py\nA  sage/acr/control_plane.py\nA  sage/acr/eas_receipts.py\nA  sage/acr/nonce_ledger.py\nM  sage/acr/skal.py\nM  sage/api.py\nM  sage/runtime/engine.py\nM  sage/runtime/health.py\nM  sage/validation.py\nA  sage_data/checkpoint_2a690006.json\nA  sage_data/checkpoints/checkpoint_2a690006.json\nMM sage_data/context/continuity_context.json\nMM sage_data/continuity/continuity_state.json\nA  sage_data/sessions/session_867e1b07.json\nA  tests/test_attack_laboratory.py\n?? sage_data/checkpoint_0f4322a4.json\n?? sage_data/sessions/session_cafdb59b.json"
+      },
+      "validation_status": {
+        "is_valid": true,
+        "loaded_files_count": 14,
+        "corrupted_files": [],
+        "referential_integrity": {
+          "missing_evidence_links": [],
+          "decisions_analyzed": 0
+        },
+        "lineage_valid": true,
+        "issues": []
+      },
+      "metadata": {}
+    },
+    {
+      "id": "checkpoint_a69752bb",
+      "timestamp": "2026-07-24 13:55:57.092384+00:00",
+      "current_sage_state": {
+        "current_objective": "Expand Intelligence",
+        "active_task": "Create tests",
+        "blockers": [],
+        "dependencies": []
+      },
+      "active_goals": [
+        "Expand Intelligence",
+        "Create tests"
+      ],
+      "recent_decisions": [],
+      "repository_state_reference": {
+        "branch": "jules-4852023650264641684-8f90d7fc",
+        "commit": "cf6c4f969e705e66c365a18e8a3d358b06c7d6c6",
+        "is_dirty": true,
+        "status_output": "M  .github/workflows/main.yml\nM  \"Main Archive/INDEX.md\"\nM  docs/master/SESSION_STATE.md\nA  poetry.lock\nA  sage/acr/attestation.py\nA  sage/acr/control_plane.py\nA  sage/acr/eas_receipts.py\nA  sage/acr/nonce_ledger.py\nM  sage/acr/skal.py\nM  sage/api.py\nA  sage/learning/__init__.py\nA  sage/learning/intake.py\nA  sage/learning/knowledge_candidate.py\nA  sage/learning/learning_loop.py\nA  sage/learning/pattern_extractor.py\nA  sage/learning/validation_router.py\nM  sage/runtime/__init__.py\nM  sage/runtime/engine.py\nM  sage/runtime/health.py\nM  sage/validation.py\nA  sage_cos_core/.sage/config/runtime.json\nA  sage_cos_core/docs/SPEK_v1.1_SPEC.md\nA  sage_cos_core/sage/core/attestation.py\nA  sage_cos_core/sage/core/boundary.py\nA  sage_cos_core/sage/core/compliance.py\nA  sage_cos_core/sage/core/hdg.py\nA  sage_cos_core/sage/core/models.py\nA  sage_cos_core/sage/core/spek.py\nA  sage_cos_core/sage/core/version.py\nA  sage_cos_core/tests/test_attestation.py\nA  sage_cos_core/tests/test_boundary.py\nA  sage_cos_core/tests/test_hdg_integrity.py\nA  sage_cos_core/tests/test_spek_core.py\nA  sage_data/checkpoint_0f4322a4.json\nA  sage_data/checkpoint_1957a964.json\nA  sage_data/checkpoint_25988db3.json\nA  sage_data/checkpoint_26509163.json\nA  sage_data/checkpoint_2a690006.json\nA  sage_data/checkpoint_428d0b26.json\nA  sage_data/checkpoint_5f612079.json\nA  sage_data/checkpoint_8f15435d.json\nA  sage_data/checkpoint_9cab58b8.json\nA  sage_data/checkpoints/checkpoint_0f4322a4.json\nA  sage_data/checkpoints/checkpoint_1957a964.json\nA  sage_data/checkpoints/checkpoint_25988db3.json\nA  sage_data/checkpoints/checkpoint_26509163.json\nA  sage_data/checkpoints/checkpoint_2a690006.json\nA  sage_data/checkpoints/checkpoint_428d0b26.json\nA  sage_data/checkpoints/checkpoint_5f612079.json\nA  sage_data/checkpoints/checkpoint_8f15435d.json\nA  sage_data/checkpoints/checkpoint_9cab58b8.json\nMM sage_data/context/continuity_context.json\nMM sage_data/continuity/continuity_state.json\nA  sage_data/sessions/session_2f5da713.json\nA  sage_data/sessions/session_4ae97cb4.json\nA  sage_data/sessions/session_4cb95a9e.json\nA  sage_data/sessions/session_5e70117d.json\nA  sage_data/sessions/session_6453aed4.json\nA  sage_data/sessions/session_867e1b07.json\nA  sage_data/sessions/session_af46206d.json\nA  sage_data/sessions/session_cafdb59b.json\nA  sage_data/sessions/session_dfbd156d.json\nA  tests/test_attack_laboratory.py\nA  tests/test_runtime_contract.py\n?? sage_data/checkpoint_a69752bb.json\n?? sage_data/sessions/session_e9cd1808.json\n?? tests/test_learning_runtime.py"
+      },
+      "validation_status": {
+        "is_valid": true,
+        "loaded_files_count": 38,
+        "corrupted_files": [],
+        "referential_integrity": {
+          "missing_evidence_links": [],
+          "decisions_analyzed": 0
+        },
+        "lineage_valid": true,
+        "issues": []
+      },
+      "metadata": {}
+    },
+    {
+      "id": "checkpoint_8f15435d",
+      "timestamp": "2026-07-24 13:20:49.480954+00:00",
+      "current_sage_state": {
+        "current_objective": "Expand Intelligence",
+        "active_task": "Create tests",
+        "blockers": [],
+        "dependencies": []
+      },
+      "active_goals": [
+        "Expand Intelligence",
+        "Create tests"
+      ],
+      "recent_decisions": [],
+      "repository_state_reference": {
+        "branch": "jules-4852023650264641684-8f90d7fc",
+        "commit": "cf6c4f969e705e66c365a18e8a3d358b06c7d6c6",
+        "is_dirty": true,
+        "status_output": "M  .github/workflows/main.yml\nM  \"Main Archive/INDEX.md\"\nM  docs/master/SESSION_STATE.md\nA  poetry.lock\nA  sage/acr/attestation.py\nA  sage/acr/control_plane.py\nA  sage/acr/eas_receipts.py\nA  sage/acr/nonce_ledger.py\nM  sage/acr/skal.py\nM  sage/api.py\nM  sage/runtime/__init__.py\nM  sage/runtime/engine.py\nM  sage/runtime/health.py\nM  sage/validation.py\nA  sage_cos_core/.sage/config/runtime.json\nA  sage_cos_core/docs/SPEK_v1.1_SPEC.md\nA  sage_cos_core/sage/core/attestation.py\nA  sage_cos_core/sage/core/boundary.py\nA  sage_cos_core/sage/core/compliance.py\nA  sage_cos_core/sage/core/hdg.py\nA  sage_cos_core/sage/core/models.py\nA  sage_cos_core/sage/core/spek.py\nA  sage_cos_core/sage/core/version.py\nA  sage_cos_core/tests/test_attestation.py\nA  sage_cos_core/tests/test_boundary.py\nA  sage_cos_core/tests/test_hdg_integrity.py\nA  sage_cos_core/tests/test_spek_core.py\nA  sage_data/checkpoint_0f4322a4.json\nA  sage_data/checkpoint_1957a964.json\nA  sage_data/checkpoint_25988db3.json\nA  sage_data/checkpoint_26509163.json\nA  sage_data/checkpoint_2a690006.json\nA  sage_data/checkpoint_428d0b26.json\nA  sage_data/checkpoint_9cab58b8.json\nA  sage_data/checkpoints/checkpoint_0f4322a4.json\nA  sage_data/checkpoints/checkpoint_1957a964.json\nA  sage_data/checkpoints/checkpoint_25988db3.json\nA  sage_data/checkpoints/checkpoint_26509163.json\nA  sage_data/checkpoints/checkpoint_2a690006.json\nA  sage_data/checkpoints/checkpoint_428d0b26.json\nA  sage_data/checkpoints/checkpoint_9cab58b8.json\nMM sage_data/context/continuity_context.json\nMM sage_data/continuity/continuity_state.json\nA  sage_data/sessions/session_2f5da713.json\nA  sage_data/sessions/session_4ae97cb4.json\nA  sage_data/sessions/session_4cb95a9e.json\nA  sage_data/sessions/session_6453aed4.json\nA  sage_data/sessions/session_867e1b07.json\nA  sage_data/sessions/session_af46206d.json\nA  sage_data/sessions/session_cafdb59b.json\nA  tests/test_attack_laboratory.py\nA  tests/test_runtime_contract.py\n?? sage_data/checkpoint_8f15435d.json\n?? sage_data/sessions/session_dfbd156d.json"
+      },
+      "validation_status": {
+        "is_valid": true,
+        "loaded_files_count": 32,
+        "corrupted_files": [],
+        "referential_integrity": {
+          "missing_evidence_links": [],
+          "decisions_analyzed": 0
+        },
+        "lineage_valid": true,
+        "issues": []
+      },
+      "metadata": {}
+    },
+    {
+      "id": "checkpoint_25988db3",
+      "timestamp": "2026-07-24 11:33:53.179816+00:00",
+      "current_sage_state": {
+        "current_objective": "Expand Intelligence",
+        "active_task": "Create tests",
+        "blockers": [],
+        "dependencies": []
+      },
+      "active_goals": [
+        "Expand Intelligence",
+        "Create tests"
+      ],
+      "recent_decisions": [],
+      "repository_state_reference": {
+        "branch": "jules-4852023650264641684-8f90d7fc",
+        "commit": "cf6c4f969e705e66c365a18e8a3d358b06c7d6c6",
+        "is_dirty": true,
+        "status_output": "M  \"Main Archive/INDEX.md\"\nM  docs/master/SESSION_STATE.md\nA  poetry.lock\nA  sage/acr/attestation.py\nA  sage/acr/control_plane.py\nA  sage/acr/eas_receipts.py\nA  sage/acr/nonce_ledger.py\nM  sage/acr/skal.py\nM  sage/api.py\nM  sage/runtime/engine.py\nM  sage/runtime/health.py\nM  sage/validation.py\nA  sage_cos_core/.sage/config/runtime.json\nA  sage_cos_core/docs/SPEK_v1.1_SPEC.md\nA  sage_cos_core/sage/core/attestation.py\nA  sage_cos_core/sage/core/boundary.py\nA  sage_cos_core/sage/core/compliance.py\nA  sage_cos_core/sage/core/hdg.py\nA  sage_cos_core/sage/core/models.py\nA  sage_cos_core/sage/core/spek.py\nA  sage_cos_core/sage/core/version.py\nA  sage_cos_core/tests/test_attestation.py\nA  sage_cos_core/tests/test_boundary.py\nA  sage_cos_core/tests/test_hdg_integrity.py\nA  sage_cos_core/tests/test_spek_core.py\nA  sage_data/checkpoint_0f4322a4.json\nA  sage_data/checkpoint_1957a964.json\nA  sage_data/checkpoint_26509163.json\nA  sage_data/checkpoint_2a690006.json\nA  sage_data/checkpoint_9cab58b8.json\nA  sage_data/checkpoints/checkpoint_0f4322a4.json\nA  sage_data/checkpoints/checkpoint_1957a964.json\nA  sage_data/checkpoints/checkpoint_26509163.json\nA  sage_data/checkpoints/checkpoint_2a690006.json\nA  sage_data/checkpoints/checkpoint_9cab58b8.json\nMM sage_data/context/continuity_context.json\nMM sage_data/continuity/continuity_state.json\nA  sage_data/sessions/session_2f5da713.json\nA  sage_data/sessions/session_4ae97cb4.json\nA  sage_data/sessions/session_4cb95a9e.json\nA  sage_data/sessions/session_867e1b07.json\nA  sage_data/sessions/session_cafdb59b.json\nA  tests/test_attack_laboratory.py\n?? sage_data/checkpoint_25988db3.json\n?? sage_data/sessions/session_6453aed4.json"
+      },
+      "validation_status": {
+        "is_valid": true,
+        "loaded_files_count": 26,
+        "corrupted_files": [],
+        "referential_integrity": {
+          "missing_evidence_links": [],
+          "decisions_analyzed": 0
+        },
+        "lineage_valid": true,
+        "issues": []
+      },
+      "metadata": {}
+    },
+    {
+      "id": "checkpoint_39628e7f",
+      "timestamp": "2026-07-24 03:03:55.548012+00:00",
+      "current_sage_state": {
+        "current_objective": "Expand Intelligence",
+        "active_task": "Create tests",
+        "blockers": [],
+        "dependencies": []
+      },
+      "active_goals": [
+        "Expand Intelligence",
+        "Create tests"
+      ],
+      "recent_decisions": [],
+      "repository_state_reference": {
+        "branch": "jules-4210040704956977379-f480c96f",
+        "commit": "3e35b25237b35c9c3dbc97d70d04e9a95d20e6bd",
+        "is_dirty": true,
+        "status_output": "M sage_data/context/continuity_context.json\n M sage_data/continuity/continuity_state.json\n?? sage_data/checkpoint_39628e7f.json\n?? sage_data/sessions/"
+      },
+      "validation_status": {
+        "is_valid": true,
+        "loaded_files_count": 5,
+        "corrupted_files": [],
+        "referential_integrity": {
+          "missing_evidence_links": [],
+          "decisions_analyzed": 0
+        },
+        "lineage_valid": true,
+        "issues": []
+      },
+      "metadata": {}
+    },
+    {
+      "id": "checkpoint_5f612079",
+      "timestamp": "2026-07-24 13:48:52.870423+00:00",
+      "current_sage_state": {
+        "current_objective": "Expand Intelligence",
+        "active_task": "Create tests",
+        "blockers": [],
+        "dependencies": []
+      },
+      "active_goals": [
+        "Expand Intelligence",
+        "Create tests"
+      ],
+      "recent_decisions": [],
+      "repository_state_reference": {
+        "branch": "jules-4852023650264641684-8f90d7fc",
+        "commit": "cf6c4f969e705e66c365a18e8a3d358b06c7d6c6",
+        "is_dirty": true,
+        "status_output": "M  .github/workflows/main.yml\nM  \"Main Archive/INDEX.md\"\nM  docs/master/SESSION_STATE.md\nA  poetry.lock\nA  sage/acr/attestation.py\nA  sage/acr/control_plane.py\nA  sage/acr/eas_receipts.py\nA  sage/acr/nonce_ledger.py\nM  sage/acr/skal.py\nM  sage/api.py\nM  sage/runtime/__init__.py\nM  sage/runtime/engine.py\nM  sage/runtime/health.py\nM  sage/validation.py\nA  sage_cos_core/.sage/config/runtime.json\nA  sage_cos_core/docs/SPEK_v1.1_SPEC.md\nA  sage_cos_core/sage/core/attestation.py\nA  sage_cos_core/sage/core/boundary.py\nA  sage_cos_core/sage/core/compliance.py\nA  sage_cos_core/sage/core/hdg.py\nA  sage_cos_core/sage/core/models.py\nA  sage_cos_core/sage/core/spek.py\nA  sage_cos_core/sage/core/version.py\nA  sage_cos_core/tests/test_attestation.py\nA  sage_cos_core/tests/test_boundary.py\nA  sage_cos_core/tests/test_hdg_integrity.py\nA  sage_cos_core/tests/test_spek_core.py\nA  sage_data/checkpoint_0f4322a4.json\nA  sage_data/checkpoint_1957a964.json\nA  sage_data/checkpoint_25988db3.json\nA  sage_data/checkpoint_26509163.json\nA  sage_data/checkpoint_2a690006.json\nA  sage_data/checkpoint_428d0b26.json\nA  sage_data/checkpoint_8f15435d.json\nA  sage_data/checkpoint_9cab58b8.json\nA  sage_data/checkpoints/checkpoint_0f4322a4.json\nA  sage_data/checkpoints/checkpoint_1957a964.json\nA  sage_data/checkpoints/checkpoint_25988db3.json\nA  sage_data/checkpoints/checkpoint_26509163.json\nA  sage_data/checkpoints/checkpoint_2a690006.json\nA  sage_data/checkpoints/checkpoint_428d0b26.json\nA  sage_data/checkpoints/checkpoint_8f15435d.json\nA  sage_data/checkpoints/checkpoint_9cab58b8.json\nMM sage_data/context/continuity_context.json\nMM sage_data/continuity/continuity_state.json\nA  sage_data/sessions/session_2f5da713.json\nA  sage_data/sessions/session_4ae97cb4.json\nA  sage_data/sessions/session_4cb95a9e.json\nA  sage_data/sessions/session_6453aed4.json\nA  sage_data/sessions/session_867e1b07.json\nA  sage_data/sessions/session_af46206d.json\nA  sage_data/sessions/session_cafdb59b.json\nA  sage_data/sessions/session_dfbd156d.json\nA  tests/test_attack_laboratory.py\nA  tests/test_runtime_contract.py\n?? sage_data/checkpoint_5f612079.json\n?? sage_data/sessions/session_5e70117d.json"
+      },
+      "validation_status": {
+        "is_valid": true,
+        "loaded_files_count": 35,
+        "corrupted_files": [],
+        "referential_integrity": {
+          "missing_evidence_links": [],
+          "decisions_analyzed": 0
+        },
+        "lineage_valid": true,
+        "issues": []
+      },
+      "metadata": {}
+    },
+    {
+      "id": "checkpoint_5b4eb4a8",
+      "timestamp": "2026-07-24 13:58:52.481896+00:00",
+      "current_sage_state": {
+        "current_objective": "Expand Intelligence",
+        "active_task": "Create tests",
+        "blockers": [],
+        "dependencies": []
+      },
+      "active_goals": [
+        "Expand Intelligence",
+        "Create tests"
+      ],
+      "recent_decisions": [],
+      "repository_state_reference": {
+        "branch": "jules-4852023650264641684-8f90d7fc",
+        "commit": "cf6c4f969e705e66c365a18e8a3d358b06c7d6c6",
+        "is_dirty": true,
+        "status_output": "M  .github/workflows/main.yml\nM  \"Main Archive/INDEX.md\"\nM  docs/master/SESSION_STATE.md\nA  poetry.lock\nA  sage/acr/attestation.py\nA  sage/acr/control_plane.py\nA  sage/acr/eas_receipts.py\nA  sage/acr/nonce_ledger.py\nM  sage/acr/skal.py\nM  sage/api.py\nA  sage/learning/__init__.py\nA  sage/learning/intake.py\nA  sage/learning/knowledge_candidate.py\nA  sage/learning/learning_loop.py\nA  sage/learning/pattern_extractor.py\nA  sage/learning/validation_router.py\nM  sage/runtime/__init__.py\nM  sage/runtime/engine.py\nM  sage/runtime/health.py\nM  sage/validation.py\nA  sage_cos_core/.sage/config/runtime.json\nA  sage_cos_core/docs/SPEK_v1.1_SPEC.md\nA  sage_cos_core/sage/core/attestation.py\nA  sage_cos_core/sage/core/boundary.py\nA  sage_cos_core/sage/core/compliance.py\nA  sage_cos_core/sage/core/hdg.py\nA  sage_cos_core/sage/core/models.py\nA  sage_cos_core/sage/core/spek.py\nA  sage_cos_core/sage/core/version.py\nA  sage_cos_core/tests/test_attestation.py\nA  sage_cos_core/tests/test_boundary.py\nA  sage_cos_core/tests/test_hdg_integrity.py\nA  sage_cos_core/tests/test_spek_core.py\nA  sage_data/checkpoint_0f4322a4.json\nA  sage_data/checkpoint_1957a964.json\nA  sage_data/checkpoint_25988db3.json\nA  sage_data/checkpoint_26509163.json\nA  sage_data/checkpoint_2a690006.json\nA  sage_data/checkpoint_428d0b26.json\nA  sage_data/checkpoint_5f612079.json\nA  sage_data/checkpoint_8f15435d.json\nA  sage_data/checkpoint_9cab58b8.json\nA  sage_data/checkpoint_a69752bb.json\nA  sage_data/checkpoints/checkpoint_0f4322a4.json\nA  sage_data/checkpoints/checkpoint_1957a964.json\nA  sage_data/checkpoints/checkpoint_25988db3.json\nA  sage_data/checkpoints/checkpoint_26509163.json\nA  sage_data/checkpoints/checkpoint_2a690006.json\nA  sage_data/checkpoints/checkpoint_428d0b26.json\nA  sage_data/checkpoints/checkpoint_5f612079.json\nA  sage_data/checkpoints/checkpoint_8f15435d.json\nA  sage_data/checkpoints/checkpoint_9cab58b8.json\nA  sage_data/checkpoints/checkpoint_a69752bb.json\nMM sage_data/context/continuity_context.json\nMM sage_data/continuity/continuity_state.json\nA  sage_data/sessions/session_2f5da713.json\nA  sage_data/sessions/session_4ae97cb4.json\nA  sage_data/sessions/session_4cb95a9e.json\nA  sage_data/sessions/session_5e70117d.json\nA  sage_data/sessions/session_6453aed4.json\nA  sage_data/sessions/session_867e1b07.json\nA  sage_data/sessions/session_af46206d.json\nA  sage_data/sessions/session_cafdb59b.json\nA  sage_data/sessions/session_dfbd156d.json\nA  sage_data/sessions/session_e9cd1808.json\nA  tests/test_attack_laboratory.py\nAM tests/test_learning_runtime.py\nA  tests/test_runtime_contract.py\n?? sage_data/checkpoint_5b4eb4a8.json\n?? sage_data/sessions/session_eb58065a.json"
+      },
+      "validation_status": {
+        "is_valid": true,
+        "loaded_files_count": 41,
+        "corrupted_files": [],
+        "referential_integrity": {
+          "missing_evidence_links": [],
+          "decisions_analyzed": 0
+        },
+        "lineage_valid": true,
+        "issues": []
+      },
+      "metadata": {}
+    },
+    {
+      "id": "checkpoint_2a690006",
+      "timestamp": "2026-07-24 07:41:21.623038+00:00",
+      "current_sage_state": {
+        "current_objective": "Expand Intelligence",
+        "active_task": "Create tests",
+        "blockers": [],
+        "dependencies": []
+      },
+      "active_goals": [
+        "Expand Intelligence",
+        "Create tests"
+      ],
+      "recent_decisions": [],
+      "repository_state_reference": {
+        "branch": "jules-4852023650264641684-8f90d7fc",
+        "commit": "cf6c4f969e705e66c365a18e8a3d358b06c7d6c6",
+        "is_dirty": true,
+        "status_output": "A  poetry.lock\n M sage_data/context/continuity_context.json\n M sage_data/continuity/continuity_state.json\n?? sage_data/checkpoint_2a690006.json\n?? sage_data/sessions/session_867e1b07.json"
+      },
+      "validation_status": {
+        "is_valid": true,
+        "loaded_files_count": 11,
+        "corrupted_files": [],
+        "referential_integrity": {
+          "missing_evidence_links": [],
+          "decisions_analyzed": 0
+        },
+        "lineage_valid": true,
+        "issues": []
+      },
+      "metadata": {}
+    },
+    {
+      "id": "checkpoint_167c8434",
+      "timestamp": "2026-07-24 14:00:58.833890+00:00",
+      "current_sage_state": {
+        "current_objective": "Expand Intelligence",
+        "active_task": "Create tests",
+        "blockers": [],
+        "dependencies": []
+      },
+      "active_goals": [
+        "Expand Intelligence",
+        "Create tests"
+      ],
+      "recent_decisions": [],
+      "repository_state_reference": {
+        "branch": "jules-4852023650264641684-8f90d7fc",
+        "commit": "cf6c4f969e705e66c365a18e8a3d358b06c7d6c6",
+        "is_dirty": true,
+        "status_output": "M  .github/workflows/main.yml\nM  \"Main Archive/INDEX.md\"\nM  docs/master/SESSION_STATE.md\nA  poetry.lock\nA  sage/acr/attestation.py\nA  sage/acr/control_plane.py\nA  sage/acr/eas_receipts.py\nA  sage/acr/nonce_ledger.py\nM  sage/acr/skal.py\nM  sage/api.py\nA  sage/learning/__init__.py\nA  sage/learning/intake.py\nA  sage/learning/knowledge_candidate.py\nA  sage/learning/learning_loop.py\nA  sage/learning/pattern_extractor.py\nA  sage/learning/validation_router.py\nM  sage/runtime/__init__.py\nM  sage/runtime/engine.py\nM  sage/runtime/health.py\nM  sage/validation.py\nA  sage_cos_core/.sage/config/runtime.json\nA  sage_cos_core/docs/SPEK_v1.1_SPEC.md\nA  sage_cos_core/sage/core/attestation.py\nA  sage_cos_core/sage/core/boundary.py\nA  sage_cos_core/sage/core/compliance.py\nA  sage_cos_core/sage/core/hdg.py\nA  sage_cos_core/sage/core/models.py\nA  sage_cos_core/sage/core/spek.py\nA  sage_cos_core/sage/core/version.py\nA  sage_cos_core/tests/test_attestation.py\nA  sage_cos_core/tests/test_boundary.py\nA  sage_cos_core/tests/test_hdg_integrity.py\nA  sage_cos_core/tests/test_spek_core.py\nA  sage_data/checkpoint_0f4322a4.json\nA  sage_data/checkpoint_1957a964.json\nA  sage_data/checkpoint_25988db3.json\nA  sage_data/checkpoint_26509163.json\nA  sage_data/checkpoint_2a690006.json\nA  sage_data/checkpoint_428d0b26.json\nA  sage_data/checkpoint_5b4eb4a8.json\nA  sage_data/checkpoint_5f612079.json\nA  sage_data/checkpoint_8f15435d.json\nA  sage_data/checkpoint_9cab58b8.json\nA  sage_data/checkpoint_a69752bb.json\nA  sage_data/checkpoints/checkpoint_0f4322a4.json\nA  sage_data/checkpoints/checkpoint_1957a964.json\nA  sage_data/checkpoints/checkpoint_25988db3.json\nA  sage_data/checkpoints/checkpoint_26509163.json\nA  sage_data/checkpoints/checkpoint_2a690006.json\nA  sage_data/checkpoints/checkpoint_428d0b26.json\nA  sage_data/checkpoints/checkpoint_5b4eb4a8.json\nA  sage_data/checkpoints/checkpoint_5f612079.json\nA  sage_data/checkpoints/checkpoint_8f15435d.json\nA  sage_data/checkpoints/checkpoint_9cab58b8.json\nA  sage_data/checkpoints/checkpoint_a69752bb.json\nMM sage_data/context/continuity_context.json\nMM sage_data/continuity/continuity_state.json\nA  sage_data/sessions/session_2f5da713.json\nA  sage_data/sessions/session_4ae97cb4.json\nA  sage_data/sessions/session_4cb95a9e.json\nA  sage_data/sessions/session_5e70117d.json\nA  sage_data/sessions/session_6453aed4.json\nA  sage_data/sessions/session_867e1b07.json\nA  sage_data/sessions/session_af46206d.json\nA  sage_data/sessions/session_cafdb59b.json\nA  sage_data/sessions/session_dfbd156d.json\nA  sage_data/sessions/session_e9cd1808.json\nA  sage_data/sessions/session_eb58065a.json\nA  tests/test_attack_laboratory.py\nAM tests/test_learning_runtime.py\nA  tests/test_runtime_contract.py\n?? sage_data/checkpoint_167c8434.json\n?? sage_data/sessions/session_22b84ada.json"
+      },
+      "validation_status": {
+        "is_valid": true,
+        "loaded_files_count": 44,
+        "corrupted_files": [],
+        "referential_integrity": {
+          "missing_evidence_links": [],
+          "decisions_analyzed": 0
+        },
+        "lineage_valid": true,
+        "issues": []
+      },
+      "metadata": {}
+    },
+    {
+      "id": "checkpoint_12acc8ae",
+      "timestamp": "2026-07-24 14:09:45.821510+00:00",
+      "current_sage_state": {
+        "current_objective": "Expand Intelligence",
+        "active_task": "Create tests",
+        "blockers": [],
+        "dependencies": []
+      },
+      "active_goals": [
+        "Expand Intelligence",
+        "Create tests"
+      ],
+      "recent_decisions": [],
+      "repository_state_reference": {
+        "branch": "jules-4852023650264641684-8f90d7fc",
+        "commit": "cf6c4f969e705e66c365a18e8a3d358b06c7d6c6",
+        "is_dirty": true,
+        "status_output": "M  .github/workflows/main.yml\nM  \"Main Archive/INDEX.md\"\nM  docs/master/SESSION_STATE.md\nA  poetry.lock\nA  sage/acr/attestation.py\nA  sage/acr/control_plane.py\nA  sage/acr/eas_receipts.py\nA  sage/acr/nonce_ledger.py\nM  sage/acr/skal.py\nM  sage/api.py\nA  sage/learning/__init__.py\nA  sage/learning/intake.py\nA  sage/learning/knowledge_candidate.py\nA  sage/learning/learning_loop.py\nA  sage/learning/pattern_extractor.py\nA  sage/learning/validation_router.py\nM  sage/runtime/__init__.py\nM  sage/runtime/engine.py\nM  sage/runtime/health.py\nM  sage/validation.py\nA  sage_cos_core/.sage/config/runtime.json\nA  sage_cos_core/docs/SPEK_v1.1_SPEC.md\nA  sage_cos_core/sage/core/attestation.py\nA  sage_cos_core/sage/core/boundary.py\nA  sage_cos_core/sage/core/compliance.py\nA  sage_cos_core/sage/core/hdg.py\nA  sage_cos_core/sage/core/models.py\nA  sage_cos_core/sage/core/spek.py\nA  sage_cos_core/sage/core/version.py\nA  sage_cos_core/tests/test_attestation.py\nA  sage_cos_core/tests/test_boundary.py\nA  sage_cos_core/tests/test_hdg_integrity.py\nA  sage_cos_core/tests/test_spek_core.py\nA  sage_data/checkpoint_0f4322a4.json\nA  sage_data/checkpoint_167c8434.json\nA  sage_data/checkpoint_1957a964.json\nA  sage_data/checkpoint_25988db3.json\nA  sage_data/checkpoint_26509163.json\nA  sage_data/checkpoint_2a690006.json\nA  sage_data/checkpoint_428d0b26.json\nA  sage_data/checkpoint_5b4eb4a8.json\nA  sage_data/checkpoint_5f612079.json\nA  sage_data/checkpoint_8f15435d.json\nA  sage_data/checkpoint_9cab58b8.json\nA  sage_data/checkpoint_a69752bb.json\nA  sage_data/checkpoints/checkpoint_0f4322a4.json\nA  sage_data/checkpoints/checkpoint_167c8434.json\nA  sage_data/checkpoints/checkpoint_1957a964.json\nA  sage_data/checkpoints/checkpoint_25988db3.json\nA  sage_data/checkpoints/checkpoint_26509163.json\nA  sage_data/checkpoints/checkpoint_2a690006.json\nA  sage_data/checkpoints/checkpoint_428d0b26.json\nA  sage_data/checkpoints/checkpoint_5b4eb4a8.json\nA  sage_data/checkpoints/checkpoint_5f612079.json\nA  sage_data/checkpoints/checkpoint_8f15435d.json\nA  sage_data/checkpoints/checkpoint_9cab58b8.json\nA  sage_data/checkpoints/checkpoint_a69752bb.json\nMM sage_data/context/continuity_context.json\nMM sage_data/continuity/continuity_state.json\nA  sage_data/sessions/session_22b84ada.json\nA  sage_data/sessions/session_2f5da713.json\nA  sage_data/sessions/session_4ae97cb4.json\nA  sage_data/sessions/session_4cb95a9e.json\nA  sage_data/sessions/session_5e70117d.json\nA  sage_data/sessions/session_6453aed4.json\nA  sage_data/sessions/session_867e1b07.json\nA  sage_data/sessions/session_af46206d.json\nA  sage_data/sessions/session_cafdb59b.json\nA  sage_data/sessions/session_dfbd156d.json\nA  sage_data/sessions/session_e9cd1808.json\nA  sage_data/sessions/session_eb58065a.json\nA  tests/test_attack_laboratory.py\nAM tests/test_learning_runtime.py\nA  tests/test_runtime_contract.py\n?? sage_data/checkpoint_12acc8ae.json\n?? sage_data/sessions/session_cd240ef0.json"
+      },
+      "validation_status": {
+        "is_valid": true,
+        "loaded_files_count": 47,
+        "corrupted_files": [],
+        "referential_integrity": {
+          "missing_evidence_links": [],
+          "decisions_analyzed": 0
+        },
+        "lineage_valid": true,
+        "issues": []
+      },
+      "metadata": {}
+    },
+    {
+      "id": "checkpoint_428d0b26",
+      "timestamp": "2026-07-24 12:05:03.993938+00:00",
+      "current_sage_state": {
+        "current_objective": "Expand Intelligence",
+        "active_task": "Create tests",
+        "blockers": [],
+        "dependencies": []
+      },
+      "active_goals": [
+        "Expand Intelligence",
+        "Create tests"
+      ],
+      "recent_decisions": [],
+      "repository_state_reference": {
+        "branch": "jules-4852023650264641684-8f90d7fc",
+        "commit": "cf6c4f969e705e66c365a18e8a3d358b06c7d6c6",
+        "is_dirty": true,
+        "status_output": "M  \"Main Archive/INDEX.md\"\nM  docs/master/SESSION_STATE.md\nA  poetry.lock\nA  sage/acr/attestation.py\nA  sage/acr/control_plane.py\nA  sage/acr/eas_receipts.py\nA  sage/acr/nonce_ledger.py\nM  sage/acr/skal.py\nM  sage/api.py\nM  sage/runtime/__init__.py\nM  sage/runtime/engine.py\nM  sage/runtime/health.py\nM  sage/validation.py\nA  sage_cos_core/.sage/config/runtime.json\nA  sage_cos_core/docs/SPEK_v1.1_SPEC.md\nA  sage_cos_core/sage/core/attestation.py\nA  sage_cos_core/sage/core/boundary.py\nA  sage_cos_core/sage/core/compliance.py\nA  sage_cos_core/sage/core/hdg.py\nA  sage_cos_core/sage/core/models.py\nA  sage_cos_core/sage/core/spek.py\nA  sage_cos_core/sage/core/version.py\nA  sage_cos_core/tests/test_attestation.py\nA  sage_cos_core/tests/test_boundary.py\nA  sage_cos_core/tests/test_hdg_integrity.py\nA  sage_cos_core/tests/test_spek_core.py\nA  sage_data/checkpoint_0f4322a4.json\nA  sage_data/checkpoint_1957a964.json\nA  sage_data/checkpoint_25988db3.json\nA  sage_data/checkpoint_26509163.json\nA  sage_data/checkpoint_2a690006.json\nA  sage_data/checkpoint_9cab58b8.json\nA  sage_data/checkpoints/checkpoint_0f4322a4.json\nA  sage_data/checkpoints/checkpoint_1957a964.json\nA  sage_data/checkpoints/checkpoint_25988db3.json\nA  sage_data/checkpoints/checkpoint_26509163.json\nA  sage_data/checkpoints/checkpoint_2a690006.json\nA  sage_data/checkpoints/checkpoint_9cab58b8.json\nMM sage_data/context/continuity_context.json\nMM sage_data/continuity/continuity_state.json\nA  sage_data/sessions/session_2f5da713.json\nA  sage_data/sessions/session_4ae97cb4.json\nA  sage_data/sessions/session_4cb95a9e.json\nA  sage_data/sessions/session_6453aed4.json\nA  sage_data/sessions/session_867e1b07.json\nA  sage_data/sessions/session_cafdb59b.json\nA  tests/test_attack_laboratory.py\nA  tests/test_runtime_contract.py\n?? sage_data/checkpoint_428d0b26.json\n?? sage_data/sessions/session_af46206d.json"
+      },
+      "validation_status": {
+        "is_valid": true,
+        "loaded_files_count": 29,
+        "corrupted_files": [],
+        "referential_integrity": {
+          "missing_evidence_links": [],
+          "decisions_analyzed": 0
+        },
+        "lineage_valid": true,
+        "issues": []
+      },
+      "metadata": {}
+    },
+    {
+      "id": "checkpoint_e8d66eb9",
+      "timestamp": "2026-07-24 03:13:17.948425+00:00",
+      "current_sage_state": {
+        "current_objective": "Expand Intelligence",
+        "active_task": "Create tests",
+        "blockers": [],
+        "dependencies": []
+      },
+      "active_goals": [
+        "Expand Intelligence",
+        "Create tests"
+      ],
+      "recent_decisions": [],
+      "repository_state_reference": {
+        "branch": "jules-4210040704956977379-f480c96f",
+        "commit": "3e35b25237b35c9c3dbc97d70d04e9a95d20e6bd",
+        "is_dirty": true,
+        "status_output": "M  docs/master/CONSTITUTION.md\nM  docs/master/SESSION_STATE.md\nM  sage/validation.py\nA  sage_data/checkpoint_39628e7f.json\nA  sage_data/checkpoints/checkpoint_39628e7f.json\nMM sage_data/context/continuity_context.json\nMM sage_data/continuity/continuity_state.json\nA  sage_data/sessions/session_6509fd93.json\nA  tests/test_civ_001.py\nM  tests/test_new_systems.py\n?? sage_data/checkpoint_e8d66eb9.json\n?? sage_data/sessions/session_0abd8bca.json"
+      },
+      "validation_status": {
+        "is_valid": true,
+        "loaded_files_count": 8,
+        "corrupted_files": [],
+        "referential_integrity": {
+          "missing_evidence_links": [],
+          "decisions_analyzed": 0
+        },
+        "lineage_valid": true,
+        "issues": []
+      },
+      "metadata": {}
+    },
+    {
+      "id": "checkpoint_26509163",
+      "timestamp": "2026-07-24 08:53:39.249321+00:00",
+      "current_sage_state": {
+        "current_objective": "Expand Intelligence",
+        "active_task": "Create tests",
+        "blockers": [],
+        "dependencies": []
+      },
+      "active_goals": [
+        "Expand Intelligence",
+        "Create tests"
+      ],
+      "recent_decisions": [],
+      "repository_state_reference": {
+        "branch": "jules-4852023650264641684-8f90d7fc",
+        "commit": "cf6c4f969e705e66c365a18e8a3d358b06c7d6c6",
+        "is_dirty": true,
+        "status_output": "A  poetry.lock\nA  sage/acr/attestation.py\nA  sage/acr/control_plane.py\nA  sage/acr/eas_receipts.py\nA  sage/acr/nonce_ledger.py\nM  sage/acr/skal.py\nM  sage/api.py\nM  sage/runtime/engine.py\nM  sage/runtime/health.py\nM  sage/validation.py\nA  sage_cos_core/.sage/config/runtime.json\nA  sage_cos_core/docs/SPEK_v1.1_SPEC.md\nA  sage_cos_core/sage/core/attestation.py\nA  sage_cos_core/sage/core/boundary.py\nA  sage_cos_core/sage/core/compliance.py\nA  sage_cos_core/sage/core/hdg.py\nA  sage_cos_core/sage/core/models.py\nA  sage_cos_core/sage/core/spek.py\nA  sage_cos_core/sage/core/version.py\nA  sage_cos_core/tests/test_attestation.py\nA  sage_cos_core/tests/test_boundary.py\nA  sage_cos_core/tests/test_hdg_integrity.py\nA  sage_cos_core/tests/test_spek_core.py\nA  sage_data/checkpoint_0f4322a4.json\nA  sage_data/checkpoint_1957a964.json\nA  sage_data/checkpoint_2a690006.json\nA  sage_data/checkpoint_9cab58b8.json\nA  sage_data/checkpoints/checkpoint_0f4322a4.json\nA  sage_data/checkpoints/checkpoint_1957a964.json\nA  sage_data/checkpoints/checkpoint_2a690006.json\nA  sage_data/checkpoints/checkpoint_9cab58b8.json\nMM sage_data/context/continuity_context.json\nMM sage_data/continuity/continuity_state.json\nA  sage_data/sessions/session_4ae97cb4.json\nA  sage_data/sessions/session_4cb95a9e.json\nA  sage_data/sessions/session_867e1b07.json\nA  sage_data/sessions/session_cafdb59b.json\nA  tests/test_attack_laboratory.py\n?? sage_data/checkpoint_26509163.json\n?? sage_data/sessions/session_2f5da713.json"
+      },
+      "validation_status": {
+        "is_valid": true,
+        "loaded_files_count": 23,
+        "corrupted_files": [],
+        "referential_integrity": {
+          "missing_evidence_links": [],
+          "decisions_analyzed": 0
+        },
+        "lineage_valid": true,
+        "issues": []
+      },
+      "metadata": {}
+    },
+    {
+      "id": "checkpoint_1957a964",
+      "timestamp": "2026-07-24 08:45:03.168281+00:00",
+      "current_sage_state": {
+        "current_objective": "Expand Intelligence",
+        "active_task": "Create tests",
+        "blockers": [],
+        "dependencies": []
+      },
+      "active_goals": [
+        "Expand Intelligence",
+        "Create tests"
+      ],
+      "recent_decisions": [],
+      "repository_state_reference": {
+        "branch": "jules-4852023650264641684-8f90d7fc",
+        "commit": "cf6c4f969e705e66c365a18e8a3d358b06c7d6c6",
+        "is_dirty": true,
+        "status_output": "A  poetry.lock\nA  sage/acr/attestation.py\nA  sage/acr/control_plane.py\nA  sage/acr/eas_receipts.py\nA  sage/acr/nonce_ledger.py\nM  sage/acr/skal.py\nM  sage/api.py\nM  sage/runtime/engine.py\nM  sage/runtime/health.py\nM  sage/validation.py\nA  sage_cos_core/.sage/config/runtime.json\nA  sage_cos_core/docs/SPEK_v1.1_SPEC.md\nA  sage_cos_core/sage/core/attestation.py\nA  sage_cos_core/sage/core/boundary.py\nA  sage_cos_core/sage/core/compliance.py\nA  sage_cos_core/sage/core/hdg.py\nA  sage_cos_core/sage/core/models.py\nA  sage_cos_core/sage/core/spek.py\nA  sage_cos_core/sage/core/version.py\nA  sage_cos_core/tests/test_attestation.py\nA  sage_cos_core/tests/test_boundary.py\nA  sage_cos_core/tests/test_hdg_integrity.py\nA  sage_cos_core/tests/test_spek_core.py\nA  sage_data/checkpoint_0f4322a4.json\nA  sage_data/checkpoint_2a690006.json\nA  sage_data/checkpoint_9cab58b8.json\nA  sage_data/checkpoints/checkpoint_0f4322a4.json\nA  sage_data/checkpoints/checkpoint_2a690006.json\nA  sage_data/checkpoints/checkpoint_9cab58b8.json\nMM sage_data/context/continuity_context.json\nMM sage_data/continuity/continuity_state.json\nA  sage_data/sessions/session_4cb95a9e.json\nA  sage_data/sessions/session_867e1b07.json\nA  sage_data/sessions/session_cafdb59b.json\nA  tests/test_attack_laboratory.py\n?? sage_data/checkpoint_1957a964.json\n?? sage_data/sessions/session_4ae97cb4.json"
+      },
+      "validation_status": {
+        "is_valid": true,
+        "loaded_files_count": 20,
+        "corrupted_files": [],
+        "referential_integrity": {
+          "missing_evidence_links": [],
+          "decisions_analyzed": 0
+        },
+        "lineage_valid": true,
+        "issues": []
+      },
+      "metadata": {}
+    },
+    {
+      "id": "checkpoint_9cab58b8",
+      "timestamp": "2026-07-24 07:55:10.776605+00:00",
+      "current_sage_state": {
+        "current_objective": "Expand Intelligence",
+        "active_task": "Create tests",
+        "blockers": [],
+        "dependencies": []
+      },
+      "active_goals": [
+        "Expand Intelligence",
+        "Create tests"
+      ],
+      "recent_decisions": [],
+      "repository_state_reference": {
+        "branch": "jules-4852023650264641684-8f90d7fc",
+        "commit": "cf6c4f969e705e66c365a18e8a3d358b06c7d6c6",
+        "is_dirty": true,
+        "status_output": "A  poetry.lock\nA  sage/acr/attestation.py\nA  sage/acr/control_plane.py\nA  sage/acr/eas_receipts.py\nA  sage/acr/nonce_ledger.py\nM  sage/acr/skal.py\nM  sage/api.py\nM  sage/runtime/engine.py\nM  sage/runtime/health.py\nM  sage/validation.py\nA  sage_data/checkpoint_0f4322a4.json\nA  sage_data/checkpoint_2a690006.json\nA  sage_data/checkpoints/checkpoint_0f4322a4.json\nA  sage_data/checkpoints/checkpoint_2a690006.json\nMM sage_data/context/continuity_context.json\nMM sage_data/continuity/continuity_state.json\nA  sage_data/sessions/session_867e1b07.json\nA  sage_data/sessions/session_cafdb59b.json\nA  tests/test_attack_laboratory.py\n?? sage_data/checkpoint_9cab58b8.json\n?? sage_data/sessions/session_4cb95a9e.json"
+      },
+      "validation_status": {
+        "is_valid": true,
+        "loaded_files_count": 17,
+        "corrupted_files": [],
+        "referential_integrity": {
+          "missing_evidence_links": [],
+          "decisions_analyzed": 0
+        },
+        "lineage_valid": true,
+        "issues": []
+      },
+      "metadata": {}
+    }
+  ]
+}
