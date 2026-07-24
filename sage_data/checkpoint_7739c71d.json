@@ -1,0 +1,78 @@
+{
+  "timestamp": "2026-07-24T06:59:43.539361+00:00",
+  "state": {
+    "current_objective": "Expand Intelligence",
+    "active_task": "Create tests",
+    "blockers": [],
+    "dependencies": []
+  },
+  "memory": [],
+  "archive": [],
+  "decisions": [],
+  "lineage": [
+    "session_5b366d59",
+    "session_3d9e4e2d",
+    "session_63b0f6bf",
+    "session_b2a632b2",
+    "session_705b039c",
+    "session_4892ffbc",
+    "session_a826a2f0",
+    "session_693e7da6",
+    "session_bb029f10",
+    "session_7ca5e3b5",
+    "session_c83c8675",
+    "session_68687fa9"
+  ],
+  "sessions": [
+    {
+      "session_id": "session_68687fa9",
+      "timestamp": "2026-07-24 06:59:43.537634+00:00",
+      "active_objectives": [
+        "Expand Intelligence"
+      ],
+      "completed_actions": [],
+      "pending_actions": [
+        "task:Create tests"
+      ],
+      "important_decisions": [],
+      "related_archive_references": [],
+      "metadata": {
+        "source": "set_objective"
+      }
+    }
+  ],
+  "context": {
+    "current_project_state": "active",
+    "active_milestone": null,
+    "unresolved_items": [],
+    "recent_changes": [],
+    "important_context_transitions": [
+      {
+        "from_state": "objective:Expand Intelligence",
+        "to_state": "objective:Expand Intelligence",
+        "reason": "Objective updated via set_objective",
+        "timestamp": "2026-07-22 16:59:31.097521+00:00"
+      },
+      {
+        "from_state": "objective:Expand Intelligence",
+        "to_state": "objective:Expand Intelligence",
+        "reason": "Objective updated via set_objective",
+        "timestamp": "2026-07-23 12:55:37.562954+00:00"
+      },
+      {
+        "from_state": "objective:Expand Intelligence",
+        "to_state": "objective:Expand Intelligence",
+        "reason": "Objective updated via set_objective",
+        "timestamp": "2026-07-23 13:00:30.816016+00:00"
+      },
+      {
+        "from_state": "objective:Expand Intelligence",
+        "to_state": "objective:Expand Intelligence",
+        "reason": "Objective updated via set_objective",
+        "timestamp": "2026-07-24 06:59:43.537907+00:00"
+      }
+    ],
+    "metadata": {}
+  },
+  "continuity_checkpoints": []
+}

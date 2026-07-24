@@ -1,0 +1,135 @@
+{
+  "timestamp": "2026-07-24T07:11:43.731698+00:00",
+  "state": {
+    "current_objective": "Expand Intelligence",
+    "active_task": "Create tests",
+    "blockers": [],
+    "dependencies": []
+  },
+  "memory": [],
+  "archive": [],
+  "decisions": [],
+  "lineage": [
+    "session_5b366d59",
+    "session_3d9e4e2d",
+    "session_63b0f6bf",
+    "session_b2a632b2",
+    "session_705b039c",
+    "session_4892ffbc",
+    "session_a826a2f0",
+    "session_693e7da6",
+    "session_bb029f10",
+    "session_7ca5e3b5",
+    "session_c83c8675",
+    "session_68687fa9",
+    "session_5b2e208b"
+  ],
+  "sessions": [
+    {
+      "session_id": "session_68687fa9",
+      "timestamp": "2026-07-24 06:59:43.537634+00:00",
+      "active_objectives": [
+        "Expand Intelligence"
+      ],
+      "completed_actions": [],
+      "pending_actions": [
+        "task:Create tests"
+      ],
+      "important_decisions": [],
+      "related_archive_references": [],
+      "metadata": {
+        "source": "set_objective"
+      }
+    },
+    {
+      "session_id": "session_5b2e208b",
+      "timestamp": "2026-07-24 07:11:43.729360+00:00",
+      "active_objectives": [
+        "Expand Intelligence"
+      ],
+      "completed_actions": [],
+      "pending_actions": [
+        "task:Create tests"
+      ],
+      "important_decisions": [],
+      "related_archive_references": [],
+      "metadata": {
+        "source": "set_objective"
+      }
+    }
+  ],
+  "context": {
+    "current_project_state": "active",
+    "active_milestone": null,
+    "unresolved_items": [],
+    "recent_changes": [],
+    "important_context_transitions": [
+      {
+        "from_state": "objective:Expand Intelligence",
+        "to_state": "objective:Expand Intelligence",
+        "reason": "Objective updated via set_objective",
+        "timestamp": "2026-07-22 16:59:31.097521+00:00"
+      },
+      {
+        "from_state": "objective:Expand Intelligence",
+        "to_state": "objective:Expand Intelligence",
+        "reason": "Objective updated via set_objective",
+        "timestamp": "2026-07-23 12:55:37.562954+00:00"
+      },
+      {
+        "from_state": "objective:Expand Intelligence",
+        "to_state": "objective:Expand Intelligence",
+        "reason": "Objective updated via set_objective",
+        "timestamp": "2026-07-23 13:00:30.816016+00:00"
+      },
+      {
+        "from_state": "objective:Expand Intelligence",
+        "to_state": "objective:Expand Intelligence",
+        "reason": "Objective updated via set_objective",
+        "timestamp": "2026-07-24 06:59:43.537907+00:00"
+      },
+      {
+        "from_state": "objective:Expand Intelligence",
+        "to_state": "objective:Expand Intelligence",
+        "reason": "Objective updated via set_objective",
+        "timestamp": "2026-07-24 07:11:43.729937+00:00"
+      }
+    ],
+    "metadata": {}
+  },
+  "continuity_checkpoints": [
+    {
+      "id": "checkpoint_7739c71d",
+      "timestamp": "2026-07-24 06:59:43.555257+00:00",
+      "current_sage_state": {
+        "current_objective": "Expand Intelligence",
+        "active_task": "Create tests",
+        "blockers": [],
+        "dependencies": []
+      },
+      "active_goals": [
+        "Expand Intelligence",
+        "Create tests"
+      ],
+      "recent_decisions": [],
+      "repository_state_reference": {
+        "branch": "jules-9738723495227716373-98a87f0c",
+        "commit": "39b4528593842e100c1898b5b8e897deb646b214",
+        "is_dirty": true,
+        "status_output": "M  docs/labs/ENGINEERING_LAB.md\nM  docs/labs/RESEARCH_LAB.md\nM  docs/labs/VALIDATION_LAB.md\nM  docs/master/COMMAND_CENTER.md\nMM docs/master/MASTER_ARCHIVE.md\nM  sage/__init__.py\nM  sage/acr/bridge.py\nA  sage/acr/continuity_integration.py\nM  sage/acr/session/__init__.py\nM  sage/acr/session/checkpoint.py\nM  sage/acr/session/context_tracker.py\nM  sage/acr/session/session_state.py\nA  sage/acr/skal.py\nA  sage/acr/state_transition.py\nM  sage/api.py\nM  sage/archive/__init__.py\nM  sage/archive/core.py\nM  sage/archive/knowledge_graph/__init__.py\nM  sage/archive/log.py\nM  sage/archive/models.py\nM  sage/archive/persistence.py\nM  sage/archive/relationships/__init__.py\nM  sage/cli.py\nM  sage/config/settings.py\nM  sage/decision.py\nM  sage/integration.py\nM  sage/memory/__init__.py\nM  sage/memory/core.py\nM  sage/memory/models.py\nM  sage/memory/persistence.py\nM  sage/memory/storage.py\nM  sage/models.py\nM  sage/runtime/__init__.py\nM  sage/runtime/capability_report.py\nM  sage/runtime/diagnostics.py\nM  sage/runtime/engine.py\nM  sage/runtime/health.py\nM  sage/runtime/metrics.py\nM  sage/service.py\nM  sage/validation.py\nD  sage_data/checkpoint_1c0233be.json\nD  sage_data/checkpoint_20acc375.json\nD  sage_data/checkpoint_2c92c05e.json\nD  sage_data/checkpoint_608890b7.json\nD  sage_data/checkpoint_61ee2961.json\nD  sage_data/checkpoint_75b2f334.json\nD  sage_data/checkpoint_983529ca.json\nD  sage_data/checkpoint_ae32f1d9.json\nD  sage_data/checkpoint_b34612c4.json\nD  sage_data/checkpoint_c194c056.json\nD  sage_data/checkpoint_ccf2605d.json\nD  sage_data/checkpoint_eaaa5dca.json\nD  sage_data/checkpoint_eb0a29a8.json\nD  sage_data/checkpoint_eff17ccf.json\nD  sage_data/checkpoints/checkpoint_2c92c05e.json\nD  sage_data/checkpoints/checkpoint_608890b7.json\nD  sage_data/checkpoints/checkpoint_75b2f334.json\nD  sage_data/checkpoints/checkpoint_983529ca.json\nD  sage_data/checkpoints/checkpoint_eaaa5dca.json\nD  sage_data/checkpoints/checkpoint_eff17ccf.json\n M sage_data/context/continuity_context.json\n M sage_data/continuity/continuity_state.json\nD  sage_data/sessions/session_50c6f375.json\nD  sage_data/sessions/session_6141937a.json\nD  sage_data/sessions/session_75ddc879.json\nD  sage_data/sessions/session_7ca5e3b5.json\nD  sage_data/sessions/session_bb029f10.json\nD  sage_data/sessions/session_c83c8675.json\nM  scripts/production_check.py\nM  tests/conftest.py\nM  tests/test_api.py\nM  tests/test_api_auth.py\nM  tests/test_archive_intelligence.py\nM  tests/test_archive_persistence.py\nA  tests/test_connected_runtime.py\nM  tests/test_continuity_bridge.py\nM  tests/test_continuity_intelligence.py\nM  tests/test_continuity_persistence.py\nM  tests/test_memory_persistence.py\nM  tests/test_new_systems.py\nM  tests/test_phase2_activation.py\nM  tests/test_runtime_intelligence.py\nA  tests/test_skal.py\n?? sage_data/checkpoint_7739c71d.json\n?? sage_data/sessions/"
+      },
+      "validation_status": {
+        "is_valid": true,
+        "loaded_files_count": 5,
+        "corrupted_files": [],
+        "referential_integrity": {
+          "missing_evidence_links": [],
+          "decisions_analyzed": 0
+        },
+        "lineage_valid": true,
+        "issues": []
+      },
+      "metadata": {}
+    }
+  ]
+}

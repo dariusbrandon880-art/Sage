@@ -84,3 +84,15 @@ SAGE features a complete automated verification test suite:
 - **Payload Type**: `architecture_decision`
 - **Title/Subject**: Draft Decision: ADR-011-experimental
 - **Lineage Details**: Unapproved decision routed to Engineering Lab.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_architecture_decision_fa39eab0
+- **Timestamp**: 2026-07-24T06:59:43.656999+00:00
+- **Payload Type**: `architecture_decision`
+- **Title/Subject**: Draft Decision: ADR-011-experimental
+- **Lineage Details**: Unapproved decision routed to Engineering Lab.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_architecture_decision_1687a637
+- **Timestamp**: 2026-07-24T07:11:43.840296+00:00
+- **Payload Type**: `architecture_decision`
+- **Title/Subject**: Draft Decision: ADR-011-experimental
+- **Lineage Details**: Unapproved decision routed to Engineering Lab.
