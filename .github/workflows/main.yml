@@ -26,3 +26,7 @@ jobs:
     - name: Run pytest
       run: |
         pytest -v --tb=short
+
+    - name: Verify Runtime Entry Point Contract
+      run: |
+        python -c "from sage.runtime import app; print('ASGI App Export Verification: SUCCESS')"
