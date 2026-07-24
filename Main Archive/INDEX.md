@@ -11,6 +11,7 @@ Welcome to SAGE's immutable Master Archive and research repository. This index l
 - [Dependency Graph](architecture/dependency-graph.md) - Class mappings and package relationship models.
 - [Architecture Index](architecture/architecture-index.md) - Directory layout index of the repository.
 - [SAGE Archive Intelligence Layer](../docs/master/ARCHIVE_INTELLIGENCE.md) - Design and operational specification of SAGE's relational knowledge graph and metadata tracking.
+- [SAGE Agent Workflow Layer v1 Foundation Spec](https://github.com/sage-cos-core/docs/AGENT_WORKFLOW_v1_SPEC.md) - Production specification for governed SAGE agents and task routing.
 
 ---
 
