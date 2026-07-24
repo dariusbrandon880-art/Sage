@@ -23,4 +23,15 @@ __all__ = [
     "generate_system_status_report",
     "get_metrics_collector",
     "get_sage_identity",
+    "app",
 ]
+
+def __getattr__(name: str):
+    """Lazy-load the FastAPI app to prevent circular dependencies on initialization."""
+    if name == "app":
+        from sage.api import app as fastapi_app
+        return list_all_exports_if_needed(fastapi_app)
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+
+def list_all_exports_if_needed(fastapi_app):
+    return fastapi_app
