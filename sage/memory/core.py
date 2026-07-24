@@ -89,6 +89,7 @@ class Memory:
 
     def _save(self, obj: MemoryObject):
         """Persist a memory object to disk as JSON."""
+        self.storage_path.mkdir(parents=True, exist_ok=True)
         filepath = self.storage_path / f"{obj.id}.json"
         with open(filepath, "w") as f:
             json.dump(obj.model_dump(), f, indent=2, default=str)

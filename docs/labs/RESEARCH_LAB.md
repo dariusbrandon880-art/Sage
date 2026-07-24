@@ -53,3 +53,21 @@ SAGE research explores 11 strategic conceptual models for cognitive continuity:
 - **Payload Type**: `architecture_decision`
 - **Title/Subject**: SAGE-RF-FutureExpansion
 - **Lineage Details**: Unapproved/draft item categorized as research. Processed by Jules.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_architecture_decision_ac833164
+- **Timestamp**: 2026-07-24T05:23:46.426763+00:00
+- **Payload Type**: `architecture_decision`
+- **Title/Subject**: SAGE-RF-FutureExpansion
+- **Lineage Details**: Unapproved/draft item categorized as research. Processed by Jules.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_architecture_decision_c5b54a52
+- **Timestamp**: 2026-07-24T05:28:33.134234+00:00
+- **Payload Type**: `architecture_decision`
+- **Title/Subject**: SAGE-RF-FutureExpansion
+- **Lineage Details**: Unapproved/draft item categorized as research. Processed by Jules.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_architecture_decision_19384e8e
+- **Timestamp**: 2026-07-24T05:30:26.397683+00:00
+- **Payload Type**: `architecture_decision`
+- **Title/Subject**: SAGE-RF-FutureExpansion
+- **Lineage Details**: Unapproved/draft item categorized as research. Processed by Jules.

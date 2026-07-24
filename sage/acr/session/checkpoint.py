@@ -118,6 +118,7 @@ class CheckpointManager:
     def save_checkpoint(self, checkpoint: ContinuityCheckpoint) -> None:
         """Save/persist a continuity checkpoint."""
         self.checkpoints[checkpoint.id] = checkpoint
+        self.storage_path.mkdir(parents=True, exist_ok=True)
         filepath = self.storage_path / f"{checkpoint.id}.json"
         with open(filepath, "w") as f:
             json.dump(checkpoint.model_dump(), f, indent=2, default=str)

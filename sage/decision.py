@@ -91,6 +91,7 @@ class DecisionTracker:
 
     def _save_decision(self, entry: DecisionEntry):
         """Persist decision entry to disk."""
+        self.storage_path.mkdir(parents=True, exist_ok=True)
         filepath = self.storage_path / f"{entry.id}.json"
         with open(filepath, "w") as f:
             json.dump(entry.model_dump(), f, indent=2, default=str)

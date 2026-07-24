@@ -78,6 +78,7 @@ class ContextTracker:
         if context is not None:
             self.context = context
         current = self.get_current_context()
+        self.storage_path.mkdir(parents=True, exist_ok=True)
         filepath = self._get_context_file_path()
         with open(filepath, "w") as f:
             json.dump(current.model_dump(), f, indent=2, default=str)

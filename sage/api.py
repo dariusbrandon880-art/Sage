@@ -12,6 +12,8 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from sage.acr.skal import process_incoming_payload, promote_skal_payload
+from sage.acr.state_transition import StateTransitionEngine
+from sage.acr.continuity_integration import StateCalibrationSync, RecoveryWorkflow
 from sage.integration import (
     AIQueryRequest,
     ChatGPTClient,
@@ -508,6 +510,86 @@ async def skal_promote(req: SKALPromoteRequest):
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"SAGE-SKAL promotion failed: {e!s}")
+
+
+class SKALPipelineRequest(BaseModel):
+    """Request model for SAGE-SKAL E2E knowledge lifecycle pipeline."""
+
+    payload_type: str
+    payload_data: dict[str, Any]
+    approved: bool
+    approver: str
+    is_research: bool = False
+
+
+@app.post("/tools/skal/pipeline")
+async def skal_pipeline(req: SKALPipelineRequest):
+    """E2E connected runtime pipeline execution endpoint."""
+    stp = StateTransitionEngine(runtime)
+
+    # 1. Begin mutation transaction
+    tx_id = stp.begin_mutation(f"E2E Pipeline intake of {req.payload_type}")
+
+    try:
+        # 2. Intake: Process incoming payload
+        intake_res = process_incoming_payload(
+            payload_type=req.payload_type,
+            payload_data=req.payload_data,
+            runtime=runtime,
+        )
+        memory_id = intake_res["memory_id"]
+
+        # 3. Register evidence in transaction
+        stp.register_evidence(tx_id, memory_id)
+
+        # 4. Validate transition
+        is_valid = stp.validate_transition(tx_id)
+        if not is_valid:
+            # Automatic rollback executed inside stp.validate_transition
+            raise HTTPException(
+                status_code=400,
+                detail=f"SAGE E2E Pipeline failed validation. Transaction rolled back. Memory ID: {memory_id}",
+            )
+
+        # 5. Commit transition
+        stp.commit_transition(tx_id)
+
+        # 6. Promotion & Governance routing
+        promotion_res = promote_skal_payload(
+            memory_id=memory_id,
+            approved=req.approved,
+            approver=req.approver,
+            runtime=runtime,
+            is_research=req.is_research,
+        )
+
+        # 7. State Calibration & Reconciliation
+        calibrator = StateCalibrationSync(runtime)
+        calibration_res = calibrator.calibrate_all()
+
+        return {
+            "status": "success",
+            "transaction_id": tx_id,
+            "intake": intake_res,
+            "promotion": promotion_res,
+            "calibration": calibration_res,
+        }
+
+    except ValueError as e:
+        # If any validation or promotion error occurs, rollback transaction to be completely safe
+        try:
+            stp.execute_rollback(tx_id)
+        except Exception:
+            pass
+        raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
+    except Exception as e:
+        try:
+            stp.execute_rollback(tx_id)
+        except Exception:
+            pass
+        raise HTTPException(status_code=500, detail=f"SAGE E2E Pipeline error: {e!s}")
 
 
 # Snapshot endpoints

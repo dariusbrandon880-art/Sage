@@ -100,6 +100,7 @@ class SessionStateManager:
     def save_session(self, state: SessionState) -> None:
         """Persist a session state to disk."""
         self.sessions[state.session_id] = state
+        self.storage_path.mkdir(parents=True, exist_ok=True)
         filepath = self.storage_path / f"{state.session_id}.json"
         with open(filepath, "w") as f:
             json.dump(state.model_dump(), f, indent=2, default=str)

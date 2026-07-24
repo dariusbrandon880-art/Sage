@@ -59,6 +59,22 @@ class ValidationSystem:
             if not has_substance:
                 failed_rules.append("Memory content lacks substance")
 
+            # Rule 4: SAGE-SKAL specific schema verification rules
+            if obj.object_type == "skal_validation_report":
+                if not obj.content.get("commit_identifier"):
+                    failed_rules.append("SAGE-SKAL ValidationReport missing commit_identifier")
+                if not obj.content.get("validation_results"):
+                    failed_rules.append("SAGE-SKAL ValidationReport missing validation_results")
+                if not obj.content.get("evidence_references"):
+                    failed_rules.append("SAGE-SKAL ValidationReport missing evidence_references")
+            elif obj.object_type == "skal_architecture_decision":
+                if not obj.content.get("proposal"):
+                    failed_rules.append("SAGE-SKAL ArchitectureDecision missing proposal")
+                if not obj.content.get("reasoning"):
+                    failed_rules.append("SAGE-SKAL ArchitectureDecision missing reasoning")
+                if not obj.content.get("approval_state"):
+                    failed_rules.append("SAGE-SKAL ArchitectureDecision missing approval_state")
+
         is_valid = len(failed_rules) == 0
         return is_valid, failed_rules
 
