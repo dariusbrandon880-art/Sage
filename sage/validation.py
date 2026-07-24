@@ -49,6 +49,18 @@ class ValidationSystem:
         if not obj.content:
             failed_rules.append("Memory content is empty")
 
+        # Rule 1b: SAGE-RT-KL-002 Governed Knowledge Promotion Contract Enforcement
+        # Rule candidates or architectural rules must have an authorized signature
+        is_rule = obj.object_type in ("rule_candidate", "architectural_rule") or any(
+            t in ("rule", "rule_candidate", "architectural_rule") for t in obj.tags
+        )
+        if is_rule:
+            signature = obj.content.get("authorized_signature") or obj.content.get("signature")
+            if not signature:
+                failed_rules.append(
+                    "Governed Knowledge Promotion Contract (SAGE-RT-KL-002) violation: Rule candidate must have an 'authorized_signature' before promotion to validated or archived."
+                )
+
         # Rule 2: Object type must be specified
         if not obj.object_type:
             failed_rules.append("Object type is not specified")
