@@ -54,3 +54,28 @@ To ensure scalability, the Master Archive supports:
 - Keyword substring searches over titles (`GET /archive/search/title/{title}`).
 - Tag indexing (`GET /archive/search/tag/{tag}`).
 - Chronological sorting with limit and offset parameters.
+
+---
+
+## 4. Validated Lineage Record: Architecture Alignment Preservation #25
+
+- **Milestone Event**: Architecture Alignment Preservation #25
+- **Status**: ✅ MERGED INTO MAIN
+- **Commit**: d58e001
+- **Validation**: ✅ Build/checks passed cleanly
+
+### Core Governance & Specifications
+The following core specifications are confirmed as SAGE 2 constitutional governance baselines:
+
+#### A. SAGE 2 Unified Architecture Model
+The structural tiers of SAGE 2 are locked into three non-overlapping execution zones:
+1. **Continuity Layer**: Managed via ACR (Adaptive Continuity Runtime) for state serialization and CIV (Continuity Independence Validation) for rehydration verification.
+2. **Intelligence Layer**: Comprises SKAL (intake validation), HSI-001 (Human-SAGE Interaction trust boundaries), and KL (Knowledge Longevity promotion pipeline).
+3. **Discovery Layer**: Powered by speculative SAGE-X mathematical, historical, and scientific concepts.
+
+#### B. Governed Knowledge Promotion Contract (SAGE-RT-KL-002)
+- **Principal Directive**: SAGE must never autonomously write permanent architectural knowledge. Rule Candidates generated from Layer 2 (Working Evidence) require manual validation and authorized signature before promotion to Layer 3 (Immutable Ledger).
+
+#### C. Strict Execution Separation Rules
+- **Write-Pipeline**: Single-transaction, zero-trust, HMAC-authenticated state mutators (Objectives, Checkpoints, SKAL payloads).
+- **Read-Pipeline**: Side-effect-free, read-only queries (diagnostics, metrics, search results).

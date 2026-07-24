@@ -42,3 +42,34 @@ SAGE features a complete automated verification test suite:
   ruff check sage/ tests/
   ```
 - **Timezone Safety**: Python 3.12+ compliant timezone-aware datetimes are enforced via `datetime.now(timezone.utc)`.
+
+---
+
+## 3. Engineering Lineage: SAGE 2 Continuity Update & Tracking
+
+- **Milestone Event**: Architecture Alignment Preservation #25
+- **Status**: ✅ MERGED INTO MAIN
+- **Merge Commit**: d58e001
+- **Changed Files**:
+  - `docs/master/CONSTITUTION.md`
+  - `docs/master/ROADMAP.md`
+  - `.sage/ROADMAP.md`
+  - `Main Archive/INDEX.md`
+  - `Main Archive/research/strategic/CIC.md`
+  - `Main Archive/research/strategic/HSI.md`
+  - `Main Archive/research/strategic/SAGE_Research_Track_Comparative_Intelligence_Architecture_Study_Review.md`
+  - `sage/validation.py`
+  - `sage/acr/skal.py`
+  - `sage/api.py`
+  - `tests/test_reliability_and_skal.py`
+
+### Repository Alignment Status
+- All core files (under `sage/` and `tests/`) are verified 100% compliant with locked SAGE 2 Unified Architecture specifications, timezone-aware UTC datetime guidelines, and zero-drift parameters.
+
+### Priority Backlog (Future Engineering Tasks)
+The following tasks are scheduled for future milestone iterations as controlled implementation tasks:
+1. **`state_calibration.py` Integration**: Refine continuous state calibrations during rehydration events.
+2. **`state_validator.py` Completion**: Enhance deep validator rules and dependency graph traversal checks.
+3. **`memory_importance.py` Pipeline**: Implement dynamic memory importance ranking to drive automated caching.
+4. **`apoptosis_manager.py` Lifecycle Handling**: Safe, scheduled process pruning and background process garbage collection.
+5. **Repository Topology Cleanup**: Consolidate redundant configuration patterns and obsolete test logs.

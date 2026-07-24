@@ -29,3 +29,16 @@ SAGE research explores 11 strategic conceptual models for cognitive continuity:
 - **APM (Autonomous Process Monitor)**: Proactively measures process velocity and raises blockers when progress stalls.
 - **MEC (Multi-user Engineering Continuity)**: Reconciles concurrent or conflicting developer-agent decision trees.
 - **CIR (Canonical Index Registry)**: Tracks knowledge lineage from draft hypothesis to Master Archive.
+
+---
+
+## 3. Research Lineage: SAGE 2 Speculative Architecture Candidates
+
+The following advanced theoretical paradigms are tracked inside the Research Lab as speculative architecture candidates (Track C.11 Continuity Architecture references), slated for future isolated evaluation prior to any formal validation or promotion:
+
+### 3.1 Track C.11 Continuity Architecture References
+- **State Calibration Sync Research**: Dynamic realignment loops to auto-correct micro-drifts in contextual embeddings between agent runs.
+- **Adaptive Decay**: Mathematical models to safely discount stale or overridden episodic memories over long session intervals.
+- **Drift Monitor**: Proactive statistical auditing of cognitive schemas to flag semantic divergence from the locked Constitution.
+- **Distributed Continuity Security**: Cryptographically signed multi-turn token chains for validating cross-node agent state handoffs.
+- **Predictive Simulation**: Real-time simulation of engineering actions against virtual testbeds to predict and prevent workspace compile failures.

@@ -17,3 +17,30 @@ SAGE is running in a fully synchronized continuous mode. The Autonomous Continui
 - **Test Integrity**: 72/72 test suites passing cleanly with zero Pydantic, datetime, or namespace conflicts.
 - **Live Continuity Loop**: Fully operational and validated via dedicated automated end-to-end regression tests verifying that session payload ingestion, structural validation, archive promotion/routing, decision tracking, and persistent state snapshotting/checkpoints execute flawlessly in a unified, single-transaction pathway.
 - **Production Validation**: Script verification completed via `bash scripts/activate_sage.sh` and `python scripts/production_check.py`.
+
+---
+
+## 3. Operational Checkpoint: Architecture Alignment Preservation #25
+
+- **Lineage Reference Event**: Architecture Alignment Preservation #25
+- **Status**: ✅ MERGED INTO MAIN (Commit d58e001)
+
+### SAGE 2 Current State
+Architecture Alignment Preservation is complete. SAGE 2 conceptual architecture, memory stratification model, and Governed Knowledge Promotion Contract are fully codified and synchronized with the repository layout.
+
+### Current Phase
+Engineering continuation and validation expansion.
+
+### Operational Priority
+Complete remaining safe implementation work while maintaining:
+- **Master Archive as source of truth**: No unvalidated ideas or drift in master files.
+- **Research/Engineering separation**: Keep speculative candidates segregated within the Research Lab.
+- **Validation before promotion**: Enforce strict validation gates and zero-trust rehydration checks on all inputs.
+
+### Active Backlog (Prioritized Continuity Tasks)
+The following safe implementation backlogs are scheduled for sequential development:
+1. `state_calibration.py` integration (Realtime state calibration across agent sessions)
+2. `state_validator.py` completion (Enforce deep rehydration checks on persistent state)
+3. `memory_importance.py` pipeline (Rank memories to drive automated cleanup)
+4. `apoptosis_manager.py` lifecycle handling (Handle process pruning)
+5. Repository topology cleanup (Remove redundant local files and old database stubs)
