@@ -158,3 +158,21 @@ Future: SAGE-X Discovery Intelligence
 > **"Knowledge must earn permanence."**
 >
 > Information may enter SAGE, but only validated understanding may influence future architecture.
+
+---
+
+### SAGE ACR-X C3S Architecture Entry (CAL-ACR-X-C3S-001)
+
+SAGE ACR-X implements the complete cognitive continuity substrate (C3S) architecture across the system. It enforces mathematical proofreaders and isolated multi-layer memory stores to evaluate state drift and maintain perfect session-restoration fidelity.
+
+#### Memory Layers:
+- **WORKING**: Handles transient incoming payloads.
+- **EPISODIC**: Maintains localized multi-turn session sequences.
+- **SEMANTIC**: Holds promoted, generalized conceptual associations.
+- **PROCEDURAL**: Stores executable processes and locked runtime routines.
+
+#### Core Formulations:
+- **Identity Drift Index (IDI)**: Measures Euclidean deviation from baseline state vectors.
+- **Memory Stability Score (MSS)**: Measures retention against incoming noise.
+- **Recovery Fidelity (RF)**: Tracks key/value restoration coherence across crashes.
+- **Variational Free Energy (VFE)**: Models state surprise and discrepancy.
