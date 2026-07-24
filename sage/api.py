@@ -95,6 +95,11 @@ class IncidentResolveRequest(BaseModel):
     resolution_details: str
 
 
+class SKALPromotionRequest(BaseModel):
+    memory_id: str
+    authorizer_signature: Optional[str] = None
+
+
 class MemoryCreateRequest(BaseModel):
     object_type: str
     content: Dict[str, Any]
@@ -301,6 +306,17 @@ async def resolve_incident(incident_id: str, req: IncidentResolveRequest):
 @app.post("/tools/skal/intake")
 async def skal_intake_endpoint(payload: Dict[str, Any]):
     result = skal_manager.process_incoming_payload(payload)
+    if not result.get("success"):
+        raise HTTPException(status_code=400, detail=result.get("error"))
+    return result
+
+
+@app.post("/tools/skal/promote")
+async def promote_skal_record_endpoint(req: SKALPromotionRequest):
+    result = skal_manager.promote_skal_record(
+        memory_id=req.memory_id,
+        authorizer_signature=req.authorizer_signature,
+    )
     if not result.get("success"):
         raise HTTPException(status_code=400, detail=result.get("error"))
     return result
