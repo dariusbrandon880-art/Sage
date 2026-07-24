@@ -1,0 +1,33 @@
+{
+  "id": "checkpoint_b377a78b",
+  "timestamp": "2026-07-24 18:05:54.016665+00:00",
+  "current_sage_state": {
+    "current_objective": "Expand Intelligence",
+    "active_task": "Create tests",
+    "blockers": [],
+    "dependencies": []
+  },
+  "active_goals": [
+    "Expand Intelligence",
+    "Create tests"
+  ],
+  "recent_decisions": [],
+  "repository_state_reference": {
+    "branch": "jules-8925078284929386525-87ad3c9e",
+    "commit": "2c6e134c340f597420871df4a71b4512372f94b7",
+    "is_dirty": true,
+    "status_output": "A  .sage/GOOGLE_INTEGRATION_GUIDE.md\nM  \"Main Archive/INDEX.md\"\nM  docs/master/SESSION_STATE.md\nA  sage/agents/__init__.py\nA  sage/agents/contract.py\nA  sage/agents/memory.py\nA  sage/agents/models.py\nA  sage/agents/reporting.py\nA  sage/agents/router.py\nM  sage/runtime/__init__.py\nA  sage_data/checkpoint_087f2552.json\nA  sage_data/checkpoint_36605460.json\nA  sage_data/checkpoint_489bca09.json\nA  sage_data/checkpoint_692abd44.json\nA  sage_data/checkpoint_6e89bd64.json\nA  sage_data/checkpoint_c28f6c77.json\nA  sage_data/checkpoints/checkpoint_087f2552.json\nA  sage_data/checkpoints/checkpoint_36605460.json\nA  sage_data/checkpoints/checkpoint_489bca09.json\nA  sage_data/checkpoints/checkpoint_692abd44.json\nA  sage_data/checkpoints/checkpoint_6e89bd64.json\nA  sage_data/checkpoints/checkpoint_c28f6c77.json\nMM sage_data/context/continuity_context.json\nMM sage_data/continuity/continuity_state.json\nA  sage_data/sessions/session_17cb8d31.json\nA  sage_data/sessions/session_3c2ce003.json\nA  sage_data/sessions/session_6dc19aca.json\nA  sage_data/sessions/session_90572145.json\nA  sage_data/sessions/session_a9334a90.json\nA  sage_data/sessions/session_dbe62731.json\nA  tests/test_agents.py\nA  tests/test_runtime_contract.py\n?? sage_data/checkpoint_b377a78b.json\n?? sage_data/sessions/session_6bd1d466.json"
+  },
+  "validation_status": {
+    "is_valid": true,
+    "loaded_files_count": 44,
+    "corrupted_files": [],
+    "referential_integrity": {
+      "missing_evidence_links": [],
+      "decisions_analyzed": 0
+    },
+    "lineage_valid": true,
+    "issues": []
+  },
+  "metadata": {}
+}
