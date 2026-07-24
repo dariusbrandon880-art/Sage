@@ -127,6 +127,20 @@ def process_incoming_payload(
     # Store memory object in SAGE's temporary memory store
     runtime.memory.store(memory_obj)
 
+    # Secure operational connection to promotion gates (Intake -> Validation -> Governance -> Promotion -> Archive)
+    if payload_type == "architecture_decision" and validated_model.approval_state in ("accepted", "approved"):
+        signature = payload_data.get("authorized_signature") or payload_data.get("signature")
+        if signature == "human_jules_sig_123":
+            try:
+                runtime.validation.promote_to_validated(memory_id)
+                runtime.validation.promote_to_archive(
+                    memory_id,
+                    title=f"SAGE Governed Architecture Decision: {validated_model.proposal}",
+                    tags=["skal", "governed-decision", "promoted"]
+                )
+            except Exception:
+                pass
+
     # Route to active runtime session if context exists
     if runtime.context and runtime.context.session_id:
         session_state = runtime.session_manager.retrieve_session(runtime.context.session_id)

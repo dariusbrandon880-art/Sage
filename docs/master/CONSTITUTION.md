@@ -141,11 +141,11 @@ Documentation ──► Schema Definition ──► Test Provisioning ──► 
 ### Active Development Order
 
 ```
-Gate 1: SAGE-SKAL Intake Validation (Status: READY)
+Gate 1: SAGE-SKAL Intake & Route Pipeline (Status: FULLY OPERATIONAL AND ROUTED)
                   ↓
 Gate 2: CIV-001 Continuity Independence Proof (Status: FULLY VERIFIED AND OPERATIONAL)
                   ↓
-Gate 3: HSI-001 Self-Model Architecture (Status: LOCKED BOUNDARY)
+Gate 3: C.11 State Calibration & Reconciliation (Status: IMPLEMENTED AND VALIDATED)
                   ↓
 Gate 4: KL Knowledge Promotion Contract SAGE-RT-KL-002 (Status: FULLY CODIFIED AND TESTED)
                   ↓

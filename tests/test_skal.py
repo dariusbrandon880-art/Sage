@@ -274,3 +274,27 @@ def test_skal_api_intake_integration():
             response = client.post("/tools/skal/intake", json=bad_type_payload)
             assert response.status_code == 400
             assert "Unsupported SAGE-SKAL payload type" in response.json()["detail"]
+
+
+def test_skal_authorized_decision_auto_promotion(temp_runtime):
+    """Test that authorized architecture decisions undergo automatic validation and archive promotion."""
+    payload_data = {
+        "proposal": "ADR-010-redis-cache",
+        "reasoning": "In-memory speed boost",
+        "validation_requirements": ["latency-test"],
+        "approval_state": "accepted",
+        "authorized_signature": "human_jules_sig_123",
+    }
+
+    initial_archive_count = len(temp_runtime.archive.list_all())
+
+    # Ingest decision
+    result = process_incoming_payload("architecture_decision", payload_data, temp_runtime)
+    assert result["status"] == "success"
+
+    # Verify that it has been promoted to the permanent Master Archive automatically
+    assert len(temp_runtime.archive.list_all()) == initial_archive_count + 1
+    archive_id = f"archive_{result['memory_id']}"
+    archived_entry = temp_runtime.archive.retrieve_entry(archive_id)
+    assert archived_entry is not None
+    assert archived_entry.title == "SAGE Governed Architecture Decision: ADR-010-redis-cache"

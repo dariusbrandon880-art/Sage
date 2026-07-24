@@ -535,6 +535,15 @@ async def verify_integrity():
         raise HTTPException(status_code=500, detail=f"Self-verification failed: {e!s}")
 
 
+@app.post("/runtime/calibrate")
+async def calibrate_state():
+    try:
+        result = runtime.calibrate_state()
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Calibration failed: {e!s}")
+
+
 # Continuity/Snapshot endpoints
 @app.post("/continuity/snapshot")
 async def create_continuity_snapshot():

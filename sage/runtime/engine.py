@@ -916,6 +916,13 @@ class SageRuntime:
             "status": "active",
         }
 
+    def calibrate_state(self) -> dict[str, Any]:
+        """Perform C.11 state calibration and reconciliation sync."""
+        from sage.acr.state_calibration import StateCalibrationSync
+
+        calibration = StateCalibrationSync(self)
+        return calibration.calibrate_and_reconcile()
+
     def verify_integrity(self) -> dict[str, Any]:
         """Perform repository-side self-verification of data stores and state referential integrity."""
         issues = []
