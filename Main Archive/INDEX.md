@@ -12,6 +12,7 @@ Welcome to SAGE's immutable Master Archive and research repository. This index l
 - [Architecture Index](architecture/architecture-index.md) - Directory layout index of the repository.
 - [SAGE Archive Intelligence Layer](../docs/master/ARCHIVE_INTELLIGENCE.md) - Design and operational specification of SAGE's relational knowledge graph and metadata tracking.
 - [SAGE Agent Workflow Layer v1 Foundation Spec](https://github.com/sage-cos-core/docs/AGENT_WORKFLOW_v1_SPEC.md) - Production specification for governed SAGE agents and task routing.
+- [SAGE Multi-Agent Coordination Layer Spec](https://github.com/sage-cos-core/docs/MULTI_AGENT_COORDINATION_SPEC.md) - Specification for governing diverse AI agents (ChatGPT, Google AI, Jules) under SAGE controls.
 
 ---
 

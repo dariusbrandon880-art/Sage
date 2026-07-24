@@ -1,4 +1,4 @@
-"""Adversarial and Lifecycle Test Suite for SAGE Agent Workflow Layer v1."""
+"""Adversarial and Lifecycle Test Suite for SAGE Agent Workflow Layer v1 and Coordination."""
 
 import pytest
 from pathlib import Path
@@ -17,6 +17,12 @@ from sage.agents import (
     AgentValidationReporting,
     AgentPolicyBridge,
     WorkflowManager,
+)
+from sage.agents.coordination import (
+    CoordinatedAgentProfile,
+    MultiAgentRegistry,
+    CoordinatedTaskRouter,
+    SAGECoordinationManager,
 )
 from sage.core import BoundaryEnforcer, CryptographicAttestationProvider
 
@@ -287,3 +293,77 @@ def test_workflow_manager_lifecycle_and_policies():
 
     # Confirm the presence of a deterministic SHA-256 evidence hash
     assert len(receipt["evidence_hash"]) == 64
+
+
+def test_multi_agent_coordination_layer():
+    """Test full SAGECoordinationManager orchestration: registration, routing, boundaries, and receipt hashes."""
+    cm = SAGECoordinationManager()
+
+    boundary_chatgpt = PermissionBoundary(
+        agent_id="CHATGPT_REASONING_AGENT",
+        allowed_paths=["docs/labs/"],
+        prohibited_paths=["sage/core/"],
+        prohibited_actions=["modify_master_state"],
+    )
+
+    profile_chatgpt = CoordinatedAgentProfile(
+        agent_id="CHATGPT_REASONING_AGENT",
+        agent_type="CHATGPT",
+        role=AgentRole.OBSERVER,
+        validation_level="medium",
+        boundary=boundary_chatgpt,
+    )
+
+    # 1. Test Coordination Agent Registration
+    cm.register_coordinated_agent(profile_chatgpt)
+    assert "CHATGPT_REASONING_AGENT" in cm.registry.profiles
+
+    # 2. Test Coordination Unauthorized Agent Rejection
+    with pytest.raises(ValueError, match="is not registered under coordination"):
+        cm.coordinate_and_execute(
+            agent_id="unregistered_coordination_agent",
+            objective_id="obj_coord_01",
+            task_title="Write research study",
+            task_type="research",
+            action="write_file",
+        )
+
+    # 3. Test Coordinated Task Routing & Authority level validation rejections
+    # Creating a task requiring "high" validation level, but agent has "medium" validation level
+    with pytest.raises(PermissionError, match="requires level 'high'"):
+        cm.coordinate_and_execute(
+            agent_id="CHATGPT_REASONING_AGENT",
+            objective_id="obj_coord_01",
+            task_title="Deploy production kernel",
+            task_type="engineering",
+            action="write_file",
+            required_validation_level="high",
+        )
+
+    # 4. Test Coordinated Permission Boundary Enforcement (prohibited actions/paths)
+    with pytest.raises(PermissionError, match="prohibited from accessing path"):
+        cm.coordinate_and_execute(
+            agent_id="CHATGPT_REASONING_AGENT",
+            objective_id="obj_coord_01",
+            task_title="Modify core SPEK compliance ledger",
+            task_type="engineering",
+            action="write_file",
+            target_path="sage/core/compliance.py",
+        )
+
+    # 5. Test Successful Coordinated Execution and SHA-256 Evidence Receipt Generation
+    receipt = cm.coordinate_and_execute(
+        agent_id="CHATGPT_REASONING_AGENT",
+        objective_id="obj_coord_01",
+        task_title="Write research laboratory review",
+        task_type="research",
+        action="write_file",
+        target_path="docs/labs/RESEARCH_LAB.md",
+    )
+
+    assert receipt["agent_id"] == "CHATGPT_REASONING_AGENT"
+    assert "Executed coordinated 'research' task" in receipt["action_summary"]
+    assert receipt["validation_status"] == "VERIFIED"
+    assert "evidence_receipt_reference" in receipt
+    # Verify deterministic SHA-256 hash reference
+    assert len(receipt["evidence_receipt_reference"]) == 64
