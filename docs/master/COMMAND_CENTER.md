@@ -151,3 +151,9 @@ The server provides a standard set of endpoints under `/docs` (interactive Swagg
 - **Payload Type**: `deployment_event`
 - **Title/Subject**: Deployment to production-onrender (synchronized)
 - **Lineage Details**: Deployment event parsed. Operational state updated by Jules.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_deployment_event_d3ed7c64
+- **Timestamp**: 2026-07-24T12:00:58.429783+00:00
+- **Payload Type**: `deployment_event`
+- **Title/Subject**: Deployment to production-onrender (synchronized)
+- **Lineage Details**: Deployment event parsed. Operational state updated by Jules.

@@ -450,3 +450,39 @@ To ensure scalability, the Master Archive supports:
 - **Payload Type**: `validation_report`
 - **Title/Subject**: Validated Report: api-tests
 - **Lineage Details**: Validation report promoted to Master Archive by Jules.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_validation_report_799450c3
+- **Timestamp**: 2026-07-24T12:00:51.258504+00:00
+- **Payload Type**: `validation_report`
+- **Title/Subject**: Validated Report: ci-propulsion-tests
+- **Lineage Details**: Validation report promoted to Master Archive by Jules.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_validation_report_b9dd4e6f
+- **Timestamp**: 2026-07-24T12:00:51.278350+00:00
+- **Payload Type**: `validation_report`
+- **Title/Subject**: Validated Report: api-reconcile
+- **Lineage Details**: Validation report promoted to Master Archive by Jules.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_validation_report_a9c69bcb
+- **Timestamp**: 2026-07-24T12:00:51.298572+00:00
+- **Payload Type**: `validation_report`
+- **Title/Subject**: Validated Report: e2e-pipeline-tests
+- **Lineage Details**: Validation report promoted to Master Archive by Jules.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_validation_report_53785d00
+- **Timestamp**: 2026-07-24T12:00:58.404746+00:00
+- **Payload Type**: `validation_report`
+- **Title/Subject**: Validated Report: github-actions-ci
+- **Lineage Details**: Validation report promoted to Master Archive by Jules.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_architecture_decision_7366dc52
+- **Timestamp**: 2026-07-24T12:00:58.417552+00:00
+- **Payload Type**: `architecture_decision`
+- **Title/Subject**: Approved Decision: ADR-010-redis-cache
+- **Lineage Details**: Architecture decision '39648a2c-ca2e-432e-ae88-0ec5b4ebc73a' promoted to Master Archive by Jules.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_validation_report_1945bd17
+- **Timestamp**: 2026-07-24T12:00:58.452161+00:00
+- **Payload Type**: `validation_report`
+- **Title/Subject**: Validated Report: api-tests
+- **Lineage Details**: Validation report promoted to Master Archive by Jules.

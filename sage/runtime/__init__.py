@@ -32,9 +32,7 @@ class SEMANTIC_INITIALIZATION_EXCEPTION(RuntimeError):
 
 
 try:
-    from sage.api import app as fastapi_app
-
-    app = fastapi_app
+    from .engine import app
 except ImportError as e:
     raise SYNTACTIC_PATH_MISALIGNMENT(
         "SAGE Runtime SYNTACTIC_PATH_MISALIGNMENT: Could not find or route sage.api module."

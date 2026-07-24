@@ -973,3 +973,15 @@ class SageRuntime:
             "lineage_valid": lineage_valid,
             "issues": issues,
         }
+
+
+class ASGIAppProxy:
+    """ASGI application proxy to avoid circular import issues on SAGE runtime entrypoint."""
+
+    def __call__(self, scope, receive, send):
+        from sage.api import app as fastapi_app
+
+        return fastapi_app(scope, receive, send)
+
+
+app = ASGIAppProxy()
