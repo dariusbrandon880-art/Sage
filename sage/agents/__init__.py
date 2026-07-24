@@ -14,6 +14,7 @@ from sage.agents.contract import AgentExecutionContract
 from sage.agents.memory import AgentMemoryInterface
 from sage.agents.router import AgentTaskRouter
 from sage.agents.reporting import AgentValidationReporting
+from sage.agents.workflow import AgentPolicyBridge, WorkflowManager
 
 __all__ = [
     "AgentRole",
@@ -22,10 +23,11 @@ __all__ = [
     "AgentTaskState",
     "AgentIdentity",
     "PermissionBoundary",
-    "TaskEvent",
     "AgentTask",
     "AgentExecutionContract",
     "AgentMemoryInterface",
     "AgentTaskRouter",
     "AgentValidationReporting",
+    "AgentPolicyBridge",
+    "WorkflowManager",
 ]

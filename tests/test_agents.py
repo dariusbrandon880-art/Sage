@@ -15,6 +15,8 @@ from sage.agents import (
     AgentMemoryInterface,
     AgentTaskRouter,
     AgentValidationReporting,
+    AgentPolicyBridge,
+    WorkflowManager,
 )
 from sage.core import BoundaryEnforcer, CryptographicAttestationProvider
 
@@ -212,3 +214,76 @@ def test_agent_validation_reporting():
 
     # 2. Cryptographic check
     assert attestation.verify(payload, report["attestation_signature"]) is True
+
+
+def test_workflow_manager_lifecycle_and_policies():
+    """Test full WorkflowManager orchestration: registration, policy bridges, and receipt generation."""
+    wm = WorkflowManager()
+
+    agent = AgentIdentity(
+        agent_id="agent_001",
+        name="Staging Deployer",
+        role=AgentRole.CONTRIBUTOR,
+    )
+    boundary = PermissionBoundary(
+        agent_id="agent_001",
+        allowed_paths=["sage_data/"],
+        prohibited_paths=["sage/core"],
+        prohibited_actions=["unauthorized_read"],
+    )
+
+    # 1. Test Registration
+    wm.register_agent(agent, boundary)
+    assert "agent_001" in wm.router.agents
+
+    # 2. Test Unauthorized Agent Rejection
+    with pytest.raises(ValueError, match="is not registered"):
+        wm.execute_workflow(
+            agent_id="unregistered_agent_id",
+            objective_id="obj_01",
+            task_title="Deploy staging package",
+            action="deploy",
+        )
+
+    # 3. Test Unauthorized Action Policy Violation
+    with pytest.raises(PermissionError, match="unauthorized_read' is strictly prohibited"):
+        wm.execute_workflow(
+            agent_id="agent_001",
+            objective_id="obj_01",
+            task_title="Read core secret file",
+            action="unauthorized_read",
+            target_path="sage/core/spek.py",
+        )
+
+    # 4. Test Prohibited Path Policy Violation
+    with pytest.raises(PermissionError, match="prohibited from accessing path"):
+        wm.execute_workflow(
+            agent_id="agent_001",
+            objective_id="obj_01",
+            task_title="Modify core SpekEngine",
+            action="write_file",
+            target_path="sage/core/spek.py",
+        )
+
+    # 5. Test Successful Execution and SHA-256 Receipt Generation
+    receipt = wm.execute_workflow(
+        agent_id="agent_001",
+        objective_id="obj_01",
+        task_title="Write checkpoint trace",
+        action="write_file",
+        target_path="sage_data/checkpoint_trace.json",
+    )
+
+    assert "receipt_payload" in receipt
+    assert "evidence_hash" in receipt
+    assert "validation_report" in receipt
+
+    payload = receipt["receipt_payload"]
+    assert payload["agent_id"] == "agent_001"
+    assert payload["action"] == "write_file"
+    assert payload["validation_status"] == "COMPLETED"
+    assert payload["policy_result"] == "PASSED"
+    assert payload["target_path"] == "sage_data/checkpoint_trace.json"
+
+    # Confirm the presence of a deterministic SHA-256 evidence hash
+    assert len(receipt["evidence_hash"]) == 64
