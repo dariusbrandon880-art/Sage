@@ -88,3 +88,15 @@ Decisions must be accompanied by supporting proof before they are approved:
 - **Payload Type**: `validation_report`
 - **Title/Subject**: Draft Report: manual-ci
 - **Lineage Details**: Unapproved validation report routed to Validation Lab.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_validation_report_daf05a28
+- **Timestamp**: 2026-07-24T10:27:28.681610+00:00
+- **Payload Type**: `validation_report`
+- **Title/Subject**: Draft Report: manual-ci
+- **Lineage Details**: Unapproved validation report routed to Validation Lab.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_validation_report_b72258f6
+- **Timestamp**: 2026-07-24T10:32:41.705597+00:00
+- **Payload Type**: `validation_report`
+- **Title/Subject**: Draft Report: manual-ci
+- **Lineage Details**: Unapproved validation report routed to Validation Lab.

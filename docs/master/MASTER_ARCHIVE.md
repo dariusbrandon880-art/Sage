@@ -378,3 +378,75 @@ To ensure scalability, the Master Archive supports:
 - **Payload Type**: `validation_report`
 - **Title/Subject**: Validated Report: api-tests
 - **Lineage Details**: Validation report promoted to Master Archive by Jules.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_validation_report_14fc8333
+- **Timestamp**: 2026-07-24T10:27:22.735045+00:00
+- **Payload Type**: `validation_report`
+- **Title/Subject**: Validated Report: ci-propulsion-tests
+- **Lineage Details**: Validation report promoted to Master Archive by Jules.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_validation_report_6f4a33c2
+- **Timestamp**: 2026-07-24T10:27:22.758511+00:00
+- **Payload Type**: `validation_report`
+- **Title/Subject**: Validated Report: api-reconcile
+- **Lineage Details**: Validation report promoted to Master Archive by Jules.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_validation_report_a78c72d4
+- **Timestamp**: 2026-07-24T10:27:22.780740+00:00
+- **Payload Type**: `validation_report`
+- **Title/Subject**: Validated Report: e2e-pipeline-tests
+- **Lineage Details**: Validation report promoted to Master Archive by Jules.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_validation_report_83ffd0c8
+- **Timestamp**: 2026-07-24T10:27:28.676888+00:00
+- **Payload Type**: `validation_report`
+- **Title/Subject**: Validated Report: github-actions-ci
+- **Lineage Details**: Validation report promoted to Master Archive by Jules.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_architecture_decision_53cd9d53
+- **Timestamp**: 2026-07-24T10:27:28.687694+00:00
+- **Payload Type**: `architecture_decision`
+- **Title/Subject**: Approved Decision: ADR-010-redis-cache
+- **Lineage Details**: Architecture decision 'b74d9fbf-0f3d-45e7-9af7-d2f6f4bee245' promoted to Master Archive by Jules.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_validation_report_4d4f255e
+- **Timestamp**: 2026-07-24T10:27:28.717104+00:00
+- **Payload Type**: `validation_report`
+- **Title/Subject**: Validated Report: api-tests
+- **Lineage Details**: Validation report promoted to Master Archive by Jules.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_validation_report_879c5511
+- **Timestamp**: 2026-07-24T10:32:35.371688+00:00
+- **Payload Type**: `validation_report`
+- **Title/Subject**: Validated Report: ci-propulsion-tests
+- **Lineage Details**: Validation report promoted to Master Archive by Jules.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_validation_report_6a60817e
+- **Timestamp**: 2026-07-24T10:32:35.388173+00:00
+- **Payload Type**: `validation_report`
+- **Title/Subject**: Validated Report: api-reconcile
+- **Lineage Details**: Validation report promoted to Master Archive by Jules.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_validation_report_509c36d7
+- **Timestamp**: 2026-07-24T10:32:35.406144+00:00
+- **Payload Type**: `validation_report`
+- **Title/Subject**: Validated Report: e2e-pipeline-tests
+- **Lineage Details**: Validation report promoted to Master Archive by Jules.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_validation_report_4f9a2eda
+- **Timestamp**: 2026-07-24T10:32:41.700882+00:00
+- **Payload Type**: `validation_report`
+- **Title/Subject**: Validated Report: github-actions-ci
+- **Lineage Details**: Validation report promoted to Master Archive by Jules.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_architecture_decision_afae2fca
+- **Timestamp**: 2026-07-24T10:32:41.752677+00:00
+- **Payload Type**: `architecture_decision`
+- **Title/Subject**: Approved Decision: ADR-010-redis-cache
+- **Lineage Details**: Architecture decision 'bd611b46-2548-4f7d-97b4-d8b8bab72895' promoted to Master Archive by Jules.
+
+### SAGE-SKAL Promoted Lineage Entry: skal_validation_report_987a2593
+- **Timestamp**: 2026-07-24T10:32:41.781557+00:00
+- **Payload Type**: `validation_report`
+- **Title/Subject**: Validated Report: api-tests
+- **Lineage Details**: Validation report promoted to Master Archive by Jules.

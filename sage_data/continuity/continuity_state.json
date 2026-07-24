@@ -1,7 +1,7 @@
 {
   "id": "global_continuity",
-  "created_at": "2026-07-24T09:01:00.820013",
-  "updated_at": "2026-07-24T09:01:00.820020",
+  "created_at": "2026-07-23T13:00:30.815383",
+  "updated_at": "2026-07-23T13:00:30.815391",
   "data": {},
   "session_lineage": [
     "session_5b366d59",
@@ -14,9 +14,6 @@
     "session_693e7da6",
     "session_bb029f10",
     "session_7ca5e3b5",
-    "session_c83c8675",
-    "session_68687fa9",
-    "session_5b2e208b",
-    "session_550bec87"
+    "session_c83c8675"
   ]
 }
