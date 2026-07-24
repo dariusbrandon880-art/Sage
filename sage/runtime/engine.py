@@ -28,6 +28,10 @@ from sage.acr.session import (
     ContinuityContext,
     ContinuityCheckpoint,
 )
+from sage.acr.state_calibration import StateCalibrationSync
+from sage.acr.state_validator import StateValidator
+from sage.memory.memory_importance import MemoryImportancePipeline
+from sage.runtime.apoptosis_manager import ApoptosisManager
 
 
 class ExecutionContext(BaseModel):
@@ -83,6 +87,12 @@ class SageRuntime:
         from sage.validation import ValidationSystem
 
         self.validation = ValidationSystem(self.memory, self.archive)
+
+        # Initialize Track C.11 subsystems
+        self.calibration_sync = StateCalibrationSync(self)
+        self.state_validator = StateValidator()
+        self.importance_pipeline = MemoryImportancePipeline(self.memory)
+        self.apoptosis_manager = ApoptosisManager(self)
 
         # Load existing state if available, otherwise init fresh
         self.current_state = RuntimeState()
@@ -362,6 +372,15 @@ class SageRuntime:
             with open(path, "r") as f:
                 handoff_data = json.load(f)
 
+            # --- Validation (CIV-001) ---
+            errors = self.state_validator.validate_rehydration_payload(handoff_data)
+            if errors:
+                return False
+
+            lineage_data = handoff_data.get("lineage", [])
+            if not self.state_validator.validate_lineage_trees(lineage_data):
+                return False
+
             # Restore state
             state_data = handoff_data.get("state", {})
             self.current_state = RuntimeState(**state_data)
@@ -369,7 +388,7 @@ class SageRuntime:
 
             # Restore lineage in ACRBridge
             self.acr.clear_state()
-            for session_id in handoff_data.get("lineage", []):
+            for session_id in lineage_data:
                 self.acr.add_session_link(session_id)
 
             # Restore sessions
@@ -386,6 +405,8 @@ class SageRuntime:
                 try:
                     ctx = ContinuityContext(**context_data)
                     self.context_tracker.save_context(ctx)
+                    # --- Calibration (C.11) ---
+                    self.calibration_sync.calibrate_context(ctx)
                 except Exception:
                     pass
 
@@ -532,6 +553,15 @@ class SageRuntime:
         except Exception:
             return False
 
+        # --- Validation (CIV-001) ---
+        errors = self.state_validator.validate_rehydration_payload(snapshot_data)
+        if errors:
+            return False
+
+        lineage_data = snapshot_data.get("lineage", [])
+        if not self.state_validator.validate_lineage_trees(lineage_data):
+            return False
+
         # 1. Clear existing workspace databases on disk to ensure clean hydration
         # Memory
         if self.memory_path.exists():
@@ -651,7 +681,7 @@ class SageRuntime:
         try:
             self.acr.clear_state()
             self.acr.save_state(snapshot_data.get("continuity_state", {}))
-            for session_id in snapshot_data.get("lineage", []):
+            for session_id in lineage_data:
                 self.acr.add_session_link(session_id)
         except Exception:
             pass
@@ -670,6 +700,8 @@ class SageRuntime:
             try:
                 ctx = ContinuityContext(**context_data)
                 self.context_tracker.save_context(ctx)
+                # --- Calibration (C.11) ---
+                self.calibration_sync.calibrate_context(ctx)
             except Exception:
                 pass
 

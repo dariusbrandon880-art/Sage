@@ -15,7 +15,7 @@ class ContextTransition(BaseModel):
     from_state: str
     to_state: str
     reason: Optional[str] = None
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    timestamp: Optional[datetime] = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class ContinuityContext(BaseModel):

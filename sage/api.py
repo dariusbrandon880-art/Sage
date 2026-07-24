@@ -520,6 +520,25 @@ async def sync_workspace(credentials_path: Optional[str] = None):
         )
 
 
+# C.11 Runtime and Lifecycle endpoints
+@app.get("/runtime/importance/audit")
+async def run_importance_audit_endpoint(threshold: float = 0.15):
+    try:
+        result = runtime.importance_pipeline.run_importance_audit(prunable_threshold=threshold)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/runtime/apoptosis")
+async def execute_apoptosis_endpoint():
+    try:
+        result = runtime.apoptosis_manager.execute_graceful_apoptosis()
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # Snapshot endpoints
 @app.post("/snapshot")
 async def create_snapshot():
