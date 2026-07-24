@@ -157,3 +157,57 @@ def test_handoff_and_restoration(temp_dir):
     )
     assert new_runtime.current_state.active_task == "Implement handoff feature"
     assert "Lack of handoff test coverage" in new_runtime.current_state.blockers
+
+
+def test_sage_rt_kl_002_enforcement(temp_dir):
+    """Test SAGE-RT-KL-002 contract enforcement on rule candidate promotion."""
+    memory_store = Memory(str(temp_dir / "memory_rule"))
+    archive_store = Archive(str(temp_dir / "archive_rule"))
+    validation = ValidationSystem(memory_store, archive_store)
+
+    # 1. Store a rule candidate WITHOUT an authorized signature
+    unsigned_rule = MemoryObject(
+        object_type="rule_candidate",
+        content={"pattern": "If X then Y"},
+        tags=["rule"],
+        confidence=ConfidenceLevel.HYPOTHESIS,
+    )
+    memory_store.store(unsigned_rule)
+
+    # Validate should fail due to SAGE-RT-KL-002 contract violation
+    is_valid, failed = validation.validate_memory(unsigned_rule.id)
+    assert is_valid is False
+    assert any("SAGE-RT-KL-002" in f for f in failed)
+
+    # Promotion should fail
+    success, msg = validation.promote_to_validated(unsigned_rule.id)
+    assert success is False
+    assert "SAGE-RT-KL-002" in msg
+
+    # Promotion to archive should fail
+    success, msg = validation.promote_to_archive(unsigned_rule.id, "Unsigned Rule")
+    assert success is False
+    assert "SAGE-RT-KL-002" in msg
+
+    # 2. Store a rule candidate WITH an authorized signature
+    signed_rule = MemoryObject(
+        object_type="rule_candidate",
+        content={"pattern": "If A then B", "authorized_signature": "human_jules_sig_123"},
+        tags=["rule"],
+        confidence=ConfidenceLevel.HYPOTHESIS,
+    )
+    memory_store.store(signed_rule)
+
+    # Validate should pass
+    is_valid, failed = validation.validate_memory(signed_rule.id)
+    assert is_valid is True
+    assert len(failed) == 0
+
+    # Promotion to validated should succeed
+    success, msg = validation.promote_to_validated(signed_rule.id)
+    assert success is True
+
+    # Promotion to archive should succeed
+    success, archive_id = validation.promote_to_archive(signed_rule.id, "Signed SAGE Rule")
+    assert success is True
+    assert archive_id.startswith("archive_")

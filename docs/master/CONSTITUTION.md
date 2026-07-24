@@ -143,11 +143,11 @@ Documentation ──► Schema Definition ──► Test Provisioning ──► 
 ```
 Gate 1: SAGE-SKAL Intake Validation (Status: READY)
                   ↓
-Gate 2: CIV-001 Continuity Independence Proof (Status: SCHEDULED)
+Gate 2: CIV-001 Continuity Independence Proof (Status: FULLY VERIFIED AND OPERATIONAL)
                   ↓
 Gate 3: HSI-001 Self-Model Architecture (Status: LOCKED BOUNDARY)
                   ↓
-Gate 4: KL Knowledge Promotion System (Status: RESEARCH BLOCK)
+Gate 4: KL Knowledge Promotion Contract SAGE-RT-KL-002 (Status: FULLY CODIFIED AND TESTED)
                   ↓
 Future: SAGE-X Discovery Intelligence
 ```
