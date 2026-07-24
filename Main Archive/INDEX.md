@@ -12,6 +12,7 @@ Welcome to SAGE's immutable Master Archive and research repository. This index l
 - [Architecture Index](architecture/architecture-index.md) - Directory layout index of the repository.
 - [SAGE Archive Intelligence Layer](../docs/master/ARCHIVE_INTELLIGENCE.md) - Design and operational specification of SAGE's relational knowledge graph and metadata tracking.
 - [SAGE Agent Workflow Layer v1 Foundation Spec](https://github.com/sage-cos-core/docs/AGENT_WORKFLOW_v1_SPEC.md) - Production specification for governed SAGE agents and task routing.
+- [SAGE Learning Runtime (Phase 4.2) Spec](https://github.com/sage-cos-core/docs/LEARNING_RUNTIME_v0.1_SPEC.md) - Spec for governed learning agents, policy bridges, and SHA-256 evidence chain verification.
 
 ---
 
@@ -54,3 +55,4 @@ Welcome to SAGE's immutable Master Archive and research repository. This index l
 - [SAGE 2 Production Readiness & Live Activation Report](../docs/master/SAGE2_PRODUCTION_READINESS_REPORT.md) - Detailed production readiness verification, environmental parameters audit, and health status.
 - [SAGE Production Baseline Completion Audit](../docs/master/SESSION_STATE.md) - Verification evidence, 129/129 test results, SRIL contract validation, and final baseline confirmation.
 - [SAGE SPEK v1.1 Production Specification](https://github.com/sage-cos-core/docs/SPEK_v1.1_SPEC.md) - Production specification for the SAGE Policy Enforcement Kernel.
+- [SAGE Learning Runtime (Phase 4.2) Activation Audit](../docs/master/SESSION_STATE.md) - Phase 4.2 verification evidence, 134/134 test results, and SHA-256 evidence receipts validation.
