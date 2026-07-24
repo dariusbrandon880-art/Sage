@@ -5,8 +5,8 @@ Runs a series of automated health and configuration checks to ensure SAGE Runtim
 fully prepared for secure, high-availability public internet hosting.
 """
 
-import sys
 import os
+import sys
 from pathlib import Path
 
 # Print styling helpers
@@ -57,13 +57,13 @@ def run_checks() -> bool:
             f"FastAPI ({fastapi.__version__}) and Pydantic ({pydantic.__version__}) installed."
         )
     except ImportError as e:
-        print_error(f"Missing core runtime dependency: {str(e)}")
+        print_error(f"Missing core runtime dependency: {e!s}")
         has_errors = True
 
     # Check Google API optional integrations
     try:
-        import googleapiclient  # noqa: F401
         import google_auth_oauthlib  # noqa: F401
+        import googleapiclient  # noqa: F401
 
         print_success("Google Workspace API clients successfully verified.")
     except ImportError:
@@ -125,7 +125,7 @@ def run_checks() -> bool:
             test_file.unlink()
             print_success(f"Directory check: '{d}' is writeable and valid.")
         except Exception as e:
-            print_error(f"Directory error on '{d}': {str(e)}")
+            print_error(f"Directory error on '{d}': {e!s}")
             has_errors = True
 
     # Check for credentials file

@@ -1,10 +1,11 @@
 """Tests for SAGE continuity persistence, serialization, snapshots, and cross-session restoration."""
 
-import tempfile
 import json
+import tempfile
 from pathlib import Path
+
+from sage.models import ConfidenceLevel, MemoryObject
 from sage.runtime import SageRuntime
-from sage.models import MemoryObject, ConfidenceLevel
 
 
 def test_runtime_state_serialization_and_persistence():

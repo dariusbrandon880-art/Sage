@@ -1,10 +1,10 @@
 """Persistent storage backend for memory layer."""
 
-from typing import Optional, List
-from pathlib import Path
 import json
 from datetime import datetime
-from sage.memory.models import MemoryEntry, SessionMemory, RetrievalQuery
+from pathlib import Path
+
+from sage.memory.models import MemoryEntry, RetrievalQuery, SessionMemory
 
 
 class PersistentMemoryStore:
@@ -54,7 +54,7 @@ class PersistentMemoryStore:
         with open(session_path, "w") as f:
             json.dump(data, f, indent=2)
 
-    def load_session(self, session_id: str) -> Optional[SessionMemory]:
+    def load_session(self, session_id: str) -> SessionMemory | None:
         """Load a session's memory from storage.
 
         Args:
@@ -107,7 +107,7 @@ class PersistentMemoryStore:
             return True
         return False
 
-    def list_sessions(self) -> List[str]:
+    def list_sessions(self) -> list[str]:
         """List all stored session IDs.
 
         Returns:
@@ -115,7 +115,7 @@ class PersistentMemoryStore:
         """
         return [f.stem for f in self.storage_path.glob("*.json")]
 
-    def query(self, query: RetrievalQuery) -> List[MemoryEntry]:
+    def query(self, query: RetrievalQuery) -> list[MemoryEntry]:
         """Retrieve memory entries matching a query.
 
         Args:

@@ -1,6 +1,6 @@
 """SAGE runtime configuration management."""
 
-from typing import Optional
+
 from pydantic_settings import BaseSettings
 
 
@@ -26,14 +26,14 @@ class SageConfig(BaseSettings):
     # Security settings
     sage_api_keys: str = "sage-default-key-2026"
     sage_require_auth: bool = False
-    github_webhook_secret: Optional[str] = None
-    github_access_token: Optional[str] = None
+    github_webhook_secret: str | None = None
+    github_access_token: str | None = None
 
     # Google Workspace Synchronization
-    google_workspace_credentials_path: Optional[str] = ".sage/credentials.json"
+    google_workspace_credentials_path: str | None = ".sage/credentials.json"
 
     # Gemini / Jules Agent Settings
-    gemini_api_key: Optional[str] = None
+    gemini_api_key: str | None = None
 
     model_config = {
         "env_file": ".env",

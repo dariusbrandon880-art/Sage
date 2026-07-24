@@ -3,8 +3,9 @@
 import logging
 import os
 import sys
-from typing import Dict, Any, Optional
 from datetime import datetime, timezone
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 # Constants
@@ -31,7 +32,7 @@ class DiagnosticReport(BaseModel):
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     status: str
     uptime_seconds: float
-    platform_info: Dict[str, Any] = Field(default_factory=dict)
+    platform_info: dict[str, Any] = Field(default_factory=dict)
     diagnostics_passed: bool = True
 
 
@@ -39,11 +40,11 @@ class LifecycleManager:
     """Manages the startup, shutdown, and operating states of SAGE services."""
 
     def __init__(self):
-        self.started_at: Optional[datetime] = None
+        self.started_at: datetime | None = None
         self.status: str = "STOPPED"
         self.api_keys: list[str] = os.getenv("SAGE_API_KEYS", "sage-default-key-2026").split(",")
 
-    def startup(self) -> Dict[str, Any]:
+    def startup(self) -> dict[str, Any]:
         """Start up the SAGE continuity platform services."""
         if self.status == "RUNNING":
             logger.warning("SAGE Service is already running.")
@@ -58,7 +59,7 @@ class LifecycleManager:
             "message": "SAGE Service started successfully",
         }
 
-    def shutdown(self) -> Dict[str, Any]:
+    def shutdown(self) -> dict[str, Any]:
         """Gracefully shut down SAGE platform services."""
         if self.status == "STOPPED":
             logger.warning("SAGE Service is already stopped.")

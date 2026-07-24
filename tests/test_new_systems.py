@@ -1,12 +1,14 @@
 """Tests for newly implemented SAGE systems: models, decisions, validation, and cli."""
 
-import pytest
 import tempfile
 from pathlib import Path
-from sage.models import MemoryObject, ConfidenceLevel, DecisionType
-from sage.memory import Memory
+
+import pytest
+
 from sage.archive import Archive
 from sage.decision import DecisionTracker
+from sage.memory import Memory
+from sage.models import ConfidenceLevel, DecisionType, MemoryObject
 from sage.validation import ValidationSystem
 
 

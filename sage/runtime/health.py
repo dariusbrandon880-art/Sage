@@ -1,7 +1,8 @@
 """SAGE Runtime Health System & Identity Model - dynamic health monitoring and identity representation."""
 
 import sys
-from typing import Dict, Any, Optional, List
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 from sage.runtime.metrics import get_metrics_collector
@@ -12,13 +13,13 @@ class SageIdentity(BaseModel):
 
     system_name: str = "SAGE Autonomous Continuity Platform"
     version: str = "1.1.0"
-    active_modules: List[str] = Field(default_factory=list)
+    active_modules: list[str] = Field(default_factory=list)
     initialization_state: str = "uninitialized"  # uninitialized, initializing, initialized, failed
-    capability_summary: Dict[str, Any] = Field(default_factory=dict)
+    capability_summary: dict[str, Any] = Field(default_factory=dict)
     health_state: str = "unknown"
 
 
-def get_sage_identity(runtime: Optional[Any] = None) -> Dict[str, Any]:
+def get_sage_identity(runtime: Any | None = None) -> dict[str, Any]:
     """Retrieve the dynamic structural representation of SAGE's identity.
 
     Args:
@@ -83,7 +84,7 @@ def get_sage_identity(runtime: Optional[Any] = None) -> Dict[str, Any]:
     return identity.model_dump()
 
 
-def check_health(runtime: Optional[Any] = None) -> Dict[str, Any]:
+def check_health(runtime: Any | None = None) -> dict[str, Any]:
     """Dynamically determine whether core SAGE systems are available.
 
     Args:
@@ -119,7 +120,7 @@ def check_health(runtime: Optional[Any] = None) -> Dict[str, Any]:
                 runtime.acr.get_session_depth()
                 components["acr"] = "available"
             except Exception as e:
-                components["acr"] = f"error: {str(e)}"
+                components["acr"] = f"error: {e!s}"
                 metrics.record_event("health_check.acr_error", {"error": str(e)})
 
         # Check Archive Availability
@@ -129,7 +130,7 @@ def check_health(runtime: Optional[Any] = None) -> Dict[str, Any]:
                 runtime.archive.list_all()
                 components["archive"] = "available"
             except Exception as e:
-                components["archive"] = f"error: {str(e)}"
+                components["archive"] = f"error: {e!s}"
                 metrics.record_event("health_check.archive_error", {"error": str(e)})
 
         # Check Memory Availability
@@ -139,7 +140,7 @@ def check_health(runtime: Optional[Any] = None) -> Dict[str, Any]:
                 runtime.memory.list_all()
                 components["memory"] = "available"
             except Exception as e:
-                components["memory"] = f"error: {str(e)}"
+                components["memory"] = f"error: {e!s}"
                 metrics.record_event("health_check.memory_error", {"error": str(e)})
 
         # Check Configuration Availability

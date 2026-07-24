@@ -1,7 +1,8 @@
 """Validation system for SAGE memory promotion to Master Archive."""
 
-from typing import Tuple, List, Optional, Any
-from sage.models import MemoryObject, ConfidenceLevel, ArchiveEntry, KnowledgeState
+from typing import Any
+
+from sage.models import ArchiveEntry, ConfidenceLevel, KnowledgeState, MemoryObject
 
 
 class ValidationSystem:
@@ -17,7 +18,7 @@ class ValidationSystem:
         self.memory = memory_store
         self.archive = archive_store
 
-    def validate_memory(self, memory_id: str) -> Tuple[bool, List[str]]:
+    def validate_memory(self, memory_id: str) -> tuple[bool, list[str]]:
         """Validate a memory object against standard quality/completeness rules.
 
         Args:
@@ -61,7 +62,7 @@ class ValidationSystem:
         is_valid = len(failed_rules) == 0
         return is_valid, failed_rules
 
-    def promote_to_validated(self, memory_id: str) -> Tuple[bool, str]:
+    def promote_to_validated(self, memory_id: str) -> tuple[bool, str]:
         """Promote a memory object's confidence level to VALIDATED if it passes validation.
 
         Args:
@@ -93,9 +94,9 @@ class ValidationSystem:
         self,
         memory_id: str,
         title: str,
-        tags: Optional[List[str]] = None,
-        session_state: Optional[Any] = None,
-    ) -> Tuple[bool, str]:
+        tags: list[str] | None = None,
+        session_state: Any | None = None,
+    ) -> tuple[bool, str]:
         """Archive a validated memory object by promoting it to the Master Archive.
 
         Args:
@@ -125,11 +126,12 @@ class ValidationSystem:
                 obj = self.memory.retrieve(memory_id)
 
         # Construct Archive Entry with ArchiveIntelligence
-        from sage.archive.intelligence import ArchiveIntelligence
-        from sage.archive.lineage import KnowledgeLineage, ValidationRecord
-        from sage.archive.confidence import ConfidenceTracker, ReviewHistoryItem
         import datetime
         from datetime import timezone
+
+        from sage.archive.confidence import ConfidenceTracker, ReviewHistoryItem
+        from sage.archive.intelligence import ArchiveIntelligence
+        from sage.archive.lineage import KnowledgeLineage, ValidationRecord
 
         # Automatic generation of lineage & validation record
         val_rec = ValidationRecord(
@@ -196,4 +198,4 @@ class ValidationSystem:
 
             return True, archive_id
         except Exception as e:
-            return False, f"Failed to promote to archive: {str(e)}"
+            return False, f"Failed to promote to archive: {e!s}"

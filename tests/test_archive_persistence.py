@@ -1,9 +1,11 @@
 """Tests for persistent archive storage."""
 
-import pytest
 import tempfile
-from pathlib import Path
 from datetime import datetime, timedelta
+from pathlib import Path
+
+import pytest
+
 from sage.archive.models import EventLog, EventQuery
 from sage.archive.persistence import PersistentArchiveStore
 

@@ -1,6 +1,6 @@
 """Memory layer for SAGE - short and long-term storage."""
 
-from sage.memory.storage import MemoryStore
 from sage.memory.core import Memory
+from sage.memory.storage import MemoryStore
 
-__all__ = ["MemoryStore", "Memory"]
+__all__ = ["Memory", "MemoryStore"]

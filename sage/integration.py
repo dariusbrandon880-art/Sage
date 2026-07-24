@@ -1,10 +1,11 @@
 """SAGE Integration Layer - AI client interfaces and engineering tool connections."""
 
-from typing import Dict, Any, List, Optional
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
+
 from pydantic import BaseModel, Field
-import uuid
 
 # --- AI Integration Models & Clients ---
 
@@ -13,7 +14,7 @@ class AIQueryRequest(BaseModel):
     """Structure for AI client queries."""
 
     prompt: str
-    session_id: Optional[str] = None
+    session_id: str | None = None
     include_validated_memory: bool = True
     include_knowledge_state: bool = True
 
@@ -22,8 +23,8 @@ class AIQueryResponse(BaseModel):
     """Structure for AI client responses."""
 
     response_text: str
-    reasoning_history: List[str] = Field(default_factory=list)
-    referenced_memories: List[str] = Field(default_factory=list)
+    reasoning_history: list[str] = Field(default_factory=list)
+    referenced_memories: list[str] = Field(default_factory=list)
     session_id: str
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -34,9 +35,9 @@ class BaseAIClient:
     def __init__(self, client_name: str, runtime: Any):
         self.client_name = client_name
         self.runtime = runtime
-        self.reasoning_history: List[str] = []
+        self.reasoning_history: list[str] = []
 
-    def retrieve_context(self, prompt: str) -> Dict[str, Any]:
+    def retrieve_context(self, prompt: str) -> dict[str, Any]:
         """Retrieve relevant context and engineering knowledge for the prompt."""
         # Query SAGE Runtime Memory/Archive for relevant tags or types
         memories = self.runtime.memory.list_all()
@@ -190,10 +191,10 @@ class GitHubEvent(BaseModel):
     event_id: str = Field(default_factory=lambda: f"gh_{uuid.uuid4().hex[:8]}")
     event_type: str  # commit, pull_request, ci_result, release
     repository: str
-    ref: Optional[str] = None
+    ref: str | None = None
     author: str
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    payload: Dict[str, Any] = Field(default_factory=dict)
+    payload: dict[str, Any] = Field(default_factory=dict)
 
 
 class GoogleWorkspaceArtifact(BaseModel):
@@ -205,7 +206,7 @@ class GoogleWorkspaceArtifact(BaseModel):
     last_modified_by: str
     last_modified_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     url: str
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 class ToolIntegrationManager:
@@ -213,8 +214,8 @@ class ToolIntegrationManager:
 
     def __init__(self, runtime: Any):
         self.runtime = runtime
-        self.indexed_github_events: List[GitHubEvent] = []
-        self.indexed_workspace_artifacts: List[GoogleWorkspaceArtifact] = []
+        self.indexed_github_events: list[GitHubEvent] = []
+        self.indexed_workspace_artifacts: list[GoogleWorkspaceArtifact] = []
 
     def index_github_event(self, event: GitHubEvent) -> str:
         """Index a GitHub engineering event into SAGE memory layer via Continuity Bridge."""
@@ -266,7 +267,7 @@ class ToolIntegrationManager:
         self.runtime.ingest_session_payload(payload)
         return artifact.doc_id
 
-    def get_relationship_index(self, query_tag: str) -> Dict[str, Any]:
+    def get_relationship_index(self, query_tag: str) -> dict[str, Any]:
         """Retrieve relationship links between GitHub events and Google Workspace documents."""
         # Simple cross-referencing tag matcher
         matching_gh = [
@@ -303,7 +304,7 @@ class GoogleWorkspaceSyncManager:
     def __init__(self, runtime: Any):
         self.runtime = runtime
 
-    def sync_to_google_workspace(self, credentials_path: Optional[str] = None) -> Dict[str, Any]:
+    def sync_to_google_workspace(self, credentials_path: str | None = None) -> dict[str, Any]:
         """Perform repository-to-workspace synchronization.
 
         If authentication credentials are available, executes real Google API sync.

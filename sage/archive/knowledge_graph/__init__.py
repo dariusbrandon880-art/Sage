@@ -1,15 +1,17 @@
 """Intelligent Knowledge Graph representing connected nodes and edges in SAGE archive."""
 
 from typing import List, Optional, Set
+
 from pydantic import BaseModel, Field
+
 from sage.archive.relationships import KnowledgeRelationship
 
 
 class KnowledgeGraph(BaseModel):
     """SAGE Knowledge Graph traversing nodes (ArchiveEntries) and relationships."""
 
-    nodes: Set[str] = Field(default_factory=set)  # Archive entry IDs
-    edges: List[KnowledgeRelationship] = Field(default_factory=list)
+    nodes: set[str] = Field(default_factory=set)  # Archive entry IDs
+    edges: list[KnowledgeRelationship] = Field(default_factory=list)
 
     def add_node(self, node_id: str) -> None:
         """Add a node to the graph."""
@@ -29,11 +31,11 @@ class KnowledgeGraph(BaseModel):
         if not exists:
             self.edges.append(relationship)
 
-    def get_relationships_for_node(self, node_id: str) -> List[KnowledgeRelationship]:
+    def get_relationships_for_node(self, node_id: str) -> list[KnowledgeRelationship]:
         """Get all relationships involving a specific node."""
         return [r for r in self.edges if r.source_id == node_id or r.target_id == node_id]
 
-    def get_related_nodes(self, node_id: str, relationship_type: Optional[str] = None) -> List[str]:
+    def get_related_nodes(self, node_id: str, relationship_type: str | None = None) -> list[str]:
         """Get IDs of all nodes connected to a node, optionally filtered by type."""
         related = []
         for r in self.edges:

@@ -2,8 +2,8 @@
 
 import importlib
 from datetime import datetime, timezone
-from typing import Dict, Any, Optional
 from pathlib import Path
+from typing import Any
 
 from sage.runtime.metrics import get_metrics_collector
 
@@ -11,7 +11,7 @@ from sage.runtime.metrics import get_metrics_collector
 class InitializationManager:
     """Manages the controlled, sequential startup sequence of SAGE."""
 
-    def __init__(self, runtime: Optional[Any] = None):
+    def __init__(self, runtime: Any | None = None):
         """Initialize the InitializationManager.
 
         Args:
@@ -20,7 +20,7 @@ class InitializationManager:
         self.runtime = runtime
         self.init_state = "uninitialized"
 
-    def run_init_sequence(self) -> Dict[str, Any]:
+    def run_init_sequence(self) -> dict[str, Any]:
         """Perform SAGE's controlled startup sequence: load config, discover capabilities, verify required components.
 
         Returns:
@@ -41,7 +41,7 @@ class InitializationManager:
             steps_executed.append("load_configuration")
             metrics.increment("init.step.load_configuration")
         except Exception as e:
-            failures.append(f"load_configuration_failed: {str(e)}")
+            failures.append(f"load_configuration_failed: {e!s}")
 
         # 2. Discover available capabilities
         try:
@@ -51,7 +51,7 @@ class InitializationManager:
             steps_executed.append("discover_capabilities")
             metrics.increment("init.step.discover_capabilities")
         except Exception as e:
-            failures.append(f"discover_capabilities_failed: {str(e)}")
+            failures.append(f"discover_capabilities_failed: {e!s}")
 
         # 3. Verify required components (ACR, Memory, Archive)
         try:
@@ -63,7 +63,7 @@ class InitializationManager:
             steps_executed.append("verify_components")
             metrics.increment("init.step.verify_components")
         except Exception as e:
-            failures.append(f"verify_components_failed: {str(e)}")
+            failures.append(f"verify_components_failed: {e!s}")
 
         # 4. Update SAGE instance state
         if failures:
@@ -86,7 +86,7 @@ class InitializationManager:
         }
 
 
-def generate_system_status_report(runtime: Optional[Any] = None) -> str:
+def generate_system_status_report(runtime: Any | None = None) -> str:
     """Generate a unified SAGE runtime status report matching the required text layout.
 
     Args:
@@ -95,8 +95,8 @@ def generate_system_status_report(runtime: Optional[Any] = None) -> str:
     Returns:
         Formatted SAGE Status text report string.
     """
-    from sage.runtime.health import check_health
     from sage.runtime.capability_report import generate_capability_report
+    from sage.runtime.health import check_health
 
     health_info = check_health(runtime)
     components = health_info.get("components", {})
@@ -131,7 +131,7 @@ def generate_system_status_report(runtime: Optional[Any] = None) -> str:
     return "\n".join(report_lines)
 
 
-def generate_diagnostic_report(runtime: Optional[Any] = None) -> Dict[str, Any]:
+def generate_diagnostic_report(runtime: Any | None = None) -> dict[str, Any]:
     """Produce a comprehensive, dynamic SAGE runtime diagnostic report.
 
     Args:
@@ -236,7 +236,7 @@ def generate_diagnostic_report(runtime: Optional[Any] = None) -> Dict[str, Any]:
             config.sage_api_keys and config.sage_api_keys != "sage-default-key-2026"
         )
     except Exception as e:
-        config_status["error"] = f"Failed to inspect configuration: {str(e)}"
+        config_status["error"] = f"Failed to inspect configuration: {e!s}"
 
     # 4. Component Readiness (Dynamic Subsystem Checks)
     component_readiness = {
@@ -257,7 +257,7 @@ def generate_diagnostic_report(runtime: Optional[Any] = None) -> Dict[str, Any]:
             test_file.unlink()
             component_readiness["workspace"] = "ready_writable"
         except Exception as e:
-            component_readiness["workspace"] = f"write_failed: {str(e)}"
+            component_readiness["workspace"] = f"write_failed: {e!s}"
 
         # Memory Store Check
         if hasattr(runtime, "memory") and runtime.memory is not None:
@@ -270,7 +270,7 @@ def generate_diagnostic_report(runtime: Optional[Any] = None) -> Dict[str, Any]:
                     "cached_count": len(runtime.memory.list_all()),
                 }
             except Exception as e:
-                component_readiness["memory_store"] = f"error: {str(e)}"
+                component_readiness["memory_store"] = f"error: {e!s}"
 
         # Archive Store Check
         if hasattr(runtime, "archive") and runtime.archive is not None:
@@ -283,7 +283,7 @@ def generate_diagnostic_report(runtime: Optional[Any] = None) -> Dict[str, Any]:
                     "cached_count": len(runtime.archive.list_all()),
                 }
             except Exception as e:
-                component_readiness["archive_store"] = f"error: {str(e)}"
+                component_readiness["archive_store"] = f"error: {e!s}"
 
         # Decision Tracker Check
         if hasattr(runtime, "decisions") and runtime.decisions is not None:
@@ -296,7 +296,7 @@ def generate_diagnostic_report(runtime: Optional[Any] = None) -> Dict[str, Any]:
                     "cached_count": len(runtime.decisions.list_all()),
                 }
             except Exception as e:
-                component_readiness["decision_tracker"] = f"error: {str(e)}"
+                component_readiness["decision_tracker"] = f"error: {e!s}"
 
     # Check overall readiness score
     is_ready = (

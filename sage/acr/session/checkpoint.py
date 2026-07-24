@@ -1,11 +1,12 @@
 """Checkpoint system for SAGE Continuity Intelligence."""
 
 import json
-import uuid
 import subprocess
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
@@ -14,12 +15,12 @@ class ContinuityCheckpoint(BaseModel):
 
     id: str = Field(default_factory=lambda: f"chk_{uuid.uuid4().hex[:8]}")
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    current_sage_state: Dict[str, Any] = Field(default_factory=dict)
-    active_goals: List[str] = Field(default_factory=list)
-    recent_decisions: List[str] = Field(default_factory=list)
-    repository_state_reference: Dict[str, Any] = Field(default_factory=dict)
-    validation_status: Dict[str, Any] = Field(default_factory=dict)
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    current_sage_state: dict[str, Any] = Field(default_factory=dict)
+    active_goals: list[str] = Field(default_factory=list)
+    recent_decisions: list[str] = Field(default_factory=list)
+    repository_state_reference: dict[str, Any] = Field(default_factory=dict)
+    validation_status: dict[str, Any] = Field(default_factory=dict)
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 class CheckpointManager:
@@ -33,10 +34,10 @@ class CheckpointManager:
         """
         self.storage_path = Path(storage_path)
         self.storage_path.mkdir(parents=True, exist_ok=True)
-        self.checkpoints: Dict[str, ContinuityCheckpoint] = {}
+        self.checkpoints: dict[str, ContinuityCheckpoint] = {}
         self._load_all_checkpoints()
 
-    def _get_git_reference(self) -> Dict[str, Any]:
+    def _get_git_reference(self) -> dict[str, Any]:
         """Safely fetch git repository state reference, falling back gracefully on failure."""
         try:
             branch = (
@@ -72,12 +73,12 @@ class CheckpointManager:
 
     def create_checkpoint(
         self,
-        current_sage_state: Dict[str, Any],
-        active_goals: List[str],
-        recent_decisions: List[str],
-        validation_status: Dict[str, Any],
-        checkpoint_id: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        current_sage_state: dict[str, Any],
+        active_goals: list[str],
+        recent_decisions: list[str],
+        validation_status: dict[str, Any],
+        checkpoint_id: str | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> ContinuityCheckpoint:
         """Create and persist a new continuity checkpoint."""
         chk_id = checkpoint_id or f"chk_{uuid.uuid4().hex[:8]}"
@@ -97,7 +98,7 @@ class CheckpointManager:
         self.save_checkpoint(checkpoint)
         return checkpoint
 
-    def retrieve_checkpoint(self, checkpoint_id: str) -> Optional[ContinuityCheckpoint]:
+    def retrieve_checkpoint(self, checkpoint_id: str) -> ContinuityCheckpoint | None:
         """Retrieve a checkpoint by ID."""
         if checkpoint_id in self.checkpoints:
             return self.checkpoints[checkpoint_id]
@@ -121,7 +122,7 @@ class CheckpointManager:
         with open(filepath, "w") as f:
             json.dump(checkpoint.model_dump(), f, indent=2, default=str)
 
-    def list_all(self) -> List[ContinuityCheckpoint]:
+    def list_all(self) -> list[ContinuityCheckpoint]:
         """List all managed checkpoints."""
         return list(self.checkpoints.values())
 

@@ -4,29 +4,30 @@ import json
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional, Dict, Any, List
+from typing import Any
+
 from pydantic import BaseModel
 
-from sage.models import (
-    RuntimeState,
-    MemoryObject,
-    DecisionEntry,
-    ArchiveEntry,
-    ConfidenceLevel,
-    DecisionType,
-    ExternalSessionPayload,
-)
-from sage.memory import Memory
-from sage.archive import Archive
-from sage.decision import DecisionTracker
 from sage.acr.bridge import ACRBridge
 from sage.acr.session import (
-    SessionStateManager,
-    ContextTracker,
     CheckpointManager,
-    SessionState,
-    ContinuityContext,
+    ContextTracker,
     ContinuityCheckpoint,
+    ContinuityContext,
+    SessionState,
+    SessionStateManager,
+)
+from sage.archive import Archive
+from sage.decision import DecisionTracker
+from sage.memory import Memory
+from sage.models import (
+    ArchiveEntry,
+    ConfidenceLevel,
+    DecisionEntry,
+    DecisionType,
+    ExternalSessionPayload,
+    MemoryObject,
+    RuntimeState,
 )
 
 
@@ -35,14 +36,14 @@ class ExecutionContext(BaseModel):
 
     session_id: str
     turn_number: int
-    metadata: Dict[str, Any] = {}
+    metadata: dict[str, Any] = {}
 
 
 class SageRuntime:
     """Main runtime engine for SAGE autonomous continuity operations."""
 
     def __init__(
-        self, workspace_path: Optional[str] = None, config: Optional[Dict[str, Any]] = None
+        self, workspace_path: str | None = None, config: dict[str, Any] | None = None
     ):
         """Initialize SAGE runtime.
 
@@ -58,7 +59,7 @@ class SageRuntime:
         self.config = config or {}
         self.workspace_path = Path(workspace_path or "sage_data")
         self.active = False
-        self.context: Optional[ExecutionContext] = None
+        self.context: ExecutionContext | None = None
 
         # Setup subsystem storage paths
         self.memory_path = self.workspace_path / "memory"
@@ -232,7 +233,7 @@ class SageRuntime:
             self.current_state.blockers.remove(blocker)
             self._save_state()
 
-    def get_status(self) -> Dict[str, Any]:
+    def get_status(self) -> dict[str, Any]:
         """Retrieve runtime status information.
 
         Returns:
@@ -288,7 +289,7 @@ class SageRuntime:
 
         return checkpoint_id
 
-    def export_all(self) -> Dict[str, Any]:
+    def export_all(self) -> dict[str, Any]:
         """Export all runtime databases and current state as a single state map.
 
         Returns:
@@ -310,7 +311,7 @@ class SageRuntime:
             "continuity_checkpoints": [c.model_dump() for c in self.checkpoint_manager.list_all()],
         }
 
-    def generate_handoff(self, target_path: Optional[str] = None) -> str:
+    def generate_handoff(self, target_path: str | None = None) -> str:
         """Generate a continuity handoff artifact.
 
         Args:
@@ -427,7 +428,7 @@ class SageRuntime:
         except Exception:
             pass
 
-    def create_workspace_snapshot(self, snapshot_id: Optional[str] = None) -> str:
+    def create_workspace_snapshot(self, snapshot_id: str | None = None) -> str:
         """Serialize active state, memory state, decisions, checkpoints, and continuity metadata
         into the persistent repository directory '.sage/sage_state.json'.
 
@@ -491,7 +492,7 @@ class SageRuntime:
 
         return snapshot_id
 
-    def list_workspace_snapshots(self) -> List[Dict[str, Any]]:
+    def list_workspace_snapshots(self) -> list[dict[str, Any]]:
         """List all snapshots stored in the workspace registry.
 
         Returns:
@@ -691,7 +692,7 @@ class SageRuntime:
 
         return True
 
-    def ingest_session_payload(self, payload: ExternalSessionPayload) -> Dict[str, Any]:
+    def ingest_session_payload(self, payload: ExternalSessionPayload) -> dict[str, Any]:
         """Execute the single, authoritative continuity ingestion path.
 
         Path: External Session -> Ingest Interface -> AutonomousContinuityRuntime
@@ -861,7 +862,7 @@ class SageRuntime:
             "status": "success",
         }
 
-    def reason_over_continuity(self) -> Dict[str, Any]:
+    def reason_over_continuity(self) -> dict[str, Any]:
         """Reason over stored continuity state, active context, memories, and decisions."""
         all_memories = self.memory.list_all()
         all_decisions = self.decisions.list_all()
@@ -915,7 +916,7 @@ class SageRuntime:
             "status": "active",
         }
 
-    def verify_integrity(self) -> Dict[str, Any]:
+    def verify_integrity(self) -> dict[str, Any]:
         """Perform repository-side self-verification of data stores and state referential integrity."""
         issues = []
 
@@ -939,7 +940,7 @@ class SageRuntime:
                         json.load(f)
                 except Exception as e:
                     corrupted_files.append(str(p))
-                    issues.append(f"File {p} is corrupted: {str(e)}")
+                    issues.append(f"File {p} is corrupted: {e!s}")
 
         # 3. Referential Integrity Check
         missing_evidence = []

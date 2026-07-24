@@ -1,12 +1,12 @@
 """SAGE Capability Reporting - dynamic reporting of system capabilities and active integrations."""
 
 from datetime import datetime, timezone
-from typing import Dict, Any, List, Optional
+from typing import Any
 
 from sage.runtime.metrics import get_metrics_collector
 
 
-def discover_capabilities(runtime: Optional[Any] = None) -> List[str]:
+def discover_capabilities(runtime: Any | None = None) -> list[str]:
     """Discover a flat list of active or enabled capability names on the SAGE platform.
 
     Args:
@@ -33,7 +33,7 @@ def discover_capabilities(runtime: Optional[Any] = None) -> List[str]:
     return discovered
 
 
-def generate_capability_report(runtime: Optional[Any] = None) -> Dict[str, Any]:
+def generate_capability_report(runtime: Any | None = None) -> dict[str, Any]:
     """Assess and return the dynamic availability of SAGE platform capabilities.
 
     Args:

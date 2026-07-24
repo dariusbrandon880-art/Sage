@@ -2,19 +2,20 @@
 
 import tempfile
 from pathlib import Path
+
 from fastapi.testclient import TestClient
 
-from sage.runtime import SAGERuntime
-from sage.service import LifecycleManager
+from sage.api import app
 from sage.integration import (
+    AIQueryRequest,
     ChatGPTClient,
     GeminiJulesClient,
-    ToolIntegrationManager,
-    AIQueryRequest,
     GitHubEvent,
     GoogleWorkspaceArtifact,
+    ToolIntegrationManager,
 )
-from sage.api import app
+from sage.runtime import SAGERuntime
+from sage.service import LifecycleManager
 
 
 def test_service_lifecycle_and_diagnostics():
@@ -50,7 +51,7 @@ def test_ai_clients_and_context_retrieval():
         runtime = SAGERuntime(str(Path(tmpdir)))
 
         # Seed some data to memory
-        from sage.models import MemoryObject, ConfidenceLevel
+        from sage.models import ConfidenceLevel, MemoryObject
 
         obj = MemoryObject(
             object_type="fact",

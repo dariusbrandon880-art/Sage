@@ -1,34 +1,36 @@
 """FastAPI runtime server for SAGE with robust authentication boundaries and live webhook validation."""
 
-import json
-import hmac
 import hashlib
+import hmac
+import json
 import os
-from fastapi import FastAPI, HTTPException, Header, Request
+from datetime import datetime
+from typing import Any
+
+from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from typing import Optional, List, Dict, Any
-from datetime import datetime
 
+from sage.acr.skal import process_incoming_payload
+from sage.integration import (
+    AIQueryRequest,
+    ChatGPTClient,
+    GeminiJulesClient,
+    GitHubEvent,
+    GoogleWorkspaceArtifact,
+    GoogleWorkspaceSyncManager,
+    ToolIntegrationManager,
+)
+from sage.models import ConfidenceLevel, DecisionType, ExternalSessionPayload, MemoryObject
 from sage.runtime import (
     SAGERuntime,
     check_health,
-    generate_diagnostic_report,
     generate_capability_report,
+    generate_diagnostic_report,
     get_metrics_collector,
 )
-from sage.models import DecisionType, MemoryObject, ConfidenceLevel, ExternalSessionPayload
-from sage.validation import ValidationSystem
 from sage.service import LifecycleManager
-from sage.integration import (
-    ChatGPTClient,
-    GeminiJulesClient,
-    ToolIntegrationManager,
-    GoogleWorkspaceSyncManager,
-    AIQueryRequest,
-    GitHubEvent,
-    GoogleWorkspaceArtifact,
-)
+from sage.validation import ValidationSystem
 
 app = FastAPI(
     title="SAGE Runtime API",
@@ -79,14 +81,14 @@ class DecisionRequest(BaseModel):
     decision_type: str
     description: str
     rationale: str
-    evidence: Optional[List[str]] = None
+    evidence: list[str] | None = None
 
 
 class MemoryCreateRequest(BaseModel):
     object_type: str
-    content: Dict[str, Any]
-    tags: Optional[List[str]] = None
-    confidence: Optional[str] = None
+    content: dict[str, Any]
+    tags: list[str] | None = None
+    confidence: str | None = None
 
 
 class ValidationRequest(BaseModel):
@@ -96,7 +98,7 @@ class ValidationRequest(BaseModel):
 class ArchivePromotionRequest(BaseModel):
     memory_id: str
     title: str
-    tags: Optional[List[str]] = None
+    tags: list[str] | None = None
 
 
 # Health and Status endpoints
@@ -295,7 +297,7 @@ async def promote_to_archive(req: ArchivePromotionRequest):
 
 # Blocker endpoints
 @app.post("/blocker")
-async def add_blocker(data: Dict[str, str]):
+async def add_blocker(data: dict[str, str]):
     blocker = data.get("blocker")
     if not blocker:
         raise HTTPException(status_code=400, detail="Blocker description required")
@@ -304,7 +306,7 @@ async def add_blocker(data: Dict[str, str]):
 
 
 @app.delete("/blocker")
-async def resolve_blocker(data: Dict[str, str]):
+async def resolve_blocker(data: dict[str, str]):
     blocker = data.get("blocker")
     if not blocker:
         raise HTTPException(status_code=400, detail="Blocker description required")
@@ -325,12 +327,12 @@ class RestoreRequest(BaseModel):
 
 
 @app.post("/handoff")
-async def generate_handoff(file_path: Optional[str] = None):
+async def generate_handoff(file_path: str | None = None):
     try:
         saved_path = runtime.generate_handoff(file_path)
         return {"status": "success", "handoff_file": saved_path}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to generate handoff: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate handoff: {e!s}")
 
 
 @app.post("/restore")
@@ -345,14 +347,14 @@ async def restore_session(req: RestoreRequest):
 
 # Service lifecycle endpoints
 @app.post("/service/startup")
-async def service_startup(x_api_key: Optional[str] = Header(None)):
+async def service_startup(x_api_key: str | None = Header(None)):
     if not x_api_key or not lifecycle_mgr.authorize(x_api_key):
         raise HTTPException(status_code=401, detail="Unauthorized")
     return lifecycle_mgr.startup()
 
 
 @app.post("/service/shutdown")
-async def service_shutdown(x_api_key: Optional[str] = Header(None)):
+async def service_shutdown(x_api_key: str | None = Header(None)):
     if not x_api_key or not lifecycle_mgr.authorize(x_api_key):
         raise HTTPException(status_code=401, detail="Unauthorized")
     return lifecycle_mgr.shutdown()
@@ -429,7 +431,7 @@ async def index_github_event(request: Request):
             event = GitHubEvent(**data)
         except Exception as e:
             raise HTTPException(
-                status_code=422, detail=f"Unprocessable GitHubEvent payload: {str(e)}"
+                status_code=422, detail=f"Unprocessable GitHubEvent payload: {e!s}"
             )
 
     event_id = tool_mgr.index_github_event(event)
@@ -448,14 +450,37 @@ async def get_tool_relationships(query_tag: str):
 
 
 @app.post("/tools/workspace/sync")
-async def sync_workspace(credentials_path: Optional[str] = None):
+async def sync_workspace(credentials_path: str | None = None):
     try:
         result = workspace_sync_mgr.sync_to_google_workspace(credentials_path)
         return result
     except Exception as e:
         raise HTTPException(
-            status_code=500, detail=f"Google Workspace synchronization failed: {str(e)}"
+            status_code=500, detail=f"Google Workspace synchronization failed: {e!s}"
         )
+
+
+class SKALIntakeRequest(BaseModel):
+    """Request model for SAGE-SKAL deterministic intake."""
+
+    payload_type: str
+    payload_data: dict[str, Any]
+
+
+@app.post("/tools/skal/intake")
+async def skal_intake(req: SKALIntakeRequest):
+    """REST endpoint for SAGE-SKAL deterministic intake gate."""
+    try:
+        result = process_incoming_payload(
+            payload_type=req.payload_type,
+            payload_data=req.payload_data,
+            runtime=runtime,
+        )
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"SAGE-SKAL intake ingestion failed: {e!s}")
 
 
 # Snapshot endpoints
@@ -489,7 +514,7 @@ async def ingest_payload(payload: ExternalSessionPayload):
         result = runtime.ingest_session_payload(payload)
         return result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Ingestion failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Ingestion failed: {e!s}")
 
 
 @app.get("/reason")
@@ -498,7 +523,7 @@ async def reason_over_continuity():
         result = runtime.reason_over_continuity()
         return result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Reasoning failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Reasoning failed: {e!s}")
 
 
 @app.get("/verify")
@@ -507,7 +532,7 @@ async def verify_integrity():
         result = runtime.verify_integrity()
         return result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Self-verification failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Self-verification failed: {e!s}")
 
 
 # Continuity/Snapshot endpoints

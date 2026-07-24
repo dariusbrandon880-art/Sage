@@ -2,7 +2,7 @@
 
 import json
 from pathlib import Path
-from typing import List, Optional, Dict
+
 from sage.models import MemoryObject
 
 
@@ -17,7 +17,7 @@ class Memory:
         """
         self.storage_path = Path(storage_path)
         self.storage_path.mkdir(parents=True, exist_ok=True)
-        self.objects: Dict[str, MemoryObject] = {}
+        self.objects: dict[str, MemoryObject] = {}
         self._load_all()
 
     def store(self, obj: MemoryObject) -> str:
@@ -33,7 +33,7 @@ class Memory:
         self._save(obj)
         return obj.id
 
-    def retrieve(self, memory_id: str) -> Optional[MemoryObject]:
+    def retrieve(self, memory_id: str) -> MemoryObject | None:
         """Retrieve a memory object by ID.
 
         Args:
@@ -57,7 +57,7 @@ class Memory:
                 pass
         return None
 
-    def list_all(self) -> List[MemoryObject]:
+    def list_all(self) -> list[MemoryObject]:
         """List all stored memory objects.
 
         Returns:
@@ -65,7 +65,7 @@ class Memory:
         """
         return list(self.objects.values())
 
-    def search_by_tag(self, tag: str) -> List[MemoryObject]:
+    def search_by_tag(self, tag: str) -> list[MemoryObject]:
         """Search memory objects by tag.
 
         Args:
@@ -76,7 +76,7 @@ class Memory:
         """
         return [obj for obj in self.objects.values() if tag in obj.tags]
 
-    def search_by_type(self, object_type: str) -> List[MemoryObject]:
+    def search_by_type(self, object_type: str) -> list[MemoryObject]:
         """Search memory objects by type.
 
         Args:
