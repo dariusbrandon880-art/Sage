@@ -1,0 +1,33 @@
+{
+  "id": "checkpoint_26509163",
+  "timestamp": "2026-07-24 08:53:39.249321+00:00",
+  "current_sage_state": {
+    "current_objective": "Expand Intelligence",
+    "active_task": "Create tests",
+    "blockers": [],
+    "dependencies": []
+  },
+  "active_goals": [
+    "Expand Intelligence",
+    "Create tests"
+  ],
+  "recent_decisions": [],
+  "repository_state_reference": {
+    "branch": "jules-4852023650264641684-8f90d7fc",
+    "commit": "cf6c4f969e705e66c365a18e8a3d358b06c7d6c6",
+    "is_dirty": true,
+    "status_output": "A  poetry.lock\nA  sage/acr/attestation.py\nA  sage/acr/control_plane.py\nA  sage/acr/eas_receipts.py\nA  sage/acr/nonce_ledger.py\nM  sage/acr/skal.py\nM  sage/api.py\nM  sage/runtime/engine.py\nM  sage/runtime/health.py\nM  sage/validation.py\nA  sage_cos_core/.sage/config/runtime.json\nA  sage_cos_core/docs/SPEK_v1.1_SPEC.md\nA  sage_cos_core/sage/core/attestation.py\nA  sage_cos_core/sage/core/boundary.py\nA  sage_cos_core/sage/core/compliance.py\nA  sage_cos_core/sage/core/hdg.py\nA  sage_cos_core/sage/core/models.py\nA  sage_cos_core/sage/core/spek.py\nA  sage_cos_core/sage/core/version.py\nA  sage_cos_core/tests/test_attestation.py\nA  sage_cos_core/tests/test_boundary.py\nA  sage_cos_core/tests/test_hdg_integrity.py\nA  sage_cos_core/tests/test_spek_core.py\nA  sage_data/checkpoint_0f4322a4.json\nA  sage_data/checkpoint_1957a964.json\nA  sage_data/checkpoint_2a690006.json\nA  sage_data/checkpoint_9cab58b8.json\nA  sage_data/checkpoints/checkpoint_0f4322a4.json\nA  sage_data/checkpoints/checkpoint_1957a964.json\nA  sage_data/checkpoints/checkpoint_2a690006.json\nA  sage_data/checkpoints/checkpoint_9cab58b8.json\nMM sage_data/context/continuity_context.json\nMM sage_data/continuity/continuity_state.json\nA  sage_data/sessions/session_4ae97cb4.json\nA  sage_data/sessions/session_4cb95a9e.json\nA  sage_data/sessions/session_867e1b07.json\nA  sage_data/sessions/session_cafdb59b.json\nA  tests/test_attack_laboratory.py\n?? sage_data/checkpoint_26509163.json\n?? sage_data/sessions/session_2f5da713.json"
+  },
+  "validation_status": {
+    "is_valid": true,
+    "loaded_files_count": 23,
+    "corrupted_files": [],
+    "referential_integrity": {
+      "missing_evidence_links": [],
+      "decisions_analyzed": 0
+    },
+    "lineage_valid": true,
+    "issues": []
+  },
+  "metadata": {}
+}

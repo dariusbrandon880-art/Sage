@@ -1,0 +1,7 @@
+{
+  "spek_version": "1.1.0",
+  "evidence_threshold": 0.8,
+  "csi_threshold": 0.9,
+  "attestation_provider": "local_deterministic",
+  "runtime_mode": "enforcement"
+}
