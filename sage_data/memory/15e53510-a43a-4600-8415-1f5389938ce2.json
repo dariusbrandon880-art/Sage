@@ -1,0 +1,24 @@
+{
+  "id": "15e53510-a43a-4600-8415-1f5389938ce2",
+  "object_type": "reliability_incident",
+  "content": {
+    "incident_type": "test",
+    "description": "Pytest convergence failure",
+    "resolved": true,
+    "resolution_details": "Re-run and verified convergence",
+    "timestamp": "2026-07-24T17:03:12.262509+00:00",
+    "metadata": {
+      "failed_tests": [
+        "test_acr_initialization"
+      ]
+    },
+    "resolved_at": "2026-07-24T17:03:12.271484+00:00"
+  },
+  "tags": [
+    "reliability",
+    "test"
+  ],
+  "confidence": "validated",
+  "created_at": "2026-07-24 17:03:12.262557+00:00",
+  "updated_at": "2026-07-24 17:03:12.262559+00:00"
+}

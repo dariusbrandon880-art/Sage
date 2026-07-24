@@ -1,0 +1,33 @@
+{
+  "id": "checkpoint_161caa46",
+  "timestamp": "2026-07-24 16:56:11.743036+00:00",
+  "current_sage_state": {
+    "current_objective": "Expand Intelligence",
+    "active_task": "Create tests",
+    "blockers": [],
+    "dependencies": []
+  },
+  "active_goals": [
+    "Expand Intelligence",
+    "Create tests"
+  ],
+  "recent_decisions": [],
+  "repository_state_reference": {
+    "branch": "jules-8285166592552881989-00816ec8",
+    "commit": "7a1bb75d8095b7b7e69313889a890a321348d27c",
+    "is_dirty": true,
+    "status_output": "M  .sage/ROADMAP.md\nM  \"Main Archive/INDEX.md\"\nA  \"Main Archive/research/strategic/CIC.md\"\nA  \"Main Archive/research/strategic/HSI.md\"\nA  \"Main Archive/research/strategic/SAGE_Research_Track_Comparative_Intelligence_Architecture_Study_Review.md\"\nM  docs/labs/ENGINEERING_LAB.md\nM  docs/labs/RESEARCH_LAB.md\nM  docs/labs/VALIDATION_LAB.md\nA  docs/master/CONSTITUTION.md\nM  docs/master/MASTER_ARCHIVE.md\nM  docs/master/ROADMAP.md\nA  docs/master/SAGE2_PRODUCTION_READINESS_REPORT.md\nA  docs/master/SAGE2_STP_CIV_PROOF.md\nM  docs/master/SESSION_STATE.md\nA  sage/acr/continuity_integration.py\nM  sage/acr/session/checkpoint.py\nM  sage/acr/session/context_tracker.py\nA  sage/acr/skal.py\nA  sage/acr/skal_normalizer.py\nA  sage/acr/state_calibration.py\nA  sage/acr/state_transition.py\nA  sage/acr/state_validator.py\nM  sage/api.py\nM  sage/archive/core.py\nM  sage/archive/knowledge_graph/__init__.py\nM  sage/cli.py\nA  sage/core/__init__.py\nA  sage/core/attestation.py\nA  sage/core/boundary.py\nA  sage/core/compliance.py\nA  sage/core/hdg.py\nA  sage/core/models.py\nA  sage/core/spek.py\nA  sage/core/version.py\nA  sage/memory/memory_importance.py\nM  sage/models.py\nM  sage/runtime/__init__.py\nA  sage/runtime/apoptosis_manager.py\nM  sage/runtime/capability_report.py\nM  sage/runtime/diagnostics.py\nM  sage/runtime/engine.py\nM  sage/runtime/health.py\nM  sage/validation.py\nA  sage_data/checkpoint_2f7fbc9c.json\nA  sage_data/checkpoint_97ea3472.json\nA  sage_data/checkpoint_c13075b8.json\nA  sage_data/checkpoints/checkpoint_2f7fbc9c.json\nA  sage_data/checkpoints/checkpoint_97ea3472.json\nA  sage_data/checkpoints/checkpoint_c13075b8.json\nMM sage_data/context/continuity_context.json\nMM sage_data/continuity/continuity_state.json\nA  sage_data/memory/ad4bed76-c4dd-40de-9fd5-f3264fdf2290.json\nA  sage_data/memory/skal_intake_7db6c463.json\nA  sage_data/memory/skal_intake_c2f844b9.json\nA  sage_data/sessions/session_46a28f4d.json\nM  tests/test_api.py\nM  tests/test_archive_intelligence.py\nA  tests/test_c11_integration.py\nM  tests/test_continuity_intelligence.py\nA  tests/test_governance.py\nA  tests/test_reliability_and_skal.py\nM  tests/test_runtime_intelligence.py\nA  tests/test_skal_integration.py\nA  tests/test_skal_normalizer.py\nA  tests/test_stp_civ_validation.py\n?? sage_data/checkpoint_161caa46.json\n?? sage_data/memory/a25769ec-3fb0-4107-ad58-c3efac90481f.json\n?? sage_data/memory/skal_intake_e528d379.json\n?? sage_data/sessions/session_fa072023.json"
+  },
+  "validation_status": {
+    "is_valid": true,
+    "loaded_files_count": 28,
+    "corrupted_files": [],
+    "referential_integrity": {
+      "missing_evidence_links": [],
+      "decisions_analyzed": 0
+    },
+    "lineage_valid": true,
+    "issues": []
+  },
+  "metadata": {}
+}

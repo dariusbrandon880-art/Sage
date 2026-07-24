@@ -1,0 +1,4 @@
+"""SAGE SPEK Core Version Specification."""
+
+SPEK_VERSION = "1.1"
+COGNITIVE_CONTROL_PLANE_VERSION = "1.0"
