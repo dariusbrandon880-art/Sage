@@ -1,0 +1,17 @@
+{
+  "id": "skal_intake_46b7fb2a",
+  "object_type": "skal_validation_report",
+  "content": {
+    "report_name": "Pre-flight Verification",
+    "status": "passed",
+    "errors": [],
+    "metadata": {}
+  },
+  "tags": [
+    "skal",
+    "validation_report"
+  ],
+  "confidence": "validated",
+  "created_at": "2026-07-24 18:32:16.163868+00:00",
+  "updated_at": "2026-07-24 18:32:16.163873+00:00"
+}

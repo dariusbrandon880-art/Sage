@@ -8,7 +8,9 @@
     "STP Transition 'Set Objective: Expand Intelligence' succeeded. Committed S1 checkpoint 'checkpoint_161caa46'.",
     "STP Transition 'Set Task: Create tests' succeeded. Committed S1 checkpoint 'checkpoint_09d47b35'.",
     "STP Transition 'Set Objective: Expand Intelligence' succeeded. Committed S1 checkpoint 'checkpoint_52ab12af'.",
-    "STP Transition 'Set Task: Create tests' succeeded. Committed S1 checkpoint 'checkpoint_71cda3b5'."
+    "STP Transition 'Set Task: Create tests' succeeded. Committed S1 checkpoint 'checkpoint_71cda3b5'.",
+    "STP Transition 'Set Objective: Expand Intelligence' succeeded. Committed S1 checkpoint 'checkpoint_8d9652ce'.",
+    "STP Transition 'Set Task: Create tests' succeeded. Committed S1 checkpoint 'checkpoint_650d48e9'."
   ],
   "important_context_transitions": [
     {
@@ -34,6 +36,12 @@
       "to_state": "objective:Expand Intelligence",
       "reason": "Objective updated via set_objective",
       "timestamp": "2026-07-24 17:03:14.322570+00:00"
+    },
+    {
+      "from_state": "objective:Expand Intelligence",
+      "to_state": "objective:Expand Intelligence",
+      "reason": "Objective updated via set_objective",
+      "timestamp": "2026-07-24 18:32:05.122894+00:00"
     }
   ],
   "metadata": {}
