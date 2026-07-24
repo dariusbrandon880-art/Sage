@@ -1,0 +1,33 @@
+{
+  "id": "checkpoint_36605460",
+  "timestamp": "2026-07-24 14:34:20.919971+00:00",
+  "current_sage_state": {
+    "current_objective": "Expand Intelligence",
+    "active_task": "Create tests",
+    "blockers": [],
+    "dependencies": []
+  },
+  "active_goals": [
+    "Expand Intelligence",
+    "Create tests"
+  ],
+  "recent_decisions": [],
+  "repository_state_reference": {
+    "branch": "jules-11952112033104208403-c064c51c",
+    "commit": "2f95ff40328c557832bb3ec9bceef75d1a6e5c71",
+    "is_dirty": true,
+    "status_output": "A  .sage/config/runtime.json\nA  .sage/validation/audit/hdg_causality.json\nA  .sage/validation/audit/negative_results.json\nA  .sage/validation/audit/spek_vault.json\nA  sage/core/__init__.py\nA  sage/core/attestation.py\nA  sage/core/boundary.py\nA  sage/core/compliance.py\nA  sage/core/hdg.py\nA  sage/core/models.py\nA  sage/core/spek.py\nA  sage/core/version.py\nA  sage_data/checkpoint_14197c59.json\nA  sage_data/checkpoint_cd41dba1.json\nA  sage_data/checkpoints/checkpoint_14197c59.json\nA  sage_data/checkpoints/checkpoint_cd41dba1.json\nMM sage_data/context/continuity_context.json\nMM sage_data/continuity/continuity_state.json\nA  sage_data/sessions/session_008300dc.json\nA  sage_data/sessions/session_6f83b55b.json\nA  tests/test_spek.py\n?? sage_data/checkpoint_36605460.json\n?? sage_data/sessions/session_3c2ce003.json"
+  },
+  "validation_status": {
+    "is_valid": true,
+    "loaded_files_count": 26,
+    "corrupted_files": [],
+    "referential_integrity": {
+      "missing_evidence_links": [],
+      "decisions_analyzed": 0
+    },
+    "lineage_valid": true,
+    "issues": []
+  },
+  "metadata": {}
+}
