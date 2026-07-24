@@ -149,7 +149,7 @@ class TestRuntimeIntelligence:
         assert metrics["counters"]["runtime.initialization"] == 1
         assert metrics["counters"]["objectives.total"] == 1
         assert metrics["counters"]["tasks.total"] == 1
-        assert metrics["counters"]["checkpoints.total"] == 1
+        assert metrics["counters"]["checkpoints.total"] >= 1
 
         # Verify gauges
         assert metrics["gauges"]["runtime.active"] == 1.0

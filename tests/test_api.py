@@ -72,6 +72,16 @@ def test_task_endpoints():
 
 def test_decision_endpoints():
     """Test recording, listing, and retrieving decisions."""
+    from sage.models import MemoryObject, ConfidenceLevel
+
+    evidence_obj = MemoryObject(
+        id="fastapi_vs_flask_benchmarks",
+        object_type="fact",
+        content={"bench": "fast"},
+        confidence=ConfidenceLevel.VALIDATED,
+    )
+    runtime.memory.store(evidence_obj)
+
     with TestClient(app) as client:
         decision_data = {
             "decision_type": "architectural",

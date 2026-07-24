@@ -30,6 +30,7 @@ from sage.acr.session import (
 )
 from sage.acr.state_calibration import StateCalibrationSync
 from sage.acr.state_validator import StateValidator
+from sage.acr.state_transition import StateTransitionProtocol
 from sage.memory.memory_importance import MemoryImportancePipeline
 from sage.runtime.apoptosis_manager import ApoptosisManager
 
@@ -91,6 +92,7 @@ class SageRuntime:
         # Initialize Track C.11 subsystems
         self.calibration_sync = StateCalibrationSync(self)
         self.state_validator = StateValidator()
+        self.state_transition = StateTransitionProtocol(self)
         self.importance_pipeline = MemoryImportancePipeline(self.memory)
         self.apoptosis_manager = ApoptosisManager(self)
 
@@ -134,7 +136,7 @@ class SageRuntime:
         return self.active
 
     def set_objective(self, objective: str) -> str:
-        """Set the current objective and generate a session ID.
+        """Set the current objective wrapped in the State Transition Protocol.
 
         Args:
             objective: The objective string.
@@ -142,6 +144,16 @@ class SageRuntime:
         Returns:
             The generated session ID.
         """
+        session_id_container = []
+
+        def mutate():
+            sid = self._set_objective_internal(objective)
+            session_id_container.append(sid)
+
+        self.state_transition.execute_transition(mutate, f"Set Objective: {objective}")
+        return session_id_container[0] if session_id_container else "session_fallback"
+
+    def _set_objective_internal(self, objective: str) -> str:
         old_objective = self.current_state.current_objective or "None"
         self.current_state.current_objective = objective
         self._save_state()
@@ -176,7 +188,7 @@ class SageRuntime:
         return session_id
 
     def set_task(self, task: str) -> str:
-        """Set the current task and generate/update session context.
+        """Set the current task wrapped in the State Transition Protocol.
 
         Args:
             task: The task description string.
@@ -184,6 +196,16 @@ class SageRuntime:
         Returns:
             The session ID.
         """
+        session_id_container = []
+
+        def mutate():
+            sid = self._set_task_internal(task)
+            session_id_container.append(sid)
+
+        self.state_transition.execute_transition(mutate, f"Set Task: {task}")
+        return session_id_container[0] if session_id_container else "session_fallback"
+
+    def _set_task_internal(self, task: str) -> str:
         self.current_state.active_task = task
         self._save_state()
 

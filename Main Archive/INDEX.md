@@ -45,6 +45,7 @@ Welcome to SAGE's immutable Master Archive and research repository. This index l
 ---
 
 ## 5. Engineering Reports and Activations
+- [STP and CIV-001 Validation Proof](../docs/master/SAGE2_STP_CIV_PROOF.md) - State Transition Protocol validation gates and rehydration proof details.
 - [SAGE 2 Production Readiness Report](../docs/master/SAGE2_PRODUCTION_READINESS_REPORT.md) - Security audited boundaries, test verification integrity, and Render environment variables audit.
 - [SAGE Final Operational Completion Report](research/archive/SAGE_FINAL_ACTIVATION_REPORT.md) - Formal activation and engineering report for SAGE Runtime v1 Phase 3.
 - [SAGE Final Live Activation Checklist](../docs/master/FINAL_LIVE_ACTIVATION_CHECKLIST.md) - Definitive step-by-step operational setup instructions to bridge the permission boundary for hosting, APIs, webhooks, and integrations.
