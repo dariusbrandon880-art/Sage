@@ -43,7 +43,7 @@ dev = [
 ]
 
 [tool.setuptools]
-packages = ["sage"]
+packages = { find = { include = ["sage", "sage.*"] } }
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
