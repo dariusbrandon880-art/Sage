@@ -85,6 +85,12 @@ class SageRuntime:
 
         self.validation = ValidationSystem(self.memory, self.archive)
 
+        # Initialize SAGE Bond validator hook layer
+        from sage.runtime.interceptors.bond import BondValidator
+        import os
+        bond_mode = os.getenv("SAGE_BOND_MODE", "shadow")
+        self.bond_validator = BondValidator(mode=bond_mode)
+
         # Initialize nonce ledger
         from sage.acr.nonce_ledger import NonceLedger
         self.nonce_ledger = NonceLedger(str(self.workspace_path / "nonces.json"))
@@ -143,6 +149,19 @@ class SageRuntime:
             The generated session ID.
         """
         old_objective = self.current_state.current_objective or "None"
+
+        # SAGE Bond Validation Hook Connection
+        if hasattr(self, "bond_validator"):
+            raw_payload = {
+                "tx_id": f"tx_obj_{uuid.uuid4().hex[:8]}",
+                "auth_token": "sys_trust_token_abc",
+                "identity_ref": "agent_jules",
+                "target_state": f"objective:{objective}",
+                "evidence_refs": []
+            }
+            s0_state_dict = self.current_state.model_dump()
+            self.bond_validator.validate_transition(s0_state_dict, raw_payload)
+
         self.current_state.current_objective = objective
         self._save_state()
 
@@ -184,6 +203,18 @@ class SageRuntime:
         Returns:
             The session ID.
         """
+        # SAGE Bond Validation Hook Connection
+        if hasattr(self, "bond_validator"):
+            raw_payload = {
+                "tx_id": f"tx_task_{uuid.uuid4().hex[:8]}",
+                "auth_token": "sys_trust_token_abc",
+                "identity_ref": "agent_jules",
+                "target_state": f"task:{task}",
+                "evidence_refs": []
+            }
+            s0_state_dict = self.current_state.model_dump()
+            self.bond_validator.validate_transition(s0_state_dict, raw_payload)
+
         self.current_state.active_task = task
         self._save_state()
 
@@ -714,6 +745,18 @@ class SageRuntime:
         if nonce:
             if not self.nonce_ledger.verify_and_record(nonce, f"ingest_payload:{payload.objective}"):
                 raise ValueError(f"SAGE Replay Attack Detected: Nonce '{nonce}' has already been used.")
+
+        # SAGE Bond Validation Hook Connection
+        if hasattr(self, "bond_validator"):
+            raw_payload = {
+                "tx_id": payload.metadata.get("tx_id") if payload.metadata else f"tx_ingest_{uuid.uuid4().hex[:8]}",
+                "auth_token": payload.metadata.get("auth_token", "sys_trust_token_abc"),
+                "identity_ref": payload.metadata.get("identity_ref", "agent_jules"),
+                "target_state": f"objective:{payload.objective}",
+                "evidence_refs": [m.get("id") for m in payload.memories if m.get("id")]
+            }
+            s0_state_dict = self.current_state.model_dump()
+            self.bond_validator.validate_transition(s0_state_dict, raw_payload)
 
         # --- 1. Intake ---
         session_id = payload.session_id or f"session_{uuid.uuid4().hex[:8]}"

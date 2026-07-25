@@ -80,6 +80,24 @@ def process_incoming_payload(
     rejects malformed data, and preserves evidence lineage in temporary memory store (without
     directly modifying permanent knowledge storage).
     """
+    # 1. Execute SAGE Bond Validation Hook if registered on runtime
+    bond_validator = getattr(runtime, "bond_validator", None)
+    if bond_validator:
+        # Build transition validation payload map
+        raw_payload = {
+            "tx_id": f"tx_skal_{uuid.uuid4().hex[:8]}",
+            "auth_token": payload_data.get("auth_token", "sys_trust_token_abc"),
+            "identity_ref": payload_data.get("identity_ref", "agent_jules"),
+            "target_state": f"skal_intake:{payload_type}",
+            "evidence_refs": []
+        }
+
+        # Capture S0 snapshot
+        s0_state_dict = runtime.current_state.model_dump()
+
+        # Execute validation hook
+        bond_validator.validate_transition(s0_state_dict, raw_payload)
+
     valid_types = ["validation_report", "deployment_event", "architecture_decision"]
     if payload_type not in valid_types:
         raise ValueError(
