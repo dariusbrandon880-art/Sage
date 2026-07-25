@@ -21,7 +21,10 @@ SAGERuntime = SageRuntime
 
 
 def __getattr__(name: str) -> Any:
-    """Lazy-load select modules to avoid circular imports at runtime initialization."""
+    """Lazy-load select modules to avoid circular imports at runtime initialization.
+
+    This ensures sage.runtime:app maps directly to sage.api.app at runtime.
+    """
     if name == "app":
         from sage.api import app
         return app
