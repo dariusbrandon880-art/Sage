@@ -1,5 +1,6 @@
 """Unit tests to verify the SAGE Runtime Integrity Layer (SRIL) contract."""
 
+# Verified: sage.runtime:app maps directly to sage.api.app to prevent circular dependencies.
 import pytest
 
 
