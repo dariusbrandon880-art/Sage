@@ -37,3 +37,14 @@ def test_circular_import_prevention_robustness():
         # but the module-level __getattr__ ensures that during pristine startup,
         # sage.api is not loaded during sage.runtime package initialization.
         pass
+
+
+def test_setuptools_package_discovery():
+    """Verify that setuptools package discovery correctly identifies all nested sage subpackages."""
+    import setuptools
+    packages = setuptools.find_packages(include=["sage", "sage.*"])
+    assert "sage" in packages
+    assert "sage.runtime" in packages
+    assert "sage.acr" in packages
+    assert "sage.agents" in packages
+    assert "sage.core" in packages
