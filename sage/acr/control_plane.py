@@ -143,6 +143,7 @@ class ExternalAuthorityGate:
         self.hypervisor = hypervisor or CognitiveHypervisor()
         self.approved_mutations = 0
         self.rejected_mutations = 0
+        self.validation_events = []  # List of CIVValidationPassEvent / CIVValidationFailEvent
 
     def get_authority_stability_index(self) -> float:
         """Calculate the Authority Stability Index (ASI).
@@ -184,7 +185,15 @@ class ExternalAuthorityGate:
         # Step 2: Observer evaluates proposed mutation
         eval_report = self.hypervisor.evaluate_mutation(action, payload_data, state_snapshot)
 
-        # Step 3: Enforcer decides based on Observer's report
+        # Step 3: Enforcer decides based on Observer's report and SAGE_BOND_MODE
+        import os
+        from sage.acr.models import CIVValidationPassEvent, CIVValidationFailEvent
+
+        bond_mode = os.getenv("SAGE_BOND_MODE", "disabled").lower()
+        session_id = "system_session_gate"
+        if hasattr(runtime, "context") and runtime.context and hasattr(runtime.context, "session_id"):
+            session_id = runtime.context.session_id or session_id
+
         if not eval_report["approved"]:
             self.rejected_mutations += 1
             metrics.increment("control_plane.mutations_rejected")
@@ -193,11 +202,45 @@ class ExternalAuthorityGate:
                 "issues": eval_report["issues"],
                 "asi": self.get_authority_stability_index()
             })
-            raise PermissionError(
-                f"SAGE Cognitive Control Plane Blocked Mutation: {', '.join(eval_report['issues'])}"
+
+            # Determine appropriate error code based on hypervisor issues
+            error_code = "CIV-ERR-MUT-003"
+            for issue in eval_report["issues"]:
+                if "Signature" in issue or "Contract" in issue:
+                    error_code = "CIV-ERR-AUTH-001"
+                elif "Structure" in issue:
+                    error_code = "CIV-ERR-SCHM-002"
+
+            # Create failure event
+            fail_event = CIVValidationFailEvent(
+                session_id=session_id,
+                error_code=error_code,
+                error_message=f"Validation failed during mutation '{action}': {', '.join(eval_report['issues'])}",
+                attempted_from="S0",
+                attempted_to="S1",
+                failed_fields=["signature"] if error_code == "CIV-ERR-AUTH-001" else ["identity"]
             )
 
-        # Mutation is approved! Execute
+            if bond_mode in ("shadow", "enforce"):
+                self.validation_events.append(fail_event)
+
+            if bond_mode != "shadow":
+                raise PermissionError(
+                    f"SAGE Cognitive Control Plane Blocked Mutation: {', '.join(eval_report['issues'])}"
+                )
+
+        else:
+            # Create success event on successful validation when Bond Mode is active
+            if bond_mode in ("shadow", "enforce"):
+                pass_event = CIVValidationPassEvent(
+                    session_id=session_id,
+                    transition_from="S0",
+                    transition_to="S1",
+                    evidence_hash="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                )
+                self.validation_events.append(pass_event)
+
+        # Execute mutation
         if not hasattr(runtime, action):
             self.rejected_mutations += 1
             metrics.increment("control_plane.mutations_rejected")
