@@ -211,9 +211,27 @@ def check_health(runtime: Any | None = None) -> dict[str, Any]:
     metrics.set_gauge("health.cognitive_separation_index", csi)
     metrics.set_gauge("health.receipt_chain_integrity", 1.0 if receipt_chain_integrity else 0.0)
 
+    bond_mode = getattr(runtime, "bond_mode", "disabled") if runtime else "disabled"
+
+    validation_subsystem_health = "healthy"
+    if runtime:
+        if getattr(runtime, "bond_manager", None) is None and getattr(runtime, "validation", None) is None:
+            validation_subsystem_health = "unavailable"
+    else:
+        validation_subsystem_health = "unavailable"
+
+    active_integrity_indicators = {
+        "receipt_chain_integrity": receipt_chain_integrity,
+        "authority_stability_index": asi,
+        "drift_detected": drift_detected,
+    }
+
     return {
         "status": status,
         "runtime": runtime_active,
         "components": components,
-        "cognitive_control_plane": cognitive_control_plane
+        "cognitive_control_plane": cognitive_control_plane,
+        "bond_mode": bond_mode,
+        "validation_subsystem_health": validation_subsystem_health,
+        "active_integrity_indicators": active_integrity_indicators,
     }

@@ -267,3 +267,29 @@ def test_ingest_reason_verify_endpoints():
         assert response.status_code == 200
         res_verify = response.json()
         assert "is_valid" in res_verify
+
+
+def test_telemetry_health_and_control_plane():
+    """Verify detailed SAGE telemetry data in /health and /runtime/control-plane."""
+    with TestClient(app) as client:
+        # Check health endpoint
+        response = client.get("/health")
+        assert response.status_code == 200
+        data = response.json()
+        assert "bond_mode" in data
+        assert "validation_subsystem_health" in data
+        assert "active_integrity_indicators" in data
+        assert "receipt_chain_integrity" in data["active_integrity_indicators"]
+        assert "authority_stability_index" in data["active_integrity_indicators"]
+
+        # Check runtime control plane endpoint
+        response = client.get("/runtime/control-plane")
+        assert response.status_code == 200
+        cp_data = response.json()
+        assert "current_runtime_state_summary" in cp_data
+        assert "active_session_metrics" in cp_data
+        assert "bond_validation_counters" in cp_data
+        assert "shadow_event_statistics" in cp_data
+
+        assert cp_data["bond_validation_counters"]["approved_transitions"] >= 0
+        assert cp_data["shadow_event_statistics"]["shadow_passes"] >= 0

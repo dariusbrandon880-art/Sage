@@ -131,6 +131,28 @@ async def get_control_plane_status():
         receipt_chain_integrity = runtime.validation.receipt_chain.verify_chain_integrity()
         receipts_count = len(runtime.validation.receipt_chain.receipts)
 
+    current_runtime_state_summary = {
+        "current_objective": runtime.current_state.current_objective if runtime else "None",
+        "active_task": runtime.current_state.active_task if runtime else "None",
+        "blockers": runtime.current_state.blockers if runtime else [],
+        "status": runtime.get_status() if runtime else {}
+    }
+
+    active_session_metrics = {
+        "active_session_id": getattr(runtime.current_state, "session_id", "None") if runtime and hasattr(runtime.current_state, "session_id") else "None",
+        "session_depth": runtime.acr.get_session_depth() if runtime and hasattr(runtime, "acr") and hasattr(runtime.acr, "get_session_depth") else 0
+    }
+
+    bond_validation_counters = {
+        "approved_transitions": runtime.bond_manager.approved_transitions if runtime and hasattr(runtime, "bond_manager") else 0,
+        "rejected_transitions": runtime.bond_manager.rejected_transitions if runtime and hasattr(runtime, "bond_manager") else 0,
+    }
+
+    shadow_event_statistics = {
+        "shadow_passes": runtime.bond_manager.shadow_passes if runtime and hasattr(runtime, "bond_manager") else 0,
+        "shadow_failures": runtime.bond_manager.shadow_failures if runtime and hasattr(runtime, "bond_manager") else 0,
+    }
+
     return {
         "status": "active",
         "observer": {
@@ -146,7 +168,11 @@ async def get_control_plane_status():
         "receipt_chain": {
             "receipts_count": receipts_count,
             "integrity_valid": receipt_chain_integrity
-        }
+        },
+        "current_runtime_state_summary": current_runtime_state_summary,
+        "active_session_metrics": active_session_metrics,
+        "bond_validation_counters": bond_validation_counters,
+        "shadow_event_statistics": shadow_event_statistics,
     }
 
 

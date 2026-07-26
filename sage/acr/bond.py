@@ -85,6 +85,10 @@ class BondManager:
         self.evidence_capture_dir = Path(evidence_capture_dir or "sage_data/evidence_capture")
         self.evidence_capture_dir.mkdir(parents=True, exist_ok=True)
         self.enforcer = BoundaryEnforcer()
+        self.approved_transitions = 0
+        self.rejected_transitions = 0
+        self.shadow_passes = 0
+        self.shadow_failures = 0
 
     def validate_transition_schema(self, payload_dict: Dict[str, Any]) -> StateTransitionPayload:
         """Validates the transition payload against the SAGE-EVID-003 schema.
@@ -285,15 +289,18 @@ class BondManager:
             with open(evidence_path, "w") as f:
                 json.dump(pass_event.model_dump(), f, indent=2, default=str)
 
+            self.approved_transitions += 1
             return s1_state
 
         except BondValidationError as bve:
+            self.rejected_transitions += 1
             # Rollback S1 state to original S0 state completely
             current_state.clear()
             current_state.update(s0_backup)
             # Re-raise the exception with full error code propagation
             raise bve
         except Exception as e:
+            self.rejected_transitions += 1
             # Handle general errors with rollback and map to CIV-ERR-SCHM-002
             current_state.clear()
             current_state.update(s0_backup)

@@ -106,7 +106,11 @@ def process_incoming_payload(
             }
             try:
                 bond_manager.execute_transition(s0_state, raw_payload)
+                if bond_mode == "shadow":
+                    bond_manager.shadow_passes += 1
             except Exception as e:
+                if bond_mode == "shadow":
+                    bond_manager.shadow_failures += 1
                 if bond_mode == "enforce":
                     raise e
 

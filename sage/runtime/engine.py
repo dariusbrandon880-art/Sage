@@ -196,7 +196,11 @@ class SageRuntime:
             }
             try:
                 self.bond_manager.execute_transition(s0_state, raw_payload)
+                if self.bond_mode == "shadow":
+                    self.bond_manager.shadow_passes += 1
             except Exception as e:
+                if self.bond_mode == "shadow":
+                    self.bond_manager.shadow_failures += 1
                 if self.bond_mode == "enforce":
                     raise e
 
@@ -260,7 +264,11 @@ class SageRuntime:
             }
             try:
                 self.bond_manager.execute_transition(s0_state, raw_payload)
+                if self.bond_mode == "shadow":
+                    self.bond_manager.shadow_passes += 1
             except Exception as e:
+                if self.bond_mode == "shadow":
+                    self.bond_manager.shadow_failures += 1
                 if self.bond_mode == "enforce":
                     raise e
 
@@ -809,7 +817,11 @@ class SageRuntime:
             }
             try:
                 self.bond_manager.execute_transition(s0_state, raw_payload)
+                if self.bond_mode == "shadow":
+                    self.bond_manager.shadow_passes += 1
             except Exception as e:
+                if self.bond_mode == "shadow":
+                    self.bond_manager.shadow_failures += 1
                 if self.bond_mode == "enforce":
                     raise e
 
