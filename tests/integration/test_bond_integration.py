@@ -4,6 +4,7 @@ import os
 import json
 import pytest
 import tempfile
+import uuid
 from pathlib import Path
 from fastapi.testclient import TestClient
 
@@ -29,6 +30,7 @@ def test_shadow_mode_passes_through_failures(temp_workspace, monkeypatch):
     monkeypatch.setenv("SAGE_BOND_MODE", "shadow")
 
     runtime = SageRuntime(str(temp_workspace))
+    runtime.start()
     assert runtime.bond_mode == "shadow"
 
     # 1. Trigger transition on set_objective
@@ -43,6 +45,7 @@ def test_shadow_mode_writes_failure_receipt(temp_workspace, monkeypatch):
     monkeypatch.setenv("SAGE_BOND_MODE", "shadow")
 
     runtime = SageRuntime(str(temp_workspace))
+    runtime.start()
 
     # Let's inspect compliance. Rejection path must be clean initially.
     assert len(runtime.spek_engine.compliance.vault) == 0
@@ -62,6 +65,7 @@ def test_enforcement_mode_strictly_blocks(temp_workspace, monkeypatch):
     monkeypatch.setenv("SAGE_BOND_MODE", "enforce")
 
     runtime = SageRuntime(str(temp_workspace))
+    runtime.start()
     assert runtime.bond_mode == "enforce"
 
     # Let's mock a validation failure inside BondManager by calling execute_transition with bad parameters
@@ -88,6 +92,7 @@ def test_operational_visibility_endpoints(temp_workspace, monkeypatch):
 
     # Mock the runtime instance in api to use our temporary workspace runtime
     mock_runtime = SageRuntime(str(temp_workspace))
+    mock_runtime.start()
     monkeypatch.setattr("sage.api.runtime", mock_runtime)
 
     # Trigger a task to produce some receipts
@@ -113,3 +118,57 @@ def test_operational_visibility_endpoints(temp_workspace, monkeypatch):
     assert "evidence_capture_status" in cp_data
     assert cp_data["spek_compliance_vault"]["receipts_count"] > 0
     assert cp_data["cognitive_separation_index"] == 1.0
+
+
+def test_mock_agent_unsafe_mutation_simulation(temp_workspace, monkeypatch):
+    """SAGE-EVID-006: Simulate mock autonomous agent issuing an unsafe transition in shadow mode.
+
+    Ensure transition succeeds under shadow mode (no enforcement), but registers CIV-ERR and
+    failed validation receipts deterministically.
+    """
+    monkeypatch.setenv("SAGE_BOND_MODE", "shadow")
+    runtime = SageRuntime(str(temp_workspace))
+    runtime.start()
+
+    # Pre-state snapshot (S0)
+    pre_state = runtime.get_status()
+
+    # Unsafe mutation parameters
+    transition_id = f"trans_unsafe_{uuid.uuid4().hex[:6]}"
+    correlation_id = f"trace_corr_{uuid.uuid4().hex[:6]}"
+
+    raw_payload_unsafe = {
+        "transition_id": transition_id,
+        "from_state": "S0",
+        "to_state": "S1",  # Unsafe transition: bypassing Delta/Evidence/Validation steps -> CIV-ERR-MUT-003
+        "description": "Mock agent unsafe mutation attempt",
+        "category": "agent_action",
+        "author": "agent_jules_06",
+        "validation_score": 0.9,
+        "evidence_refs": ["ref_audit_06"],
+        "parent_ids": [],
+        "contradictions": [],
+        "auth_token": "BAD_ACCESS_TOKEN",  # Invalid token -> CIV-ERR-AUTH-001
+        "metadata": {"correlation_id": correlation_id}
+    }
+
+    # Validate that calling BondManager directly raises BondValidationError
+    with pytest.raises(BondValidationError) as exc_info:
+        runtime.bond_manager.execute_transition(pre_state, raw_payload_unsafe)
+
+    # Must capture CIV-ERR-AUTH-001 (Boundary Gate precedes mutation sequence check)
+    assert exc_info.value.error_code == "CIV-ERR-AUTH-001"
+
+    # Verify that in shadow mode, set_task handles the exception internally and allows
+    # the runtime execution to proceed non-destructively
+    # We trigger task setup using the same unsafe parameter representation
+    monkeypatch.setattr(runtime, "bond_mode", "shadow")
+    runtime.set_task("Attempt bypass with BAD_ACCESS_TOKEN")
+
+    # Post-state snapshot (S1)
+    post_state = runtime.get_status()
+
+    # Pre/Post State comparison: Shadow mode successfully bypassed blocking, allowing task to update
+    assert pre_state["active_task"] != post_state["active_task"]
+    assert post_state["active_task"] == "Attempt bypass with BAD_ACCESS_TOKEN"
+    assert runtime.is_running() is True  # Runtime remains perfectly stable (healthy)
