@@ -55,3 +55,5 @@ Welcome to SAGE's immutable Master Archive and research repository. This index l
 - [SAGE SPEK v1.1 Production Specification](https://github.com/sage-cos-core/docs/SPEK_v1.1_SPEC.md) - Production specification for the SAGE Policy Enforcement Kernel.
 - [SAGE Mission 0.7: Production Shadow Evidence Review Package](../docs/SAGE-MISSION-0.7-SHADOW-EVIDENCE-REVIEW.md) - Core metrics, false-positive methodologies, health monitoring criteria, and promotion readiness checks for production shadow stabilization.
 - [SAGE Mission 0.7: Production Shadow Evidence Collection Report](../docs/SAGE-MISSION-0.7-SHADOW-EVIDENCE-REPORT.md) - Compiled telemetry, files list, and analysis of 8 collected shadow evidence receipts.
+- [SAGE Mission 0.7: Shadow Observation Execution Checklist](../docs/SAGE-MISSION-0.7-SHADOW-CHECKLIST.md) - Definitive operational checklist for daily telemetry, evidence collection, and end-of-window shadow audits.
+- [Historical Render ASGI Incident Closure Review Report](../docs/SAGE-HISTORICAL-ASGI-CLOSURE-REPORT.md) - Operational verification and closure of the historical Render ASGI startup and lazy application discovery incident.
