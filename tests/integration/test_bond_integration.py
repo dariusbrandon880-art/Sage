@@ -8,7 +8,6 @@ from pathlib import Path
 from fastapi.testclient import TestClient
 
 from sage.runtime.engine import SageRuntime
-from sage.models import ExternalSessionPayload, ConfidenceLevel
 from sage.core.boundary import BoundaryEnforcer
 from sage.acr.bond import BondValidationError
 from sage.api import app
