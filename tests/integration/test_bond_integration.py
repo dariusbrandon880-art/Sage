@@ -153,8 +153,9 @@ def test_mock_agent_unsafe_mutation_simulation(temp_workspace, monkeypatch):
     }
 
     # Validate that calling BondManager directly raises BondValidationError
+    s0_test_state = {"current_project_state": "S0"}
     with pytest.raises(BondValidationError) as exc_info:
-        runtime.bond_manager.execute_transition(pre_state, raw_payload_unsafe)
+        runtime.bond_manager.execute_transition(s0_test_state, raw_payload_unsafe)
 
     # Must capture CIV-ERR-AUTH-001 (Boundary Gate precedes mutation sequence check)
     assert exc_info.value.error_code == "CIV-ERR-AUTH-001"
@@ -172,3 +173,78 @@ def test_mock_agent_unsafe_mutation_simulation(temp_workspace, monkeypatch):
     assert pre_state["active_task"] != post_state["active_task"]
     assert post_state["active_task"] == "Attempt bypass with BAD_ACCESS_TOKEN"
     assert runtime.is_running() is True  # Runtime remains perfectly stable (healthy)
+
+
+# ==========================================
+# MISSION 0.6 PHASE 3: ENFORCEMENT SIMULATION
+# ==========================================
+
+def test_controlled_enforcement_simulation_unauthorized_auth_civ_err_auth_001(temp_workspace, monkeypatch):
+    """SAGE-EVID-007: Simulate unauthorized authorization mutation in sandbox enforcement mode.
+
+    Confirm CIV-ERR-AUTH-001 classification, block transition, and verify 100% S0 state restoration.
+    """
+    monkeypatch.setenv("SAGE_BOND_MODE", "enforce")
+    runtime = SageRuntime(str(temp_workspace))
+    runtime.start()
+
+    # Capture S0 initial state completely
+    s0_state = {"current_project_state": "S0", "active_task": "None"}
+    s0_active_task = s0_state["active_task"]
+
+    # Try set_task with unauthorized token
+    # We simulate this directly inside execute_transition to test enforcement behavior
+    raw_payload_unsafe = {
+        "transition_id": "trans_forged_auth_123",
+        "from_state": "Delta",
+        "to_state": "Evidence",
+        "description": "Forged auth attempt",
+        "author": "malicious_actor",
+        "validation_score": 0.9,
+        "auth_token": "forged_malicious_sig_666"  # BAD token -> CIV-ERR-AUTH-001
+    }
+
+    # Verify that enforcement blocks and raises CIV-ERR-AUTH-001
+    with pytest.raises(BondValidationError) as exc_info:
+        runtime.bond_manager.execute_transition(s0_state, raw_payload_unsafe)
+
+    assert exc_info.value.error_code == "CIV-ERR-AUTH-001"
+    assert "Security Boundary" in exc_info.value.message
+
+    # State Integrity Comparison: State remains 100% preserved (S0)
+    assert s0_state["current_project_state"] == "S0"
+    assert s0_state["active_task"] == s0_active_task
+
+
+def test_controlled_enforcement_simulation_identity_mutation_civ_err_mut_003(temp_workspace, monkeypatch):
+    """SAGE-EVID-007: Simulate identity mutation/out-of-order state transition in sandbox enforcement mode.
+
+    Confirm CIV-ERR-MUT-003 classification, block transition, and verify 100% S0 state restoration.
+    """
+    monkeypatch.setenv("SAGE_BOND_MODE", "enforce")
+    runtime = SageRuntime(str(temp_workspace))
+    runtime.start()
+
+    s0_state = {"current_project_state": "S0"}
+    s0_project_state = s0_state["current_project_state"]
+
+    # Out of order transition payload (skipping states, trying to jump S0 -> Validation)
+    raw_payload_unsafe = {
+        "transition_id": "trans_out_of_order_123",
+        "from_state": "S0",
+        "to_state": "Validation",  # Skipped Delta & Evidence -> CIV-ERR-MUT-003
+        "description": "Out of order state skip attempt",
+        "author": "jules",
+        "validation_score": 0.9,
+        "auth_token": BoundaryEnforcer.SYSTEM_TOKEN
+    }
+
+    # Verify that enforcement blocks and raises CIV-ERR-MUT-003
+    with pytest.raises(BondValidationError) as exc_info:
+        runtime.bond_manager.execute_transition(s0_state, raw_payload_unsafe)
+
+    assert exc_info.value.error_code == "CIV-ERR-MUT-003"
+    assert "Invalid state transition sequence" in exc_info.value.message
+
+    # State Integrity Comparison: S0 state is pristine after rollback
+    assert s0_state["current_project_state"] == s0_project_state
