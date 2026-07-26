@@ -86,6 +86,30 @@ def process_incoming_payload(
             f"Unsupported SAGE-SKAL payload type: '{payload_type}'. Must be one of {valid_types}."
         )
 
+    # SAGE_BOND_MODE connection hook
+    bond_mode = getattr(runtime, "bond_mode", "disabled")
+    if bond_mode in ("shadow", "enforce"):
+        bond_manager = getattr(runtime, "bond_manager", None)
+        if bond_manager:
+            s0_state = {"current_project_state": "S0", "skal_payload_type": payload_type}
+            raw_payload = {
+                "from_state": "S0",
+                "to_state": "Delta",
+                "description": f"SKAL payload ingest: {payload_type}",
+                "author": "skal_intake",
+                "validation_score": 1.0,
+                "evidence_refs": payload_data.get("evidence_references", []),
+                "parent_ids": [],
+                "contradictions": [],
+                "auth_token": "SECURE_SPEK_SYSTEM_TOKEN_2026",
+                "metadata": {"payload_type": payload_type}
+            }
+            try:
+                bond_manager.execute_transition(s0_state, raw_payload)
+            except Exception as e:
+                if bond_mode == "enforce":
+                    raise e
+
     # Nonce Replay Protection Check
     nonce = payload_data.get("nonce")
     if nonce:

@@ -98,6 +98,41 @@ class SageRuntime:
         self.current_state = RuntimeState()
         self._load_state()
 
+        # Initialize SAGE Bond Manager for Phase 2 Runtime Hooks Connection
+        import os
+        from sage.acr.bond import BondManager
+        from sage.core.spek import SpekEngine
+
+        self.bond_mode = os.environ.get("SAGE_BOND_MODE", "disabled").lower()
+        spek_vault_path = self.workspace_path / "compliance" / "spek_vault.json"
+        promotion_path = self.workspace_path / "compliance" / "promotion_queue.log"
+        rejection_path = self.workspace_path / "compliance" / "negative_results.json"
+        hdg_path = self.workspace_path / "compliance" / "hdg_causality.json"
+
+        spek_vault_path.parent.mkdir(parents=True, exist_ok=True)
+        if not spek_vault_path.exists():
+            with open(spek_vault_path, "w") as f:
+                json.dump([], f)
+        if not rejection_path.exists():
+            with open(rejection_path, "w") as f:
+                json.dump([], f)
+        if not hdg_path.exists():
+            with open(hdg_path, "w") as f:
+                json.dump([], f)
+        if not promotion_path.exists():
+            promotion_path.touch()
+
+        self.spek_engine = SpekEngine(
+            vault_path=spek_vault_path,
+            promotion_path=promotion_path,
+            rejection_path=rejection_path,
+            hdg_path=hdg_path,
+        )
+        self.bond_manager = BondManager(
+            spek_engine=self.spek_engine,
+            evidence_capture_dir=str(self.workspace_path / "evidence_capture")
+        )
+
         # Telemetry
         from sage.runtime.metrics import get_metrics_collector
 
@@ -143,6 +178,28 @@ class SageRuntime:
             The generated session ID.
         """
         old_objective = self.current_state.current_objective or "None"
+
+        # SAGE_BOND_MODE connection hook
+        if getattr(self, "bond_mode", "disabled") in ("shadow", "enforce"):
+            s0_state = {"current_project_state": "S0", "current_objective": old_objective}
+            raw_payload = {
+                "from_state": "S0",
+                "to_state": "Delta",
+                "description": f"Set objective: {objective}",
+                "author": "system_runtime",
+                "validation_score": 1.0,
+                "evidence_refs": [],
+                "parent_ids": [],
+                "contradictions": [],
+                "auth_token": "SECURE_SPEK_SYSTEM_TOKEN_2026",
+                "metadata": {"objective": objective}
+            }
+            try:
+                self.bond_manager.execute_transition(s0_state, raw_payload)
+            except Exception as e:
+                if self.bond_mode == "enforce":
+                    raise e
+
         self.current_state.current_objective = objective
         self._save_state()
 
@@ -184,6 +241,29 @@ class SageRuntime:
         Returns:
             The session ID.
         """
+        old_task = self.current_state.active_task or "None"
+
+        # SAGE_BOND_MODE connection hook
+        if getattr(self, "bond_mode", "disabled") in ("shadow", "enforce"):
+            s0_state = {"current_project_state": "Delta", "active_task": old_task}
+            raw_payload = {
+                "from_state": "Delta",
+                "to_state": "Evidence",
+                "description": f"Set task: {task}",
+                "author": "system_runtime",
+                "validation_score": 1.0,
+                "evidence_refs": [],
+                "parent_ids": [],
+                "contradictions": [],
+                "auth_token": "SECURE_SPEK_SYSTEM_TOKEN_2026",
+                "metadata": {"task": task}
+            }
+            try:
+                self.bond_manager.execute_transition(s0_state, raw_payload)
+            except Exception as e:
+                if self.bond_mode == "enforce":
+                    raise e
+
         self.current_state.active_task = task
         self._save_state()
 
@@ -709,6 +789,30 @@ class SageRuntime:
               -> Persistence -> Decision Tracking -> Evidence Tracking
               -> Checkpoint -> Workspace Snapshot -> Restoration
         """
+        # SAGE_BOND_MODE connection hook
+        if getattr(self, "bond_mode", "disabled") in ("shadow", "enforce"):
+            s0_state = {
+                "current_project_state": "Evidence",
+                "current_objective": self.current_state.current_objective or "None"
+            }
+            raw_payload = {
+                "from_state": "Evidence",
+                "to_state": "Validation",
+                "description": f"Ingest session payload: {payload.objective}",
+                "author": "system_runtime",
+                "validation_score": 1.0,
+                "evidence_refs": [m.get("id") for m in payload.memories if m.get("id")] if payload.memories else [],
+                "parent_ids": [],
+                "contradictions": [],
+                "auth_token": "SECURE_SPEK_SYSTEM_TOKEN_2026",
+                "metadata": {"payload_objective": payload.objective}
+            }
+            try:
+                self.bond_manager.execute_transition(s0_state, raw_payload)
+            except Exception as e:
+                if self.bond_mode == "enforce":
+                    raise e
+
         # Nonce verification for replay protection
         nonce = payload.metadata.get("nonce") if payload.metadata else None
         if nonce:
