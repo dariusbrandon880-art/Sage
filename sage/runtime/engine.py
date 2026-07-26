@@ -57,7 +57,7 @@ class SageRuntime:
             workspace_path = None
 
         self.config = config or {}
-        self.workspace_path = Path(workspace_path or "sage_data")
+        self.workspace_path = Path(workspace_path or "sage_data").resolve()
         self.active = False
         self.context: ExecutionContext | None = None
 

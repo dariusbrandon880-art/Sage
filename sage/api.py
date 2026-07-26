@@ -5,6 +5,7 @@ import hmac
 import json
 import os
 from datetime import datetime
+from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, Header, HTTPException, Request
@@ -107,6 +108,55 @@ async def root():
     return {"status": "SAGE Runtime online", "version": "1.1.0"}
 
 
+@app.get("/runtime/validation/events")
+async def get_validation_events():
+    """Retrieve all read-only SAGE-EVID-003 validation pass events, compliance receipts, and rejection logs."""
+    events = []
+
+    # 1. Read SAGE-EVID-003 evidence captures from disk
+    capture_dir = Path(runtime.bond_manager.evidence_capture_dir)
+    if capture_dir.exists():
+        for path in capture_dir.glob("evidence_*.json"):
+            try:
+                with open(path, "r") as f:
+                    events.append({
+                        "source": "evidence_capture",
+                        "filename": path.name,
+                        "data": json.load(f)
+                    })
+            except Exception:
+                pass
+
+    # 2. Read compliance vault receipts
+    vault = runtime.spek_engine.compliance.vault
+    for receipt in vault:
+        events.append({
+            "source": "compliance_vault",
+            "receipt_id": receipt.receipt_id,
+            "data": receipt.model_dump()
+        })
+
+    # 3. Read rejection logs
+    rejection_path = Path(runtime.spek_engine.compliance.rejection_path)
+    if rejection_path.exists():
+        try:
+            with open(rejection_path, "r") as f:
+                rejections = json.load(f)
+                for r in rejections:
+                    events.append({
+                        "source": "negative_results",
+                        "data": r
+                    })
+        except Exception:
+            pass
+
+    return {
+        "status": "success",
+        "count": len(events),
+        "events": events
+    }
+
+
 @app.get("/health")
 async def health():
     return check_health(runtime)
@@ -119,20 +169,41 @@ async def get_status():
 
 @app.get("/runtime/control-plane")
 async def get_control_plane_status():
-    """Retrieve detailed SAGE Cognitive Control Plane status."""
+    """Retrieve detailed SAGE Cognitive Control Plane status connected with active evidence sources."""
     metrics = get_metrics_collector()
     approved = metrics.counters.get("control_plane.mutations_approved", 0)
     rejected = metrics.counters.get("control_plane.mutations_rejected", 0)
 
-    # Verify receipt chain
+    # 1. Verify SAGE-EVID-001 receipt chain
     receipt_chain_integrity = True
     receipts_count = 0
     if hasattr(runtime, "validation") and hasattr(runtime.validation, "receipt_chain"):
         receipt_chain_integrity = runtime.validation.receipt_chain.verify_chain_integrity()
         receipts_count = len(runtime.validation.receipt_chain.receipts)
 
+    # 2. Verify SAGE SPEK v1.1 compliance vault integrity
+    spek_vault_valid = runtime.spek_engine.compliance.verify_vault_integrity(runtime.spek_engine.attestation)
+    spek_receipts_count = len(runtime.spek_engine.compliance.vault)
+
+    # 3. Retrieve SAGE-EVID-003 evidence captures count on disk
+    evidence_captures_count = 0
+    capture_dir = Path(runtime.bond_manager.evidence_capture_dir)
+    if capture_dir.exists():
+        evidence_captures_count = len(list(capture_dir.glob("evidence_*.json")))
+
+    # 4. Count rejections from compliance logs
+    rejections_count = 0
+    rejection_path = Path(runtime.spek_engine.compliance.rejection_path)
+    if rejection_path.exists():
+        try:
+            with open(rejection_path, "r") as f:
+                rejections_count = len(json.load(f))
+        except Exception:
+            pass
+
     return {
         "status": "active",
+        "bond_mode": getattr(runtime, "bond_mode", "disabled"),
         "observer": {
             "name": "CognitiveHypervisor",
             "provider_type": runtime.hypervisor.attestation.get_provider_type()
@@ -146,7 +217,18 @@ async def get_control_plane_status():
         "receipt_chain": {
             "receipts_count": receipts_count,
             "integrity_valid": receipt_chain_integrity
-        }
+        },
+        "spek_compliance_vault": {
+            "receipts_count": spek_receipts_count,
+            "integrity_valid": spek_vault_valid,
+            "rejections_count": rejections_count
+        },
+        "evidence_capture_status": {
+            "sage_evid_003_captures_count": evidence_captures_count,
+            "capture_directory": str(runtime.bond_manager.evidence_capture_dir)
+        },
+        "cognitive_separation_index": 1.0 if spek_vault_valid else 0.0,
+        "authority_stability_index": runtime.authority_gate.get_authority_stability_index()
     }
 
 

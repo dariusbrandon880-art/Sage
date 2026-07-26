@@ -1,14 +1,17 @@
-"""Integration tests for SAGE Mission 0.4 Phase 2 - Shadow Hook Connections."""
+"""Integration tests for SAGE Mission 0.4 Phase 2 & Mission 0.5 - Operational Visibility Connections."""
 
 import os
+import json
 import pytest
 import tempfile
 from pathlib import Path
+from fastapi.testclient import TestClient
 
 from sage.runtime.engine import SageRuntime
 from sage.models import ExternalSessionPayload, ConfidenceLevel
 from sage.core.boundary import BoundaryEnforcer
 from sage.acr.bond import BondValidationError
+from sage.api import app
 
 
 @pytest.fixture
@@ -78,3 +81,36 @@ def test_enforcement_mode_strictly_blocks(temp_workspace, monkeypatch):
         runtime.bond_manager.execute_transition(s0_state, raw_payload_bad_token)
 
     assert exc_info.value.error_code == "CIV-ERR-AUTH-001"
+
+
+def test_operational_visibility_endpoints(temp_workspace, monkeypatch):
+    """Test read-only endpoints GET /runtime/validation/events and GET /runtime/control-plane."""
+    monkeypatch.setenv("SAGE_BOND_MODE", "shadow")
+
+    # Mock the runtime instance in api to use our temporary workspace runtime
+    mock_runtime = SageRuntime(str(temp_workspace))
+    monkeypatch.setattr("sage.api.runtime", mock_runtime)
+
+    # Trigger a task to produce some receipts
+    mock_runtime.set_task("Create mock telemetry receipt")
+
+    client = TestClient(app)
+
+    # 1. Test GET /runtime/validation/events
+    response = client.get("/runtime/validation/events")
+    assert response.status_code == 200
+    res_data = response.json()
+    assert res_data["status"] == "success"
+    assert "events" in res_data
+    assert res_data["count"] > 0
+
+    # 2. Test GET /runtime/control-plane
+    response_cp = client.get("/runtime/control-plane")
+    assert response_cp.status_code == 200
+    cp_data = response_cp.json()
+    assert cp_data["status"] == "active"
+    assert cp_data["bond_mode"] == "shadow"
+    assert "spek_compliance_vault" in cp_data
+    assert "evidence_capture_status" in cp_data
+    assert cp_data["spek_compliance_vault"]["receipts_count"] > 0
+    assert cp_data["cognitive_separation_index"] == 1.0
