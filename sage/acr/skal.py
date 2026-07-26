@@ -11,6 +11,7 @@ from typing import Any
 from pydantic import AliasChoices, BaseModel, Field, ValidationError
 
 from sage.models import ConfidenceLevel, MemoryObject
+from sage.core.boundary import BoundaryEnforcer
 
 
 class ValidationReport(BaseModel):
@@ -101,7 +102,7 @@ def process_incoming_payload(
                 "evidence_refs": payload_data.get("evidence_references", []),
                 "parent_ids": [],
                 "contradictions": [],
-                "auth_token": "SECURE_SPEK_SYSTEM_TOKEN_2026",
+                "auth_token": BoundaryEnforcer.SYSTEM_TOKEN,
                 "metadata": {"payload_type": payload_type}
             }
             try:

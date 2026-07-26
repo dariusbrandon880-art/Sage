@@ -191,7 +191,7 @@ class SageRuntime:
                 "evidence_refs": [],
                 "parent_ids": [],
                 "contradictions": [],
-                "auth_token": "SECURE_SPEK_SYSTEM_TOKEN_2026",
+                "auth_token": self.bond_manager.enforcer.SYSTEM_TOKEN,
                 "metadata": {"objective": objective}
             }
             try:
@@ -259,7 +259,7 @@ class SageRuntime:
                 "evidence_refs": [],
                 "parent_ids": [],
                 "contradictions": [],
-                "auth_token": "SECURE_SPEK_SYSTEM_TOKEN_2026",
+                "auth_token": self.bond_manager.enforcer.SYSTEM_TOKEN,
                 "metadata": {"task": task}
             }
             try:
@@ -812,7 +812,7 @@ class SageRuntime:
                 "evidence_refs": [m.get("id") for m in payload.memories if m.get("id")] if payload.memories else [],
                 "parent_ids": [],
                 "contradictions": [],
-                "auth_token": "SECURE_SPEK_SYSTEM_TOKEN_2026",
+                "auth_token": self.bond_manager.enforcer.SYSTEM_TOKEN,
                 "metadata": {"payload_objective": payload.objective}
             }
             try:
