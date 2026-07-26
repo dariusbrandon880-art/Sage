@@ -54,3 +54,4 @@ Welcome to SAGE's immutable Master Archive and research repository. This index l
 - [SAGE 2 Production Readiness & Live Activation Report](../docs/master/SAGE2_PRODUCTION_READINESS_REPORT.md) - Detailed production readiness verification, environmental parameters audit, and health status.
 - [SAGE SPEK v1.1 Production Specification](https://github.com/sage-cos-core/docs/SPEK_v1.1_SPEC.md) - Production specification for the SAGE Policy Enforcement Kernel.
 - [SAGE Mission 0.7: Production Shadow Evidence Review Package](../docs/SAGE-MISSION-0.7-SHADOW-EVIDENCE-REVIEW.md) - Core metrics, false-positive methodologies, health monitoring criteria, and promotion readiness checks for production shadow stabilization.
+- [SAGE Mission 0.7: Production Shadow Evidence Collection Report](../docs/SAGE-MISSION-0.7-SHADOW-EVIDENCE-REPORT.md) - Compiled telemetry, files list, and analysis of 8 collected shadow evidence receipts.
