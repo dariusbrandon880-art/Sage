@@ -80,29 +80,35 @@ def process_incoming_payload(
     rejects malformed data, and preserves evidence lineage in temporary memory store (without
     directly modifying permanent knowledge storage).
     """
-    # 1. Execute SAGE Bond Validation Hook if registered on runtime
-    bond_validator = getattr(runtime, "bond_validator", None)
-    if bond_validator:
-        # Build transition validation payload map
-        raw_payload = {
-            "tx_id": f"tx_skal_{uuid.uuid4().hex[:8]}",
-            "auth_token": payload_data.get("auth_token", "sys_trust_token_abc"),
-            "identity_ref": payload_data.get("identity_ref", "agent_jules"),
-            "target_state": f"skal_intake:{payload_type}",
-            "evidence_refs": []
-        }
-
-        # Capture S0 snapshot
-        s0_state_dict = runtime.current_state.model_dump()
-
-        # Execute validation hook
-        bond_validator.validate_transition(s0_state_dict, raw_payload)
-
     valid_types = ["validation_report", "deployment_event", "architecture_decision"]
     if payload_type not in valid_types:
         raise ValueError(
             f"Unsupported SAGE-SKAL payload type: '{payload_type}'. Must be one of {valid_types}."
         )
+
+    # SAGE_BOND_MODE connection hook
+    bond_mode = getattr(runtime, "bond_mode", "disabled")
+    if bond_mode in ("shadow", "enforce"):
+        bond_manager = getattr(runtime, "bond_manager", None)
+        if bond_manager:
+            s0_state = {"current_project_state": "S0", "skal_payload_type": payload_type}
+            raw_payload = {
+                "from_state": "S0",
+                "to_state": "Delta",
+                "description": f"SKAL payload ingest: {payload_type}",
+                "author": "skal_intake",
+                "validation_score": 1.0,
+                "evidence_refs": payload_data.get("evidence_references", []),
+                "parent_ids": [],
+                "contradictions": [],
+                "auth_token": "SECURE_SPEK_SYSTEM_TOKEN_2026",
+                "metadata": {"payload_type": payload_type}
+            }
+            try:
+                bond_manager.execute_transition(s0_state, raw_payload)
+            except Exception as e:
+                if bond_mode == "enforce":
+                    raise e
 
     # Nonce Replay Protection Check
     nonce = payload_data.get("nonce")

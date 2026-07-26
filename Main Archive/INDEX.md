@@ -32,7 +32,6 @@ Welcome to SAGE's immutable Master Archive and research repository. This index l
 - [SAGE 2 Knowledge Governance Study](research/strategic/SAGE_Research_Track_Comparative_Intelligence_Architecture_Study_Review.md) - SAGE-RF-2026-004 Comparative Intelligence Architecture Study Review (ACCEPTED).
 - [PEF Spec](research/strategic/PEF.md) - SAGE-RF-PEF-001 Parallel Cognitive Evolution Infrastructure Framework (SPRO, HSE, Reliability Arena, ESI v2).
 - [SP_REV2 Spec](research/strategic/SP_REV2.md) - SAGE-RF-SP-001-REV-2.0 Deep Security & Information Physics Expansion Study (ITF, ZKI, QKSS, SIMG, Adaptive Security Field Theory).
-- [BIO-COMP-001 Spec](research/strategic/BIO-COMP-001.md) - SAGE-RF-BIO-COMP-001 Resource Intelligence, Metabolic Regulation Layer, and Green AI Engineering directives (Candidate Only).
 
 ---
 
@@ -53,5 +52,5 @@ Welcome to SAGE's immutable Master Archive and research repository. This index l
 - [SAGE Final Live Activation Checklist](../docs/master/FINAL_LIVE_ACTIVATION_CHECKLIST.md) - Definitive step-by-step operational setup instructions to bridge the permission boundary for hosting, APIs, webhooks, and integrations.
 - [SAGE Render Deployment Handoff Spec](../docs/master/RENDER_DEPLOYMENT_HANDOFF.md) - Comprehensive Render deployment settings, repository reference, required env variables, and health checks.
 - [SAGE 2 Production Readiness & Live Activation Report](../docs/master/SAGE2_PRODUCTION_READINESS_REPORT.md) - Detailed production readiness verification, environmental parameters audit, and health status.
-- [SAGE Build Ledger Record for PR #39](../docs/master/SAGE_BUILD_LEDGER_RECORD_PR39.md) - Official post-merge build verification and promotion confirmation record.
+- [SAGE Day-2 Observation Evidence](../docs/validation_records/SAGE_EVID_0_7_DAY2.md) - Official post-merge shadow validation telemetry and transaction observation record.
 - [SAGE SPEK v1.1 Production Specification](https://github.com/sage-cos-core/docs/SPEK_v1.1_SPEC.md) - Production specification for the SAGE Policy Enforcement Kernel.
