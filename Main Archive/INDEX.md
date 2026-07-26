@@ -12,7 +12,6 @@ Welcome to SAGE's immutable Master Archive and research repository. This index l
 - [Architecture Index](architecture/architecture-index.md) - Directory layout index of the repository.
 - [SAGE Archive Intelligence Layer](../docs/master/ARCHIVE_INTELLIGENCE.md) - Design and operational specification of SAGE's relational knowledge graph and metadata tracking.
 - [SAGE Agent Workflow Layer v1 Foundation Spec](https://github.com/sage-cos-core/docs/AGENT_WORKFLOW_v1_SPEC.md) - Production specification for governed SAGE agents and task routing.
-- [SAGE BIO-COMP-001 Constitutional Boundary Specification](../docs/master/BIO_COMP_001_CONSTITUTIONAL_BOUNDARY.md) - Resource intelligence, Metabolic Regulation Layer, and Green AI Engineering directives.
 
 ---
 
@@ -33,6 +32,7 @@ Welcome to SAGE's immutable Master Archive and research repository. This index l
 - [SAGE 2 Knowledge Governance Study](research/strategic/SAGE_Research_Track_Comparative_Intelligence_Architecture_Study_Review.md) - SAGE-RF-2026-004 Comparative Intelligence Architecture Study Review (ACCEPTED).
 - [PEF Spec](research/strategic/PEF.md) - SAGE-RF-PEF-001 Parallel Cognitive Evolution Infrastructure Framework (SPRO, HSE, Reliability Arena, ESI v2).
 - [SP_REV2 Spec](research/strategic/SP_REV2.md) - SAGE-RF-SP-001-REV-2.0 Deep Security & Information Physics Expansion Study (ITF, ZKI, QKSS, SIMG, Adaptive Security Field Theory).
+- [BIO-COMP-001 Spec](research/strategic/BIO-COMP-001.md) - SAGE-RF-BIO-COMP-001 Resource Intelligence, Metabolic Regulation Layer, and Green AI Engineering directives (Candidate Only).
 
 ---
 
