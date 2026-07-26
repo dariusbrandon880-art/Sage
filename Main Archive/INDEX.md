@@ -53,4 +53,5 @@ Welcome to SAGE's immutable Master Archive and research repository. This index l
 - [SAGE Render Deployment Handoff Spec](../docs/master/RENDER_DEPLOYMENT_HANDOFF.md) - Comprehensive Render deployment settings, repository reference, required env variables, and health checks.
 - [SAGE 2 Production Readiness & Live Activation Report](../docs/master/SAGE2_PRODUCTION_READINESS_REPORT.md) - Detailed production readiness verification, environmental parameters audit, and health status.
 - [SAGE Day-2 Observation Evidence](../docs/validation_records/SAGE_EVID_0_7_DAY2.md) - Official post-merge shadow validation telemetry and transaction observation record.
+- [SAGE Mission 0.7 Shadow Evidence Report](../docs/SAGE-MISSION-0.7-SHADOW-EVIDENCE-REPORT.md) - Diagnostic report on shadow-mode telemetry and validation evidence collection.
 - [SAGE SPEK v1.1 Production Specification](https://github.com/sage-cos-core/docs/SPEK_v1.1_SPEC.md) - Production specification for the SAGE Policy Enforcement Kernel.
