@@ -1,83 +1,288 @@
-"""SAGE-ACT Milestone 1 Interface validation and Import isolation test suite."""
+"""SAGE-ACT Milestone 2 Interface validation and Import isolation test suite."""
 
 import pytest
 import os
 import ast
 from pathlib import Path
+from datetime import datetime, timedelta, timezone
 
 from sage.experimental.act import SessionTaskTreeLinker, TaskDecisionBinder
+from sage.acr.session.session_state import SessionState
+from sage.agents.models import AgentTask, AgentTaskState, TaskEvent
+from sage.models import DecisionEntry, DecisionType
 
 
-def test_session_task_tree_linker_valid():
-    """Verify standard valid linkage mapping."""
+class MockSessionStateManager:
+    """Mock state manager for SessionState retrievals."""
+
+    def __init__(self):
+        self.sessions = {}
+
+    def retrieve_session(self, session_id: str):
+        return self.sessions.get(session_id)
+
+
+class MockAgentTaskRouter:
+    """Mock router for AgentTask retrievals."""
+
+    def __init__(self):
+        self.tasks = {}
+
+
+class MockDecisionTracker:
+    """Mock tracker for DecisionEntry retrievals."""
+
+    def __init__(self):
+        self.decisions = {}
+
+    def list_all(self):
+        return list(self.decisions.values())
+
+
+def test_session_task_tree_linker_valid_integration():
+    """Verify standard valid linkage mapping and zero anomalies when fully aligned."""
+    session_mgr = MockSessionStateManager()
+    task_router = MockAgentTaskRouter()
+
+    # 1. Setup existing SessionState
+    session_id = "session_2026_ok"
+    session = SessionState(
+        session_id=session_id,
+        active_objectives=["obj_kernel_deploy"],
+    )
+    session_mgr.sessions[session_id] = session
+
+    # 2. Setup active AgentTasks
+    task_1 = AgentTask(
+        task_id="task_001_compile",
+        objective_id="obj_kernel_deploy",
+        title="Compile secure kernel",
+        assigned_agent_id="agent_jules_enforcer",
+        state=AgentTaskState.COMPLETED,
+    )
+    task_router.tasks["task_001_compile"] = task_1
+
     linker = SessionTaskTreeLinker()
-    result = linker.link_session_to_tasks(
-        session_id="session_f6b3d4e5",
-        task_ids=["task_001_deploy", "task_002_test"],
+    report = linker.validate_session_and_tasks(
+        session_id=session_id,
+        task_ids=["task_001_compile"],
+        session_manager=session_mgr,
+        task_router=task_router,
     )
 
-    assert result["session_id"] == "session_f6b3d4e5"
-    assert len(result["mapped_tasks"]) == 2
-    assert "task_001_deploy" in result["mapped_tasks"]
-    assert result["validation_status"] == "INTERFACE_VERIFIED"
-    assert result["read_only_assertion"] is True
-    assert "linked_at" in result
+    assert report["session_id"] == session_id
+    assert report["valid_continuity"] is True
+    assert len(report["anomalies"]) == 0
+    assert report["validation_status"] == "CONTINUITY_TRUTH_REPORT_COMPILED"
 
 
-def test_session_task_tree_linker_invalid_session_id():
-    """Verify that an invalid session_id format is rejected."""
-    linker = SessionTaskTreeLinker()
-    with pytest.raises(ValueError, match="Invalid session_id format"):
-        linker.link_session_to_tasks(
-            session_id="sess_f6b3d4e5",  # Invalid prefix (must be session_)
-            task_ids=["task_001"],
-        )
+def test_session_task_tree_linker_anomalies_and_orphans():
+    """Verify that linker detects session_not_found, task_not_found, orphan_task, and mismatch anomalies."""
+    session_mgr = MockSessionStateManager()
+    task_router = MockAgentTaskRouter()
 
+    # Setup mismatched active session
+    session_id = "session_2026_mismatch"
+    session = SessionState(
+        session_id=session_id,
+        active_objectives=["obj_prod_deploy"],
+    )
+    session_mgr.sessions[session_id] = session
 
-def test_session_task_tree_linker_invalid_task_id():
-    """Verify that an invalid task_id format is rejected."""
-    linker = SessionTaskTreeLinker()
-    with pytest.raises(ValueError, match="Invalid task_id format"):
-        linker.link_session_to_tasks(
-            session_id="session_f6b3d4e5",
-            task_ids=["task_001", "deploy_task_002"],  # Invalid prefix
-        )
-
-
-def test_task_decision_binder_valid():
-    """Verify standard valid decision binding mapping."""
-    binder = TaskDecisionBinder()
-    result = binder.bind_task_to_decisions(
-        task_id="task_2026_spek",
-        decision_ids=["decision_001_approve", "proposal_002_auth"],
+    # Setup an orphan task (no agent) with objective mismatch
+    task_router.tasks["task_orphan"] = AgentTask(
+        task_id="task_orphan",
+        objective_id="obj_unaligned_secret",
+        title="Unassigned secret audit",
+        assigned_agent_id=None,  # Orphan
+        state=AgentTaskState.PENDING,
     )
 
-    assert result["task_id"] == "task_2026_spek"
-    assert len(result["bound_decisions"]) == 2
-    assert "proposal_002_auth" in result["bound_decisions"]
-    assert result["validation_status"] == "INTERFACE_VERIFIED"
-    assert result["read_only_assertion"] is True
-    assert "bound_at" in result
+    linker = SessionTaskTreeLinker()
+
+    # 1. Test missing session anomaly
+    report_no_session = linker.validate_session_and_tasks(
+        session_id="session_unknown",
+        task_ids=[],
+        session_manager=session_mgr,
+        task_router=task_router,
+    )
+    assert report_no_session["valid_continuity"] is False
+    assert any(a["type"] == "session_not_found" for a in report_no_session["anomalies"])
+
+    # 2. Test missing task and orphan task anomalies
+    report_orphans = linker.validate_session_and_tasks(
+        session_id=session_id,
+        task_ids=["task_missing", "task_orphan"],
+        session_manager=session_mgr,
+        task_router=task_router,
+    )
+    assert report_orphans["valid_continuity"] is False
+    anom_types = [a["type"] for a in report_orphans["anomalies"]]
+    assert "task_not_found" in anom_types
+    assert "orphan_task_no_agent" in anom_types
+    assert "objective_alignment_mismatch" in anom_types
 
 
-def test_task_decision_binder_invalid_task_id():
-    """Verify that an invalid task_id format is rejected by the binder."""
+def test_session_task_tree_linker_missing_lineage_link():
+    """Verify detection of missing lineage link where a task references a session but is omitted from list."""
+    session_mgr = MockSessionStateManager()
+    task_router = MockAgentTaskRouter()
+
+    session_id = "session_missing_link_test"
+    session = SessionState(
+        session_id=session_id,
+        active_objectives=["obj_audit"],
+    )
+    session_mgr.sessions[session_id] = session
+
+    # Task is in router and references session_id in metadata, but is not passed in task_ids list
+    task_router.tasks["task_unlisted"] = AgentTask(
+        task_id="task_unlisted",
+        objective_id="obj_audit",
+        title="Audit compliance logs",
+        assigned_agent_id="agent_jules",
+        metadata={"session_id": session_id},
+    )
+
+    linker = SessionTaskTreeLinker()
+    report = linker.validate_session_and_tasks(
+        session_id=session_id,
+        task_ids=[],  # Omitting task_unlisted
+        session_manager=session_mgr,
+        task_router=task_router,
+    )
+
+    assert report["valid_continuity"] is False
+    assert any(a["type"] == "missing_lineage_link" for a in report["anomalies"])
+
+
+def test_task_decision_binder_valid_integration():
+    """Verify standard valid decision-to-task binding with perfect temporal order."""
+    task_router = MockAgentTaskRouter()
+    dec_tracker = MockDecisionTracker()
+
+    task_id = "task_verify_contract"
+    now_tz = datetime.now(timezone.utc)
+
+    # Task created at time 'now'
+    task_router.tasks[task_id] = AgentTask(
+        task_id=task_id,
+        objective_id="obj_deploy",
+        title="Contract verification",
+        created_at=now_tz.isoformat(),
+        assigned_agent_id="agent_enforcer",
+    )
+
+    # Decision made 5 minutes later
+    dec_id = "decision_approve_scaffold"
+    dec_tracker.decisions[dec_id] = DecisionEntry(
+        id=dec_id,
+        decision_type=DecisionType.TECHNICAL,
+        description="Approve read-only contracts",
+        rationale="Milestone 2 interface safety verified",
+        timestamp=now_tz + timedelta(minutes=5),
+    )
+
     binder = TaskDecisionBinder()
-    with pytest.raises(ValueError, match="Invalid task_id format"):
-        binder.bind_task_to_decisions(
-            task_id="t_2026",  # Invalid prefix
-            decision_ids=["decision_001"],
-        )
+    report = binder.validate_task_and_decisions(
+        task_id=task_id,
+        decision_ids=[dec_id],
+        task_router=task_router,
+        decision_tracker=dec_tracker,
+    )
+
+    assert report["task_id"] == task_id
+    assert report["valid_causality"] is True
+    assert len(report["anomalies"]) == 0
+    assert report["validation_status"] == "DECISION_CAUSALITY_MAP_COMPILED"
 
 
-def test_task_decision_binder_invalid_decision_id():
-    """Verify that an invalid decision_id format is rejected by the binder."""
+def test_task_decision_binder_causality_violations():
+    """Verify that binder detects task_not_found, decision_not_found, and temporal_causality_violations."""
+    task_router = MockAgentTaskRouter()
+    dec_tracker = MockDecisionTracker()
+
+    task_id = "task_2026_audit"
+    now_tz = datetime.now(timezone.utc)
+
+    # Task created 'now'
+    task_router.tasks[task_id] = AgentTask(
+        task_id=task_id,
+        objective_id="obj_audit",
+        title="Compliance checking",
+        created_at=now_tz.isoformat(),
+        assigned_agent_id="agent_validator",
+    )
+
+    # Decision is marked as having occurred 10 minutes *before* the task was created
+    dec_id = "decision_retroactive"
+    dec_tracker.decisions[dec_id] = DecisionEntry(
+        id=dec_id,
+        decision_type=DecisionType.ARCHITECTURAL,
+        description="Retroactive decision",
+        rationale="Incorrectly logged timeline",
+        timestamp=now_tz - timedelta(minutes=10),  # Causality violation!
+    )
+
     binder = TaskDecisionBinder()
-    with pytest.raises(ValueError, match="Invalid decision/proposal ID format"):
-        binder.bind_task_to_decisions(
-            task_id="task_2026",
-            decision_ids=["decision_001", "approved_dec_002"],  # Invalid prefix
-        )
+
+    # 1. Test task not found
+    report_no_task = binder.validate_task_and_decisions(
+        task_id="task_unknown",
+        decision_ids=[],
+        task_router=task_router,
+        decision_tracker=dec_tracker,
+    )
+    assert report_no_task["valid_causality"] is False
+    assert any(a["type"] == "task_not_found" for a in report_no_task["anomalies"])
+
+    # 2. Test decision not found & causality violations
+    report_violations = binder.validate_task_and_decisions(
+        task_id=task_id,
+        decision_ids=["decision_missing", dec_id],
+        task_router=task_router,
+        decision_tracker=dec_tracker,
+    )
+    assert report_violations["valid_causality"] is False
+    anom_types = [a["type"] for a in report_violations["anomalies"]]
+    assert "decision_not_found" in anom_types
+    assert "temporal_causality_violation" in anom_types
+
+
+def test_task_decision_binder_unlinked_decision_reference():
+    """Verify detection of decision referencing task in evidence but omitted from list."""
+    task_router = MockAgentTaskRouter()
+    dec_tracker = MockDecisionTracker()
+
+    task_id = "task_core"
+    task_router.tasks[task_id] = AgentTask(
+        task_id=task_id,
+        objective_id="obj_core",
+        title="Core tasks",
+        assigned_agent_id="agent_jules",
+    )
+
+    # Decision contains task_id in evidence list, but is not passed in decision_ids list
+    dec_id = "decision_unlinked_ref"
+    dec_tracker.decisions[dec_id] = DecisionEntry(
+        id=dec_id,
+        decision_type=DecisionType.STRATEGIC,
+        description="Strategic mapping",
+        rationale="Derived from task outcomes",
+        evidence=[task_id],
+    )
+
+    binder = TaskDecisionBinder()
+    report = binder.validate_task_and_decisions(
+        task_id=task_id,
+        decision_ids=[],  # Omitting dec_id
+        task_router=task_router,
+        decision_tracker=dec_tracker,
+    )
+
+    assert report["valid_causality"] is False
+    assert any(a["type"] == "unlinked_decision_reference" for a in report["anomalies"])
 
 
 def test_one_way_import_isolation_enforcement():
