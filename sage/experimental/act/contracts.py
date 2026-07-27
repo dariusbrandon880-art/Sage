@@ -8,12 +8,12 @@ from pathlib import Path
 class PreMutationSafetyGates:
     """Implements read-only, non-mutating validation checks for proposed continuity operations.
 
-    Ensures path mutation isolation, nonce freshness, and acyclic hierarchies
-    fail-closed before any active writes are authorized.
+    Provides simulation-only validators for protected path access, nonce freshness, and cyclic lineage.
+    These validators report findings only and do not modify any system state.
     """
 
     def __init__(self):
-        # Critical SAGE core protected path elements
+        # Critical SAGE core protected paths
         self.protected_prefixes = [
             ".sage",
             "sage/acr",
@@ -23,64 +23,82 @@ class PreMutationSafetyGates:
             "sage/config"
         ]
 
-    def validate_path_isolation(self, target_path: str | Path) -> bool:
-        """Verify that proposed mutated paths sit strictly outside protected namespaces.
-
-        Args:
-            target_path: Proposed target file or directory path.
+    def validate_path_isolation(self, target_path: str | Path) -> Dict[str, Any]:
+        """Simulation-only: Check if proposed mutated path sits outside protected namespaces.
 
         Returns:
-            True if path is isolated, raises ValueError otherwise.
+            A dictionary containing the audit findings.
         """
         resolved_path = Path(target_path).resolve()
         workspace_root = Path(".").resolve()
+
+        findings = {
+            "target_path": str(target_path),
+            "is_isolated": True,
+            "details": "Path is safely situated outside critical namespaces.",
+            "code": "PATH_ISOLATED"
+        }
 
         # Enforce relative check
         try:
             rel_path = resolved_path.relative_to(workspace_root)
         except ValueError:
-            # Outside workspace is strictly forbidden
-            raise ValueError(f"SAGE-ACT Path Violation: Path '{target_path}' lies outside the workspace root.")
+            findings["is_isolated"] = False
+            findings["details"] = f"Path '{target_path}' lies outside the workspace root."
+            findings["code"] = "PATH_OUT_OF_WORKSPACE"
+            return findings
 
         parts_str = "/".join(rel_path.parts).lower()
 
         # Check if the path targets any protected core namespaces
         for protected in self.protected_prefixes:
             if parts_str == protected or parts_str.startswith(protected + "/"):
-                raise ValueError(
-                    f"SAGE-ACT Path Violation: Mutating core protected namespace '{protected}' "
-                    f"is strictly prohibited. Attempted path: '{target_path}'"
-                )
+                findings["is_isolated"] = False
+                findings["details"] = f"Proposed mutation path targets core protected namespace '{protected}'."
+                findings["code"] = "PROTECTED_NAMESPACE_VIOLATION"
+                break
 
-        return True
+        return findings
 
-    def validate_nonce_freshness(self, nonce: str, active_nonces: List[str]) -> bool:
-        """Verify that a proposed execution nonce is perfectly unique to prevent replay.
-
-        Args:
-            nonce: Proposed session/task nonce string.
-            active_nonces: List of currently consumed/active nonces in the ledger.
+    def validate_nonce_freshness(self, nonce: str, active_nonces: List[str]) -> Dict[str, Any]:
+        """Simulation-only: Check if a proposed execution nonce is perfectly unique.
 
         Returns:
-            True if fresh, raises ValueError if replayed or malformed.
+            A dictionary containing the audit findings.
         """
+        findings = {
+            "nonce": nonce,
+            "is_fresh": True,
+            "details": "Nonce is fresh and unique.",
+            "code": "NONCE_FRESH"
+        }
+
         if not nonce or len(nonce) < 8:
-            raise ValueError(f"SAGE-ACT Nonce Violation: Nonce '{nonce}' is malformed or too short.")
+            findings["is_fresh"] = False
+            findings["details"] = "Nonce is malformed or too short (minimum 8 characters)."
+            findings["code"] = "NONCE_MALFORMED"
+            return findings
 
         if nonce in active_nonces:
-            raise ValueError(f"SAGE-ACT Nonce Violation: Nonce replay detected. Nonce '{nonce}' has already been consumed.")
+            findings["is_fresh"] = False
+            findings["details"] = f"Nonce replay detected. Nonce '{nonce}' already exists in ledger."
+            findings["code"] = "NONCE_REPLAY"
 
-        return True
+        return findings
 
-    def validate_acyclic_hierarchy(self, dependency_map: Dict[str, List[str]]) -> bool:
-        """Verify that the proposed task/session hierarchy is perfectly acyclic.
-
-        Args:
-            dependency_map: Map of task_id/session_id to its list of parent dependencies.
+    def validate_acyclic_hierarchy(self, dependency_map: Dict[str, List[str]]) -> Dict[str, Any]:
+        """Simulation-only: Check if the proposed task/session hierarchy is perfectly acyclic.
 
         Returns:
-            True if acyclic, raises ValueError if a circular dependency cycle is detected.
+            A dictionary containing the audit findings.
         """
+        findings = {
+            "is_acyclic": True,
+            "details": "No cycles detected in lineage hierarchy.",
+            "code": "HIERARCHY_ACYCLIC",
+            "cycle_detected_at": None
+        }
+
         visited = {}  # 0 = unvisited, 1 = visiting, 2 = fully processed
 
         def has_cycle(node: str) -> bool:
@@ -89,7 +107,8 @@ class PreMutationSafetyGates:
             for neighbor in dependency_map.get(node, []):
                 state = visited.get(neighbor, 0)
                 if state == 1:
-                    return True  # Found a back edge/cycle
+                    findings["cycle_detected_at"] = node
+                    return True  # Cycle detected
                 elif state == 0:
                     if has_cycle(neighbor):
                         return True
@@ -100,12 +119,12 @@ class PreMutationSafetyGates:
         for n in dependency_map:
             if visited.get(n, 0) == 0:
                 if has_cycle(n):
-                    raise ValueError(
-                        f"SAGE-ACT Cycle Violation: Circular dependency detected in lineage hierarchy "
-                        f"involving node: '{n}'."
-                    )
+                    findings["is_acyclic"] = False
+                    findings["details"] = f"Circular dependency cycle detected at node '{findings['cycle_detected_at']}'."
+                    findings["code"] = "CYCLE_DETECTED"
+                    break
 
-        return True
+        return findings
 
 
 class SessionTaskTreeLinker:
@@ -120,10 +139,7 @@ class SessionTaskTreeLinker:
         self.validation_mode = validation_mode
 
     def link_session_to_tasks(self, session_id: str, task_ids: List[str]) -> Dict[str, Any]:
-        """Perform legacy format check and return a simple read-only tree.
-
-        Maintains backwards compatibility with Milestone 1 signatures.
-        """
+        """Perform legacy format check and return a simple read-only tree."""
         if not session_id or not session_id.startswith("session_"):
             raise ValueError(f"SAGE-ACT Contract Violation: Invalid session_id format: '{session_id}'")
 
@@ -148,10 +164,11 @@ class SessionTaskTreeLinker:
     ) -> Dict[str, Any]:
         """Validate relationships between session and tasks, generating a Continuity Truth Report.
 
-        Performs deep verification of lineage link completeness and orphan states.
+        Performs deep verification of lineage link completeness, objective alignment,
+        pending/completed action consistency, and orphan states.
         No database or production mutations are executed.
         """
-        # Ensure structural formatting matches standard
+        # Formally check structural formats first
         self.link_session_to_tasks(session_id, task_ids)
 
         anomalies = []
@@ -196,9 +213,9 @@ class SessionTaskTreeLinker:
                         "details": f"The task {t_id} is in state '{getattr(task, 'state', 'unknown')}' but has no assigned agent.",
                     })
 
-                # Check objective alignment
+                # Validate: Objective alignment between session and tasks
                 if session_obj:
-                    active_objectives = getattr(session_obj, "active_objectives", [])
+                    active_objectives = getattr(session_obj, "active_objectives", []) or []
                     task_obj_id = getattr(task, "objective_id", None)
                     if task_obj_id and task_obj_id not in active_objectives:
                         anomalies.append({
@@ -207,17 +224,41 @@ class SessionTaskTreeLinker:
                             "details": f"The task {t_id} objective '{task_obj_id}' is not linked to active session objectives: {active_objectives}.",
                         })
 
+                    # Validate: Pending / completed action consistency
+                    # Completed tasks should reside in completed_actions, pending/routing in pending_actions
+                    pending_actions = getattr(session_obj, "pending_actions", []) or []
+                    completed_actions = getattr(session_obj, "completed_actions", []) or []
+
+                    t_state = getattr(task, "state", None)
+                    t_title = getattr(task, "title", "")
+
+                    if t_state == "COMPLETED":
+                        # Completed task's title or ID should be in completed_actions
+                        if t_title not in completed_actions and t_id not in completed_actions:
+                            anomalies.append({
+                                "type": "action_consistency_mismatch",
+                                "target": t_id,
+                                "details": f"Task {t_id} is marked as COMPLETED, but is missing from completed_actions.",
+                            })
+                    else:
+                        # Non-completed task should not be in completed_actions
+                        if t_title in completed_actions or t_id in completed_actions:
+                            anomalies.append({
+                                "type": "action_consistency_mismatch",
+                                "target": t_id,
+                                "details": f"Task {t_id} is in state '{t_state}', but is listed in completed_actions.",
+                            })
+
             # Detect Missing Lineage Links: Router tasks claiming to belong to this session but omitted from task_ids
             for r_tid, r_task in router_tasks.items():
                 if r_tid not in task_ids:
-                    # Check metadata or objective associations indicating link to this session
-                    r_meta = getattr(r_task, "metadata", {})
+                    r_meta = getattr(r_task, "metadata", {}) or {}
                     r_obj_id = getattr(r_task, "objective_id", None)
 
                     belongs_to_session = False
                     if r_meta.get("session_id") == session_id:
                         belongs_to_session = True
-                    elif session_obj and r_obj_id in getattr(session_obj, "active_objectives", []):
+                    elif session_obj and r_obj_id in (getattr(session_obj, "active_objectives", []) or []):
                         belongs_to_session = True
 
                     if belongs_to_session:
@@ -254,10 +295,7 @@ class TaskDecisionBinder:
         self.validation_mode = validation_mode
 
     def bind_task_to_decisions(self, task_id: str, decision_ids: List[str]) -> Dict[str, Any]:
-        """Perform simple legacy format check and return simple mapping.
-
-        Maintains backwards compatibility with Milestone 1 signatures.
-        """
+        """Perform simple legacy format check and return simple mapping."""
         if not task_id or not task_id.startswith("task_"):
             raise ValueError(f"SAGE-ACT Contract Violation: Invalid task_id format: '{task_id}'")
 
@@ -285,7 +323,7 @@ class TaskDecisionBinder:
         Performs strict temporal audits and detects detached or missing references.
         No database or production mutations are executed.
         """
-        # Formally check structural formats
+        # Formally check structural formats first
         self.bind_task_to_decisions(task_id, decision_ids)
 
         anomalies = []
@@ -359,6 +397,27 @@ class TaskDecisionBinder:
                             "target": dec_id,
                             "details": f"Failed to parse time causality metrics for decision {dec_id}: {e}",
                         })
+
+                    # Check agent ownership alignment
+                    # Since DecisionEntry does not have a direct author field, we check if the assigned agent ID
+                    # is mentioned or referenced in description, rationale, or evidence.
+                    assigned_agent = getattr(task_obj, "assigned_agent_id", None)
+                    dec_desc = getattr(dec_entry, "description", "") or ""
+                    dec_rat = getattr(dec_entry, "rationale", "") or ""
+                    dec_ev = getattr(dec_entry, "evidence", []) or []
+
+                    if assigned_agent:
+                        mentioned = (
+                            assigned_agent in dec_desc or
+                            assigned_agent in dec_rat or
+                            any(assigned_agent in ev for ev in dec_ev)
+                        )
+                        if not mentioned:
+                            anomalies.append({
+                                "type": "agent_ownership_mismatch",
+                                "target": dec_id,
+                                "details": f"Decision {dec_id} rationale or evidence does not reference the assigned task agent '{assigned_agent}'.",
+                            })
 
             # Detect unlinked decision references (decisions referencing task in evidence but not in list)
             all_tracker_decisions = []
