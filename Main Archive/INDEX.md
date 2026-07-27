@@ -63,3 +63,4 @@ Welcome to SAGE's immutable Master Archive and research repository. This index l
   - [SAGE Phase Readiness Assessment](../docs/SAGE-PHASE-READINESS-ASSESSMENT.md) - Comprehensive validated capabilities review, evolutionary architecture layers, and empirical production readiness check.
   - [SAGE Phase C Baseline Alignment Report](../docs/SAGE-PHASE-C-BASELINE-ALIGNMENT-REPORT.md) - Core verification, baseline test alignment, and structural audit for transitioning SAGE to Phase C.
   - [SAGE Phase C Transition Planning Package](../docs/SAGE-PHASE-C-TRANSITION-PLANNING-PACKAGE.md) - Comprehensive system state mapping, Proof Trinity readiness assessment, dependency graph modeling, implementation readiness gates, and core risk review.
+  - [SAGE Architecture Resilience Assessment](../docs/SAGE-ARCHITECTURE-RESILIENCE-ASSESSMENT.md) - Comprehensive review of continuity layer resilience, multi-agent governance, validation pipeline audit, and long-term evolution risks.
