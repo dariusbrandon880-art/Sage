@@ -57,3 +57,5 @@ Welcome to SAGE's immutable Master Archive and research repository. This index l
   - [SAGE Mission 0.7: Production Shadow Evidence Review Package](../docs/SAGE-MISSION-0.7-SHADOW-EVIDENCE-REVIEW.md) - Core metrics, false-positive methodologies, health monitoring criteria, and promotion readiness checks for production shadow stabilization.
   - [SAGE Mission 0.7 Initial Observation Readiness Report](../docs/SAGE-MISSION-0.7-INITIAL-OBSERVATION-READINESS-REPORT.md) - Assessment of environment status, telemetry endpoints, evidence pipeline safety, blockers, and recommended checkpoint.
   - [SAGE Mission 0.7: Day-0 Observation Report](../docs/SAGE-MISSION-0.7-SHADOW-EVIDENCE-REPORT.md) - Operational telemetry baseline, health checks, evidence pipeline validation, and classification distribution for Mission 0.7.
+- **Validation Phase — Security & Adversarial Robustness**
+  - [SAGE-ARCH-AVF-008: Adversarial Validation Framework](../docs/SAGE-ARCH-AVF-008-ADVERSARIAL-VALIDATION-FRAMEWORK.md) - Security architecture, defensive guards, and execution telemetry results across priority attack vectors.
