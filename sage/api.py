@@ -22,11 +22,13 @@ from sage.integration import (
     ToolIntegrationManager,
 )
 from sage.models import ConfidenceLevel, DecisionType, ExternalSessionPayload, MemoryObject
-from sage.runtime.engine import SageRuntime as SAGERuntime
-from sage.runtime.health import check_health
-from sage.runtime.capability_report import generate_capability_report
-from sage.runtime.diagnostics import generate_diagnostic_report
-from sage.runtime.metrics import get_metrics_collector
+from sage.runtime import (
+    SAGERuntime,
+    check_health,
+    generate_capability_report,
+    generate_diagnostic_report,
+    get_metrics_collector,
+)
 from sage.service import LifecycleManager
 from sage.validation import ValidationSystem
 
