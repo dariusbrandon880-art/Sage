@@ -6,7 +6,11 @@ import ast
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
 
-from sage.experimental.act import SessionTaskTreeLinker, TaskDecisionBinder
+from sage.experimental.act.contracts import (
+    SessionTaskTreeLinker,
+    TaskDecisionBinder,
+    PreMutationSafetyGates,
+)
 from sage.acr.session.session_state import SessionState
 from sage.agents.models import AgentTask, AgentTaskState, TaskEvent
 from sage.models import DecisionEntry, DecisionType
@@ -283,6 +287,65 @@ def test_task_decision_binder_unlinked_decision_reference():
 
     assert report["valid_causality"] is False
     assert any(a["type"] == "unlinked_decision_reference" for a in report["anomalies"])
+
+
+def test_pre_mutation_safety_gates_path_isolation():
+    """Verify that path mutation isolation checks pass for sandbox paths and fail for core paths."""
+    gates = PreMutationSafetyGates()
+
+    # Valid sandbox paths succeed
+    assert gates.validate_path_isolation("sage/experimental/act/contracts.py") is True
+    assert gates.validate_path_isolation("tests/experimental/test_act_interface.py") is True
+    assert gates.validate_path_isolation("sage_data/sessions/session_xyz.json") is True
+
+    # Mutating core files directly fails-closed with ValueError
+    with pytest.raises(ValueError, match="Mutating core protected namespace"):
+        gates.validate_path_isolation("sage/core/spek.py")
+
+    with pytest.raises(ValueError, match="Mutating core protected namespace"):
+        gates.validate_path_isolation(".sage/config/runtime.json")
+
+    with pytest.raises(ValueError, match="Mutating core protected namespace"):
+        gates.validate_path_isolation("sage/acr/eas_receipts.py")
+
+
+def test_pre_mutation_safety_gates_nonce_freshness():
+    """Verify that nonce uniqueness check accepts fresh nonces and rejects duplicates."""
+    gates = PreMutationSafetyGates()
+    active_ledger = ["nonce_used_123", "nonce_used_456"]
+
+    # Fresh unique nonces succeed
+    assert gates.validate_nonce_freshness("nonce_fresh_789", active_ledger) is True
+
+    # Replayed nonces fail-closed
+    with pytest.raises(ValueError, match="Nonce replay detected"):
+        gates.validate_nonce_freshness("nonce_used_123", active_ledger)
+
+    # Malformed nonces fail-closed
+    with pytest.raises(ValueError, match="malformed or too short"):
+        gates.validate_nonce_freshness("short", active_ledger)
+
+
+def test_pre_mutation_safety_gates_acyclic_hierarchy():
+    """Verify that acyclic hierarchy validation passes on DAGs and rejects loops."""
+    gates = PreMutationSafetyGates()
+
+    # Valid DAG dependencies (A -> B, B -> C, A -> C) succeed
+    dag_map = {
+        "task_A": ["task_B", "task_C"],
+        "task_B": ["task_C"],
+        "task_C": [],
+    }
+    assert gates.validate_acyclic_hierarchy(dag_map) is True
+
+    # Cyclic dependencies (A -> B, B -> C, C -> A) fail-closed
+    cyclic_map = {
+        "task_A": ["task_B"],
+        "task_B": ["task_C"],
+        "task_C": ["task_A"],  # Cycle!
+    }
+    with pytest.raises(ValueError, match="Circular dependency detected"):
+        gates.validate_acyclic_hierarchy(cyclic_map)
 
 
 def test_one_way_import_isolation_enforcement():

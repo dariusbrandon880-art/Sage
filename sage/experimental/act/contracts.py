@@ -2,6 +2,110 @@
 
 from typing import Any, Dict, List, Optional
 from datetime import datetime, timezone
+from pathlib import Path
+
+
+class PreMutationSafetyGates:
+    """Implements read-only, non-mutating validation checks for proposed continuity operations.
+
+    Ensures path mutation isolation, nonce freshness, and acyclic hierarchies
+    fail-closed before any active writes are authorized.
+    """
+
+    def __init__(self):
+        # Critical SAGE core protected path elements
+        self.protected_prefixes = [
+            ".sage",
+            "sage/acr",
+            "sage/core",
+            "sage/runtime",
+            "sage/archive",
+            "sage/config"
+        ]
+
+    def validate_path_isolation(self, target_path: str | Path) -> bool:
+        """Verify that proposed mutated paths sit strictly outside protected namespaces.
+
+        Args:
+            target_path: Proposed target file or directory path.
+
+        Returns:
+            True if path is isolated, raises ValueError otherwise.
+        """
+        resolved_path = Path(target_path).resolve()
+        workspace_root = Path(".").resolve()
+
+        # Enforce relative check
+        try:
+            rel_path = resolved_path.relative_to(workspace_root)
+        except ValueError:
+            # Outside workspace is strictly forbidden
+            raise ValueError(f"SAGE-ACT Path Violation: Path '{target_path}' lies outside the workspace root.")
+
+        parts_str = "/".join(rel_path.parts).lower()
+
+        # Check if the path targets any protected core namespaces
+        for protected in self.protected_prefixes:
+            if parts_str == protected or parts_str.startswith(protected + "/"):
+                raise ValueError(
+                    f"SAGE-ACT Path Violation: Mutating core protected namespace '{protected}' "
+                    f"is strictly prohibited. Attempted path: '{target_path}'"
+                )
+
+        return True
+
+    def validate_nonce_freshness(self, nonce: str, active_nonces: List[str]) -> bool:
+        """Verify that a proposed execution nonce is perfectly unique to prevent replay.
+
+        Args:
+            nonce: Proposed session/task nonce string.
+            active_nonces: List of currently consumed/active nonces in the ledger.
+
+        Returns:
+            True if fresh, raises ValueError if replayed or malformed.
+        """
+        if not nonce or len(nonce) < 8:
+            raise ValueError(f"SAGE-ACT Nonce Violation: Nonce '{nonce}' is malformed or too short.")
+
+        if nonce in active_nonces:
+            raise ValueError(f"SAGE-ACT Nonce Violation: Nonce replay detected. Nonce '{nonce}' has already been consumed.")
+
+        return True
+
+    def validate_acyclic_hierarchy(self, dependency_map: Dict[str, List[str]]) -> bool:
+        """Verify that the proposed task/session hierarchy is perfectly acyclic.
+
+        Args:
+            dependency_map: Map of task_id/session_id to its list of parent dependencies.
+
+        Returns:
+            True if acyclic, raises ValueError if a circular dependency cycle is detected.
+        """
+        visited = {}  # 0 = unvisited, 1 = visiting, 2 = fully processed
+
+        def has_cycle(node: str) -> bool:
+            visited[node] = 1  # Mark as visiting
+
+            for neighbor in dependency_map.get(node, []):
+                state = visited.get(neighbor, 0)
+                if state == 1:
+                    return True  # Found a back edge/cycle
+                elif state == 0:
+                    if has_cycle(neighbor):
+                        return True
+
+            visited[node] = 2  # Mark as fully processed
+            return False
+
+        for n in dependency_map:
+            if visited.get(n, 0) == 0:
+                if has_cycle(n):
+                    raise ValueError(
+                        f"SAGE-ACT Cycle Violation: Circular dependency detected in lineage hierarchy "
+                        f"involving node: '{n}'."
+                    )
+
+        return True
 
 
 class SessionTaskTreeLinker:
