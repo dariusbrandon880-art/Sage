@@ -16,6 +16,7 @@ Each indexed artifact is assigned a lifecycle state under the **Index Layer v0.1
 - [SAGE Archive Intelligence Layer](../docs/master/ARCHIVE_INTELLIGENCE.md) `[State: CANONICAL]` - Design and operational specification of SAGE's relational knowledge graph and metadata tracking.
 - [SAGE Agent Workflow Layer v1 Foundation Spec](https://github.com/sage-cos-core/docs/AGENT_WORKFLOW_v1_SPEC.md) `[State: CANONICAL]` - Production specification for governed SAGE agents and task routing.
 - [SAGE-EVOL-001 Architecture Acceptance Record](architecture/SAGE-EVOL-001-ARCHITECTURE-ACCEPTANCE-RECORD.md) `[State: ARCHIVE_CANDIDATE]` - Core acceptance record for SAGE-EVOL-001 framework, establishing objectives, baseline reference, isolation models, and import laws for SAGE Proof Trinity Phase.
+- [SAGE Index Layer v0.1 Design Record](../sage/lab/index_layer_v0_1/SAGE-INDEX-LAYER-v0.1-DESIGN-RECORD.md) `[State: PROPOSED]` - SAGE Index Layer v0.1 Design Record for review before implementation, detailing architecture proposal, provenance schema v0.1, extraction targets, and validation plan.
 
 ---
 
