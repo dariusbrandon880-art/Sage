@@ -288,3 +288,76 @@ Potential risk factors and validation assumptions are documented below:
     - *Mitigation:* Strictly enforce the AST-based import check, ensuring complete namespace containment.
 *   **Assumptions Requiring Validation:**
     - We assume that `SessionState` timestamps and `AgentTask` timestamps use comparable ISO-8601 UTC formats. If a discrepancy in timezone representation occurs, timestamp parsing will automatically fallback to standard ISO timezone-aware datetimes.
+
+---
+
+## 9. SAGE-ACT Milestone 2 Architecture Review Report
+
+This section contains the formal, comprehensive **SAGE-ACT Milestone 2 Architecture Review Report** as authorized by the SAGE Engineering Node governance directive.
+
+### 9.1. Implementation Boundary Map
+To satisfy the absolute system isolation requirements, the boundaries are meticulously mapped:
+
+*   **Smallest Safe Future Implementation Slice:**
+    - Future Milestone 2 implementation should be delivered strictly as two non-mutating validation classes: `SessionStateTaskLinker` and `TaskDecisionCausalBinder` inside the existing file `sage/experimental/act/contracts.py`.
+    - The interfaces will expose read-only validations that construct and return structured, immutable lineage dictionary mappings without side effects.
+*   **Target Namespaces and Files:**
+    - Isolated directory: `sage/experimental/act/`
+    - Involved modules: `contracts.py` (expansion), `__init__.py` (exposing new linkage classes).
+    - Test files: `tests/experimental/test_act_lineage_mapping.py` (exposing dedicated lineage verification tests).
+*   **Strict Isolation Assurances:**
+    - **No production namespace changes:** All modules inside `sage/acr/`, `sage/core/`, `sage/runtime/`, and root files are explicitly frozen. No edits of any kind will occur.
+    - **No core production imports:** Under the **One-Way Import Law**, any production code imports from experimental ACT modules are blocked and checked programmatically.
+
+### 9.2. Dependency Analysis
+The lineage engine behaves as a passive observer of existing SAGE production models. The interfaces are defined strictly as read-only dependency injections:
+
+*   **`SessionState` / `SessionStateManager` Observation:**
+    - *Interface:* `SessionStateTaskLinker` queries the `active_objectives`, `session_id`, and `important_decisions` properties of the standard `SessionState` model class in `sage.acr.session.session_state`.
+    - *Safety:* No instance of `SessionStateManager` is allowed to receive write or update calls. State is queried directly from memory.
+*   **Decision Tracking Structures (`DecisionEntry`):**
+    - *Interface:* `TaskDecisionCausalBinder` reads `DecisionEntry` models from `sage.models`. It checks fields: `id`, `timestamp`, `evidence`, and `outcome`.
+    - *Safety:* No decision entry is saved, mutated on disk, or promoted during validation.
+*   **EAS Receipt Structures:**
+    - *Interface:* `PreMutationSafetyGates` queries associated SPEK validation receipts from `AgentTask.validation_records` (represented as lists of SHA-256 hashes) and correlates them with actual receipts inside `sage_data/evidence_capture/` if necessary.
+*   **Archive Promotion Pathways:**
+    - *Interface:* Verification of whether a session is safe for future promotion is performed strictly as a read-only metadata check (e.g. asserting that `SessionState.metadata` does not contain a pre-existing `"promoted"` or `"archived"` flag).
+    - *Safety:* No writes to `Archive` or archive database directories are executed.
+
+### 9.3. Validation Plan Refinement
+The testing harness is refined with specific requirements for five critical validation assertions:
+
+1.  **Session Lineage Mapping:**
+    - Assert that every task assigned to a session has an `objective_id` matching an element inside `SessionState.active_objectives`.
+    - Raise a `ValueError` with clear violation codes if a task objective is unlisted or orphan.
+2.  **Task-to-Decision Causality Validation:**
+    - Parse decision timestamps and task creation timestamps. Enforce strict chronological ordering: `DecisionEntry.timestamp >= AgentTask.created_at`.
+    - Verify that the target decision's evidence contains valid trace terms matching the task.
+3.  **Receipt Integrity Checks:**
+    - Assert that validation hashes listed inside the lineage mapping are structurally valid SHA-256 hex strings.
+    - Flag missing validation records on tasks that have entered the `COMPLETED` state.
+4.  **Mutation Boundary Enforcement:**
+    - The validation test suite will execute audits under a mocked filesystem environment, asserting that no `.json` writes are made to `sage_data/sessions/` or `sage_data/state.json` during lineage processing.
+5.  **Acyclic Lineage Verification:**
+    - Construct an internal Graph representation where nodes are `SessionState`, `AgentTask`, and `DecisionEntry`, and directed edges represent references.
+    - Run an acyclic validation algorithm (DFS with recursion-stack state tracking or Kahn's topological sort) to programmatically ensure there are no cyclic dependency loops.
+
+### 9.4. Risk Review
+Before moving to implementation, all identified risks are evaluated with strict containment protocols:
+
+*   **Production Impact Risks:**
+    - *Risk:* Exposure of experimental interfaces causing performance or thread-safety issues in the active runtime.
+    - *Mitigation:* Ensure that experimental ACT modules are never imported, initialized, or referenced in the production pipeline (`sage/runtime/` or `sage/service.py`).
+*   **Import Boundary Risks:**
+    - *Risk:* Code regression where a developer mistakenly imports from experimental namespaces in core runtime modules.
+    - *Mitigation:* Programmatic AST checks inside the test suite automatically scan all non-experimental python files on every run to reject imports of `sage.experimental`.
+*   **State Mutation Risks:**
+    - *Risk:* Accidental mutation of session state references during mapping.
+    - *Mitigation:* Read-only enforcement is verified by passing deep-copied mock structures and asserting that the original inputs remain completely identical post-validation.
+*   **Archive Integrity Risks:**
+    - *Risk:* Potential contamination of the permanent Master Archive directory by experimental schemas.
+    - *Mitigation:* The experimental validation layer has no dependency, reference, or import of the `sage.archive` namespace, eliminating any risk of archive writes.
+*   **Unresolved Assumptions:**
+    - *Assumption:* High-level objectives and task IDs are consistently formatted with standard ASCII string characters.
+    - *Assumption:* Time stamps inside Pydantic models use ISO-8601 UTC format.
+    - *Validation Path:* Added robust timezone parser normalization inside the validation strategy to handle all string datetime types safely.

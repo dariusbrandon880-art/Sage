@@ -35,6 +35,10 @@ def test_milestone_2_planning_document_exists_and_is_valid():
         "Read-Only Expansion Design Review",
         "SessionTaskTreeLinker",
         "TaskDecisionBinder",
+        "SAGE-ACT Milestone 2 Architecture Review Report",
+        "Dependency Analysis",
+        "Validation Plan Refinement",
+        "Risk Review",
     ]
 
     for phrase in required_phrases:
