@@ -26,6 +26,10 @@ def test_milestone_2_planning_document_exists_and_is_valid():
         "File Impact Report",
         "Validation and Test Strategy",
         "Zero Production Footprint",
+        "Milestone 2 Architecture Review",
+        "Implementation Boundary Map",
+        "Proposed File Structure for Future Read-Only Lineage Expansion",
+        "Risk Assessment and Mitigations",
     ]
 
     for phrase in required_phrases:

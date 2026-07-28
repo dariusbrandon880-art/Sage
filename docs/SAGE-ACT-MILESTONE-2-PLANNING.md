@@ -166,3 +166,59 @@ The existing import checking tests (`tests/experimental/test_act_interface.py`) 
 - **Zero Production Footprint:** All code additions are restricted to `sage/experimental/act/` and `tests/experimental/`.
 - **Zero Configuration Drift:** No additions to dependencies in `pyproject.toml` or changes to `render.yaml`.
 - **Backward Compatibility:** All existing 157 tests continue to pass 100% cleanly.
+
+---
+
+## 7. Milestone 2 Architecture Review
+
+In accordance with SAGE's strict multi-agent evolution policy, this section presents the pre-implementation Architecture Review of the Milestone 2 design.
+
+### 7.1. Implementation Boundary Map
+To enforce total system isolation and maintain a zero production footprint, the file and component interactions are strictly demarcated:
+
+- **Experimental Core (`sage/experimental/act/`):**
+  - Consumes existing models from production.
+  - No database, filesystem, or session writes.
+  - Absolute import isolation: Core runtime components (`sage/acr/`, `sage/core/`, `sage/runtime/`) are prohibited from importing any code under `sage/experimental/`.
+- **Type Consumption (One-Way Flow):**
+  - `SessionState` is imported from `sage.acr.session.session_state`.
+  - `AgentTask` and `AgentTaskState` are imported from `sage.agents.models`.
+  - `DecisionEntry` and `DecisionType` are imported from `sage.models`.
+  - All references are imported and utilized strictly for type annotations and read-only field verification.
+
+### 7.2. Proposed File Structure for Future Read-Only Lineage Expansion
+The proposed layout of the experimental namespace for Milestone 2 implementation:
+
+```
+sage/experimental/act/
+├── __init__.py           # Exports public interfaces
+├── contracts.py          # Milestone 1 Linker/Binder contracts
+└── lineage_validation.py # Future Milestone 2 expansion classes:
+                          #  - SessionStateTaskLinker
+                          #  - TaskDecisionCausalBinder
+                          #  - PreMutationSafetyGates
+```
+
+Separating Milestone 2 validators into a separate module (`lineage_validation.py`) ensures clean separation of concerns and facilitates modular test mapping.
+
+### 7.3. Validation Test Strategy
+To establish absolute correctness before any promotion, the testing harness is structured into three layers:
+
+1. **Unit Testing (`tests/experimental/test_act_lineage_mapping.py`):**
+   - Mocking standard model instances via simulated data objects.
+   - Asserting exact error codes and exception classes for each failure scenario.
+   - Asserting tree return formats match the exact schemas defined in Section 3.
+2. **Integration Verification:**
+   - Loading actual production `.json` state files from the workspace (if present) to verify that real production states compile into lineages correctly.
+3. **AST Isolation Tests:**
+   - Using the AST parsing engine to assert that no production python files import or interact with the `sage.experimental.act` submodules.
+
+### 7.4. Risk Assessment and Mitigations
+Before any code generation, potential architectural and runtime risks have been mapped with proactive mitigations:
+
+| Risk Description | Threat Tier | Concrete Mitigation Strategy |
+| :--- | :--- | :--- |
+| **Accidental State Mutation** | CRITICAL | All arguments passed to validation classes are frozen or handled as read-only copies; no `save_session` or disk write calls are executed. |
+| **Circular Dependencies** | HIGH | Validation engines are strictly downstream consumers of core schemas, importing types directly from terminal schema packages (`sage.agents.models`, `sage.models`) rather than high-level manager classes. |
+| **Circular Reference Trapping** | MEDIUM | Detect cycle loops (e.g., recursive dependencies in the decision history) and terminate validations with a cyclic-dependency exception rather than memory exhaustion. |
+| **Validation Drift** | MEDIUM | Enforce schema strictness using Pydantic’s built-in field validation to automatically raise schema validation errors on mismatch. |
