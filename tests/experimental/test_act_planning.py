@@ -52,6 +52,10 @@ def test_milestone_2_planning_document_exists_and_is_valid():
         "Promotion Requirements",
         "Final Readiness Decision",
         "READY FOR IMPLEMENTATION REVIEW",
+        "SAGE-ACT Milestone 2a Execution Gate Report",
+        "Milestone 2a Execution Readiness Record",
+        "Final Pre-Implementation Audit",
+        "Implementation Gate Checklist",
     ]
 
     for phrase in required_phrases:
