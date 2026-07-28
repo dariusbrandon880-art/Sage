@@ -66,3 +66,4 @@ Each indexed artifact is assigned a lifecycle state under the **Index Layer v0.1
 - **SAGE Agent Continuity Tree (SAGE-ACT) Multi-Agent Lineage**
   - [SAGE-ACT Milestone 2 Planning & Design Specification](../docs/SAGE-ACT-MILESTONE-2-PLANNING.md) `[State: PROPOSED]` - Read-only lineage validation planning package mapping SessionState to AgentTask and AgentTask to DecisionEntry.
   - [SAGE-ACT Milestone 2 Readiness Evidence Report](../docs/SAGE-ACT-MILESTONE-2-EVIDENCE-REPORT.md) `[State: PROPOSED]` - Pre-implementation analytical evidence package, evaluating compatibility, boundary isolation, and validation metrics for Milestone 2.
+  - [SAGE-ACT Milestone 2 Implementation Authorization Package](../docs/SAGE-ACT-MILESTONE-2-AUTHORIZATION-PACKAGE.md) `[State: PROPOSED]` - Experimental engineering analysis and readiness review, outlining safe implementation slices and final recommendations for Milestone 2.
