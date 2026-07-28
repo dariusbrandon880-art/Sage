@@ -502,3 +502,36 @@ def test_controlled_usage_report_is_indexed_properly():
     assert "../docs/SAGE-CMAPS-V1-CONTROLLED-USAGE-VALIDATION-REPORT.md" in content
     assert "[State: PROPOSED]" in content
     assert "SAGE Agent Continuity Tree (SAGE-ACT) Multi-Agent Lineage" in content
+
+
+def test_synchronization_report_exists_and_conforms():
+    """Verify that SAGE-CONTINUITY-SYNCHRONIZATION-REPORT.md exists and contains synchronization details."""
+    root_dir = Path(__file__).parent.parent.parent
+    report_file = root_dir / "docs" / "SAGE-CONTINUITY-SYNCHRONIZATION-REPORT.md"
+
+    assert report_file.exists(), "Synchronization report must exist under docs/"
+    content = report_file.read_text(encoding="utf-8")
+
+    # Assert necessary topics are described in depth
+    assert "SAGE-ACT-CMAPS-CSR-1.0" in content
+    assert "Validation Summary & Purpose" in content
+    assert "SAGE Strategic Positioning" in content
+    assert "Core Reliability & Organizational Patterns" in content
+    assert "Governance Principles & Lifecycles" in content
+    assert "Protection Framework Posture" in content
+    assert "CMAPS Lifecycle Status Verification" in content
+    assert "Repository Boundary Rules" in content
+    assert "Boundary Audit & Operational Findings" in content
+
+
+def test_synchronization_report_is_indexed_properly():
+    """Verify that SAGE-CONTINUITY-SYNCHRONIZATION-REPORT.md is listed as PROPOSED in INDEX.md."""
+    root_dir = Path(__file__).parent.parent.parent
+    index_file = root_dir / "Main Archive" / "INDEX.md"
+
+    assert index_file.exists(), "Index file must exist in Main Archive/"
+    content = index_file.read_text(encoding="utf-8")
+
+    assert "../docs/SAGE-CONTINUITY-SYNCHRONIZATION-REPORT.md" in content
+    assert "[State: PROPOSED]" in content
+    assert "SAGE Agent Continuity Tree (SAGE-ACT) Multi-Agent Lineage" in content
