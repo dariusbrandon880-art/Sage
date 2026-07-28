@@ -30,6 +30,11 @@ def test_milestone_2_planning_document_exists_and_is_valid():
         "Implementation Boundary Map",
         "Proposed File Structure for Future Read-Only Lineage Expansion",
         "Risk Assessment and Mitigations",
+        "Nonce Freshness Validation",
+        "Acyclic Lineage Verification",
+        "Read-Only Expansion Design Review",
+        "SessionTaskTreeLinker",
+        "TaskDecisionBinder",
     ]
 
     for phrase in required_phrases:

@@ -222,3 +222,69 @@ Before any code generation, potential architectural and runtime risks have been 
 | **Circular Dependencies** | HIGH | Validation engines are strictly downstream consumers of core schemas, importing types directly from terminal schema packages (`sage.agents.models`, `sage.models`) rather than high-level manager classes. |
 | **Circular Reference Trapping** | MEDIUM | Detect cycle loops (e.g., recursive dependencies in the decision history) and terminate validations with a cyclic-dependency exception rather than memory exhaustion. |
 | **Validation Drift** | MEDIUM | Enforce schema strictness using Pydantic’s built-in field validation to automatically raise schema validation errors on mismatch. |
+
+---
+
+## 8. Detailed SAGE-ACT Milestone 2 Architecture Review
+
+In response to the formal Milestone 2 Directive, this section presents a deep-dive, pre-implementation architecture and boundary analysis.
+
+### 8.1. Implementation Boundary Map
+To satisfy the Zero-Footprint directive, the files and namespaces for Milestone 2 are mapped as follows:
+
+*   **Target Files for Isolation:**
+    - `sage/experimental/act/__init__.py`: Will act as the single entrypoint exposing our validation interfaces.
+    - `sage/experimental/act/contracts.py`: Will be appended to contain `SessionStateTaskLinker`, `TaskDecisionCausalBinder`, and `PreMutationSafetyGates` (maintaining original Milestone 1 classes `SessionTaskTreeLinker` and `TaskDecisionBinder` without changes).
+    - `tests/experimental/test_act_lineage_mapping.py`: Created for isolated unit testing of the expanded contracts.
+*   **Enforcement of Zero-Footprint:**
+    - **No production namespace edits:** Absolutely no files inside `sage/acr/`, `sage/core/`, `sage/runtime/`, or root package modules like `sage/validation.py` will be created or modified.
+    - **No core production imports:** Any import of experimental modules by production code will violate the **One-Way Import Law** and cause the import-checks test suite (`test_production_isolation_and_zero_footprint`) to fail.
+    - **No write operations:** The validation logic operates exclusively on memory references of production types (e.g., using Pydantic models strictly read-only), and contains no serialization, filesystem dump, or sqlite/state mutations.
+
+### 8.2. Read-Only Expansion Design Review
+This sub-section reviews the specific contract requirements and component dependencies:
+
+*   **`SessionTaskTreeLinker` / `SessionStateTaskLinker` Expansion:**
+    - To map `SessionState` to its corresponding `AgentTask` list, the linker must accept a fully instantiated `SessionState` and a list of `AgentTask` objects.
+    - It must traverse `SessionState.active_objectives` and compare them against `AgentTask.objective_id` to establish mapping.
+*   **`TaskDecisionBinder` / `TaskDecisionCausalBinder` Validation:**
+    - Validates mapping between `AgentTask` and `DecisionEntry`.
+    - It must assert that all decision identifiers mapped inside a task's metadata exist in the input list of `DecisionEntry` records and that the causal evidence list is chronological.
+*   **Existing Component Dependencies:**
+    - `SessionState`: Defined in `sage/acr/session/session_state.py`.
+    - `AgentTask`: Defined in `sage/agents/models.py`.
+    - `DecisionEntry`: Defined in `sage/models.py`.
+    - `AgentIdentity`: Defined in `sage/agents/models.py`.
+    - *Constraint:* None of these target types are modified. All classes consume them via read-only property reads.
+
+### 8.3. Validation Strategy
+We define a highly specific test and audit schema to ensure correctness before promotion:
+
+*   **SessionState Ingestion Checks:**
+    - Inspect that the ingested `SessionState` has valid session ID formats and is structured with non-empty active objectives.
+*   **Decision Causality Verification:**
+    - Verify that every referenced decision has evidence that links back to the originating task.
+    - Enforce strict chronological verification: decision creation timestamps (`timestamp`) must follow the corresponding task creation timestamp (`created_at`).
+*   **Path Mutation Isolation Checks:**
+    - Verify that any validation execution has no disk or state mutations on active workspace paths (`sage_data/`).
+*   **Nonce Freshness Validation:**
+    - Read nonce values or version sequences inside session and task metadata.
+    - Validate that they form a strict, ascending, non-repeating sequence to prevent replay attacks during cross-agent session synchronization.
+*   **Acyclic Lineage Verification:**
+    - Build a Directed Acyclic Graph (DAG) representation of the mapped session-task-decision relationships.
+    - Run a cycle-detection algorithm (DFS-based or topological sort) to assert that the lineage contains no loops or cyclic relationships.
+
+### 8.4. Risk Assessment
+Potential risk factors and validation assumptions are documented below:
+
+*   **Production Risks:**
+    - *Risk:* Accidental mutation or reference alteration of production states.
+    - *Mitigation:* Ensure that all validators consume inputs as read-only models (e.g. using `model_copy()` if required or read-only properties) without triggering any `.save_session()` or disk dump.
+*   **Archive Integrity Risks:**
+    - *Risk:* Accidental or malformed archive writes during lineage checks.
+    - *Mitigation:* No archive modules or promotion engines are imported under `sage/experimental/act/`. Tests will enforce that archive promotion remains completely frozen.
+*   **Import Boundary Risks:**
+    - *Risk:* Import leakage where production code imports experimental validators to leverage new checks.
+    - *Mitigation:* Strictly enforce the AST-based import check, ensuring complete namespace containment.
+*   **Assumptions Requiring Validation:**
+    - We assume that `SessionState` timestamps and `AgentTask` timestamps use comparable ISO-8601 UTC formats. If a discrepancy in timezone representation occurs, timestamp parsing will automatically fallback to standard ISO timezone-aware datetimes.
