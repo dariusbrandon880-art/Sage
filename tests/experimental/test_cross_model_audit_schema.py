@@ -570,6 +570,38 @@ def test_milestone_3_proposal_is_indexed_properly():
     assert "SAGE Agent Continuity Tree (SAGE-ACT) Multi-Agent Lineage" in content
 
 
+def test_milestone_4_proposal_exists_and_conforms():
+    """Verify that SAGE-ACT-MILESTONE-4-PROPOSAL.md exists and contains findings."""
+    root_dir = Path(__file__).parent.parent.parent
+    report_file = root_dir / "docs" / "SAGE-ACT-MILESTONE-4-PROPOSAL.md"
+
+    assert report_file.exists(), "Milestone 4 proposal must exist under docs/"
+    content = report_file.read_text(encoding="utf-8")
+
+    # Assert necessary topics are described in depth
+    assert "SAGE-ACT-MP-4.0" in content
+    assert "Capability Objective" in content
+    assert "Enterprise Reliability Value" in content
+    assert "Smallest Safe Implementation Slice" in content
+    assert "Expected File Impact" in content
+    assert "Validation Strategy" in content
+    assert "Rollback Plan" in content
+    assert "Boundary Audit" in content
+
+
+def test_milestone_4_proposal_is_indexed_properly():
+    """Verify that SAGE-ACT-MILESTONE-4-PROPOSAL.md is listed as PROPOSED in INDEX.md."""
+    root_dir = Path(__file__).parent.parent.parent
+    index_file = root_dir / "Main Archive" / "INDEX.md"
+
+    assert index_file.exists(), "Index file must exist in Main Archive/"
+    content = index_file.read_text(encoding="utf-8")
+
+    assert "../docs/SAGE-ACT-MILESTONE-4-PROPOSAL.md" in content
+    assert "[State: PROPOSED]" in content
+    assert "SAGE Agent Continuity Tree (SAGE-ACT) Multi-Agent Lineage" in content
+
+
 def test_rehydrator_positive_path():
     """Verify GovernedAgentRehydrator correctly parses, validates, and rehydrates a valid payload."""
     from sage.experimental.act.rehydrator import GovernedAgentRehydrator
