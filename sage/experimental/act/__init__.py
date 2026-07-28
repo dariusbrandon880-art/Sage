@@ -6,7 +6,11 @@ from sage.experimental.act.contracts import (
     SessionStateTaskLinker,
     TaskDecisionCausalBinder,
 )
-from sage.experimental.act.agent_runner import GovernedAgentSimWorker
+from sage.experimental.act.agent_runner import (
+    GovernedAgentSimWorker,
+    AgentBoundaryInterceptionError,
+    AgentReliabilityManager,
+)
 
 __all__ = [
     "SessionTaskTreeLinker",
@@ -14,4 +18,6 @@ __all__ = [
     "SessionStateTaskLinker",
     "TaskDecisionCausalBinder",
     "GovernedAgentSimWorker",
+    "AgentBoundaryInterceptionError",
+    "AgentReliabilityManager",
 ]

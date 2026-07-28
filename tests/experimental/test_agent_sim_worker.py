@@ -113,3 +113,91 @@ def test_agent_sim_worker_read_only_invariance():
 
     assert result["status"] == "SIMULATION_SUCCESS"
     assert result["read_only_assertion"] is True
+
+
+from sage.experimental.act import AgentBoundaryInterceptionError
+
+
+def test_agent_sim_worker_intercept_success():
+    """Verify that simulate_action_with_intercept returns success when no violation occurs."""
+    identity = AgentIdentity(
+        agent_id="agent_contributor_01",
+        name="Contributor SAGE Agent"
+    )
+    boundary = PermissionBoundary(
+        agent_id="agent_contributor_01",
+        allowed_paths=["sage/experimental/act/"]
+    )
+
+    worker = GovernedAgentSimWorker(identity, boundary)
+    result = worker.simulate_action_with_intercept(
+        action_name="read_file",
+        target_path="sage/experimental/act/contracts.py",
+        session_id="session_f6b3d4e5",
+        workflow_id="workflow_123",
+        current_task_step="read_contracts",
+        previous_steps=[],
+        causal_binder_ref="validation_status_ok",
+        causal_chain=[],
+        underlying_decisions=[]
+    )
+
+    assert result["status"] == "SIMULATION_SUCCESS"
+    assert result["read_only_assertion"] is True
+
+
+def test_agent_sim_worker_intercept_failure_schema():
+    """Verify that simulate_action_with_intercept gracefully captures boundary failure and returns a schema-compliant payload."""
+    identity = AgentIdentity(
+        agent_id="agent_contributor_01",
+        name="Contributor SAGE Agent"
+    )
+    boundary = PermissionBoundary(
+        agent_id="agent_contributor_01",
+        prohibited_paths=["sage/core/"]
+    )
+
+    worker = GovernedAgentSimWorker(identity, boundary)
+    with pytest.raises(AgentBoundaryInterceptionError) as exc_info:
+        worker.simulate_action_with_intercept(
+            action_name="read_file",
+            target_path="sage/core/spek.py",
+            session_id="session_f6b3d4e5",
+            workflow_id="workflow_123",
+            current_task_step="read_spek",
+            previous_steps=[{"step_name": "init_session", "completed_at": "2026-03-01T12:00:00Z", "status": "COMPLETED"}],
+            causal_binder_ref="validation_status_ok",
+            causal_chain=["decision_001"],
+            underlying_decisions=[{"decision_id": "decision_001", "decision_type": "architectural", "timestamp": "2026-03-01T12:00:00Z"}]
+        )
+
+    err = exc_info.value
+    assert "SAGE-ACT Contract Violation: Graceful Intercept Captured" in str(err)
+
+    payload = err.payload
+    # Verify exact schema compliance
+    assert "identity" in payload
+    assert payload["identity"]["agent_id"] == "agent_contributor_01"
+    assert payload["identity"]["session_id"] == "session_f6b3d4e5"
+    assert payload["identity"]["workflow_id"] == "workflow_123"
+
+    assert "state" in payload
+    assert payload["state"]["current_task_step"] == "read_spek"
+    assert len(payload["state"]["previous_steps"]) == 1
+    assert payload["state"]["active_state_snapshot_ref"].startswith("snapshot_")
+
+    assert "failure_event" in payload
+    assert payload["failure_event"]["failure_type"] == "BOUNDARY_VIOLATION"
+    assert "timestamp" in payload["failure_event"]
+    assert payload["failure_event"]["originating_component"] == "sage.experimental.act.agent_runner.GovernedAgentSimWorker"
+    assert payload["failure_event"]["external_dependency_status"] == {"local_filesystem": "ACTIVE"}
+
+    assert "decision_lineage" in payload
+    assert payload["decision_lineage"]["causal_binder_ref"] == "validation_status_ok"
+    assert payload["decision_lineage"]["causal_chain"] == ["decision_001"]
+    assert len(payload["decision_lineage"]["underlying_decisions"]) == 1
+
+    assert "recovery" in payload
+    assert payload["recovery"]["recovery_possible"] is True
+    assert payload["recovery"]["human_approval_required"] is True
+    assert payload["recovery"]["rehydration_checkpoint_ref"].startswith("checkpoint_")

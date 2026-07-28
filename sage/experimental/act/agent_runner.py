@@ -8,8 +8,71 @@ PermissionBoundary boundaries and satisfy chronological monotonicity check rules
 from typing import Any, Dict, List, Optional
 import copy
 from datetime import datetime, timezone
+import uuid
 
 from sage.agents.models import AgentIdentity, PermissionBoundary, TaskEvent, AgentTaskState
+
+
+class AgentBoundaryInterceptionError(ValueError):
+    """Exception raised when an agent boundary violation is gracefully intercepted, holding the reliability payload."""
+
+    def __init__(self, message: str, payload: Dict[str, Any]):
+        super().__init__(message)
+        self.payload = payload
+
+
+class AgentReliabilityManager:
+    """Manages graceful failure interception, payload generation, and recovery/rehydration checkpointing."""
+
+    @staticmethod
+    def generate_audit_payload(
+        agent_id: str,
+        task_id: str,
+        session_id: str,
+        workflow_id: str,
+        current_task_step: str,
+        previous_steps: List[Dict[str, Any]],
+        active_state_snapshot_ref: str,
+        failure_type: str,
+        originating_component: str,
+        external_dependency_status: Dict[str, str],
+        causal_binder_ref: str,
+        causal_chain: List[str],
+        underlying_decisions: List[Dict[str, Any]],
+        recovery_possible: bool,
+        human_approval_required: bool,
+        rehydration_checkpoint_ref: str
+    ) -> Dict[str, Any]:
+        """Generates a complete, schema-compliant SAGE Agent Reliability Audit Payload."""
+        return {
+            "identity": {
+                "agent_id": agent_id,
+                "task_id": task_id,
+                "session_id": session_id,
+                "workflow_id": workflow_id
+            },
+            "state": {
+                "current_task_step": current_task_step,
+                "previous_steps": previous_steps,
+                "active_state_snapshot_ref": active_state_snapshot_ref
+            },
+            "failure_event": {
+                "failure_type": failure_type,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "originating_component": originating_component,
+                "external_dependency_status": external_dependency_status
+            },
+            "decision_lineage": {
+                "causal_binder_ref": causal_binder_ref,
+                "causal_chain": causal_chain,
+                "underlying_decisions": underlying_decisions
+            },
+            "recovery": {
+                "recovery_possible": recovery_possible,
+                "human_approval_required": human_approval_required,
+                "rehydration_checkpoint_ref": rehydration_checkpoint_ref
+            }
+        }
 
 
 class GovernedAgentSimWorker:
@@ -95,3 +158,65 @@ class GovernedAgentSimWorker:
             "task_event": sim_event.model_dump(),
             "read_only_assertion": True
         }
+
+    def simulate_action_with_intercept(
+        self,
+        action_name: str,
+        target_path: str,
+        session_id: str,
+        workflow_id: str,
+        current_task_step: str,
+        previous_steps: List[Dict[str, Any]],
+        causal_binder_ref: str,
+        causal_chain: List[str],
+        underlying_decisions: List[Dict[str, Any]],
+        context: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """Simulates action execution while dynamically capturing any boundary violations.
+
+        If a violation is captured, it builds the schema-compliant audit payload,
+        prepares state snapshots and rehydration checkpoints, and raises
+        AgentBoundaryInterceptionError.
+        """
+        try:
+            return self.simulate_action(action_name, target_path, context)
+        except ValueError as e:
+            # Determine the failure type
+            failure_type = "BOUNDARY_VIOLATION"
+            if "Prohibited Action" in str(e):
+                failure_type = "BOUNDARY_VIOLATION"
+            elif "Prohibited Path" in str(e):
+                failure_type = "BOUNDARY_VIOLATION"
+            elif "Unauthorized Path" in str(e):
+                failure_type = "BOUNDARY_VIOLATION"
+            else:
+                failure_type = "UNKNOWN"
+
+            # Generate unique snapshot and checkpoint references
+            unique_suffix = uuid.uuid4().hex[:8]
+            active_state_snapshot_ref = f"snapshot_{unique_suffix}"
+            rehydration_checkpoint_ref = f"checkpoint_{unique_suffix}"
+
+            # Build audit payload using AgentReliabilityManager
+            payload = AgentReliabilityManager.generate_audit_payload(
+                agent_id=self.agent_identity.agent_id,
+                task_id=self.permission_boundary.agent_id,
+                session_id=session_id,
+                workflow_id=workflow_id,
+                current_task_step=current_task_step,
+                previous_steps=previous_steps,
+                active_state_snapshot_ref=active_state_snapshot_ref,
+                failure_type=failure_type,
+                originating_component=f"{self.__class__.__module__}.{self.__class__.__name__}",
+                external_dependency_status={"local_filesystem": "ACTIVE"},
+                causal_binder_ref=causal_binder_ref,
+                causal_chain=causal_chain,
+                underlying_decisions=underlying_decisions,
+                recovery_possible=True,
+                human_approval_required=True,
+                rehydration_checkpoint_ref=rehydration_checkpoint_ref
+            )
+
+            # Raise the formatted intercept error containing the payload
+            error_msg = f"SAGE-ACT Contract Violation: Graceful Intercept Captured: {str(e)}"
+            raise AgentBoundaryInterceptionError(error_msg, payload)
