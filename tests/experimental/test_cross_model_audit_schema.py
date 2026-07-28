@@ -568,3 +568,97 @@ def test_milestone_3_proposal_is_indexed_properly():
     assert "../docs/SAGE-ACT-MILESTONE-3-PROPOSAL.md" in content
     assert "[State: PROPOSED]" in content
     assert "SAGE Agent Continuity Tree (SAGE-ACT) Multi-Agent Lineage" in content
+
+
+def test_rehydrator_positive_path():
+    """Verify GovernedAgentRehydrator correctly parses, validates, and rehydrates a valid payload."""
+    from sage.experimental.act.rehydrator import GovernedAgentRehydrator
+
+    rehydrator = GovernedAgentRehydrator()
+    payload = get_valid_payload()
+
+    # Re-compute correct signature base on test key
+    correct_signature = rehydrator._compute_payload_signature(payload)
+    payload["attestation"]["signature"] = correct_signature
+
+    verified_payload = rehydrator.parse_and_verify_payload(payload)
+    context = rehydrator.rehydrate_mock_context(verified_payload)
+
+    assert context["status"] == "REHYDRATION_SUCCESSFUL"
+    assert context["agent_id"] == "agent_reliability_monitor_v1"
+    assert context["session_id"] == "session_f6b3d4e5"
+    assert context["current_task_id"] == "task_sub_verify_002"
+    assert context["step_counter"] == 14
+    assert context["model_provider"]["provider"] == "anthropic"
+    assert context["state_snapshot_rehydrated"] is True
+    assert context["rehydration_token_consumed"] == "rehyd_01j7p8g9r0b1c2d3e4f5g6h7i8"
+    assert context["read_only_assertion"] is True
+
+
+def test_rehydrator_tampered_payload_signature_mismatch():
+    """Verify that any tampering inside the payload leads to immediate cryptographic rejection."""
+    from sage.experimental.act.rehydrator import GovernedAgentRehydrator
+
+    rehydrator = GovernedAgentRehydrator()
+    payload = get_valid_payload()
+
+    # Sign first
+    correct_signature = rehydrator._compute_payload_signature(payload)
+    payload["attestation"]["signature"] = correct_signature
+
+    # Tamper with step_counter after signing
+    payload["execution_state"]["step_counter"] = 99
+
+    with pytest.raises(ValueError, match="CMAPS Violation: Cryptographic signature mismatch"):
+        rehydrator.parse_and_verify_payload(payload)
+
+
+def test_rehydrator_nonce_replay_attack():
+    """Verify rehydrator successfully blocks replay attacks of the exact same nonce."""
+    from sage.experimental.act.rehydrator import GovernedAgentRehydrator
+
+    rehydrator = GovernedAgentRehydrator()
+    payload = get_valid_payload()
+
+    correct_signature = rehydrator._compute_payload_signature(payload)
+    payload["attestation"]["signature"] = correct_signature
+
+    # Parse first time - successful
+    rehydrator.parse_and_verify_payload(payload)
+
+    # Parse second time with same payload/nonce - replay rejection
+    with pytest.raises(ValueError, match="CMAPS Violation: Nonce replay attack detected"):
+        rehydrator.parse_and_verify_payload(payload)
+
+
+def test_rehydrator_one_way_import_isolation():
+    """Verify that rehydrator.py doesn't violate SAGE's One-Way Import Law."""
+    rehydrator_file = Path(__file__).parent.parent.parent / "sage" / "experimental" / "act" / "rehydrator.py"
+    assert rehydrator_file.exists(), f"Could not find rehydrator.py at: {rehydrator_file}"
+
+    with open(rehydrator_file, "r", encoding="utf-8") as f:
+        tree = ast.parse(f.read(), filename=str(rehydrator_file))
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                assert not alias.name.startswith("sage.acr"), (
+                    f"One-Way Import Law Violation: 'rehydrator.py' directly imports production module '{alias.name}'"
+                )
+                assert not alias.name.startswith("sage.core"), (
+                    f"One-Way Import Law Violation: 'rehydrator.py' directly imports production module '{alias.name}'"
+                )
+                assert not alias.name.startswith("sage.agents"), (
+                    f"One-Way Import Law Violation: 'rehydrator.py' directly imports production module '{alias.name}'"
+                )
+        elif isinstance(node, ast.ImportFrom):
+            if node.module:
+                assert not node.module.startswith("sage.acr"), (
+                    f"One-Way Import Law Violation: 'rehydrator.py' imports from production module '{node.module}'"
+                )
+                assert not node.module.startswith("sage.core"), (
+                    f"One-Way Import Law Violation: 'rehydrator.py' imports from production module '{node.module}'"
+                )
+                assert not node.module.startswith("sage.agents"), (
+                    f"One-Way Import Law Violation: 'rehydrator.py' imports from production module '{node.module}'"
+                )

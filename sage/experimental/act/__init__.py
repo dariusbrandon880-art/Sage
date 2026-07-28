@@ -6,10 +6,12 @@ from sage.experimental.act.contracts import (
     SessionStateTaskLinker,
     CrossModelAuditPayloadValidator,
 )
+from sage.experimental.act.rehydrator import GovernedAgentRehydrator
 
 __all__ = [
     "SessionTaskTreeLinker",
     "TaskDecisionBinder",
     "SessionStateTaskLinker",
     "CrossModelAuditPayloadValidator",
+    "GovernedAgentRehydrator",
 ]
