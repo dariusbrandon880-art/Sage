@@ -1,6 +1,6 @@
 # SAGE Collaborator Orientation Layer: Google AI Alignment Wrap
 
-**Record ID:** SAGE-GLOBAL-ALIGNMENT-WRAP-2026-07-24
+**Record ID:** SAGE-GLOBAL-ALIGNMENT-WRAP-2026-07-28
 **Classification:** Layer 3 Immutable Ledger / Strategic Alignment Documentation
 **Status:** Active
 
@@ -62,7 +62,7 @@ SAGE coordinates a precise division of labor across human and AI participants to
 ### 2.5. Jules (Execution Agent Role)
 * **Definition:** Pragmatic, sandboxed software engineer and implementation agent.
 * **Responsibilities:** Focuses on concrete file editing, code building, executing test suites, diagnosing environment issues, performing pre-commit verifications, and pushing verified code changes to Git.
-* **Boundary:** Operates strictly within the sandboxed environment. Jules cannot self-approve pull requests or bypass validation checks, adhering to the programmed rules of SPEK and SRIL.
+* **Boundary:** Operates strictly within the sandboxed environment. Jules cannot self-approve pull requests or bypass validation checks, adhering to the programmed rules of SPEK, SRIL, and ACT.
 
 ---
 
@@ -95,11 +95,23 @@ Every lifecycle event, codebase modification, and knowledge promotion must advan
 
 ---
 
-## 5. Current SAGE State & Milestones
+## 5. Current Engineering State & Validated Milestones
 
-SAGE has established a highly hardened runtime. The state of active and completed milestones is documented below to avoid repetitive implementation of completed capabilities:
+SAGE is currently a validated engineering platform focused on:
+* **AI Reliability Infrastructure**
+* **Continuity Preservation**
+* **Failure Interception**
+* **State Recovery**
+* **Evidence Lineage**
+* **Decision Traceability**
+* **Enterprise Auditability**
 
-### 5.1. Completed Milestones
+### 5.1. Preservation Invariants
+SAGE programmatically and structurally preserves:
+* $$\text{Agent Event} \longrightarrow \text{State} \longrightarrow \text{Decision} \longrightarrow \text{Evidence} \longrightarrow \text{Failure Context} \longrightarrow \text{Recovery Path}$$
+* $$\text{Action} \longrightarrow \text{Record} \longrightarrow \text{Decision} \longrightarrow \text{Evidence} \longrightarrow \text{Accountability}$$
+
+### 5.2. Validated Capabilities
 * **SAGE 2 Architecture Alignment (#25):** Solidified the three-layer structural separation:
   * **Continuity Layer:** Autonomous Continuity Runtime (ACR) & Continuity Independence Validation (CIV-001).
   * **Intelligence Layer:** Semantic Knowledge Association Layer (SKAL), Human-System Interface, and Knowledge Loop.
@@ -107,45 +119,71 @@ SAGE has established a highly hardened runtime. The state of active and complete
 * **SKAL Deterministic Intake Boundary (#29):** Implemented Pydantic-driven payload normalization and deterministic routing for architecture decisions, validation reports, and deployment events via the `/tools/skal/intake` REST boundary.
 * **COS-EAGP006 Cognitive Control Plane (#31):** Separated Observer and Enforcer domains, implementing `CognitiveHypervisor` and `ExternalAuthorityGate` to isolate operational state telemetry.
 * **SPEK v1.1 Hardened Core (#32):** Built zero-dependency rules lifecycle state tracking (PROPOSED -> APPROVED -> ARCHIVED) with HMAC-SHA256 cryptographic attestation signing, audit logging via `spek_vault.json`, and concurrent multi-thread transaction safety.
-
-### 5.2. Current Stabilization Focus
-* **SRIL (SAGE Runtime Integrity Layer):** Protecting the main runtime entrypoint. Ensures the invariant `sage.runtime:app` export boundary is cleanly maintained.
-* **`sage.runtime:app` Validation:** Enforcing module-level lazy-loading to prevent circular dependency risks on startup (verified via `tests/test_runtime_contract.py`).
-* **Render Deployment Evidence:** Integrating and preserving concrete, cryptographic deployment and health telemetry evidence to guarantee end-to-end trace causality.
-
----
-
-## 6. The Continuity Principle
-
-Because AI agent sessions are ephemeral, state preservation must be anchored to persistent repository artifacts.
-
-* **Temporary Sessions:** Chat threads, local terminal histories, and temporary VM sessions will fade. They must be treated as transient computation.
-* **Continuity Anchors:** The repository itself is the single source of truth for continuity.
-* **State Preservation Structure:**
-  * **`docs/` and `Main Archive/`:** Maintain the long-term historical records and design lineage.
-  * **`docs/master/SESSION_STATE.md`:** Tracks active goals, depth, and blockers across runs.
-  * **`sage_data/`:** Houses persistent continuity state files, calibration logs, and nonces.
-  * **Validation Evidence:** Automated test suites must provide explicit, cryptographic proof of correct system execution at every epoch.
+* **SAGE Agent Continuity Tree (SAGE-ACT) Lineage Framework:**
+  * Read-only lineage validation mapping SessionState to AgentTask and AgentTask to DecisionEntry.
+  * Implementation of `SessionStateTaskLinker` and `TaskDecisionCausalBinder` components under absolute experimental isolation inside `sage/experimental/act/`.
+* **Agent Activation v1 & GovernedAgentSimWorker:** Full integration of the autonomous governed simulation worker capability executing standard agent runs with automatic boundaries.
+* **Agent Reliability Layer v1 & Graceful Intercept Foundation:** Implementation of the `AgentBoundaryInterceptionError` and `AgentReliabilityManager` to capture, log, and recover from out-of-boundary simulation drift.
+* **Cross-Model Audit Payload Schema (CMAPS v1.0):** Standardized, model-independent trace schemas validated adversarially against self-parent loops, temporal drift, and trace signature spoofing.
+* **Full Platform Verification Status:** Currently verified with **185+ clean passing tests** in the main suite, confirming zero regressions, perfect import isolation (One-Way Import Law), and zero state drift.
 
 ---
 
-## 7. Google AI Collaborator: Role & Constraints
+## 6. Strategic Assessment & Directives (SAGE-STRAT-ASSESS-001)
 
-When future sessions activate a Google AI collaborator, that entity must adhere to the following strict guidelines:
-
-1. **Role Classification:** Google AI is primarily a Research Collaborator, Documentation Assistant, Architecture Reviewer, and Validation Support engine.
-2. **Proposal Non-Execution Law:** Google AI may author documentation, strategic maps, and system diagrams under the designated laboratory paths (e.g., `docs/labs/` or `Main Archive/research/`). However, it must **not** directly edit core execution files under `sage/` or bypass the validation checks.
-3. **Archive/Lab Separation:** Research and ideation remain strictly isolated inside `docs/labs/` or `Main Archive/research/`. They only move into the Master Archive (`docs/master/` or production code) through the sequential operating pipeline with human oversight.
-4. **Human Approval Boundary:** Any pattern extracted or learning rule generated by Google AI remains in a "PROPOSED" state and cannot be marked as "APPROVED" or "VALIDATED" without human-in-the-loop signature confirmation.
+Per authorized strategic record **SAGE-STRAT-ASSESS-001**:
+* **Strategic Position:** SAGE is evaluated exclusively as **AI Reliability Infrastructure / Agent Governance Control Layer**.
+* **Core Philosophy:** SAGE is committed to being:
+  * *Model Independent*
+  * *Framework Neutral*
+  * *Data Minimizing*
+  * *Reliability Focused*
+* **Commercial Exclusions:** SAGE must **not** be recorded as "enterprise proven", "commercially validated", "acquisition candidate", or "market success achieved". These classifications represent hypotheses requiring external empirical business evidence to be promoted.
 
 ---
 
-## 8. Current Mission Statement
+## 7. Governance Principles & Rigor
 
-SAGE is currently in an integration and stabilization phase. To avoid regression and maintain system cohesion, the active mandate is:
+Engineering rigor at SAGE applies equally to all aspects of the ecosystem:
+* **Technical Decisions:** Formally validated through sandboxed implementation, comprehensive testing, and empirical evidence logs.
+* **Business Strategy:** Formally validated through active users, pilot programs, measurable outcomes, and customer evidence.
+* **Strategic Pipeline:**
+  $$\text{Research} \longrightarrow \text{Validation} \longrightarrow \text{Master Archive}$$
+  $$\text{Authorize} \longrightarrow \text{Implement} \longrightarrow \text{Verify} \longrightarrow \text{Archive}$$
 
-* **No Architecture Expansion:** Do not design or introduce new speculative features, unneeded sub-modules, or unvetted core APIs.
-* **Runtime Stabilization:** Hardening the existing SRIL, SPEK, and SKAL components to run with 100% predictability across diverse platforms.
-* **Validation:** Maintaining the rigorous contract validation tests and adversarial attack laboratories.
-* **Deployment Evidence:** Ensuring the live telemetry and `/health` reporting accurately represents underlying control plane indices.
-* **Archive Synchronization:** Committing all active operational states back to the repository to guarantee seamless rehydration for the next session.
+---
+
+## 8. CMAPS Classification
+
+**Component:** Cross-Model Audit Payload Schema (CMAPS v1.0)
+**Status:** Architecturally Stabilized Candidate Path
+
+* **Rule:** CMAPS v1.0 must **not** be promoted to a *canonical architecture*, *permanent architecture layer*, or *production capability* without future, formally governed validation and authorization cycles.
+
+---
+
+## 9. Protection & Provenance Framework
+
+* **Maturity Level:** **Phase 1: Confidentiality + Provenance Focus**
+  * **Core Scope:** Repository discipline, access control, engineering history logs, validation receipts, and immutable architecture records.
+  * **Clarification:** Local confidentiality practices do **not** represent or substitute for formal legal protection.
+* **Future Evolution Path:**
+  $$\text{Trade-secret readiness} \longrightarrow \text{Contractual protection} \longrightarrow \text{Formal IP strategy}$$
+
+---
+
+## 10. Google AI Collaborator: Role & Constraints
+
+When active sessions coordinate with a Google AI collaborator, that entity must adhere to the following constraints:
+1. **Role Classification:** Google AI is strictly a Research Collaborator, Documentation Assistant, Architecture Reviewer, and Validation Support engine.
+2. **Proposal Non-Execution Law:** Google AI may author documentation, strategic maps, and diagrams under designated laboratory paths (e.g., `docs/labs/` or `Main Archive/research/`). It must **not** edit core execution files under `sage/` or bypass the operating pipeline.
+3. **Archive/Lab Separation:** Staging and lab-level artifacts remain separated from canonical Master Archives until formal validation receipts are signed by the Human Operator.
+4. **Human Approval Boundary:** All generated items remain in a `PROPOSED` state and cannot be marked as approved or promoted without direct human sign-off.
+
+---
+
+## 11. Current Mission Statement & Continuity Principle
+
+* **Zero Scope Expansion:** Do not introduce speculative APIs or unnecessary sub-modules during integration passes.
+* **Strict Verification:** Every state modification must be followed by a read-only validation check to confirm persistence and correctness.
+* **Ephemerality Management:** Local chat history and container VM states are transient. The repository itself—specifically the `Main Archive/` and `docs/` paths—serves as the single, persistent source of truth for rehydrating future cognitive sessions.
