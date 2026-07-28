@@ -202,3 +202,100 @@ def test_one_way_import_boundary_preservation():
                 assert not node.module.startswith("sage.agents"), (
                     f"One-Way Import Law Violation: 'contracts.py' imports from production module '{node.module}'"
                 )
+
+
+def test_session_state_task_linker_finalization_invariant_dict():
+    """Verify that finalized or archived sessions in dictionary format are rejected."""
+    linker = SessionStateTaskLinker()
+
+    finalized_session = {
+        "session_id": "session_f6b3d4e5",
+        "active_objectives": ["obj_001"],
+        "metadata": {"finalized": True},
+    }
+    with pytest.raises(ValueError, match="Cannot perform lineage validation on a finalized session"):
+        linker.validate_session_task_lineage(finalized_session, [])
+
+    archived_session = {
+        "session_id": "session_f6b3d4e5",
+        "active_objectives": ["obj_001"],
+        "metadata": {"archived": True},
+    }
+    with pytest.raises(ValueError, match="Cannot perform lineage validation on an archived session"):
+        linker.validate_session_task_lineage(archived_session, [])
+
+
+def test_session_state_task_linker_finalization_invariant_model():
+    """Verify that finalized or archived SessionState models are rejected."""
+    linker = SessionStateTaskLinker()
+
+    finalized_session = SessionState(
+        session_id="session_f6b3d4e5",
+        active_objectives=["obj_001"],
+        metadata={"finalized": True},
+    )
+    with pytest.raises(ValueError, match="Cannot perform lineage validation on a finalized session"):
+        linker.validate_session_task_lineage(finalized_session, [])
+
+    archived_session = SessionState(
+        session_id="session_f6b3d4e5",
+        active_objectives=["obj_001"],
+        metadata={"archived": True},
+    )
+    with pytest.raises(ValueError, match="Cannot perform lineage validation on an archived session"):
+        linker.validate_session_task_lineage(archived_session, [])
+
+
+def test_session_state_task_linker_enhanced_metrics_and_metadata():
+    """Verify improved structured output contains correct validation metrics and audit flags."""
+    linker = SessionStateTaskLinker()
+    session = {
+        "session_id": "session_f6b3d4e5",
+        "active_objectives": ["obj_001", "obj_002"],
+    }
+    tasks = [
+        {"task_id": "task_001", "objective_id": "obj_001"},
+        {"task_id": "task_002", "objective_id": "obj_001"},
+        {"task_id": "task_003", "objective_id": "obj_002"},
+    ]
+
+    result = linker.validate_session_task_lineage(session, tasks)
+
+    assert result["total_tasks_validated"] == 3
+    assert result["validated_objectives"] == ["obj_001", "obj_002"]
+    assert "audit_metrics" in result
+    assert result["audit_metrics"]["finalization_checked"] is True
+    assert result["audit_metrics"]["objectives_verified"] is True
+    assert result["audit_metrics"]["duplicate_checks_passed"] is True
+
+
+def test_session_state_task_linker_empty_tasks():
+    """Verify lineage validation with an empty list of tasks."""
+    linker = SessionStateTaskLinker()
+    session = {
+        "session_id": "session_f6b3d4e5",
+        "active_objectives": ["obj_001"],
+    }
+
+    result = linker.validate_session_task_lineage(session, [])
+
+    assert result["session_id"] == "session_f6b3d4e5"
+    assert result["mapped_tasks"] == []
+    assert result["total_tasks_validated"] == 0
+    assert result["validated_objectives"] == []
+
+
+def test_session_state_task_linker_no_metadata_field():
+    """Verify that sessions without any metadata field validate normally."""
+    linker = SessionStateTaskLinker()
+    session = {
+        "session_id": "session_f6b3d4e5",
+        "active_objectives": ["obj_001"],
+    }
+    tasks = [
+        {"task_id": "task_001", "objective_id": "obj_001"},
+    ]
+
+    result = linker.validate_session_task_lineage(session, tasks)
+    assert result["session_id"] == "session_f6b3d4e5"
+    assert result["total_tasks_validated"] == 1

@@ -78,7 +78,21 @@ class SessionStateTaskLinker:
         if not isinstance(session_id, str) or not session_id.startswith("session_"):
             raise ValueError(f"SAGE-ACT Contract Violation: Invalid session_id format: '{session_id}'")
 
-        # 2. Extract active_objectives
+        # 2. Extract and validate metadata (Session Finalization Invariant)
+        if hasattr(session, "metadata"):
+            metadata = session.metadata
+        elif isinstance(session, dict) and "metadata" in session:
+            metadata = session["metadata"]
+        else:
+            metadata = {}
+
+        if isinstance(metadata, dict):
+            if metadata.get("finalized") is True:
+                raise ValueError("SAGE-ACT Contract Violation: Cannot perform lineage validation on a finalized session.")
+            if metadata.get("archived") is True:
+                raise ValueError("SAGE-ACT Contract Violation: Cannot perform lineage validation on an archived session.")
+
+        # 3. Extract active_objectives
         if hasattr(session, "active_objectives"):
             active_objectives = session.active_objectives
         elif isinstance(session, dict) and "active_objectives" in session:
@@ -86,9 +100,10 @@ class SessionStateTaskLinker:
         else:
             active_objectives = []
 
-        # 3. Process and validate tasks
+        # 4. Process and validate tasks
         seen_task_ids = set()
         mapped_tasks = []
+        validated_objectives = []
 
         for task in tasks:
             # Extract task_id
@@ -124,14 +139,23 @@ class SessionStateTaskLinker:
                 )
 
             mapped_tasks.append(task_id)
+            if objective_id not in validated_objectives:
+                validated_objectives.append(objective_id)
 
-        # Return structured lineage metadata
+        # Return structured lineage metadata with enhanced metrics and detailed audit checks
         return {
             "session_id": session_id,
             "mapped_tasks": mapped_tasks,
             "validated_at": datetime.now(timezone.utc).isoformat(),
             "validation_status": "LINEAGE_VALIDATED",
             "read_only_assertion": True,
+            "total_tasks_validated": len(mapped_tasks),
+            "validated_objectives": validated_objectives,
+            "audit_metrics": {
+                "finalization_checked": True,
+                "objectives_verified": True,
+                "duplicate_checks_passed": True,
+            },
         }
 
 
