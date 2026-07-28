@@ -469,3 +469,36 @@ def test_stabilization_report_is_indexed_properly():
     assert "../docs/SAGE-CROSS-MODEL-AUDIT-PAYLOAD-STABILIZATION-REPORT.md" in content
     assert "[State: PROPOSED]" in content
     assert "SAGE Agent Continuity Tree (SAGE-ACT) Multi-Agent Lineage" in content
+
+
+def test_controlled_usage_report_exists_and_conforms():
+    """Verify that SAGE-CMAPS-V1-CONTROLLED-USAGE-VALIDATION-REPORT.md exists and contains findings."""
+    root_dir = Path(__file__).parent.parent.parent
+    report_file = root_dir / "docs" / "SAGE-CMAPS-V1-CONTROLLED-USAGE-VALIDATION-REPORT.md"
+
+    assert report_file.exists(), "Usage validation report must exist under docs/"
+    content = report_file.read_text(encoding="utf-8")
+
+    # Assert necessary topics are described in depth
+    assert "SAGE-ACT-CMAPS-CUVR-1.0" in content
+    assert "Validation Summary" in content
+    assert "Validation Scenarios Executed" in content
+    assert "Workflow Coverage Analysis" in content
+    assert "Cross-Model Neutrality Assessment" in content
+    assert "Evidence Usefulness Evaluation" in content
+    assert "Minimality Review" in content
+    assert "Limitations & Compatibility Observations" in content
+    assert "Remain ARCHITECTURALLY STABILIZED RECOMMENDATION" in content
+
+
+def test_controlled_usage_report_is_indexed_properly():
+    """Verify that SAGE-CMAPS-V1-CONTROLLED-USAGE-VALIDATION-REPORT.md is listed as PROPOSED in INDEX.md."""
+    root_dir = Path(__file__).parent.parent.parent
+    index_file = root_dir / "Main Archive" / "INDEX.md"
+
+    assert index_file.exists(), "Index file must exist in Main Archive/"
+    content = index_file.read_text(encoding="utf-8")
+
+    assert "../docs/SAGE-CMAPS-V1-CONTROLLED-USAGE-VALIDATION-REPORT.md" in content
+    assert "[State: PROPOSED]" in content
+    assert "SAGE Agent Continuity Tree (SAGE-ACT) Multi-Agent Lineage" in content
