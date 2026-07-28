@@ -436,3 +436,36 @@ def test_validator_recovery_state_integrity():
     payload["recovery_checkpoints"] = []
     with pytest.raises(ValueError, match="CMAPS Violation: Recovery state transition integrity violation. Status 'recovered' requires at least one recovery_checkpoint."):
         validator.validate_payload(payload)
+
+
+def test_stabilization_report_exists_and_conforms():
+    """Verify that SAGE-CROSS-MODEL-AUDIT-PAYLOAD-STABILIZATION-REPORT.md exists and contains stabilization findings."""
+    root_dir = Path(__file__).parent.parent.parent
+    report_file = root_dir / "docs" / "SAGE-CROSS-MODEL-AUDIT-PAYLOAD-STABILIZATION-REPORT.md"
+
+    assert report_file.exists(), "Stabilization report must exist under docs/"
+    content = report_file.read_text(encoding="utf-8")
+
+    # Assert necessary topics are described in depth
+    assert "SAGE-ACT-CMAPS-SR-1.0" in content
+    assert "Validation Summary" in content
+    assert "Architectural Findings" in content
+    assert "Compatibility Assessment" in content
+    assert "Evidence Lifecycle Review" in content
+    assert "Minimality Review" in content
+    assert "Risks Identified & Mitigations" in content
+    assert "RECOMMENDED LIFECYCLE STATUS" in content
+    assert "ARCHITECTURALLY STABILIZED" in content
+
+
+def test_stabilization_report_is_indexed_properly():
+    """Verify that SAGE-CROSS-MODEL-AUDIT-PAYLOAD-STABILIZATION-REPORT.md is listed as PROPOSED in INDEX.md."""
+    root_dir = Path(__file__).parent.parent.parent
+    index_file = root_dir / "Main Archive" / "INDEX.md"
+
+    assert index_file.exists(), "Index file must exist in Main Archive/"
+    content = index_file.read_text(encoding="utf-8")
+
+    assert "../docs/SAGE-CROSS-MODEL-AUDIT-PAYLOAD-STABILIZATION-REPORT.md" in content
+    assert "[State: PROPOSED]" in content
+    assert "SAGE Agent Continuity Tree (SAGE-ACT) Multi-Agent Lineage" in content
