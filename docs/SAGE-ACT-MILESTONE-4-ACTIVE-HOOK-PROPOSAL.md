@@ -1,8 +1,8 @@
-# SAGE-ACT Milestone 4: Active Hook & Intercept Layer Proposal
+# SAGE-ACT Milestone 4: Active Hook & Intercept Layer Refined Proposal
 
 **Record ID:** SAGE-ACT-M4-PROP-2026-07-28
 **Classification:** Experimental Capability Proposal
-**Status:** Under Review
+**Status:** Under Review (Scope Refined)
 **Target Namespace:** `sage/experimental/act/`
 
 ---
@@ -12,7 +12,7 @@
 The objective of this proposal is to introduce the next sequential evolutionary capability slice: **The SAGE Active Client Hook and Intercept Layer (SAGE-ACH)**.
 
 ### 1.1. Core Focus
-The focus is on **designing a lightweight, non-intrusive mock developer wrapper and command interceptor** inside the experimental namespace. SAGE-ACH hooks directly into standard agent workspace actions (e.g., executing bash tools, git operations, or file mutations), automatically capturing their outputs as structured context, and logging them directly into the newly validated SAGE Continuity Control Loop (SAGE-CCL) records.
+The focus is on **designing a lightweight, non-intrusive mock developer command execution hook** inside the experimental namespace. SAGE-ACH hooks directly into standard agent workspace actions (e.g., executing test commands, linting, or file reads), automatically capturing their execution summaries as structured context, and logging them directly into the newly validated SAGE Continuity Control Loop (SAGE-CCL) records.
 
 ---
 
@@ -44,74 +44,88 @@ This capability establishes the physical telemetry link to automatically constru
   └───────────────────┘      └──────────────────┘      └─────────────────┘
 ```
 
-### 3.2. Data Interface & Structures
-SAGE-ACH will leverage a structure `ActiveInterceptHookEvent` matching the Pydantic schemas in SAGE:
-```python
-class ActiveInterceptHookEvent(BaseModel):
-    event_id: str  # Format: ACH-EVT-YYYYMMDD-UUID
-    command: str   # e.g., "pytest", "git commit -m ..."
-    workspace_before: Dict[str, str] # Key files and their shas before action
-    workspace_after: Dict[str, str]  # Key files and their shas after action
-    exit_code: int
-    execution_duration: float
-    output_summary: str
-    linked_record_id: Optional[str] = None # Reference to a ContinuityControlRecord
-```
+---
 
-### 3.3. Execution Workflow
-1. **Command Interception:** A developer or agent runs a command through the mock execution wrapper (e.g., `sage_run <command>`).
-2. **Pre-State Capture:** SAGE-ACH captures the SHAs of crucial workspace files.
-3. **Execution:** The command is executed in the sandboxed shell context.
-4. **Post-State Capture & Record Synthesis:** SAGE-ACH captures the command output, exit status, and post-state changes. It generates an `ActiveInterceptHookEvent`, maps it to a `ContinuityControlRecord`, and stages it locally.
+## 4. Refined Technical Specifications
+
+### 4.1. Exact Capability Boundary
+SAGE-ACH operates strictly inside `sage/experimental/act/` and has **zero** authority to alter, schedule, or block execution streams of any command. It functions strictly as an **observational hook**—wrapping command execution to read metadata and outputs without controlling or automating active state transitions.
+
+### 4.2. Inputs
+SAGE-ACH receives the following inputs:
+* `command`: The string command target to wrap (e.g., `"poetry run pytest tests/experimental/"`).
+* `session_id`: The active session identifier format `^session_[a-fA-F0-9]{8}$`.
+* `target_files`: List of filepaths in the workspace to monitor for SHA shifts (default: `["Main Archive/INDEX.md", "pyproject.toml"]`).
+
+### 4.3. Outputs
+SAGE-ACH outputs:
+* `ActiveInterceptHookEvent`: An in-memory, machine-validatable instance mapping the execution metadata.
+* `SAGE-CCL Record`: An automatically generated, staged `ContinuityControlRecord` synchronized to `sage_data/experimental_ccl/` under a `PROPOSED` state.
+
+### 4.4. Captured Evidence Fields
+To ensure high-fidelity lineage and accountability, SAGE-ACH captures and preserves:
+* `event_id`: Unique trace identifier format `^ACH-EVT-[0-9]{8}-[a-fA-F0-9\-]{36}$`.
+* `timestamp`: Epoch start and stop timestamps.
+* `exit_code`: Execution status code of the wrapped process (e.g., `0` for success).
+* `execution_duration`: CPU and wall time elapsed.
+* `workspace_state_before`: File-to-SHA-256 mapping of observed files *before* execution.
+* `workspace_state_after`: File-to-SHA-256 mapping of observed files *after* execution.
+* `output_summary`: Captures stdout/stderr summary blocks (truncated to 1000 characters to prevent buffer bloat).
+* `governance_checksum`: SHA-256 checksum of the intercepted metadata ensuring un-tampered record lineage.
 
 ---
 
-## 4. Implementation Boundary
+## 5. Human Approval & Governance Boundaries
 
-SAGE-ACH strictly adheres to SAGE's One-Way Import Law:
-* **Allowed Namespace:** Confined strictly to `sage/experimental/act/` and `tests/experimental/`.
-* **Prohibited Modifications:** No changes to `sage/runtime/`, `sage/core/`, or `sage/acr/`.
-* **Zero Production Footprint:** Standard production run commands are unaffected. The capability is initialized only when explicitly executing commands within the experimental wrapper.
-
----
-
-## 5. Validation Strategy
-
-Unit and integration tests will be written inside `tests/experimental/test_active_hook.py` to verify:
-1. **Command Execution Interception:** Assert that passing command strings to the wrapper correctly executes them and captures output text, duration, and exit status.
-2. **Context Differential Capturing:** Verify that changes to file states (e.g., creating a file) are captured as a structured metadata dictionary in `workspace_after`.
-3. **SAGE-CCL Linkage:** Assert that every captured event is successfully written as an experimental `ContinuityControlRecord` under a `PROPOSED` status.
-4. **AST Import Isolation:** Ensure that no production systems import from the SAGE-ACH wrapper module.
+* **Observation Over Control:** SAGE-ACH cannot intercept standard shell commands unless explicitly wrapped via `sage_run`. It does not execute commands automatically, and holds no scheduling or process management authority.
+* **Evidence Capture Over Automation:** The loop's role is solely to gather metadata. It does not auto-commit, auto-push, or auto-apply code fixes.
+* **Read-Only Behavior:** Command wrappers only read state (e.g., executing `git diff` or reading file hashes). They do not mutate core files or alter system structures.
+* **Approval Gate:** All newly generated `SAGE-CCL` records are staged with `lifecycle_state = "PROPOSED"`. Promotion to `VALIDATED` remains strictly locked behind manual human-operator signature verification (`sig_...`).
 
 ---
 
-## 6. Rollback Plan
+## 6. Implementation Boundary & Security
 
-To completely remove the SAGE-ACH prototype:
+* **Target Namespace:** Confined strictly to `sage/experimental/act/active_hook.py` and `tests/experimental/test_active_hook.py`.
+* **One-Way Import Law:** Experimental code may import model schemas from `sage.acr.session` or `sage.experimental.act.continuity_control`, but production modules (`sage/runtime/`, `sage/core/`, `sage/acr/`) must **never** import from experimental active hook files.
+* **Security & Sandboxing:** Process spawning is strictly restricted to standard subprocess parameters without shell exposure (`shell=False`) wherever possible, mitigating potential prompt injection command-escalation vulnerabilities in wrapped environments.
+
+---
+
+## 7. Validation Strategy
+
+The SAGE-ACH prototype will be validated through dedicated tests in `tests/experimental/test_active_hook.py` asserting:
+1. **Mock Execution Interception:** Verifies that commands like `echo "test"` correctly capture outputs, exit codes, and durations.
+2. **State Shift Tracking:** Tests assert that file modifications are successfully detected by comparing `workspace_state_before` and `workspace_state_after` hashes.
+3. **Causal Linkage Validation:** Checks that executing a command automatically generates a corresponding `ContinuityControlRecord` staged inside the CCL directory.
+4. **Pristine core isolation:** Automated AST import parser checks ensure zero production coupling.
+
+---
+
+## 8. Rollback Plan
+
+Should the SAGE-ACH experiment need to be removed or reverted:
 1. **File Deletion:** Delete `sage/experimental/act/active_hook.py` (when implemented) and its test suite `tests/experimental/test_active_hook.py`. Remove exports from `__init__.py`.
 2. **Index Reversion:** Revert the corresponding entries in `Main Archive/INDEX.md` and any registration documents.
 3. **Pristine State Guarantee:** Because the prototype operates solely inside the isolated experimental directory, removing these files returns SAGE to its exact pristine state with zero risk of logical residue.
 
 ---
 
-## 7. Demonstration Value
+## 9. Demonstration Value
 
-This next step strengthens the SAGE ecosystem by:
-* **Automated Evidence Generation:** Eliminates the need to manually declare what commands led to a specific milestone.
-* **Causal Linkage Audit:** Connects raw terminal command chains directly to decision-trace lines and immutable ledger receipts, making the entire engineering history inspectable.
-* **Enhanced Reconstruction Reliability:** Provides an exact step-by-step history of commands that can be re-played automatically to rebuild a session state after a crash.
+This next step strengthens SAGE's core value proposition:
+* **Automated Trace Gathering:** Saves human operators from manual status logging between sessions.
+* **Better Audit Readiness:** Demonstrates end-to-end evidence tracking that is easily inspectable by human auditors.
+* **Clearer Decision History:** Connects actions directly to their underlying justifications, eliminating ambiguity around why specific code changes were introduced.
 
 ---
 
-## 8. Boundary Audit & Classifications
+## 10. Boundary Audit & Classifications
 
-SAGE-ACH operates under strict governance:
-* **No Speculative Architecture:** The capability does not modify system routers, endpoints, or persistent state databases.
-* **No CMAPS Promotion:** CMAPS v1.0 remains strictly classified as an **Architecturally Stabilized Candidate Path**.
-* **Governance Classifications:**
-  * **SAGE-CCL:** *Implemented Experimental Prototype*
-  * **SAGE-ACH:** *Experimental Capability Proposal*
+* **CMAPS v1.0:** *Architecturally Stabilized Candidate Path*
+* **Continuity Control Loop (SAGE-CCL):** *Implemented Experimental Prototype*
+* **Active Hook and Intercept Layer (SAGE-ACH):** *Experimental Capability Proposal*
 
-### 8.1. Operational Directives
+### 10.1. Operational Directives
 $$\text{Research} \longrightarrow \text{Validation} \longrightarrow \text{Master Archive}$$
 $$\text{Authorize} \longrightarrow \text{Implement} \longrightarrow \text{Verify} \longrightarrow \text{Archive}$$
