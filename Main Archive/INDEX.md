@@ -9,6 +9,7 @@ Each indexed artifact is assigned a lifecycle state under the **Index Layer v0.1
 
 ## 1. Architecture Specs
 - [SAGE Constitution](../docs/master/CONSTITUTION.md) `[State: CANONICAL]` - SAGE Constitutional and Master Architecture records, including SAGE 2 core governance laws and architectural update.
+- [SAGE Collaborator Orientation Layer: Google AI Alignment Wrap](../docs/SAGE_GOOGLE_ALIGNMENT_WRAP.md) `[State: VALIDATED]` - Strategic alignment documentation defining multi-role coordination boundaries, operational pipelines, and current milestones.
 - [Organizational Operating System](architecture/organizational-operating-system.md) `[State: CANONICAL]` - Theoretical and structural overview of the organizational continuity system.
 - [Roadmap Spec](architecture/roadmap.md) `[State: CANONICAL]` - Current core architecture status and locked expansion plans.
 - [Dependency Graph](architecture/dependency-graph.md) `[State: CANONICAL]` - Class mappings and package relationship models.
@@ -20,6 +21,7 @@ Each indexed artifact is assigned a lifecycle state under the **Index Layer v0.1
 ---
 
 ## 2. Strategic Research
+- [SAGE Strategic Assessment: SAGE-STRAT-ASSESS-001](research/strategic/SAGE-STRAT-ASSESS-001.md) `[State: VALIDATED]` - Formal record defining strategic positioning as AI Reliability Infrastructure / Agent Governance Control Layer.
 - [SME Spec](research/strategic/SME.md) `[State: CANONICAL]` - Subject Matter Expert Layer.
 - [SRL Spec](research/strategic/SRL.md) `[State: CANONICAL]` - Self-Referential Learning / Semantic Representation Layer.
 - [SKAL Spec](research/strategic/SKAL.md) `[State: CANONICAL]` - Semantic Knowledge Association Layer.
@@ -52,6 +54,7 @@ Each indexed artifact is assigned a lifecycle state under the **Index Layer v0.1
 ---
 
 ## 5. Engineering Reports and Activations
+- [SAGE Knowledge Synchronization Report](../docs/SAGE-KNOWLEDGE-SYNCHRONIZATION-REPORT.md) `[State: VALIDATED]` - Document mapping repository-wide alignment, corrected reference lineages, and synchronized classifications.
 - [SAGE Final Operational Completion Report](research/archive/SAGE_FINAL_ACTIVATION_REPORT.md) `[State: CANONICAL]` - Formal activation and engineering report for SAGE Runtime v1 Phase 3.
 - [SAGE Final Live Activation Checklist](../docs/master/FINAL_LIVE_ACTIVATION_CHECKLIST.md) `[State: CANONICAL]` - Definitive step-by-step operational setup instructions to bridge the permission boundary for hosting, APIs, webhooks, and integrations.
 - [SAGE Render Deployment Handoff Spec](../docs/master/RENDER_DEPLOYMENT_HANDOFF.md) `[State: CANONICAL]` - Comprehensive Render deployment settings, repository reference, required env variables, and health checks.
