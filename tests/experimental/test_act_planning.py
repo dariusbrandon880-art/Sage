@@ -39,6 +39,13 @@ def test_milestone_2_planning_document_exists_and_is_valid():
         "Dependency Analysis",
         "Validation Plan Refinement",
         "Risk Review",
+        "Boundary Confirmation",
+        "Interface Analysis",
+        "Validation Expansion Plan",
+        "EASReceiptChain",
+        "Dependency Coupling",
+        "orphan task",
+        "Production Contamination",
     ]
 
     for phrase in required_phrases:

@@ -345,19 +345,81 @@ The testing harness is refined with specific requirements for five critical vali
 ### 9.4. Risk Review
 Before moving to implementation, all identified risks are evaluated with strict containment protocols:
 
-*   **Production Impact Risks:**
-    - *Risk:* Exposure of experimental interfaces causing performance or thread-safety issues in the active runtime.
-    - *Mitigation:* Ensure that experimental ACT modules are never imported, initialized, or referenced in the production pipeline (`sage/runtime/` or `sage/service.py`).
-*   **Import Boundary Risks:**
-    - *Risk:* Code regression where a developer mistakenly imports from experimental namespaces in core runtime modules.
-    - *Mitigation:* Programmatic AST checks inside the test suite automatically scan all non-experimental python files on every run to reject imports of `sage.experimental`.
-*   **State Mutation Risks:**
-    - *Risk:* Accidental mutation of session state references during mapping.
-    - *Mitigation:* Read-only enforcement is verified by passing deep-copied mock structures and asserting that the original inputs remain completely identical post-validation.
+*   **Production Risks:**
+    - *Risk:* Accidental mutation or reference alteration of production states.
+    - *Mitigation:* Ensure that all validators consume inputs as read-only models (e.g. using `model_copy()` if required or read-only properties) without triggering any `.save_session()` or disk dump.
 *   **Archive Integrity Risks:**
-    - *Risk:* Potential contamination of the permanent Master Archive directory by experimental schemas.
-    - *Mitigation:* The experimental validation layer has no dependency, reference, or import of the `sage.archive` namespace, eliminating any risk of archive writes.
+    - *Risk:* Accidental or malformed archive writes during lineage checks.
+    - *Mitigation:* No archive modules or promotion engines are imported under `sage/experimental/act/`. Tests will enforce that archive promotion remains completely frozen.
+*   **Import Boundary Risks:**
+    - *Risk:* Import leakage where production code imports experimental validators to leverage new checks.
+    - *Mitigation:* Strictly enforce the AST-based import check, ensuring complete namespace containment.
 *   **Unresolved Assumptions:**
     - *Assumption:* High-level objectives and task IDs are consistently formatted with standard ASCII string characters.
     - *Assumption:* Time stamps inside Pydantic models use ISO-8601 UTC format.
     - *Validation Path:* Added robust timezone parser normalization inside the validation strategy to handle all string datetime types safely.
+
+---
+
+## 10. SAGE-ACT Milestone 2 Architecture Review Report (Harnessed)
+
+This section contains the formal, harnessed **SAGE-ACT Milestone 2 Architecture Review Report**, converting the approved planning package into an implementation-ready blueprint while keeping production safety boundaries completely frozen.
+
+### 10.1. Boundary Confirmation
+The SAGE Engineering Node programmatically confirms the containment of the SAGE-ACT lineage validation layer:
+
+*   **Experimental Isolation:** All proposed validation algorithms, utility structures, and interface types reside strictly under `sage/experimental/act/`. No files inside core namespaces (`sage/acr/`, `sage/core/`, `sage/runtime/`) are introduced, altered, or impacted.
+*   **Zero Core Dependencies Direction:** No dependencies point from production namespaces into experimental namespaces. SAGE core layers remain unaware of and independent from the `sage/experimental` ACT scaffolding. The validation layer behaves as a pure downstream observer.
+*   **One-Way Import Law Compliance:** Programmatic AST scans guarantee that the One-Way Import Law remains fully enforceable, blocking any accidental developer import of ACT components into production files.
+
+### 10.2. Interface Analysis
+This section analyzes how ACT observes existing SAGE system elements strictly as a read-only harness:
+
+*   **`SessionStateManager` Interface:**
+    - *Existing Interfaces:* Utilizes read-only methods `retrieve_session(session_id)` and `list_all()` from `SessionStateManager` in `sage/acr/session/session_state.py`.
+    - *Required Adapter/Interface:* In Milestone 2 validation, a read-only adapter wraps incoming session payloads to inspect `active_objectives` and metadata without invoking persistence loops.
+*   **Decision Tracking Structures Interface:**
+    - *Existing Interfaces:* Direct read access to fields on `DecisionEntry` (from `sage/models.py`) such as `id`, `evidence`, and `timestamp` (represented as standard UTC-aware datetime objects).
+    - *Required Adapter/Interface:* No complex adapters are needed; properties are observed directly from the immutable models.
+*   **`EASReceiptChain` / Spek Validation Integration:**
+    - *Existing Interfaces:* Reads list of SPEK compliance receipt hashes from the `validation_records` attribute of standard `AgentTask` objects in `sage/agents/models.py`.
+    - *Required Adapter/Interface:* A lookup adapter validates receipt hashes against files inside `sage_data/evidence_capture/` to check receipt authenticity.
+*   **Archive Promotion Workflows:**
+    - *Existing Interfaces:* Observes `ArchiveEntry` structures in `sage/models.py` directly.
+    - *Required Adapter/Interface:* A validation guard reads the `intelligence.relationships` attribute of existing archive records to verify that a target task is not already promoted.
+*   **Missing Assumptions:**
+    - Timezone normalizations are assumed consistent (ISO-8601 UTC format). Datetime parsers will automatically enforce UTC conversions on all read-only checks.
+
+### 10.3. Validation Expansion Plan
+Before any Milestone 2 implementation code is finalized, the following testing boundaries must be met under Pytest:
+
+*   **Session Lineage Mapping:**
+    - Tests will verify that `SessionStateTaskLinker` maps tasks matching `SessionState.active_objectives` correctly, and throws `ValueError` on mismatched objectives.
+*   **Task Lineage Verification:**
+    - Tests will verify that mapped task IDs correspond exactly to standard formatted identifiers with `"task_"` prefix.
+*   **Decision Causality Validation:**
+    - Enforce chronological validation checks: reject mappings where a decision timestamp is strictly earlier than task creation time.
+*   **Receipt Integrity Verification:**
+    - Verify that SPEK receipt hashes associated with executing tasks represent structurally sound SHA-256 strings.
+*   **Mutation Boundary Enforcement:**
+    - Run unit and integration tests inside a strictly controlled, read-only mocked context. Assert that any validation execution makes exactly zero `.json` or filesystem modifications to `sage_data/`.
+*   **Recovery / Orphan Task Scenarios:**
+    - Explicit test scenarios must cover the isolation and recovery of orphan tasks (tasks that have valid objective references but do not map to active sessions), ensuring they are caught, categorized, and reported as invalid.
+
+### 10.4. Risk Assessment
+Potential risks and security postures for the next phase are assessed below:
+
+*   **Production Contamination Risks:**
+    - *Risk:* Accidental invocation of experimental ACT code during active production runtime operations.
+    - *Mitigation:* Programmatic isolation is fully enforced; no core production module imports ACT code.
+*   **State Mutation Risks:**
+    - *Risk:* Accidental mutation of session or task states during validation.
+    - *Mitigation:* Validate that the validator components consume inputs strictly as read-only copies and perform no database writes.
+*   **Archive Integrity Risks:**
+    - *Risk:* Unintentional modifications to SAGE's immutable Master Archive files.
+    - *Mitigation:* The experimental validation layer is completely isolated from archive classes and promotion pathways.
+*   **Dependency Coupling Risks:**
+    - *Risk:* Direct coupling of validation code to mutable managers.
+    - *Mitigation:* Couple strictly to underlying, read-only Pydantic model schemas, avoiding dependency on active service engines.
+*   **Security Assumptions Requiring Validation:**
+    - We assume that the assigned agent IDs match valid governed `AgentIdentity` roles. Security tests must confirm that only valid, authorized agent roles are mapped.
