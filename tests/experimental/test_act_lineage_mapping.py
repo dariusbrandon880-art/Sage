@@ -3,6 +3,7 @@
 import pytest
 import ast
 from pathlib import Path
+from datetime import datetime
 
 from sage.experimental.act import SessionStateTaskLinker
 from sage.acr.session.session_state import SessionState
@@ -299,3 +300,130 @@ def test_session_state_task_linker_no_metadata_field():
     result = linker.validate_session_task_lineage(session, tasks)
     assert result["session_id"] == "session_f6b3d4e5"
     assert result["total_tasks_validated"] == 1
+
+
+from sage.experimental.act import TaskDecisionCausalBinder
+from sage.models import DecisionEntry, DecisionType
+
+
+def test_task_decision_causal_binder_valid_dict():
+    """Verify standard valid causal mapping with dictionary structures."""
+    binder = TaskDecisionCausalBinder()
+    task = {
+        "task_id": "task_001_deploy",
+        "created_at": "2026-03-01T12:00:00Z",
+    }
+    decisions = [
+        {
+            "id": "decision_001_approve",
+            "timestamp": "2026-03-01T12:05:00Z",
+        },
+        {
+            "decision_id": "proposal_002_verify",
+            "timestamp": "2026-03-01T12:10:00Z",
+        }
+    ]
+
+    result = binder.validate_causal_mapping(task, decisions)
+
+    assert result["task_id"] == "task_001_deploy"
+    assert result["mapped_decisions"] == ["decision_001_approve", "proposal_002_verify"]
+    assert result["total_decisions_validated"] == 2
+    assert result["chronological_ordering_verified"] is True
+    assert result["validation_status"] == "LINEAGE_VALIDATED"
+    assert result["read_only_assertion"] is True
+    assert "validated_at" in result
+
+
+def test_task_decision_causal_binder_valid_models():
+    """Verify standard valid causal mapping with actual models."""
+    binder = TaskDecisionCausalBinder()
+    task = AgentTask(
+        task_id="task_001_deploy",
+        objective_id="obj_001",
+        title="Deploy task",
+        created_at="2026-03-01T12:00:00Z",
+    )
+    decisions = [
+        DecisionEntry(
+            id="decision_001_approve",
+            decision_type=DecisionType.ARCHITECTURAL,
+            description="Approve architecture",
+            rationale="Meets all guidelines",
+            timestamp=datetime.fromisoformat("2026-03-01T12:05:00+00:00"),
+        )
+    ]
+
+    result = binder.validate_causal_mapping(task, decisions)
+
+    assert result["task_id"] == "task_001_deploy"
+    assert result["mapped_decisions"] == ["decision_001_approve"]
+    assert result["total_decisions_validated"] == 1
+
+
+def test_task_decision_causal_binder_missing_properties():
+    """Verify rejection when task or decision lacks essential lineage fields."""
+    binder = TaskDecisionCausalBinder()
+
+    # Missing task_id
+    with pytest.raises(ValueError, match="Missing 'task_id' in task"):
+        binder.validate_causal_mapping({"created_at": "2026-03-01T12:00:00Z"}, [])
+
+    # Missing created_at
+    with pytest.raises(ValueError, match="Missing 'created_at' in task"):
+        binder.validate_causal_mapping({"task_id": "task_001"}, [])
+
+    # Missing decision ID
+    with pytest.raises(ValueError, match="Missing decision/proposal ID"):
+        binder.validate_causal_mapping(
+            {"task_id": "task_001", "created_at": "2026-03-01T12:00:00Z"},
+            [{"timestamp": "2026-03-01T12:05:00Z"}]
+        )
+
+    # Missing decision timestamp
+    with pytest.raises(ValueError, match="Missing 'timestamp' in decision"):
+        binder.validate_causal_mapping(
+            {"task_id": "task_001", "created_at": "2026-03-01T12:00:00Z"},
+            [{"id": "decision_001"}]
+        )
+
+
+def test_task_decision_causal_binder_invalid_prefixes():
+    """Verify rejection of invalid identifier prefixes."""
+    binder = TaskDecisionCausalBinder()
+
+    # Bad task prefix
+    with pytest.raises(ValueError, match="Invalid task_id format"):
+        binder.validate_causal_mapping({"task_id": "invalid_001", "created_at": "2026-03-01T12:00:00Z"}, [])
+
+    # Bad decision prefix
+    with pytest.raises(ValueError, match="Invalid decision/proposal ID format"):
+        binder.validate_causal_mapping(
+            {"task_id": "task_001", "created_at": "2026-03-01T12:00:00Z"},
+            [{"id": "invalid_dec_001", "timestamp": "2026-03-01T12:05:00Z"}]
+        )
+
+
+def test_task_decision_causal_binder_duplicate_id():
+    """Verify rejection of duplicate decision IDs in causal mapping."""
+    binder = TaskDecisionCausalBinder()
+    task = {"task_id": "task_001", "created_at": "2026-03-01T12:00:00Z"}
+    decisions = [
+        {"id": "decision_001", "timestamp": "2026-03-01T12:05:00Z"},
+        {"id": "decision_001", "timestamp": "2026-03-01T12:10:00Z"},
+    ]
+
+    with pytest.raises(ValueError, match="Duplicate decision ID detected"):
+        binder.validate_causal_mapping(task, decisions)
+
+
+def test_task_decision_causal_binder_chronological_violation():
+    """Verify rejection when a decision is strictly earlier than task creation."""
+    binder = TaskDecisionCausalBinder()
+    task = {"task_id": "task_001", "created_at": "2026-03-01T12:00:00Z"}
+    decisions = [
+        {"id": "decision_001", "timestamp": "2026-03-01T11:55:00Z"},  # 5 mins prior to task creation
+    ]
+
+    with pytest.raises(ValueError, match="Chronological violation"):
+        binder.validate_causal_mapping(task, decisions)
