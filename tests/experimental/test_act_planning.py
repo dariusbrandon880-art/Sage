@@ -46,6 +46,12 @@ def test_milestone_2_planning_document_exists_and_is_valid():
         "Dependency Coupling",
         "orphan task",
         "Production Contamination",
+        "SAGE-ACT Milestone 2 Implementation Authorization Package",
+        "Current Readiness State Review",
+        "Smallest Safe Implementation Slice",
+        "Promotion Requirements",
+        "Final Readiness Decision",
+        "READY FOR IMPLEMENTATION REVIEW",
     ]
 
     for phrase in required_phrases:
