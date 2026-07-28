@@ -63,3 +63,5 @@ Each indexed artifact is assigned a lifecycle state under the **Index Layer v0.1
   - [SAGE Mission 0.7: Day-0 Observation Report](../docs/SAGE-MISSION-0.7-SHADOW-EVIDENCE-REPORT.md) `[State: CANONICAL]` - Operational telemetry baseline, health checks, evidence pipeline validation, and classification distribution for Mission 0.7.
 - **Mission 0.8 — SAGE Proof Trinity Phase**
   - [SAGE Mission 0.8 Pre-Implementation Baseline Verification & Drift Report](../docs/SAGE-MISSION-0.8-PRE-IMPLEMENTATION-BASELINE-REPORT.md) `[State: CANONICAL]` - Comprehensive verification of current main baseline, zero state-drift confirmation, and architectural preparedness check prior to Mission 0.8 implementation.
+- **SAGE Agent Continuity Tree (SAGE-ACT) Multi-Agent Lineage**
+  - [SAGE-ACT Milestone 2 Planning & Design Specification](../docs/SAGE-ACT-MILESTONE-2-PLANNING.md) `[State: PROPOSED]` - Read-only lineage validation planning package mapping SessionState to AgentTask and AgentTask to DecisionEntry.
