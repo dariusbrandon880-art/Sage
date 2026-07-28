@@ -1,8 +1,8 @@
-# SAGE-ACT Milestone 4: Active Hook & Intercept Layer Refined Proposal
+# SAGE-ACT Milestone 4: Active Hook & Intercept Layer Refined Proposal & Implementation
 
 **Record ID:** SAGE-ACT-M4-PROP-2026-07-28
-**Classification:** Experimental Capability Proposal
-**Status:** Under Review (Scope Refined)
+**Classification:** Experimental Capability Prototype
+**Status:** Approved & Implemented (Staged inside Experimental Namespace)
 **Target Namespace:** `sage/experimental/act/`
 
 ---
@@ -92,20 +92,22 @@ To ensure high-fidelity lineage and accountability, SAGE-ACH captures and preser
 
 ---
 
-## 7. Validation Strategy
+## 7. Validation Strategy & Results
 
-The SAGE-ACH prototype will be validated through dedicated tests in `tests/experimental/test_active_hook.py` asserting:
+The SAGE-ACH experimental capability is fully implemented and covered by robust unit and integration tests inside `tests/experimental/test_active_hook.py`:
 1. **Mock Execution Interception:** Verifies that commands like `echo "test"` correctly capture outputs, exit codes, and durations.
 2. **State Shift Tracking:** Tests assert that file modifications are successfully detected by comparing `workspace_state_before` and `workspace_state_after` hashes.
 3. **Causal Linkage Validation:** Checks that executing a command automatically generates a corresponding `ContinuityControlRecord` staged inside the CCL directory.
 4. **Pristine core isolation:** Automated AST import parser checks ensure zero production coupling.
+
+**Verification Status:** 100% green passing tests.
 
 ---
 
 ## 8. Rollback Plan
 
 Should the SAGE-ACH experiment need to be removed or reverted:
-1. **File Deletion:** Delete `sage/experimental/act/active_hook.py` (when implemented) and its test suite `tests/experimental/test_active_hook.py`. Remove exports from `__init__.py`.
+1. **File Deletion:** Delete `sage/experimental/act/active_hook.py` and its test suite `tests/experimental/test_active_hook.py`. Remove exports from `__init__.py`.
 2. **Index Reversion:** Revert the corresponding entries in `Main Archive/INDEX.md` and any registration documents.
 3. **Pristine State Guarantee:** Because the prototype operates solely inside the isolated experimental directory, removing these files returns SAGE to its exact pristine state with zero risk of logical residue.
 
@@ -124,7 +126,7 @@ This next step strengthens SAGE's core value proposition:
 
 * **CMAPS v1.0:** *Architecturally Stabilized Candidate Path*
 * **Continuity Control Loop (SAGE-CCL):** *Implemented Experimental Prototype*
-* **Active Hook and Intercept Layer (SAGE-ACH):** *Experimental Capability Proposal*
+* **Active Hook and Intercept Layer (SAGE-ACH):** *Implemented Experimental Prototype*
 
 ### 10.1. Operational Directives
 $$\text{Research} \longrightarrow \text{Validation} \longrightarrow \text{Master Archive}$$
