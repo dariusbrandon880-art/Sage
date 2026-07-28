@@ -110,6 +110,16 @@ class CrossModelAuditPayloadValidator:
             if field not in provider_data:
                 raise ValueError(f"CMAPS Violation: Missing 'model_provider.{field}'.")
 
+        # Provider-to-model prefix consistency checking
+        prov = str(provider_data["provider"]).lower()
+        m_name = str(provider_data["model_name"]).lower()
+        if prov == "openai" and not ("gpt" in m_name or "o1" in m_name or "o3" in m_name):
+            raise ValueError(f"CMAPS Violation: Model/Provider consistency mismatch. Provider '{prov}' cannot run model '{m_name}'.")
+        elif prov == "anthropic" and "claude" not in m_name:
+            raise ValueError(f"CMAPS Violation: Model/Provider consistency mismatch. Provider '{prov}' cannot run model '{m_name}'.")
+        elif prov == "google" and "gemini" not in m_name:
+            raise ValueError(f"CMAPS Violation: Model/Provider consistency mismatch. Provider '{prov}' cannot run model '{m_name}'.")
+
         # Execution State
         exec_state = payload["execution_state"]
         if not isinstance(exec_state, dict):
@@ -162,6 +172,8 @@ class CrossModelAuditPayloadValidator:
         if "parent_task_id" in task_lineage and task_lineage["parent_task_id"] is not None:
             if not re.match(r"^task_[a-zA-Z0-9_]{3,128}$", task_lineage["parent_task_id"]):
                 raise ValueError(f"CMAPS Violation: Invalid format for 'parent_task_id': '{task_lineage['parent_task_id']}'")
+            if task_lineage["parent_task_id"] == task_lineage["current_task_id"]:
+                raise ValueError(f"CMAPS Violation: Task hierarchy violation. parent_task_id cannot equal current_task_id.")
 
         # List fields checks
         if not isinstance(payload["decision_events"], list):
@@ -211,7 +223,8 @@ class CrossModelAuditPayloadValidator:
                 f"is strictly later than 'updated_at' ({updated_at})."
             )
 
-        # decision timestamps >= started_at
+        # decision timestamps >= started_at and monotonically increasing
+        last_dec_time = None
         for dec in payload["decision_events"]:
             try:
                 dec_time = datetime.fromisoformat(dec["timestamp"].replace("Z", "+00:00"))
@@ -222,6 +235,12 @@ class CrossModelAuditPayloadValidator:
                     f"CMAPS Violation: Chronological mismatch. Decision '{dec['decision_id']}' "
                     f"timestamp ({dec_time}) is strictly earlier than run start time ({started_at})."
                 )
+            if last_dec_time is not None and dec_time < last_dec_time:
+                raise ValueError(
+                    f"CMAPS Violation: Chronological mismatch. Decision '{dec['decision_id']}' timestamp ({dec_time}) "
+                    f"is strictly earlier than previous decision timestamp ({last_dec_time})."
+                )
+            last_dec_time = dec_time
 
         # failure timestamps <= checkpoint timestamps
         for fail in payload["failure_events"]:
@@ -240,11 +259,32 @@ class CrossModelAuditPayloadValidator:
                         f"timestamp ({fail_time}) occurred after checkpoint snapshot '{chk['checkpoint_id']}' ({chk_time})."
                     )
 
+        # Evidence relationships validation
+        if not isinstance(payload["evidence_relationships"], list):
+            raise ValueError("CMAPS Violation: 'evidence_relationships' must be a list.")
+        for ev in payload["evidence_relationships"]:
+            if not isinstance(ev, dict):
+                raise ValueError("CMAPS Violation: Evidence entry must be a dictionary.")
+            for f in ["artifact_path", "git_commit", "sha256_checksum"]:
+                if f not in ev:
+                    raise ValueError(f"CMAPS Violation: Evidence missing required field '{f}'.")
+            if not re.match(r"^[a-fA-F0-9]{40}$", ev["git_commit"]):
+                raise ValueError(f"CMAPS Violation: Invalid git commit hash format: '{ev['git_commit']}'.")
+            if not re.match(r"^[a-fA-F0-9]{64}$", ev["sha256_checksum"]):
+                raise ValueError(f"CMAPS Violation: Invalid sha256 checksum format: '{ev['sha256_checksum']}'.")
+
         # 5. Relational and Multi-Set Uniqueness Constraints
         subtask_ids = task_lineage["subtask_ids"]
         if not isinstance(subtask_ids, list):
             raise ValueError("CMAPS Violation: 'subtask_ids' must be a list of strings.")
         current_task_id = task_lineage["current_task_id"]
+
+        # If recovered state, there must be at least one failure and recovery checkpoint
+        if exec_state["status"] == "recovered":
+            if not payload["failure_events"]:
+                raise ValueError("CMAPS Violation: Recovery state transition integrity violation. Status 'recovered' requires at least one failure_event.")
+            if not payload["recovery_checkpoints"]:
+                raise ValueError("CMAPS Violation: Recovery state transition integrity violation. Status 'recovered' requires at least one recovery_checkpoint.")
 
         # current_task_id not in subtask_ids
         if current_task_id in subtask_ids:

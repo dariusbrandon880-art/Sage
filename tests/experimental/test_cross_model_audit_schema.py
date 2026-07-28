@@ -329,3 +329,110 @@ def test_one_way_import_isolation_enforcement():
                 assert not node.module.startswith("sage.agents"), (
                     f"One-Way Import Law Violation: 'contracts.py' imports from production module '{node.module}'"
                 )
+
+
+def test_validator_model_provider_consistency_mismatch():
+    """Verify that inconsistent model/provider pairings raise consistency mismatch errors."""
+    validator = CrossModelAuditPayloadValidator()
+
+    # Case 1: Provider 'openai' running non-gpt model
+    payload = get_valid_payload()
+    payload["model_provider"]["provider"] = "openai"
+    payload["model_provider"]["model_name"] = "claude-3-sonnet"
+    with pytest.raises(ValueError, match="CMAPS Violation: Model/Provider consistency mismatch. Provider 'openai' cannot run model 'claude-3-sonnet'"):
+        validator.validate_payload(payload)
+
+    # Case 2: Provider 'anthropic' running non-claude model
+    payload = get_valid_payload()
+    payload["model_provider"]["provider"] = "anthropic"
+    payload["model_provider"]["model_name"] = "gpt-4o"
+    with pytest.raises(ValueError, match="CMAPS Violation: Model/Provider consistency mismatch. Provider 'anthropic' cannot run model 'gpt-4o'"):
+        validator.validate_payload(payload)
+
+    # Case 3: Provider 'google' running non-gemini model
+    payload = get_valid_payload()
+    payload["model_provider"]["provider"] = "google"
+    payload["model_provider"]["model_name"] = "claude-3-sonnet"
+    with pytest.raises(ValueError, match="CMAPS Violation: Model/Provider consistency mismatch. Provider 'google' cannot run model 'claude-3-sonnet'"):
+        validator.validate_payload(payload)
+
+
+def test_validator_task_hierarchy_self_parenting():
+    """Verify that a task with itself listed as parent raises a hierarchy violation error."""
+    validator = CrossModelAuditPayloadValidator()
+
+    payload = get_valid_payload()
+    payload["task_lineage"]["parent_task_id"] = "task_sub_verify_002"
+    payload["task_lineage"]["current_task_id"] = "task_sub_verify_002"
+
+    with pytest.raises(ValueError, match="CMAPS Violation: Task hierarchy violation. parent_task_id cannot equal current_task_id."):
+        validator.validate_payload(payload)
+
+
+def test_validator_decisions_monotonic_ordering():
+    """Verify that chronological out-of-order decision events raise a chronological mismatch error."""
+    validator = CrossModelAuditPayloadValidator()
+
+    payload = get_valid_payload()
+    # Add two decisions where the second occurs BEFORE the first
+    payload["decision_events"] = [
+        {
+            "decision_id": "decision_001_approve_credentials",
+            "timestamp": "2026-03-30T14:40:00.000000Z",
+            "summary": "Decision 1",
+            "reasoning": "Reason 1",
+            "confidence": 0.9
+        },
+        {
+            "decision_id": "decision_002_validate_signature",
+            "timestamp": "2026-03-30T14:35:00.000000Z",  # strictly earlier
+            "summary": "Decision 2",
+            "reasoning": "Reason 2",
+            "confidence": 0.95
+        }
+    ]
+
+    with pytest.raises(ValueError, match="CMAPS Violation: Chronological mismatch. Decision 'decision_002_validate_signature' timestamp .* is strictly earlier than previous decision timestamp"):
+        validator.validate_payload(payload)
+
+
+def test_validator_evidence_relationship_validation():
+    """Verify evidence structure correctness, required fields, and format checks (git_commit, checksum)."""
+    validator = CrossModelAuditPayloadValidator()
+
+    # Case 1: Missing field inside evidence relationships
+    payload = get_valid_payload()
+    del payload["evidence_relationships"][0]["git_commit"]
+    with pytest.raises(ValueError, match="CMAPS Violation: Evidence missing required field 'git_commit'"):
+        validator.validate_payload(payload)
+
+    # Case 2: Invalid format for git_commit (must be 40 chars hex)
+    payload = get_valid_payload()
+    payload["evidence_relationships"][0]["git_commit"] = "short_hash"
+    with pytest.raises(ValueError, match="CMAPS Violation: Invalid git commit hash format: 'short_hash'"):
+        validator.validate_payload(payload)
+
+    # Case 3: Invalid format for sha256_checksum (must be 64 chars hex)
+    payload = get_valid_payload()
+    payload["evidence_relationships"][0]["sha256_checksum"] = "invalid_sha"
+    with pytest.raises(ValueError, match="CMAPS Violation: Invalid sha256 checksum format: 'invalid_sha'"):
+        validator.validate_payload(payload)
+
+
+def test_validator_recovery_state_integrity():
+    """Verify that transitioning to recovered status without a failure and checkpoint context is blocked."""
+    validator = CrossModelAuditPayloadValidator()
+
+    # Case 1: recovered state but failure_events list is empty
+    payload = get_valid_payload()
+    payload["execution_state"]["status"] = "recovered"
+    payload["failure_events"] = []
+    with pytest.raises(ValueError, match="CMAPS Violation: Recovery state transition integrity violation. Status 'recovered' requires at least one failure_event."):
+        validator.validate_payload(payload)
+
+    # Case 2: recovered state but recovery_checkpoints list is empty
+    payload = get_valid_payload()
+    payload["execution_state"]["status"] = "recovered"
+    payload["recovery_checkpoints"] = []
+    with pytest.raises(ValueError, match="CMAPS Violation: Recovery state transition integrity violation. Status 'recovered' requires at least one recovery_checkpoint."):
+        validator.validate_payload(payload)
