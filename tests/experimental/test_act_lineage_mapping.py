@@ -10,6 +10,7 @@ from sage.experimental.act.contracts import (
     SessionTaskTreeLinker,
     TaskDecisionBinder,
     PreMutationSafetyGates,
+    ContinuityTreeRepresentation,
 )
 from sage.acr.session.session_state import SessionState
 from sage.agents.models import AgentTask, AgentTaskState
@@ -196,6 +197,54 @@ def test_pre_mutation_safety_validators():
     f_cycle = gates.validate_acyclic_hierarchy(cyclic_dependency)
     assert f_cycle["is_acyclic"] is False
     assert f_cycle["code"] == "CYCLE_DETECTED"
+
+
+def test_continuity_tree_representation_valid():
+    """Verify compiling a valid ContinuityTreeRepresentation graph returns correct lineage structures."""
+    tree = ContinuityTreeRepresentation()
+    tree.add_session("session_1", ["obj_audit"])
+    tree.add_task("task_1", "session_1", "Audit logs", state="COMPLETED", assigned_agent_id="agent_jules")
+    tree.add_decision("decision_1", "task_1", "architectural", "Approve model", "Meets strict requirements", "2026-03-30")
+
+    result = tree.compile_tree()
+    assert result["compilation_status"] == "SUCCESS"
+    assert result["is_valid_continuity"] is True
+    assert len(result["anomalies"]) == 0
+    assert "session_1" in result["tree_structure"]["sessions"]
+    assert "task_1" in result["tree_structure"]["tasks"]
+    assert "decision_1" in result["tree_structure"]["decisions"]
+
+
+def test_continuity_tree_representation_malformed_and_orphans():
+    """Verify that malformed relationships, cycle detections, and orphans are captured as anomalies."""
+    tree = ContinuityTreeRepresentation()
+
+    # 1. Orphan Task (references nonexistent session)
+    # 2. Orphan Task: Executing but no assigned agent ID
+    # 3. Invalid parent/child relationship (references nonexistent parent task)
+    tree.add_task(
+        task_id="task_child",
+        session_id="session_nonexistent",
+        title="Orphan child task",
+        parent_id="task_parent_nonexistent",
+        state="EXECUTING",
+        assigned_agent_id=None
+    )
+
+    # 4. Cycle detection (task_a depends on task_b, task_b depends on task_a)
+    tree.add_session("session_cycle", ["obj_test"])
+    tree.add_task("task_a", "session_cycle", "Task A", parent_id="task_b", assigned_agent_id="agent_1")
+    tree.add_task("task_b", "session_cycle", "Task B", parent_id="task_a", assigned_agent_id="agent_1")
+
+    result = tree.compile_tree()
+    assert result["compilation_status"] == "DEGRADED"
+    assert result["is_valid_continuity"] is False
+
+    anomalies = [a["type"] for a in result["anomalies"]]
+    assert "orphan_task_no_session" in anomalies
+    assert "invalid_parent_child_relationship" in anomalies
+    assert "orphan_task_no_agent" in anomalies
+    assert "cyclic_dependency_detected" in anomalies
 
 
 def test_one_way_import_isolation_enforcement():

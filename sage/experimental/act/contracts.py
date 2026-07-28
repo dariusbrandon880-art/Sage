@@ -5,6 +5,149 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 
+class ContinuityTreeRepresentation:
+    """An internal continuity tree representation suitable for diagnostics and future visualization.
+
+    Acts as a container and compiler for the evaluated multi-agent continuity graph,
+    enforcing acyclic relationships and mapping session-to-task-to-decision causal lines.
+    """
+
+    def __init__(self):
+        self.sessions: Dict[str, Dict[str, Any]] = {}
+        self.tasks: Dict[str, Dict[str, Any]] = {}
+        self.decisions: Dict[str, Dict[str, Any]] = {}
+
+    def add_session(self, session_id: str, active_objectives: List[str], metadata: Optional[Dict[str, Any]] = None) -> None:
+        """Add a session node representation."""
+        self.sessions[session_id] = {
+            "session_id": session_id,
+            "active_objectives": list(active_objectives),
+            "metadata": metadata or {},
+            "tasks": []
+        }
+
+    def add_task(
+        self,
+        task_id: str,
+        session_id: str,
+        title: str,
+        parent_id: Optional[str] = None,
+        state: str = "PENDING",
+        assigned_agent_id: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        """Add a task node representation."""
+        self.tasks[task_id] = {
+            "task_id": task_id,
+            "session_id": session_id,
+            "title": title,
+            "parent_id": parent_id,
+            "state": state,
+            "assigned_agent_id": assigned_agent_id,
+            "metadata": metadata or {},
+            "decisions": []
+        }
+        if session_id in self.sessions:
+            self.sessions[session_id]["tasks"].append(task_id)
+
+    def add_decision(
+        self,
+        decision_id: str,
+        task_id: str,
+        decision_type: str,
+        description: str,
+        rationale: str,
+        timestamp: str,
+        outcome: Optional[str] = None,
+    ) -> None:
+        """Add a decision node representation."""
+        self.decisions[decision_id] = {
+            "decision_id": decision_id,
+            "task_id": task_id,
+            "decision_type": decision_type,
+            "description": description,
+            "rationale": rationale,
+            "timestamp": timestamp,
+            "outcome": outcome
+        }
+        if task_id in self.tasks:
+            self.tasks[task_id]["decisions"].append(decision_id)
+
+    def compile_tree(self) -> Dict[str, Any]:
+        """Compile and evaluate the entire continuity graph for visualizer/diagnostic intake.
+
+        Identifies cycles, orphans, missing lineage links, and unaligned nodes.
+        No database or production mutations are performed.
+        """
+        anomalies = []
+        gates = PreMutationSafetyGates()
+
+        # 1. Detect Cyclic Lineage
+        dependency_map = {}
+        for t_id, t_info in self.tasks.items():
+            parent = t_info["parent_id"]
+            dependency_map[t_id] = [parent] if parent else []
+
+        cycle_audit = gates.validate_acyclic_hierarchy(dependency_map)
+        if not cycle_audit["is_acyclic"]:
+            anomalies.append({
+                "type": "cyclic_dependency_detected",
+                "target": cycle_audit["cycle_detected_at"],
+                "details": cycle_audit["details"]
+            })
+
+        # 2. Detect Orphans and Missing Links
+        for t_id, t_info in self.tasks.items():
+            # A. Task references nonexistent session
+            s_id = t_info["session_id"]
+            if s_id not in self.sessions:
+                anomalies.append({
+                    "type": "orphan_task_no_session",
+                    "target": t_id,
+                    "details": f"Task '{t_id}' references nonexistent session '{s_id}'."
+                })
+
+            # B. Task references nonexistent parent task (Invalid parent/child relationship)
+            p_id = t_info["parent_id"]
+            if p_id and p_id not in self.tasks:
+                anomalies.append({
+                    "type": "invalid_parent_child_relationship",
+                    "target": t_id,
+                    "details": f"Task '{t_id}' references nonexistent parent task '{p_id}'."
+                })
+
+            # C. Orphan Task: Executing/Pending but no assigned agent ID
+            if not t_info["assigned_agent_id"] and t_info["state"] != "FAILED":
+                anomalies.append({
+                    "type": "orphan_task_no_agent",
+                    "target": t_id,
+                    "details": f"Task '{t_id}' is in state '{t_info['state']}' but has no assigned agent."
+                })
+
+        # 3. Detect unlinked decisions
+        for d_id, d_info in self.decisions.items():
+            t_ref = d_info["task_id"]
+            if t_ref not in self.tasks:
+                anomalies.append({
+                    "type": "orphan_decision_no_task",
+                    "target": d_id,
+                    "details": f"Decision '{d_id}' references nonexistent task '{t_ref}'."
+                })
+
+        return {
+            "compilation_status": "SUCCESS" if len(anomalies) == 0 else "DEGRADED",
+            "compiled_at": datetime.now(timezone.utc).isoformat(),
+            "tree_structure": {
+                "sessions": self.sessions,
+                "tasks": self.tasks,
+                "decisions": self.decisions
+            },
+            "anomalies": anomalies,
+            "is_valid_continuity": len(anomalies) == 0,
+            "read_only_assertion": True
+        }
+
+
 class PreMutationSafetyGates:
     """Implements read-only, non-mutating validation checks for proposed continuity operations.
 
