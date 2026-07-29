@@ -170,3 +170,31 @@ def test_validation_evidence_readiness_assessment():
     index_content = index_file.read_text(encoding="utf-8")
     assert "../docs/SAGE-VALIDATION-EVIDENCE-READINESS-ASSESSMENT.md" in index_content
     assert "[State: VALIDATED]" in index_content
+
+
+def test_sdr_readiness_specification():
+    """Verify that the SAGE Safe Dry Run (SDR) Readiness Specification exists, has required sections, and is registered in Main Archive/INDEX.md as PROPOSED."""
+    root_dir = Path(__file__).parent.parent.parent
+    sdr_doc = root_dir / "docs" / "SAGE-SDR-READINESS-SPECIFICATION.md"
+
+    assert sdr_doc.exists(), "The SAGE-SDR Readiness Specification must exist under docs/"
+    content = sdr_doc.read_text(encoding="utf-8")
+
+    # Verify ID and Status
+    assert "SAGE-SDR-READINESS-2026-07-30" in content
+    assert "PROPOSED" in content
+
+    # Verify key sections
+    assert "Sandbox Boundaries" in content
+    assert "Simulation Lifecycle" in content or "SDR Simulation Lifecycle" in content
+    assert "Validation Strategy" in content
+    assert "SDR Evidence Requirements" in content
+    assert "Human Review Checkpoints" in content
+    assert "Failure Handling Model" in content
+    assert "Future Implementation Prerequisites" in content
+
+    # Verify index registration
+    index_file = root_dir / "Main Archive" / "INDEX.md"
+    index_content = index_file.read_text(encoding="utf-8")
+    assert "../docs/SAGE-SDR-READINESS-SPECIFICATION.md" in index_content
+    assert "[State: PROPOSED]" in index_content
