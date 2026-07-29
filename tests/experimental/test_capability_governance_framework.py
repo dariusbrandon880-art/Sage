@@ -257,6 +257,60 @@ def test_agent_ecosystem_activation_roadmap_exists_and_conforms():
     assert "stage 5" in content_lower
 
 
+def test_agent_coordination_model_exists_and_conforms():
+    """Verify that the SAGE-AGENT-COORDINATION-MODEL.md document exists and contains required sections."""
+    root_dir = Path(__file__).parent.parent.parent
+    model_doc = root_dir / "docs" / "SAGE-AGENT-COORDINATION-MODEL.md"
+
+    assert model_doc.exists(), "The SAGE Agent Coordination Model document must exist under docs/"
+    content = model_doc.read_text(encoding="utf-8")
+    content_lower = content.lower()
+
+    # Verify ID and Status
+    assert "SAGE-AGENT-COORDINATION-2026-07-29" in content
+    assert "PROPOSED — Strategic Governance Design Phase" in content
+
+    # Verify Sections
+    assert "Section 1 — Coordination Architecture" in content
+    assert "Section 2 — Agent Task Lifecycle" in content
+    assert "Section 3 — Agent Handoff Envelope" in content
+    assert "Section 4 — Agent Coordination Rules" in content
+    assert "Section 5 — Failure Recovery Model" in content
+    assert "Section 6 — Future Coordination Research" in content
+    assert "Section 7 — Conclusion" in content
+
+    # Verify specific items
+    assert "human task request" in content_lower
+    assert "task classification" in content_lower
+    assert "agent assignment" in content_lower
+    assert "execution boundary check" in content_lower
+    assert "agent work product" in content_lower
+    assert "evidence package creation" in content_lower
+    assert "independent review" in content_lower
+    assert "human decision" in content_lower
+    assert "master archive update" in content_lower
+
+    # Verify handoff fields
+    assert "task id" in content_lower
+    assert "agent identity" in content_lower
+    assert "mission purpose" in content_lower
+    assert "input context" in content_lower
+    assert "allowed actions" in content_lower
+    assert "restricted actions" in content_lower
+    assert "output artifact" in content_lower
+    assert "evidence produced" in content_lower
+    assert "validation status" in content_lower
+    assert "next reviewer" in content_lower
+    assert "archive destination" in content_lower
+
+    # Verify coordination rules
+    assert "no agent without passport" in content_lower
+    assert "no action without traceability" in content_lower
+    assert "no output without evidence context" in content_lower
+    assert "no promotion without human review" in content_lower
+    assert "no hidden state transfer" in content_lower
+
+
 def test_documents_are_indexed_correctly():
     """Verify that all five required governance documents are registered in Main Archive/INDEX.md as PROPOSED."""
     root_dir = Path(__file__).parent.parent.parent
@@ -265,13 +319,14 @@ def test_documents_are_indexed_correctly():
     assert index_file.exists(), "Index file must exist in Main Archive/"
     content = index_file.read_text(encoding="utf-8")
 
-    # Assert correct link format and state for all six
+    # Assert correct link format and state for all seven
     assert "../docs/SAGE-CAPABILITY-EVOLUTION-GOVERNANCE-FRAMEWORK.md" in content
     assert "../docs/SAGE-ROADMAP-CONTINUITY-REVIEW-REPORT.md" in content
     assert "../docs/SAGE-GOVERNANCE-DEPENDENCY-MAP.md" in content
     assert "../docs/SAGE-MASTER-SYNCHRONIZATION-CHECKPOINT-REPORT.md" in content
     assert "../docs/SAGE-AGENT-CONTINUITY-GOVERNANCE-FRAMEWORK.md" in content
     assert "../docs/SAGE-AGENT-ECOSYSTEM-ACTIVATION-ROADMAP.md" in content
+    assert "../docs/SAGE-AGENT-COORDINATION-MODEL.md" in content
     assert "[State: PROPOSED]" in content
 
 
