@@ -39,6 +39,7 @@ Each indexed artifact is assigned a lifecycle state under the **Index Layer v0.1
 - [SAGE 2 Knowledge Governance Study](research/strategic/SAGE_Research_Track_Comparative_Intelligence_Architecture_Study_Review.md) `[State: CANONICAL]` - SAGE-RF-2026-004 Comparative Intelligence Architecture Study Review (ACCEPTED).
 - [PEF Spec](research/strategic/PEF.md) `[State: CANONICAL]` - SAGE-RF-PEF-001 Parallel Cognitive Evolution Infrastructure Framework (SPRO, HSE, Reliability Arena, ESI v2).
 - [SP_REV2 Spec](research/strategic/SP_REV2.md) `[State: CANONICAL]` - SAGE-RF-SP-001-REV-2.0 Deep Security & Information Physics Expansion Study (ITF, ZKI, QKSS, SIMG, Adaptive Security Field Theory).
+- [SAGE Advanced Cognitive Architecture Research Track](../docs/SAGE-ADVANCED-COGNITIVE-ARCHITECTURE-RESEARCH-TRACK.md) `[State: PROPOSED]` - Advanced strategic research specification exploring mathematical abstractions (quantum-inspired modeling, context entropy, and topology) for knowledge continuity.
 
 ---
 
