@@ -254,3 +254,17 @@ For full details, specifications, and protocols, refer to:
 * **Documentation Health Audit:** [SAGE Documentation Health Audit Report](../docs/SAGE-DOCUMENTATION-HEALTH-AUDIT-REPORT.md)
 * **Master Archive Navigation Standard:** [SAGE Master Archive Navigation Standard](../docs/SAGE-MASTER-ARCHIVE-NAVIGATION-STANDARD.md)
 * **Context Restoration Protocol:** [SAGE Context Restoration Protocol](../docs/SAGE-CONTEXT-RESTORATION-PROTOCOL.md)
+
+---
+
+## 14. SAGE Evolution Governance Summary
+
+Following the documentation health, navigation, and restoration protocol synchronization, SAGE establishes a formal, robust governance layer to control how the system evolves without architectural drift.
+
+### Key Governance Invariants:
+1. **Research Intake Process:** Standardizes how new concepts enter SAGE using a strict 7-field intake template mapping origins, lineages, and risk profiles.
+2. **Promotion Gates:** Enforces five unidirectional maturity gates controlling the progression of concepts from initial ideas through validation to canonical production baselines.
+3. **Anti-Drift Controls:** Specifies six critical operational guardrails protecting against conceptual duplication, architectural confusion, historical rewriting, premature implementation, and experimental leakage.
+4. **Lifecycle State Machine:** Maps the exact allowed transitions and rejection paths between lifecycle classifications (`FUTURE EXPLORATION` $\rightarrow$ `STRATEGIC RESEARCH INPUT` $\rightarrow$ `PROPOSED` $\rightarrow$ `VALIDATED EXPERIMENTAL` $\rightarrow$ `VALIDATED` $\rightarrow$ `MASTER ARCHIVE`).
+
+For the full detailed governance framework, decision authority models, and state transition rules, refer to the [SAGE Evolution Governance Framework Report](../docs/SAGE-EVOLUTION-GOVERNANCE-FRAMEWORK.md).

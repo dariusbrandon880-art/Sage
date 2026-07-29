@@ -163,7 +163,7 @@ def test_knowledge_graph_report_conformance():
     assert "Recommended Documentation Standards" in content
 
     # Verify index registration
-    index_file = root_dir = Path(__file__).parent.parent.parent / "Main Archive" / "INDEX.md"
+    index_file = Path(__file__).parent.parent.parent / "Main Archive" / "INDEX.md"
     index_content = index_file.read_text(encoding="utf-8")
     assert "../docs/SAGE-KNOWLEDGE-GRAPH-AND-TRACEABILITY-ARCHITECTURE.md" in index_content
     assert "[State: VALIDATED]" in index_content
@@ -203,3 +203,32 @@ def test_health_and_navigation_standards():
     assert "../docs/SAGE-DOCUMENTATION-HEALTH-AUDIT-REPORT.md" in index_content
     assert "../docs/SAGE-MASTER-ARCHIVE-NAVIGATION-STANDARD.md" in index_content
     assert "../docs/SAGE-CONTEXT-RESTORATION-PROTOCOL.md" in index_content
+
+
+def test_evolution_governance_conformance():
+    """Verify that SAGE Evolution Governance Framework Report exists, contains required elements, and is registered."""
+    root_dir = Path(__file__).parent.parent.parent
+    gov_file = root_dir / "docs" / "SAGE-EVOLUTION-GOVERNANCE-FRAMEWORK.md"
+
+    assert gov_file.exists(), "Governance Framework Report must exist under docs/"
+    content = gov_file.read_text(encoding="utf-8")
+
+    # Assert critical sections
+    assert "SAGE Evolution Governance Framework Report" in content
+    assert "SAGE-EVOL-GOV-2026-07-29" in content
+    assert "Standard Research Intake Process" in content
+    assert "Research Promotion Gates" in content
+    assert "Decision Authority Model" in content
+    assert "Anti-Drift Controls" in content
+    assert "Capability Lifecycle State Machine" in content
+    assert "Future Session Governance Flow" in content
+
+    # Assert key terminology invariants
+    assert "One-Way Import Law" in content
+    assert "rejection paths" in content or "rejection path" in content or "Rejection Path" in content
+
+    # Verify index registration
+    index_file = root_dir / "Main Archive" / "INDEX.md"
+    index_content = index_file.read_text(encoding="utf-8")
+    assert "../docs/SAGE-EVOLUTION-GOVERNANCE-FRAMEWORK.md" in index_content
+    assert "[State: VALIDATED]" in index_content
