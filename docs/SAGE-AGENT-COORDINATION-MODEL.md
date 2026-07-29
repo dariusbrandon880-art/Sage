@@ -158,7 +158,7 @@ In multi-agent environments, execution failures must be handled gracefully. SAGE
 | **Conflicting Agent Outputs** | Coordination and Execution nodes disagree on task requirements. | Immediately freeze the active task and halt execution; trigger a **Human Dispute Arbitration** gate. |
 | **Lost Context** | Host restart or execution crash drops preceding variables. | Reconstruct context by traversing the relational lineage graph backward to the nearest validated checkpoint state. |
 | **Duplicate Work** | Multiple execution agents editing identical enclaves. | Freeze active sessions; merge conflicts are rejected, and agents must synchronize with the **Session 1 Checkpoint Anchor**. |
-| **Invalid Evidence** | Generated Evidence Package fails schema or validation integrity audits. | Reject the work product; quarantine the associated payload, and alert the human supervisor. |
+| **Invalid Evidence** | Generated Evidence Package fails schema or validation audits. | Reject the work product; quarantine the associated payload, and alert the human supervisor. |
 | **Failed Validation** | Automated tests fail or AST boundaries are violated. | Prevent code commit; roll back active edits to the last green git reference, and log the failure. |
 | **Handoff Interruption** | Network latency or host disconnects interrupt the handoff chain. | Lock the envelope; quarantine incomplete files, and wait for manual rehydration. |
 

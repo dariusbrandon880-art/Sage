@@ -45,7 +45,7 @@ This map coordinates SAGE's conceptual specifications against physical, experime
 | **SAGE Capability Evidence Receipt** | `CapabilityEvidenceReceiptGenerator` | `tests/experimental/test_capability_governance_framework.py` | **Documented & Verified** |
 | **SAGE Human Review Gate** | `HumanReviewGate` | `tests/experimental/test_capability_governance_framework.py` | **Documented & Verified** |
 | **SAGE-SDR Simulation Design** | Awaiting Prototyping | `tests/experimental/test_capability_governance_framework.py` | **Awaiting Sandbox Validation** |
-| **CMAPS Payload Schema** | `CrossModelAuditPayloadValidator` | `tests/experimental/test_cross_model_audit_schema.py` | **Documented & Verified** |
+| **CMAPS Payload Schema** | `CrossModelAuditPayloadValidator` | `tests/test_cross_model_audit_schema.py` | **Documented & Verified** |
 | **Render Observation Protocol** | Awaiting Cloud Enclave Orchestrator | `tests/test_api.py` | **Awaiting Sandbox Validation** |
 
 ---

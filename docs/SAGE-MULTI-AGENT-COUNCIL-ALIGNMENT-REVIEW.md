@@ -89,7 +89,7 @@ SAGE enforces the **No Agent Without Accountability Rule**. No agent can partici
 3. **Allowed Actions:** White-listed API and terminal tool permissions.
 4. **Restricted Actions:** Actions strictly prohibited (e.g. state promotion).
 5. **Evidence Responsibility:** Mandatory 11-field Evidence Package emission parameters.
-6. **Review Boundary:** Designated independent peer-review agent or human supervisor.
+6. **Review Boundary:** Designated independent peer-reviewer or supervisor.
 7. **Archive Relationship:** Designated index registry path inside the Master Archive.
 
 ---
