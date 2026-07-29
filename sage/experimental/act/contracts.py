@@ -249,6 +249,125 @@ class CapabilityEvidenceReceiptGenerator:
         }
 
 
+class HumanReviewGate:
+    """Enforces the final manual/cognitive gate checkpoint prior to any capability promotion.
+
+    Processes, structures, and validates a Human Review decision based on the
+    evaluation of a previously generated Capability Evidence Receipt.
+    """
+
+    def __init__(self, reviewer_identity: str = "supervisor_v1"):
+        """Initialize human review gate validator."""
+        self.reviewer_identity = reviewer_identity
+
+    def execute_review(
+        self,
+        receipt: Dict[str, Any],
+        decision: str,  # "approved" or "rejected"
+        notes: str,
+        review_id: str | None = None,
+    ) -> Dict[str, Any]:
+        """Validates a capability evidence receipt and compiles a structured Human Review trace.
+
+        Args:
+            receipt: Output dictionary from CapabilityEvidenceReceiptGenerator representing the receipt.
+            decision: Explicit string indicating the reviewer choice ("approved" or "rejected").
+            notes: Non-empty rationale string.
+            review_id: Optional identifier. If not provided, a secure hash ID is generated.
+
+        Returns:
+            A dictionary containing the validated Human Review audit trace.
+
+        Raises:
+            ValueError: If inputs are invalid, required receipt fields are missing, or notes are empty.
+        """
+        # 1. Verification of incoming receipt structure
+        if not isinstance(receipt, dict):
+            raise ValueError("Review Violation: Evidence receipt must be a dictionary.")
+
+        # Extract inner 'receipt' if passed as wrapper, or handle raw receipt dict
+        target_receipt = receipt.get("receipt") if "receipt" in receipt else receipt
+        if not isinstance(target_receipt, dict):
+            raise ValueError("Review Violation: Invalid or incomplete receipt dictionary.")
+
+        # Verify all 8 required evidence fields exist in the receipt
+        required_evidence_fields = [
+            "receipt_id",
+            "capability_id",
+            "validator_id",
+            "validation_result",
+            "evidence_reference",
+            "timestamp",
+            "review_status",
+            "archive_destination",
+        ]
+        for field in required_evidence_fields:
+            if field not in target_receipt:
+                raise ValueError(f"Review Violation: Missing required receipt field '{field}'.")
+
+        # 2. Input Parameter Check
+        decision_lower = str(decision).lower()
+        if decision_lower not in ["approved", "rejected"]:
+            raise ValueError(f"Review Violation: Invalid review decision '{decision}'. Allowed: ['approved', 'rejected']")
+
+        if not isinstance(notes, str) or not notes.strip():
+            raise ValueError("Review Violation: Review notes must be a non-empty string.")
+
+        # 3. Compile Identifiers and State Variables
+        import hashlib
+        receipt_id = target_receipt["receipt_id"]
+        capability_id = target_receipt["capability_id"]
+
+        if not review_id:
+            raw_hash_data = f"{receipt_id}:{decision_lower}:{self.reviewer_identity}"
+            secure_hash = hashlib.sha256(raw_hash_data.encode()).hexdigest()[:16]
+            review_id = f"rev_{secure_hash}"
+
+        if not re.match(r"^rev_[a-zA-Z0-9_]{8,64}$", review_id):
+            raise ValueError(f"Review Violation: Invalid format for review_id: '{review_id}'")
+
+        # Determine target state status based on decision
+        validation_status = "VALIDATED" if decision_lower == "approved" else "REJECTED"
+        archive_destination = f"Main Archive/{capability_id}_review_gate.json"
+
+        # Construct review schema dictionary
+        review_audit = {
+            "review_id": review_id,
+            "receipt_id": receipt_id,
+            "capability_id": capability_id,
+            "reviewer_identity": self.reviewer_identity,
+            "review_decision": decision_lower,
+            "review_notes": notes.strip(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "validation_status": validation_status,
+            "archive_destination": archive_destination,
+        }
+
+        # 4. Programmatic audit verification
+        required_review_fields = [
+            "review_id",
+            "receipt_id",
+            "capability_id",
+            "reviewer_identity",
+            "review_decision",
+            "review_notes",
+            "timestamp",
+            "validation_status",
+            "archive_destination",
+        ]
+        for field in required_review_fields:
+            if field not in review_audit or review_audit[field] is None:
+                raise ValueError(f"Review Violation: Missing required review field '{field}'.")
+
+        # 5. Output read-only outcome with traceability marker
+        return {
+            "review_audit": review_audit,
+            "audit_trail_valid": True,
+            "read_only_assertion": True,
+            "finalized_at": datetime.now(timezone.utc).isoformat(),
+        }
+
+
 class CrossModelAuditPayloadValidator:
     """Enforces programmatic, read-only validation for the Cross-Model Audit Payload Schema.
 
