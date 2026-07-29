@@ -74,3 +74,4 @@ Each indexed artifact is assigned a lifecycle state under the **Index Layer v0.1
   - [SAGE Agent Continuity Tree Milestone 3 Proposal](../docs/SAGE-ACT-MILESTONE-3-PROPOSAL.md) `[State: PROPOSED]` - Next governed milestone proposal to implement a stateless, read-only context rehydration validation scaffold inside ACT.
   - [SAGE-ACT Milestone 3 Implementation Receipt](../docs/SAGE-ACT-MILESTONE-3-IMPLEMENTATION-RECEIPT.md) `[State: PROPOSED]` - Empirical record of the read-only GovernedAgentRehydrator validation implementation.
   - [SAGE-ACT Milestone 4 Proposal](../docs/SAGE-ACT-MILESTONE-4-PROPOSAL.md) `[State: PROPOSED]` - Next governed milestone proposal to implement a stateless, read-only controlled dry-run rehydration executor scaffold inside ACT.
+  - [SAGE Documentation Consistency Receipt](../docs/SAGE-DOCUMENTATION-CONSISTENCY-RECEIPT.md) `[State: PROPOSED]` - Verification receipt summarizing terminology and lifecycle consistency across ACT files.
