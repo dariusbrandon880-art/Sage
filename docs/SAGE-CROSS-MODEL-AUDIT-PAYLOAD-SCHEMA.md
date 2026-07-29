@@ -274,3 +274,37 @@ SAGE CMAPS is designed with modular expansion in mind to support future capabili
 1. **Multi-Modal Audit Captures:** Extending `evidence_relationships` to capture model-generated canvas layouts, audio tokens, or visual frame screenshots for spatial agents.
 2. **Federated Governance Consensus:** Allowing multiple consensus signers in the `attestation` block, requiring a M-of-N signature quorum before a payload is promoted to `CANONICAL` status.
 3. **Acyclic Path-Pruning Engines:** Optimizing memory consumption by automatically pruning redundant checkpoints on completed sessions, preserving only the causal boundary checkpoints.
+
+---
+
+## 8. SAGE Strategic Architecture Research Input Appendix
+
+This appendix catalogues long-term, non-active research tracks evaluated under SAGE's governance loop. These tracks represent future theoretical directions to explore under strict experimental isolation, with zero implementation footprint on SAGE core or production runtimes.
+
+### 8.1. Track A — SAGE State Representation Layer (SSRL)
+* **Research Question:** Can SAGE represent durable operational state independent of any single LLM or model architecture?
+* **Research Constraints:**
+  - Do not capture hidden model states.
+  - Do not depend on proprietary latent representations.
+  - Focus exclusively on operational state: objectives, dependencies, constraints, evidence, execution history, and recovery context.
+* **Lineage Mapping:** Extends SAGE's focus on model-independent tracing, laying the foundation for cross-provider transaction logs.
+
+### 8.2. Track B — SAGE Recovery Architecture (SRA)
+* **Research Question:** How can autonomous workflows fail safely through recoverable checkpoints?
+* **Focus Areas:** Failure state capture, recovery records, execution checkpoints, and evidence preservation.
+* **Lineage Mapping:** Conceptualizes multi-hop rollback mechanisms building upon the CMAPS v1.0 recovery schema definitions.
+
+### 8.3. Track C — CMAPS Evolution Contract (CEC)
+* **Research Question:** How can CMAPS evolve from an evidence payload schema into a formal state transition contract?
+* **Focus Areas:** Preconditions, validated transitions, evidence relationships, and archive promotion rules.
+* **Status:** CMAPS remains categorized strictly as a **Validated Experimental Specification**. No promotion beyond this current lifecycle state is authorized.
+
+### 8.4. Track D — Cognitive Infrastructure Boundary (CIB)
+* **Research Question:** What minimum boundary preserves SAGE identity independent from external model providers?
+* **Focus Areas:** Core ownership boundaries, model-provider independence, and continuity preservation.
+
+### 8.5. Archived Long-Term Concepts
+The following trajectories are archived as future research only to prevent premature complexity:
+* **Distributed Ledger Architecture:** Deemed premature complexity; focus remains on central, cryptographic validation receipts.
+* **Cognitive HAL Architecture:** Deferred; focus remains on standard provider wrappers.
+* **Universal Cryptographic Proof Systems:** Deferred; focus remains on HMAC-SHA256 attestation primitives.
