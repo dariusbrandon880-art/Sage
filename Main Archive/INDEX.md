@@ -32,6 +32,7 @@ Each indexed artifact is assigned a lifecycle state under the **Index Layer v0.1
 - [SAGE Capability Dependency Map](../docs/SAGE-CAPABILITY-DEPENDENCY-MAP.md) `[State: VALIDATED]` - Structural mapping of sequential and unidirectional dependencies between core and experimental SAGE capabilities.
 - [SAGE Continuity Proof Architecture](../docs/SAGE-CONTINUITY-PROOF-ARCHITECTURE.md) `[State: PROPOSED]` - Specification defining SAGE's first formal evidence experiment to validate core continuity hypotheses across interruption-and-recovery scenarios.
 - [SAGE Render Validation Environment Plan](../docs/SAGE-RENDER-VALIDATION-ENVIRONMENT-PLAN.md) `[State: PROPOSED]` - Specification defining SAGE's external validation strategies, boundaries, and experiment designs on Render.
+- [SAGE Render Validation Observation Framework](../docs/SAGE-RENDER-VALIDATION-OBSERVATION-FRAMEWORK.md) `[State: PROPOSED]` - Framework defining how cloud-hosted observations are recorded, analyzed, and converted into research evidence.
 - [SME Spec](research/strategic/SME.md) `[State: CANONICAL]` - Subject Matter Expert Layer.
 - [SRL Spec](research/strategic/SRL.md) `[State: CANONICAL]` - Self-Referential Learning / Semantic Representation Layer.
 - [SKAL Spec](research/strategic/SKAL.md) `[State: CANONICAL]` - Semantic Knowledge Association Layer.
