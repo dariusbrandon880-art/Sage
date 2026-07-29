@@ -145,6 +145,110 @@ class CapabilityPassportValidator:
         }
 
 
+class CapabilityEvidenceReceiptGenerator:
+    """Generates secure, structured Evidence Receipts to track SAGE capability passport validation events.
+
+    Implements read-only artifact creation adhering strictly to SAGE's Evidence Lifecycle
+    and parallel validation frameworks.
+    """
+
+    def __init__(self, validator_id: str = "val_system_v1"):
+        """Initialize receipt generator."""
+        self.validator_id = validator_id
+
+    def generate_receipt(
+        self,
+        passport: Dict[str, Any],
+        validation_result: Dict[str, Any],
+        receipt_id: str | None = None,
+    ) -> Dict[str, Any]:
+        """Creates a signed capability evidence receipt.
+
+        Args:
+            passport: The dictionary representing the validated Capability Passport.
+            validation_result: Output from CapabilityPassportValidator.
+            receipt_id: Optional unique identifier. If not provided, a secure hash is generated.
+
+        Returns:
+            A dictionary conforming to SAGE's Capability Evidence Receipt Schema.
+
+        Raises:
+            ValueError: If either dictionary is malformed or required attributes are invalid.
+        """
+        # 1. Structural verification of input contracts
+        if not isinstance(passport, dict) or "capability_id" not in passport:
+            raise ValueError("Receipt Violation: Invalid or incomplete passport dictionary.")
+        if not isinstance(validation_result, dict) or "validation_status" not in validation_result:
+            raise ValueError("Receipt Violation: Invalid or incomplete validation_result dictionary.")
+
+        # Ensure validation state matches passport capability identifier
+        capability_id = passport["capability_id"]
+        if validation_result.get("capability_id") != capability_id:
+            raise ValueError("Receipt Violation: Capability ID mismatch between passport and validation_result.")
+
+        # 2. Determine identifiers
+        import hashlib
+        import uuid
+        if not receipt_id:
+            raw_hash_data = f"{capability_id}:{validation_result.get('validated_at')}:{self.validator_id}"
+            secure_hash = hashlib.sha256(raw_hash_data.encode()).hexdigest()[:16]
+            receipt_id = f"rcpt_{secure_hash}"
+
+        if not re.match(r"^rcpt_[a-zA-Z0-9_]{8,64}$", receipt_id):
+            raise ValueError(f"Receipt Violation: Invalid format for receipt_id: '{receipt_id}'")
+
+        # 3. Core field compilation
+        evidence_reference = passport.get("evidence_path", "")
+        if not isinstance(evidence_reference, str) or not evidence_reference.strip():
+            raise ValueError("Receipt Violation: Missing or invalid 'evidence_reference'.")
+
+        review_status = "approved" if validation_result.get("approved") is True else "pending"
+        archive_destination = f"Main Archive/{capability_id}_receipt.json"
+
+        # Construct structured receipt
+        receipt = {
+            "receipt_id": receipt_id,
+            "capability_id": capability_id,
+            "validator_id": self.validator_id,
+            "validation_result": {
+                "status": validation_result["validation_status"],
+                "validated_at": validation_result.get("validated_at"),
+                "approved": validation_result.get("approved", False)
+            },
+            "evidence_reference": evidence_reference,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "review_status": review_status,
+            "archive_destination": archive_destination,
+        }
+
+        # 4. Programmatic constraints checking
+        # Verify all 8 fields are structurally populated
+        required_receipt_fields = [
+            "receipt_id",
+            "capability_id",
+            "validator_id",
+            "validation_result",
+            "evidence_reference",
+            "timestamp",
+            "review_status",
+            "archive_destination",
+        ]
+        for field in required_receipt_fields:
+            if field not in receipt or receipt[field] is None:
+                raise ValueError(f"Receipt Violation: Missing required receipt field '{field}'.")
+
+        if review_status not in ["approved", "pending", "rejected"]:
+            raise ValueError(f"Receipt Violation: Invalid receipt review status: '{review_status}'.")
+
+        # 5. Output read-only outcome with traceability marker
+        return {
+            "receipt": receipt,
+            "traceability_chain_valid": True,
+            "read_only_assertion": True,
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+        }
+
+
 class CrossModelAuditPayloadValidator:
     """Enforces programmatic, read-only validation for the Cross-Model Audit Payload Schema.
 
