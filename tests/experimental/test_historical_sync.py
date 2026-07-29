@@ -102,3 +102,43 @@ def test_protected_boundary_preservation():
     assert core_dir.exists()
     assert acr_dir.exists()
     assert runtime_dir.exists()
+
+
+def test_future_capability_readiness_assessment():
+    """Verify that the Future Capability Readiness and Historical Continuity Assessment exists, has required sections, and is registered in Main Archive/INDEX.md as VALIDATED."""
+    root_dir = Path(__file__).parent.parent.parent
+    readiness_doc = root_dir / "docs" / "SAGE-FUTURE-CAPABILITY-READINESS-HISTORICAL-CONTINUITY-ASSESSMENT.md"
+
+    assert readiness_doc.exists(), "The Future Capability Readiness Assessment must exist under docs/"
+    content = readiness_doc.read_text(encoding="utf-8")
+
+    # Verify ID and Status
+    assert "SAGE-READINESS-CONTINUITY-2026-07-30" in content
+    assert "Validated Technical Record" in content
+
+    # Verify Key Core Metaphors
+    assert "Prometheus" in content
+    assert "Star Wars" in content
+    assert "Marvel" in content
+
+    # Verify The Three-Layer Architecture Schema
+    assert "CORE LAYER" in content or "Core Layer" in content
+    assert "EXPERIMENTAL LAYER" in content or "Experimental Layer" in content
+    assert "RESEARCH LAYER" in content or "Research Layer" in content
+
+    # Verify Capability Passport Model (No Orphans)
+    assert "No Orphan Capability Rule" in content or "No capability exists without" in content
+    assert "Purpose" in content
+    assert "Lifecycle Classification" in content or "lifecycle classification" in content
+    assert "Validation Strategy" in content or "validation strategy" in content
+    assert "Evidence Path" in content or "evidence path" in content
+    assert "Archive Reference" in content or "archive reference" in content
+
+    # Verify Risks & Attention
+    assert "Risks Requiring Governance Attention" in content
+
+    # Verify index registration
+    index_file = root_dir / "Main Archive" / "INDEX.md"
+    index_content = index_file.read_text(encoding="utf-8")
+    assert "../docs/SAGE-FUTURE-CAPABILITY-READINESS-HISTORICAL-CONTINUITY-ASSESSMENT.md" in index_content
+    assert "[State: VALIDATED]" in index_content
