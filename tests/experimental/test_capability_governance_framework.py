@@ -227,6 +227,36 @@ def test_agent_continuity_governance_framework_exists_and_conforms():
     assert "adversarial review" in content_lower
 
 
+def test_agent_ecosystem_activation_roadmap_exists_and_conforms():
+    """Verify that the SAGE-AGENT-ECOSYSTEM-ACTIVATION-ROADMAP.md document exists and contains required sections."""
+    root_dir = Path(__file__).parent.parent.parent
+    roadmap_doc = root_dir / "docs" / "SAGE-AGENT-ECOSYSTEM-ACTIVATION-ROADMAP.md"
+
+    assert roadmap_doc.exists(), "The SAGE Agent Ecosystem Activation Roadmap document must exist under docs/"
+    content = roadmap_doc.read_text(encoding="utf-8")
+    content_lower = content.lower()
+
+    # Verify ID and Status
+    assert "SAGE-AGENT-ACTIVATION-2026-07-29" in content
+    assert "PROPOSED — Strategic Governance Design Phase" in content
+
+    # Verify Sections
+    assert "Section 1 — Current Activation Readiness" in content
+    assert "Section 2 — Multi-Agent Operating Hierarchy & Handoff Protocol" in content
+    assert "Section 3 — The Five-Stage Activation Roadmap" in content
+    assert "Section 4 — Multi-Agent Risk Controls & Validation Gates" in content
+    assert "Section 5 — Human Governance Requirements" in content
+    assert "Section 6 — Conclusion & Recommended Next Steps" in content
+
+    # Verify stages
+    assert "the five-stage activation roadmap" in content_lower
+    assert "stage 1" in content_lower
+    assert "stage 2" in content_lower
+    assert "stage 3" in content_lower
+    assert "stage 4" in content_lower
+    assert "stage 5" in content_lower
+
+
 def test_documents_are_indexed_correctly():
     """Verify that all five required governance documents are registered in Main Archive/INDEX.md as PROPOSED."""
     root_dir = Path(__file__).parent.parent.parent
@@ -235,12 +265,13 @@ def test_documents_are_indexed_correctly():
     assert index_file.exists(), "Index file must exist in Main Archive/"
     content = index_file.read_text(encoding="utf-8")
 
-    # Assert correct link format and state for all five
+    # Assert correct link format and state for all six
     assert "../docs/SAGE-CAPABILITY-EVOLUTION-GOVERNANCE-FRAMEWORK.md" in content
     assert "../docs/SAGE-ROADMAP-CONTINUITY-REVIEW-REPORT.md" in content
     assert "../docs/SAGE-GOVERNANCE-DEPENDENCY-MAP.md" in content
     assert "../docs/SAGE-MASTER-SYNCHRONIZATION-CHECKPOINT-REPORT.md" in content
     assert "../docs/SAGE-AGENT-CONTINUITY-GOVERNANCE-FRAMEWORK.md" in content
+    assert "../docs/SAGE-AGENT-ECOSYSTEM-ACTIVATION-ROADMAP.md" in content
     assert "[State: PROPOSED]" in content
 
 
