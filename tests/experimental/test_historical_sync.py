@@ -253,3 +253,33 @@ def test_agent_coordination_protocol_specification():
     index_content = index_file.read_text(encoding="utf-8")
     assert "../docs/SAGE-AGENT-COORDINATION-PROTOCOL-SPECIFICATION.md" in index_content
     assert "[State: PROPOSED]" in index_content
+
+
+def test_agent_sdr_simulation_design():
+    """Verify that the SAGE Agent Coordination SDR Simulation Design exists, has required sections, and is registered in Main Archive/INDEX.md as PROPOSED."""
+    root_dir = Path(__file__).parent.parent.parent
+    design_doc = root_dir / "docs" / "SAGE-AGENT-SDR-SIMULATION-DESIGN.md"
+
+    assert design_doc.exists(), "The SAGE Agent Coordination SDR Simulation Design must exist under docs/"
+    content = design_doc.read_text(encoding="utf-8")
+
+    # Verify ID and Status
+    assert "SAGE-SDR-SIMULATION-DESIGN-2026-07-30" in content
+    assert "PROPOSED" in content
+
+    # Verify key sections
+    assert "SDR simulation purpose" in content or "SDR Simulation Purpose" in content
+    assert "Simulation boundaries" in content or "Simulation Boundaries" in content
+    assert "Agent interaction model" in content or "Agent Interaction Model" in content
+    assert "Simulated handoff format" in content or "Simulated Handoff Format" in content
+    assert "Evidence capture requirements" in content or "Evidence Capture Requirements" in content
+    assert "Review checkpoints" in content or "Review Checkpoints" in content
+    assert "Failure scenarios" in content or "Failure Scenarios" in content
+    assert "Success criteria" in content or "Success Criteria" in content
+    assert "Future implementation prerequisites" in content or "Future Implementation Prerequisites" in content
+
+    # Verify index registration
+    index_file = root_dir / "Main Archive" / "INDEX.md"
+    index_content = index_file.read_text(encoding="utf-8")
+    assert "../docs/SAGE-AGENT-SDR-SIMULATION-DESIGN.md" in index_content
+    assert "[State: PROPOSED]" in index_content
