@@ -468,6 +468,38 @@ def test_controlled_experimental_validation_loop_specification_exists_and_confor
     assert "future engineering transition" in content_lower
 
 
+def test_controlled_experimental_validation_loop_alignment_review_exists_and_conforms():
+    """Verify that the SAGE-CONTROLLED-EXPERIMENTAL-VALIDATION-LOOP-ALIGNMENT-REVIEW.md document exists and contains required sections."""
+    root_dir = Path(__file__).parent.parent.parent
+    review_doc = root_dir / "docs" / "SAGE-CONTROLLED-EXPERIMENTAL-VALIDATION-LOOP-ALIGNMENT-REVIEW.md"
+
+    assert review_doc.exists(), "The SAGE Controlled Experimental Validation Loop Alignment Review document must exist under docs/"
+    content = review_doc.read_text(encoding="utf-8")
+    content_lower = content.lower()
+
+    # Verify ID and Status
+    assert "SAGE-LOOP-ALIGN-2026-07-29" in content
+    assert "PROPOSED — Strategic Governance Design Phase" in content
+
+    # Verify Sections
+    assert "Section 1 — Validation Loop Integrity" in content
+    assert "Section 2 — Artifact Readiness Review" in content
+    assert "Section 3 — Boundary Enforcement Review" in content
+    assert "Section 4 — Evidence Quality Review" in content
+    assert "Section 5 — Governance Decision Model" in content
+    assert "Section 6 — First Sandbox Experiment Readiness" in content
+    assert "Section 7 — Frozen Boundaries" in content
+
+    # Verify specific key constraints
+    assert "validation loop integrity" in content_lower
+    assert "artifact readiness review" in content_lower
+    assert "boundary enforcement review" in content_lower
+    assert "evidence quality review" in content_lower
+    assert "governance decision model" in content_lower
+    assert "first sandbox experiment readiness" in content_lower
+    assert "frozen boundaries" in content_lower
+
+
 def test_documents_are_indexed_correctly():
     """Verify that all required governance documents are registered in Main Archive/INDEX.md as PROPOSED."""
     root_dir = Path(__file__).parent.parent.parent
@@ -476,7 +508,7 @@ def test_documents_are_indexed_correctly():
     assert index_file.exists(), "Index file must exist in Main Archive/"
     content = index_file.read_text(encoding="utf-8")
 
-    # Assert correct link format and state for all twelve
+    # Assert correct link format and state for all thirteen
     assert "../docs/SAGE-CAPABILITY-EVOLUTION-GOVERNANCE-FRAMEWORK.md" in content
     assert "../docs/SAGE-ROADMAP-CONTINUITY-REVIEW-REPORT.md" in content
     assert "../docs/SAGE-GOVERNANCE-DEPENDENCY-MAP.md" in content
@@ -489,6 +521,7 @@ def test_documents_are_indexed_correctly():
     assert "../docs/SAGE-VALIDATION-EVIDENCE-TRACEABILITY-SYNCHRONIZATION-REPORT.md" in content
     assert "../docs/SAGE-EXPERIMENTAL-ENGINEERING-READINESS-GATE.md" in content
     assert "../docs/SAGE-CONTROLLED-EXPERIMENTAL-VALIDATION-LOOP-SPECIFICATION.md" in content
+    assert "../docs/SAGE-CONTROLLED-EXPERIMENTAL-VALIDATION-LOOP-ALIGNMENT-REVIEW.md" in content
     assert "[State: PROPOSED]" in content
 
 
