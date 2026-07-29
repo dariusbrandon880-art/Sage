@@ -102,3 +102,39 @@ def test_protected_boundary_preservation():
     assert core_dir.exists()
     assert acr_dir.exists()
     assert runtime_dir.exists()
+
+
+def test_prioritization_report_conformance():
+    """Verify that SAGE Next Capability Research Prioritization Report exists, contains required 12-point headers, and is properly registered."""
+    root_dir = Path(__file__).parent.parent.parent
+    priority_doc = root_dir / "docs" / "SAGE-NEXT-CAPABILITY-RESEARCH-PRIORITIZATION-REPORT.md"
+
+    assert priority_doc.exists(), "Prioritization Report must exist under docs/"
+    content = priority_doc.read_text(encoding="utf-8")
+
+    # Verify metadata and rankings
+    assert "SAGE Next Capability Research Prioritization Report" in content
+    assert "SAGE-PRIORITY-2026-07-29" in content
+    assert "Rank 1: SAGE Cryptographic Session Receipt Chain (SAGE-CRC)" in content
+    assert "Rank 2: SAGE Stateless Continuous State Fallback (SAGE-CSF)" in content
+    assert "Rank 3: SAGE Decentralized Validator Key Rotation (SAGE-DKR)" in content
+
+    # Verify presence of specific 12-point specs (case-insensitive or exact casing)
+    assert "Capability Opportunity Ranking" in content
+    assert "Problem Addressed" in content
+    assert "Why This Matters to SAGE Mission" in content
+    assert "Historical Lineage Connection" in content
+    assert "Current Capability Tree Placement" in content
+    assert "Dependencies" in content
+    assert "Smallest Safe Research Scope" in content
+    assert "Expected Evidence Outputs" in content
+    assert "Validation Strategy" in content
+    assert "Rollback Considerations" in content
+    assert "Security/isolation considerations" in content or "Security/Isolation Considerations" in content
+    assert "Lifecycle Classification" in content
+
+    # Verify index registration
+    index_file = root_dir / "Main Archive" / "INDEX.md"
+    index_content = index_file.read_text(encoding="utf-8")
+    assert "../docs/SAGE-NEXT-CAPABILITY-RESEARCH-PRIORITIZATION-REPORT.md" in index_content
+    assert "[State: VALIDATED]" in index_content

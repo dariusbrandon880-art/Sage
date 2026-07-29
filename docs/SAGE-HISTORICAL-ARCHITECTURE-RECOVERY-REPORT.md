@@ -211,3 +211,16 @@ Following the historical synchronization phase, a capability alignment review wa
 4. **Recommended Next Research Direction:** The **SAGE Cryptographic Session Receipt Chain (SAGE-CRC)** is prioritized as the next governed research direction to link stateless recovery blocks into an immutable, verifiable chain.
 
 For the full detailed strategic and capability analysis, refer to the [SAGE Post-Recovery Capability Alignment Report](../docs/SAGE-POST-RECOVERY-CAPABILITY-ALIGNMENT-REPORT.md).
+
+---
+
+## 11. SAGE Post-Recovery Capability Prioritization Summary
+
+Following the historical synchronization and capability alignment review, a capability prioritization review was performed to rank and specify the highest-value unresolved challenges.
+
+### Ranked Research Opportunities:
+1. **Rank 1: SAGE Cryptographic Session Receipt Chain (SAGE-CRC)** — Resolves multi-session timeline splicing and state hijack between decoupled sessions, tracing sequential monotonic receipt chains.
+2. **Rank 2: SAGE Stateless Continuous State Fallback (SAGE-CSF)** — Resolves external model provider API timeouts during rehydration by using a secure, local read-only cache.
+3. **Rank 3: SAGE Decentralized Validator Key Rotation (SAGE-DKR)** — Resolves static verification key vulnerability using decentralized public-key trust hierarchies.
+
+For the full detailed 12-point prioritization, validation, and security specs of each opportunity, refer to the [SAGE Next Capability Research Prioritization Report](../docs/SAGE-NEXT-CAPABILITY-RESEARCH-PRIORITIZATION-REPORT.md).
