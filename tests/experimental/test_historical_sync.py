@@ -163,7 +163,7 @@ def test_knowledge_graph_report_conformance():
     assert "Recommended Documentation Standards" in content
 
     # Verify index registration
-    index_file = root_dir = Path(__file__).parent.parent.parent / "Main Archive" / "INDEX.md"
+    index_file = Path(__file__).parent.parent.parent / "Main Archive" / "INDEX.md"
     index_content = index_file.read_text(encoding="utf-8")
     assert "../docs/SAGE-KNOWLEDGE-GRAPH-AND-TRACEABILITY-ARCHITECTURE.md" in index_content
     assert "[State: VALIDATED]" in index_content
@@ -280,4 +280,29 @@ def test_continuity_proof_conformance():
     index_file = root_dir / "Main Archive" / "INDEX.md"
     index_content = index_file.read_text(encoding="utf-8")
     assert "../docs/SAGE-CONTINUITY-PROOF-STRATEGY.md" in index_content
+    assert "[State: VALIDATED]" in index_content
+
+
+def test_proof_readiness_conformance():
+    """Verify SAGE Continuity Proof Readiness Plan exists, has correct sections, and is registered in INDEX.md."""
+    root_dir = Path(__file__).parent.parent.parent
+    readiness_file = root_dir / "docs" / "SAGE-CONTINUITY-PROOF-READINESS-PLAN.md"
+
+    assert readiness_file.exists(), "Proof Readiness Plan must exist under docs/"
+    content = readiness_file.read_text(encoding="utf-8")
+
+    # Assert critical sections
+    assert "SAGE Continuity Proof Readiness and Validation Design Plan" in content
+    assert "SAGE-PROOF-READINESS-2026-07-29" in content
+    assert "The Core Proof Hypothesis" in content
+    assert "Controlled Failure Scenario" in content
+    assert "Evidence Requirements" in content
+    assert "Success and Failure Criteria" in content
+    assert "Validation Gate Mapping" in content
+    assert "Strategic Importance" in content
+
+    # Verify index registration
+    index_file = root_dir / "Main Archive" / "INDEX.md"
+    index_content = index_file.read_text(encoding="utf-8")
+    assert "../docs/SAGE-CONTINUITY-PROOF-READINESS-PLAN.md" in index_content
     assert "[State: VALIDATED]" in index_content
