@@ -136,17 +136,47 @@ def test_roadmap_continuity_review_report_exists_and_conforms():
     assert "safe dry-run" in content_lower or "sage-sdr" in content_lower
 
 
+def test_governance_dependency_map_exists_and_conforms():
+    """Verify that the SAGE-GOVERNANCE-DEPENDENCY-MAP.md document exists and has core required sections."""
+    root_dir = Path(__file__).parent.parent.parent
+    map_doc = root_dir / "docs" / "SAGE-GOVERNANCE-DEPENDENCY-MAP.md"
+
+    assert map_doc.exists(), "The SAGE Governance Dependency Map document must exist under docs/"
+    content = map_doc.read_text(encoding="utf-8")
+    content_lower = content.lower()
+
+    # Verify ID and Status
+    assert "SAGE-GOV-DEPMAP-2026-07-29" in content
+    assert "PROPOSED — Strategic Review Phase" in content
+
+    # Verify Sections
+    assert "Section 1 — Governance Artifact Relationship Map" in content
+    assert "Section 2 — Source-of-Truth Hierarchy" in content
+    assert "Section 3 — Document Ownership Boundaries" in content
+    assert "Section 4 — Duplicate-Risk Assessment" in content
+    assert "Section 5 — Cross-Reference Recommendations" in content
+    assert "Section 6 — Future Synchronization Rules" in content
+    assert "Section 7 — Conclusion" in content
+
+    # Verify Specific terms
+    assert "source-of-truth hierarchy" in content_lower or "source-of-truth ordering" in content_lower
+    assert "ownership boundaries" in content_lower
+    assert "duplicate-risk assessment" in content_lower
+    assert "future synchronization rules" in content_lower
+
+
 def test_documents_are_indexed_correctly():
-    """Verify that both the Governance Framework and Roadmap Review are registered in Main Archive/INDEX.md as PROPOSED."""
+    """Verify that Governance Framework, Roadmap Review, and Dependency Map are registered in Main Archive/INDEX.md as PROPOSED."""
     root_dir = Path(__file__).parent.parent.parent
     index_file = root_dir / "Main Archive" / "INDEX.md"
 
     assert index_file.exists(), "Index file must exist in Main Archive/"
     content = index_file.read_text(encoding="utf-8")
 
-    # Assert correct link format and state for both
+    # Assert correct link format and state for all three
     assert "../docs/SAGE-CAPABILITY-EVOLUTION-GOVERNANCE-FRAMEWORK.md" in content
     assert "../docs/SAGE-ROADMAP-CONTINUITY-REVIEW-REPORT.md" in content
+    assert "../docs/SAGE-GOVERNANCE-DEPENDENCY-MAP.md" in content
     assert "[State: PROPOSED]" in content
 
 
