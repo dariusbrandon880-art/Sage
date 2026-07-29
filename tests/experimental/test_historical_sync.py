@@ -232,3 +232,27 @@ def test_evolution_governance_conformance():
     index_content = index_file.read_text(encoding="utf-8")
     assert "../docs/SAGE-EVOLUTION-GOVERNANCE-FRAMEWORK.md" in index_content
     assert "[State: VALIDATED]" in index_content
+
+
+def test_system_state_intelligence_conformance():
+    """Verify SAGE System State Intelligence Framework exists, has correct sections, and is registered in INDEX.md."""
+    root_dir = Path(__file__).parent.parent.parent
+    intel_file = root_dir / "docs" / "SAGE-SYSTEM-STATE-INTELLIGENCE-FRAMEWORK.md"
+
+    assert intel_file.exists(), "State Intelligence Framework must exist under docs/"
+    content = intel_file.read_text(encoding="utf-8")
+
+    # Assert critical sections
+    assert "SAGE System State Intelligence Framework Report" in content
+    assert "SAGE-STATE-INTEL-2026-07-29" in content
+    assert "Canonical SAGE State Model" in content
+    assert "State Transition Documentation Model" in content
+    assert "Canonical Governance Snapshot Format" in content
+    assert "Continuity Failure Prevention" in content
+    assert "Future Session Alignment & Startup" in content
+
+    # Verify index registration
+    index_file = root_dir / "Main Archive" / "INDEX.md"
+    index_content = index_file.read_text(encoding="utf-8")
+    assert "../docs/SAGE-SYSTEM-STATE-INTELLIGENCE-FRAMEWORK.md" in index_content
+    assert "[State: VALIDATED]" in index_content

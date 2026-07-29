@@ -268,3 +268,17 @@ Following the documentation health, navigation, and restoration protocol synchro
 4. **Lifecycle State Machine:** Maps the exact allowed transitions and rejection paths between lifecycle classifications (`FUTURE EXPLORATION` $\rightarrow$ `STRATEGIC RESEARCH INPUT` $\rightarrow$ `PROPOSED` $\rightarrow$ `VALIDATED EXPERIMENTAL` $\rightarrow$ `VALIDATED` $\rightarrow$ `MASTER ARCHIVE`).
 
 For the full detailed governance framework, decision authority models, and state transition rules, refer to the [SAGE Evolution Governance Framework Report](../docs/SAGE-EVOLUTION-GOVERNANCE-FRAMEWORK.md).
+
+---
+
+## 15. SAGE System State Intelligence Summary
+
+Following the evolution governance standardization, SAGE defines a formal documentation model to capture and understand SAGE's current state at any moment in time.
+
+### Key Intelligence Dimensions:
+1. **Canonical State Model:** Standardizes how SAGE records current state, completed milestones, validated capabilities, active research, pending decisions, blocks, constraints, opportunities, and retired concepts.
+2. **State Transition Records:** Specifies the mandatory tracking fields necessary to record lifecycle state transitions.
+3. **Governance Snapshot Format:** Establishes a standard front-matter schema for emitting active governance snapshots, capturing timestamp, version, completed work, risk, and boundary statuses.
+4. **Continuity Failure Prevention:** Actively prevents duplicate work, lost decisions, forgotten constraints, incorrect assumptions, and premature implementations by enforcing strict restoration checks.
+
+For the full detailed state intelligence specs and governance snapshot models, refer to the [SAGE System State Intelligence Framework Report](../docs/SAGE-SYSTEM-STATE-INTELLIGENCE-FRAMEWORK.md).
