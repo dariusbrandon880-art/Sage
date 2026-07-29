@@ -374,6 +374,36 @@ def test_multi_agent_council_operating_charter_exists_and_conforms():
     assert "agent-owned actions" in content_lower
 
 
+def test_validation_evidence_traceability_synchronization_report_exists_and_conforms():
+    """Verify that the SAGE-VALIDATION-EVIDENCE-TRACEABILITY-SYNCHRONIZATION-REPORT.md document exists and contains required sections."""
+    root_dir = Path(__file__).parent.parent.parent
+    report_doc = root_dir / "docs" / "SAGE-VALIDATION-EVIDENCE-TRACEABILITY-SYNCHRONIZATION-REPORT.md"
+
+    assert report_doc.exists(), "The SAGE Validation Evidence Traceability Synchronization Report document must exist under docs/"
+    content = report_doc.read_text(encoding="utf-8")
+    content_lower = content.lower()
+
+    # Verify ID and Status
+    assert "SAGE-TRACE-SYNC-2026-07-29" in content
+    assert "PROPOSED — Strategic Governance Design Phase" in content
+
+    # Verify Sections
+    assert "Section 1 — Current Validation Ecosystem State" in content
+    assert "Section 2 — Artifact Traceability Map" in content
+    assert "Section 3 — Evidence Chain Assessment" in content
+    assert "Section 4 — Master Archive Consistency Review" in content
+    assert "Section 5 — Remaining Validation Infrastructure Gaps" in content
+    assert "Section 6 — Recommended Next Engineering Preparation Step" in content
+    assert "Section 7 — Frozen Items Requiring No Action" in content_lower or "section 7 — frozen items (no action authorized)" in content_lower
+    assert "Section 8 — Conclusion" in content
+
+    # Verify specific concepts
+    assert "accountability invariant" in content_lower
+    assert "capability passport" in content_lower
+    assert "evidence receipt" in content_lower
+    assert "human review" in content_lower
+
+
 def test_documents_are_indexed_correctly():
     """Verify that all required governance documents are registered in Main Archive/INDEX.md as PROPOSED."""
     root_dir = Path(__file__).parent.parent.parent
@@ -382,7 +412,7 @@ def test_documents_are_indexed_correctly():
     assert index_file.exists(), "Index file must exist in Main Archive/"
     content = index_file.read_text(encoding="utf-8")
 
-    # Assert correct link format and state for all nine
+    # Assert correct link format and state for all ten
     assert "../docs/SAGE-CAPABILITY-EVOLUTION-GOVERNANCE-FRAMEWORK.md" in content
     assert "../docs/SAGE-ROADMAP-CONTINUITY-REVIEW-REPORT.md" in content
     assert "../docs/SAGE-GOVERNANCE-DEPENDENCY-MAP.md" in content
@@ -392,6 +422,7 @@ def test_documents_are_indexed_correctly():
     assert "../docs/SAGE-AGENT-COORDINATION-MODEL.md" in content
     assert "../docs/SAGE-MULTI-AGENT-COUNCIL-ALIGNMENT-REVIEW.md" in content
     assert "../docs/SAGE-MULTI-AGENT-COUNCIL-OPERATING-CHARTER.md" in content
+    assert "../docs/SAGE-VALIDATION-EVIDENCE-TRACEABILITY-SYNCHRONIZATION-REPORT.md" in content
     assert "[State: PROPOSED]" in content
 
 
