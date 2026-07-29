@@ -22,6 +22,7 @@ Each indexed artifact is assigned a lifecycle state under the **Index Layer v0.1
 
 ## 2. Strategic Research
 - [SAGE Strategic Assessment: SAGE-STRAT-ASSESS-001](research/strategic/SAGE-STRAT-ASSESS-001.md) `[State: VALIDATED]` - Formal record defining strategic positioning as AI Reliability Infrastructure / Agent Governance Control Layer.
+- [SAGE Full Blueprint Continuity Integration Map and Record](research/strategic/SAGE-BLUEPRINT-CONTINUITY-INTEGRATION.md) `[State: VALIDATED]` - Complete capture of SAGE's conceptual, creative, strategic, and engineering lineage, integrating founding blueprints, creative models (Marvel, Star Wars, Prometheus), scientific analogs, decision ledgers, and a comprehensive continuity map.
 - [SME Spec](research/strategic/SME.md) `[State: CANONICAL]` - Subject Matter Expert Layer.
 - [SRL Spec](research/strategic/SRL.md) `[State: CANONICAL]` - Self-Referential Learning / Semantic Representation Layer.
 - [SKAL Spec](research/strategic/SKAL.md) `[State: CANONICAL]` - Semantic Knowledge Association Layer.
