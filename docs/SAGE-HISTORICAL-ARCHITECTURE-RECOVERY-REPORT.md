@@ -310,3 +310,17 @@ Following the strategic positioning and competitive readiness framework, SAGE es
 4. **Validation Gate Mapping:** Maps SAGE's evolution progress through six formal progress checkers (Gate 0: Historical alignment to Gate 5: Implementation authorization) to eliminate risk and developer waste.
 
 For the full detailed validation plans, failure scenarios, success/failure criteria, and gate mappings, refer to the [SAGE Continuity Proof Readiness and Validation Design Plan](../docs/SAGE-CONTINUITY-PROOF-READINESS-PLAN.md).
+
+---
+
+## 18. SAGE Render Continuity Experiment Design Summary
+
+Following the validation readiness planning, SAGE defines the formal design and architecture constraints for its proposed Render-based continuity validation experiment.
+
+### Key Experimental Constraints:
+1. **Payload Integrity Validation:** Prioritizes trustworthy state detection over automated recovery. Malformed payloads are treated as structural integrity failures and are rejected, preserving non-mutating, read-only behavior.
+2. **Experimental Scope Controls:** Bounded to synthetic workloads, isolated namespaces (`sage/experimental/`), and strict 5-20 execution event limits to guarantee production core safety.
+3. **Controlled Scenarios:** Designs three explicit validation scenarios: Service Restart Simulation, Network/API Interruption Simulation, and Payload Integrity Failure.
+4. **Advancement & Falsification Criteria:** Formulates strict criteria to govern progression from `PROPOSED` $\rightarrow$ `VALIDATED EXPERIMENTAL` based on deterministic repeatability and strict boundary compliance.
+
+For the full detailed experiment architecture, scenario specs, and output frameworks, refer to the [SAGE Render Continuity Experiment Design Report](../docs/SAGE-RENDER-CONTINUITY-EXPERIMENT-DESIGN.md).
