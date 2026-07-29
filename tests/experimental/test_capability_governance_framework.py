@@ -195,19 +195,52 @@ def test_master_synchronization_checkpoint_report_exists_and_conforms():
     assert "sage-sdr" in content_lower or "safe dry-run" in content_lower
 
 
+def test_agent_continuity_governance_framework_exists_and_conforms():
+    """Verify that the SAGE-AGENT-CONTINUITY-GOVERNANCE-FRAMEWORK.md document exists and contains required sections."""
+    root_dir = Path(__file__).parent.parent.parent
+    agent_gov_doc = root_dir / "docs" / "SAGE-AGENT-CONTINUITY-GOVERNANCE-FRAMEWORK.md"
+
+    assert agent_gov_doc.exists(), "The SAGE Agent Continuity Governance Framework document must exist under docs/"
+    content = agent_gov_doc.read_text(encoding="utf-8")
+    content_lower = content.lower()
+
+    # Verify ID and Status
+    assert "SAGE-AGENT-GOV-2026-07-29" in content
+    assert "PROPOSED — Strategic Governance Design Phase" in content
+
+    # Verify Sections
+    assert "Section 1 — Multi-Agent Operating Model" in content
+    assert "Section 2 — Agent Passport Model" in content
+    assert "Section 3 — Agent Role Separation" in content
+    assert "Section 4 — Multi-Agent Handoff Protocol" in content
+    assert "Section 5 — Agent Risk Controls" in content
+    assert "Section 6 — Future Agent Expansion Rules" in content
+    assert "Section 7 — Conclusion" in content
+
+    # Verify specific rules and terminology
+    assert "no agent without accountability rule" in content_lower
+    assert "chatgpt" in content_lower
+    assert "jules" in content_lower
+    assert "claude" in content_lower
+    assert "architectural coordination" in content_lower
+    assert "repository operations" in content_lower
+    assert "adversarial review" in content_lower
+
+
 def test_documents_are_indexed_correctly():
-    """Verify that all four required governance documents are registered in Main Archive/INDEX.md as PROPOSED."""
+    """Verify that all five required governance documents are registered in Main Archive/INDEX.md as PROPOSED."""
     root_dir = Path(__file__).parent.parent.parent
     index_file = root_dir / "Main Archive" / "INDEX.md"
 
     assert index_file.exists(), "Index file must exist in Main Archive/"
     content = index_file.read_text(encoding="utf-8")
 
-    # Assert correct link format and state for all four
+    # Assert correct link format and state for all five
     assert "../docs/SAGE-CAPABILITY-EVOLUTION-GOVERNANCE-FRAMEWORK.md" in content
     assert "../docs/SAGE-ROADMAP-CONTINUITY-REVIEW-REPORT.md" in content
     assert "../docs/SAGE-GOVERNANCE-DEPENDENCY-MAP.md" in content
     assert "../docs/SAGE-MASTER-SYNCHRONIZATION-CHECKPOINT-REPORT.md" in content
+    assert "../docs/SAGE-AGENT-CONTINUITY-GOVERNANCE-FRAMEWORK.md" in content
     assert "[State: PROPOSED]" in content
 
 
