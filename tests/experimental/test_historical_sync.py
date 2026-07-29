@@ -138,3 +138,32 @@ def test_prioritization_report_conformance():
     index_content = index_file.read_text(encoding="utf-8")
     assert "../docs/SAGE-NEXT-CAPABILITY-RESEARCH-PRIORITIZATION-REPORT.md" in index_content
     assert "[State: VALIDATED]" in index_content
+
+
+def test_knowledge_graph_report_conformance():
+    """Verify that the SAGE Knowledge Graph and Traceability Architecture Report exists, contains key sections, and is properly registered."""
+    root_dir = Path(__file__).parent.parent.parent
+    graph_doc = root_dir / "docs" / "SAGE-KNOWLEDGE-GRAPH-AND-TRACEABILITY-ARCHITECTURE.md"
+
+    assert graph_doc.exists(), "Knowledge Graph Report must exist under docs/"
+    content = graph_doc.read_text(encoding="utf-8")
+
+    # Assert critical sections
+    assert "SAGE Knowledge Graph and Traceability Architecture Report" in content
+    assert "SAGE-KNOWLEDGE-GRAPH-2026-07-29" in content
+    assert "Recommended Metadata Schema" in content
+    assert "Unique Document Identifiers Strategy" in content
+    assert "Unified Document Relationship Map" in content
+    assert "Explicit Traceability Lineages" in content
+    assert "Document Dependency Graph" in content
+    assert "Mappings and Trace Matrices" in content
+    assert "Cross-Reference Conventions" in content
+    assert "Duplicate Detection & Future Retrieval Opportunities" in content
+    assert "Documentation Health Assessment & Gap Analysis" in content
+    assert "Recommended Documentation Standards" in content
+
+    # Verify index registration
+    index_file = root_dir / "Main Archive" / "INDEX.md"
+    index_content = index_file.read_text(encoding="utf-8")
+    assert "../docs/SAGE-KNOWLEDGE-GRAPH-AND-TRACEABILITY-ARCHITECTURE.md" in index_content
+    assert "[State: VALIDATED]" in index_content

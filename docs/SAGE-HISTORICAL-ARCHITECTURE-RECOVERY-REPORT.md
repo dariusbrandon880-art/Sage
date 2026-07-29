@@ -224,3 +224,17 @@ Following the historical synchronization and capability alignment review, a capa
 3. **Rank 3: SAGE Decentralized Validator Key Rotation (SAGE-DKR)** — Resolves static verification key vulnerability using decentralized public-key trust hierarchies.
 
 For the full detailed 12-point prioritization, validation, and security specs of each opportunity, refer to the [SAGE Next Capability Research Prioritization Report](../docs/SAGE-NEXT-CAPABILITY-RESEARCH-PRIORITIZATION-REPORT.md).
+
+---
+
+## 12. SAGE Knowledge Graph and Traceability Architecture Summary
+
+To ensure SAGE's growing library of architectural decisions, research tracks, Proposals, and Validation reports is fully discoverable and auditable, SAGE establishes a formal **Knowledge Graph and Traceability Architecture**.
+
+### Key Traceability Elements:
+1. **Unique Identifiers & Metadata:** Every document is assigned a unique, immutable ID (e.g., `SAGE-SYNC-002` for this report) and contains a machine-readable YAML metadata front-matter block.
+2. **Explicit Lineages:** Traces documentation, decisions, and capabilities across research, architecture, implementation, and validation timelines.
+3. **Trace Matrices:** Maps critical capabilities and decisions directly to their validating test files (e.g., verifying One-Way Import compliance via AST checks in `conftest.py`).
+4. **Future RAG Optimization:** The highly structured Markdown headers and metadata schemas are fully optimized for future automated retrieval and interactive relational graph construction.
+
+For the full architectural report, relationship maps, dependency graphs, and documentation health assessments, refer to the [SAGE Knowledge Graph and Traceability Architecture Report](../docs/SAGE-KNOWLEDGE-GRAPH-AND-TRACEABILITY-ARCHITECTURE.md).
