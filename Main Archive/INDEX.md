@@ -30,6 +30,7 @@ Each indexed artifact is assigned a lifecycle state under the **Index Layer v0.1
 - [SAGE Knowledge Graph Specification](../docs/SAGE-KNOWLEDGE-GRAPH-SPECIFICATION.md) `[State: VALIDATED]` - Specification formalizing node categories, edge predicates, and relational mappings across historical and active documents.
 - [SAGE Decision Traceability Matrix](../docs/SAGE-DECISION-TRACEABILITY-MATRIX.md) `[State: VALIDATED]` - Ledger tracing SAGE's core architectural decisions to their justifications, rejections, alternative choices, evidence, and dependencies.
 - [SAGE Capability Dependency Map](../docs/SAGE-CAPABILITY-DEPENDENCY-MAP.md) `[State: VALIDATED]` - Structural mapping of sequential and unidirectional dependencies between core and experimental SAGE capabilities.
+- [SAGE Continuity Proof Architecture](../docs/SAGE-CONTINUITY-PROOF-ARCHITECTURE.md) `[State: PROPOSED]` - Specification defining SAGE's first formal evidence experiment to validate core continuity hypotheses across interruption-and-recovery scenarios.
 - [SME Spec](research/strategic/SME.md) `[State: CANONICAL]` - Subject Matter Expert Layer.
 - [SRL Spec](research/strategic/SRL.md) `[State: CANONICAL]` - Self-Referential Learning / Semantic Representation Layer.
 - [SKAL Spec](research/strategic/SKAL.md) `[State: CANONICAL]` - Semantic Knowledge Association Layer.
