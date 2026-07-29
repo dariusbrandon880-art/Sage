@@ -158,6 +158,24 @@ def test_future_capability_readiness_assessment():
     assert "Final Readiness Decision" in content
     assert "READY FOR HUMAN AUTHORIZATION" in content
 
+    # Verify Part III — SAGE Quantum-Resilient Cyber Defense Research Track sections and content
+    assert "Part III — SAGE Quantum-Resilient Cyber Defense Research Track" in content
+    assert "SAGE-QUANTUM-RESILIENT-DEFENSE-2026-07-30" in content
+    assert "Section 1 — Post-Quantum Evidence Integrity" in content
+    assert "Section 2 — Quantum-Inspired Security State Modeling" in content
+    assert "Section 3 — Entropy-Based Drift Detection" in content
+    assert "Section 4 — Security Knowledge Topology" in content
+    assert "Section 5 — Human Security Review Alignment" in content
+
+    # Verify quantum resilient key concepts
+    assert "ML-DSA" in content
+    assert "SLH-DSA" in content
+    assert "superposition" in content.lower()
+    assert "Kullback-Leibler" in content or "KL" in content
+    assert "simplicial complexes" in content.lower()
+    assert "Betti" in content
+    assert "Human Sovereignty is Absolute" in content
+
     # Verify index registration
     index_file = root_dir / "Main Archive" / "INDEX.md"
     index_content = index_file.read_text(encoding="utf-8")
