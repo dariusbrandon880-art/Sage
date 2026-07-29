@@ -1,6 +1,6 @@
-# SAGE Engineering Reality & SDR Controlled Experiment Readiness Assessment
+# SAGE Engineering Reality & First Controlled SDR Experiment Readiness Assessment
 
-This report presents a thorough, evidence-based technical assessment of the SAGE Autonomous Continuity Runtime repository. It establishes an engineering baseline by analyzing current application entrypoints, deployment configurations, environmental assumptions, architecture-to-code alignment, and SAGE's readiness to support its first controlled **Safe Dry-Run (SDR) Experiment Lifecycle**.
+This report presents a thorough, evidence-based technical assessment of the SAGE Autonomous Continuity Runtime repository. It establishes an engineering baseline by analyzing current application entrypoints, deployment configurations, environmental assumptions, architecture-to-code alignment, and SAGE's readiness to support its first controlled **Safe Dry-Run (SDR) Experiment Specification**.
 
 All assessments are conducted without introducing code mutations to protected core runtime boundaries (`sage/runtime/`, `sage/core/`, `sage/acr/`).
 
@@ -62,26 +62,24 @@ A systematic comparison was conducted between documented architectural claims (a
 
 ---
 
-## 3. Controlled SDR Experiment Readiness Assessment
+## 3. SAGE First Controlled SDR Experiment Specification
 
-SAGE's existing governance machinery is **fully sufficient** to support and govern one complete, controlled SDR experiment lifecycle. The sequential, non-bypassable alignment pipeline is fully defined conceptually and programmatically validated under experimental boundaries:
+SAGE's first controlled SDR simulation is designed as the smallest possible experiment validating the complete 8-stage governance lifecycle:
 
-$$\text{Research} \rightarrow \text{Validation} \rightarrow \text{Evidence} \rightarrow \text{Human Review} \rightarrow \text{Master Archive}$$
+$$\text{Research Proposal} \rightarrow \text{Experiment Registry} \rightarrow \text{Boundary Verification} \rightarrow \text{Human Authorization} \rightarrow \text{Controlled SDR Execution} \rightarrow \text{Evidence Package} \rightarrow \text{Independent Review} \rightarrow \text{Master Archive Decision}$$
 
-### 3.1 Sufficiency of the Governance Chain
-1. **Research Proposal Stage:** Governed by `SAGE-SDR-EXPERIMENT-REGISTRY-CONTROL-FRAMEWORK.md`.
-2. **Experiment Registry Stage:** Validated against the twelve required experiment schema fields.
-3. **Boundary Verification Stage:** Confirms write permissions exclude protected core directories (`sage/runtime/`, `sage/core/`, `sage/acr/`).
-4. **Human Authorization Gate:** Governed by `HumanReviewGate` class, requiring signed supervisor approval.
-5. **Controlled SDR Execution:** Runs within isolated simulation directory boundaries (`sage/experimental/sdr/`).
-6. **Evidence Package Generation:** Programmatically compiled using `CapabilityEvidenceReceiptGenerator` with unique secure hashes.
-7. **Independent Review Gate:** Programmatically audited by Claude and verified against validation criteria.
-8. **Archive Decision Gate:** Promotes the registry entry and its receipts to their designate archive destinations upon final human supervisor signoff.
+### 3.1 Experiment Scope
+- **Included Actions:** Scratch workspace setup under `sage/experimental/sdr/scratch/`, mock agent handoffs between `agent_chatgpt` and `agent_jules`, programmatic passport attribute validation, and serializing execution logs.
+- **Excluded Actions:** Mutating core directories, un-mocked external API calls, and automated INDEX.md promotions.
+- **Success Criteria:** Zero unhandled exceptions across all 8 stages, complete compilation of 10 evidence items, and full scratch rollback.
 
-### 3.2 Remaining Missing Infrastructure
-1. **Automated Registry File Database:** A file-based database (e.g., `sdr_registry.json` inside `.sage/`) to store active experiment schemas.
-2. **SDR Sandbox Orchestrator Loop:** A lightweight execution loop class (e.g., `SDRSandboxRunner` inside `sage/experimental/sdr/`) to trigger mock agent interactions and compile evidence.
-3. **Command Center Ingestion Endpoints:** REST routes inside `sage/api.py` to ingest and query active SDR experiment states.
+### 3.2 Experiment Registry Entry
+- **Experiment ID:** `sdr_exp_governance_lifecycle_001`
+- **Simulation Boundary:** `sage/experimental/sdr/scratch/`
+- **Protected Systems Excluded:** `["sage/runtime/", "sage/core/", "sage/acr/"]`
+- **Expected Evidence Output:** `evidence_capture/sdr_exp_001_evidence_package.json`
+- **Reviewer Identity:** `independent_auditor_claude`
+- **Archive Destination:** `Main Archive/sdr_exp_governance_lifecycle_001_archive.json`
 
 ### 3.3 Required Evidence Artifacts
 SDR experiments must compile a complete evidence package containing exactly ten required artifacts:
