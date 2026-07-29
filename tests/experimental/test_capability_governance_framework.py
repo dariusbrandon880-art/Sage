@@ -311,15 +311,47 @@ def test_agent_coordination_model_exists_and_conforms():
     assert "no hidden state transfer" in content_lower
 
 
+def test_multi_agent_council_alignment_review_exists_and_conforms():
+    """Verify that the SAGE-MULTI-AGENT-COUNCIL-ALIGNMENT-REVIEW.md document exists and contains required sections."""
+    root_dir = Path(__file__).parent.parent.parent
+    council_doc = root_dir / "docs" / "SAGE-MULTI-AGENT-COUNCIL-ALIGNMENT-REVIEW.md"
+
+    assert council_doc.exists(), "The SAGE Multi-Agent Council Alignment Review document must exist under docs/"
+    content = council_doc.read_text(encoding="utf-8")
+    content_lower = content.lower()
+
+    # Verify ID and Status
+    assert "SAGE-COUNCIL-REVIEW-2026-07-29" in content
+    assert "PROPOSED — Strategic Governance Design Phase" in content
+
+    # Verify Sections
+    assert "Section 1 — Current Agent Ecosystem State" in content
+    assert "Section 2 — Role Alignment Assessment" in content
+    assert "Section 3 — Communication Alignment & Handoff Integrity" in content
+    assert "Section 4 — Evidence Flow & Agent Accountability" in content
+    assert "Section 5 — Coordination Risk Controls" in content
+    assert "Section 6 — Remaining Governance Gaps & Future Coordination Requirements" in content
+    assert "Section 7 — Frozen Items (No Action Authorized)" in content
+    assert "Section 8 — Conclusion" in content
+
+    # Verify specific roles and rules
+    assert "chatgpt" in content_lower
+    assert "jules" in content_lower
+    assert "claude" in content_lower
+    assert "gemini / google ai" in content_lower
+    assert "role separation rule" in content_lower
+    assert "no agent without accountability rule" in content_lower
+
+
 def test_documents_are_indexed_correctly():
-    """Verify that all five required governance documents are registered in Main Archive/INDEX.md as PROPOSED."""
+    """Verify that all required governance documents are registered in Main Archive/INDEX.md as PROPOSED."""
     root_dir = Path(__file__).parent.parent.parent
     index_file = root_dir / "Main Archive" / "INDEX.md"
 
     assert index_file.exists(), "Index file must exist in Main Archive/"
     content = index_file.read_text(encoding="utf-8")
 
-    # Assert correct link format and state for all seven
+    # Assert correct link format and state for all eight
     assert "../docs/SAGE-CAPABILITY-EVOLUTION-GOVERNANCE-FRAMEWORK.md" in content
     assert "../docs/SAGE-ROADMAP-CONTINUITY-REVIEW-REPORT.md" in content
     assert "../docs/SAGE-GOVERNANCE-DEPENDENCY-MAP.md" in content
@@ -327,6 +359,7 @@ def test_documents_are_indexed_correctly():
     assert "../docs/SAGE-AGENT-CONTINUITY-GOVERNANCE-FRAMEWORK.md" in content
     assert "../docs/SAGE-AGENT-ECOSYSTEM-ACTIVATION-ROADMAP.md" in content
     assert "../docs/SAGE-AGENT-COORDINATION-MODEL.md" in content
+    assert "../docs/SAGE-MULTI-AGENT-COUNCIL-ALIGNMENT-REVIEW.md" in content
     assert "[State: PROPOSED]" in content
 
 
