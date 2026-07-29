@@ -424,3 +424,42 @@ def test_agent_ecosystem_engineering_transition_assessment():
     index_content = index_file.read_text(encoding="utf-8")
     assert "../docs/SAGE-AGENT-ECOSYSTEM-ENGINEERING-TRANSITION-ASSESSMENT.md" in index_content
     assert "[State: PROPOSED]" in index_content
+
+
+def test_first_controlled_sdr_experiment_design_specification():
+    """Verify that the SAGE First Controlled SDR Experiment Design Specification exists, has required sections, and is registered in Main Archive/INDEX.md as PROPOSED."""
+    root_dir = Path(__file__).parent.parent.parent
+    spec_doc = root_dir / "docs" / "SAGE-FIRST-CONTROLLED-SDR-EXPERIMENT-DESIGN-SPECIFICATION.md"
+
+    assert spec_doc.exists(), "The SAGE First Controlled SDR Experiment Design Specification must exist under docs/"
+    content = spec_doc.read_text(encoding="utf-8")
+
+    # Verify ID and Status
+    assert "SAGE-FIRST-SDR-EXPERIMENT-DESIGN-2026-07-30" in content
+    assert "PROPOSED" in content
+
+    # Verify key sections & contents
+    assert "Section 1 — Experiment Purpose" in content
+    assert "Section 2 — Experiment Scope" in content
+    assert "Section 3 — Experiment Registry Requirements" in content
+    assert "Section 4 — SDR Execution Model" in content
+    assert "Section 5 — Evidence Requirements" in content
+    assert "Section 6 — Human Governance Gates" in content
+    assert "Section 7 — Failure Conditions" in content
+    assert "Section 8 — Success Criteria" in content
+    assert "Section 9 — Frozen Boundaries" in content
+    assert "Section 10 — Conclusion" in content
+
+    # Verify specific keywords from current directive
+    assert "twelve parameters" in content.lower()
+    assert "six-stage" in content or "six linear" in content
+    assert "nine required" in content or "nine artifacts" in content or "nine" in content
+    assert "three non-bypassable" in content or "three" in content
+    assert "five conditions" in content or "five" in content
+    assert "six conditions" in content or "six" in content
+
+    # Verify index registration
+    index_file = root_dir / "Main Archive" / "INDEX.md"
+    index_content = index_file.read_text(encoding="utf-8")
+    assert "../docs/SAGE-FIRST-CONTROLLED-SDR-EXPERIMENT-DESIGN-SPECIFICATION.md" in index_content
+    assert "[State: PROPOSED]" in index_content
