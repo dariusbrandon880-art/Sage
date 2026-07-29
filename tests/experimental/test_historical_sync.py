@@ -382,3 +382,29 @@ def test_render_readiness_conformance():
     index_content = index_file.read_text(encoding="utf-8")
     assert "../docs/SAGE-RENDER-CONTINUITY-EXECUTION-READINESS-REVIEW.md" in index_content
     assert "[State: PROPOSED]" in index_content
+
+
+def test_builder_lineage_conformance():
+    """Verify SAGE Builder Lineage and Inspiration Record exists, has correct sections, and is registered in INDEX.md."""
+    root_dir = Path(__file__).parent.parent.parent
+    inspiration_file = root_dir / "docs" / "SAGE-BUILDER-LINEAGE-AND-INSPIRATION.md"
+
+    assert inspiration_file.exists(), "Inspiration Record must exist under docs/"
+    content = inspiration_file.read_text(encoding="utf-8")
+
+    # Assert critical sections
+    assert "SAGE Builder Lineage and Strategic Inspiration Record" in content
+    assert "SAGE-INSPIRATION-2026-07-29" in content
+    assert "Builder Philosophy References" in content
+    assert "Long-Horizon Intelligence Research" in content
+    assert "Practical AI Engineering" in content
+    assert "Foundational Infrastructure Engineering" in content
+    assert "SAGE Alignment Principles" in content
+    assert "Strategic Humility Requirement" in content
+    assert "Future Ecosystem Principle" in content
+
+    # Verify index registration
+    index_file = root_dir / "Main Archive" / "INDEX.md"
+    index_content = index_file.read_text(encoding="utf-8")
+    assert "../docs/SAGE-BUILDER-LINEAGE-AND-INSPIRATION.md" in index_content
+    assert "[State: VALIDATED]" in index_content
