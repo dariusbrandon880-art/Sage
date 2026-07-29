@@ -312,3 +312,31 @@ def test_agent_sdr_simulation_readiness_assessment():
     index_content = index_file.read_text(encoding="utf-8")
     assert "../docs/SAGE-AGENT-SDR-SIMULATION-READINESS-ASSESSMENT.md" in index_content
     assert "[State: PROPOSED]" in index_content
+
+
+def test_agent_sdr_validation_gate_specification():
+    """Verify that the SAGE Agent SDR Validation Gate Specification exists, has required sections, and is registered in Main Archive/INDEX.md as PROPOSED."""
+    root_dir = Path(__file__).parent.parent.parent
+    gate_doc = root_dir / "docs" / "SAGE-AGENT-SDR-VALIDATION-GATE-SPECIFICATION.md"
+
+    assert gate_doc.exists(), "The SAGE Agent SDR Validation Gate Specification must exist under docs/"
+    content = gate_doc.read_text(encoding="utf-8")
+
+    # Verify ID and Status
+    assert "SAGE-SDR-VALIDATION-GATE-2026-07-30" in content
+    assert "PROPOSED" in content
+
+    # Verify key sections
+    assert "Section 1 — Validation Gate Purpose" in content
+    assert "Section 2 — Validation Gate Lifecycle" in content
+    assert "Section 3 — Simulation Validation Requirements" in content
+    assert "Section 4 — Evidence Package Requirements" in content
+    assert "Section 5 — Human Governance Gates" in content
+    assert "Section 6 — Failure and Rejection Criteria" in content
+    assert "Section 7 — Future Experiment Prerequisites" in content
+
+    # Verify index registration
+    index_file = root_dir / "Main Archive" / "INDEX.md"
+    index_content = index_file.read_text(encoding="utf-8")
+    assert "../docs/SAGE-AGENT-SDR-VALIDATION-GATE-SPECIFICATION.md" in index_content
+    assert "[State: PROPOSED]" in index_content
