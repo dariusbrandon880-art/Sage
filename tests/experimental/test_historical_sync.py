@@ -397,3 +397,30 @@ def test_agent_ecosystem_full_activation_blueprint():
     index_content = index_file.read_text(encoding="utf-8")
     assert "../docs/SAGE-AGENT-ECOSYSTEM-FULL-ACTIVATION-BLUEPRINT.md" in index_content
     assert "[State: PROPOSED]" in index_content
+
+
+def test_agent_ecosystem_engineering_transition_assessment():
+    """Verify that the SAGE Agent Ecosystem Engineering Transition Assessment exists, has required sections, and is registered in Main Archive/INDEX.md as PROPOSED."""
+    root_dir = Path(__file__).parent.parent.parent
+    assessment_doc = root_dir / "docs" / "SAGE-AGENT-ECOSYSTEM-ENGINEERING-TRANSITION-ASSESSMENT.md"
+
+    assert assessment_doc.exists(), "The SAGE Agent Ecosystem Engineering Transition Assessment must exist under docs/"
+    content = assessment_doc.read_text(encoding="utf-8")
+
+    # Verify ID and Status
+    assert "SAGE-ECOSYSTEM-ENGINEERING-ASSESSMENT-2026-07-30" in content
+    assert "PROPOSED" in content
+
+    # Verify key sections
+    assert "Current engineering readiness" in content or "Current Engineering Readiness" in content
+    assert "Dependency map" in content or "Dependency Map" in content or "Engineering Dependency Map" in content
+    assert "First experiment preparation checklist" in content or "First Experiment Preparation Checklist" in content
+    assert "Risk assessment" in content or "Risk Assessment" in content
+    assert "Recommended engineering sequence" in content or "Recommended Engineering Sequence" in content
+    assert "Frozen items" in content or "Frozen Items" in content
+
+    # Verify index registration
+    index_file = root_dir / "Main Archive" / "INDEX.md"
+    index_content = index_file.read_text(encoding="utf-8")
+    assert "../docs/SAGE-AGENT-ECOSYSTEM-ENGINEERING-TRANSITION-ASSESSMENT.md" in index_content
+    assert "[State: PROPOSED]" in index_content
