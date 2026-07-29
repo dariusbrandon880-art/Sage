@@ -198,3 +198,30 @@ def test_sdr_readiness_specification():
     index_content = index_file.read_text(encoding="utf-8")
     assert "../docs/SAGE-SDR-READINESS-SPECIFICATION.md" in index_content
     assert "[State: PROPOSED]" in index_content
+
+
+def test_sdr_agent_coordination_alignment_review():
+    """Verify that the SAGE Safe Dry Run (SDR) & Agent Coordination Alignment Review exists, has required sections, and is registered in Main Archive/INDEX.md as PROPOSED."""
+    root_dir = Path(__file__).parent.parent.parent
+    review_doc = root_dir / "docs" / "SAGE-SDR-AGENT-COORDINATION-ALIGNMENT-REVIEW.md"
+
+    assert review_doc.exists(), "The SAGE-SDR & Agent Coordination Review must exist under docs/"
+    content = review_doc.read_text(encoding="utf-8")
+
+    # Verify ID and Status
+    assert "SAGE-SDR-AGENT-ALIGN-2026-07-30" in content
+    assert "PROPOSED" in content
+
+    # Verify key sections
+    assert "SDR and Agent Framework Relationship" in content
+    assert "Agent Contribution Evidence Model" in content
+    assert "Multi-Agent Validation Handoff Flow" in content or "Validation handoff flow" in content or "Validation Handoff Flow" in content
+    assert "Human Review Checkpoints" in content
+    assert "Systemic Risks" in content or "Risks" in content
+    assert "Future Research Questions" in content
+
+    # Verify index registration
+    index_file = root_dir / "Main Archive" / "INDEX.md"
+    index_content = index_file.read_text(encoding="utf-8")
+    assert "../docs/SAGE-SDR-AGENT-COORDINATION-ALIGNMENT-REVIEW.md" in index_content
+    assert "[State: PROPOSED]" in index_content
