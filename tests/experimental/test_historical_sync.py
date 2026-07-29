@@ -340,3 +340,31 @@ def test_agent_sdr_validation_gate_specification():
     index_content = index_file.read_text(encoding="utf-8")
     assert "../docs/SAGE-AGENT-SDR-VALIDATION-GATE-SPECIFICATION.md" in index_content
     assert "[State: PROPOSED]" in index_content
+
+
+def test_agent_capability_passport_integration_review():
+    """Verify that the SAGE Agent Capability Passport Integration Review exists, has required sections, and is registered in Main Archive/INDEX.md as VALIDATED."""
+    root_dir = Path(__file__).parent.parent.parent
+    review_doc = root_dir / "docs" / "SAGE-AGENT-CAPABILITY-PASSPORT-INTEGRATION-REVIEW.md"
+
+    assert review_doc.exists(), "The SAGE Agent Capability Passport Integration Review must exist under docs/"
+    content = review_doc.read_text(encoding="utf-8")
+
+    # Verify ID and Status
+    assert "SAGE-PASSPORT-INTEGRATION-2026-07-30" in content
+    assert "Validated Technical Record" in content
+
+    # Verify key sections
+    assert "Section 1 — Purpose" in content
+    assert "Section 2 — Agent Identity vs Capability Identity" in content
+    assert "Section 3 — Passport Relationship Model" in content
+    assert "Section 4 — Evidence Ownership Model" in content
+    assert "Section 5 — Validation Flow Alignment" in content
+    assert "Section 6 — Governance Risks" in content
+    assert "Section 7 — Future Research Questions" in content
+
+    # Verify index registration
+    index_file = root_dir / "Main Archive" / "INDEX.md"
+    index_content = index_file.read_text(encoding="utf-8")
+    assert "../docs/SAGE-AGENT-CAPABILITY-PASSPORT-INTEGRATION-REVIEW.md" in index_content
+    assert "[State: VALIDATED]" in index_content
