@@ -163,7 +163,7 @@ def test_knowledge_graph_report_conformance():
     assert "Recommended Documentation Standards" in content
 
     # Verify index registration
-    index_file = Path(__file__).parent.parent.parent / "Main Archive" / "INDEX.md"
+    index_file = root_dir = Path(__file__).parent.parent.parent / "Main Archive" / "INDEX.md"
     index_content = index_file.read_text(encoding="utf-8")
     assert "../docs/SAGE-KNOWLEDGE-GRAPH-AND-TRACEABILITY-ARCHITECTURE.md" in index_content
     assert "[State: VALIDATED]" in index_content
@@ -255,4 +255,29 @@ def test_system_state_intelligence_conformance():
     index_file = root_dir / "Main Archive" / "INDEX.md"
     index_content = index_file.read_text(encoding="utf-8")
     assert "../docs/SAGE-SYSTEM-STATE-INTELLIGENCE-FRAMEWORK.md" in index_content
+    assert "[State: VALIDATED]" in index_content
+
+
+def test_continuity_proof_conformance():
+    """Verify SAGE Continuity Proof Strategy exists, has correct sections, and is registered in INDEX.md."""
+    root_dir = Path(__file__).parent.parent.parent
+    proof_file = root_dir / "docs" / "SAGE-CONTINUITY-PROOF-STRATEGY.md"
+
+    assert proof_file.exists(), "Continuity Proof Strategy must exist under docs/"
+    content = proof_file.read_text(encoding="utf-8")
+
+    # Assert critical sections
+    assert "SAGE Continuity Proof Strategy Report" in content
+    assert "SAGE-PROOF-STRAT-2026-07-29" in content
+    assert "Competitive Positioning Analysis" in content
+    assert "SAGE Protection Strategy" in content
+    assert "Proof-First Strategy: Continuity Proof Milestones" in content
+    assert "Continuity Proof Blueprint" in content
+    assert "Strategic Moat Analysis" in content
+    assert "Future Competitor Readiness" in content
+
+    # Verify index registration
+    index_file = root_dir / "Main Archive" / "INDEX.md"
+    index_content = index_file.read_text(encoding="utf-8")
+    assert "../docs/SAGE-CONTINUITY-PROOF-STRATEGY.md" in index_content
     assert "[State: VALIDATED]" in index_content
