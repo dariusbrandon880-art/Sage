@@ -142,3 +142,31 @@ def test_future_capability_readiness_assessment():
     index_content = index_file.read_text(encoding="utf-8")
     assert "../docs/SAGE-FUTURE-CAPABILITY-READINESS-HISTORICAL-CONTINUITY-ASSESSMENT.md" in index_content
     assert "[State: VALIDATED]" in index_content
+
+
+def test_validation_evidence_readiness_assessment():
+    """Verify that the SAGE Validation Evidence Readiness Assessment exists, has required sections, and is registered in Main Archive/INDEX.md as VALIDATED."""
+    root_dir = Path(__file__).parent.parent.parent
+    readiness_doc = root_dir / "docs" / "SAGE-VALIDATION-EVIDENCE-READINESS-ASSESSMENT.md"
+
+    assert readiness_doc.exists(), "The Validation Evidence Readiness Assessment must exist under docs/"
+    content = readiness_doc.read_text(encoding="utf-8")
+
+    # Verify ID and Status
+    assert "SAGE-EVIDENCE-READINESS-2026-07-30" in content
+    assert "Validated Technical Record" in content
+
+    # Verify key sections
+    assert "Current Evidence Maturity Assessment" in content or "Evidence Maturity Assessment" in content
+    assert "Validation Framework Strengths" in content
+    assert "Evidence Lifecycle & Quality Dimensions" in content or "Evidence Lifecycle Alignment" in content or "Evidence Lifecycle" in content
+    assert "Missing Evidence Requirements" in content
+    assert "Remaining Risks" in content
+    assert "Recommended Validation Priorities" in content
+    assert "Next Recommended Governance Action" in content
+
+    # Verify index registration
+    index_file = root_dir / "Main Archive" / "INDEX.md"
+    index_content = index_file.read_text(encoding="utf-8")
+    assert "../docs/SAGE-VALIDATION-EVIDENCE-READINESS-ASSESSMENT.md" in index_content
+    assert "[State: VALIDATED]" in index_content
