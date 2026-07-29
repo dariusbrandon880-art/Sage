@@ -137,6 +137,27 @@ def test_future_capability_readiness_assessment():
     # Verify Risks & Attention
     assert "Risks Requiring Governance Attention" in content
 
+    # Verify Part II — First Controlled SDR Experiment Pre-Execution Review sections and content
+    assert "Part II — First Controlled SDR Experiment Pre-Execution Review" in content
+    assert "SAGE-FIRST-SDR-PRE-EXEC-REVIEW-2026-07-30" in content
+    assert "Section 1 — Governance Chain Completeness" in content
+    assert "Section 2 — Experiment Artifact Readiness" in content
+    assert "Section 3 — Boundary Verification" in content
+    assert "Section 4 — Evidence Collection Readiness" in content
+    assert "Section 5 — Human Authorization Requirements" in content
+    assert "Section 6 — First Experiment Success Definition" in content
+    assert "Section 7 — Final Readiness Decision" in content
+
+    # Verify exact pre-execution review constraints
+    assert "Governance Chain Completeness" in content
+    assert "Experiment Artifact Readiness" in content
+    assert "Boundary Verification" in content
+    assert "Evidence Collection Readiness" in content
+    assert "Human Authorization Requirements" in content
+    assert "First Experiment Success Definition" in content
+    assert "Final Readiness Decision" in content
+    assert "READY FOR HUMAN AUTHORIZATION" in content
+
     # Verify index registration
     index_file = root_dir / "Main Archive" / "INDEX.md"
     index_content = index_file.read_text(encoding="utf-8")
