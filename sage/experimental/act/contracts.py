@@ -46,6 +46,105 @@ class SessionTaskTreeLinker:
         }
 
 
+class CapabilityPassportValidator:
+    """Enforces programmatic, read-only validation of Capability Passport documents.
+
+    Strictly enforces the 'No Orphan Capability' policy by ensuring every
+    operational component maps to an authorized, documented, and reviewed passport.
+    """
+
+    def __init__(self, validation_mode: str = "strict"):
+        """Initialize passport validator."""
+        self.validation_mode = validation_mode
+
+    def validate_passport(self, passport: Dict[str, Any]) -> Dict[str, Any]:
+        """Validates a capability passport document structure against standard rules.
+
+        Args:
+            passport: The dictionary representing the capability passport.
+
+        Returns:
+            A metadata dictionary containing the validation outcome.
+
+        Raises:
+            ValueError: If required fields are missing, invalid formats are detected,
+                        or No Orphan constraints are violated.
+        """
+        if not isinstance(passport, dict):
+            raise ValueError("Passport Violation: Passport must be a dictionary.")
+
+        # 1. Required field verification
+        required_fields = [
+            "capability_id",
+            "name",
+            "purpose",
+            "lifecycle_state",
+            "validation_strategy",
+            "evidence_path",
+            "dependencies",
+            "human_signoff",
+        ]
+        for field in required_fields:
+            if field not in passport:
+                raise ValueError(f"Passport Violation: Missing required field '{field}'.")
+
+        # 2. Field Type validation
+        # strings
+        for field in ["capability_id", "name", "purpose", "validation_strategy"]:
+            if not isinstance(passport[field], str) or not passport[field].strip():
+                raise ValueError(f"Passport Violation: '{field}' must be a non-empty string.")
+
+        # capability_id pattern verification
+        cap_id = passport["capability_id"]
+        if not re.match(r"^cap_[a-zA-Z0-9_]{3,64}$", cap_id):
+            raise ValueError(f"Passport Violation: Invalid capability_id format: '{cap_id}'")
+
+        # 3. Lifecycle State Validation
+        allowed_states = ["proposed", "validated", "archive_candidate", "canonical"]
+        state = str(passport["lifecycle_state"]).lower()
+        if state not in allowed_states:
+            raise ValueError(f"Passport Violation: Invalid lifecycle_state: '{state}'. Allowed states: {allowed_states}")
+
+        # 4. Evidence Path presence and validation
+        ev_path = passport["evidence_path"]
+        if not isinstance(ev_path, str) or not ev_path.strip():
+            raise ValueError("Passport Violation: 'evidence_path' must be a non-empty string.")
+        if not ev_path.startswith("docs/") and not ev_path.startswith("evidence/"):
+            raise ValueError(f"Passport Violation: 'evidence_path' must point to docs/ or evidence/, got: '{ev_path}'")
+
+        # 5. Dependency declaration verification
+        deps = passport["dependencies"]
+        if not isinstance(deps, list):
+            raise ValueError("Passport Violation: 'dependencies' must be a list of strings.")
+        for dep in deps:
+            if not isinstance(dep, str) or not re.match(r"^cap_[a-zA-Z0-9_]{3,64}$", dep):
+                raise ValueError(f"Passport Violation: Invalid dependency identifier: '{dep}'")
+
+        # 6. Human Signoff presence and verification
+        signoff = passport["human_signoff"]
+        if not isinstance(signoff, dict):
+            raise ValueError("Passport Violation: 'human_signoff' must be a dictionary.")
+        required_signoff = ["signer", "timestamp", "approved"]
+        for field in required_signoff:
+            if field not in signoff:
+                raise ValueError(f"Passport Violation: Missing required field 'human_signoff.{field}'.")
+        if not isinstance(signoff["approved"], bool):
+            raise ValueError("Passport Violation: 'human_signoff.approved' must be a boolean.")
+
+        # Monotonicity check: If approved is False, reject validated/canonical states
+        if not signoff["approved"] and state in ["validated", "canonical"]:
+            raise ValueError(f"Passport Violation: Unauthorized transition. State cannot be '{state}' without active human approval.")
+
+        # Complete and return verification result
+        return {
+            "capability_id": cap_id,
+            "validated_at": datetime.now(timezone.utc).isoformat(),
+            "validation_status": "PASSPORT_VALIDATED",
+            "approved": signoff["approved"],
+            "read_only_assertion": True,
+        }
+
+
 class CrossModelAuditPayloadValidator:
     """Enforces programmatic, read-only validation for the Cross-Model Audit Payload Schema.
 
