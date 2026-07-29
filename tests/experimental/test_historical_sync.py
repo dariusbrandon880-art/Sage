@@ -225,3 +225,31 @@ def test_sdr_agent_coordination_alignment_review():
     index_content = index_file.read_text(encoding="utf-8")
     assert "../docs/SAGE-SDR-AGENT-COORDINATION-ALIGNMENT-REVIEW.md" in index_content
     assert "[State: PROPOSED]" in index_content
+
+
+def test_agent_coordination_protocol_specification():
+    """Verify that the SAGE Agent Coordination Protocol Specification exists, has required sections, and is registered in Main Archive/INDEX.md as PROPOSED."""
+    root_dir = Path(__file__).parent.parent.parent
+    proto_doc = root_dir / "docs" / "SAGE-AGENT-COORDINATION-PROTOCOL-SPECIFICATION.md"
+
+    assert proto_doc.exists(), "The SAGE Agent Coordination Protocol Specification must exist under docs/"
+    content = proto_doc.read_text(encoding="utf-8")
+
+    # Verify ID and Status
+    assert "SAGE-COORDINATION-PROTOCOL-2026-07-30" in content
+    assert "PROPOSED" in content
+
+    # Verify key sections
+    assert "Section 1 — Coordination Protocol Purpose" in content
+    assert "Section 2 — Agent Communication Envelope" in content
+    assert "Section 3 — Agent Workflow Sequence" in content
+    assert "Section 4 — Cross-Agent Handoff Rules" in content
+    assert "Section 5 — Evidence and Accountability Model" in content
+    assert "Section 6 — Coordination Failure Recovery" in content
+    assert "Section 7 — Future Expansion Boundaries" in content
+
+    # Verify index registration
+    index_file = root_dir / "Main Archive" / "INDEX.md"
+    index_content = index_file.read_text(encoding="utf-8")
+    assert "../docs/SAGE-AGENT-COORDINATION-PROTOCOL-SPECIFICATION.md" in index_content
+    assert "[State: PROPOSED]" in index_content
