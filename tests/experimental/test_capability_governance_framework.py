@@ -165,18 +165,49 @@ def test_governance_dependency_map_exists_and_conforms():
     assert "future synchronization rules" in content_lower
 
 
+def test_master_synchronization_checkpoint_report_exists_and_conforms():
+    """Verify that the SAGE-MASTER-SYNCHRONIZATION-CHECKPOINT-REPORT.md document exists and contains required sections."""
+    root_dir = Path(__file__).parent.parent.parent
+    report_doc = root_dir / "docs" / "SAGE-MASTER-SYNCHRONIZATION-CHECKPOINT-REPORT.md"
+
+    assert report_doc.exists(), "The SAGE Master Synchronization Checkpoint Report document must exist under docs/"
+    content = report_doc.read_text(encoding="utf-8")
+    content_lower = content.lower()
+
+    # Verify ID and Status
+    assert "SAGE-MASTER-SYNC-2026-07-29" in content
+    assert "PROPOSED — Strategic Review Phase" in content
+
+    # Verify Sections
+    assert "Section 1 — Current SAGE System State" in content
+    assert "Section 2 — Three-Lane Reconciliation Summary" in content
+    assert "Section 3 — Multi-Dimensional Maturity Assessment" in content
+    assert "Section 4 — Active Workstream Inventory" in content
+    assert "Section 5 — Remaining Research Gaps" in content
+    assert "Section 6 — Recommended Next Engineering Sequence" in content
+    assert "Section 7 — Frozen Items (No Action Authorized)" in content
+    assert "Section 8 — Conclusion & Master Alignment Recommendation" in content
+
+    # Verify key terminology
+    assert "three-lane reconciliation" in content_lower
+    assert "multi-dimensional maturity" in content_lower
+    assert "recommended next engineering sequence" in content_lower
+    assert "sage-sdr" in content_lower or "safe dry-run" in content_lower
+
+
 def test_documents_are_indexed_correctly():
-    """Verify that Governance Framework, Roadmap Review, and Dependency Map are registered in Main Archive/INDEX.md as PROPOSED."""
+    """Verify that all four required governance documents are registered in Main Archive/INDEX.md as PROPOSED."""
     root_dir = Path(__file__).parent.parent.parent
     index_file = root_dir / "Main Archive" / "INDEX.md"
 
     assert index_file.exists(), "Index file must exist in Main Archive/"
     content = index_file.read_text(encoding="utf-8")
 
-    # Assert correct link format and state for all three
+    # Assert correct link format and state for all four
     assert "../docs/SAGE-CAPABILITY-EVOLUTION-GOVERNANCE-FRAMEWORK.md" in content
     assert "../docs/SAGE-ROADMAP-CONTINUITY-REVIEW-REPORT.md" in content
     assert "../docs/SAGE-GOVERNANCE-DEPENDENCY-MAP.md" in content
+    assert "../docs/SAGE-MASTER-SYNCHRONIZATION-CHECKPOINT-REPORT.md" in content
     assert "[State: PROPOSED]" in content
 
 
