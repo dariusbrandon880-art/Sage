@@ -283,3 +283,32 @@ def test_agent_sdr_simulation_design():
     index_content = index_file.read_text(encoding="utf-8")
     assert "../docs/SAGE-AGENT-SDR-SIMULATION-DESIGN.md" in index_content
     assert "[State: PROPOSED]" in index_content
+
+
+def test_agent_sdr_simulation_readiness_assessment():
+    """Verify that the SAGE Agent SDR Simulation Readiness Assessment exists, has required sections, and is registered in Main Archive/INDEX.md as PROPOSED."""
+    root_dir = Path(__file__).parent.parent.parent
+    assessment_doc = root_dir / "docs" / "SAGE-AGENT-SDR-SIMULATION-READINESS-ASSESSMENT.md"
+
+    assert assessment_doc.exists(), "The SAGE Agent SDR Simulation Readiness Assessment must exist under docs/"
+    content = assessment_doc.read_text(encoding="utf-8")
+
+    # Verify ID and Status
+    assert "SAGE-SDR-SIMULATION-READINESS-ASSESSMENT-2026-07-30" in content
+    assert "PROPOSED" in content
+
+    # Verify key sections
+    assert "Current readiness status" in content or "Current Readiness Status" in content
+    assert "Simulation completeness" in content or "Simulation Completeness" in content or "Simulation Completeness & Strengths" in content
+    assert "Governance alignment" in content or "Governance Alignment" in content
+    assert "Agent accountability readiness" in content or "Agent Accountability Readiness" in content
+    assert "Simulation risks" in content or "Simulation Risks" in content or "Simulation Risks & Remaining Gaps" in content
+    assert "Required validation gates" in content or "Required Validation Gates" in content
+    assert "Future experiment prerequisites" in content or "Future Experiment Prerequisites" in content
+    assert "Recommended next coordination step" in content or "Recommended Next Coordination Step" in content
+
+    # Verify index registration
+    index_file = root_dir / "Main Archive" / "INDEX.md"
+    index_content = index_file.read_text(encoding="utf-8")
+    assert "../docs/SAGE-AGENT-SDR-SIMULATION-READINESS-ASSESSMENT.md" in index_content
+    assert "[State: PROPOSED]" in index_content
