@@ -56,6 +56,7 @@ Each indexed artifact is assigned a lifecycle state under the **Index Layer v0.1
 
 ## 5. Engineering Reports and Activations
 - [SAGE Knowledge Synchronization Report](../docs/SAGE-KNOWLEDGE-SYNCHRONIZATION-REPORT.md) `[State: VALIDATED]` - Document mapping repository-wide alignment, corrected reference lineages, and synchronized classifications.
+- [SAGE Post-Merge Blueprint Continuity Synchronization Report](../docs/SAGE-POST-MERGE-BLUEPRINT-SYNCHRONIZATION-REPORT.md) `[State: VALIDATED]` - Review of post-merge blueprint continuity, current Master Archive state, capability tree alignments, remaining gaps, and next research priority.
 - [SAGE Final Operational Completion Report](research/archive/SAGE_FINAL_ACTIVATION_REPORT.md) `[State: CANONICAL]` - Formal activation and engineering report for SAGE Runtime v1 Phase 3.
 - [SAGE Final Live Activation Checklist](../docs/master/FINAL_LIVE_ACTIVATION_CHECKLIST.md) `[State: CANONICAL]` - Definitive step-by-step operational setup instructions to bridge the permission boundary for hosting, APIs, webhooks, and integrations.
 - [SAGE Render Deployment Handoff Spec](../docs/master/RENDER_DEPLOYMENT_HANDOFF.md) `[State: CANONICAL]` - Comprehensive Render deployment settings, repository reference, required env variables, and health checks.
