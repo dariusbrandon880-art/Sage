@@ -163,7 +163,43 @@ def test_knowledge_graph_report_conformance():
     assert "Recommended Documentation Standards" in content
 
     # Verify index registration
-    index_file = root_dir / "Main Archive" / "INDEX.md"
+    index_file = root_dir = Path(__file__).parent.parent.parent / "Main Archive" / "INDEX.md"
     index_content = index_file.read_text(encoding="utf-8")
     assert "../docs/SAGE-KNOWLEDGE-GRAPH-AND-TRACEABILITY-ARCHITECTURE.md" in index_content
     assert "[State: VALIDATED]" in index_content
+
+
+def test_health_and_navigation_standards():
+    """Verify that Documentation Health Audit, Master Navigation Standard, and Context Restoration Protocol files exist, conform to schemas, and are indexed."""
+    root_dir = Path(__file__).parent.parent.parent
+
+    # 1. Health Audit Report
+    health_file = root_dir / "docs" / "SAGE-DOCUMENTATION-HEALTH-AUDIT-REPORT.md"
+    assert health_file.exists()
+    health_content = health_file.read_text(encoding="utf-8")
+    assert "SAGE-DOC-AUDIT-2026-07-29" in health_content
+    assert "Documentation Maturity Assessment" in health_content
+    assert "The Core 6 Navigation Questions Mapping" in health_content
+
+    # 2. Navigation Standard
+    nav_file = root_dir / "docs" / "SAGE-MASTER-ARCHIVE-NAVIGATION-STANDARD.md"
+    assert nav_file.exists()
+    nav_content = nav_file.read_text(encoding="utf-8")
+    assert "SAGE-NAV-STANDARD-2026-07-29" in nav_content
+    assert "Canonical Entry Points" in nav_content
+    assert "Structured Lookup Protocols" in nav_content
+
+    # 3. Restoration Protocol
+    restore_file = root_dir / "docs" / "SAGE-CONTEXT-RESTORATION-PROTOCOL.md"
+    assert restore_file.exists()
+    restore_content = restore_file.read_text(encoding="utf-8")
+    assert "SAGE-RESTORE-PROTOCOL-2026-07-29" in restore_content
+    assert "Session Context Restoration Flow" in restore_content
+    assert "Prohibited Assumptions" in restore_content
+
+    # Index registration checks
+    index_file = root_dir / "Main Archive" / "INDEX.md"
+    index_content = index_file.read_text(encoding="utf-8")
+    assert "../docs/SAGE-DOCUMENTATION-HEALTH-AUDIT-REPORT.md" in index_content
+    assert "../docs/SAGE-MASTER-ARCHIVE-NAVIGATION-STANDARD.md" in index_content
+    assert "../docs/SAGE-CONTEXT-RESTORATION-PROTOCOL.md" in index_content
