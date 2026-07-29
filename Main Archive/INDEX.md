@@ -34,6 +34,7 @@ Each indexed artifact is assigned a lifecycle state under the **Index Layer v0.1
 - [SAGE Render Validation Environment Plan](../docs/SAGE-RENDER-VALIDATION-ENVIRONMENT-PLAN.md) `[State: PROPOSED]` - Specification defining SAGE's external validation strategies, boundaries, and experiment designs on Render.
 - [SAGE Render Validation Observation Framework](../docs/SAGE-RENDER-VALIDATION-OBSERVATION-FRAMEWORK.md) `[State: PROPOSED]` - Framework defining how cloud-hosted observations are recorded, analyzed, and converted into research evidence.
 - [SAGE First Render Validation Observation Protocol](../docs/SAGE-FIRST-RENDER-VALIDATION-OBSERVATION-PROTOCOL.md) `[State: PROPOSED]` - Operational protocol defining SAGE's first controlled cloud-hosted observation experiment and success criteria.
+- [SAGE Parallel Validation Strategy Framework](../docs/SAGE-PARALLEL-VALIDATION-STRATEGY-FRAMEWORK.md) `[State: PROPOSED]` - Strategy model defining how external cloud environments are used as controlled validation instruments for SAGE research.
 - [SME Spec](research/strategic/SME.md) `[State: CANONICAL]` - Subject Matter Expert Layer.
 - [SRL Spec](research/strategic/SRL.md) `[State: CANONICAL]` - Self-Referential Learning / Semantic Representation Layer.
 - [SKAL Spec](research/strategic/SKAL.md) `[State: CANONICAL]` - Semantic Knowledge Association Layer.
