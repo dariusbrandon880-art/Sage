@@ -331,3 +331,29 @@ def test_render_experiment_conformance():
     index_content = index_file.read_text(encoding="utf-8")
     assert "../docs/SAGE-RENDER-CONTINUITY-EXPERIMENT-DESIGN.md" in index_content
     assert "[State: PROPOSED]" in index_content
+
+
+def test_render_specification_conformance():
+    """Verify SAGE Render Continuity Experiment Specification exists, has correct sections, and is registered in INDEX.md."""
+    root_dir = Path(__file__).parent.parent.parent
+    spec_file = root_dir / "docs" / "SAGE-RENDER-CONTINUITY-EXPERIMENT-SPECIFICATION.md"
+
+    assert spec_file.exists(), "Experiment Specification Report must exist under docs/"
+    content = spec_file.read_text(encoding="utf-8")
+
+    # Assert critical sections
+    assert "SAGE Render Continuity Experiment Execution Specification Report" in content
+    assert "SAGE-RENDER-SPEC-2026-07-29" in content
+    assert "Experiment Objective & Boundaries" in content
+    assert "Synthetic Workflow Definition" in content
+    assert "State Capture Specification" in content
+    assert "Controlled Interruption Procedure" in content
+    assert "Validation Comparison Model" in content
+    assert "Evidence Package Format" in content
+    assert "Advancement and Falsification Framework" in content
+
+    # Verify index registration
+    index_file = root_dir / "Main Archive" / "INDEX.md"
+    index_content = index_file.read_text(encoding="utf-8")
+    assert "../docs/SAGE-RENDER-CONTINUITY-EXPERIMENT-SPECIFICATION.md" in index_content
+    assert "[State: PROPOSED]" in index_content
