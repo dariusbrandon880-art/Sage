@@ -357,3 +357,28 @@ def test_render_specification_conformance():
     index_content = index_file.read_text(encoding="utf-8")
     assert "../docs/SAGE-RENDER-CONTINUITY-EXPERIMENT-SPECIFICATION.md" in index_content
     assert "[State: PROPOSED]" in index_content
+
+
+def test_render_readiness_conformance():
+    """Verify SAGE Render Continuity Execution Readiness Review exists, has correct sections, and is registered in INDEX.md."""
+    root_dir = Path(__file__).parent.parent.parent
+    readiness_file = root_dir / "docs" / "SAGE-RENDER-CONTINUITY-EXECUTION-READINESS-REVIEW.md"
+
+    assert readiness_file.exists(), "Readiness Review Report must exist under docs/"
+    content = readiness_file.read_text(encoding="utf-8")
+
+    # Assert critical sections
+    assert "SAGE Render Continuity Execution Readiness Review Report" in content
+    assert "SAGE-RENDER-READINESS-2026-07-29" in content
+    assert "Execution Readiness Assessment" in content
+    assert "Experimental Environment Checklist" in content
+    assert "First Experiment Preconditions" in content
+    assert "Execution Risk Review" in content
+    assert "Execution Authorization Gate" in content
+    assert "Post-Experiment Review Model" in content
+
+    # Verify index registration
+    index_file = root_dir / "Main Archive" / "INDEX.md"
+    index_content = index_file.read_text(encoding="utf-8")
+    assert "../docs/SAGE-RENDER-CONTINUITY-EXECUTION-READINESS-REVIEW.md" in index_content
+    assert "[State: PROPOSED]" in index_content
