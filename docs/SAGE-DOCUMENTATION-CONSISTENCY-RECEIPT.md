@@ -1,7 +1,7 @@
 # SAGE Documentation Consistency Receipt
 
 **Document Identifier:** SAGE-ACT-CMAPS-DCR-1.0
-**Classification:** Experimental Validation Receipt
+**Classification:** Archived Consistency Record
 **Status:** PROPOSED
 **Author:** Jules (SAGE Engineering Node)
 **Date:** March 2026
