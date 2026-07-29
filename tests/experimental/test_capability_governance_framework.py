@@ -106,16 +106,47 @@ def test_governance_framework_document_exists_and_conforms():
     assert "false confidence" in content_lower
 
 
-def test_governance_framework_is_indexed_correctly():
-    """Verify that the Capability Evolution Governance Framework is registered in Main Archive/INDEX.md as PROPOSED."""
+def test_roadmap_continuity_review_report_exists_and_conforms():
+    """Verify that the SAGE-ROADMAP-CONTINUITY-REVIEW-REPORT.md document exists and has core required sections and terms."""
+    root_dir = Path(__file__).parent.parent.parent
+    review_doc = root_dir / "docs" / "SAGE-ROADMAP-CONTINUITY-REVIEW-REPORT.md"
+
+    assert review_doc.exists(), "The SAGE Roadmap Continuity Review report must exist under docs/"
+    content = review_doc.read_text(encoding="utf-8")
+    content_lower = content.lower()
+
+    # Verify ID and Status
+    assert "SAGE-ROADMAP-REVIEW-2026-07-29" in content
+    assert "PROPOSED — Strategic Review Phase" in content
+
+    # Verify Section headings
+    assert "Section 1 — Workstream Coordination Status Matrix" in content
+    assert "Section 2 — Completed Milestones" in content
+    assert "Section 3 — Active Research Tracks" in content
+    assert "Section 4 — Pending Validation Gates" in content
+    assert "Section 5 — Safe Next Engineering Directions" in content
+    assert "Section 6 — Items Requiring No Action Yet" in content
+    assert "Section 7 — Conclusion & Governance Recommendation" in content
+
+    # Verify presence of specific concepts
+    assert "acr v1.0.0" in content_lower
+    assert "sage-act milestones 1 through 4" in content_lower or "milestones 1 through 4" in content_lower
+    assert "cmaps v1.1" in content_lower
+    assert "validation gate checklist" in content_lower
+    assert "safe dry-run" in content_lower or "sage-sdr" in content_lower
+
+
+def test_documents_are_indexed_correctly():
+    """Verify that both the Governance Framework and Roadmap Review are registered in Main Archive/INDEX.md as PROPOSED."""
     root_dir = Path(__file__).parent.parent.parent
     index_file = root_dir / "Main Archive" / "INDEX.md"
 
     assert index_file.exists(), "Index file must exist in Main Archive/"
     content = index_file.read_text(encoding="utf-8")
 
-    # Assert correct link format and state
+    # Assert correct link format and state for both
     assert "../docs/SAGE-CAPABILITY-EVOLUTION-GOVERNANCE-FRAMEWORK.md" in content
+    assert "../docs/SAGE-ROADMAP-CONTINUITY-REVIEW-REPORT.md" in content
     assert "[State: PROPOSED]" in content
 
 
