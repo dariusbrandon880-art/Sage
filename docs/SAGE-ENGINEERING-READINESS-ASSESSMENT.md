@@ -1,6 +1,8 @@
-# SAGE Engineering Reality Assessment Report
+# SAGE Engineering Reality & SDR Controlled Experiment Readiness Assessment
 
-This report presents a thorough, evidence-based technical assessment of the SAGE Autonomous Continuity Runtime repository. It establishes an engineering baseline by analyzing current application entrypoints, deployment configurations, environmental assumptions, architecture-to-code alignment, and identified priorities/risks—without introducing code mutations to protected core runtime boundaries (`sage/runtime/`, `sage/core/`, `sage/acr/`).
+This report presents a thorough, evidence-based technical assessment of the SAGE Autonomous Continuity Runtime repository. It establishes an engineering baseline by analyzing current application entrypoints, deployment configurations, environmental assumptions, architecture-to-code alignment, and SAGE's readiness to support its first controlled **Safe Dry-Run (SDR) Experiment Lifecycle**.
+
+All assessments are conducted without introducing code mutations to protected core runtime boundaries (`sage/runtime/`, `sage/core/`, `sage/acr/`).
 
 ---
 
@@ -58,44 +60,48 @@ A systematic comparison was conducted between documented architectural claims (a
 | **SAGE-SDR Safe Dry Run Simulation** | `docs/SAGE-EXPERIMENTAL-BUILD-READINESS-PLAN.md` | Mentioned conceptually in the activation roadmap. | There is no operational build code or sandboxed sandbox runner implemented yet; exists strictly as a readiness spec. |
 | **SAGE-CCL Continuity Control Loop** | `docs/SAGE-ACT-MILESTONE-3-CONTINUITY-CONTROL-PROPOSAL.md` | The runtime includes a robust ingestion loop `ingest_session_payload` in `sage/runtime/engine.py` representing session states, decisions, and memories. | The real-time automated daemon to implicitly capture workflow events is absent; instead, state capture is triggered via direct REST ingestion payloads. |
 
-### 2.2 Missing Validation & Technical Gaps
-1. **Experimental Inactivity:** While files under `sage/experimental/act/` are 100% syntactically correct and fully tested under `tests/experimental/`, they function as passive validation gates. They are isolated from the operational FastAPI routes `/validate` and `/promote`.
-2. **Mock AI Integrations:** The AI Client wrappers (`ChatGPTClient` and `GeminiJulesClient` in `sage/integration.py`) are largely pass-through interfaces or depend heavily on mock structures. Live calls on Render will fail without validated API keys.
-3. **No Database Persistence in Free Tier:** Under default settings on Render, any container restart completely flushes the in-memory memory objects, decisions, and archive entries.
-
 ---
 
-## 3. Engineering Priority Map
+## 3. Controlled SDR Experiment Readiness Assessment
 
-To translate governance and research documents into an evolutionary code roadmap safely, the following priorities and implementation steps are recommended.
+SAGE's existing governance machinery is **fully sufficient** to support and govern one complete, controlled SDR experiment lifecycle. The sequential, non-bypassable alignment pipeline is fully defined conceptually and programmatically validated under experimental boundaries:
 
-### 3.1 Recommended First Implementation Sequence
-```
-Phase 1: Environment & Secrets Stabilization
-  ├── Configure default, secure, fallback API keys for SAGE_API_KEYS to prevent startup failures.
-  └── Establish mock-resilient fallback paths for Google Workspace Sync if credentials are not found.
+$$\text{Research} \rightarrow \text{Validation} \rightarrow \text{Evidence} \rightarrow \text{Human Review} \rightarrow \text{Master Archive}$$
 
-Phase 2: Integrate CMAPS and SAGE-ACT into core API Validation Routes
-  ├── Map /tools/skal/intake payload directly to CMAPS validation using CrossModelAuditPayloadValidator.
-  └── Promote SAGE-ACT contracts from experimental scaffolding to core validation middleware in validation.py.
+### 3.1 Sufficiency of the Governance Chain
+1. **Research Proposal Stage:** Governed by `SAGE-SDR-EXPERIMENT-REGISTRY-CONTROL-FRAMEWORK.md`.
+2. **Experiment Registry Stage:** Validated against the twelve required experiment schema fields.
+3. **Boundary Verification Stage:** Confirms write permissions exclude protected core directories (`sage/runtime/`, `sage/core/`, `sage/acr/`).
+4. **Human Authorization Gate:** Governed by `HumanReviewGate` class, requiring signed supervisor approval.
+5. **Controlled SDR Execution:** Runs within isolated simulation directory boundaries (`sage/experimental/sdr/`).
+6. **Evidence Package Generation:** Programmatically compiled using `CapabilityEvidenceReceiptGenerator` with unique secure hashes.
+7. **Independent Review Gate:** Programmatically audited by Claude and verified against validation criteria.
+8. **Archive Decision Gate:** Promotes the registry entry and its receipts to their designate archive destinations upon final human supervisor signoff.
 
-Phase 3: Formalize SAGE-SDR (Simulation Engine)
-  ├── Build the simulation execution engine inside a new sage/sdr/ runtime sub-module.
-  └── Establish a sandboxed execution context to run mock dry-runs of multi-agent events.
-```
+### 3.2 Remaining Missing Infrastructure
+1. **Automated Registry File Database:** A file-based database (e.g., `sdr_registry.json` inside `.sage/`) to store active experiment schemas.
+2. **SDR Sandbox Orchestrator Loop:** A lightweight execution loop class (e.g., `SDRSandboxRunner` inside `sage/experimental/sdr/`) to trigger mock agent interactions and compile evidence.
+3. **Command Center Ingestion Endpoints:** REST routes inside `sage/api.py` to ingest and query active SDR experiment states.
 
-### 3.2 Key Risks & Mitigations
-- **Risk 1: State Loss (Stateless Ephemeral Stores).**
-  *Mitigation:* Enable optional filesystem backups to `.sage/` directory which are automatically serialized during `/checkpoint` and `/handoff` operations, ensuring easier session recovery on subsequent launches.
-- **Risk 2: Protected Boundary Mutation.**
-  *Mitigation:* Keep all experimental features strictly within `sage/experimental/` and use a defined interface pattern (such as `contracts.py`) to connect them safely to core API endpoints, maintaining 100% coverage on import-boundary checks.
-- **Risk 3: API Authentication Gaps.**
-  *Mitigation:* Ensure any dynamic API keys generated on Render are automatically logged to a secure telemetry endpoint or registered within SAGE’s internal audit ledger.
+### 3.3 Required Evidence Artifacts
+SDR experiments must compile a complete evidence package containing exactly ten required artifacts:
+- `experiment_description` (`str`)
+- `inputs` (`dict`)
+- `outputs` (`dict`)
+- `agent_participation_record` (`list[dict]`)
+- `timestamps` (`dict`)
+- `logs` (`list[str]`)
+- `validation_results` (`dict`)
+- `failure_records` (`list[dict]`)
+- `review_conclusion` (`dict`)
+- `archive_reference` (`str`)
 
----
+### 3.4 Required Human Checkpoints & Authorization Gates
+1. **Checkpoint 1: Pre-Execution Authorization (Boundary Signoff):** Supervisor manually inspects the registry entry, verifies exclusions, and signs off.
+2. **Checkpoint 2: Mid-Simulation Interceptor (Failure Signoff):** Simulation immediately halts on SPEK violation, requiring manual review of failure records before re-run.
+3. **Checkpoint 3: Post-Execution Promotion (Archive Signoff):** Supervisor manually reviews the complete evidence package, submits notes, and signs off promotion.
 
-## 4. Conclusion & Next Steps
-
-This reality assessment establishes that **SAGE has a highly advanced documentation-to-code design**, with a 100% green testing baseline (196/196 platform tests passing cleanly).
-
-While the governance framework, schema validations, and structural boundaries are fully verified programmatically, the next major evolutionary phase requires **bridging these experimental validation frameworks (SAGE-ACT & CMAPS) directly into the live, operational API routes** as structured, mandatory middleware validation guards.
+### 3.5 Frozen Boundaries (No Action Permitted)
+- **Core Runtime Loops (`sage/runtime/engine.py`):** Completely sealed from non-deterministic execution modifications.
+- **SPEK Kernel Compliance Logic (`sage/core/spek.py`):** Purely deterministic and frozen.
+- **Advanced Cognitive Architecture Research Track (`docs/SAGE-ADVANCED-COGNITIVE-ARCHITECTURE-RESEARCH-TRACK.md`):** Remains strictly theoretical (Stage 1 research-only). None of the advanced concepts (quantum-inspired context models, context entropy metrics, or topological analyzers) may be implemented.
