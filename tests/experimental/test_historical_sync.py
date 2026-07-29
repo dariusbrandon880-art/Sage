@@ -368,3 +368,32 @@ def test_agent_capability_passport_integration_review():
     index_content = index_file.read_text(encoding="utf-8")
     assert "../docs/SAGE-AGENT-CAPABILITY-PASSPORT-INTEGRATION-REVIEW.md" in index_content
     assert "[State: VALIDATED]" in index_content
+
+
+def test_agent_ecosystem_full_activation_blueprint():
+    """Verify that the SAGE Agent Ecosystem Full Activation Blueprint exists, has required sections, and is registered in Main Archive/INDEX.md as PROPOSED."""
+    root_dir = Path(__file__).parent.parent.parent
+    blueprint_doc = root_dir / "docs" / "SAGE-AGENT-ECOSYSTEM-FULL-ACTIVATION-BLUEPRINT.md"
+
+    assert blueprint_doc.exists(), "The SAGE Agent Ecosystem Full Activation Blueprint must exist under docs/"
+    content = blueprint_doc.read_text(encoding="utf-8")
+
+    # Verify ID and Status
+    assert "SAGE-ECOSYSTEM-ACTIVATION-BLUEPRINT-2026-07-30" in content
+    assert "PROPOSED" in content
+
+    # Verify key sections
+    assert "Section 1 — Executive Summary" in content
+    assert "Section 2 — Completed Foundations" in content
+    assert "Section 3 — Activation Readiness Matrix" in content
+    assert "Section 4 — Operational Architecture" in content
+    assert "Section 5 — Remaining Engineering Prerequisites" in content
+    assert "Section 6 — Activation Boundaries" in content
+    assert "Section 7 — Success Criteria" in content
+    assert "Section 8 — Transition Recommendation" in content
+
+    # Verify index registration
+    index_file = root_dir / "Main Archive" / "INDEX.md"
+    index_content = index_file.read_text(encoding="utf-8")
+    assert "../docs/SAGE-AGENT-ECOSYSTEM-FULL-ACTIVATION-BLUEPRINT.md" in index_content
+    assert "[State: PROPOSED]" in index_content
