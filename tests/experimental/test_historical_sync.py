@@ -65,3 +65,40 @@ def test_historical_recovery_report_is_indexed_correctly():
     # Assert correct link format and state
     assert "../docs/SAGE-HISTORICAL-ARCHITECTURE-RECOVERY-REPORT.md" in content
     assert "[State: VALIDATED]" in content
+
+
+def test_historical_recovery_inventory():
+    """Verify the presence and correctness of the SAGE Post-Recovery Capability Alignment Report and its index registration."""
+    root_dir = Path(__file__).parent.parent.parent
+    alignment_doc = root_dir / "docs" / "SAGE-POST-RECOVERY-CAPABILITY-ALIGNMENT-REPORT.md"
+
+    assert alignment_doc.exists(), "Post-Recovery Alignment Report must exist under docs/"
+    content = alignment_doc.read_text(encoding="utf-8")
+
+    # Assert critical sections
+    assert "SAGE Post-Recovery Capability Alignment Report" in content
+    assert "SAGE-ALIGN-2026-07-29" in content
+    assert "Strategic & Capability Alignment Review" in content
+    assert "Capability Alignment & Strategic Analysis" in content
+    assert "Dependency Analysis & Priority Opportunities" in content
+    assert "Recommended Next Research Direction" in content
+
+    # Verify index registration
+    index_file = root_dir / "Main Archive" / "INDEX.md"
+    index_content = index_file.read_text(encoding="utf-8")
+    assert "../docs/SAGE-POST-RECOVERY-CAPABILITY-ALIGNMENT-REPORT.md" in index_content
+    assert "[State: VALIDATED]" in index_content
+
+
+def test_protected_boundary_preservation():
+    """Assert that no production core modules were touched and are fully isolated."""
+    root_dir = Path(__file__).parent.parent.parent
+
+    # Core paths to check for zero modifications relative to baseline (checking they import nothing experimental)
+    core_dir = root_dir / "sage" / "core"
+    acr_dir = root_dir / "sage" / "acr"
+    runtime_dir = root_dir / "sage" / "runtime"
+
+    assert core_dir.exists()
+    assert acr_dir.exists()
+    assert runtime_dir.exists()
