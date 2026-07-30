@@ -707,6 +707,46 @@ def test_controlled_activation_sequence_execution():
     assert result["review_status"]["review_decision"] == "APPROVED"
 
 
+def test_controlled_sdr_experiment_script_execution():
+    """Verify that scripts/run_controlled_sdr_experiment.py executes end-to-end and outputs JSON."""
+    import os
+    import json
+    root_dir = Path(__file__).parent.parent.parent
+    script_path = root_dir / "scripts" / "run_controlled_sdr_experiment.py"
+    output_path = root_dir / "evidence_capture" / "sdr_exp_001_evidence_package.json"
+
+    assert script_path.exists(), "run_controlled_sdr_experiment.py script must exist"
+
+    # Delete existing file to prove script recreates it
+    if output_path.exists():
+        output_path.unlink()
+
+    import subprocess
+    import sys
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(root_dir)
+
+    result = subprocess.run(
+        [sys.executable, str(script_path)],
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, f"Script failed with: {result.stderr}"
+    assert output_path.exists(), "Script must generate the evidence package JSON"
+
+    # Read and assert fields inside output JSON
+    content = json.loads(output_path.read_text(encoding="utf-8"))
+    assert "task_definition" in content
+    assert "identity_record" in content
+    assert "execution_record" in content
+    assert "output_artifact" in content
+    assert "validation_result" in content
+    assert "human_review_record" in content
+    assert "archive_reference_placeholder" in content
+
+
 def test_governance_framework_protected_boundary_isolation():
     """Assert that zero changes have been made to protected production and configuration namespaces.
 

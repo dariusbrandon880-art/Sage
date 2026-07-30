@@ -1,0 +1,51 @@
+{
+  "task_definition": {
+    "task_name": "SAGE Controlled CMAPS Payload Validation Task",
+    "task_objective": "Validate a mock CMAPS payload schema consistency to verify the governance loop.",
+    "expected_output": "SCHEMA_VALIDATED state indicating the payload meets CMAPS v1.0 specifications.",
+    "acceptance_criteria": "The payload must pass the CrossModelAuditPayloadValidator checks, produce a signed evidence receipt, and receive manual human review approval."
+  },
+  "identity_record": {
+    "identity_id": "sim-agent-01",
+    "assigned_role": "sim-coordinator",
+    "allowed_capability": "cap_cmaps_validation",
+    "restricted_actions": [
+      "No direct filesystem write-access outside of sage/experimental/act/ and evidence_capture/",
+      "No network connections or external API calls",
+      "No modification of sage/runtime/, sage/core/, or sage/acr/",
+      "No automated promotion or self-elevation of capability states"
+    ],
+    "expiration_boundary": "2026-08-01T00:00:00Z"
+  },
+  "execution_record": {
+    "experiment_id": "sdr-exp-001",
+    "timestamp": "2026-07-30T03:32:49.245745+00:00",
+    "input_artifact_digest": "sha256_1234567890abcdef",
+    "execution_action": "Invoke run_controlled_activation_sequence validation flow",
+    "validation_result": "SCHEMA_VALIDATED",
+    "failure_record": null
+  },
+  "output_artifact": "CapabilityEvidenceReceipt (receipt_a1f005de9dc14bbf8d00b4bac1828ef7)",
+  "validation_result": {
+    "receipt_id": "receipt_a1f005de9dc14bbf8d00b4bac1828ef7",
+    "capability_id": "cap_cmaps_validation",
+    "validator_id": "sim-agent-01",
+    "validation_result": "PASSED",
+    "evidence_reference": "artifacts/evidence_cap_cmaps_validation.json",
+    "timestamp": "2026-07-30T03:32:49.245717+00:00",
+    "review_status": "PENDING",
+    "archive_destination": "Main Archive/"
+  },
+  "human_review_record": {
+    "review_id": "rev_bb5bc3223fcd41e6b6d6f6a4dcca6e0a",
+    "receipt_id": "receipt_a1f005de9dc14bbf8d00b4bac1828ef7",
+    "capability_id": "cap_cmaps_validation",
+    "reviewer_identity": "human_supervisor_01",
+    "review_decision": "APPROVED",
+    "review_notes": "Non-autonomous sandbox execution trace matches expected SCHEMA_VALIDATED output. Approved.",
+    "timestamp": "2026-07-30T03:32:49.245737+00:00",
+    "validation_status": "VALIDATED_EXPERIMENTAL",
+    "archive_destination": "Main Archive/"
+  },
+  "archive_reference_placeholder": "Main Archive/SAGE-CONTROLLED-EXPERIMENTAL-VALIDATION-LOOP-ALIGNMENT-REVIEW.md"
+}
