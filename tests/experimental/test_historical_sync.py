@@ -220,6 +220,33 @@ def test_future_capability_readiness_assessment():
     assert "Success is" in content
     assert "Standard AI workflow" in content
 
+    # Verify Part VI — SAGE Reality Benchmark Preparation sections and content
+    assert "Part VI — SAGE Reality Benchmark Preparation" in content
+    assert "SAGE-BENCHMARK-PREPARATION-2026-07-30" in content
+    assert "Section 1 — TRACK 1: Benchmark Task Selection" in content
+    assert "Section 2 — TRACK 2: Minimum Flight Recorder Schema" in content
+    assert "Section 3 — TRACK 3: Evidence Package Requirements" in content
+    assert "Section 4 — TRACK 4: Human Review Procedure" in content
+    assert "Section 5 — TRACK 5: Reality Check" in content
+    assert "Section 6 — Non-Negotiable Boundaries" in content
+    assert "Section 7 — Conclusion" in content
+
+    # Verify key benchmark preparation concepts
+    assert "Standard AI workflow" in content
+    assert "SAGE-governed workflow" in content
+    assert "visual verification" in content.lower()
+    assert "measurable completion time" in content.lower()
+    assert "output quality comparison" in content.lower()
+    assert "task must allow failure" in content.lower()
+    assert "Experiment ID" in content
+    assert "Participant Identity" in content
+    assert "Reviewer Role" in content
+    assert "Acceptance Threshold" in content
+    assert "Failure Conditions" in content
+    assert "Proposed benchmark task" in content.lower() or "Proposed Benchmark Task" in content
+    assert "Why It Is Measurable" in content or "why it is measurable" in content.lower()
+    assert "No automated approval authority exists" in content or "no automated approval authority exists" in content.lower()
+
     # Verify index registration
     index_file = root_dir / "Main Archive" / "INDEX.md"
     index_content = index_file.read_text(encoding="utf-8")
