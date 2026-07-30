@@ -1,6 +1,7 @@
 """SAGE Multi-Agent Handoff and Communication Bridge Tests."""
 
 import pytest
+import time
 from datetime import datetime
 from sage.experimental.agents.models import (
     AgentIdentity,
@@ -240,3 +241,103 @@ def test_handoff_human_approval_authority():
         envelope, {}, human_approved=True
     )
     assert evidence_approved.review_status == "approved"
+
+
+def test_sequential_multi_agent_handoff_chain():
+    """Verify a complete sequential handoff chain with monotonically increasing timestamps."""
+    registry = AgentIdentityRegistry(seed_defaults=True)
+    validator = AgentHandoffValidator(registry)
+
+    mission_id = "mission_sdr_002_test"
+    constraints = ["no-code-mutation"]
+
+    # 1. ChatGPT -> Jules
+    env_1 = AgentCommunicationEnvelope(
+        mission_id=mission_id,
+        sender_identity="ChatGPT",
+        receiver_identity="Jules",
+        task_objective="Sandbox run.",
+        authorized_capability="cap_sdr_sim_engine",
+        constraints=constraints,
+        expected_artifact="evidence_capture/sdr_exp_002_jules_output.json",
+        evidence_reference="docs/SAGE-FIRST-CONTROLLED-SDR-EXPERIMENT-SPECIFICATION.md",
+        review_status="pending",
+    )
+    time.sleep(0.01)
+    record_1 = validator.validate_and_execute_handoff(env_1, {}, human_approved=True)
+
+    # 2. Jules -> Claude
+    env_2 = AgentCommunicationEnvelope(
+        mission_id=mission_id,
+        sender_identity="Jules",
+        receiver_identity="Claude",
+        task_objective="Audit run.",
+        authorized_capability="cap_adversarial_audit",
+        constraints=constraints,
+        expected_artifact="evidence_capture/sdr_exp_002_claude_audit.json",
+        evidence_reference="docs/SAGE-FIRST-CONTROLLED-SDR-EXPERIMENT-SPECIFICATION.md",
+        review_status="pending",
+    )
+    time.sleep(0.01)
+    record_2 = validator.validate_and_execute_handoff(env_2, {}, human_approved=True)
+
+    # 3. Claude -> Gemini
+    env_3 = AgentCommunicationEnvelope(
+        mission_id=mission_id,
+        sender_identity="Claude",
+        receiver_identity="Gemini",
+        task_objective="Metrics compilation.",
+        authorized_capability="cap_metrics_compilation",
+        constraints=constraints,
+        expected_artifact="evidence_capture/sdr_exp_002_gemini_metrics.json",
+        evidence_reference="docs/SAGE-FIRST-CONTROLLED-SDR-EXPERIMENT-SPECIFICATION.md",
+        review_status="pending",
+    )
+    time.sleep(0.01)
+    record_3 = validator.validate_and_execute_handoff(env_3, {}, human_approved=True)
+
+    # Check timestamps are monotonically increasing
+    t1 = datetime.fromisoformat(record_1.timestamp)
+    t2 = datetime.fromisoformat(record_2.timestamp)
+    t3 = datetime.fromisoformat(record_3.timestamp)
+
+    assert t1 < t2 < t3
+    assert record_1.envelope["constraints"] == ["no-code-mutation"]
+    assert record_2.envelope["constraints"] == ["no-code-mutation"]
+    assert record_3.envelope["constraints"] == ["no-code-mutation"]
+
+
+def test_agent_permission_boundaries():
+    """Verify distinct permission boundaries are strictly enforced across models."""
+    registry = AgentIdentityRegistry(seed_defaults=True)
+    validator = AgentHandoffValidator(registry)
+
+    # Jules can execute sandbox
+    env_jules = AgentCommunicationEnvelope(
+        mission_id="mission_test",
+        sender_identity="ChatGPT",
+        receiver_identity="Jules",
+        task_objective="Sandbox run.",
+        authorized_capability="cap_sdr_sim_engine",
+        constraints=[],
+        expected_artifact="evidence_capture/sdr_exp_001.json",
+        evidence_reference="docs/SAGE-FIRST-CONTROLLED-SDR-EXPERIMENT-SPECIFICATION.md",
+        review_status="pending",
+    )
+    record_jules = validator.validate_and_execute_handoff(env_jules, {}, human_approved=True)
+    assert record_jules.review_status == "approved"
+
+    # Claude cannot execute sandbox
+    env_claude = AgentCommunicationEnvelope(
+        mission_id="mission_test",
+        sender_identity="ChatGPT",
+        receiver_identity="Claude",
+        task_objective="Sandbox run.",
+        authorized_capability="cap_sdr_sim_engine",
+        constraints=[],
+        expected_artifact="evidence_capture/sdr_exp_001.json",
+        evidence_reference="docs/SAGE-FIRST-CONTROLLED-SDR-EXPERIMENT-SPECIFICATION.md",
+        review_status="pending",
+    )
+    with pytest.raises(ValueError, match="lacks required permission 'execute_sandbox'"):
+        validator.validate_and_execute_handoff(env_claude, {}, human_approved=True)

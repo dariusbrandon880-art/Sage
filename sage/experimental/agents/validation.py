@@ -75,7 +75,6 @@ class AgentHandoffValidator:
 
         # 3. Capability Authorization Check
         # Verify that the receiver possesses the appropriate permissions to handle the authorized capability
-        # e.g., 'cap_sdr_sim_engine' requires 'execute_sandbox' or 'coordinate_missions' or 'adversarial_audit'
         needed_permission = None
         if envelope.authorized_capability == "cap_sdr_sim_engine":
             needed_permission = "execute_sandbox"
@@ -83,6 +82,8 @@ class AgentHandoffValidator:
             needed_permission = "coordinate_missions"
         elif envelope.authorized_capability == "cap_adversarial_audit":
             needed_permission = "adversarial_audit"
+        elif envelope.authorized_capability == "cap_metrics_compilation":
+            needed_permission = "analyze_metrics"
 
         if needed_permission and needed_permission not in receiver.permissions:
             raise ValueError(
