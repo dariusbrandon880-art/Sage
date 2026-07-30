@@ -747,6 +747,83 @@ def test_controlled_sdr_experiment_script_execution():
     assert "archive_reference_placeholder" in content
 
 
+def test_multi_agent_envelope_validation_and_script():
+    """Verify that AgentCommunicationEnvelopeValidator and multi-agent experiment script execute correctly."""
+    import os
+    import json
+    import subprocess
+    import sys
+    from sage.experimental.act import AgentCommunicationEnvelopeValidator, run_multi_agent_handoff_validation
+
+    validator = AgentCommunicationEnvelopeValidator()
+    valid_envelope = {
+        "mission_id": "mission_12345",
+        "sender_identity": "chatgpt_coordinator",
+        "receiver_identity": "jules_executor",
+        "task_objective": "Validate drafted code",
+        "authorized_capability": "cap_cmaps_validation",
+        "constraints": ["Run strictly within sandbox"],
+        "expected_artifact": "artifacts/handoff_test.json",
+        "evidence_reference": "evidence_capture/handoff_test.json",
+        "review_status": "HUMAN_APPROVAL_REQUIRED",
+    }
+    result = validator.validate_envelope(valid_envelope)
+    assert result["envelope_status"] == "VALIDATED"
+
+    # Test failure mode
+    import pytest
+    invalid_envelope = dict(valid_envelope)
+    invalid_envelope["sender_identity"] = "unknown_agent"
+    with pytest.raises(ValueError, match="Unknown sender identity"):
+        validator.validate_envelope(invalid_envelope)
+
+    # Test runner execution
+    run_status = run_multi_agent_handoff_validation(
+        sender="chatgpt_coordinator",
+        receiver="claude_reviewer",
+        objective="Verify test coverage",
+        capability="cap_cmaps_validation",
+        constraints=["non-disruptive"]
+    )
+    assert run_status["execution_status"] == "SUCCESSFUL_VALIDATION"
+
+    # Execute scripts/run_multi_agent_envelope_experiment.py
+    root_dir = Path(__file__).parent.parent.parent
+    script_path = root_dir / "scripts" / "run_multi_agent_envelope_experiment.py"
+    output_path = root_dir / "evidence_capture" / "multi_agent_handoff_envelope.json"
+
+    assert script_path.exists(), "run_multi_agent_envelope_experiment.py must exist"
+
+    if output_path.exists():
+        output_path.unlink()
+
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(root_dir)
+
+    proc_result = subprocess.run(
+        [sys.executable, str(script_path)],
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+
+    assert proc_result.returncode == 0, f"Script failed with: {proc_result.stderr}"
+    assert output_path.exists(), "Script must generate the handoff envelope JSON"
+
+    # Read and assert fields inside output JSON
+    content = json.loads(output_path.read_text(encoding="utf-8"))
+    assert "mission_id" in content
+    assert "sender_identity" in content
+    assert "receiver_identity" in content
+    assert "task_objective" in content
+    assert "authorized_capability" in content
+    assert "constraints" in content
+    assert "expected_artifact" in content
+    assert "evidence_reference" in content
+    assert "review_status" in content
+    assert "validation_metadata" in content
+
+
 def test_governance_framework_protected_boundary_isolation():
     """Assert that zero changes have been made to protected production and configuration namespaces.
 

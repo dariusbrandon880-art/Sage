@@ -588,3 +588,73 @@ def run_controlled_activation_sequence(
         "evidence_captured": receipt,
         "review_status": review_record,
     }
+
+
+class AgentCommunicationEnvelopeValidator:
+    """Enforces schema checking and boundary verification for Agent Communication Envelopes."""
+
+    def __init__(self, validation_mode: str = "strict"):
+        """Initialize the validator."""
+        self.validation_mode = validation_mode
+
+    def validate_envelope(self, envelope: Dict[str, Any]) -> Dict[str, Any]:
+        """Validates that the envelope contains all 9 required fields and satisfies boundaries."""
+        required_fields = [
+            "mission_id",
+            "sender_identity",
+            "receiver_identity",
+            "task_objective",
+            "authorized_capability",
+            "constraints",
+            "expected_artifact",
+            "evidence_reference",
+            "review_status",
+        ]
+        for field in required_fields:
+            if field not in envelope:
+                raise ValueError(f"Envelope Violation: Missing required field '{field}'.")
+
+        # Identity Checks
+        valid_participants = ["human_supervisor", "chatgpt_coordinator", "jules_executor", "gemini_analyst", "claude_reviewer"]
+        sender = envelope["sender_identity"]
+        receiver = envelope["receiver_identity"]
+
+        if sender not in valid_participants:
+            raise ValueError(f"Envelope Violation: Unknown sender identity '{sender}'")
+        if receiver not in valid_participants:
+            raise ValueError(f"Envelope Violation: Unknown receiver identity '{receiver}'")
+
+        if sender == receiver:
+            raise ValueError("Envelope Violation: Handoff loops to the same identity are forbidden.")
+
+        return {
+            "envelope_status": "VALIDATED",
+            "validated_at": datetime.now(timezone.utc).isoformat(),
+            "read_only_assertion": True,
+        }
+
+
+def run_multi_agent_handoff_validation(
+    sender: str, receiver: str, objective: str, capability: str, constraints: List[str]
+) -> Dict[str, Any]:
+    """Simulates a secure multi-agent handoff event by validating the exchange envelope."""
+    envelope = {
+        "mission_id": f"mission_{uuid.uuid4().hex[:16]}",
+        "sender_identity": sender,
+        "receiver_identity": receiver,
+        "task_objective": objective,
+        "authorized_capability": capability,
+        "constraints": constraints,
+        "expected_artifact": f"artifacts/handoff_{uuid.uuid4().hex[:8]}.json",
+        "evidence_reference": f"evidence_capture/handoff_envelope_{uuid.uuid4().hex[:8]}.json",
+        "review_status": "HUMAN_APPROVAL_REQUIRED",
+    }
+
+    validator = AgentCommunicationEnvelopeValidator()
+    validation_status = validator.validate_envelope(envelope)
+
+    return {
+        "handoff_envelope": envelope,
+        "validation_result": validation_status,
+        "execution_status": "SUCCESSFUL_VALIDATION",
+    }

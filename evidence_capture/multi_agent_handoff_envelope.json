@@ -1,0 +1,26 @@
+{
+  "mission_id": "mission_57b6fc60b5244bd8",
+  "sender_identity": "chatgpt_coordinator",
+  "receiver_identity": "jules_executor",
+  "task_objective": "Validate a newly drafted SAGE security configuration",
+  "authorized_capability": "cap_cmaps_validation",
+  "constraints": [
+    "No direct core codebase modifications",
+    "Absolute preservation of protected namespaces (sage/runtime/, sage/core/, sage/acr/)",
+    "Strict non-autonomous dry-run execution only"
+  ],
+  "expected_artifact": "artifacts/handoff_65a08e7b.json",
+  "evidence_reference": "evidence_capture/handoff_envelope_c0354d1e.json",
+  "review_status": "HUMAN_APPROVAL_REQUIRED",
+  "validation_metadata": {
+    "status": "VALIDATED",
+    "validated_at": "2026-07-30T09:49:58.297830+00:00",
+    "verification_checks": {
+      "identity_recorded": true,
+      "capability_boundaries_enforced": true,
+      "task_handoff_traceable": true,
+      "evidence_output_generated": true,
+      "human_approval_required": true
+    }
+  }
+}

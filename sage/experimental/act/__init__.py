@@ -9,6 +9,8 @@ from sage.experimental.act.contracts import (
     CapabilityEvidenceReceiptGenerator,
     HumanReviewGate,
     run_controlled_activation_sequence,
+    AgentCommunicationEnvelopeValidator,
+    run_multi_agent_handoff_validation,
 )
 
 __all__ = [
@@ -20,4 +22,6 @@ __all__ = [
     "CapabilityEvidenceReceiptGenerator",
     "HumanReviewGate",
     "run_controlled_activation_sequence",
+    "AgentCommunicationEnvelopeValidator",
+    "run_multi_agent_handoff_validation",
 ]
