@@ -558,6 +558,155 @@ def test_documents_are_indexed_correctly():
     assert "[State: PROPOSED]" in content
 
 
+def test_capability_passport_validator():
+    """Verify that CapabilityPassportValidator validates passport structures correctly."""
+    from sage.experimental.act import CapabilityPassportValidator
+
+    validator = CapabilityPassportValidator()
+    valid_passport = {
+        "capability_id": "cap_test_capability",
+        "name": "CMAPS Payload Validation Schema",
+        "purpose": "Validate CMAPS payload schema consistency",
+        "lifecycle_state": "PROPOSED",
+        "validation_strategy": "Static schema checking",
+        "evidence_path": "docs/evidence/",
+        "dependencies": [],
+        "human_signoff": "human_supervisor_01",
+    }
+    result = validator.validate_passport(valid_passport)
+    assert result["capability_id"] == "cap_test_capability"
+    assert result["status"] == "PASSPORT_VALIDATED"
+
+    # Test failure modes
+    import pytest
+    invalid_passport = dict(valid_passport)
+    del invalid_passport["capability_id"]
+    with pytest.raises(ValueError, match="Missing required field 'capability_id'"):
+        validator.validate_passport(invalid_passport)
+
+
+def test_capability_evidence_receipt_generator():
+    """Verify that CapabilityEvidenceReceiptGenerator outputs properly structured Receipts."""
+    from sage.experimental.act import CapabilityEvidenceReceiptGenerator
+
+    generator = CapabilityEvidenceReceiptGenerator()
+    receipt = generator.generate_receipt(
+        capability_id="cap_test_capability",
+        validator_id="sim-agent-01",
+        validation_result="PASSED",
+        evidence_reference="artifacts/evidence_receipt.json",
+    )
+    assert receipt["receipt_id"].startswith("receipt_")
+    assert receipt["capability_id"] == "cap_test_capability"
+    assert receipt["validator_id"] == "sim-agent-01"
+    assert receipt["validation_result"] == "PASSED"
+    assert receipt["review_status"] == "PENDING"
+
+
+def test_human_review_gate_prototype():
+    """Verify that HumanReviewGate prototype parses and records manual signoffs."""
+    from sage.experimental.act import HumanReviewGate
+
+    gate = HumanReviewGate()
+    mock_receipt = {
+        "receipt_id": "receipt_12345",
+        "capability_id": "cap_test_capability",
+        "validator_id": "sim-agent-01",
+        "validation_result": "PASSED",
+        "evidence_reference": "artifacts/evidence_receipt.json",
+    }
+    review = gate.process_review(
+        receipt=mock_receipt,
+        reviewer="human_supervisor_01",
+        decision="APPROVED",
+        notes="Non-autonomous run complete.",
+    )
+    assert review["review_id"].startswith("rev_")
+    assert review["receipt_id"] == "receipt_12345"
+    assert review["reviewer_identity"] == "human_supervisor_01"
+    assert review["review_decision"] == "APPROVED"
+    assert review["validation_status"] == "VALIDATED_EXPERIMENTAL"
+
+
+def test_controlled_activation_sequence_execution():
+    """Verify that the end-to-end controlled activation sequence executes successfully."""
+    from sage.experimental.act import run_controlled_activation_sequence
+
+    passport = {
+        "capability_id": "cap_cmaps_validation",
+        "name": "CMAPS Schema validation",
+        "purpose": "Validate CMAPS payload schema consistency",
+        "lifecycle_state": "PROPOSED",
+        "validation_strategy": "Static schema validation",
+        "evidence_path": "docs/evidence/",
+        "dependencies": [],
+        "human_signoff": "human_supervisor_01",
+    }
+
+    input_payload = {
+        "audit_id": "audit_0123456789abcdef0123456789abcdef",
+        "timestamp": "2026-07-29T12:00:00Z",
+        "agent_identity": {
+            "agent_id": "agent_test_runner",
+            "name": "Validation Test Runner",
+            "role": "sim-coordinator",
+            "governance_tier": "TIER_3",
+        },
+        "model_provider": {
+            "provider": "anthropic",
+            "model_name": "claude-3-5-sonnet",
+            "temperature": 0.0,
+        },
+        "execution_state": {
+            "run_id": "run_0123456789abcdef0123",
+            "status": "active",
+            "step_counter": 1,
+            "started_at": "2026-07-29T12:00:00Z",
+            "updated_at": "2026-07-29T12:00:05Z",
+        },
+        "task_lineage": {
+            "session_id": "session_01234567",
+            "current_task_id": "task_validation_run",
+            "subtask_ids": [],
+        },
+        "decision_events": [
+            {
+                "decision_id": "decision_001",
+                "timestamp": "2026-07-29T12:00:01Z",
+                "summary": "Sandbox initialization complete.",
+                "reasoning": "Preconditions matched.",
+                "confidence": 1.0,
+            }
+        ],
+        "failure_events": [],
+        "recovery_checkpoints": [],
+        "evidence_relationships": [
+            {
+                "artifact_path": "docs/evidence/receipt.json",
+                "git_commit": "abcdef0123456789abcdef0123456789abcdef01",
+                "sha256_checksum": "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
+            }
+        ],
+        "attestation": {
+            "nonce": 42,
+            "signature": "mock_signature",
+            "signer_identity": "human_supervisor_01",
+        },
+    }
+
+    result = run_controlled_activation_sequence(
+        agent_id="sim-agent-01",
+        passport_data=passport,
+        input_payload=input_payload,
+    )
+
+    assert result["sandbox_task_selected"] == "Validate CMAPS Schema for cap_cmaps_validation"
+    assert result["execution_status"] == "COMPLETED"
+    assert result["artifact_produced"].startswith("CapabilityEvidenceReceipt (")
+    assert result["evidence_captured"]["validation_result"] == "PASSED"
+    assert result["review_status"]["review_decision"] == "APPROVED"
+
+
 def test_governance_framework_protected_boundary_isolation():
     """Assert that zero changes have been made to protected production and configuration namespaces.
 
