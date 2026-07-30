@@ -46,6 +46,130 @@ class SessionTaskTreeLinker:
         }
 
 
+class CapabilityPassportValidator:
+    """Validates the structure of a SAGE Capability Passport under the Research/Experimental Layer."""
+
+    def __init__(self, validation_mode: str = "strict"):
+        self.validation_mode = validation_mode
+
+    def validate_passport(self, passport: Dict[str, Any]) -> Dict[str, Any]:
+        """Validates that a Capability Passport contains all required attributes.
+
+        Required fields: capability_id, name, purpose, lifecycle_state, validation_strategy, evidence_path, dependencies, human_signoff
+        """
+        if not isinstance(passport, dict):
+            raise ValueError("Passport Violation: Passport must be a dictionary.")
+
+        required_fields = [
+            "capability_id",
+            "name",
+            "purpose",
+            "lifecycle_state",
+            "validation_strategy",
+            "evidence_path",
+            "dependencies",
+            "human_signoff",
+        ]
+        for field in required_fields:
+            if field not in passport:
+                raise ValueError(f"Passport Violation: Missing required field '{field}'.")
+
+        if not passport["capability_id"].startswith("CAP-"):
+            raise ValueError(f"Passport Violation: Invalid capability_id prefix: '{passport['capability_id']}'.")
+
+        return {
+            "capability_id": passport["capability_id"],
+            "validated_at": datetime.now(timezone.utc).isoformat(),
+            "validation_status": "PASSPORT_VALIDATED",
+            "read_only_assertion": True,
+        }
+
+
+class CapabilityEvidenceReceiptGenerator:
+    """Generates secure validation receipts for captured telemetry under the Research/Experimental Layer."""
+
+    def __init__(self, validator_id: str = "VAL-SDR-001"):
+        self.validator_id = validator_id
+
+    def generate_receipt(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """Generates a structured, signed validation receipt from the validation result payload.
+
+        Required input fields: receipt_id, capability_id, validation_result, evidence_reference, timestamp, review_status, archive_destination
+        """
+        required_fields = [
+            "receipt_id",
+            "capability_id",
+            "validation_result",
+            "evidence_reference",
+            "timestamp",
+            "review_status",
+            "archive_destination",
+        ]
+        for field in required_fields:
+            if field not in payload:
+                raise ValueError(f"Evidence Receipt Violation: Missing required field '{field}'.")
+
+        return {
+            "receipt_id": payload["receipt_id"],
+            "capability_id": payload["capability_id"],
+            "validator_id": self.validator_id,
+            "validation_result": payload["validation_result"],
+            "evidence_reference": payload["evidence_reference"],
+            "timestamp": payload["timestamp"],
+            "review_status": payload["review_status"],
+            "archive_destination": payload["archive_destination"],
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "read_only_assertion": True,
+        }
+
+
+class HumanReviewGate:
+    """Simulates the supervisor review gate evaluating validation results and signing transition records."""
+
+    def __init__(self, reviewer_identity: str = "SUPERVISOR-SAGE-001"):
+        self.reviewer_identity = reviewer_identity
+
+    def process_review(self, receipt: Dict[str, Any], decision_notes: str) -> Dict[str, Any]:
+        """Processes the human supervisor review gate, enforcing PASS/FAIL criteria.
+
+        Required input fields for receipt: receipt_id, capability_id, validation_result, evidence_reference, timestamp, review_status, archive_destination
+        """
+        required_fields = [
+            "receipt_id",
+            "capability_id",
+            "validation_result",
+            "evidence_reference",
+            "timestamp",
+            "review_status",
+            "archive_destination",
+        ]
+        for field in required_fields:
+            if field not in receipt:
+                raise ValueError(f"Review Gate Violation: Missing required field '{field}' in evidence receipt.")
+
+        # PASS/FAIL Criteria Evaluation
+        val_result = str(receipt["validation_result"]).upper()
+        if val_result == "PASSED" and "FAIL" not in decision_notes:
+            review_decision = "APPROVED_BY_GOVERNANCE"
+            validation_status = "VALIDATED"
+        else:
+            review_decision = "REJECTED_BY_GOVERNANCE"
+            validation_status = "PROPOSED"
+
+        return {
+            "review_id": f"REV-{receipt['receipt_id'][-3:]}",
+            "receipt_id": receipt["receipt_id"],
+            "capability_id": receipt["capability_id"],
+            "reviewer_identity": self.reviewer_identity,
+            "review_decision": review_decision,
+            "review_notes": decision_notes,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "validation_status": validation_status,
+            "archive_destination": receipt["archive_destination"],
+            "read_only_assertion": True,
+        }
+
+
 class CrossModelAuditPayloadValidator:
     """Enforces programmatic, read-only validation for the Cross-Model Audit Payload Schema.
 

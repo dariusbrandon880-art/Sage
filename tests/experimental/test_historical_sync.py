@@ -247,6 +247,31 @@ def test_future_capability_readiness_assessment():
     assert "Why It Is Measurable" in content or "why it is measurable" in content.lower()
     assert "No automated approval authority exists" in content or "no automated approval authority exists" in content.lower()
 
+    # Verify Part VII — SAGE SDR Simulation Reality Validation Gate sections and content
+    assert "Part VII — SAGE SDR Simulation Reality Validation Gate" in content
+    assert "SAGE-SDR-REALITY-VALIDATION-GATE-2026-07-30" in content
+    assert "Section 1 — The Smallest Possible Sandbox Validation Event" in content
+    assert "Section 2 — The Produced Evidence Package" in content
+    assert "Section 3 — The Human Review Checkpoint" in content
+    assert "Section 4 — Active Execution Blockers" in content
+    assert "Section 5 — Validation Standard Alignment" in content
+
+    # Verify key reality validation gate concepts
+    assert "smallest possible sandbox validation event" in content.lower()
+    assert "one agent identity" in content.lower()
+    assert "one restricted capability" in content.lower()
+    assert "one controlled input" in content.lower()
+    assert "one expected output" in content.lower()
+    assert "EXP-SDR-REALITY-001" in content
+    assert "identity record" in content.lower() or "Identity Record" in content
+    assert "input record" in content.lower() or "Input Record" in content
+    assert "output artifact" in content.lower() or "Output Artifact" in content
+    assert "validation result" in content.lower() or "Validation Result" in content
+    assert "reviewer decision" in content.lower() or "Reviewer Decision" in content
+    assert "PASS Criteria" in content or "pass criteria" in content.lower()
+    assert "FAIL Criteria" in content or "fail criteria" in content.lower()
+    assert "active execution blockers" in content.lower() or "execution blockers" in content.lower()
+
     # Verify index registration
     index_file = root_dir / "Main Archive" / "INDEX.md"
     index_content = index_file.read_text(encoding="utf-8")

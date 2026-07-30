@@ -115,3 +115,60 @@ def test_one_way_import_isolation_enforcement():
                             f"One-Way Import Law Violation inside production: '{file_path}' "
                             f"attempts to import from module '{node.module}'"
                         )
+
+
+def test_smallest_sandbox_validation_event():
+    """Verify the smallest possible sandbox validation event and governance lifecycle."""
+    from sage.experimental.act import (
+        CapabilityPassportValidator,
+        CapabilityEvidenceReceiptGenerator,
+        HumanReviewGate,
+    )
+
+    # 1. Define one agent identity, one restricted capability, controlled input, expected output
+    passport = {
+        "capability_id": "CAP-SCR-003",
+        "name": "Stateless Context Rehydration",
+        "purpose": "Verify chronological execution sequences from client-held checkpoints.",
+        "lifecycle_state": "PROPOSED",
+        "validation_strategy": "Linter Invariant Checking",
+        "evidence_path": "docs/SAGE-ACT-MILESTONE-3-EVIDENCE.md",
+        "dependencies": [],
+        "human_signoff": "SUPERVISOR-SAGE-001",
+    }
+
+    # Validate Passport
+    passport_validator = CapabilityPassportValidator()
+    passport_result = passport_validator.validate_passport(passport)
+    assert passport_result["capability_id"] == "CAP-SCR-003"
+    assert passport_result["validation_status"] == "PASSPORT_VALIDATED"
+
+    # 2. Simulate validation result input and generate secure evidence receipt
+    receipt_input = {
+        "receipt_id": "REC-SDR-ERR-001",
+        "capability_id": "CAP-SCR-003",
+        "validation_result": "PASSED",  # Or FAILED depending on check
+        "evidence_reference": "sha256(Inputs) = a89f3c7e",
+        "timestamp": "2026-07-30T12:00:00Z",
+        "review_status": "PENDING_MANUAL_AUDIT",
+        "archive_destination": "Main Archive/INDEX.md",
+    }
+    receipt_generator = CapabilityEvidenceReceiptGenerator()
+    receipt = receipt_generator.generate_receipt(receipt_input)
+
+    assert receipt["receipt_id"] == "REC-SDR-ERR-001"
+    assert receipt["validator_id"] == "VAL-SDR-001"
+    assert receipt["validation_result"] == "PASSED"
+
+    # 3. human review gate PASS criteria
+    review_gate = HumanReviewGate()
+    review_result_pass = review_gate.process_review(receipt, "Complete, non-repudiable logs verified. Conformant to CMAPS.")
+
+    assert review_result_pass["review_id"] == "REV-001"
+    assert review_result_pass["review_decision"] == "APPROVED_BY_GOVERNANCE"
+    assert review_result_pass["validation_status"] == "VALIDATED"
+
+    # 4. human review gate FAIL criteria
+    review_result_fail = review_gate.process_review(receipt, "FAIL: chronological trace mismatch detected in trace.")
+    assert review_result_fail["review_decision"] == "REJECTED_BY_GOVERNANCE"
+    assert review_result_fail["validation_status"] == "PROPOSED"
