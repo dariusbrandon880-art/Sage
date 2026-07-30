@@ -172,3 +172,178 @@ def test_smallest_sandbox_validation_event():
     review_result_fail = review_gate.process_review(receipt, "FAIL: chronological trace mismatch detected in trace.")
     assert review_result_fail["review_decision"] == "REJECTED_BY_GOVERNANCE"
     assert review_result_fail["validation_status"] == "PROPOSED"
+
+
+def test_agent_envelope_validation_success():
+    """Verify that a valid experimental agent handoff envelope passes validation successfully."""
+    from sage.experimental.agents import (
+        AgentCommunicationEnvelope,
+        ExperimentalAgentRegistry,
+        EnvelopeValidator,
+    )
+
+    registry = ExperimentalAgentRegistry()
+    validator = EnvelopeValidator(registry)
+
+    # Valid handoff between chatgpt-coordinator and jules-engineer
+    envelope = AgentCommunicationEnvelope(
+        mission_id="MSN-2026-001",
+        sender_identity="chatgpt-coordinator",
+        receiver_identity="jules-engineer",
+        task_objective="Draft session receipt spec inside sandbox",
+        authorized_capability="CAP-ACT-001",
+        constraints=["Sandbox directories only", "No production imports"],
+        expected_artifact="docs/sandbox/SAGE-CRC-SPEC.md",
+        evidence_reference="sha256(Inputs) = a89f3c7e",
+        review_status="PENDING_MANUAL_AUDIT",
+    )
+
+    result = validator.validate_envelope(envelope)
+    assert result["mission_id"] == "MSN-2026-001"
+    assert result["validation_status"] == "ENVELOPE_VALIDATED"
+    assert result["read_only_assertion"] is True
+    assert "validated_at" in result
+
+
+def test_agent_envelope_validation_invalid_identity():
+    """Verify that an invalid sender or receiver identity is rejected."""
+    from sage.experimental.agents import (
+        AgentCommunicationEnvelope,
+        ExperimentalAgentRegistry,
+        EnvelopeValidator,
+    )
+
+    registry = ExperimentalAgentRegistry()
+    validator = EnvelopeValidator(registry)
+
+    # Invalid sender (rogue-agent is not registered)
+    envelope_bad_sender = AgentCommunicationEnvelope(
+        mission_id="MSN-2026-001",
+        sender_identity="rogue-agent",
+        receiver_identity="jules-engineer",
+        task_objective="Draft spec",
+        authorized_capability="CAP-ACT-001",
+        constraints=[],
+        expected_artifact="docs/sandbox/spec.md",
+        evidence_reference="sha256(Inputs) = a89f3c7e",
+        review_status="PENDING_MANUAL_AUDIT",
+    )
+
+    with pytest.raises(ValueError, match="Sender identity 'rogue-agent' is not registered"):
+        validator.validate_envelope(envelope_bad_sender)
+
+    # Invalid receiver (rogue-receiver is not registered)
+    envelope_bad_receiver = AgentCommunicationEnvelope(
+        mission_id="MSN-2026-001",
+        sender_identity="chatgpt-coordinator",
+        receiver_identity="rogue-receiver",
+        task_objective="Draft spec",
+        authorized_capability="CAP-ACT-001",
+        constraints=[],
+        expected_artifact="docs/sandbox/spec.md",
+        evidence_reference="sha256(Inputs) = a89f3c7e",
+        review_status="PENDING_MANUAL_AUDIT",
+    )
+
+    with pytest.raises(ValueError, match="Receiver identity 'rogue-receiver' is not registered"):
+        validator.validate_envelope(envelope_bad_receiver)
+
+
+def test_agent_envelope_validation_invalid_capability():
+    """Verify that an unauthorized capability for the sender is rejected."""
+    from sage.experimental.agents import (
+        AgentCommunicationEnvelope,
+        ExperimentalAgentRegistry,
+        EnvelopeValidator,
+    )
+
+    registry = ExperimentalAgentRegistry()
+    validator = EnvelopeValidator(registry)
+
+    # chatgpt-coordinator is authorized only for CAP-ACT-001, attempting CAP-SCR-003
+    envelope_bad_cap = AgentCommunicationEnvelope(
+        mission_id="MSN-2026-001",
+        sender_identity="chatgpt-coordinator",
+        receiver_identity="jules-engineer",
+        task_objective="Draft spec",
+        authorized_capability="CAP-SCR-003",
+        constraints=[],
+        expected_artifact="docs/sandbox/spec.md",
+        evidence_reference="sha256(Inputs) = a89f3c7e",
+        review_status="PENDING_MANUAL_AUDIT",
+    )
+
+    with pytest.raises(ValueError, match="Capability 'CAP-SCR-003' is not authorized for sender 'chatgpt-coordinator'"):
+        validator.validate_envelope(envelope_bad_cap)
+
+
+def test_agent_envelope_validation_protected_path_rejection():
+    """Verify that a request accessing protected directories is rejected."""
+    from sage.experimental.agents import (
+        AgentCommunicationEnvelope,
+        ExperimentalAgentRegistry,
+        EnvelopeValidator,
+    )
+
+    registry = ExperimentalAgentRegistry()
+    validator = EnvelopeValidator(registry)
+
+    # Attempting to write output artifact directly into protected sage/runtime/
+    envelope_bad_path = AgentCommunicationEnvelope(
+        mission_id="MSN-2026-001",
+        sender_identity="chatgpt-coordinator",
+        receiver_identity="jules-engineer",
+        task_objective="Attempting injection",
+        authorized_capability="CAP-ACT-001",
+        constraints=[],
+        expected_artifact="sage/runtime/malicious.py",
+        evidence_reference="sha256(Inputs) = a89f3c7e",
+        review_status="PENDING_MANUAL_AUDIT",
+    )
+
+    with pytest.raises(ValueError, match="Protected path access attempt detected: 'sage/runtime/malicious.py'"):
+        validator.validate_envelope(envelope_bad_path)
+
+    # Attempting to place protected sage/core/ in constraints
+    envelope_bad_constraint = AgentCommunicationEnvelope(
+        mission_id="MSN-2026-001",
+        sender_identity="chatgpt-coordinator",
+        receiver_identity="jules-engineer",
+        task_objective="Attempting injection",
+        authorized_capability="CAP-ACT-001",
+        constraints=["Write to sage/core/engine.py allowed"],
+        expected_artifact="docs/sandbox/safe.md",
+        evidence_reference="sha256(Inputs) = a89f3c7e",
+        review_status="PENDING_MANUAL_AUDIT",
+    )
+
+    with pytest.raises(ValueError, match="Protected path access attempt detected: 'Write to sage/core/engine.py allowed'"):
+        validator.validate_envelope(envelope_bad_constraint)
+
+
+def test_agent_envelope_validation_missing_evidence():
+    """Verify that an envelope with a missing or empty evidence reference is rejected."""
+    from sage.experimental.agents import (
+        AgentCommunicationEnvelope,
+        ExperimentalAgentRegistry,
+        EnvelopeValidator,
+    )
+
+    registry = ExperimentalAgentRegistry()
+    validator = EnvelopeValidator(registry)
+
+    # Missing evidence reference (empty string)
+    envelope_no_evidence = AgentCommunicationEnvelope(
+        mission_id="MSN-2026-001",
+        sender_identity="chatgpt-coordinator",
+        receiver_identity="jules-engineer",
+        task_objective="Draft spec",
+        authorized_capability="CAP-ACT-001",
+        constraints=[],
+        expected_artifact="docs/sandbox/spec.md",
+        evidence_reference="  ",  # empty/whitespace
+        review_status="PENDING_MANUAL_AUDIT",
+    )
+
+    with pytest.raises(ValueError, match="Evidence reference is required and cannot be empty"):
+        validator.validate_envelope(envelope_no_evidence)
