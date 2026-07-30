@@ -500,6 +500,38 @@ def test_controlled_experimental_validation_loop_alignment_review_exists_and_con
     assert "frozen boundaries" in content_lower
 
 
+def test_controlled_agent_activation_sequence_exists_and_conforms():
+    """Verify that the SAGE-CONTROLLED-AGENT-ACTIVATION-SEQUENCE.md document exists and contains required sections."""
+    root_dir = Path(__file__).parent.parent.parent
+    seq_doc = root_dir / "docs" / "SAGE-CONTROLLED-AGENT-ACTIVATION-SEQUENCE.md"
+
+    assert seq_doc.exists(), "The SAGE Controlled Agent Activation Sequence Plan must exist under docs/"
+    content = seq_doc.read_text(encoding="utf-8")
+    content_lower = content.lower()
+
+    # Verify ID and Status
+    assert "SAGE-ACTIVATION-SEQ-2026-07-29" in content
+    assert "PROPOSED — Strategic Governance Design Phase" in content
+
+    # Verify Sections
+    assert "Section 1 — Phase 0 — Activation Preconditions" in content
+    assert "Section 2 — Phase 1 — Agent Registration" in content
+    assert "Section 3 — Phase 2 — Sandbox Activation" in content
+    assert "Section 4 — Phase 3 — Evidence Generation" in content
+    assert "Section 5 — Phase 4 — Human Review" in content
+    assert "Section 6 — Phase 5 — Expansion Criteria" in content
+    assert "Section 7 — Explicit Exclusions and Frozen Boundaries" in content
+
+    # Verify specific key constraints
+    assert "phase 0 — activation preconditions" in content_lower
+    assert "phase 1 — agent registration" in content_lower
+    assert "phase 2 — sandbox activation" in content_lower
+    assert "phase 3 — evidence generation" in content_lower
+    assert "phase 4 — human review" in content_lower
+    assert "phase 5 — expansion criteria" in content_lower
+    assert "explicit exclusions and frozen boundaries" in content_lower
+
+
 def test_documents_are_indexed_correctly():
     """Verify that all required governance documents are registered in Main Archive/INDEX.md as PROPOSED."""
     root_dir = Path(__file__).parent.parent.parent
@@ -508,7 +540,7 @@ def test_documents_are_indexed_correctly():
     assert index_file.exists(), "Index file must exist in Main Archive/"
     content = index_file.read_text(encoding="utf-8")
 
-    # Assert correct link format and state for all thirteen
+    # Assert correct link format and state for all fourteen
     assert "../docs/SAGE-CAPABILITY-EVOLUTION-GOVERNANCE-FRAMEWORK.md" in content
     assert "../docs/SAGE-ROADMAP-CONTINUITY-REVIEW-REPORT.md" in content
     assert "../docs/SAGE-GOVERNANCE-DEPENDENCY-MAP.md" in content
@@ -522,6 +554,7 @@ def test_documents_are_indexed_correctly():
     assert "../docs/SAGE-EXPERIMENTAL-ENGINEERING-READINESS-GATE.md" in content
     assert "../docs/SAGE-CONTROLLED-EXPERIMENTAL-VALIDATION-LOOP-SPECIFICATION.md" in content
     assert "../docs/SAGE-CONTROLLED-EXPERIMENTAL-VALIDATION-LOOP-ALIGNMENT-REVIEW.md" in content
+    assert "../docs/SAGE-CONTROLLED-AGENT-ACTIVATION-SEQUENCE.md" in content
     assert "[State: PROPOSED]" in content
 
 
