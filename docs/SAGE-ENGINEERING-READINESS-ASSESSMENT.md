@@ -1,6 +1,6 @@
-# SAGE Engineering Reality & Governance Consolidation Readiness Assessment
+# SAGE Engineering Reality & Agent Activation Readiness Assessment
 
-This report presents a thorough, evidence-based technical assessment of the SAGE Autonomous Continuity Runtime repository. It establishes an engineering baseline by analyzing current application entrypoints, deployment configurations, environmental assumptions, architecture-to-code alignment, and SAGE's final **Governance Consolidation and Engineering Readiness Review** before any controlled SDR experiment execution or Phase 1 implementation.
+This report presents a thorough, evidence-based technical assessment of the SAGE Autonomous Continuity Runtime repository. It establishes an engineering baseline by analyzing current application entrypoints, deployment configurations, environmental assumptions, architecture-to-code alignment, and SAGE's **Agent Activation Readiness Assessment** before any controlled SDR experiment execution or Phase 1 implementation.
 
 All assessments are conducted without introducing code mutations to protected core runtime boundaries (`sage/runtime/`, `sage/core/`, `sage/acr/`).
 
@@ -62,37 +62,29 @@ A systematic comparison was conducted between documented architectural claims (a
 
 ---
 
-## 3. SAGE Governance Consolidation and Readiness Review
+## 3. SAGE Agent Ecosystem Activation Readiness Assessment
 
-We perform a repository-wide consolidation review to check for terminology alignment, trace the complete validation chain, construct the documentation dependency graph, identify technical/documentation debt, and confirm that all advanced/security tracks remain research-only.
+We evaluate the structural readiness of the SAGE governance and execution components required for safe agent activation:
 
-### 3.1 Governance Terminology Alignment
-All active files use identical terminology, lifecycle states, authority boundaries, and responsibilities. The states of validated artifacts strictly align under:
-$$\text{PROPOSED} \rightarrow \text{VALIDATED} \rightarrow \text{ARCHIVE\_CANDIDATE} \rightarrow \text{CANONICAL}$$
-There are no term contractions or duplicate concepts. SAGE-ACT, CMAPS, and SPEK remain uniquely defined.
+### 3.1 Overall Readiness Decision
+Based on the completeness of SAGE's experimental, verification, and schema validation components, the ecosystem is rated:
+$$\mathbf{\text{READY FOR CONTROLLED SANDBOX AGENT VALIDATION}}$$
 
-### 3.2 Evidence Chain Integrity
-We trace the complete validation chain:
-$$\text{Research} \rightarrow \text{Validation} \rightarrow \text{Evidence} \rightarrow \text{Human Review} \rightarrow \text{Master Archive}$$
-Every document aligns with this five-stage sequential workflow. No capability can bypass manual human reviewer gates.
+### 3.2 Readiness by Dimension
+- **Agent Identity Readiness (READY):** Agent IDs inside registry schemas must map to verified agent passport objects. All handoffs must be signed, guaranteeing identity authenticity.
+- **Capability Passport Readiness (READY):** Programmatically validated by `CapabilityPassportValidator` inside `sage/experimental/act/contracts.py`. Enforces all 8 required fields.
+- **Evidence Receipt Readiness (READY):** Programmatically compiled by `CapabilityEvidenceReceiptGenerator` inside `sage/experimental/act/contracts.py`. Generates secure `rcpt_` hashes.
+- **Human Review Gate Readiness (READY):** Programmatically validated by `HumanReviewGate` inside `sage/experimental/act/contracts.py`. Enforces manual reviewer signoff notes and approval states.
+- **Sandbox Execution & Rollback Boundaries (READY):** Boundaries are strictly restricted to isolated scratch workspaces. All core runtime modules remain 100% read-only. Standard snap-shotting (`restore_workspace_snapshot`) allows fast rollback.
 
-### 3.3 Index Integrity (INDEX.md)
-We verify that `Main Archive/INDEX.md` contains no duplicate registrations, no orphaned entries, and accurate cross-references.
+### 3.3 First Permitted Agent Experiment Definition
+- **Experiment ID:** `sdr_exp_governance_lifecycle_001`
+- **Objective:** Simulate a mock multi-agent handoff to validate SAGE's 8-stage governance pipeline.
+- **Participating Nodes:** `agent_chatgpt` (Strategic Coordination), `agent_jules` (Execution), `agent_claude` (Auditor).
+- **Execution Boundary:** Restricted strictly to `sage/experimental/sdr/scratch/`.
+- **Allowed Actions:** Writing mock specs, reading mock passports, generating validation receipts, and submitting manual review signoff traces.
 
-### 3.4 Governance Dependency Map
-We model the relational hierarchy and dependency graph of SAGE's core governance and specification documents:
-- **Foundational Documents:** SAGE Constitution, SPEK Kernel Spec, SAGE-CEGF.
-- **Dependent Documents:** SAGE-ACT Milestones, CMAPS, Passport Prototype, Receipt Prototype, Review Gate Prototype.
-- **Research-Only Tracks (Stage 1):** Advanced Cognitive Architecture Research Track (SAGE-ACART), Evidence Receipt Cryptographic Integrity Research (SAGE-ERCIR).
-- **Future Engineering References:** SAGE-SDR Registry, First Controlled SDR Experiment Specification, Authorization Readiness Review.
-
-### 3.5 Engineering Readiness & Documentation Freeze
-SAGE has reached complete architectural and documentation saturation. No additional research papers or governance specifications are required. We recommend an immediate, complete **Documentation Freeze** across all SAGE research, architectural, and governance directories. SAGE is structurally ready to begin Phase 1 engineering implementation.
-
-### 3.6 Next Engineering Priority
-The immediate next engineering milestone is **Milestone 1.1: Stateless Backup Persistence**. This flushes active in-memory memory states, decisions, and session states directly to `.sage/` backup directories, resolving the highest-impact deployment risk without altering protected runtime code.
-
-### 3.7 Frozen Boundaries (No Action Permitted)
+### 3.4 Frozen Boundaries (No Action Permitted)
 - **Core Runtime Loops (`sage/runtime/engine.py`):** Completely sealed from non-deterministic execution modifications.
 - **SPEK Kernel Compliance Logic (`sage/core/spek.py`):** Purely deterministic and frozen.
 - **Advanced Cognitive & Cryptographic Research Tracks (Stage 1):** Locked as theoretical-only. No execution or production implementations are authorized.
