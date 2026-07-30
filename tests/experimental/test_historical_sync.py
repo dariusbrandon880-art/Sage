@@ -176,6 +176,29 @@ def test_future_capability_readiness_assessment():
     assert "Betti" in content
     assert "Human Sovereignty is Absolute" in content
 
+    # Verify Part IV — SAGE Architecture Stability and Activation Oversight Assessment sections and content
+    assert "Part IV — SAGE Architecture Stability and Activation Oversight Assessment" in content
+    assert "SAGE-ARCH-STABILITY-OVERSIGHT-2026-07-30" in content
+    assert "Section 1 — Governance Stability Assessment" in content
+    assert "Section 2 — Documentation Stability and Anti-Drift Monitoring" in content
+    assert "Section 3 — Security Boundary Preservation" in content
+    assert "Section 4 — Agent Transition Oversight" in content
+    assert "Section 5 — Engineering Readiness & Gaps" in content
+    assert "Section 6 — Frozen Boundaries" in content
+    assert "Section 7 — Conclusion & Transition Recommendation" in content
+
+    # Verify key architectural stability concepts
+    assert "Governance Stability" in content
+    assert "Concept Uniqueness Control" in content
+    assert "Terminology Stabilization" in content
+    assert "Zero Production Cryptographic Migration" in content
+    assert "agent identity" in content.lower() or "Agent Identity" in content
+    assert "capability references" in content.lower() or "Capability References" in content
+    assert "evidence generation" in content.lower() or "Evidence Generation" in content
+    assert "sandbox boundaries" in content.lower() or "Sandbox Boundaries" in content
+    assert "rollback conditions" in content.lower() or "Rollback Conditions" in content
+    assert "Authorized Execution Preparation" in content or "Controlled Execution Preparation" in content
+
     # Verify index registration
     index_file = root_dir / "Main Archive" / "INDEX.md"
     index_content = index_file.read_text(encoding="utf-8")
