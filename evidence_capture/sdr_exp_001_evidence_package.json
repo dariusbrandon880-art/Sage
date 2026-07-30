@@ -19,31 +19,31 @@
   },
   "execution_record": {
     "experiment_id": "sdr-exp-001",
-    "timestamp": "2026-07-30T10:30:46.520972+00:00",
+    "timestamp": "2026-07-30T12:33:28.690858+00:00",
     "input_artifact_digest": "sha256_1234567890abcdef",
     "execution_action": "Invoke run_controlled_activation_sequence validation flow",
     "validation_result": "SCHEMA_VALIDATED",
     "failure_record": null
   },
-  "output_artifact": "CapabilityEvidenceReceipt (receipt_4f2c715d84944e0b855b63c09f35824e)",
+  "output_artifact": "CapabilityEvidenceReceipt (receipt_02fe7321f02e40ec8885606dbdbd593f)",
   "validation_result": {
-    "receipt_id": "receipt_4f2c715d84944e0b855b63c09f35824e",
+    "receipt_id": "receipt_02fe7321f02e40ec8885606dbdbd593f",
     "capability_id": "cap_cmaps_validation",
     "validator_id": "sim-agent-01",
     "validation_result": "PASSED",
     "evidence_reference": "artifacts/evidence_cap_cmaps_validation.json",
-    "timestamp": "2026-07-30T10:30:46.520944+00:00",
+    "timestamp": "2026-07-30T12:33:28.690829+00:00",
     "review_status": "PENDING",
     "archive_destination": "Main Archive/"
   },
   "human_review_record": {
-    "review_id": "rev_44cbc97aa91a4a4192b8a2cbbc7b9161",
-    "receipt_id": "receipt_4f2c715d84944e0b855b63c09f35824e",
+    "review_id": "rev_3a184b572c7d4336ab448d643ce8e687",
+    "receipt_id": "receipt_02fe7321f02e40ec8885606dbdbd593f",
     "capability_id": "cap_cmaps_validation",
     "reviewer_identity": "human_supervisor_01",
     "review_decision": "APPROVED",
     "review_notes": "Non-autonomous sandbox execution trace matches expected SCHEMA_VALIDATED output. Approved.",
-    "timestamp": "2026-07-30T10:30:46.520964+00:00",
+    "timestamp": "2026-07-30T12:33:28.690850+00:00",
     "validation_status": "VALIDATED_EXPERIMENTAL",
     "archive_destination": "Main Archive/"
   },
