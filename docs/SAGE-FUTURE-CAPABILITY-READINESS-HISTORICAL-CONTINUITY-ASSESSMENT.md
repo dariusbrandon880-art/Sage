@@ -558,3 +558,173 @@ $$\textbf{SAGE Non-Negotiable Operational Constraints:}$$
 The SAGE Architecture Stability and Activation Oversight Assessment confirms that SAGE’s governance frameworks and security boundaries are exceptionally stable. By maintaining a perfect separation between **Research, Experimental, and Core Layers**, enforcing strict documentation controls, and keeping protected boundaries 100% pristine, SAGE guarantees absolute baseline stability and continues to stand as the world's most secure and robust AI Reliability Infrastructure.
 
 We recommend that SAGE enter the **Authorized Execution Preparation** phase under manual supervisor control.
+
+---
+
+# Part V — SAGE Next Phase Transition Framework
+
+**Record ID:** SAGE-TRANSITION-FRAMEWORK-2026-07-30
+**Classification:** Strategic Transition & Validation Planning
+**Status:** PROPOSED — Measurable Validation Phase
+**Reference Standard:** SAGE Constitutional Hierarchy, CMAPS v1.0, SAGE Capability Evolution Governance Framework
+
+---
+
+## Section 1 — Track 1: SAGE Reality Benchmark
+
+We establish a neutral evaluation methodology to measure whether SAGE governance provides empirical, reproducible benefits over standard unmonitored AI workflows.
+
+### 1.1 The Proposed Benchmark Task
+The baseline task measures the performance of a Standard AI workflow versus a SAGE-governed workflow when drafting a Cryptographic Session Key Rotation Specification inside the sandboxed environment.
+- **Group A (Standard AI workflow):** An autonomous LLM agent drafts the specification document with zero external validation, no schema-checking enforcers, and no human-in-the-loop validation checkpoints.
+- **Group B (SAGE-governed workflow):** SAGE-coordinated model connectors (ChatGPT, Jules, Claude) execute the task. The workflow is restricted by the **SAGE Agent Coordination Protocol**, logged via **CMAPS v1.0**, linted by the **SAGE-SDR Validator**, and authorized by the **Human Review Gate**.
+
+### 1.2 Evaluation Metrics & Quantifiable Criteria
+
+We evaluate the execution results against six distinct performance dimensions:
+
+$$\text{SAGE Reality Index } (SRI) = \omega_1 A_{\text{acc}} + \omega_2 T_{\text{trace}} + \omega_3 E_{\text{qual}} + \omega_4 C_{\text{corr}} + \omega_5 R_{\text{eff}} + \omega_6 P_{\text{repro}}$$
+
+- **Task Accuracy ($A_{\text{acc}}$):** Semantic and logical correctness of the drafted specification, measured by structural completeness and presence of zero syntax errors.
+- **Traceability ($T_{\text{trace}}$):** The ability to trace every sentence and parameter in the draft back to a specific model's execution trace and a validated human command.
+- **Evidence Quality ($E_{\text{qual}}$):** Structural integrity of the generated metadata, verifying that output JSON packages satisfy all schema-level and chronological invariants.
+- **Correction Handling ($C_{\text{corr}}$):** Graceful recovery during simulated failures (such as model timeouts or input formatting errors) without crashing the session context.
+- **Review Efficiency ($R_{\text{eff}}$):** Time required for a human supervisor to audit the output. SAGE targets a $50\%$ reduction in review time by providing standardized, pre-validated evidence packages.
+- **Reproducibility ($P_{\text{repro}}$):** The capability to perfectly reconstruct the exact session state and filesystem differential starting from the signed recovery checkpoint.
+
+---
+
+## Section 2 — Track 2: SAGE Flight Recorder Minimum Schema
+
+The **SAGE Flight Recorder** is designed as SAGE's smallest practical, high-integrity evidence capture mechanism. It generates a verifiable, chronological history of all transaction events.
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                      SAGE FLIGHT RECORDER RECORD                       │
+├───────────────────┬────────────────────────────────────────────────────┤
+│ event_id          │ Unique transaction UUID (e.g., EVT-001)            │
+│ task_objective    │ Target task identifier (e.g., TASK-CRC-001)        │
+│ timestamp         │ High-res ISO 8601 UTC timestamp                    │
+│ inputs            │ SHA-256 hash of input envelope arguments           │
+│ outputs           │ SHA-256 hash of generated output documents         │
+│ reasoning_trace   │ List of model connector identifiers & reasoning    │
+│ validation_result │ Exit code and linter output state (PASSED/FAILED)  │
+│ review_decision   │ Human supervisor decision state (APPROVED/REJECTED) │
+│ archive_ref       │ INDEX.md section index path                        │
+└───────────────────┴────────────────────────────────────────────────────┘
+```
+
+### 2.1 The Flight Record JSON Schema
+
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SageFlightRecord",
+  "type": "object",
+  "properties": {
+    "event_id": { "type": "string", "pattern": "^EVT-[0-9]{3}$" },
+    "task_objective": { "type": "string", "pattern": "^TASK-[A-Z]{3,4}-[0-9]{3}$" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "inputs_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "outputs_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "reasoning_artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "model_id": { "type": "string" },
+          "trace": { "type": "string" }
+        },
+        "required": ["model_id", "trace"]
+      }
+    },
+    "validation_result": { "type": "string", "enum": ["PASSED", "FAILED"] },
+    "human_review_decision": { "type": "string", "enum": ["APPROVED", "REJECTED"] },
+    "archive_reference": { "type": "string" }
+  },
+  "required": [
+    "event_id",
+    "task_objective",
+    "timestamp",
+    "inputs_hash",
+    "outputs_hash",
+    "reasoning_artifacts",
+    "validation_result",
+    "human_review_decision",
+    "archive_reference"
+  ]
+}
+```
+
+---
+
+## Section 3 — Track 3: External Adversarial Review Protocol
+
+To ensure SAGE remains robust against cognitive drift, we implement an **External Adversarial Review Protocol**. Under this protocol, external AI systems (such as red-team or boundary stress-testing models) serve as critical reviewers, not sovereign authorities.
+
+```
+┌─────────────────┐      ┌─────────────────┐      ┌─────────────────┐      ┌─────────────────┐
+│    EXTERNAL     │      │      SAGE       │      │      HUMAN      │      │     MASTER      │
+│    CRITIQUE     ├─────►│ CLASSIFICATION  ├─────►│   REVIEW GATE   ├─────►│  ARCHIVE INDEX  │
+│ (Red-team model)│      │(Verify & map)   │      │(Supervisor signs)│     │ (Commit state)  │
+└─────────────────┘      └─────────────────┘      └─────────────────┘      └─────────────────┘
+```
+
+1. **External Critique:** An isolated external model attacks a proposed spec or execution trace, outputting a list of vulnerabilities, boundary escape vectors, or logical discrepancies.
+2. **SAGE Classification:** SAGE's internal validation contracts parse, tag, and categorize the critique into standardized error bins or topological gap definitions.
+3. **Human Review:** The supervisor audits the classified vulnerability matrix and decides whether to authorize a rollback, apply a policy amendment, or dismiss the critique.
+4. **Archive Decision:** Upon manual approval, the updated, hardened specification and its adversarial evidence package are permanently committed to the Master Archive.
+
+---
+
+## Section 4 — Required Evidence Artifacts
+
+SAGE establishes the definitive eight evidence artifacts required to certify any validation run:
+
+1. **Execution Logs:** Chronologically ordered standard output, standard error, and internal trace logs.
+2. **Timestamps:** High-resolution ISO 8601 UTC timestamps verifying that `started_at <= updated_at`.
+3. **Inputs:** Complete, unchanged `Agent Communication Envelope` payload.
+4. **Outputs:** Definitive SHA-256 hashes of all generated file differentials.
+5. **Failure Records:** Detailed stack traces of any caught exception, provider timeout, or linter rejection.
+6. **Validation Results:** Static linter checks and AST isolation validations.
+7. **Review Records:** Human supervisor feedback, evaluation comments, and manual approval nonces.
+8. **Archive References:** Synchronized registry index references inside `Main Archive/INDEX.md`.
+
+---
+
+## Section 5 — Human Review Procedure
+
+The Human Review Procedure is a strict, step-by-step manual sequence that must be executed by the supervisor:
+
+1. **Initiate Pre-Execution Audit:** Inspect the experiment registry entry, verifying that the experiment ID, boundary directories (`docs/sandbox/`), and participating agents match the authorized proposal.
+2. **Launch Sandbox Enclave:** Execute the controlled validation simulation script. Telemetry collection is active.
+3. **Inspect Active Telemetry:** Monitor the SAGE Flight Recorder output to ensure that the active Kullback-Leibler divergence remains below the drift threshold ($D_{\text{KL}} < \theta_{\text{drift}}$).
+4. **Verify Exit Criteria:** Following run completion, inspect generated file hashes and exit codes.
+5. **Perform Adversarial Integrity Check:** Run the static AST checker to confirm that zero writes or imports occurred inside the protected namespaces (`sage/runtime/`, `sage/core/`, `sage/acr/`).
+6. **Apply Cryptographic Signature:** Sign the SDR Evidence Package and authorize its registration in `Main Archive/INDEX.md`.
+
+---
+
+## Section 6 — Current Execution Blockers
+
+Before SAGE can safely transition from pure research modeling to active sandboxed execution, three technical and structural blockers must be resolved:
+
+1. **Telemetry Interceptor Integration:** The physical connection between active provider client libraries and the local Flight Recorder serialization class is not yet compiled.
+2. **Lattice Sign-off Compiler:** The experimental `HumanReviewGate` prototype does not yet possess the lattice-based cryptographic verification library required to sign off on ML-DSA evidence receipts.
+3. **Sandbox Directory Enforcement:** We must compile and verify the OS-level filesystem jail or temporary folder mounting routine to guarantee absolute physical isolation during executing simulation loops.
+
+---
+
+## Section 7 — Success Definition
+
+SAGE maintains a strict, objective success definition to prevent conceptual drift:
+
+$$\textbf{Success } \neq \text{AGI} \parallel \text{Autonomous Intelligence} \parallel \text{Market Dominance} \parallel \text{Self-Evolution}$$
+$$\textbf{Success } = \text{A documented, reproducible example showing that SAGE governance manages an AI workflow}$$
+
+Success is achieved if and only if SAGE demonstrates control of a multi-agent workflow under:
+- **Clear Boundaries:** Absolute isolation verified by programmatic AST checks.
+- **Evidence Capture:** Non-repudiable serialization via the Flight Recorder schema.
+- **Human Oversight:** Non-bypassable supervisor gate control at every phase.
+- **Traceable Outcomes:** Complete traceability of generated artifacts back to initial human commands.
+The Master Archive remains SAGE's constitutional source of truth. No production activations or capability promotions can be compiled without explicit, supervisor-signed authorization.

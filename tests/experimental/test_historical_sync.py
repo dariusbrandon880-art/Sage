@@ -199,6 +199,27 @@ def test_future_capability_readiness_assessment():
     assert "rollback conditions" in content.lower() or "Rollback Conditions" in content
     assert "Authorized Execution Preparation" in content or "Controlled Execution Preparation" in content
 
+    # Verify Part V — SAGE Next Phase Transition Framework sections and content
+    assert "Part V — SAGE Next Phase Transition Framework" in content
+    assert "SAGE-TRANSITION-FRAMEWORK-2026-07-30" in content
+    assert "Section 1 — Track 1: SAGE Reality Benchmark" in content
+    assert "Section 2 — Track 2: SAGE Flight Recorder Minimum Schema" in content
+    assert "Section 3 — Track 3: External Adversarial Review Protocol" in content
+    assert "Section 4 — Required Evidence Artifacts" in content
+    assert "Section 5 — Human Review Procedure" in content
+    assert "Section 6 — Current Execution Blockers" in content
+    assert "Section 7 — Success Definition" in content
+
+    # Verify key transition framework concepts
+    assert "SAGE Reality Benchmark" in content
+    assert "SAGE Flight Recorder" in content
+    assert "External Adversarial Review" in content
+    assert "benchmark task" in content.lower()
+    assert "minimum schema" in content.lower() or "Flight Record JSON Schema" in content
+    assert "execution blockers" in content.lower()
+    assert "Success is" in content
+    assert "Standard AI workflow" in content
+
     # Verify index registration
     index_file = root_dir / "Main Archive" / "INDEX.md"
     index_content = index_file.read_text(encoding="utf-8")
