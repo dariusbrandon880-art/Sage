@@ -532,6 +532,35 @@ def test_controlled_agent_activation_sequence_exists_and_conforms():
     assert "explicit exclusions and frozen boundaries" in content_lower
 
 
+def test_evidence_integrity_hardening_specification_exists_and_conforms():
+    """Verify that the SAGE-EVIDENCE-INTEGRITY-HARDENING-SPECIFICATION.md document exists and contains required sections."""
+    root_dir = Path(__file__).parent.parent.parent
+    spec_doc = root_dir / "docs" / "SAGE-EVIDENCE-INTEGRITY-HARDENING-SPECIFICATION.md"
+
+    assert spec_doc.exists(), "The SAGE Evidence Integrity Hardening Specification document must exist under docs/"
+    content = spec_doc.read_text(encoding="utf-8")
+    content_lower = content.lower()
+
+    # Verify ID and Status
+    assert "SAGE-INTEGRITY-HARD-2026-07-31" in content
+    assert "PROPOSED — Strategic Governance Design Phase" in content
+
+    # Verify Sections
+    assert "Section 1 — Cryptographic Hashing Protocol" in content
+    assert "Section 2 — Fail-Closed Verification Behavior" in content
+    assert "Section 3 — Experimental Evidence Verification Checks" in content
+    assert "Section 4 — Final Manifest Package Layout" in content
+    assert "Section 5 — Boundary Enforcement" in content
+    assert "Section 6 — Conclusion" in content
+
+    # Verify specific key constraints
+    assert "cryptographic hashing protocol" in content_lower
+    assert "fail-closed verification behavior" in content_lower
+    assert "experimental evidence verification checks" in content_lower
+    assert "final manifest package layout" in content_lower
+    assert "boundary enforcement" in content_lower
+
+
 def test_documents_are_indexed_correctly():
     """Verify that all required governance documents are registered in Main Archive/INDEX.md as PROPOSED."""
     root_dir = Path(__file__).parent.parent.parent
@@ -540,7 +569,7 @@ def test_documents_are_indexed_correctly():
     assert index_file.exists(), "Index file must exist in Main Archive/"
     content = index_file.read_text(encoding="utf-8")
 
-    # Assert correct link format and state for all fourteen
+    # Assert correct link format and state for all fifteen
     assert "../docs/SAGE-CAPABILITY-EVOLUTION-GOVERNANCE-FRAMEWORK.md" in content
     assert "../docs/SAGE-ROADMAP-CONTINUITY-REVIEW-REPORT.md" in content
     assert "../docs/SAGE-GOVERNANCE-DEPENDENCY-MAP.md" in content
@@ -555,6 +584,7 @@ def test_documents_are_indexed_correctly():
     assert "../docs/SAGE-CONTROLLED-EXPERIMENTAL-VALIDATION-LOOP-SPECIFICATION.md" in content
     assert "../docs/SAGE-CONTROLLED-EXPERIMENTAL-VALIDATION-LOOP-ALIGNMENT-REVIEW.md" in content
     assert "../docs/SAGE-CONTROLLED-AGENT-ACTIVATION-SEQUENCE.md" in content
+    assert "../docs/SAGE-EVIDENCE-INTEGRITY-HARDENING-SPECIFICATION.md" in content
     assert "[State: PROPOSED]" in content
 
 
