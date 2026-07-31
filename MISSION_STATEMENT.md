@@ -96,9 +96,38 @@ Expanding SAGE capabilities to:
 
 ---
 
+## SAGE Strategic Execution Principle Record
+
+This section records the long-term execution philosophy behind SAGE development as a strategic operating principle, not a system objective.
+
+### Core Principles
+
+*   **Engineering Over Speculation:** Prioritize validated engineering progress and empirical sandbox execution over speculative architecture drafting.
+*   **Methodical Continuation Flow:** Maintain the strict `Research → Validation → Evidence → Human Review → Master Archive` workflow for every capability transition.
+*   **Strong Foundations First:** Continue building robust technical foundations and complete contract tests before expanding the operational scope.
+*   **Value Through Proof:** Convert validated capabilities into demonstrable value through real-world, sequential proofs (e.g. SDR-001, SDR-002, and SAGE-CRC).
+*   **Capital-Efficient Execution:** Preserve low-cost, high-discipline validation as SAGE's primary strategic engineering advantage.
+*   **Evidence-Driven Evolution:** Avoid premature scaling, unnecessary runtime complexity, or core namespace capability expansion without verified evidence.
+
+### Business Alignment Principle
+
+SAGE development should maximize the probability of creating meaningful real-world value through reliability, governance, continuity, and operational integrity.
+
+Financial outcomes are a result of creating valuable technology and adoption, not a direct system optimization target.
+
+### Structural Discipline Boundaries
+
+$$\text{Evidence} \prec \text{Promotion}$$
+$$\text{Validation} \prec \text{Expansion}$$
+$$\text{Value} \prec \text{Monetization}$$
+
+Every capability must have its evidence verified and signed off before it can be integrated or promoted into SAGE core.
+
+---
+
 **Status**: Mission Active, Priority 1 Complete, Priority 2 Initiating
 
-**Generated**: 2026-07-19
+**Generated**: 2026-07-19 (Updated 2026-07-30)
 
 **Version**: 0.1.0 → Expanding to 0.2.0
 
