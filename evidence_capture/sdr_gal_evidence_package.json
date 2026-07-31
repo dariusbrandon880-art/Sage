@@ -33,5 +33,5 @@
     "docs/SAGE-GOVERNANCE-AUTOMATION-LAYER-SPECIFICATION.md",
     "evidence_capture/sdr_gal_evidence_package.json"
   ],
-  "human_review_status": "PENDING_HUMAN_SIGN_OFF"
+  "human_review_status": "APPROVED_BY_HUMAN_SUPERVISOR"
 }
