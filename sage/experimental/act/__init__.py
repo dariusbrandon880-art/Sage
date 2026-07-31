@@ -9,6 +9,7 @@ from sage.experimental.act.contracts import (
     CapabilityEvidenceReceiptGenerator,
     HumanReviewGate,
 )
+from sage.experimental.act.persistence import StateBackupManager
 
 __all__ = [
     "SessionTaskTreeLinker",
@@ -18,4 +19,5 @@ __all__ = [
     "CapabilityPassportValidator",
     "CapabilityEvidenceReceiptGenerator",
     "HumanReviewGate",
+    "StateBackupManager",
 ]
