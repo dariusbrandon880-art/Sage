@@ -10,6 +10,7 @@ from sage.experimental.act.contracts import (
     HumanReviewGate,
 )
 from sage.experimental.act.persistence import StateBackupManager
+from sage.experimental.act.fallbacks import ResilientIntegrationBridge
 
 __all__ = [
     "SessionTaskTreeLinker",
@@ -20,4 +21,5 @@ __all__ = [
     "CapabilityEvidenceReceiptGenerator",
     "HumanReviewGate",
     "StateBackupManager",
+    "ResilientIntegrationBridge",
 ]
