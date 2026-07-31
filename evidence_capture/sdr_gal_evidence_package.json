@@ -1,12 +1,13 @@
 {
   "gal_run_id": "gal_sdr_gal_phase_1",
   "commit_identifier": "8c61920e4d6c22c67e8b43343a77893be92f3bd7",
-  "timestamp": "2026-07-31T09:32:17.988553Z",
+  "timestamp": "2026-07-31T09:43:44.902399Z",
   "changed_files": [
-    "\"Main Archive/INDEX.md\"",
+    "Main Archive/INDEX.md",
     "docs/SAGE-ACT-MILESTONE-5-CRC-SPECIFICATION.md",
     "docs/SAGE-GOVERNANCE-AUTOMATION-LAYER-SPECIFICATION.md",
     "evidence_capture/sdr_crc_evidence_package.json",
+    "evidence_capture/sdr_gal_evidence_package.json",
     "sage/experimental/act/__init__.py",
     "sage/experimental/act/contracts.py",
     "sage/experimental/act/governance.py",

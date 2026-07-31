@@ -60,7 +60,7 @@ class GovernanceAutomationLayer:
             for line in git_status_raw.splitlines():
                 if len(line) > 3:
                     # Strip status prefix (e.g. ' M ', '?? ')
-                    filepath = line[3:].strip()
+                    filepath = line[3:].strip().strip('"')
                     changed_files.append(filepath)
         else:
             # Fallback: scan untracked files or list empty
