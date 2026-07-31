@@ -1,6 +1,8 @@
 """SAGE Agent Continuity Tree Read-Only Interface Contracts."""
 
 import re
+import hashlib
+import json
 from typing import Any, Dict, List
 from datetime import datetime, timezone
 
@@ -44,6 +46,180 @@ class SessionTaskTreeLinker:
             "validation_status": "INTERFACE_VERIFIED",
             "read_only_assertion": True,
         }
+
+
+class CryptographicSessionReceiptChain:
+    """Enforces mathematical and cryptographic chaining of successive execution traces.
+
+    Verifies block structure, canonicalized hash chaining, sequence monotonicity,
+    temporal monotonicity, and deterministic mock signature validations.
+    """
+
+    def __init__(self, validation_mode: str = "strict"):
+        self.validation_mode = validation_mode
+
+    def canonicalize_block(self, block: Dict[str, Any]) -> bytes:
+        """Serializes block properties in a deterministic format for hashing."""
+        canonical_keys = [
+            "receipt_id",
+            "session_id",
+            "sequence_number",
+            "previous_hash",
+            "payload_hash",
+            "timestamp",
+            "signer_identity",
+        ]
+        serialized_data = {k: block[k] for k in canonical_keys}
+        return json.dumps(serialized_data, sort_keys=True).encode("utf-8")
+
+    def generate_mock_signature(self, block_hash: str, signer_identity: str) -> str:
+        """Generates a deterministic signature mock for validation."""
+        combined = f"{block_hash}:{signer_identity}:SAGE_SIG_v1"
+        return hashlib.sha256(combined.encode("utf-8")).hexdigest()
+
+    def build_genesis_block(self, session_id: str, payload_hash: str, signer_identity: str) -> Dict[str, Any]:
+        """Constructs a validated genesis block (sequence 0) for a session."""
+        if not re.match(r"^session_[a-fA-F0-9]{8}$", session_id):
+            raise ValueError(f"SAGE-CRC Error: Invalid session_id format: '{session_id}'")
+        if not re.match(r"^[a-fA-F0-9]{64}$", payload_hash):
+            raise ValueError(f"SAGE-CRC Error: Invalid payload_hash format: '{payload_hash}'")
+        if not re.match(r"^agent_[a-zA-Z0-9_]{3,64}$", signer_identity):
+            raise ValueError(f"SAGE-CRC Error: Invalid signer_identity format: '{signer_identity}'")
+
+        timestamp = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+        receipt_id = f"receipt_crc_{hashlib.md5(f'genesis:{session_id}:{timestamp}'.encode('utf-8')).hexdigest()}"
+
+        block = {
+            "receipt_id": receipt_id,
+            "session_id": session_id,
+            "sequence_number": 0,
+            "previous_hash": "0" * 64,
+            "payload_hash": payload_hash,
+            "timestamp": timestamp,
+            "signer_identity": signer_identity,
+        }
+
+        canonical_bytes = self.canonicalize_block(block)
+        current_hash = hashlib.sha256(canonical_bytes).hexdigest()
+        block["current_hash"] = current_hash
+
+        block["signature"] = self.generate_mock_signature(current_hash, signer_identity)
+        return block
+
+    def append_receipt_block(self, previous_block: Dict[str, Any], payload_hash: str, signer_identity: str) -> Dict[str, Any]:
+        """Constructs and validates a sequential block chained to previous_block."""
+        required_fields = ["receipt_id", "session_id", "sequence_number", "current_hash", "timestamp"]
+        for field in required_fields:
+            if field not in previous_block:
+                raise ValueError(f"SAGE-CRC Error: Malformed previous block. Missing '{field}'.")
+
+        session_id = previous_block["session_id"]
+        sequence_number = previous_block["sequence_number"] + 1
+
+        if not re.match(r"^[a-fA-F0-9]{64}$", payload_hash):
+            raise ValueError(f"SAGE-CRC Error: Invalid payload_hash format: '{payload_hash}'")
+        if not re.match(r"^agent_[a-zA-Z0-9_]{3,64}$", signer_identity):
+            raise ValueError(f"SAGE-CRC Error: Invalid signer_identity format: '{signer_identity}'")
+
+        timestamp = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+        receipt_id = f"receipt_crc_{hashlib.md5(f'append:{session_id}:{sequence_number}:{timestamp}'.encode('utf-8')).hexdigest()}"
+
+        block = {
+            "receipt_id": receipt_id,
+            "session_id": session_id,
+            "sequence_number": sequence_number,
+            "previous_hash": previous_block["current_hash"],
+            "payload_hash": payload_hash,
+            "timestamp": timestamp,
+            "signer_identity": signer_identity,
+        }
+
+        canonical_bytes = self.canonicalize_block(block)
+        current_hash = hashlib.sha256(canonical_bytes).hexdigest()
+        block["current_hash"] = current_hash
+
+        block["signature"] = self.generate_mock_signature(current_hash, signer_identity)
+        return block
+
+    def verify_chain_integrity(self, chain: List[Dict[str, Any]]) -> bool:
+        """Verifies the complete cryptographic session chain against all validation rules."""
+        if not chain:
+            raise ValueError("SAGE-CRC Exception: Chain cannot be empty.")
+
+        last_block = None
+
+        for idx, block in enumerate(chain):
+            required_fields = [
+                "receipt_id",
+                "session_id",
+                "sequence_number",
+                "previous_hash",
+                "payload_hash",
+                "timestamp",
+                "signer_identity",
+                "signature",
+                "current_hash",
+            ]
+            for field in required_fields:
+                if field not in block:
+                    raise ValueError(f"SAGE-CRC Violation: Missing required block attribute '{field}' at index {idx}.")
+
+            if not re.match(r"^receipt_crc_[a-fA-F0-9]{32}$", block["receipt_id"]):
+                raise ValueError(f"SAGE-CRC Violation: Invalid receipt_id format at index {idx}: '{block['receipt_id']}'")
+            if not re.match(r"^session_[a-fA-F0-9]{8}$", block["session_id"]):
+                raise ValueError(f"SAGE-CRC Violation: Invalid session_id format at index {idx}: '{block['session_id']}'")
+            if not re.match(r"^[a-fA-F0-9]{64}$", block["previous_hash"]):
+                raise ValueError(f"SAGE-CRC Violation: Invalid previous_hash format at index {idx}: '{block['previous_hash']}'")
+            if not re.match(r"^[a-fA-F0-9]{64}$", block["payload_hash"]):
+                raise ValueError(f"SAGE-CRC Violation: Invalid payload_hash format at index {idx}: '{block['payload_hash']}'")
+            if not re.match(r"^[a-fA-F0-9]{64}$", block["current_hash"]):
+                raise ValueError(f"SAGE-CRC Violation: Invalid current_hash format at index {idx}: '{block['current_hash']}'")
+            if not re.match(r"^agent_[a-zA-Z0-9_]{3,64}$", block["signer_identity"]):
+                raise ValueError(f"SAGE-CRC Violation: Invalid signer_identity format at index {idx}: '{block['signer_identity']}'")
+
+            if idx == 0:
+                if block["sequence_number"] != 0:
+                    raise ValueError(f"SAGE-CRC Violation: Genesis block must have sequence_number=0. Got {block['sequence_number']}.")
+                if block["previous_hash"] != "0" * 64:
+                    raise ValueError(f"SAGE-CRC Violation: Genesis block previous_hash must be sixty-four zeros.")
+            else:
+                if block["previous_hash"] != last_block["current_hash"]:
+                    raise ValueError(
+                        f"SAGE-CRC Violation: Hash discontinuity at index {idx}. "
+                        f"previous_hash '{block['previous_hash']}' does not match last current_hash '{last_block['current_hash']}'."
+                    )
+                if block["sequence_number"] != last_block["sequence_number"] + 1:
+                    raise ValueError(
+                        f"SAGE-CRC Violation: Sequence gap at index {idx}. "
+                        f"sequence_number={block['sequence_number']} is not consecutive to previous={last_block['sequence_number']}."
+                    )
+                try:
+                    curr_time = datetime.fromisoformat(block["timestamp"].replace("Z", "+00:00"))
+                    prev_time = datetime.fromisoformat(last_block["timestamp"].replace("Z", "+00:00"))
+                except ValueError as e:
+                    raise ValueError(f"SAGE-CRC Violation: Malformed ISO 8601 timestamp at index {idx}: {e}")
+
+                if curr_time < prev_time:
+                    raise ValueError(
+                        f"SAGE-CRC Violation: Chronological violation at index {idx}. "
+                        f"Timestamp {block['timestamp']} is earlier than previous timestamp {last_block['timestamp']}."
+                    )
+
+            canonical_bytes = self.canonicalize_block(block)
+            recalculated_hash = hashlib.sha256(canonical_bytes).hexdigest()
+            if recalculated_hash != block["current_hash"]:
+                raise ValueError(
+                    f"SAGE-CRC Violation: Hash mismatch at index {idx}. "
+                    f"Recalculated '{recalculated_hash}' does not match stored current_hash '{block['current_hash']}'."
+                )
+
+            recalculated_sig = self.generate_mock_signature(block["current_hash"], block["signer_identity"])
+            if recalculated_sig != block["signature"]:
+                raise ValueError(f"SAGE-CRC Violation: Signature authentication failure at index {idx}.")
+
+            last_block = block
+
+        return True
 
 
 class CrossModelAuditPayloadValidator:

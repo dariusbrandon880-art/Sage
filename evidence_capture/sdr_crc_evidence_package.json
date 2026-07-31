@@ -1,0 +1,55 @@
+{
+  "experiment_id": "sdr_crc_experiment_001",
+  "name": "SAGE Cryptographic Session Receipt Chain Verification",
+  "description": "Captured sequential multi-block trace demonstrating tamper-evident cryptographic chain integrity.",
+  "session_id": "session_f5c4b3a2",
+  "chain_length": 3,
+  "signer_identity": "agent_jules",
+  "blocks": [
+    {
+      "receipt_id": "receipt_crc_2aec54fe95c5bee18aa2a0eae7ba6d3e",
+      "session_id": "session_f5c4b3a2",
+      "sequence_number": 0,
+      "previous_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "payload_hash": "b3577aec35347d7c6f6f5206430c89e9467fd27c585afc7ee8b4e5d609df4d8f",
+      "timestamp": "2026-07-31T08:13:29.074746Z",
+      "signer_identity": "agent_jules",
+      "current_hash": "4289c72bf6918c5bbcb18333282fc860d68f703687b07ebfaddc5911280022ff",
+      "signature": "ccbf0fea5c83c3aba04ff40d5f6641b7d8433aaa376fec79732d42167e19401a"
+    },
+    {
+      "receipt_id": "receipt_crc_3f9fac4ade8ece90c359f188d72822bb",
+      "session_id": "session_f5c4b3a2",
+      "sequence_number": 1,
+      "previous_hash": "4289c72bf6918c5bbcb18333282fc860d68f703687b07ebfaddc5911280022ff",
+      "payload_hash": "f813e412ac559a6447e1559ddd7c0291d63f9d7e43d29f51bac78e58b57b9ef3",
+      "timestamp": "2026-07-31T08:13:29.074841Z",
+      "signer_identity": "agent_jules",
+      "current_hash": "85a3c248bb411a44ded7ba3c9b926d3444825b16a455e428592d73c9c8cdbef0",
+      "signature": "a3da47a4ceffcab08636ddae3e39a0c0382860d298089efeaa8813f3cc0d18d4"
+    },
+    {
+      "receipt_id": "receipt_crc_a3515647da687a0afac259394a13cd5e",
+      "session_id": "session_f5c4b3a2",
+      "sequence_number": 2,
+      "previous_hash": "85a3c248bb411a44ded7ba3c9b926d3444825b16a455e428592d73c9c8cdbef0",
+      "payload_hash": "c70d93b12277ba11c3dbf7437bbf4a78bc8b799982946562f243830163b53981",
+      "timestamp": "2026-07-31T08:13:29.074892Z",
+      "signer_identity": "agent_jules",
+      "current_hash": "1d3919fd8e70dc8505f019e5497f998ea7748cf362bce17b86a435302324b3ba",
+      "signature": "fdefb6ad21be46a7e1583c96f5b3cea72b22b7b9d18c7873f7e44f373c9a899e"
+    }
+  ],
+  "verification": {
+    "status": "VALIDATED",
+    "validator_class": "CryptographicSessionReceiptChain",
+    "rules_enforced": [
+      "Genesis Rule (sequence 0 and 64-zero previous hash)",
+      "Chain Link Rule (hash integrity and linkage)",
+      "Sequence Monotonicity Rule (consecutive indices)",
+      "Temporal Monotonicity Rule (non-decreasing timestamps)",
+      "Signature Rule (mock sign-off authentication)"
+    ],
+    "integrity_verified": true
+  }
+}

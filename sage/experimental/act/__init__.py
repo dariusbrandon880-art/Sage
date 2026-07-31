@@ -5,6 +5,7 @@ from sage.experimental.act.contracts import (
     TaskDecisionBinder,
     SessionStateTaskLinker,
     CrossModelAuditPayloadValidator,
+    CryptographicSessionReceiptChain,
 )
 
 __all__ = [
@@ -12,4 +13,5 @@ __all__ = [
     "TaskDecisionBinder",
     "SessionStateTaskLinker",
     "CrossModelAuditPayloadValidator",
+    "CryptographicSessionReceiptChain",
 ]
