@@ -1,0 +1,64 @@
+{
+  "experiment_id": "sdr_exp_002",
+  "name": "SAGE Safe Dry-Run Sandbox Handoff Simulation (SDR-002)",
+  "description": "Captures chronological multi-agent handoff sequence verifying role boundary preservation.",
+  "participating_identities": [
+    {
+      "agent_id": "agent_chatgpt",
+      "name": "ChatGPT-Coordinator",
+      "role": "Coordinator"
+    },
+    {
+      "agent_id": "agent_jules",
+      "name": "Jules-Executor",
+      "role": "Executor"
+    },
+    {
+      "agent_id": "agent_claude",
+      "name": "Claude-Analyst",
+      "role": "Analyst"
+    },
+    {
+      "agent_id": "agent_gemini",
+      "name": "Gemini-Reviewer",
+      "role": "Reviewer"
+    }
+  ],
+  "handoff_sequence": [
+    {
+      "step": 1,
+      "sender_id": "agent_chatgpt",
+      "receiver_id": "agent_jules",
+      "capability_id": "coordinate_workflow",
+      "evidence_reference": "ref_crc_genesis",
+      "timestamp": "2026-07-31T10:00:00Z",
+      "status": "VALIDATED"
+    },
+    {
+      "step": 2,
+      "sender_id": "agent_jules",
+      "receiver_id": "agent_claude",
+      "capability_id": "write_code",
+      "evidence_reference": "ref_crc_block_1",
+      "timestamp": "2026-07-31T10:05:00Z",
+      "status": "VALIDATED"
+    },
+    {
+      "step": 3,
+      "sender_id": "agent_claude",
+      "receiver_id": "agent_gemini",
+      "capability_id": "analyze_trace",
+      "evidence_reference": "ref_crc_block_2",
+      "timestamp": "2026-07-31T10:10:00Z",
+      "status": "VALIDATED"
+    }
+  ],
+  "verification_results": {
+    "identity_enforcement": "SUCCESSFUL",
+    "capability_boundary_enforcement": "SUCCESSFUL",
+    "protected_enclave_isolation": "CONFIRMED",
+    "chronological_monotonicity_verified": true,
+    "human_review_gate_enforced": true
+  },
+  "human_review_status": "APPROVED_BY_HUMAN_SUPERVISOR"
+}
