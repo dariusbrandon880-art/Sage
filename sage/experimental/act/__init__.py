@@ -8,6 +8,7 @@ from sage.experimental.act.contracts import (
     CryptographicSessionReceiptChain,
 )
 from sage.experimental.act.governance import GovernanceAutomationLayer
+from sage.experimental.act.integrity import EvidenceIntegrityVerifier
 
 __all__ = [
     "SessionTaskTreeLinker",
@@ -16,4 +17,5 @@ __all__ = [
     "CrossModelAuditPayloadValidator",
     "CryptographicSessionReceiptChain",
     "GovernanceAutomationLayer",
+    "EvidenceIntegrityVerifier",
 ]
