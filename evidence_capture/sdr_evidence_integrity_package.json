@@ -1,0 +1,13 @@
+{
+  "verified_evidence_files": [
+    "evidence_capture/sdr_exp_001_evidence_package.json",
+    "evidence_capture/multi_agent_handoff_envelope.json"
+  ],
+  "integrity_results": {
+    "evidence_capture/sdr_exp_001_evidence_package.json": "f9d627317d2ea01863dddfc899ffd5cc60c6b9c33976ee8113c9903fb5c3f7dc",
+    "evidence_capture/multi_agent_handoff_envelope.json": "661b9f8d4500fedf085568c84fd7544e4f65d3b4bcc2bde39a82f8436cc94de0"
+  },
+  "verification_timestamp": "2026-07-31T12:06:56.033221+00:00",
+  "validation_status": "INTEGRITY_VERIFIED",
+  "human_review_state": "HUMAN_APPROVAL_REQUIRED"
+}

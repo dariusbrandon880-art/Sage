@@ -12,6 +12,7 @@ from sage.experimental.act.contracts import (
     AgentCommunicationEnvelopeValidator,
     run_multi_agent_handoff_validation,
 )
+from sage.experimental.act.integrity import EvidenceIntegrityVerifier
 
 __all__ = [
     "SessionTaskTreeLinker",
@@ -24,4 +25,5 @@ __all__ = [
     "run_controlled_activation_sequence",
     "AgentCommunicationEnvelopeValidator",
     "run_multi_agent_handoff_validation",
+    "EvidenceIntegrityVerifier",
 ]
