@@ -9,6 +9,7 @@ from sage.experimental.act.contracts import (
 )
 from sage.experimental.act.governance import GovernanceAutomationLayer
 from sage.experimental.act.integrity import EvidenceIntegrityVerifier
+from sage.experimental.act.cpc import ContinuityProofChamber
 
 __all__ = [
     "SessionTaskTreeLinker",
@@ -18,4 +19,5 @@ __all__ = [
     "CryptographicSessionReceiptChain",
     "GovernanceAutomationLayer",
     "EvidenceIntegrityVerifier",
+    "ContinuityProofChamber",
 ]
