@@ -1,0 +1,56 @@
+{
+  "experiment_id": "sdr_e2e_proof",
+  "name": "SAGE Safe End-to-End Proof Demonstration (Dry-Run)",
+  "timestamp": "2026-08-01T00:35:36.597692Z",
+  "success_path": {
+    "sequence": [
+      {
+        "step": 1,
+        "sender": "agent_chatgpt",
+        "receiver": "agent_jules",
+        "capability": "coordinate_workflow",
+        "evidence": "receipt_crc_721d3393811869efad2768bf2b45dd54",
+        "status": "VALIDATED"
+      }
+    ],
+    "crc_blocks": [
+      {
+        "receipt_id": "receipt_crc_721d3393811869efad2768bf2b45dd54",
+        "session_id": "session_e2e00001",
+        "sequence_number": 0,
+        "previous_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+        "payload_hash": "6b4f7325256a27b9f7559fd903fe73032b7dacd94d1d1de82bad5fc404d1efae",
+        "timestamp": "2026-08-01T00:35:36.597036Z",
+        "signer_identity": "agent_chatgpt",
+        "current_hash": "3f1e4e18ddaf1508af2438986df0a4acc1225c577d45e76b463297120b07fef6",
+        "signature": "253033052effa6a40afaa8109954da1e5dd6c506db14b72d1e7bb329eeda3344"
+      },
+      {
+        "receipt_id": "receipt_crc_a56532c568867a839bd78bc1520c367a",
+        "session_id": "session_e2e00001",
+        "sequence_number": 1,
+        "previous_hash": "3f1e4e18ddaf1508af2438986df0a4acc1225c577d45e76b463297120b07fef6",
+        "payload_hash": "24205139d49e1ecf36ce51bf6ddc70a179086db46cecb27ac6a31fc10ad01f6a",
+        "timestamp": "2026-08-01T00:35:36.597328Z",
+        "signer_identity": "agent_jules",
+        "current_hash": "598bb11ad998db93ef06f1112dfd6bb54e68f7f51872b2e0b07fd0dc95c5455c",
+        "signature": "11fa4cda08a5a240f7ebbcd363477c1c96fd261df21c0da7a2fd1dcd2c023912"
+      }
+    ],
+    "chronology_verified": true
+  },
+  "failure_path": {
+    "unauthorized_capability_check": {
+      "sender": "agent_jules",
+      "capability_attempted": "coordinate_workflow",
+      "blocked": true,
+      "error_message": "SAGE Handoff Violation: Sender 'agent_jules' is not authorized to execute capability 'coordinate_workflow'."
+    },
+    "protected_boundary_check": {
+      "target_path_attempted": "sage/core/spek.py",
+      "blocked": true,
+      "error_message": "SAGE Security Violation: Autonomous handoff attempted to write to protected core enclave path 'sage/core/spek.py'. Execution blocked."
+    }
+  },
+  "human_review_status": "APPROVED_BY_HUMAN_SUPERVISOR"
+}
