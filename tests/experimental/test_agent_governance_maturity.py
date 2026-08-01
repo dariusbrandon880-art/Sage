@@ -134,7 +134,7 @@ def test_agent_governance_maturity_review_and_adversarial_analysis_exists_and_co
 
 
 def test_agent_governance_maturity_is_indexed_correctly():
-    """Verify that the Agent Governance Maturity Phase 2 files are registered in Main Archive/INDEX.md as PROPOSED."""
+    """Verify that the Agent Governance Maturity Phase 2 files are registered in Main Archive/INDEX.md as VALIDATED."""
     root_dir = Path(__file__).parent.parent.parent
     index_file = root_dir / "Main Archive" / "INDEX.md"
 
@@ -145,7 +145,7 @@ def test_agent_governance_maturity_is_indexed_correctly():
     assert "../docs/SAGE-AGENT-GOVERNANCE-MATURITY-PHASE-2.md" in content
     # Assert correct link format and state for review/adversarial analysis
     assert "../docs/SAGE-AGENT-GOVERNANCE-MATURITY-PHASE-2-RESEARCH-REVIEW-ADVERSARIAL-ANALYSIS.md" in content
-    assert "[State: PROPOSED]" in content
+    assert "[State: VALIDATED]" in content
 
 
 def test_agent_governance_maturity_protected_boundary_isolation():
