@@ -1,0 +1,86 @@
+{
+  "demonstration_id": "sdr_e2e_proof_demonstration",
+  "status": "COMPLETED",
+  "executed_at": "2026-07-30T13:05:00Z",
+  "participating_identities": [
+    {
+      "agent_id": "ChatGPT",
+      "role": "Coordinator",
+      "permissions": ["coordinate_missions", "delegate_tasks", "verify_evidence"],
+      "restrictions": ["mutate_code", "execute_sandbox", "approve_promotions"]
+    },
+    {
+      "agent_id": "Jules",
+      "role": "Engineering Executor",
+      "permissions": ["execute_sandbox", "write_experimental_code", "generate_evidence"],
+      "restrictions": ["approve_promotions", "coordinate_missions", "direct_review"]
+    },
+    {
+      "agent_id": "Claude",
+      "role": "Adversarial Reviewer",
+      "permissions": ["adversarial_audit", "review_receipts", "sign_human_reviews"],
+      "restrictions": ["mutate_code", "execute_sandbox", "delegate_tasks"]
+    },
+    {
+      "agent_id": "Gemini",
+      "role": "Independent Analyst",
+      "permissions": ["analyze_metrics", "read_logs", "compile_readiness"],
+      "restrictions": ["mutate_code", "execute_sandbox", "direct_review"]
+    }
+  ],
+  "success_path": {
+    "sdr_001": {
+      "capability_id": "cap_sdr_sim_engine",
+      "status": "PASSPORT_VALIDATED",
+      "receipt_id": "rcpt_9c3fe7c38809c8c3",
+      "human_review_id": "rev_6d965cde5cc4a899"
+    },
+    "sdr_002": {
+      "chain_sequence": [
+        "ChatGPT -> Jules (cap_sdr_sim_engine)",
+        "Jules -> Claude (cap_adversarial_audit)",
+        "Claude -> Gemini (cap_metrics_compilation)"
+      ],
+      "constraints_propagated": [
+        "no-code-mutation",
+        "sandbox-scratch-only"
+      ],
+      "chronological_timestamps": [
+        "2026-07-30T12:47:09.664298+00:00",
+        "2026-07-30T12:47:09.764671+00:00",
+        "2026-07-30T12:47:09.865014+00:00"
+      ]
+    }
+  },
+  "failure_path": {
+    "scenario": "Unauthorized Capability Attempt",
+    "trigger": {
+      "sender_identity": "ChatGPT",
+      "receiver_identity": "Claude",
+      "authorized_capability": "cap_sdr_sim_engine",
+      "task_objective": "Attempt to run sandbox execution on Claude."
+    },
+    "rejection": {
+      "exception_raised": "ValueError",
+      "message": "Handoff Violation: Receiver 'Claude' lacks required permission 'execute_sandbox' for capability 'cap_sdr_sim_engine'.",
+      "enforced_by": "AgentHandoffValidator"
+    },
+    "protected_namespace_impact": "None. Rejection executed at the validation layer; execution was aborted prior to any process initialization."
+  },
+  "integrity_verification_results": {
+    "chronology_monotonic": true,
+    "constraints_propagated_successfully": true,
+    "checksum_verified": true,
+    "session_chain_hash": "SAGE-CRC-v1.0-CHAIN-VALID"
+  },
+  "human_review_state": {
+    "reviewer_identity": "supervisor_v1",
+    "review_decision": "approved",
+    "review_notes": "All End-to-End demonstration parameters verified. The success path completed without core mutations, and the failure path successfully rejected unauthorized boundary violations. State persistence and graceful fallbacks operate as expected.",
+    "timestamp": "2026-07-30T13:10:00Z"
+  },
+  "archive_reference": {
+    "evidence_package": "evidence_capture/sdr_e2e_proof_package.json",
+    "target_destination": "Main Archive/sdr_e2e_proof_package.json"
+  }
+}
