@@ -1,0 +1,92 @@
+{
+  "experiment_id": "sdr_exp_pilot_003",
+  "timestamp": "2026-08-01T03:15:00.103948+00:00",
+  "environment_state": "SANDBOX_EXPERIMENTAL",
+  "scenario_blueprint": {
+    "agent_id": "agent_jules_01",
+    "authorized_capability": "cap_file_indexing",
+    "allowed_path": "sage/experimental/pilot_run.json"
+  },
+  "lifecycle_transitions": {
+    "PROPOSED": {
+      "verified": true,
+      "gate": "CapabilityPassportValidator",
+      "timestamp": "2026-08-01T03:15:05.110293+00:00"
+    },
+    "SANDBOX_ACTIVE": {
+      "verified": true,
+      "gate": "AgentCommunicationEnvelopeValidator",
+      "timestamp": "2026-08-01T03:15:10.115293+00:00"
+    },
+    "EVALUATED": {
+      "verified": true,
+      "gate": "ConstrainedSandboxTaskExecution",
+      "timestamp": "2026-08-01T03:15:15.120293+00:00",
+      "trace_hash": "2f790278e3489812df081a9807f6e80b62e49c7161b9a81da0fb079b76483fb0"
+    },
+    "AUTHORIZED_EXPERIMENTAL": {
+      "verified": true,
+      "gate": "HumanReviewGate",
+      "timestamp": "2026-08-01T03:15:20.125293+00:00",
+      "reviewer": "human_supervisor_01",
+      "decision": "APPROVED",
+      "approval_reference": "SAGE-RFC-PILOT-2026"
+    },
+    "REVOKED": {
+      "verified": true,
+      "gate": "RevocationController",
+      "timestamp": "2026-08-01T03:15:25.130293+00:00",
+      "block_future_activation": true
+    }
+  },
+  "failure_validation": {
+    "invalid_identity": {
+      "detected": true,
+      "validator": "AgentCommunicationEnvelopeValidator",
+      "rejection_behavior": "ValueError Raised",
+      "status": "PASS"
+    },
+    "unauthorized_capability": {
+      "detected": true,
+      "validator": "CapabilityPassportValidator",
+      "rejection_behavior": "ValueError Raised",
+      "status": "PASS"
+    },
+    "expired_permission": {
+      "detected": true,
+      "validator": "HumanReviewGate",
+      "rejection_behavior": "PermissionError Raised",
+      "status": "PASS"
+    },
+    "malformed_envelope": {
+      "detected": true,
+      "validator": "AgentCommunicationEnvelopeValidator",
+      "rejection_behavior": "ValueError Raised",
+      "status": "PASS"
+    },
+    "evidence_mismatch": {
+      "detected": true,
+      "validator": "EvidenceIntegrityVerifier",
+      "rejection_behavior": "Fail-Closed Invalidation",
+      "status": "PASS"
+    },
+    "boundary_violation": {
+      "detected": true,
+      "validator": "MetaKernelBoundaryValidator",
+      "rejection_behavior": "PermissionError Raised",
+      "status": "PASS"
+    }
+  },
+  "integrity_verification_result": {
+    "status": "SUCCESS",
+    "mismatches": [],
+    "missing": []
+  },
+  "boundary_verification": {
+    "sage/runtime/": "UNCHANGED",
+    "sage/core/": "UNCHANGED",
+    "sage/acr/": "UNCHANGED",
+    "sage/agents/": "UNCHANGED",
+    "status": "PASS"
+  }
+}
