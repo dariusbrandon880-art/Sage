@@ -76,8 +76,11 @@
   "human_review_state": {
     "reviewer_identity": "supervisor_v1",
     "review_decision": "approved",
+    "final_demonstration_acceptance_state": "ACCEPTED",
+    "reviewer_validation_status": "APPROVED AS VALIDATED EXPERIMENTAL EVIDENCE",
     "review_notes": "All End-to-End demonstration parameters verified. The success path completed without core mutations, and the failure path successfully rejected unauthorized boundary violations. State persistence and graceful fallbacks operate as expected.",
-    "timestamp": "2026-07-30T13:10:00Z"
+    "timestamp": "2026-07-30T13:10:00Z",
+    "approval_timestamp_reference": "2026-07-30T13:15:00Z/auth-gate-passed"
   },
   "archive_reference": {
     "evidence_package": "evidence_capture/sdr_e2e_proof_package.json",
