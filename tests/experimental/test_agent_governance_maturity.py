@@ -94,16 +94,57 @@ def test_agent_governance_maturity_document_exists_and_conforms():
     assert "audit lineage" in content_lower
 
 
+def test_agent_governance_maturity_review_and_adversarial_analysis_exists_and_conforms():
+    """Verify that the SAGE-AGENT-GOVERNANCE-MATURITY-PHASE-2-RESEARCH-REVIEW-ADVERSARIAL-ANALYSIS.md document exists and has core required sections and terms."""
+    root_dir = Path(__file__).parent.parent.parent
+    review_doc = root_dir / "docs" / "SAGE-AGENT-GOVERNANCE-MATURITY-PHASE-2-RESEARCH-REVIEW-ADVERSARIAL-ANALYSIS.md"
+
+    assert review_doc.exists(), "The Agent Governance Maturity Phase 2 Research Review must exist under docs/"
+    content = review_doc.read_text(encoding="utf-8")
+    content_lower = content.lower()
+
+    # Verify ID, Classification and Status
+    assert "SAGE-AGM-PHASE-2-REVIEW-2026-08-01" in content
+    assert "PROPOSED — Strategic Review Phase" in content
+
+    # Verify key sections
+    assert "1. Missing Enterprise Requirements Audit" in content
+    assert "2. Conceptual Stress-Testing & Adversarial Analysis" in content
+    assert "3. Minimal Future Validation Experiment Design" in content
+    assert "4. Operational Boundaries & Rules of Engagement" in content
+
+    # Verify stress-testing scenario terms
+    assert "lying or corrupt agents" in content_lower or "multi-agent disagreement" in content_lower
+    assert "permission conflicts" in content_lower
+    assert "evidence disputes" in content_lower
+    assert "human escalation failure" in content_lower
+    assert "compliance reconstruction" in content_lower
+
+    # Verify missing requirements audit
+    assert "identity non-repudiation" in content_lower
+    assert "federated audit trail" in content_lower
+    assert "real-time alerting" in content_lower
+    assert "granular key rotation" in content_lower
+
+    # Verify pilot/validation experiment design
+    assert "safe-sdr-agm-003" in content_lower
+    assert "minimal future validation experiment design" in content_lower
+    assert "experiment parameters" in content_lower
+    assert "programmatic sequence" in content_lower
+
+
 def test_agent_governance_maturity_is_indexed_correctly():
-    """Verify that the Agent Governance Maturity Phase 2 Research Specification is registered in Main Archive/INDEX.md as PROPOSED."""
+    """Verify that the Agent Governance Maturity Phase 2 files are registered in Main Archive/INDEX.md as PROPOSED."""
     root_dir = Path(__file__).parent.parent.parent
     index_file = root_dir / "Main Archive" / "INDEX.md"
 
     assert index_file.exists(), "Index file must exist in Main Archive/"
     content = index_file.read_text(encoding="utf-8")
 
-    # Assert correct link format and state
+    # Assert correct link format and state for spec
     assert "../docs/SAGE-AGENT-GOVERNANCE-MATURITY-PHASE-2.md" in content
+    # Assert correct link format and state for review/adversarial analysis
+    assert "../docs/SAGE-AGENT-GOVERNANCE-MATURITY-PHASE-2-RESEARCH-REVIEW-ADVERSARIAL-ANALYSIS.md" in content
     assert "[State: PROPOSED]" in content
 
 
