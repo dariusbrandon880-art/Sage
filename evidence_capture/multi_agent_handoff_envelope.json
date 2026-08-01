@@ -1,5 +1,5 @@
 {
-  "mission_id": "mission_bdcbc454623c41e7",
+  "mission_id": "mission_636e9b28a9204c42",
   "sender_identity": "chatgpt_coordinator",
   "receiver_identity": "jules_executor",
   "task_objective": "Validate a newly drafted SAGE security configuration",
@@ -9,12 +9,12 @@
     "Absolute preservation of protected namespaces (sage/runtime/, sage/core/, sage/acr/)",
     "Strict non-autonomous dry-run execution only"
   ],
-  "expected_artifact": "artifacts/handoff_24b83969.json",
-  "evidence_reference": "evidence_capture/handoff_envelope_0004e5f9.json",
+  "expected_artifact": "artifacts/handoff_43b147df.json",
+  "evidence_reference": "evidence_capture/handoff_envelope_6c0d663c.json",
   "review_status": "HUMAN_APPROVAL_REQUIRED",
   "validation_metadata": {
     "status": "VALIDATED",
-    "validated_at": "2026-07-31T23:10:24.803437+00:00",
+    "validated_at": "2026-08-01T01:55:11.699214+00:00",
     "verification_checks": {
       "identity_recorded": true,
       "capability_boundaries_enforced": true,

@@ -585,6 +585,7 @@ def test_documents_are_indexed_correctly():
     assert "../docs/SAGE-CONTROLLED-EXPERIMENTAL-VALIDATION-LOOP-ALIGNMENT-REVIEW.md" in content
     assert "../docs/SAGE-CONTROLLED-AGENT-ACTIVATION-SEQUENCE.md" in content
     assert "../docs/SAGE-EVIDENCE-INTEGRITY-HARDENING-SPECIFICATION.md" in content
+    assert "../docs/SAGE-EVIDENCE-INTEGRITY-HARDENING-SPECIFICATION.md) `[State: APPROVED AS VALIDATED EXPERIMENTAL CAPABILITY]`" in content
     assert "[State: PROPOSED]" in content
 
 
