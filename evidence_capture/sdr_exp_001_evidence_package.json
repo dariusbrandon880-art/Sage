@@ -1,6 +1,6 @@
 {
   "experiment_id": "sdr_exp_001_governance_lifecycle",
-  "executed_at": "2026-07-30T12:47:09.563543+00:00",
+  "executed_at": "2026-08-01T03:36:20.789169+00:00",
   "status": "COMPLETED",
   "components": {
     "mock_passport": {
@@ -19,45 +19,45 @@
     },
     "passport_validation_result": {
       "capability_id": "cap_sdr_sim_engine",
-      "validated_at": "2026-07-30T12:47:09.563232+00:00",
+      "validated_at": "2026-08-01T03:36:20.788507+00:00",
       "validation_status": "PASSPORT_VALIDATED",
       "approved": true,
       "read_only_assertion": true
     },
     "evidence_receipt": {
       "receipt": {
-        "receipt_id": "rcpt_ee636fade95192be",
+        "receipt_id": "rcpt_345a616276e677af",
         "capability_id": "cap_sdr_sim_engine",
         "validator_id": "val_system_v1",
         "validation_result": {
           "status": "PASSPORT_VALIDATED",
-          "validated_at": "2026-07-30T12:47:09.563232+00:00",
+          "validated_at": "2026-08-01T03:36:20.788507+00:00",
           "approved": true
         },
         "evidence_reference": "docs/SAGE-FIRST-CONTROLLED-SDR-EXPERIMENT-SPECIFICATION.md",
-        "timestamp": "2026-07-30T12:47:09.563411+00:00",
+        "timestamp": "2026-08-01T03:36:20.788966+00:00",
         "review_status": "approved",
         "archive_destination": "Main Archive/cap_sdr_sim_engine_receipt.json"
       },
       "traceability_chain_valid": true,
       "read_only_assertion": true,
-      "generated_at": "2026-07-30T12:47:09.563420+00:00"
+      "generated_at": "2026-08-01T03:36:20.788986+00:00"
     },
     "human_review_result": {
       "review_audit": {
-        "review_id": "rev_21081d403802de7d",
-        "receipt_id": "rcpt_ee636fade95192be",
+        "review_id": "rev_9481c7a5be9fe3a4",
+        "receipt_id": "rcpt_345a616276e677af",
         "capability_id": "cap_sdr_sim_engine",
         "reviewer_identity": "supervisor_v1",
         "review_decision": "approved",
         "review_notes": "Sandbox dry-run execution results verified. All isolated file operations performed strictly in approved experimental scratch directories. No core runtime mutations detected.",
-        "timestamp": "2026-07-30T12:47:09.563531+00:00",
+        "timestamp": "2026-08-01T03:36:20.789152+00:00",
         "validation_status": "VALIDATED",
         "archive_destination": "Main Archive/cap_sdr_sim_engine_review_gate.json"
       },
       "audit_trail_valid": true,
       "read_only_assertion": true,
-      "finalized_at": "2026-07-30T12:47:09.563539+00:00"
+      "finalized_at": "2026-08-01T03:36:20.789164+00:00"
     }
   },
   "system_telemetry": {

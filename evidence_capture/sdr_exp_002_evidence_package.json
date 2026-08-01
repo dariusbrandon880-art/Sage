@@ -1,6 +1,6 @@
 {
   "experiment_id": "sdr_exp_002_multi_agent_chain",
-  "executed_at": "2026-07-30T12:47:09.865369+00:00",
+  "executed_at": "2026-08-01T03:36:21.092354+00:00",
   "status": "COMPLETED",
   "chain_sequence": [
     "ChatGPT (Coordinator)",
@@ -35,7 +35,7 @@
       },
       "artifact_reference": "evidence_capture/sdr_exp_002_jules_output.json",
       "review_status": "approved",
-      "timestamp": "2026-07-30T12:47:09.664298+00:00"
+      "timestamp": "2026-08-01T03:36:20.891477+00:00"
     },
     {
       "envelope": {
@@ -60,7 +60,7 @@
       },
       "artifact_reference": "evidence_capture/sdr_exp_002_claude_audit.json",
       "review_status": "approved",
-      "timestamp": "2026-07-30T12:47:09.764671+00:00"
+      "timestamp": "2026-08-01T03:36:20.991814+00:00"
     },
     {
       "envelope": {
@@ -84,7 +84,7 @@
       },
       "artifact_reference": "evidence_capture/sdr_exp_002_gemini_metrics.json",
       "review_status": "approved",
-      "timestamp": "2026-07-30T12:47:09.865014+00:00"
+      "timestamp": "2026-08-01T03:36:21.092151+00:00"
     }
   ],
   "constraints_propagated": [
