@@ -37,6 +37,7 @@ Each indexed artifact is assigned a lifecycle state under the **Index Layer v0.1
 - [CIC Spec](research/strategic/CIC.md) `[State: CANONICAL]` - Continuity Independence Validation (CIV-001) strategic framework and rehydration validation.
 - [HSI Spec](research/strategic/HSI.md) `[State: CANONICAL]` - Human-SAGE Interaction (SAGE-HSI-001) specifying trust boundaries and pacing.
 - [SAGE 2 Knowledge Governance Study](research/strategic/SAGE_Research_Track_Comparative_Intelligence_Architecture_Study_Review.md) `[State: CANONICAL]` - SAGE-RF-2026-004 Comparative Intelligence Architecture Study Review (ACCEPTED).
+- [SAGE Agent Governance Maturity Phase 2](../docs/SAGE-AGENT-GOVERNANCE-MATURITY-PHASE-2.md) `[State: PROPOSED]` - Research specification defining the multi-agent governance model, role separation, delegation constraints, and compliance structures for Phase 2.
 - [PEF Spec](research/strategic/PEF.md) `[State: CANONICAL]` - SAGE-RF-PEF-001 Parallel Cognitive Evolution Infrastructure Framework (SPRO, HSE, Reliability Arena, ESI v2).
 - [SP_REV2 Spec](research/strategic/SP_REV2.md) `[State: CANONICAL]` - SAGE-RF-SP-001-REV-2.0 Deep Security & Information Physics Expansion Study (ITF, ZKI, QKSS, SIMG, Adaptive Security Field Theory).
 
