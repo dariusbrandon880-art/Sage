@@ -289,7 +289,7 @@ class Phase4EvaluationRunner:
         package["validation results"]["reproducibility_check"] = rep_check
 
         # Persist individually to durable locations
-        for path in [self.output_path.parent / f"{eval_id}.json", self.output_path.parent / f"{self.output_path.stem}_scenario_a.json"]:
+        for path in [self.output_path.parent / "phase_4_scenario_a_evidence.json", self.output_path.parent / f"{self.output_path.stem}_scenario_a.json"]:
             path.parent.mkdir(parents=True, exist_ok=True)
             with open(path, "w", encoding="utf-8") as f:
                 json.dump(package, f, indent=2)
@@ -446,7 +446,7 @@ class Phase4EvaluationRunner:
         package["validation results"]["reproducibility_check"] = rep_check
 
         # Persist individually to durable locations
-        for path in [self.output_path.parent / f"{eval_id}.json", self.output_path.parent / f"{self.output_path.stem}_scenario_b.json"]:
+        for path in [self.output_path.parent / "phase_4_scenario_b_evidence.json", self.output_path.parent / f"{self.output_path.stem}_scenario_b.json"]:
             path.parent.mkdir(parents=True, exist_ok=True)
             with open(path, "w", encoding="utf-8") as f:
                 json.dump(package, f, indent=2)

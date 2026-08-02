@@ -14,7 +14,7 @@ def test_phase_4_evaluation_runner_execution_and_schema():
     evidence_file = evidence_dir / "phase_4_controlled_evaluation_evidence.json"
 
     # Delete if exists to ensure we verify fresh generation
-    for f in [evidence_file, evidence_dir / "eval_phase4_scenario_a_001.json", evidence_dir / "eval_phase4_scenario_b_001.json"]:
+    for f in [evidence_file, evidence_dir / "phase_4_scenario_a_evidence.json", evidence_dir / "phase_4_scenario_b_evidence.json"]:
         if f.exists():
             f.unlink()
 
@@ -82,8 +82,8 @@ def test_phase_4_evaluation_runner_execution_and_schema():
     assert sc_b["validation_results"]["reproducibility_check"]["status"] == "PASSED"
 
     # Validate individual durable scenario files
-    sc_a_file = evidence_dir / "eval_phase4_scenario_a_001.json"
-    sc_b_file = evidence_dir / "eval_phase4_scenario_b_001.json"
+    sc_a_file = evidence_dir / "phase_4_scenario_a_evidence.json"
+    sc_b_file = evidence_dir / "phase_4_scenario_b_evidence.json"
 
     assert sc_a_file.exists(), "Individual Scenario A package must be written to disk (durable location)."
     assert sc_b_file.exists(), "Individual Scenario B package must be written to disk (durable location)."

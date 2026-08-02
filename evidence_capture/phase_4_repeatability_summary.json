@@ -1,12 +1,12 @@
 {
   "summary_id": "summary_phase_4_repeatability_2026_08_02",
-  "timestamp": "2026-08-02T10:11:50.245780+00:00",
-  "total_runs_executed": 3,
+  "timestamp": "2026-08-02T10:22:32.396432+00:00",
+  "total_runs_executed": 5,
   "success_rate_percent": 100.0,
   "runs": [
     {
       "run_index": 1,
-      "file_path": "/app/evidence_capture/phase_4_repeatability_run_1.json",
+      "file_path": "evidence_capture/phase_4_repeatability_run_1.json",
       "total_duration_mins": 10.2,
       "total_steps_reduced": 27,
       "actions_blocked": 3,
@@ -14,7 +14,7 @@
     },
     {
       "run_index": 2,
-      "file_path": "/app/evidence_capture/phase_4_repeatability_run_2.json",
+      "file_path": "evidence_capture/phase_4_repeatability_run_2.json",
       "total_duration_mins": 10.7,
       "total_steps_reduced": 27,
       "actions_blocked": 3,
@@ -22,8 +22,24 @@
     },
     {
       "run_index": 3,
-      "file_path": "/app/evidence_capture/phase_4_repeatability_run_3.json",
+      "file_path": "evidence_capture/phase_4_repeatability_run_3.json",
       "total_duration_mins": 11.3,
+      "total_steps_reduced": 27,
+      "actions_blocked": 3,
+      "lineage_valid": true
+    },
+    {
+      "run_index": 4,
+      "file_path": "evidence_capture/phase_4_repeatability_run_4.json",
+      "total_duration_mins": 10.4,
+      "total_steps_reduced": 27,
+      "actions_blocked": 3,
+      "lineage_valid": true
+    },
+    {
+      "run_index": 5,
+      "file_path": "evidence_capture/phase_4_repeatability_run_5.json",
+      "total_duration_mins": 11.1,
       "total_steps_reduced": 27,
       "actions_blocked": 3,
       "lineage_valid": true
@@ -32,18 +48,18 @@
   "repeatability_statistics": {
     "scenario_a_duration_mins": {
       "mean": 4.5,
-      "variance": 0.09,
-      "std_dev": 0.3
+      "variance": 0.065,
+      "std_dev": 0.255
     },
     "scenario_b_duration_mins": {
-      "mean": 6.2333,
-      "variance": 0.0633,
-      "std_dev": 0.2517
+      "mean": 6.24,
+      "variance": 0.043,
+      "std_dev": 0.2074
     },
     "total_duration_mins": {
-      "mean": 10.7333,
-      "variance": 0.3033,
-      "std_dev": 0.5508
+      "mean": 10.74,
+      "variance": 0.213,
+      "std_dev": 0.4615
     },
     "steps_reduced_scenario_a": {
       "mean": 12.0,
