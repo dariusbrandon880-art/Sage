@@ -6,10 +6,18 @@ from sage.experimental.act.contracts import (
     SessionStateTaskLinker,
     CrossModelAuditPayloadValidator,
 )
+from sage.experimental.act.prototype import (
+    PrototypeMetricsCollector,
+    PrototypeOrchestratorRunner,
+    DemoInterface,
+)
 
 __all__ = [
     "SessionTaskTreeLinker",
     "TaskDecisionBinder",
     "SessionStateTaskLinker",
     "CrossModelAuditPayloadValidator",
+    "PrototypeMetricsCollector",
+    "PrototypeOrchestratorRunner",
+    "DemoInterface",
 ]
