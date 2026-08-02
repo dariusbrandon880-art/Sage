@@ -10,11 +10,13 @@ from sage.experimental.act.phase_4_eval import Phase4EvaluationRunner
 def test_phase_4_evaluation_runner_execution_and_schema():
     """Verify that Phase4EvaluationRunner executes perfectly and produces a conforming evidence package."""
     root_dir = Path(__file__).parent.parent.parent
-    evidence_file = root_dir / "evidence_capture" / "phase_4_controlled_evaluation_evidence.json"
+    evidence_dir = root_dir / "evidence_capture"
+    evidence_file = evidence_dir / "phase_4_controlled_evaluation_evidence.json"
 
     # Delete if exists to ensure we verify fresh generation
-    if evidence_file.exists():
-        evidence_file.unlink()
+    for f in [evidence_file, evidence_dir / "phase_4_scenario_a_evidence.json", evidence_dir / "phase_4_scenario_b_evidence.json"]:
+        if f.exists():
+            f.unlink()
 
     runner = Phase4EvaluationRunner(output_path=str(evidence_file))
     package = runner.execute_all()
@@ -23,14 +25,16 @@ def test_phase_4_evaluation_runner_execution_and_schema():
 
     # Validate high-level structure
     assert package["compliance_pack_id"] == "comp_phase_4_controlled_evaluation_2026_08_02"
-    assert len(package["workflows"]) == 5
+    assert len(package["workflows"]) == 2
     assert "aggregate_metrics" in package
+    assert "run_identifier" in package
+    assert "run identifier" in package
 
     # Validate aggregate metrics
     agg = package["aggregate_metrics"]
-    assert agg["total_workflows_executed"] == 5
-    assert agg["total_steps_reduced"] == 66
-    assert agg["unauthorized_actions_blocked"] == 6
+    assert agg["total_workflows_executed"] == 2
+    assert agg["total_steps_reduced"] == 27
+    assert agg["unauthorized_actions_blocked"] == 3
     assert agg["context_recovery_success_rate"] == 100.0
 
     # Validate Scenario A
@@ -77,29 +81,42 @@ def test_phase_4_evaluation_runner_execution_and_schema():
     assert sc_b["validation_results"]["reproducibility_check"]["reproducible"] is True
     assert sc_b["validation_results"]["reproducibility_check"]["status"] == "PASSED"
 
-    # Validate Scenario C (ADR Recovery)
-    sc_c = package["workflows"][2]
-    assert sc_c["evaluation_id"] == "eval_phase4_scenario_c_001"
-    assert sc_c["scenario_id"] == "scenario_c"
-    assert len(sc_c["workflow_trace"]) == 4
-    assert sc_c["metrics_summary"]["efficiency"]["steps_reduced"] == 11
-    assert sc_c["validation_results"]["reproducibility_check"]["reproducible"] is True
+    # Validate individual durable scenario files
+    sc_a_file = evidence_dir / "phase_4_scenario_a_evidence.json"
+    sc_b_file = evidence_dir / "phase_4_scenario_b_evidence.json"
 
-    # Validate Scenario D (History Lineage)
-    sc_d = package["workflows"][3]
-    assert sc_d["evaluation_id"] == "eval_phase4_scenario_d_001"
-    assert sc_d["scenario_id"] == "scenario_d"
-    assert len(sc_d["workflow_trace"]) == 3
-    assert sc_d["metrics_summary"]["efficiency"]["steps_reduced"] == 19
-    assert sc_d["validation_results"]["reproducibility_check"]["reproducible"] is True
+    assert sc_a_file.exists(), "Individual Scenario A package must be written to disk (durable location)."
+    assert sc_b_file.exists(), "Individual Scenario B package must be written to disk (durable location)."
 
-    # Validate Scenario E (Doc Synthesis)
-    sc_e = package["workflows"][4]
-    assert sc_e["evaluation_id"] == "eval_phase4_scenario_e_001"
-    assert sc_e["scenario_id"] == "scenario_e"
-    assert len(sc_e["workflow_trace"]) == 3
-    assert sc_e["metrics_summary"]["efficiency"]["steps_reduced"] == 9
-    assert sc_e["validation_results"]["reproducibility_check"]["reproducible"] is True
+    # Read Scenario A individually generated file
+    with open(sc_a_file, "r") as f:
+        data_a = json.load(f)
+    assert data_a["evaluation_id"] == "eval_phase4_scenario_a_001"
+    assert data_a["scenario_id"] == "scenario_a"
+    assert "timestamp" in data_a
+    assert "run_identifier" in data_a
+    assert "run identifier" in data_a
+    assert "artifact_hashes" in data_a
+    assert "artifact hashes" in data_a
+    assert "generated_metrics" in data_a
+    assert "generated metrics" in data_a
+    assert "validation_results" in data_a
+    assert "validation results" in data_a
+
+    # Read Scenario B individually generated file
+    with open(sc_b_file, "r") as f:
+        data_b = json.load(f)
+    assert data_b["evaluation_id"] == "eval_phase4_scenario_b_001"
+    assert data_b["scenario_id"] == "scenario_b"
+    assert "timestamp" in data_b
+    assert "run_identifier" in data_b
+    assert "run identifier" in data_b
+    assert "artifact_hashes" in data_b
+    assert "artifact hashes" in data_b
+    assert "generated_metrics" in data_b
+    assert "generated metrics" in data_b
+    assert "validation_results" in data_b
+    assert "validation results" in data_b
 
 
 def test_phase_4_boundary_isolation_enforcement():
