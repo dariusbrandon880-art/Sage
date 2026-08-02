@@ -2,9 +2,9 @@
   "evaluation_id": "eval_phase4_scenario_b_001",
   "evaluation_identifier": "eval_phase4_scenario_b_001",
   "scenario_id": "scenario_b",
-  "timestamp": "2026-08-02T10:22:32.373628+00:00",
-  "run_identifier": "run_phase4_repeatability_3_4965491a",
-  "run identifier": "run_phase4_repeatability_3_4965491a",
+  "timestamp": "2026-08-02T11:01:22.487409+00:00",
+  "run_identifier": "run_phase4_repeatability_3_9c218865",
+  "run identifier": "run_phase4_repeatability_3_9c218865",
   "human objective": "Recover stateless session context and verify chronological invariants after a mock loop failure.",
   "human_objective": "Recover stateless session context and verify chronological invariants after a mock loop failure.",
   "input artifact references": [
@@ -18,28 +18,28 @@
   "workflow_trace": [
     {
       "step": 1,
-      "timestamp": "2026-08-02T10:22:32.373109+00:00",
+      "timestamp": "2026-08-02T11:01:22.486923+00:00",
       "actor_id": "agent_coord_chatgpt",
       "action": "EXECUTE_QUERY",
       "details": "Coordinator queries repository state. Encounters simulated model loop termination."
     },
     {
       "step": 2,
-      "timestamp": "2026-08-02T10:22:32.373121+00:00",
+      "timestamp": "2026-08-02T11:01:22.486934+00:00",
       "actor_id": "SYSTEM",
       "action": "TRAP_LOOP_FAILURE",
       "details": "SPEK intercepts loop failure and pauses active execution thread."
     },
     {
       "step": 3,
-      "timestamp": "2026-08-02T10:22:32.373125+00:00",
+      "timestamp": "2026-08-02T11:01:22.486937+00:00",
       "actor_id": "agent_exec_jules",
       "action": "REHYDRATE_CHECKPOINT",
       "details": "Jules loads the last signed recovery checkpoint and validates state.json checksum."
     },
     {
       "step": 4,
-      "timestamp": "2026-08-02T10:22:32.373127+00:00",
+      "timestamp": "2026-08-02T11:01:22.486940+00:00",
       "actor_id": "agent_analyst_claude",
       "action": "RECONSTRUCT_DECISIONS",
       "details": "Claude audits reconstructed decisions and verifies chronological order."
@@ -144,7 +144,7 @@
     ],
     "reproducibility_check": {
       "reproducible": true,
-      "timestamp": "2026-08-02T10:22:32.373666+00:00",
+      "timestamp": "2026-08-02T11:01:22.487445+00:00",
       "mismatches": [],
       "status": "PASSED"
     }
@@ -201,7 +201,7 @@
     ],
     "reproducibility_check": {
       "reproducible": true,
-      "timestamp": "2026-08-02T10:22:32.373666+00:00",
+      "timestamp": "2026-08-02T11:01:22.487445+00:00",
       "mismatches": [],
       "status": "PASSED"
     }
@@ -232,21 +232,21 @@
   ],
   "human checkpoint": {
     "checkpoint_id": "chk_phase_4_loop_recovery",
-    "timestamp": "2026-08-02T10:22:32.373611+00:00",
+    "timestamp": "2026-08-02T11:01:22.487400+00:00",
     "supervisor_id": "human_supervisor_01",
     "decision": "AUTHORIZED",
     "comments": "Stateless rollback and recovery observed result. Zero execution drift observed under estimated baseline."
   },
   "human_checkpoint": {
     "checkpoint_id": "chk_phase_4_loop_recovery",
-    "timestamp": "2026-08-02T10:22:32.373611+00:00",
+    "timestamp": "2026-08-02T11:01:22.487400+00:00",
     "supervisor_id": "human_supervisor_01",
     "decision": "AUTHORIZED",
     "comments": "Stateless rollback and recovery observed result. Zero execution drift observed under estimated baseline."
   },
   "human_decision_record": {
     "checkpoint_id": "chk_phase_4_loop_recovery",
-    "timestamp": "2026-08-02T10:22:32.373611+00:00",
+    "timestamp": "2026-08-02T11:01:22.487400+00:00",
     "supervisor_id": "human_supervisor_01",
     "decision": "AUTHORIZED",
     "comments": "Stateless rollback and recovery observed result. Zero execution drift observed under estimated baseline."
@@ -255,11 +255,11 @@
   "outcome_state": "SUCCESS_RECOVERED",
   "artifact hashes": {
     "sage/experimental/act/contracts.py": "977a5ec08a7c842a943f009e20fd0204235728340ab6b9dc448b4b2e4b6f70b8",
-    "sage/experimental/act/phase_4_eval.py": "5726ef5ebe2a133014ec1c0d6419694de71b5184cd06273b42321913a6b69042"
+    "sage/experimental/act/phase_4_eval.py": "d028be877dae3b0f4fb94f4e79e71c57a93dffe2edeab77884a588cb0cedd739"
   },
   "artifact_hashes": {
     "sage/experimental/act/contracts.py": "977a5ec08a7c842a943f009e20fd0204235728340ab6b9dc448b4b2e4b6f70b8",
-    "sage/experimental/act/phase_4_eval.py": "5726ef5ebe2a133014ec1c0d6419694de71b5184cd06273b42321913a6b69042"
+    "sage/experimental/act/phase_4_eval.py": "d028be877dae3b0f4fb94f4e79e71c57a93dffe2edeab77884a588cb0cedd739"
   },
   "metrics": {
     "efficiency": {
