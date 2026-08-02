@@ -23,14 +23,14 @@ def test_phase_4_evaluation_runner_execution_and_schema():
 
     # Validate high-level structure
     assert package["compliance_pack_id"] == "comp_phase_4_controlled_evaluation_2026_08_02"
-    assert len(package["workflows"]) == 2
+    assert len(package["workflows"]) == 5
     assert "aggregate_metrics" in package
 
     # Validate aggregate metrics
     agg = package["aggregate_metrics"]
-    assert agg["total_workflows_executed"] == 2
-    assert agg["total_steps_reduced"] == 27
-    assert agg["unauthorized_actions_blocked"] == 3
+    assert agg["total_workflows_executed"] == 5
+    assert agg["total_steps_reduced"] == 66
+    assert agg["unauthorized_actions_blocked"] == 6
     assert agg["context_recovery_success_rate"] == 100.0
 
     # Validate Scenario A
@@ -76,6 +76,30 @@ def test_phase_4_evaluation_runner_execution_and_schema():
     # Verify reproducibility check for scenario B
     assert sc_b["validation_results"]["reproducibility_check"]["reproducible"] is True
     assert sc_b["validation_results"]["reproducibility_check"]["status"] == "PASSED"
+
+    # Validate Scenario C (ADR Recovery)
+    sc_c = package["workflows"][2]
+    assert sc_c["evaluation_id"] == "eval_phase4_scenario_c_001"
+    assert sc_c["scenario_id"] == "scenario_c"
+    assert len(sc_c["workflow_trace"]) == 4
+    assert sc_c["metrics_summary"]["efficiency"]["steps_reduced"] == 11
+    assert sc_c["validation_results"]["reproducibility_check"]["reproducible"] is True
+
+    # Validate Scenario D (History Lineage)
+    sc_d = package["workflows"][3]
+    assert sc_d["evaluation_id"] == "eval_phase4_scenario_d_001"
+    assert sc_d["scenario_id"] == "scenario_d"
+    assert len(sc_d["workflow_trace"]) == 3
+    assert sc_d["metrics_summary"]["efficiency"]["steps_reduced"] == 19
+    assert sc_d["validation_results"]["reproducibility_check"]["reproducible"] is True
+
+    # Validate Scenario E (Doc Synthesis)
+    sc_e = package["workflows"][4]
+    assert sc_e["evaluation_id"] == "eval_phase4_scenario_e_001"
+    assert sc_e["scenario_id"] == "scenario_e"
+    assert len(sc_e["workflow_trace"]) == 3
+    assert sc_e["metrics_summary"]["efficiency"]["steps_reduced"] == 9
+    assert sc_e["validation_results"]["reproducibility_check"]["reproducible"] is True
 
 
 def test_phase_4_boundary_isolation_enforcement():
