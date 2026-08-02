@@ -1,0 +1,80 @@
+{
+  "summary_id": "summary_phase_4_repeatability_2026_08_02",
+  "timestamp": "2026-08-02T10:11:50.245780+00:00",
+  "total_runs_executed": 3,
+  "success_rate_percent": 100.0,
+  "runs": [
+    {
+      "run_index": 1,
+      "file_path": "/app/evidence_capture/phase_4_repeatability_run_1.json",
+      "total_duration_mins": 10.2,
+      "total_steps_reduced": 27,
+      "actions_blocked": 3,
+      "lineage_valid": true
+    },
+    {
+      "run_index": 2,
+      "file_path": "/app/evidence_capture/phase_4_repeatability_run_2.json",
+      "total_duration_mins": 10.7,
+      "total_steps_reduced": 27,
+      "actions_blocked": 3,
+      "lineage_valid": true
+    },
+    {
+      "run_index": 3,
+      "file_path": "/app/evidence_capture/phase_4_repeatability_run_3.json",
+      "total_duration_mins": 11.3,
+      "total_steps_reduced": 27,
+      "actions_blocked": 3,
+      "lineage_valid": true
+    }
+  ],
+  "repeatability_statistics": {
+    "scenario_a_duration_mins": {
+      "mean": 4.5,
+      "variance": 0.09,
+      "std_dev": 0.3
+    },
+    "scenario_b_duration_mins": {
+      "mean": 6.2333,
+      "variance": 0.0633,
+      "std_dev": 0.2517
+    },
+    "total_duration_mins": {
+      "mean": 10.7333,
+      "variance": 0.3033,
+      "std_dev": 0.5508
+    },
+    "steps_reduced_scenario_a": {
+      "mean": 12.0,
+      "variance": 0.0,
+      "std_dev": 0.0
+    },
+    "steps_reduced_scenario_b": {
+      "mean": 15.0,
+      "variance": 0.0,
+      "std_dev": 0.0
+    },
+    "aggregate_steps_reduced": {
+      "mean": 27.0,
+      "variance": 0.0,
+      "std_dev": 0.0
+    },
+    "blocked_unauthorized_actions": {
+      "mean": 3.0,
+      "variance": 0.0,
+      "std_dev": 0.0
+    }
+  },
+  "automated_consistency_summary": {
+    "all_runs_receipt_lineages_intact": true,
+    "all_runs_validation_sequences_monotonic": true,
+    "all_runs_metrics_complete": true
+  },
+  "boundary_integrity_verification": {
+    "sage_runtime_untouched": true,
+    "sage_core_untouched": true,
+    "sage_acr_untouched": true,
+    "sage_agents_untouched": true
+  }
+}
