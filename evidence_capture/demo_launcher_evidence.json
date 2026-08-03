@@ -1,0 +1,87 @@
+{
+  "launcher_run_id": "launch_d2b66670",
+  "timestamp": "2026-08-03T14:28:10.231623+00:00",
+  "standard_inputs": {
+    "session_id": "session_demo_launcher_2026",
+    "user_id": "usr_lead_developer",
+    "approver": "supervisor_charlie",
+    "signature": "sig_exp_approved_7711",
+    "modified_files": [
+      "sage/core/spek.py"
+    ],
+    "strategy": "CHRONOLOGICAL_PRIORITY",
+    "historical_context_id": "ctx_baseline_audit_v2"
+  },
+  "context_guard_validation": {
+    "compliance_pack_id": "comp_s_guard_001",
+    "receipt_id": "rec_guard_eceffd9800d5",
+    "status": "PROTECTION_VIOLATION_DETECTED",
+    "violations_found": 1,
+    "supervisor_decision": {
+      "checkpoint_id": "chk_guard_679d0883",
+      "decision_state": "AUTHORIZED",
+      "supervisor_id": "supervisor_charlie",
+      "comments": "SAGE Demonstration Manual Authorization Override applied.",
+      "action_taken": "COMMIT_APPROVED"
+    }
+  },
+  "sdr_004_divergence": {
+    "conflicts_detected": 1,
+    "applied_strategy": "CHRONOLOGICAL_PRIORITY",
+    "resolution_status": "RESOLVED"
+  },
+  "repeatable_experience": {
+    "experience_id": "exp_eecc713d",
+    "status": "EXPERIENCE_SUCCESS",
+    "experience_checksum": "26d47aab5da51dff5c3770a7be49e650675972cc2632a4f0e3df2c29b4c2d3e1"
+  },
+  "act_prod_demonstrator": {
+    "signatures_audited": 3,
+    "chain_integrity": "SECURE_PASSED",
+    "non_repudiation_status": "VERIFIED_INDISPUTABLE"
+  },
+  "terminal_presentation": [
+    "==========================================================================",
+    "          SAGE DEMONSTRATION EXPERIENCE LAUNCHER CONTROL CONSOLE          ",
+    "==========================================================================",
+    " Launch Timestamp     : 2026-08-03T14:28:10.231623+00:00",
+    " Boundary Security    : SECURE SANDBOX PRESERVED",
+    " Non-Repudiation Code : VERIFIED_INDISPUTABLE",
+    "",
+    "=== SAGE CHRONOLOGICAL DEMONSTRATION LINEAGE ===",
+    "Launch Run ID      : launch_d2b66670",
+    "Active Session     : session_demo_launcher_2026",
+    "User Initiator     : usr_lead_developer",
+    "Workspace Intake   : 1 file(s) monitored",
+    "  \u2514\u2500\u25ba Intake File: sage/core/spek.py",
+    "Guard Verdict      : PROTECTION_VIOLATION_DETECTED",
+    "  \u2514\u2500\u25ba Action: COMMIT_APPROVED (AUTHORIZED)",
+    "SDR Divergence     : State split brain simulated & resolved (CHRONOLOGICAL_PRIORITY)",
+    "CRC Receipt Valid  : SAGE_ACTIVATION_RECEIPT_VALID",
+    "  \u2514\u2500\u25ba Hash: 3d861a88f84b4227d5b7849a46a0877325737e089749d6d8eb2d6303d6524d8d",
+    "=================================================",
+    "",
+    "=== FINAL SAGE DEMONSTRATION WORKFLOW RUN SUMMARY ===",
+    "=== SAGE DEMONSTRATION RUN COMPLETE ===\nSession ID: session_demo_launcher_2026\nStatus: INTAKE_COMPLETE & VERIFIED\nBoundary Integrity: Context Guard Monitored (SECURE)\nSDR Divergence State: split_brain_detected=True (Recovery Checkpoints Active)\nHuman Checkpoint: AUTHORIZED by supervisor_charlie\nVerification: SAGE_ACTIVATION_RECEIPT_VALID\n========================================",
+    "=====================================================",
+    "  SAGE SECURE EXPERIMENTAL SANDBOX OPERATES WITH 100% COMPLIANCE  ",
+    "=========================================================================="
+  ],
+  "attestation": {
+    "nonce": "4a537eae2097421a",
+    "data_hash": "f98e691edc81a0f1c885e92f99ff6cd6f3441b42aeeefeb030df50a18e9f3a93",
+    "signature": "sig_launcher_c55816165acc65e1d7e90f4d75ec6161",
+    "signer_identity": "supervisor_charlie"
+  },
+  "boundary_integrity_verification": {
+    "sage_runtime_untouched": true,
+    "sage_core_untouched": true,
+    "sage_acr_untouched": true,
+    "sage_agents_untouched": true
+  },
+  "observed_results": {
+    "success_rate_percent": 100.0,
+    "workflow_latency_secs": 0.035,
+    "total_reconstructed_lineages": 1
+  }
+}
