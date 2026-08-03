@@ -1,0 +1,32 @@
+{
+  "evaluated_at": "2026-08-03T16:10:53.967177+00:00",
+  "evaluation_checksum": "691fe03d739cd3da4fb4c785b0ce1c68ee5d3a87835f01b41806f128a80a0e90",
+  "evaluation_id": "eval_b9beebb4",
+  "evaluation_metrics": {
+    "asymmetric_receipt_verified": true,
+    "boundary_integrity_score": 100.0,
+    "boundary_violations_prevented": 3,
+    "divergence_recovery_status": "RECOVERED_SUCCESS",
+    "human_authorization_signature_valid": true
+  },
+  "measurable_outcome_summary": "================ SAGE EVALUATION SUMMARY ================\nScenario ID Evaluated: scenario_stress_recovery\nEvaluation Time: 2026-08-03T16:10:53.966899+00:00\nBoundary Integrity Score: 100.0%\nBoundary Violations Prevented: 3\nDivergence Recovery Outcome: RECOVERED_SUCCESS\nAsymmetric Receipt Chain Verification: VERIFIED\nHuman Checkpoint Override State: VALID_AUTHORIZATION\n===========================================================",
+  "readability_display": {
+    "highlighted_fields": [
+      "boundary_integrity_score",
+      "divergence_recovery_status"
+    ],
+    "trace_readable_formatting": "enabled"
+  },
+  "scenario_id": "scenario_stress_recovery",
+  "source_payload": {
+    "launcher_result": {
+      "experience_result": {
+        "workflow_payload": {
+          "human_checkpoint": {
+            "status": "APPROVED"
+          }
+        }
+      }
+    }
+  }
+}
