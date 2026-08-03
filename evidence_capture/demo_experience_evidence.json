@@ -1,6 +1,6 @@
 {
-  "experience_run_id": "demo_exp_791aecf4",
-  "timestamp": "2026-08-03T12:50:26.637617+00:00",
+  "experience_run_id": "demo_exp_0034eb3b",
+  "timestamp": "2026-08-03T13:00:54.427127+00:00",
   "integrated_lineage": {
     "user_action": {
       "modified_files": [
@@ -22,7 +22,7 @@
       ]
     },
     "hdg_checkpoint": {
-      "checkpoint_id": "chk_demo_wf_1ebb7599",
+      "checkpoint_id": "chk_demo_wf_ddaaed22",
       "decision_state": "REJECTED",
       "supervisor_id": "human_supervisor_01",
       "comments": "Illegal edits touched core namespace block.",
@@ -30,7 +30,7 @@
     },
     "sdr_divergence": {
       "simulation_id": "sim_sdr004_dem_01",
-      "timestamp": "2026-08-03T12:50:26.637789+00:00",
+      "timestamp": "2026-08-03T13:00:54.427127+00:00",
       "divergence_details": {
         "original_session_id": "session_sdr_demo",
         "diverged_branches": [
@@ -96,12 +96,12 @@
     "==========================================================================",
     "          SAGE ENTERPRISE DEMONSTRATION INTEGRATED EXPERIENCE COCONSOLE    ",
     "==========================================================================",
-    " Presentation Run ID  : demo_exp_791aecf4",
-    " Presentation Time    : 2026-08-03T12:50:26.637617+00:00",
+    " Presentation Run ID  : demo_exp_0034eb3b",
+    " Presentation Time    : 2026-08-03T13:00:54.427127+00:00",
     "",
     "=== SAGE CHRONOLOGICAL AUDIT LINEAGE ===",
-    "Session Identifier : demo_wf_6d45aafb",
-    "Intake Captured At : 2026-08-03T12:50:26.637652+00:00",
+    "Session Identifier : session_guard_fallback",
+    "Intake Captured At : 2026-08-03T13:00:54.427127+00:00",
     "Workspace Intake   : 1 file(s) modified",
     "  \u2514\u2500\u25ba Modified: sage/core/spek.py",
     "SPEK Guard Status  : PROTECTION_VIOLATION_DETECTED (HIGH Severity)",
@@ -126,13 +126,13 @@
     "==============================================",
     "",
     "=== RECOVERY CHECKPOINT & SUPERVISOR SIGS ===",
-    "Checkpoint ID     : chk_demo_wf_1ebb7599",
-    "Timestamp Captured: 2026-08-03T12:50:26.637652+00:00",
+    "Checkpoint ID     : chk_demo_wf_ddaaed22",
+    "Timestamp Captured: 2026-08-03T13:00:54.427127+00:00",
     "Supervisor Identity: human_supervisor_01",
     "Supervisor Verdict : REJECTED",
     "Comments / Notes   : Illegal edits touched core namespace block.",
-    "Cryptographic Hash : 1388cbacc2a189c9098e904a24f64c6134de95c0485cef082f55018051ef2cc7",
-    "Attestation Seal   : sig_wf_c654d75b6ac957a457f1767684e28869",
+    "Cryptographic Hash : 8628fd355563f5a37ca6ef3a1a49a6e3477d4b243cffd20fbb857f091dc8e3a6",
+    "Attestation Seal   : sig_wf_2415a08623de88dc2f4ffa89989cfd8e",
     "=============================================",
     "",
     "=== CRYPTOGRAPHIC RECEIPT VERIFICATION ===",
@@ -154,9 +154,9 @@
     "=========================================================================="
   ],
   "attestation": {
-    "nonce": "4ed2b19b75fe4f0c",
-    "data_hash": "b1451b5f2a9957221395563f805a414bfaac5211b3382c6e22fee6338cbc7c86",
-    "signature": "sig_exp_7eb2d7c40a452afed11b02a4b25881c5",
+    "nonce": "bb7d8aaecec24e9d",
+    "data_hash": "467c836827730ccfc5f86cb43fcc3e253f752b96144dd3e5dc0e820a287c1c48",
+    "signature": "sig_exp_b78a922beaa53bc8c548b7a6a51fc3db",
     "signer_identity": "EXPERIENCE_COORDINATOR_SYSTEM"
   },
   "boundary_integrity_verification": {
