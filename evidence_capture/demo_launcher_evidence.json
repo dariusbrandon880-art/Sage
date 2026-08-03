@@ -1,0 +1,37 @@
+{
+  "launcher_run_id": "run_launch_11bcfe17",
+  "timestamp": "2026-08-03T14:28:03.692621+00:00",
+  "activity_trace": [
+    "INITIATED_FLOW: pristine_run",
+    "STAGE: SAGE_INTAKE",
+    "STAGE: LINEAGE_COMPILATION",
+    "STAGE: DIVERGENCE_CHECK",
+    "STAGE: ASYMMETRIC_RECEIPTS",
+    "STAGE: HUMAN_CHECKPOINT_DISPLAY",
+    "INITIATED_FLOW: divergence_resolution",
+    "STAGE: SAGE_INTAKE",
+    "STAGE: LINEAGE_COMPILATION",
+    "STAGE: DIVERGENCE_CHECK",
+    "STAGE: ASYMMETRIC_RECEIPTS",
+    "STAGE: HUMAN_CHECKPOINT_DISPLAY"
+  ],
+  "simulated_scenario_details": {
+    "scenario": "divergence_resolution",
+    "divergence_conflicts": 1
+  },
+  "gate_verification_summary": {
+    "gate_status": "AUTHORIZED",
+    "checkpoint_id": "chk_demo_launch_01"
+  },
+  "boundary_integrity_verification": {
+    "sage_runtime_untouched": true,
+    "sage_core_untouched": true,
+    "sage_acr_untouched": true,
+    "sage_agents_untouched": true
+  },
+  "observed_results": {
+    "total_receipts_verified": 2,
+    "launcher_run_duration_secs": 0.04,
+    "estimated_baseline_reproducibility_percent": 100.0
+  }
+}
