@@ -7,14 +7,14 @@
       "scenario_stress_recovery"
     ]
   },
-  "executed_at": "2026-08-03T14:28:51.011073+00:00",
+  "executed_at": "2026-08-03T14:39:07.747176+00:00",
   "experience_result": {
     "demonstration_summary": "=== SAGE DEMONSTRATION RUN COMPLETE ===\nSession ID: session_launcher_scenario\nStatus: INTAKE_COMPLETE & VERIFIED\nBoundary Integrity: Context Guard Monitored (SECURE)\nSDR Divergence State: split_brain_detected=True (Recovery Checkpoints Active)\nHuman Checkpoint: AUTHORIZED by supervisor_charlie\nVerification: SAGE_ACTIVATION_RECEIPT_VALID\n========================================",
-    "experience_checksum": "8cbc51523cd841c90967297244e381c9eac048358855f8e44d68b7fc1a5d2d26",
+    "experience_checksum": "854505d59e1ba2679e75352a07999ccbbaac3633d6c3c1c9b372d8d341aff8e7",
     "experience_id": "exp_8927c831",
     "session_id": "session_launcher_scenario",
     "status": "EXPERIENCE_SUCCESS",
-    "timestamp": "2026-08-03T14:28:51.011000+00:00",
+    "timestamp": "2026-08-03T14:39:07.747091+00:00",
     "usability_improvements": {
       "input_mapping_consistency_checked": true,
       "summary_presentation_enabled": true,
@@ -56,20 +56,20 @@
           "session_status": "INTAKE_COMPLETE"
         },
         "receipt_verification_display": {
-          "receipt_id": "receipt_38a3b0078ee808e5",
-          "verification_hash": "38a3b0078ee808e565380d17c105a623e57fc75a1bcf861689734c9d3c5f041c"
+          "receipt_id": "receipt_cd664629ec096df1",
+          "verification_hash": "cd664629ec096df1673a78477f8f7d5e4ad9facb978d0e688dabb37cac800d6c"
         }
       },
       "evidence_receipt": {
         "assertion": "SAGE_ACTIVATION_RECEIPT_VALID",
-        "receipt_id": "receipt_38a3b0078ee808e5",
-        "timestamp": "2026-08-03T14:28:51.010983+00:00",
-        "verification_hash": "38a3b0078ee808e565380d17c105a623e57fc75a1bcf861689734c9d3c5f041c"
+        "receipt_id": "receipt_cd664629ec096df1",
+        "timestamp": "2026-08-03T14:39:07.747076+00:00",
+        "verification_hash": "cd664629ec096df1673a78477f8f7d5e4ad9facb978d0e688dabb37cac800d6c"
       },
       "human_checkpoint": {
         "approver": "supervisor_charlie",
         "assertion": "HUMAN_OVERRIDE_VERIFIED",
-        "authorized_at": "2026-08-03T14:28:51.010844+00:00",
+        "authorized_at": "2026-08-03T14:39:07.746986+00:00",
         "signature": "sig_verified_123",
         "status": "APPROVED"
       },
@@ -78,11 +78,11 @@
         "context_data": {
           "active_milestone": "SAGE-ACT-PROD-DEMO-EXPERIENCE",
           "environment": "sandboxed_demo_sandbox",
-          "launched_at": "2026-08-03T14:28:51.010837+00:00"
+          "launched_at": "2026-08-03T14:39:07.746978+00:00"
         },
         "session_id": "session_launcher_scenario",
         "status": "INTAKE_COMPLETE",
-        "timestamp": "2026-08-03T14:28:51.010826+00:00",
+        "timestamp": "2026-08-03T14:39:07.746919+00:00",
         "user_id": "usr_demo_operator"
       },
       "session_id": "session_launcher_scenario",
@@ -93,7 +93,7 @@
       "workflow_id": "workflow_8927c831"
     }
   },
-  "launcher_checksum": "450c595ecc4cd8af4b8fd69137ab166d79a5177cbfbfe9d1f7d6e20459679e73",
+  "launcher_checksum": "a06c5276351fb250b0722bb59b042c42a93518bb23bdf44e1f068aa50213f32b",
   "launcher_run_id": "launcher_2f82f2d1",
   "scenario_id": "scenario_default_audit",
   "unified_execution_summary": "=== SAGE SCENARIO EXECUTION SUMMARY ===\nScenario Executed: scenario_default_audit\nTarget Session: session_launcher_scenario\nStatus: SUCCESS & VERIFIED\nApprover Checklist Signature: sig_verified_123 (AUTHORIZED)\nUsability Status: Repeatable Run Verified\n========================================"
