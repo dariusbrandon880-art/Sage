@@ -1,0 +1,52 @@
+{
+  "simulation_id": "sim_sdr004_6a037697",
+  "timestamp": "2026-08-03T09:12:14.540753+00:00",
+  "divergence_details": {
+    "original_session_id": "session_sdr004_baseline",
+    "diverged_branches": [
+      "branch_a",
+      "branch_b"
+    ],
+    "diverged_agents": [
+      "agent_analyst_01",
+      "agent_coord_01",
+      "agent_exec_01"
+    ]
+  },
+  "conflict_detection_report": {
+    "conflicts_found": 1,
+    "anomalies_found": 0,
+    "conflicts": [
+      {
+        "conflict_type": "TASK_MUTATION_OVERRIDE",
+        "task_id": "task_conf",
+        "fields_mismatched": [
+          "actor_id"
+        ],
+        "details": "Task 'task_conf' exists on both branches but has conflicting definitions for: ['actor_id']"
+      }
+    ],
+    "anomalies": []
+  },
+  "resolution_details": {
+    "applied_strategy": "CHRONOLOGICAL_PRIORITY",
+    "status": "RESOLVED",
+    "resolved_tasks_count": 2
+  },
+  "cryptographic_continuity_proofs": {
+    "original_root_hash": "00547aec9dc8438b1faf8bbe383e1715728b1b23f6d1e598394177e7c89ba068",
+    "branch_a_hash": "32b5d3a6845938140a7ae9a6d1bafe52f83ef4b1cea7c43797441d0f81d2d56c",
+    "branch_b_hash": "d95c937a91445b45664a4cf4ee6991faa8c0aff22860b70049f300333be549f5",
+    "merged_state_hash": "758b817fcaada5ddd5edee6cf8c75e3265434f159212320232812e0860dc0e43"
+  },
+  "boundary_integrity_verification": {
+    "sage_runtime_untouched": true,
+    "sage_core_untouched": true,
+    "sage_acr_untouched": true,
+    "sage_agents_untouched": true
+  },
+  "observed_results": {
+    "conflicts_resolved": 1,
+    "estimated_baseline_resolution_time_secs": 1.25
+  }
+}
