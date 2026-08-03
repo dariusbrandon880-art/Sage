@@ -1,5 +1,5 @@
 {
-  "demonstrator_checksum": "71f7e74903ac576cc4b8d9e57c43779a4ed7d41f66bd35a87a745c35a4516be7",
+  "demonstrator_checksum": "3b370a6957f0b61d74a4f78bd2963b295e7670c856adbc31d3cac2d2db4da644",
   "demonstrator_metadata": {
     "mode": "read_only_experimental_sandbox",
     "version": "1.0.0-demonstrator"
@@ -14,7 +14,7 @@
   },
   "human_review_checkpoint_simulation": {
     "approver": "supervisor_bob",
-    "authorized_at": "2026-08-03T11:43:59.084978+00:00",
+    "authorized_at": "2026-08-03T12:09:38.014379+00:00",
     "checkpoint_triggered": true,
     "signature": "sig_abc",
     "status": "AUTHORIZED"
@@ -52,6 +52,6 @@
     ]
   },
   "session_id": "session_demo_202",
-  "timestamp": "2026-08-03T11:43:59.084961+00:00",
+  "timestamp": "2026-08-03T12:09:38.014349+00:00",
   "user_id": "usr_admin"
 }
