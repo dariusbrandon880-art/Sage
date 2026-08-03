@@ -34,20 +34,20 @@
       "session_status": "INTAKE_COMPLETE"
     },
     "receipt_verification_display": {
-      "receipt_id": "receipt_0c56ec288d5c45fa",
-      "verification_hash": "0c56ec288d5c45fa26479707433d8012d946b3142bc3f89092d09ed94b6680f3"
+      "receipt_id": "receipt_59a86ab7b807323d",
+      "verification_hash": "59a86ab7b807323d004baffea33821640963d1c9c65d9db6dd439a6a0b333aaf"
     }
   },
   "evidence_receipt": {
     "assertion": "SAGE_ACTIVATION_RECEIPT_VALID",
-    "receipt_id": "receipt_0c56ec288d5c45fa",
-    "timestamp": "2026-08-03T12:33:16.790382+00:00",
-    "verification_hash": "0c56ec288d5c45fa26479707433d8012d946b3142bc3f89092d09ed94b6680f3"
+    "receipt_id": "receipt_59a86ab7b807323d",
+    "timestamp": "2026-08-03T12:43:12.685073+00:00",
+    "verification_hash": "59a86ab7b807323d004baffea33821640963d1c9c65d9db6dd439a6a0b333aaf"
   },
   "human_checkpoint": {
     "approver": "supervisor_charlie",
     "assertion": "HUMAN_OVERRIDE_VERIFIED",
-    "authorized_at": "2026-08-03T12:33:16.790233+00:00",
+    "authorized_at": "2026-08-03T12:43:12.684971+00:00",
     "signature": "sig_demo_abc123",
     "status": "APPROVED"
   },
@@ -60,16 +60,16 @@
     },
     "session_id": "session_demo_9921",
     "status": "INTAKE_COMPLETE",
-    "timestamp": "2026-08-03T12:33:16.790218+00:00",
+    "timestamp": "2026-08-03T12:43:12.684953+00:00",
     "user_id": "usr_9921"
   },
   "metadata": {
     "framework": "SAGE-ACT-PROD",
     "run_type": "read_only_demonstration_workflow",
-    "timestamp": "2026-08-03T12:33:16.790449+00:00"
+    "timestamp": "2026-08-03T12:43:12.685102+00:00"
   },
   "session_id": "session_demo_9921",
-  "state_checksum": "b19ff7219594fabb95261db7ded51f88793d6545c9321b65cd5da5690614ceba",
+  "state_checksum": "2e7eb332f2e150efb546a06e0bb163756693eb45a347d3b3a9dc2b42e56801eb",
   "user_action": {
     "action_type": "code_evaluation",
     "user_id": "usr_9921"
