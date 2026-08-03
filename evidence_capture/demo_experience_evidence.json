@@ -1,10 +1,10 @@
 {
   "demonstration_summary": "=== SAGE DEMONSTRATION RUN COMPLETE ===\nSession ID: session_exp_99\nStatus: INTAKE_COMPLETE & VERIFIED\nBoundary Integrity: Context Guard Monitored (SECURE)\nSDR Divergence State: split_brain_detected=True (Recovery Checkpoints Active)\nHuman Checkpoint: AUTHORIZED by supervisor_charlie\nVerification: SAGE_ACTIVATION_RECEIPT_VALID\n========================================",
-  "experience_checksum": "89230b57db045cfe778248f6e7d66c170c682ab6de4bbda261562d0b25ea6286",
+  "experience_checksum": "0b970d52e1bf7b5aa03dd48fe57eb3e66a7681e27a922ac6b662e595636df87f",
   "experience_id": "exp_65bfb00e",
   "session_id": "session_exp_99",
   "status": "EXPERIENCE_SUCCESS",
-  "timestamp": "2026-08-03T14:17:12.035676+00:00",
+  "timestamp": "2026-08-03T14:28:51.007651+00:00",
   "usability_improvements": {
     "input_mapping_consistency_checked": true,
     "summary_presentation_enabled": true,
@@ -46,20 +46,20 @@
         "session_status": "INTAKE_COMPLETE"
       },
       "receipt_verification_display": {
-        "receipt_id": "receipt_d82993f76917104e",
-        "verification_hash": "d82993f76917104e91d2c55802a62a423cd6f5f69fd69f85a074efbb9ce0b615"
+        "receipt_id": "receipt_731eafb8ea406ede",
+        "verification_hash": "731eafb8ea406ede0785e9986faf606182c764e282b5a5794da48c30e4d5a80d"
       }
     },
     "evidence_receipt": {
       "assertion": "SAGE_ACTIVATION_RECEIPT_VALID",
-      "receipt_id": "receipt_d82993f76917104e",
-      "timestamp": "2026-08-03T14:17:12.035599+00:00",
-      "verification_hash": "d82993f76917104e91d2c55802a62a423cd6f5f69fd69f85a074efbb9ce0b615"
+      "receipt_id": "receipt_731eafb8ea406ede",
+      "timestamp": "2026-08-03T14:28:51.007620+00:00",
+      "verification_hash": "731eafb8ea406ede0785e9986faf606182c764e282b5a5794da48c30e4d5a80d"
     },
     "human_checkpoint": {
       "approver": "supervisor_charlie",
       "assertion": "HUMAN_OVERRIDE_VERIFIED",
-      "authorized_at": "2026-08-03T14:17:12.035436+00:00",
+      "authorized_at": "2026-08-03T14:28:51.007541+00:00",
       "signature": "sig_exp_abc",
       "status": "APPROVED"
     },
@@ -68,11 +68,11 @@
       "context_data": {
         "active_milestone": "SAGE-ACT-PROD-DEMO-EXPERIENCE",
         "environment": "sandboxed_demo_sandbox",
-        "launched_at": "2026-08-03T14:17:12.035423+00:00"
+        "launched_at": "2026-08-03T14:28:51.007534+00:00"
       },
       "session_id": "session_exp_99",
       "status": "INTAKE_COMPLETE",
-      "timestamp": "2026-08-03T14:17:12.035407+00:00",
+      "timestamp": "2026-08-03T14:28:51.007521+00:00",
       "user_id": "usr_tester"
     },
     "session_id": "session_exp_99",
