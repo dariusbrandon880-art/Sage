@@ -1,28 +1,17 @@
 {
-  "executed_at": "2026-08-03T14:39:07.752700+00:00",
-  "improved_result_summary": "================ SAGE SCENARIO EXPERIENCE ================\nScenario Name: Asymmetric Cryptographic State Recovery\nScenario Description: Simulates split-brain divergence recovery and cryptographic receipt chains.\nRun Status: SUCCESS\nExecution Summary:\n=== SAGE SCENARIO EXECUTION SUMMARY ===\nScenario Executed: scenario_stress_recovery\nTarget Session: session_launcher_scenario\nStatus: SUCCESS & VERIFIED\nApprover Checklist Signature: sig_scenario_approved_1100 (AUTHORIZED)\nUsability Status: Repeatable Run Verified\n========================================\n===========================================================",
+  "executed_at": "2026-08-03T14:52:54.276128+00:00",
+  "improved_result_summary": "================ SAGE SCENARIO EXPERIENCE ================\nScenario Name: Asymmetric Cryptographic State Recovery\nScenario Description: Simulates split-brain divergence recovery and cryptographic receipt chains.\nRun Status: SUCCESS\nExecution Summary:\n=== SAGE SCENARIO EXECUTION SUMMARY ===\nScenario Executed: scenario_stress_recovery\nTarget Session: session_scenario_scenario\nStatus: SUCCESS & VERIFIED\nApprover Checklist Signature: sig_scenario_approved_1100 (AUTHORIZED)\nUsability Status: Repeatable Run Verified\n========================================\n===========================================================",
   "launcher_result": {
     "config_applied": {
       "demo_version": "1.0.0-demo-launch",
-      "environment_mode": "sandboxed_experimental_mode",
-      "supported_scenarios": [
-        "scenario_default_audit",
-        "scenario_stress_recovery"
-      ]
+      "environment_mode": "sandboxed_experimental_mode"
     },
-    "executed_at": "2026-08-03T14:39:07.752619+00:00",
+    "executed_at": "2026-08-03T14:52:54.276112+00:00",
     "experience_result": {
-      "demonstration_summary": "=== SAGE DEMONSTRATION RUN COMPLETE ===\nSession ID: session_launcher_scenario\nStatus: INTAKE_COMPLETE & VERIFIED\nBoundary Integrity: Context Guard Monitored (SECURE)\nSDR Divergence State: split_brain_detected=True (Recovery Checkpoints Active)\nHuman Checkpoint: AUTHORIZED by supervisor_charlie\nVerification: SAGE_ACTIVATION_RECEIPT_VALID\n========================================",
-      "experience_checksum": "947ed3ae4b39092fc5faff480deaa6524185d2964707dae46ca4e3b6b37bbbe1",
-      "experience_id": "exp_8927c831",
-      "session_id": "session_launcher_scenario",
+      "experience_id": "exp_7cb87dde",
+      "session_id": "session_scenario_scenario",
       "status": "EXPERIENCE_SUCCESS",
-      "timestamp": "2026-08-03T14:39:07.752552+00:00",
-      "usability_improvements": {
-        "input_mapping_consistency_checked": true,
-        "summary_presentation_enabled": true,
-        "unified_entry_invoked": true
-      },
+      "timestamp": "2026-08-03T14:52:54.276118+00:00",
       "workflow_payload": {
         "capability_analysis": {
           "crc_trust_layer": {
@@ -55,54 +44,52 @@
             "divergence_detected": true
           },
           "lineage_visualization": {
-            "active_session": "session_launcher_scenario",
+            "active_session": "session_scenario_scenario",
             "session_status": "INTAKE_COMPLETE"
           },
           "receipt_verification_display": {
-            "receipt_id": "receipt_bd759b5d0f81b520",
-            "verification_hash": "bd759b5d0f81b52039dc7900cce41e3c6e8e990100a033350e4a52b0b138fe9c"
+            "receipt_id": "receipt_279db47c6727b70f",
+            "verification_hash": "279db47c6727b70f4e588f6bf78127b550dc78641c77d6304dab953a521c83f2"
           }
         },
         "evidence_receipt": {
           "assertion": "SAGE_ACTIVATION_RECEIPT_VALID",
-          "receipt_id": "receipt_bd759b5d0f81b520",
-          "timestamp": "2026-08-03T14:39:07.752539+00:00",
-          "verification_hash": "bd759b5d0f81b52039dc7900cce41e3c6e8e990100a033350e4a52b0b138fe9c"
+          "receipt_id": "receipt_279db47c6727b70f",
+          "timestamp": "2026-08-03T14:52:54.276078+00:00",
+          "verification_hash": "279db47c6727b70f4e588f6bf78127b550dc78641c77d6304dab953a521c83f2"
         },
         "human_checkpoint": {
           "approver": "supervisor_charlie",
           "assertion": "HUMAN_OVERRIDE_VERIFIED",
-          "authorized_at": "2026-08-03T14:39:07.752469+00:00",
+          "authorized_at": "2026-08-03T14:52:54.275975+00:00",
           "signature": "sig_scenario_approved_1100",
           "status": "APPROVED"
         },
         "intake": {
-          "action_type": "user_demonstration_run",
+          "action_type": "scenario_execution_run",
           "context_data": {
-            "active_milestone": "SAGE-ACT-PROD-DEMO-EXPERIENCE",
-            "environment": "sandboxed_demo_sandbox",
-            "launched_at": "2026-08-03T14:39:07.752462+00:00"
+            "active_milestone": "SAGE-SCENARIO-EXPERIENCE-ADVANCEMENT",
+            "environment": "sandboxed_demo_sandbox"
           },
-          "session_id": "session_launcher_scenario",
+          "session_id": "session_scenario_scenario",
           "status": "INTAKE_COMPLETE",
-          "timestamp": "2026-08-03T14:39:07.752446+00:00",
+          "timestamp": "2026-08-03T14:52:54.275959+00:00",
           "user_id": "usr_demo_operator"
         },
-        "session_id": "session_launcher_scenario",
+        "session_id": "session_scenario_scenario",
         "user_action": {
-          "action_type": "user_demonstration_run",
+          "action_type": "scenario_execution_run",
           "user_id": "usr_demo_operator"
         },
-        "workflow_id": "workflow_8927c831"
+        "workflow_id": "workflow_7cb87dde"
       }
     },
-    "launcher_checksum": "e3351eb338bcea9350f1e6884c46d2d286df955b1a0f592deda56c15dad3196c",
     "launcher_run_id": "launcher_b9beebb4",
     "scenario_id": "scenario_stress_recovery",
-    "unified_execution_summary": "=== SAGE SCENARIO EXECUTION SUMMARY ===\nScenario Executed: scenario_stress_recovery\nTarget Session: session_launcher_scenario\nStatus: SUCCESS & VERIFIED\nApprover Checklist Signature: sig_scenario_approved_1100 (AUTHORIZED)\nUsability Status: Repeatable Run Verified\n========================================"
+    "unified_execution_summary": "=== SAGE SCENARIO EXECUTION SUMMARY ===\nScenario Executed: scenario_stress_recovery\nTarget Session: session_scenario_scenario\nStatus: SUCCESS & VERIFIED\nApprover Checklist Signature: sig_scenario_approved_1100 (AUTHORIZED)\nUsability Status: Repeatable Run Verified\n========================================"
   },
   "run_id": "scenario_run_b9beebb4",
-  "scenario_checksum": "e9bffc70ef6c0695676faeab2a39dc61fdc83e149ec326a57fbb3fd3e3542273",
+  "scenario_checksum": "d96c3f54c19854c77dfba5066f72a7d8cb054131174cd963160801f08b97a40d",
   "scenario_details": {
     "description": "Simulates split-brain divergence recovery and cryptographic receipt chains.",
     "difficulty": "advanced",
