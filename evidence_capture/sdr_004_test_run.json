@@ -1,0 +1,82 @@
+{
+  "compliance_pack_id": "comp_sdr_004_test_run",
+  "timestamp": "2026-08-03T09:17:32.726885+00:00",
+  "run_identifier": "test_run",
+  "experimental_boundary": "sage/experimental/act/",
+  "simulation_details": {
+    "simulation_id": "sim_sdr_004_default",
+    "agent_states": {
+      "agent_alpha": {
+        "agent_id": "agent_alpha_coordinator",
+        "role": "Coordinator",
+        "assumptions": {
+          "baseline_commit": "5ab427d7f7e9",
+          "validation_threshold": 0.95,
+          "target_environment": "staging"
+        },
+        "active_checkpoint": "chk_alpha_99"
+      },
+      "agent_beta": {
+        "agent_id": "agent_beta_executor",
+        "role": "Executor",
+        "assumptions": {
+          "baseline_commit": "12114cbab001",
+          "validation_threshold": 0.9,
+          "target_environment": "production"
+        },
+        "active_checkpoint": "chk_beta_41"
+      }
+    }
+  },
+  "conflict_analysis": {
+    "conflicts_detected": 3,
+    "conflicts_list": [
+      {
+        "conflict_type": "COMMIT_MISMATCH",
+        "severity": "HIGH",
+        "details": "Agent Alpha baseline '5ab427d7f7e9' conflicts with Agent Beta baseline '12114cbab001'."
+      },
+      {
+        "conflict_type": "THRESHOLD_MISMATCH",
+        "severity": "MEDIUM",
+        "details": "Alpha threshold '0.95' conflicts with Beta threshold '0.9'."
+      },
+      {
+        "conflict_type": "ENVIRONMENT_MISMATCH",
+        "severity": "HIGH",
+        "details": "Alpha target environment 'staging' conflicts with Beta target environment 'production'."
+      }
+    ]
+  },
+  "resolution_pathway": {
+    "resolved_state": "SUCCESS_ALIGNED",
+    "resolution_preference": "ALPHA",
+    "actions_executed": 3,
+    "resolution_log": [
+      {
+        "conflict_type": "COMMIT_MISMATCH",
+        "resolution_action": "RESOLVE_BY_PREFERRING_ALPHA_VALUE_FOR_COMMIT_MISMATCH",
+        "status": "RESOLVED",
+        "timestamp": "2026-08-03T09:17:32.726799+00:00"
+      },
+      {
+        "conflict_type": "THRESHOLD_MISMATCH",
+        "resolution_action": "RESOLVE_BY_PREFERRING_ALPHA_VALUE_FOR_THRESHOLD_MISMATCH",
+        "status": "RESOLVED",
+        "timestamp": "2026-08-03T09:17:32.726817+00:00"
+      },
+      {
+        "conflict_type": "ENVIRONMENT_MISMATCH",
+        "resolution_action": "RESOLVE_BY_PREFERRING_ALPHA_VALUE_FOR_ENVIRONMENT_MISMATCH",
+        "status": "RESOLVED",
+        "timestamp": "2026-08-03T09:17:32.726821+00:00"
+      }
+    ]
+  },
+  "boundary_integrity_verification": {
+    "sage_runtime_untouched": true,
+    "sage_core_untouched": true,
+    "sage_acr_untouched": true,
+    "sage_agents_untouched": true
+  }
+}
