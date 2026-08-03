@@ -1,0 +1,100 @@
+{
+  "config_applied": {
+    "demo_version": "1.0.0-demo-launch",
+    "environment_mode": "sandboxed_experimental_mode",
+    "supported_scenarios": [
+      "scenario_default_audit",
+      "scenario_stress_recovery"
+    ]
+  },
+  "executed_at": "2026-08-03T14:17:12.040192+00:00",
+  "experience_result": {
+    "demonstration_summary": "=== SAGE DEMONSTRATION RUN COMPLETE ===\nSession ID: session_launcher_scenario\nStatus: INTAKE_COMPLETE & VERIFIED\nBoundary Integrity: Context Guard Monitored (SECURE)\nSDR Divergence State: split_brain_detected=True (Recovery Checkpoints Active)\nHuman Checkpoint: AUTHORIZED by supervisor_charlie\nVerification: SAGE_ACTIVATION_RECEIPT_VALID\n========================================",
+    "experience_checksum": "6f85f0d083d4832d01610cc07bb1d8174bbe507817faa55a9fd72e9c6692f4e0",
+    "experience_id": "exp_8927c831",
+    "session_id": "session_launcher_scenario",
+    "status": "EXPERIENCE_SUCCESS",
+    "timestamp": "2026-08-03T14:17:12.040116+00:00",
+    "usability_improvements": {
+      "input_mapping_consistency_checked": true,
+      "summary_presentation_enabled": true,
+      "unified_entry_invoked": true
+    },
+    "workflow_payload": {
+      "capability_analysis": {
+        "crc_trust_layer": {
+          "asymmetric_signed": true,
+          "attestation": "SAGE_TRUST_ATTESTATION_SUCCESS"
+        },
+        "recovery_checkpoints_active": [
+          {
+            "authority_restored": "supervisor_lead",
+            "checkpoint_id": "chk_rec_001_initial",
+            "status": "restored"
+          }
+        ],
+        "sdr_divergence_status": "MONITORED",
+        "split_brain_detected": true
+      },
+      "context_evaluation": {
+        "boundary_isolation_verified": true,
+        "monitored_paths": [
+          "sage/runtime/",
+          "sage/core/",
+          "sage/acr/"
+        ],
+        "status": "EVALUATION_SUCCESS",
+        "unauthorized_mutations_prevented": 0
+      },
+      "demonstrator_output": {
+        "divergence_visibility": {
+          "conflict_type": "state_split_brain",
+          "divergence_detected": true
+        },
+        "lineage_visualization": {
+          "active_session": "session_launcher_scenario",
+          "session_status": "INTAKE_COMPLETE"
+        },
+        "receipt_verification_display": {
+          "receipt_id": "receipt_5d54e4e37c13c3a0",
+          "verification_hash": "5d54e4e37c13c3a0fda9f8030fb708d6bced1878729b419b00cf94cf6e16162f"
+        }
+      },
+      "evidence_receipt": {
+        "assertion": "SAGE_ACTIVATION_RECEIPT_VALID",
+        "receipt_id": "receipt_5d54e4e37c13c3a0",
+        "timestamp": "2026-08-03T14:17:12.040097+00:00",
+        "verification_hash": "5d54e4e37c13c3a0fda9f8030fb708d6bced1878729b419b00cf94cf6e16162f"
+      },
+      "human_checkpoint": {
+        "approver": "supervisor_charlie",
+        "assertion": "HUMAN_OVERRIDE_VERIFIED",
+        "authorized_at": "2026-08-03T14:17:12.039974+00:00",
+        "signature": "sig_verified_123",
+        "status": "APPROVED"
+      },
+      "intake": {
+        "action_type": "user_demonstration_run",
+        "context_data": {
+          "active_milestone": "SAGE-ACT-PROD-DEMO-EXPERIENCE",
+          "environment": "sandboxed_demo_sandbox",
+          "launched_at": "2026-08-03T14:17:12.039966+00:00"
+        },
+        "session_id": "session_launcher_scenario",
+        "status": "INTAKE_COMPLETE",
+        "timestamp": "2026-08-03T14:17:12.039949+00:00",
+        "user_id": "usr_demo_operator"
+      },
+      "session_id": "session_launcher_scenario",
+      "user_action": {
+        "action_type": "user_demonstration_run",
+        "user_id": "usr_demo_operator"
+      },
+      "workflow_id": "workflow_8927c831"
+    }
+  },
+  "launcher_checksum": "4ad8c0da7d6b2c9594ea744b616ca51411df9f2b0385fa82d061038ff1c2458e",
+  "launcher_run_id": "launcher_2f82f2d1",
+  "scenario_id": "scenario_default_audit",
+  "unified_execution_summary": "=== SAGE SCENARIO EXECUTION SUMMARY ===\nScenario Executed: scenario_default_audit\nTarget Session: session_launcher_scenario\nStatus: SUCCESS & VERIFIED\nApprover Checklist Signature: sig_verified_123 (AUTHORIZED)\nUsability Status: Repeatable Run Verified\n========================================"
+}
