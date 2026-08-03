@@ -1,31 +1,31 @@
 {
   "summary_id": "summary_phase_4_repeatability_2026_08_02",
-  "timestamp": "2026-08-02T09:54:48.815366+00:00",
+  "timestamp": "2026-08-02T12:07:04.589480+00:00",
   "total_runs_executed": 3,
   "success_rate_percent": 100.0,
   "runs": [
     {
       "run_index": 1,
       "file_path": "/app/evidence_capture/phase_4_repeatability_run_1.json",
-      "total_duration_mins": 26.6,
-      "total_steps_reduced": 66,
-      "actions_blocked": 6,
+      "total_duration_mins": 10.2,
+      "total_steps_reduced": 27,
+      "actions_blocked": 3,
       "lineage_valid": true
     },
     {
       "run_index": 2,
       "file_path": "/app/evidence_capture/phase_4_repeatability_run_2.json",
-      "total_duration_mins": 27.7,
-      "total_steps_reduced": 66,
-      "actions_blocked": 6,
+      "total_duration_mins": 10.7,
+      "total_steps_reduced": 27,
+      "actions_blocked": 3,
       "lineage_valid": true
     },
     {
       "run_index": 3,
       "file_path": "/app/evidence_capture/phase_4_repeatability_run_3.json",
-      "total_duration_mins": 28.9,
-      "total_steps_reduced": 66,
-      "actions_blocked": 6,
+      "total_duration_mins": 11.3,
+      "total_steps_reduced": 27,
+      "actions_blocked": 3,
       "lineage_valid": true
     }
   ],
@@ -35,63 +35,33 @@
       "variance": 0.09,
       "std_dev": 0.3
     },
-    "steps_reduced_scenario_a": {
-      "mean": 12.0,
-      "variance": 0.0,
-      "std_dev": 0.0
-    },
     "scenario_b_duration_mins": {
       "mean": 6.2333,
       "variance": 0.0633,
       "std_dev": 0.2517
+    },
+    "total_duration_mins": {
+      "mean": 10.7333,
+      "variance": 0.3033,
+      "std_dev": 0.5508
+    },
+    "steps_reduced_scenario_a": {
+      "mean": 12.0,
+      "variance": 0.0,
+      "std_dev": 0.0
     },
     "steps_reduced_scenario_b": {
       "mean": 15.0,
       "variance": 0.0,
       "std_dev": 0.0
     },
-    "scenario_c_duration_mins": {
-      "mean": 5.3,
-      "variance": 0.04,
-      "std_dev": 0.2
-    },
-    "steps_reduced_scenario_c": {
-      "mean": 11.0,
-      "variance": 0.0,
-      "std_dev": 0.0
-    },
-    "scenario_d_duration_mins": {
-      "mean": 8.4,
-      "variance": 0.04,
-      "std_dev": 0.2
-    },
-    "steps_reduced_scenario_d": {
-      "mean": 19.0,
-      "variance": 0.0,
-      "std_dev": 0.0
-    },
-    "scenario_e_duration_mins": {
-      "mean": 3.3,
-      "variance": 0.04,
-      "std_dev": 0.2
-    },
-    "steps_reduced_scenario_e": {
-      "mean": 9.0,
-      "variance": 0.0,
-      "std_dev": 0.0
-    },
-    "total_duration_mins": {
-      "mean": 27.7333,
-      "variance": 1.3233,
-      "std_dev": 1.1504
-    },
     "aggregate_steps_reduced": {
-      "mean": 66.0,
+      "mean": 27.0,
       "variance": 0.0,
       "std_dev": 0.0
     },
     "blocked_unauthorized_actions": {
-      "mean": 6.0,
+      "mean": 3.0,
       "variance": 0.0,
       "std_dev": 0.0
     }

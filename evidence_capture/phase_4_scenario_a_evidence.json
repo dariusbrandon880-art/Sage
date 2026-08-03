@@ -1,0 +1,358 @@
+{
+  "evaluation_id": "eval_phase4_scenario_a_001",
+  "evaluation_identifier": "eval_phase4_scenario_a_001",
+  "scenario_id": "scenario_a",
+  "timestamp": "2026-08-02T12:07:04.580380+00:00",
+  "run_identifier": "run_phase4_repeatability_3_17403298",
+  "run identifier": "run_phase4_repeatability_3_17403298",
+  "human objective": "Perform joint multi-agent context validation and security auditing over distributed handoffs.",
+  "human_objective": "Perform joint multi-agent context validation and security auditing over distributed handoffs.",
+  "input artifact references": [
+    "sage/experimental/act/contracts.py",
+    "sage/experimental/act/phase_4_eval.py"
+  ],
+  "input_artifact_references": [
+    "sage/experimental/act/contracts.py",
+    "sage/experimental/act/phase_4_eval.py"
+  ],
+  "workflow_trace": [
+    {
+      "step": 1,
+      "timestamp": "2026-08-02T12:07:04.579889+00:00",
+      "actor_id": "agent_coord_chatgpt",
+      "action": "INITIATE_WORKFLOW",
+      "details": "Coordinator sets objective and assigns subtask to Jules (Executor)."
+    },
+    {
+      "step": 2,
+      "timestamp": "2026-08-02T12:07:04.579900+00:00",
+      "actor_id": "agent_exec_jules",
+      "action": "EXECUTE_VALIDATION",
+      "details": "Executor performs AST boundary checks and verifies repository state."
+    },
+    {
+      "step": 3,
+      "timestamp": "2026-08-02T12:07:04.580034+00:00",
+      "actor_id": "agent_analyst_claude",
+      "action": "ANALYZE_TRACE",
+      "details": "Analyst reviews chronological trace and compiles metrics report."
+    },
+    {
+      "step": 4,
+      "timestamp": "2026-08-02T12:07:04.580039+00:00",
+      "actor_id": "agent_review_gemini",
+      "action": "REVIEW_AUDIT",
+      "details": "Reviewer verifies cryptographic hash chain integrity and signs off."
+    }
+  ],
+  "agent_participation_record": [
+    {
+      "agent_id": "agent_coord_chatgpt",
+      "name": "ChatGPT",
+      "role": "Coordinator",
+      "tier": "Tier 1"
+    },
+    {
+      "agent_id": "agent_exec_jules",
+      "name": "Jules",
+      "role": "Executor",
+      "tier": "Tier 1"
+    },
+    {
+      "agent_id": "agent_analyst_claude",
+      "name": "Claude",
+      "role": "Analyst",
+      "tier": "Tier 1"
+    },
+    {
+      "agent_id": "agent_review_gemini",
+      "name": "Gemini",
+      "role": "Reviewer",
+      "tier": "Tier 2"
+    }
+  ],
+  "recovered context": {
+    "session_id": "session_a1b2c3d4",
+    "active_objectives": [
+      "obj_joint_validation"
+    ],
+    "parent_task_id": "task_audit_001"
+  },
+  "recovered_context": {
+    "session_id": "session_a1b2c3d4",
+    "active_objectives": [
+      "obj_joint_validation"
+    ],
+    "parent_task_id": "task_audit_001"
+  },
+  "reconstructed decisions": [
+    "decision_initiate_coord",
+    "decision_ast_check",
+    "decision_analyze_metrics",
+    "decision_review_signoff"
+  ],
+  "reconstructed_decisions": [
+    "decision_initiate_coord",
+    "decision_ast_check",
+    "decision_analyze_metrics",
+    "decision_review_signoff"
+  ],
+  "prevented_tasks": [
+    "task_manual_ast_check",
+    "task_manual_lineage_trace",
+    "task_manual_signoff"
+  ],
+  "validation results": {
+    "schema_check": "PASSED",
+    "boundary_isolation_verified": true,
+    "no_unauthorized_imports": true,
+    "signature_checks": [
+      {
+        "signer": "agent_coord_chatgpt",
+        "signature": "sig_coord_7a8b9c...f123",
+        "valid": true
+      },
+      {
+        "signer": "agent_exec_jules",
+        "signature": "sig_exec_1d2e3f...a456",
+        "valid": true
+      },
+      {
+        "signer": "agent_review_gemini",
+        "signature": "sig_rev_9e8d7c...b789",
+        "valid": true
+      }
+    ],
+    "blocked_unauthorized_actions": [
+      {
+        "attempt_id": "att_A_1",
+        "action_attempted": "MUTATE_CORE_RUNTIME",
+        "status": "BLOCKED"
+      },
+      {
+        "attempt_id": "att_A_2",
+        "action_attempted": "BYPASS_HUMAN_GATE",
+        "status": "BLOCKED"
+      }
+    ],
+    "reproducibility_check": {
+      "reproducible": true,
+      "timestamp": "2026-08-02T12:07:04.580415+00:00",
+      "mismatches": [],
+      "status": "PASSED"
+    }
+  },
+  "validation_results": {
+    "schema_check": "PASSED",
+    "boundary_isolation_verified": true,
+    "no_unauthorized_imports": true,
+    "signature_checks": [
+      {
+        "signer": "agent_coord_chatgpt",
+        "signature": "sig_coord_7a8b9c...f123",
+        "valid": true
+      },
+      {
+        "signer": "agent_exec_jules",
+        "signature": "sig_exec_1d2e3f...a456",
+        "valid": true
+      },
+      {
+        "signer": "agent_review_gemini",
+        "signature": "sig_rev_9e8d7c...b789",
+        "valid": true
+      }
+    ],
+    "blocked_unauthorized_actions": [
+      {
+        "attempt_id": "att_A_1",
+        "action_attempted": "MUTATE_CORE_RUNTIME",
+        "status": "BLOCKED"
+      },
+      {
+        "attempt_id": "att_A_2",
+        "action_attempted": "BYPASS_HUMAN_GATE",
+        "status": "BLOCKED"
+      }
+    ],
+    "reproducibility_check": {
+      "reproducible": true,
+      "timestamp": "2026-08-02T12:07:04.580415+00:00",
+      "mismatches": [],
+      "status": "PASSED"
+    }
+  },
+  "receipt lineage": [
+    {
+      "receipt_id": "rec_001_a_8c52241388aeeb18",
+      "hash": "8c52241388aeeb18a90c311d84ac45d6059fec58eddb3c0b5d74fa693d886604",
+      "prev_hash": "genesis_phase_4_root_0000000000000000000000000000"
+    },
+    {
+      "receipt_id": "rec_001_b_72ae2fa0be5e94e1",
+      "hash": "72ae2fa0be5e94e134c778a4df2f7f43e1fe7b234ba2b4f784ed4b77ff69d742",
+      "prev_hash": "8c52241388aeeb18a90c311d84ac45d6059fec58eddb3c0b5d74fa693d886604"
+    },
+    {
+      "receipt_id": "rec_001_c_26ab6b760f91382d",
+      "hash": "26ab6b760f91382d36d3531aea13d4c73580ee5087bced1422281c0bcda05cad",
+      "prev_hash": "72ae2fa0be5e94e134c778a4df2f7f43e1fe7b234ba2b4f784ed4b77ff69d742"
+    }
+  ],
+  "receipt_lineage": [
+    {
+      "receipt_id": "rec_001_a_8c52241388aeeb18",
+      "hash": "8c52241388aeeb18a90c311d84ac45d6059fec58eddb3c0b5d74fa693d886604",
+      "prev_hash": "genesis_phase_4_root_0000000000000000000000000000"
+    },
+    {
+      "receipt_id": "rec_001_b_72ae2fa0be5e94e1",
+      "hash": "72ae2fa0be5e94e134c778a4df2f7f43e1fe7b234ba2b4f784ed4b77ff69d742",
+      "prev_hash": "8c52241388aeeb18a90c311d84ac45d6059fec58eddb3c0b5d74fa693d886604"
+    },
+    {
+      "receipt_id": "rec_001_c_26ab6b760f91382d",
+      "hash": "26ab6b760f91382d36d3531aea13d4c73580ee5087bced1422281c0bcda05cad",
+      "prev_hash": "72ae2fa0be5e94e134c778a4df2f7f43e1fe7b234ba2b4f784ed4b77ff69d742"
+    }
+  ],
+  "human checkpoint": {
+    "checkpoint_id": "chk_phase_4_joint_audit",
+    "timestamp": "2026-08-02T12:07:04.580373+00:00",
+    "supervisor_id": "human_supervisor_01",
+    "decision": "AUTHORIZED",
+    "comments": "SAGE demonstrated observed result of structural trace verification under estimated baseline. Option B execution approved."
+  },
+  "human_checkpoint": {
+    "checkpoint_id": "chk_phase_4_joint_audit",
+    "timestamp": "2026-08-02T12:07:04.580373+00:00",
+    "supervisor_id": "human_supervisor_01",
+    "decision": "AUTHORIZED",
+    "comments": "SAGE demonstrated observed result of structural trace verification under estimated baseline. Option B execution approved."
+  },
+  "human_decision_record": {
+    "checkpoint_id": "chk_phase_4_joint_audit",
+    "timestamp": "2026-08-02T12:07:04.580373+00:00",
+    "supervisor_id": "human_supervisor_01",
+    "decision": "AUTHORIZED",
+    "comments": "SAGE demonstrated observed result of structural trace verification under estimated baseline. Option B execution approved."
+  },
+  "outcome": "SUCCESS_VALIDATED",
+  "outcome_state": "SUCCESS_VALIDATED",
+  "artifact hashes": {
+    "sage/experimental/act/contracts.py": "977a5ec08a7c842a943f009e20fd0204235728340ab6b9dc448b4b2e4b6f70b8",
+    "sage/experimental/act/phase_4_eval.py": "d028be877dae3b0f4fb94f4e79e71c57a93dffe2edeab77884a588cb0cedd739"
+  },
+  "artifact_hashes": {
+    "sage/experimental/act/contracts.py": "977a5ec08a7c842a943f009e20fd0204235728340ab6b9dc448b4b2e4b6f70b8",
+    "sage/experimental/act/phase_4_eval.py": "d028be877dae3b0f4fb94f4e79e71c57a93dffe2edeab77884a588cb0cedd739"
+  },
+  "metrics": {
+    "efficiency": {
+      "manual_baseline_estimate_mins": 120.0,
+      "sage_assisted_duration_mins": 4.5,
+      "steps_reduced": 12,
+      "review_effort_reduction_percent": 96.2
+    },
+    "continuity": {
+      "context_recovered_keys": [
+        "session_id",
+        "active_objectives",
+        "parent_task_id"
+      ],
+      "decisions_reconstructed": 4,
+      "duplicate_work_prevented_tasks": 3
+    },
+    "governance": {
+      "validation_checks_completed": 8,
+      "blocked_unauthorized_actions": 2,
+      "human_checkpoints_reached": 1
+    },
+    "evidence": {
+      "completeness_score": 1.0,
+      "traceability_score": 1.0,
+      "review_clarity": "HIGH_COMPREHEND"
+    }
+  },
+  "metrics_summary": {
+    "efficiency": {
+      "manual_baseline_estimate_mins": 120.0,
+      "sage_assisted_duration_mins": 4.5,
+      "steps_reduced": 12,
+      "review_effort_reduction_percent": 96.2
+    },
+    "continuity": {
+      "context_recovered_keys": [
+        "session_id",
+        "active_objectives",
+        "parent_task_id"
+      ],
+      "decisions_reconstructed": 4,
+      "duplicate_work_prevented_tasks": 3
+    },
+    "governance": {
+      "validation_checks_completed": 8,
+      "blocked_unauthorized_actions": 2,
+      "human_checkpoints_reached": 1
+    },
+    "evidence": {
+      "completeness_score": 1.0,
+      "traceability_score": 1.0,
+      "review_clarity": "HIGH_COMPREHEND"
+    }
+  },
+  "generated_metrics": {
+    "efficiency": {
+      "manual_baseline_estimate_mins": 120.0,
+      "sage_assisted_duration_mins": 4.5,
+      "steps_reduced": 12,
+      "review_effort_reduction_percent": 96.2
+    },
+    "continuity": {
+      "context_recovered_keys": [
+        "session_id",
+        "active_objectives",
+        "parent_task_id"
+      ],
+      "decisions_reconstructed": 4,
+      "duplicate_work_prevented_tasks": 3
+    },
+    "governance": {
+      "validation_checks_completed": 8,
+      "blocked_unauthorized_actions": 2,
+      "human_checkpoints_reached": 1
+    },
+    "evidence": {
+      "completeness_score": 1.0,
+      "traceability_score": 1.0,
+      "review_clarity": "HIGH_COMPREHEND"
+    }
+  },
+  "generated metrics": {
+    "efficiency": {
+      "manual_baseline_estimate_mins": 120.0,
+      "sage_assisted_duration_mins": 4.5,
+      "steps_reduced": 12,
+      "review_effort_reduction_percent": 96.2
+    },
+    "continuity": {
+      "context_recovered_keys": [
+        "session_id",
+        "active_objectives",
+        "parent_task_id"
+      ],
+      "decisions_reconstructed": 4,
+      "duplicate_work_prevented_tasks": 3
+    },
+    "governance": {
+      "validation_checks_completed": 8,
+      "blocked_unauthorized_actions": 2,
+      "human_checkpoints_reached": 1
+    },
+    "evidence": {
+      "completeness_score": 1.0,
+      "traceability_score": 1.0,
+      "review_clarity": "HIGH_COMPREHEND"
+    }
+  }
+}
