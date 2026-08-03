@@ -1,0 +1,173 @@
+{
+  "experience_run_id": "demo_exp_791aecf4",
+  "timestamp": "2026-08-03T12:50:26.637617+00:00",
+  "integrated_lineage": {
+    "user_action": {
+      "modified_files": [
+        "sage/core/spek.py"
+      ],
+      "files_count": 1
+    },
+    "spek_evaluation": {
+      "status": "PROTECTION_VIOLATION_DETECTED",
+      "violations_found": 1,
+      "severity": "HIGH",
+      "violations": [
+        {
+          "file_path": "sage/core/spek.py",
+          "matched_prefix": "sage/core/",
+          "severity": "CRITICAL",
+          "reason": "Modification of protected core namespace file 'sage/core/spek.py' is strictly forbidden."
+        }
+      ]
+    },
+    "hdg_checkpoint": {
+      "checkpoint_id": "chk_demo_wf_1ebb7599",
+      "decision_state": "REJECTED",
+      "supervisor_id": "human_supervisor_01",
+      "comments": "Illegal edits touched core namespace block.",
+      "action_taken": "COMMIT_REJECTED"
+    },
+    "sdr_divergence": {
+      "simulation_id": "sim_sdr004_dem_01",
+      "timestamp": "2026-08-03T12:50:26.637789+00:00",
+      "divergence_details": {
+        "original_session_id": "session_sdr_demo",
+        "diverged_branches": [
+          "branch_a",
+          "branch_b"
+        ],
+        "diverged_agents": [
+          "agent_analyst_01",
+          "agent_exec_01"
+        ]
+      },
+      "conflict_detection_report": {
+        "conflicts_found": 1,
+        "anomalies_found": 1,
+        "conflicts": [
+          {
+            "conflict_type": "TASK_MUTATION_OVERRIDE",
+            "task_id": "task_conflict_01",
+            "fields_mismatched": [
+              "actor_id",
+              "status"
+            ],
+            "details": "Task 'task_conflict_01' has conflicting definitions (mismatched actor_id, status) on parallel branches."
+          }
+        ],
+        "anomalies": [
+          {
+            "anomaly_type": "RELATIONAL_LOOP_DETECTED",
+            "branch": "branch_a",
+            "task_id": "task_loop_01",
+            "details": "Task 'task_loop_01' points to itself as its own parent task."
+          }
+        ]
+      },
+      "resolution_details": {
+        "applied_strategy": "AUTHORITY_PRIORITY",
+        "status": "RESOLVED",
+        "resolved_tasks_count": 3
+      }
+    },
+    "crc_verification": {
+      "attestation_provider": "AsymmetricKeyPair",
+      "key_pair_identity": "sage_key_pair_v2",
+      "verification_status": "SIGNATURE_VERIFIED",
+      "hash_chain_integrity": "INTEGRITY_PASSED",
+      "receipt_chain": [
+        {
+          "receipt_id": "rec_crc_001",
+          "parent_hash": "genesis_hash_0000000000000000",
+          "hash": "hash_level_1_7a8b9c",
+          "signer": "agent_coordinator"
+        },
+        {
+          "receipt_id": "rec_crc_002",
+          "parent_hash": "hash_level_1_7a8b9c",
+          "hash": "hash_level_2_1d2e3f",
+          "signer": "agent_reviewer"
+        }
+      ]
+    }
+  },
+  "demonstration_dashboard": [
+    "==========================================================================",
+    "          SAGE ENTERPRISE DEMONSTRATION INTEGRATED EXPERIENCE COCONSOLE    ",
+    "==========================================================================",
+    " Presentation Run ID  : demo_exp_791aecf4",
+    " Presentation Time    : 2026-08-03T12:50:26.637617+00:00",
+    "",
+    "=== SAGE CHRONOLOGICAL AUDIT LINEAGE ===",
+    "Session Identifier : demo_wf_6d45aafb",
+    "Intake Captured At : 2026-08-03T12:50:26.637652+00:00",
+    "Workspace Intake   : 1 file(s) modified",
+    "  \u2514\u2500\u25ba Modified: sage/core/spek.py",
+    "SPEK Guard Status  : PROTECTION_VIOLATION_DETECTED (HIGH Severity)",
+    "HDG Decision State : REJECTED by human_supervisor_01",
+    "Decision Comments  : Illegal edits touched core namespace block.",
+    "Action Implemented : COMMIT_REJECTED",
+    "========================================",
+    "",
+    "=== SDR-004 STATE DIVERGENCE AUDIT DISPLAY ===",
+    "Simulation ID    : sim_sdr004_dem_01",
+    "Original Session : session_sdr_demo",
+    "Diverging Paths  : branch_a, branch_b",
+    "Active Agents    : agent_analyst_01, agent_exec_01",
+    "Conflicts Found  : 1",
+    "Anomalies Found  : 1",
+    "  [Conflict] TASK_MUTATION_OVERRIDE on 'task_conflict_01'",
+    "             Mismatches: ['actor_id', 'status']",
+    "             Details: Task 'task_conflict_01' has conflicting definitions (mismatched actor_id, status) on parallel branches.",
+    "  [Anomaly]  RELATIONAL_LOOP_DETECTED in branch_a for 'task_loop_01'",
+    "             Details: Task 'task_loop_01' points to itself as its own parent task.",
+    "Resolution Rule  : AUTHORITY_PRIORITY -> Status: RESOLVED",
+    "==============================================",
+    "",
+    "=== RECOVERY CHECKPOINT & SUPERVISOR SIGS ===",
+    "Checkpoint ID     : chk_demo_wf_1ebb7599",
+    "Timestamp Captured: 2026-08-03T12:50:26.637652+00:00",
+    "Supervisor Identity: human_supervisor_01",
+    "Supervisor Verdict : REJECTED",
+    "Comments / Notes   : Illegal edits touched core namespace block.",
+    "Cryptographic Hash : 1388cbacc2a189c9098e904a24f64c6134de95c0485cef082f55018051ef2cc7",
+    "Attestation Seal   : sig_wf_c654d75b6ac957a457f1767684e28869",
+    "=============================================",
+    "",
+    "=== CRYPTOGRAPHIC RECEIPT VERIFICATION ===",
+    "Signing Provider: AsymmetricKeyPair",
+    "Keypair Identity: sage_key_pair_v2",
+    "Signature Status: SIGNATURE_VERIFIED",
+    "Chain Integrity : INTEGRITY_PASSED",
+    "Total Receipts  : 2 linked node(s)",
+    "  \u251c\u2500 Receipt ID: rec_crc_001",
+    "  \u2502  \u251c\u2500 Hash   : hash_level_1_7a8b9c",
+    "  \u2502  \u2514\u2500 Signer : agent_coordinator",
+    "  \u251c\u2500 Receipt ID: rec_crc_002",
+    "  \u2502  \u251c\u2500 Hash   : hash_level_2_1d2e3f",
+    "  \u2502  \u2514\u2500 Signer : agent_reviewer",
+    "==========================================",
+    "",
+    "==========================================================================",
+    "          SAGE SECURE SANDBOX BOUNDARIES REMAIN ABSOLUTELY PRESERVED      ",
+    "=========================================================================="
+  ],
+  "attestation": {
+    "nonce": "4ed2b19b75fe4f0c",
+    "data_hash": "b1451b5f2a9957221395563f805a414bfaac5211b3382c6e22fee6338cbc7c86",
+    "signature": "sig_exp_7eb2d7c40a452afed11b02a4b25881c5",
+    "signer_identity": "EXPERIENCE_COORDINATOR_SYSTEM"
+  },
+  "boundary_integrity_verification": {
+    "sage_runtime_untouched": true,
+    "sage_core_untouched": true,
+    "sage_acr_untouched": true,
+    "sage_agents_untouched": true
+  },
+  "observed_results": {
+    "rendered_lines_count": 59,
+    "has_violations_rendered": 1,
+    "presentation_duration_secs": 0.062
+  }
+}
