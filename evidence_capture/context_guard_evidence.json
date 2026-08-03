@@ -1,0 +1,49 @@
+{
+  "compliance_pack_id": "comp_s_guard_001",
+  "receipt_id": "rec_guard_31dea8154e49",
+  "timestamp": "2026-08-03T11:17:23.582476+00:00",
+  "session_id": "session_guard_4c747934",
+  "intake_details": {
+    "modified_files_count": 1,
+    "modified_files": [
+      "sage/core/spek.py"
+    ]
+  },
+  "protection_evaluation": {
+    "status": "PROTECTION_VIOLATION_DETECTED",
+    "violations_found": 1,
+    "severity": "HIGH",
+    "violations": [
+      {
+        "file_path": "sage/core/spek.py",
+        "matched_prefix": "sage/core/",
+        "severity": "CRITICAL",
+        "reason": "Modification of protected core namespace file 'sage/core/spek.py' is strictly forbidden without supervisor approval."
+      }
+    ]
+  },
+  "decision_record": {
+    "checkpoint_id": "chk_guard_4626945d",
+    "decision_state": "REJECTED",
+    "supervisor_id": "human_supervisor_01",
+    "comments": "Illegal edit detected in protected spek module.",
+    "action_taken": "COMMIT_REJECTED"
+  },
+  "attestation": {
+    "nonce": "948b836b574e4bb0",
+    "data_hash": "40672d2690ab208a8b950fb299a434b10c2555853aeba5bf98aafd550d9e8ee0",
+    "signature": "sig_guard_e8172d5942d1b0ad7d2a06e008e152a8",
+    "signer_identity": "human_supervisor_01"
+  },
+  "boundary_integrity_verification": {
+    "sage_runtime_untouched": true,
+    "sage_core_untouched": true,
+    "sage_acr_untouched": true,
+    "sage_agents_untouched": true
+  },
+  "observed_results": {
+    "violations_intercepted": 1,
+    "recovery_held": 0,
+    "duration_secs": 0.042
+  }
+}
