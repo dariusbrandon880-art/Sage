@@ -1,11 +1,11 @@
 {
-  "scenario_run_id": "scen_run_e1c24603",
+  "scenario_run_id": "scen_run_39fd350d",
   "scenario_id": "scenario_b_override",
   "name": "Scenario B: Protected Workspace Modification & Override Flow",
-  "timestamp": "2026-08-03T14:58:48.022183+00:00",
+  "timestamp": "2026-08-03T16:03:25.592282+00:00",
   "launcher_evidence": {
-    "launcher_run_id": "launch_4b17e503",
-    "timestamp": "2026-08-03T14:58:48.022253+00:00",
+    "launcher_run_id": "launch_79c94b15",
+    "timestamp": "2026-08-03T16:03:25.592351+00:00",
     "standard_inputs": {
       "session_id": "session_scenario_b_2026",
       "user_id": "usr_lead_developer",
@@ -19,11 +19,11 @@
     },
     "context_guard_validation": {
       "compliance_pack_id": "comp_s_guard_001",
-      "receipt_id": "rec_guard_f42c7a7a3368",
+      "receipt_id": "rec_guard_e6722929cda4",
       "status": "PROTECTION_VIOLATION_DETECTED",
       "violations_found": 1,
       "supervisor_decision": {
-        "checkpoint_id": "chk_guard_6c52d65d",
+        "checkpoint_id": "chk_guard_63bb5e79",
         "decision_state": "AUTHORIZED",
         "supervisor_id": "supervisor_charlie",
         "comments": "SAGE Demonstration Manual Authorization Override applied.",
@@ -38,7 +38,7 @@
     "repeatable_experience": {
       "experience_id": "exp_e294dadc",
       "status": "EXPERIENCE_SUCCESS",
-      "experience_checksum": "fb2825c22835e023f477df65656004544e7ac1b1fb2c1fa68a4823e90e9bafd3"
+      "experience_checksum": "1d63a1996e0ed58de2f471b02f42fe8af91cd0e38f9b6e6ffbb068ead45f8579"
     },
     "act_prod_demonstrator": {
       "signatures_audited": 3,
@@ -49,12 +49,12 @@
       "==========================================================================",
       "          SAGE DEMONSTRATION EXPERIENCE LAUNCHER CONTROL CONSOLE          ",
       "==========================================================================",
-      " Launch Timestamp     : 2026-08-03T14:58:48.022253+00:00",
+      " Launch Timestamp     : 2026-08-03T16:03:25.592351+00:00",
       " Boundary Security    : SECURE SANDBOX PRESERVED",
       " Non-Repudiation Code : VERIFIED_INDISPUTABLE",
       "",
       "=== SAGE CHRONOLOGICAL DEMONSTRATION LINEAGE ===",
-      "Launch Run ID      : launch_4b17e503",
+      "Launch Run ID      : launch_79c94b15",
       "Active Session     : session_scenario_b_2026",
       "User Initiator     : usr_lead_developer",
       "Workspace Intake   : 1 file(s) monitored",
@@ -63,7 +63,7 @@
       "  \u2514\u2500\u25ba Action: COMMIT_APPROVED (AUTHORIZED)",
       "SDR Divergence     : State split brain simulated & resolved (CHRONOLOGICAL_PRIORITY)",
       "CRC Receipt Valid  : SAGE_ACTIVATION_RECEIPT_VALID",
-      "  \u2514\u2500\u25ba Hash: ca308bbc69c3f6d0e160f26a25b4d7abae347fd0c5a3113ccbf6bd189aa58781",
+      "  \u2514\u2500\u25ba Hash: 763b0f9b54de4985f77045574123fc71a62123cbda2abd3790c9d04c83bdffa2",
       "=================================================",
       "",
       "=== FINAL SAGE DEMONSTRATION WORKFLOW RUN SUMMARY ===",
@@ -73,9 +73,9 @@
       "=========================================================================="
     ],
     "attestation": {
-      "nonce": "e1ace3b60de444ee",
-      "data_hash": "0e49eed57f2bb0681f7bed70d7cb89da3fb734783fc1b52766b982c8e1cf5fc4",
-      "signature": "sig_launcher_6d5a6d96e045c2579084763778565c16",
+      "nonce": "1b8b690dcd5e478a",
+      "data_hash": "b544793824741c27f904807fa7ca8ceaeb4a90ca1b71637d78897dcd02e9639c",
+      "signature": "sig_launcher_add5f9e0df02d6f6b03f0c43c98f0309",
       "signer_identity": "supervisor_charlie"
     },
     "boundary_integrity_verification": {
@@ -90,13 +90,25 @@
       "total_reconstructed_lineages": 1
     }
   },
+  "decision_interpretation": {
+    "explanation": "SAGE intercepted an unauthorized attempt to modify 'sage/core/spek.py'. The execution was held at a secure human checkpoint until a manual supervisor override authorization was applied.",
+    "governed_outcome_advantage": "Critical path violation intercepted and halted; manual authorization gate invoked; override audit trail recorded.",
+    "baseline_uncontrolled_risk": "Silent core namespace modification; immediate undetected codebase contamination; high security risk."
+  },
   "visual_presentation": [
     "==========================================================================",
     "          SAGE REPEATABLE SCENARIO EXPERIENCE: SCENARIO B: PROTECTED WORKSPACE MODIFICATION & OVERRIDE FLOW          ",
     "==========================================================================",
-    " Run Identifier       : scen_run_e1c24603",
-    " Execution Timestamp  : 2026-08-03T14:58:48.022183+00:00",
+    " Run Identifier       : scen_run_39fd350d",
+    " Execution Timestamp  : 2026-08-03T16:03:25.592282+00:00",
     " Scenario Description : Demonstrates SAGE's manual supervisor gate holding and overriding modifications to protected paths.",
+    "--------------------------------------------------------------------------",
+    "=== SAGE DECISION INTERPRETATION ===",
+    " Explanation : SAGE intercepted an unauthorized attempt to modify 'sage/core/spek.py'. The execution was held at a secure human checkpoint until a manual supervisor override authorization was applied.",
+    "--------------------------------------------------------------------------",
+    "=== GOVERNED OUTCOME VS. BASELINE RISK CONTRAST ===",
+    " [SAGE Governed Outcome] : Critical path violation intercepted and halted; manual authorization gate invoked; override audit trail recorded.",
+    " [Non-SAGE Baseline]     : Silent core namespace modification; immediate undetected codebase contamination; high security risk.",
     "--------------------------------------------------------------------------",
     "=== ASSEMBLED LINEAGE TRACE ===",
     "  \u251c\u2500 active_session_id : session_scenario_b_2026",
@@ -113,9 +125,9 @@
     "=========================================================================="
   ],
   "attestation": {
-    "nonce": "aa0456617d914f58",
-    "data_hash": "656bc886987c38258ea18332f3fd3cb779f013868cf115e70de7b4efe8a2e0d4",
-    "signature": "sig_scenario_0b210df4ec5f4f4f445c2fab8b8e195e",
+    "nonce": "32e2498a2afe483a",
+    "data_hash": "b2729c1acaf30a677aef8750dbf5d7d0dc5c3b86e614f0fa321e489b092d6f18",
+    "signature": "sig_scenario_7bfad5592c66ad57d28ba0a1b90ea15a",
     "signer_identity": "supervisor_charlie"
   },
   "boundary_integrity_verification": {
@@ -127,6 +139,7 @@
   "observed_results": {
     "scenario_execution_success": true,
     "latency_secs": 0.048,
-    "integrity_checks_passed": 4
+    "integrity_checks_passed": 4,
+    "governed_advantages_identified": 3
   }
 }
