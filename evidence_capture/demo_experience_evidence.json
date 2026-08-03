@@ -1,0 +1,91 @@
+{
+  "demonstration_summary": "=== SAGE DEMONSTRATION RUN COMPLETE ===\nSession ID: session_exp_99\nStatus: INTAKE_COMPLETE & VERIFIED\nBoundary Integrity: Context Guard Monitored (SECURE)\nSDR Divergence State: split_brain_detected=True (Recovery Checkpoints Active)\nHuman Checkpoint: AUTHORIZED by supervisor_charlie\nVerification: SAGE_ACTIVATION_RECEIPT_VALID\n========================================",
+  "experience_checksum": "149ca640d954cb074a997e601361b78b7080020e308c57fcf3dfb8b35b9076a1",
+  "experience_id": "exp_65bfb00e",
+  "session_id": "session_exp_99",
+  "status": "EXPERIENCE_SUCCESS",
+  "timestamp": "2026-08-03T12:52:40.460437+00:00",
+  "usability_improvements": {
+    "input_mapping_consistency_checked": true,
+    "summary_presentation_enabled": true,
+    "unified_entry_invoked": true
+  },
+  "workflow_payload": {
+    "capability_analysis": {
+      "crc_trust_layer": {
+        "asymmetric_signed": true,
+        "attestation": "SAGE_TRUST_ATTESTATION_SUCCESS"
+      },
+      "recovery_checkpoints_active": [
+        {
+          "authority_restored": "supervisor_lead",
+          "checkpoint_id": "chk_rec_001_initial",
+          "status": "restored"
+        }
+      ],
+      "sdr_divergence_status": "MONITORED",
+      "split_brain_detected": true
+    },
+    "context_evaluation": {
+      "boundary_isolation_verified": true,
+      "monitored_paths": [
+        "sage/runtime/",
+        "sage/core/",
+        "sage/acr/"
+      ],
+      "status": "EVALUATION_SUCCESS",
+      "unauthorized_mutations_prevented": 0
+    },
+    "demonstrator_output": {
+      "divergence_visibility": {
+        "conflict_type": "state_split_brain",
+        "divergence_detected": true
+      },
+      "lineage_visualization": {
+        "active_session": "session_exp_99",
+        "session_status": "INTAKE_COMPLETE"
+      },
+      "receipt_verification_display": {
+        "receipt_id": "receipt_185af36b3d8050d8",
+        "verification_hash": "185af36b3d8050d88250ffdfb46788d916f65eecf5c2c7fc026020e172162d0e"
+      }
+    },
+    "evidence_receipt": {
+      "assertion": "SAGE_ACTIVATION_RECEIPT_VALID",
+      "receipt_id": "receipt_185af36b3d8050d8",
+      "timestamp": "2026-08-03T12:52:40.460303+00:00",
+      "verification_hash": "185af36b3d8050d88250ffdfb46788d916f65eecf5c2c7fc026020e172162d0e"
+    },
+    "human_checkpoint": {
+      "approver": "supervisor_charlie",
+      "assertion": "HUMAN_OVERRIDE_VERIFIED",
+      "authorized_at": "2026-08-03T12:52:40.460219+00:00",
+      "signature": "sig_exp_abc",
+      "status": "APPROVED"
+    },
+    "intake": {
+      "action_type": "user_demonstration_run",
+      "context_data": {
+        "active_milestone": "SAGE-ACT-PROD-DEMO-EXPERIENCE",
+        "environment": "sandboxed_demo_sandbox",
+        "launched_at": "2026-08-03T12:52:40.460198+00:00"
+      },
+      "session_id": "session_exp_99",
+      "status": "INTAKE_COMPLETE",
+      "timestamp": "2026-08-03T12:52:40.460211+00:00",
+      "user_id": "usr_tester"
+    },
+    "metadata": {
+      "framework": "SAGE-ACT-PROD",
+      "run_type": "read_only_demonstration_workflow",
+      "timestamp": "2026-08-03T12:52:40.460331+00:00"
+    },
+    "session_id": "session_exp_99",
+    "state_checksum": "e46a4de0cfe275d6e18bc7904f05e6b037d5d13e539737dcc5cb7bf71ba16a42",
+    "user_action": {
+      "action_type": "user_demonstration_run",
+      "user_id": "usr_tester"
+    },
+    "workflow_id": "workflow_65bfb00e"
+  }
+}
