@@ -1080,3 +1080,66 @@ def test_discovery_candidate_blocked_boost(tmp_path):
     assert prioritized[0]["priority_score"] == 7.25  # (8.0 + 6.5) / 2.0
     assert prioritized[0]["risk_level"] == "CRITICAL"
     assert prioritized[0]["validation_readiness"] == "HIGH"
+
+
+def test_transition_improvement_lifecycle_success(tmp_path):
+    """Verify that SAGE programmatically promotes and traces discovery candidate lifecycle transitions."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_lifecycle_test",
+        objective="obj_continuous_development"
+    )
+    orchestrator.session_manager = session_mgr
+    orchestrator.ccl.storage_path = record_storage
+    orchestrator.session = session_mgr.create_session(
+        session_id="session_lifecycle_test",
+        active_objectives=["obj_continuous_development"]
+    )
+
+    # 1. Promote new candidate
+    candidate = orchestrator.promote_discovery_candidate(
+        opportunity_type="TEST_INTEGRITY",
+        pattern_observed="Manual pre-commits are slow",
+        research_validation_criteria="Automate pre-commit hooks"
+    )
+    assert candidate["lifecycle_state"] == "PROPOSED"
+
+    # 2. Transition lifecycle state to VALIDATED with evidence
+    promoted = orchestrator.transition_improvement_lifecycle(
+        candidate_id=candidate["candidate_id"],
+        new_state="VALIDATED",
+        validation_evidence_path="evidence_capture/operational_persistence_evidence.json"
+    )
+
+    assert promoted["lifecycle_state"] == "VALIDATED"
+    assert "evidence_capture/operational_persistence_evidence.json" in promoted["research_validation_criteria"]
+
+
+def test_transition_improvement_lifecycle_invalid_state(tmp_path):
+    """Verify that transitioning to an invalid lifecycle state raises a ValueError."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator
+    import pytest
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_invalid_lifecycle_test",
+        objective="obj_continuous_development"
+    )
+    orchestrator.promote_discovery_candidate(
+        opportunity_type="TEST_INTEGRITY",
+        pattern_observed="observation",
+        research_validation_criteria="criteria"
+    )
+    candidate_id = orchestrator.session.metadata["discovery_candidates"][0]["candidate_id"]
+
+    with pytest.raises(ValueError, match="Invalid lifecycle state"):
+        orchestrator.transition_improvement_lifecycle(
+            candidate_id=candidate_id,
+            new_state="INVALID_STATE"
+        )

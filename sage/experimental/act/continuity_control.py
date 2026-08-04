@@ -928,6 +928,65 @@ class DeveloperWorkflowOrchestrator:
 
         return [c.model_dump() for c in candidates_sorted]
 
+    def transition_improvement_lifecycle(
+        self,
+        candidate_id: str,
+        new_state: str,
+        validation_evidence_path: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Orchestrates state promotions of discovery candidates, ensuring strict governance and traceability."""
+        candidates_list = self.session.metadata.get("discovery_candidates", [])
+        target_candidate = None
+
+        for c in candidates_list:
+            if c["candidate_id"] == candidate_id:
+                target_candidate = c
+                break
+
+        if not target_candidate:
+            raise ValueError(f"SAGE Operational Continuity Error: Candidate '{candidate_id}' not found.")
+
+        # Validate transition states
+        allowed_states = ["PROPOSED", "UNDER_REVIEW", "VALIDATED", "INTEGRATED"]
+        if new_state not in allowed_states:
+            raise ValueError(f"SAGE Operational Continuity Error: Invalid lifecycle state '{new_state}'. Allowed: {allowed_states}")
+
+        # Transition lifecycle
+        target_candidate["lifecycle_state"] = new_state
+        if validation_evidence_path:
+            target_candidate["research_validation_criteria"] += f" [Evidence Path: {validation_evidence_path}]"
+
+        target_candidate["timestamp"] = time.time()
+        self.session_manager.save_session(self.session)
+
+        # Update stand-alone register file
+        register_path = Path("evidence_capture/discovery_candidates_register.json")
+        if register_path.exists():
+            try:
+                with open(register_path, "r", encoding="utf-8") as f:
+                    all_candidates = json.load(f)
+                for c in all_candidates:
+                    if c["candidate_id"] == candidate_id:
+                        c["lifecycle_state"] = new_state
+                        if validation_evidence_path:
+                            c["research_validation_criteria"] += f" [Evidence Path: {validation_evidence_path}]"
+                with open(register_path, "w", encoding="utf-8") as f:
+                    json.dump(all_candidates, f, indent=2, default=str)
+            except Exception:
+                pass
+
+        # Intercept CCL Event
+        rec = self.ccl.intercept_event(
+            event_type="state_transition",
+            action_taken=f"Promoted Discovery Candidate '{candidate_id}' to '{new_state}'",
+            decision_reasoning=f"Lifecycle transition under supervised operational validation. Evidence: {validation_evidence_path}",
+            session_id=self.session_id,
+            evidence_payload={"discovery_candidate": target_candidate}
+        )
+        self.ccl.serialize_record(rec)
+
+        return target_candidate
+
     def execute_active_development_coordination(
         self,
         action_taken: str,
@@ -1188,14 +1247,17 @@ class DeveloperWorkflowOrchestrator:
                 intelligence_info.append(f"    * [{sig['severity']}] {sig['signal_type']}: {sig['description']}")
                 intelligence_info.append(f"      Recommendation: {sig['recommendation']}")
 
-        # Determine discovery candidates
+        # Determine discovery candidates (SAGE Operational Learning Lineage)
         discovery_info = []
         candidates_list = self.generate_prioritized_candidates()
         if candidates_list:
-            discovery_info.append("  Prioritized Discovery Candidates:")
+            discovery_info.append("  SAGE Operational Learning Lineage:")
             for can in candidates_list[:2]:  # Show top 2 candidates
-                discovery_info.append(f"    * [{can['candidate_id']}] Priority Score: {can['priority_score']:.1f} (Type: {can['opportunity_type']})")
-                discovery_info.append(f"      Pattern: {can['pattern_observed'][:80]}...")
+                discovery_info.append(
+                    f"    * {can['candidate_id']} (Priority: {can['priority_score']:.1f}) [{can['lifecycle_state']}]\n"
+                    f"      Origin Pattern: {can['pattern_observed'][:75]}...\n"
+                    f"      Validation criteria: {can['research_validation_criteria'][:75]}..."
+                )
         else:
             discovery_info.append("  Discovery Candidates: None registered.")
 
@@ -1456,15 +1518,23 @@ if __name__ == "__main__":
 
     print(f"\n[*] Promoting SAGE Discovery Intelligence Candidates...")
     # Promote a high-value operational candidate noticed during real work
-    orchestrator.promote_discovery_candidate(
+    cand_1 = orchestrator.promote_discovery_candidate(
         opportunity_type="OPERATIONAL_EFFICIENCY",
         pattern_observed="Manual bootstrap of poetry environment is slow on clean sandbox containers",
         research_validation_criteria="Implement high-fidelity workspace memory cache and pre-packaged virtualenvs"
     )
-    orchestrator.promote_discovery_candidate(
+    cand_2 = orchestrator.promote_discovery_candidate(
         opportunity_type="TEST_INTEGRITY",
         pattern_observed="Pre-commit checks require manual execution of command line suite",
         research_validation_criteria="Integrate programmatic pre-commit hook triggers inside SAGE coordinate loops"
+    )
+
+    # Transition the TEST_INTEGRITY candidate to VALIDATED state to demonstrate the complete closed loop!
+    print(f"\n[*] Transitioning SAGE Discovery Candidates through Operational Validation Lifecycle...")
+    orchestrator.transition_improvement_lifecycle(
+        candidate_id=cand_2["candidate_id"],
+        new_state="VALIDATED",
+        validation_evidence_path="evidence_capture/operational_persistence_evidence.json"
     )
 
     print(f"\n[*] Generating Live Coordination Status Dashboard...")
