@@ -234,3 +234,131 @@ def test_one_way_import_isolation_enforcement():
                             f"One-Way Import Law Violation inside production: '{file_path}' "
                             f"attempts to import from module '{node.module}'"
                         )
+
+
+def test_developer_workflow_orchestrator_e2e(tmp_path):
+    """Verify the DeveloperWorkflowOrchestrator runs the complete active coordination loop successfully."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    evidence_output = tmp_path / "evidence" / "ccl_operational_feedback.json"
+
+    # 1. Initialize custom managers and loop
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+
+    # Create orchestrator
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_orch_test_123",
+        objective="obj_continuous_development",
+        ccl=ccl,
+        evidence_output_path=str(evidence_output)
+    )
+
+    # 2. Run active development coordination
+    action = "SAGE Priority Implementation"
+    reasoning = "Validate SAGE's operational coordination capability"
+    friction = [{"type": "cognitive_load", "detail": "high manual step friction", "severity": "medium"}]
+    opportunities = ["Auto-run tests after code modifications via watcher"]
+
+    result = orchestrator.execute_active_development_coordination(
+        action_taken=action,
+        decision_reasoning=reasoning,
+        workflow_friction=friction,
+        improvement_opportunities=opportunities
+    )
+
+    # 3. Assert on result fields
+    assert result["status"] == "VALIDATED"
+    assert "orchestrator_run_id" in result
+    assert result["session_id"] == "session_orch_test_123"
+    assert "obj_continuous_development" in result["session_objectives"]
+
+    # SAGE-CCL Record Assertions
+    ccl_rec = result["ccl_record"]
+    assert ccl_rec["action_taken"] == action
+    assert ccl_rec["decision_reasoning"] == reasoning
+    assert ccl_rec["lifecycle_state"] == "VALIDATED"
+    assert ccl_rec["workflow_friction"] == friction
+    assert ccl_rec["improvement_opportunities"] == opportunities
+
+    # CMAPS Payload Assertions
+    cmaps = result["cmaps_payload"]
+    assert cmaps["audit_id"].startswith("audit_")
+    assert cmaps["agent_identity"]["agent_id"] == "agent_jules_sage"
+    assert cmaps["model_provider"]["provider"] == "anthropic"
+    assert cmaps["execution_state"]["status"] == "completed"
+    assert cmaps["task_lineage"]["session_id"].startswith("session_")
+    assert len(cmaps["task_lineage"]["session_id"]) == 16
+    assert cmaps["decision_events"][0]["summary"] == action
+    assert cmaps["decision_events"][0]["reasoning"] == reasoning
+    assert cmaps["attestation"]["signer_identity"] == "supervisor_jules"
+
+    # Telemetry Assertions
+    telemetry = result["developer_telemetry"]
+    assert telemetry["friction"] == friction
+    assert telemetry["opportunities"] == opportunities
+
+    # 4. Verify file persistence
+    assert evidence_output.exists()
+    with open(evidence_output, "r", encoding="utf-8") as f:
+        loaded_evidence = json.load(f)
+    assert loaded_evidence["orchestrator_run_id"] == result["orchestrator_run_id"]
+    assert loaded_evidence["ccl_record"]["record_id"] == ccl_rec["record_id"]
+
+
+def test_developer_workflow_orchestrator_with_supervisor_override(tmp_path):
+    """Verify the DeveloperWorkflowOrchestrator honors supervisor overrides and custom approvals."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    evidence_output = tmp_path / "evidence" / "custom_feedback.json"
+
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_override_test",
+        objective="obj_continuous_development",
+        ccl=ccl,
+        evidence_output_path=str(evidence_output)
+    )
+
+    override = {
+        "decision": "APPROVED",
+        "supervisor_id": "human_supervisor_jules_override",
+        "comments": "Explicit manual override for special experimental run",
+        "signature": "sig_special_run_8892"
+    }
+
+    result = orchestrator.execute_active_development_coordination(
+        action_taken="Custom Run",
+        decision_reasoning="Custom validation reasons",
+        supervisor_override=override
+    )
+
+    assert result["status"] == "VALIDATED"
+    assert result["ccl_record"]["lifecycle_state"] == "VALIDATED"
+    assert result["ccl_record"]["evidence_payload"]["human_approval_record"]["supervisor_id"] == "human_supervisor_jules_override"
+    assert result["ccl_record"]["evidence_payload"]["human_approval_record"]["signature"] == "sig_special_run_8892"
+    assert result["cmaps_payload"]["attestation"]["signer_identity"] == "human_supervisor_jules_override"
+    assert result["cmaps_payload"]["attestation"]["signature"] == "sig_special_run_8892"
+
+
+def test_developer_workflow_orchestrator_scan_git(tmp_path):
+    """Verify git scan capability in various contexts, ensuring robust fallbacks."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_git_test",
+        evidence_output_path=str(tmp_path / "git_evidence.json")
+    )
+
+    workspace = orchestrator.scan_git_workspace()
+    assert "modified_files" in workspace
+    assert "diffs" in workspace
+    assert len(workspace["modified_files"]) > 0
