@@ -4,7 +4,11 @@ import os
 import ast
 import json
 import pytest
-from sage.experimental.act.ccl_orchestrator import DeveloperWorkflowOrchestrator, ChatGPTAgentConnector
+from sage.experimental.act.ccl_orchestrator import (
+    DeveloperWorkflowOrchestrator,
+    ChatGPTAgentConnector,
+    JulesAgentConnector,
+)
 
 
 def test_orchestrator_lifecycle_and_transitions():
@@ -783,3 +787,72 @@ def test_chatgpt_coordinated_agent_workflow_validation(tmp_path):
     assert ccl_record["task_state_snapshot"]["progress_percent"] == 100.0
     assert ccl_record["task_state_snapshot"]["latest_result"]["stage"] == "all_tests_passed"
     assert len(ccl_record["monotonic_sequence_history"]) == 6 # Complete traceable chain (TASK_INIT, HUMAN_APPROVALs, STATE_TRANSITIONS, progress)
+
+
+def test_jules_agent_connector(tmp_path):
+    """Verify JulesAgentConnector registration, context rehydration, progress reporting, and handoffs."""
+    orch = DeveloperWorkflowOrchestrator(session_id="session_jules_testing")
+
+    # 1. Registration & Role Verification
+    jules = JulesAgentConnector(orch, agent_id="agent_jules_exec")
+    assert orch.agents["agent_jules_exec"] == "ACTIVATED"
+    assert orch.agent_roles["agent_jules_exec"] == "EXECUTOR"
+
+    # Activate a reviewer agent as well
+    orch.ingest_event("AGENT_ACTIVATION", "system", {"agent_id": "agent_reviewer", "supervisor_id": "super", "decision": "AUTHORIZED", "role": "REVIEWER"})
+
+    # Initialize a task
+    task = orch.ingest_event(
+        "TASK_INIT",
+        "task_jules_01",
+        {
+            "objective_id": "obj_engineering_refactor",
+            "assigned_agent": "agent_jules_exec",
+            "initial_context": {
+                "files_to_modify": ["sage/experimental/act/ccl_orchestrator.py"],
+                "milestones_completed": ["Milestone-1-contracts", "Milestone-2-ccl-ops"]
+            }
+        }
+    )
+    assert task["status"] == "INITIATED"
+
+    # 2. Context Rehydration Check (reporting awaiting approval checkpoint blocker initially)
+    context_pkg = jules.rehydrate_engineering_context("task_jules_01")
+    assert context_pkg["active_mission"]["objective_id"] == "obj_engineering_refactor"
+    assert context_pkg["workflow_state"]["status"] == "INITIATED"
+    assert "Milestone-2-ccl-ops" in context_pkg["completed_milestones"]
+    assert context_pkg["repository_context"]["branch_name"].startswith("jules-")
+    assert "awaiting human approval" in context_pkg["current_blocker"].lower()
+    assert len(context_pkg["evidence_history"]["preceding_records_hashes"]) == 1
+
+    # Now verify with blocker (by making task ACTIVE with 0% progress)
+    jules.align_task_state("task_jules_01", "ACTIVE", "Jules starting execution.")
+    assert orch.tasks["task_jules_01"]["status"] == "ACTIVE"
+
+    context_pkg_active = jules.rehydrate_engineering_context("task_jules_01")
+    assert context_pkg_active["workflow_state"]["status"] == "ACTIVE"
+    # Should report blocker since task is active with 0.0% progress (as analyzed by intelligence feedback layer)
+    assert "stalled" in context_pkg_active["current_blocker"].lower()
+
+    # 3. Progress Reporting Validation
+    jules.report_progress(
+        task_id="task_jules_01",
+        progress_percent=80.0,
+        result_payload={"ast_isolation_verified": True},
+        feedback="Added AST checks successfully."
+    )
+    assert orch.tasks["task_jules_01"]["progress_percent"] == 80.0
+    assert orch.tasks["task_jules_01"]["latest_result"]["ast_isolation_verified"] is True
+
+    # 4. Handoff Manifest Generation & Verification
+    manifest = jules.generate_handoff_manifest("task_jules_01", "agent_reviewer")
+    assert manifest["source_agent"] == "agent_jules_exec"
+    assert manifest["destination_agent"] == "agent_reviewer"
+    assert "files_to_modify" in manifest["preserved_context_keys"]
+    assert orch.tasks["task_jules_01"]["status"] == "HANDOFF"
+    assert orch.tasks["task_jules_01"]["assigned_agent"] == "agent_reviewer"
+
+    # Verify that unactivated source agent raises Error
+    orch.agents["agent_jules_exec"] = "SUSPENDED"
+    with pytest.raises(PermissionError, match="Handoff Refused"):
+        jules.generate_handoff_manifest("task_jules_01", "agent_reviewer")

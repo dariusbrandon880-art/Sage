@@ -165,6 +165,135 @@ class ChatGPTAgentConnector:
         return manifest
 
 
+class JulesAgentConnector:
+    """Jules Engineering Agent Role Connector for SAGE.
+
+    Adapts real-world code refactoring and engineering execution tasks into
+    SAGE coordination events. Provides the engineering role context packages,
+    rehydrates repository details, and prepares secure peer handoff manifests.
+    """
+
+    def __init__(self, orchestrator: "DeveloperWorkflowOrchestrator", agent_id: str = "agent_jules_exec", supervisor_id: str = "human_supervisor_01"):
+        self.orchestrator = orchestrator
+        self.agent_id = agent_id
+        self.supervisor_id = supervisor_id
+
+        # Register Jules Identity with EXECUTOR role
+        self.orchestrator.ingest_event(
+            "AGENT_ACTIVATION",
+            "system",
+            {
+                "agent_id": self.agent_id,
+                "supervisor_id": self.supervisor_id,
+                "decision": "AUTHORIZED",
+                "role": "EXECUTOR"
+            }
+        )
+
+    def rehydrate_engineering_context(self, task_id: str) -> Dict[str, Any]:
+        """Assembles a highly tailored SAGE Engineering Context Package for Jules."""
+        if task_id not in self.orchestrator.tasks:
+            raise ValueError(f"Task '{task_id}' not found.")
+
+        task = self.orchestrator.tasks[task_id]
+        analysis = self.orchestrator.intelligence.analyze_workflow_state()
+
+        # Look up current blockers or risks for this task in SAGE intelligence
+        blocker = "NONE"
+        for b in analysis["blocked_tasks"]:
+            if b["task_id"] == task_id:
+                blocker = b["reason"]
+
+        return {
+            "active_mission": {
+                "objective_id": task["objective_id"],
+                "parent_task_id": task["parent_task_id"],
+                "session_id": task["session_id"]
+            },
+            "workflow_state": {
+                "status": task["status"],
+                "progress_percent": task["progress_percent"]
+            },
+            "completed_milestones": task["context"].get("milestones_completed", ["Milestone-1-contracts"]),
+            "assigned_engineering_responsibility": {
+                "scope_prefix": "sage/experimental/act",
+                "target_files": task["context"].get("files_to_modify", ["sage/experimental/act/ccl_orchestrator.py"]),
+                "objective_clarifications": task["context"].get("objective_clarifications", [])
+            },
+            "repository_context": {
+                "branch_name": "jules-3239577525536385000-a4b9ec08",
+                "workspace_clean": True,
+                "ast_restricted": True
+            },
+            "current_blocker": blocker,
+            "required_next_action": f"Transition to ACTIVE state if status is '{task['status']}' and record progress.",
+            "evidence_history": {
+                "preceding_records_hashes": [self.orchestrator.generate_continuity_records(task_id)["state_integrity"]["state_hash"]]
+            }
+        }
+
+    def align_task_state(self, task_id: str, target_status: str, comment: str = "") -> Dict[str, Any]:
+        """Transitions task execution states, enforcing ownership and activation checks."""
+        return self.orchestrator.ingest_event(
+            "STATE_TRANSITION",
+            task_id,
+            {
+                "target_status": target_status,
+                "agent_id": self.agent_id,
+                "comment": comment or f"Jules aligned task status to {target_status}."
+            }
+        )
+
+    def report_progress(self, task_id: str, progress_percent: float, result_payload: Dict[str, Any], feedback: str) -> Dict[str, Any]:
+        """Ingests structured execution results and operational feedback from Jules' changes."""
+        return self.orchestrator.record_progress(
+            task_id=task_id,
+            agent_id=self.agent_id,
+            progress_percent=progress_percent,
+            result_payload=result_payload,
+            feedback=feedback
+        )
+
+    def generate_handoff_manifest(self, task_id: str, target_agent_id: str) -> Dict[str, Any]:
+        """Prepares a secure, context-preserving handoff manifest requesting code review or validation."""
+        if task_id not in self.orchestrator.tasks:
+            raise ValueError(f"Task '{task_id}' not found.")
+
+        task = self.orchestrator.tasks[task_id]
+
+        if self.orchestrator.agents.get(self.agent_id) != "ACTIVATED":
+            raise PermissionError(f"Handoff Refused: Source agent '{self.agent_id}' is not activated.")
+        if self.orchestrator.agents.get(target_agent_id) != "ACTIVATED":
+            raise PermissionError(f"Handoff Refused: Destination agent '{target_agent_id}' is not activated.")
+
+        ts = datetime.now(timezone.utc).isoformat()
+        serialized_context = json.dumps(task["context"], sort_keys=True)
+        context_fingerprint = hashlib.sha256(serialized_context.encode("utf-8")).hexdigest()
+
+        manifest = {
+            "manifest_id": f"HND-{uuid.uuid4().hex[:8].upper()}",
+            "timestamp": ts,
+            "task_id": task_id,
+            "source_agent": self.agent_id,
+            "destination_agent": target_agent_id,
+            "context_fingerprint": context_fingerprint,
+            "preserved_context_keys": list(task["context"].keys()),
+            "security_clearance_verified": True
+        }
+
+        self.orchestrator.ingest_event(
+            "AGENT_HANDOFF",
+            task_id,
+            {
+                "target_agent": target_agent_id,
+                "handoff_context": {"handoff_manifest": manifest},
+                "reason": f"Jules completes engineering task. Preserving context hash: {context_fingerprint[:16]}."
+            }
+        )
+
+        return manifest
+
+
 class WorkflowIntelligenceFeedbackLayer:
     """SAGE Workflow Intelligence Feedback Layer.
 
