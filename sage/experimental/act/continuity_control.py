@@ -312,6 +312,11 @@ class DiscoveryCandidate(BaseModel):
     pattern_observed: str
     research_validation_criteria: str
     lifecycle_state: str = "PROPOSED"  # PROPOSED, UNDER_REVIEW, VALIDATED, INTEGRATED
+    operational_impact: float = 5.0
+    frequency_score: float = 5.0
+    risk_level: str = "MEDIUM"  # LOW, MEDIUM, HIGH, CRITICAL
+    validation_readiness: str = "LOW"  # LOW, MEDIUM, HIGH
+    priority_score: float = 5.0
     timestamp: float = Field(default_factory=time.time)
 
     @field_validator("candidate_id")
@@ -841,17 +846,27 @@ class DeveloperWorkflowOrchestrator:
         self,
         opportunity_type: str,
         pattern_observed: str,
-        research_validation_criteria: str
+        research_validation_criteria: str,
+        operational_impact: float = 5.0,
+        frequency_score: float = 5.0,
+        risk_level: str = "MEDIUM",
+        validation_readiness: str = "LOW"
     ) -> Dict[str, Any]:
         """Synthesizes, validates, and records a new Discovery Candidate into the SAGE Discovery register."""
         candidate_id = f"DISC-CAN-{uuid.uuid4().hex[:12].upper()}"
+        priority_score = (operational_impact + frequency_score) / 2.0
 
         candidate = DiscoveryCandidate(
             candidate_id=candidate_id,
             opportunity_type=opportunity_type,
             pattern_observed=pattern_observed,
             research_validation_criteria=research_validation_criteria,
-            lifecycle_state="PROPOSED"
+            lifecycle_state="PROPOSED",
+            operational_impact=operational_impact,
+            frequency_score=frequency_score,
+            risk_level=risk_level,
+            validation_readiness=validation_readiness,
+            priority_score=priority_score
         )
 
         # Append to session metadata
@@ -887,6 +902,31 @@ class DeveloperWorkflowOrchestrator:
         self.ccl.serialize_record(rec)
 
         return candidate.model_dump()
+
+    def generate_prioritized_candidates(self) -> List[Dict[str, Any]]:
+        """Analyzes active workflow conditions, dynamically updates candidate prioritization, and ranks them."""
+        candidates_raw = self.session.metadata.get("discovery_candidates", [])
+        candidates = [DiscoveryCandidate(**c) for c in candidates_raw]
+
+        # Analyze current workflow conditions for prioritize scoring
+        report = self.generate_workflow_intelligence_report()
+        is_blocked = report["workflow_status"] == "BLOCKED"
+
+        # Compute prioritized weights
+        for c in candidates:
+            # If the workflow is blocked, automatically elevate security and testing priorities
+            if is_blocked and c.opportunity_type in ["BOUNDARY_SECURITY", "TEST_INTEGRITY"]:
+                c.operational_impact = min(10.0, c.operational_impact + 2.0)
+                c.frequency_score = min(10.0, c.frequency_score + 1.5)
+                c.risk_level = "CRITICAL"
+                c.validation_readiness = "HIGH"
+
+            c.priority_score = (c.operational_impact + c.frequency_score) / 2.0
+
+        # Rank by descending priority score
+        candidates_sorted = sorted(candidates, key=lambda x: x.priority_score, reverse=True)
+
+        return [c.model_dump() for c in candidates_sorted]
 
     def execute_active_development_coordination(
         self,
@@ -1150,11 +1190,11 @@ class DeveloperWorkflowOrchestrator:
 
         # Determine discovery candidates
         discovery_info = []
-        candidates_list = self.session.metadata.get("discovery_candidates", [])
+        candidates_list = self.generate_prioritized_candidates()
         if candidates_list:
-            discovery_info.append("  Discovery Candidates:")
-            for can in candidates_list[-2:]:  # Show last 2 candidates
-                discovery_info.append(f"    * [{can['candidate_id']}] Type: {can['opportunity_type']}")
+            discovery_info.append("  Prioritized Discovery Candidates:")
+            for can in candidates_list[:2]:  # Show top 2 candidates
+                discovery_info.append(f"    * [{can['candidate_id']}] Priority Score: {can['priority_score']:.1f} (Type: {can['opportunity_type']})")
                 discovery_info.append(f"      Pattern: {can['pattern_observed'][:80]}...")
         else:
             discovery_info.append("  Discovery Candidates: None registered.")
@@ -1216,7 +1256,7 @@ class DeveloperWorkflowOrchestrator:
             }
 
         act_dict = self.session.metadata.get("agent_activation")
-        disc_candidates = self.session.metadata.get("discovery_candidates", [])
+        disc_candidates = self.generate_prioritized_candidates()
 
         manifest = {
             "manifest_id": f"manifest_handoff_{uuid.uuid4().hex[:12]}",

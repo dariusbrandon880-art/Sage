@@ -978,3 +978,105 @@ def test_rehydrate_preserves_discovery_candidates(tmp_path):
     assert candidates is not None
     assert len(candidates) == 1
     assert candidates[0]["candidate_id"] == "DISC-CAN-ABCDE12345"
+
+
+def test_discovery_candidate_prioritization_and_ranking(tmp_path):
+    """Verify that SAGE programmatically evaluates, scores, and ranks registered discovery candidates."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_discovery_priority_test",
+        objective="obj_continuous_development"
+    )
+    orchestrator.session_manager = session_mgr
+    orchestrator.ccl.storage_path = record_storage
+    orchestrator.session = session_mgr.create_session(
+        session_id="session_discovery_priority_test",
+        active_objectives=["obj_continuous_development"]
+    )
+
+    # 1. Promote multiple candidates of varying metrics
+    orchestrator.promote_discovery_candidate(
+        opportunity_type="OPERATIONAL_EFFICIENCY",
+        pattern_observed="Low impact item",
+        research_validation_criteria="Simple fix",
+        operational_impact=3.0,
+        frequency_score=2.0
+    )
+    orchestrator.promote_discovery_candidate(
+        opportunity_type="TEST_INTEGRITY",
+        pattern_observed="High impact item",
+        research_validation_criteria="Complex fix",
+        operational_impact=9.0,
+        frequency_score=8.0
+    )
+
+    # Mock clean workflow status for standard ranking
+    orchestrator.generate_workflow_intelligence_report = lambda: {
+        "workflow_status": "HEALTHY",
+        "health_score": 100.0,
+        "blocked_conditions": [],
+        "actionable_operator_signals": []
+    }
+
+    prioritized = orchestrator.generate_prioritized_candidates()
+    assert len(prioritized) == 2
+    # Verify descending rank order (high priority first)
+    assert prioritized[0]["pattern_observed"] == "High impact item"
+    assert prioritized[0]["priority_score"] == 8.5
+    assert prioritized[1]["pattern_observed"] == "Low impact item"
+    assert prioritized[1]["priority_score"] == 2.5
+
+
+def test_discovery_candidate_blocked_boost(tmp_path):
+    """Verify that BLOCKED workflow state dynamically elevates security/test candidate priorities."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_discovery_boost_test",
+        objective="obj_continuous_development"
+    )
+    orchestrator.session_manager = session_mgr
+    orchestrator.ccl.storage_path = record_storage
+    orchestrator.session = session_mgr.create_session(
+        session_id="session_discovery_boost_test",
+        active_objectives=["obj_continuous_development"]
+    )
+
+    # Promote a TEST_INTEGRITY candidate
+    orchestrator.promote_discovery_candidate(
+        opportunity_type="TEST_INTEGRITY",
+        pattern_observed="Hook tests",
+        research_validation_criteria="criteria",
+        operational_impact=6.0,
+        frequency_score=5.0
+    )
+
+    # Mock BLOCKED workflow report to trigger the automatic boost
+    orchestrator.generate_workflow_intelligence_report = lambda: {
+        "workflow_status": "BLOCKED",
+        "health_score": 20.0,
+        "blocked_conditions": ["Agent blocked"],
+        "actionable_operator_signals": []
+    }
+
+    prioritized = orchestrator.generate_prioritized_candidates()
+    assert len(prioritized) == 1
+    # Check that scores have been boosted
+    assert prioritized[0]["operational_impact"] == 8.0  # +2.0
+    assert prioritized[0]["frequency_score"] == 6.5  # +1.5
+    assert prioritized[0]["priority_score"] == 7.25  # (8.0 + 6.5) / 2.0
+    assert prioritized[0]["risk_level"] == "CRITICAL"
+    assert prioritized[0]["validation_readiness"] == "HIGH"
