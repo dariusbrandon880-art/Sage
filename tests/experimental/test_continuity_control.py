@@ -757,3 +757,124 @@ def test_operational_control_loop_successful_flow(tmp_path):
 
     # 4. File persistence evidence
     assert (tmp_path / "evidence_output.json").exists()
+
+
+def test_active_learning_default_ci_directive(tmp_path):
+    """Verify that a clean run generates the continuous improvement directive (DIRECTIVE-CI-001)."""
+    import uuid
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id=f"session_learn_clean_{uuid.uuid4().hex[:6]}",
+        objective="obj_learn_clean",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    report = orchestrator.analyze_operational_history_and_learn()
+    directives = report["improvement_directives"]
+
+    assert len(directives) == 1
+    assert directives[0]["directive_id"] == "DIRECTIVE-CI-001"
+    assert directives[0]["category"] == "continuous_improvement"
+
+
+def test_active_learning_high_handoff_friction(tmp_path):
+    """Verify that high handoff counts trigger a workflow optimization directive."""
+    import uuid
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id=f"session_learn_handoffs_{uuid.uuid4().hex[:6]}",
+        objective="obj_learn_handoffs",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    # Set up task with multiple handoffs to trigger DIRECTIVE-OPT-...
+    orchestrator.add_coordinated_task("task_seq", "Database Migration", "TIER_2_DEVELOPER")
+    orchestrator.assign_agent_to_task("task_seq", "agent_builder_sage")
+
+    # Perform a transition that logs handoff lineage from builder to scout
+    orchestrator.enforcer.set_agent_state("agent_builder_sage", "ACTIVATED")
+    override = {"decision": "APPROVED", "supervisor_id": "supervisor_jules"}
+    orchestrator.transition_coordinated_task("task_seq", "agent_scout_sage", "ACTIVE", supervisor_override=override)
+
+    report = orchestrator.analyze_operational_history_and_learn()
+    directives = report["improvement_directives"]
+
+    # Verify that a workflow optimization directive was synthesized
+    opt_directives = [d for d in directives if d["category"] == "workflow_optimization"]
+    assert len(opt_directives) >= 1
+    assert opt_directives[0]["directive_id"].startswith("DIRECTIVE-OPT-")
+
+
+def test_active_learning_unauthorized_attempts_friction(tmp_path):
+    """Verify that unactivated agent execution attempts synthesize a security directive."""
+    import pytest
+    import uuid
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id=f"session_learn_unauth_{uuid.uuid4().hex[:6]}",
+        objective="obj_learn_unauth",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    orchestrator.add_coordinated_task("task_t", "Task", "TIER_1_COORDINATOR")
+    orchestrator.assign_agent_to_task("task_t", "agent_jules_sage")
+
+    # Suspend the agent to cause a blocked execution attempt
+    orchestrator.enforcer.set_agent_state("agent_jules_sage", "SUSPENDED")
+
+    with pytest.raises(PermissionError):
+        orchestrator.execute_active_development_coordination(
+            action_taken="Develop Feature",
+            decision_reasoning="Reasoning"
+        )
+
+    # Run the learning analyzer
+    report = orchestrator.analyze_operational_history_and_learn()
+    directives = report["improvement_directives"]
+
+    # Verify that a security boundary directive was synthesized
+    sec_directives = [d for d in directives if d["category"] == "security_boundary"]
+    assert len(sec_directives) >= 1
+    assert sec_directives[0]["directive_id"].startswith("DIRECTIVE-SEC-")
+
+
+def test_active_learning_live_operator_visibility(tmp_path):
+    """Verify that active learning directives are presented clearly in the operator status console."""
+    import uuid
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id=f"session_learn_vis_{uuid.uuid4().hex[:6]}",
+        objective="obj_learn_vis",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    orchestrator.analyze_operational_history_and_learn()
+    dashboard = orchestrator.render_multi_agent_status()
+
+    assert "SAGE Self-Referential Active Learning Directives:" in dashboard
+    assert "[DIRECTIVE-CI-001]" in dashboard
+    assert "SAGE operational coordination flow is perfectly aligned" in dashboard

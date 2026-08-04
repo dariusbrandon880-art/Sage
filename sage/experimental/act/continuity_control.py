@@ -385,6 +385,7 @@ class DeveloperWorkflowOrchestrator:
         # Multi-Agent Coordination attributes
         self.shared_workflow_state = {}
         self.coordinated_tasks = {}
+        self.improvement_directives = []
 
     def scan_git_workspace(self) -> Dict[str, Any]:
         """Programmatically queries git status and diffs for the active workspace."""
@@ -560,6 +561,80 @@ class DeveloperWorkflowOrchestrator:
 
         return task
 
+    def analyze_operational_history_and_learn(self) -> Dict[str, Any]:
+        """Analyzes active task board, handoff histories, and workflow events to dynamically synthesize learning-focused SAGE Improvement Directives."""
+        directives = []
+        metrics = {
+            "total_tasks": len(self.coordinated_tasks),
+            "total_handoffs": 0,
+            "drift_incidents": 0,
+            "unauthorized_attempts": 0
+        }
+
+        # 1. Analyze task board and handoffs
+        for task_id, task in self.coordinated_tasks.items():
+            handoffs = [h for h in task.get("handoff_history", []) if h.get("action") == "HANDOFF_LINEAGE_TRANSITION"]
+            metrics["total_handoffs"] += len(handoffs)
+
+            if len(handoffs) >= 1:
+                directives.append({
+                    "directive_id": f"DIRECTIVE-OPT-{uuid.uuid4().hex[:4].upper()}",
+                    "category": "workflow_optimization",
+                    "description": f"High frequency of agent transitions detected on task '{task_id}'.",
+                    "remedial_action": "Consolidate task assignments or activate a dedicated reviewer role to minimize handoff friction."
+                })
+
+        # 2. Query SAGE-CCL ledger for execution anomalies and drift
+        for filepath in self.ccl.storage_path.glob("*.json"):
+            try:
+                with open(filepath, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    payload = data.get("evidence_payload", {})
+                    event_type = data.get("event_type", "")
+
+                    if event_type == "multi_agent_transition" and payload.get("target_status") == "REJECTED":
+                        metrics["drift_incidents"] += 1
+
+                    # Track unactivated attempts
+                    if "Operational Control Loop Error" in str(payload) or "not authorized to transition" in str(payload):
+                        metrics["unauthorized_attempts"] += 1
+            except Exception:
+                pass
+
+        if metrics["drift_incidents"] >= 1:
+            directives.append({
+                "directive_id": f"DIRECTIVE-ALIGN-{uuid.uuid4().hex[:4].upper()}",
+                "category": "mission_alignment",
+                "description": "Context drift or repeated task restarts detected in workflow history.",
+                "remedial_action": "Enable strict chronological alignment pre-checks and rehydrate older session snapshots before executing new workflows."
+            })
+
+        if metrics["unauthorized_attempts"] >= 1:
+            directives.append({
+                "directive_id": f"DIRECTIVE-SEC-{uuid.uuid4().hex[:4].upper()}",
+                "category": "security_boundary",
+                "description": "Blocked execution attempts from unactivated or suspended agents detected.",
+                "remedial_action": "Harden the supervisor authorization checkpoint and prevent queueing tasks for agents who are not fully ACTIVATED."
+            })
+
+        # If no friction is detected, synthesize default continuous improvement directive
+        if not directives:
+            directives.append({
+                "directive_id": "DIRECTIVE-CI-001",
+                "category": "continuous_improvement",
+                "description": "SAGE operational coordination flow is perfectly aligned and execution is highly stable.",
+                "remedial_action": "Maintain governing constraints and record standard SHA-256 self-validating evidence structures."
+            })
+
+        self.improvement_directives = directives
+        self.shared_workflow_state["active_learning_directives"] = [d["directive_id"] for d in directives]
+
+        return {
+            "metrics": metrics,
+            "improvement_directives": directives,
+            "analyzed_at": time.time()
+        }
+
     def render_multi_agent_status(self) -> str:
         """Generates an operator-visible summary of multi-agent coordination, roles, tasks, and sequencing."""
         lines = [
@@ -593,6 +668,19 @@ class DeveloperWorkflowOrchestrator:
             lines.append("  (Shared workflow context is currently empty)")
         for k, v in sorted(self.shared_workflow_state.items()):
             lines.append(f"  • {k}: {v}")
+
+        # Integrate SAGE active learning/improvement feedback visibility
+        lines.extend([
+            "--------------------------------------------------",
+            "SAGE Self-Referential Active Learning Directives:"
+        ])
+        if not self.improvement_directives:
+            lines.append("  (Run analyze_operational_history_and_learn to synthesize directives)")
+        else:
+            for d in self.improvement_directives:
+                lines.append(f"  • [{d['directive_id']}] Category={d['category']}")
+                lines.append(f"    Description: {d['description']}")
+                lines.append(f"    Remediation: {d['remedial_action']}")
 
         lines.append("==================================================")
         return "\n".join(lines)
@@ -666,6 +754,9 @@ class DeveloperWorkflowOrchestrator:
         )
         self.ccl.serialize_record(record)
 
+        # Run SAGE Self-Referential Learning Layer analysis dynamically from real events
+        learning_report = self.analyze_operational_history_and_learn()
+
         # Reserialize unified operational evidence file to disk
         unified_report = {
             "timestamp": time.time(),
@@ -676,7 +767,8 @@ class DeveloperWorkflowOrchestrator:
             "progress_details": progress_details,
             "task_status": task["status"],
             "shared_workflow_state": dict(self.shared_workflow_state),
-            "ccl_record": record.model_dump()
+            "ccl_record": record.model_dump(),
+            "learning_report": learning_report
         }
 
         # Save to self.evidence_output_path
@@ -712,6 +804,16 @@ class DeveloperWorkflowOrchestrator:
                 proposed_assignee=proposed_assignee
             )
         except (ValueError, PermissionError) as drift_err:
+            # Audit block attempt to SAGE-CCL ledger for evidence lineage and learning
+            record = self.ccl.intercept_event(
+                event_type="blocked_attempt",
+                action_taken=f"Blocked attempt: {action_taken}",
+                decision_reasoning=f"Enforcement check failed: {drift_err}",
+                evidence_payload={"error": str(drift_err)},
+                session_id=self.session_id
+            )
+            self.ccl.serialize_record(record)
+
             if supervisor_override and supervisor_override.get("decision") == "APPROVED":
                 enforcement_report = {
                     "session_id": self.session_id,
