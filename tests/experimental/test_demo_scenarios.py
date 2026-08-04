@@ -47,13 +47,15 @@ def test_scenario_execution_and_summary():
     assert res_div["divergence"]["divergence_found"] is True
     assert res_div["human_gate"]["status"] == "AUTHORIZED"
 
-    # 3. Test summary output rendering
+    # 3. Test summary output rendering with decision contrasts
     summary_renderer = UserResultSummary()
     summary_str = summary_renderer.render_output_string(res_div)
 
     assert "SAGE SCENARIO RUN" in summary_str
     assert "Session ID" in summary_str
     assert "Divergence State : CONFL_RESOLVED" in summary_str
+    assert "SAGE COGNITIVE CONTRAST" in summary_str
+    assert "BASELINE UNGOVERNED EXECUTION" in summary_str
 
 
 def test_repeatable_evidence_export(tmp_path):
