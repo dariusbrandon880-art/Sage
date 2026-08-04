@@ -32,6 +32,7 @@ class DeveloperWorkflowOrchestrator:
         self.session_id = session_id
         self.tasks: Dict[str, Dict[str, Any]] = {}
         self.agents: Dict[str, str] = {}  # Tracks agent_id -> activation_state (INACTIVE, ACTIVATED, SUSPENDED)
+        self.agent_roles: Dict[str, str] = {}  # Tracks agent_id -> operational_role (e.g., COORDINATOR, EXECUTOR, etc.)
         self.event_log: List[Dict[str, Any]] = []
         self.orchestrator_run_id = f"ccl_run_{uuid.uuid4().hex[:8]}"
 
@@ -48,21 +49,24 @@ class DeveloperWorkflowOrchestrator:
         }
         self.event_log.append(event_record)
 
-        # Handle agent activation gate
+        # Handle agent activation gate with role awareness
         if event_type == "AGENT_ACTIVATION":
             agent_id = payload.get("agent_id")
             supervisor_id = payload.get("supervisor_id")
             decision = payload.get("decision")
+            role = payload.get("role", "GENERAL_AGENT")
 
             if not agent_id or not supervisor_id or not decision:
                 raise ValueError("Activation Failure: Agent ID, supervisor ID, and decision are required.")
 
             if decision == "AUTHORIZED":
                 self.agents[agent_id] = "ACTIVATED"
+                self.agent_roles[agent_id] = role
             else:
                 self.agents[agent_id] = "SUSPENDED"
+                self.agent_roles.pop(agent_id, None)
 
-            return {"agent_id": agent_id, "activation_state": self.agents[agent_id]}
+            return {"agent_id": agent_id, "activation_state": self.agents[agent_id], "role": role}
 
         # Handle task initialization
         if event_type == "TASK_INIT":
@@ -84,8 +88,11 @@ class DeveloperWorkflowOrchestrator:
                 "objective_id": objective_id,
                 "status": "INITIATED",
                 "assigned_agent": assigned_agent,
+                "agent_role": self.agent_roles.get(assigned_agent, "UNASSIGNED"),
                 "context": payload.get("initial_context", {}),
                 "lineage_references": payload.get("lineage_references", []),
+                "parent_task_id": payload.get("parent_task_id"),
+                "subtask_ids": [],
                 "history": [{
                     "status": "INITIATED",
                     "assigned_agent": assigned_agent,
@@ -143,6 +150,7 @@ class DeveloperWorkflowOrchestrator:
             task_state["context"].update(handoff_context)
             task_state["context"]["last_handoff_by"] = from_agent
             task_state["assigned_agent"] = to_agent
+            task_state["agent_role"] = self.agent_roles.get(to_agent, "UNASSIGNED")
 
             task_state["history"].append({
                 "status": task_state["status"],
@@ -177,6 +185,51 @@ class DeveloperWorkflowOrchestrator:
 
         return self.tasks[task_id]
 
+    def delegate_task(self, parent_task_id: str, child_task_id: str, to_agent: str, objective_id: str, initial_context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """Delegates a structured child task from an active parent task to another activated agent."""
+        if parent_task_id not in self.tasks:
+            raise ValueError(f"Delegation Error: Parent task '{parent_task_id}' does not exist.")
+
+        parent_task = self.tasks[parent_task_id]
+        if parent_task["status"] != "ACTIVE":
+            raise PermissionError(
+                f"Delegation Blocked: Parent task '{parent_task_id}' must be in 'ACTIVE' state to delegate subtasks."
+            )
+
+        if self.agents.get(to_agent) != "ACTIVATED":
+            raise PermissionError(
+                f"Delegation Refused: Target agent '{to_agent}' must be fully activated to receive delegated task."
+            )
+
+        ts = datetime.now(timezone.utc).isoformat()
+
+        # Initialize the child task
+        child_task = self.ingest_event(
+            "TASK_INIT",
+            child_task_id,
+            {
+                "objective_id": objective_id,
+                "assigned_agent": to_agent,
+                "initial_context": initial_context or {},
+                "parent_task_id": parent_task_id,
+                "lineage_references": parent_task.get("lineage_references", [])
+            },
+            timestamp=ts
+        )
+
+        # Track the child in the parent's subtask list
+        parent_task["subtask_ids"].append(child_task_id)
+
+        # Log delegation event to task history
+        parent_task["history"].append({
+            "status": parent_task["status"],
+            "assigned_agent": parent_task["assigned_agent"],
+            "timestamp": ts,
+            "comment": f"Delegated subtask '{child_task_id}' to {to_agent} (Role: {self.agent_roles.get(to_agent)})."
+        })
+
+        return child_task
+
     def transition_task_status(self, task_id: str, target_status: str, agent: str, comment: str, timestamp: str) -> None:
         """Helper to enforce state transition rules, authorization checks, and update status history."""
         task_state = self.tasks[task_id]
@@ -200,6 +253,7 @@ class DeveloperWorkflowOrchestrator:
         # Execute transition
         task_state["status"] = target_status
         task_state["assigned_agent"] = agent
+        task_state["agent_role"] = self.agent_roles.get(agent, "UNASSIGNED")
         task_state["history"].append({
             "status": target_status,
             "assigned_agent": agent,
@@ -208,7 +262,7 @@ class DeveloperWorkflowOrchestrator:
         })
 
     def generate_operator_summary(self) -> str:
-        """Generates a terminal-friendly, operator-visible coordination summary."""
+        """Generates a terminal-friendly, operator-visible coordination summary with delegation hierarchies."""
         lines = [
             "==========================================================================",
             "             SAGE OPERATIONAL COORDINATION & CONTEXT SUMMARY              ",
@@ -220,24 +274,21 @@ class DeveloperWorkflowOrchestrator:
         ]
 
         # Render Agent Activation Registry
-        lines.append(" AGENT ACTIVATION REGISTRY:")
+        lines.append(" ACTIVE AGENT REGISTRY & NETWORK ROLES:")
         if not self.agents:
             lines.append("   (No agents registered)")
         for agent_id, state in sorted(self.agents.items()):
-            lines.append(f"   • {agent_id.ljust(24)}: [{state}]")
+            role = self.agent_roles.get(agent_id, "GENERAL_AGENT")
+            lines.append(f"   • {agent_id.ljust(24)}: [{state}] (Role: {role})")
 
         # Render Task Assignments & States
         lines.append("\n ACTIVE TASK COORDINATION STATE:")
         if not self.tasks:
             lines.append("   (No active tasks coordinated)")
         for task_id, t_state in sorted(self.tasks.items()):
-            lines.append(f"   • Task ID : {task_id}")
-            lines.append(f"     Status  : {t_state['status']}")
-            lines.append(f"     Assignee: {t_state['assigned_agent']}")
-            lines.append(f"     Objective: {t_state['objective_id']}")
-            app = t_state["human_approval"]
-            app_str = f"AUTHORIZED by {app['supervisor_id']}" if app else "NONE / PENDING"
-            lines.append(f"     Approval: {app_str}")
+            if t_state["parent_task_id"]:
+                continue  # These will be rendered under their parents
+            self._render_task_summary_recursive(task_id, lines, indent=1)
 
         lines.extend([
             "==========================================================================",
@@ -245,6 +296,25 @@ class DeveloperWorkflowOrchestrator:
             "=========================================================================="
         ])
         return "\n".join(lines)
+
+    def _render_task_summary_recursive(self, task_id: str, lines: List[str], indent: int) -> None:
+        """Helper to recursively render the task hierarchy tree."""
+        t_state = self.tasks[task_id]
+        spacing = "  " * indent
+        child_spacing = "  " * (indent + 1)
+
+        lines.append(f"{spacing}• Task ID : {task_id}")
+        lines.append(f"{child_spacing}Status  : {t_state['status']}")
+        lines.append(f"{child_spacing}Assignee: {t_state['assigned_agent']} ({t_state['agent_role']})")
+        lines.append(f"{child_spacing}Objective: {t_state['objective_id']}")
+        app = t_state["human_approval"]
+        app_str = f"AUTHORIZED by {app['supervisor_id']}" if app else "NONE / PENDING"
+        lines.append(f"{child_spacing}Approval: {app_str}")
+
+        if t_state["subtask_ids"]:
+            lines.append(f"{child_spacing}Delegated Subtasks:")
+            for child_id in t_state["subtask_ids"]:
+                self._render_task_summary_recursive(child_id, lines, indent=indent + 2)
 
     def generate_continuity_records(self, task_id: str) -> Dict[str, Any]:
         """Generates a formal, machine-validatable SAGE ContinuityControlRecord for a task."""
@@ -275,9 +345,12 @@ class DeveloperWorkflowOrchestrator:
                 "task_id": task_state["task_id"],
                 "status": task_state["status"],
                 "assigned_agent": task_state["assigned_agent"],
+                "agent_role": task_state["agent_role"],
                 "objective_id": task_state["objective_id"],
                 "context": task_state["context"],
                 "lineage_references": task_state["lineage_references"],
+                "parent_task_id": task_state["parent_task_id"],
+                "subtask_ids": task_state["subtask_ids"],
                 "human_approval": task_state["human_approval"]
             },
             "state_integrity": {
@@ -309,6 +382,7 @@ class DeveloperWorkflowOrchestrator:
             "workflow_events": self.event_log,
             "active_tasks": self.tasks,
             "registered_agents": self.agents,
+            "agent_roles": self.agent_roles,
             "continuity_control_records": tasks_records,
             "operator_summary": self.generate_operator_summary().split("\n"),
             "boundary_checks": {

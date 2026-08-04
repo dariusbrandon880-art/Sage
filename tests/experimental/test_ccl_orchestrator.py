@@ -18,7 +18,8 @@ def test_orchestrator_lifecycle_and_transitions():
         {
             "agent_id": "agent_initiator",
             "supervisor_id": "human_supervisor_01",
-            "decision": "AUTHORIZED"
+            "decision": "AUTHORIZED",
+            "role": "EXECUTOR"
         }
     )
 
@@ -36,6 +37,7 @@ def test_orchestrator_lifecycle_and_transitions():
 
     assert task["status"] == "INITIATED"
     assert task["assigned_agent"] == "agent_initiator"
+    assert task["agent_role"] == "EXECUTOR"
     assert task["context"]["key"] == "initial_value"
 
     # Re-initialization should fail
@@ -101,8 +103,8 @@ def test_context_continuity_and_handoff():
     orch = DeveloperWorkflowOrchestrator(session_id="session_test_handoff")
 
     # Activate analyst and reviewer
-    orch.ingest_event("AGENT_ACTIVATION", "system", {"agent_id": "agent_analyst", "supervisor_id": "super", "decision": "AUTHORIZED"})
-    orch.ingest_event("AGENT_ACTIVATION", "system", {"agent_id": "agent_reviewer", "supervisor_id": "super", "decision": "AUTHORIZED"})
+    orch.ingest_event("AGENT_ACTIVATION", "system", {"agent_id": "agent_analyst", "supervisor_id": "super", "decision": "AUTHORIZED", "role": "ANALYST"})
+    orch.ingest_event("AGENT_ACTIVATION", "system", {"agent_id": "agent_reviewer", "supervisor_id": "super", "decision": "AUTHORIZED", "role": "REVIEWER"})
 
     orch.ingest_event(
         "TASK_INIT",
@@ -146,9 +148,61 @@ def test_context_continuity_and_handoff():
     task = orch.tasks["task_handoff_01"]
     assert task["status"] == "HANDOFF"
     assert task["assigned_agent"] == "agent_reviewer"
+    assert task["agent_role"] == "REVIEWER"
     assert task["context"]["baseline_metric"] == 0.95
     assert task["context"]["updated_metric"] == 0.99
     assert task["context"]["last_handoff_by"] == "agent_analyst"
+
+
+def test_multi_agent_structured_delegation():
+    """Verify active parent tasks can delegate subtasks to other activated agents with role awareness."""
+    orch = DeveloperWorkflowOrchestrator(session_id="session_test_delegation")
+
+    # Activate Coordinator and Executor
+    orch.ingest_event("AGENT_ACTIVATION", "system", {"agent_id": "agent_coord", "supervisor_id": "super", "decision": "AUTHORIZED", "role": "COORDINATOR"})
+    orch.ingest_event("AGENT_ACTIVATION", "system", {"agent_id": "agent_exec", "supervisor_id": "super", "decision": "AUTHORIZED", "role": "EXECUTOR"})
+    orch.ingest_event("AGENT_ACTIVATION", "system", {"agent_id": "agent_unassigned", "supervisor_id": "super", "decision": "AUTHORIZED", "role": "GENERAL_AGENT"})
+
+    # Initialize Parent Task
+    orch.ingest_event(
+        "TASK_INIT",
+        "parent_task_01",
+        {
+            "objective_id": "obj_main_refactor",
+            "assigned_agent": "agent_coord",
+            "lineage_references": ["ref_adr_baseline"]
+        }
+    )
+
+    # Non-active parent task should fail to delegate
+    with pytest.raises(PermissionError, match="Parent task.*must be in 'ACTIVE' state to delegate"):
+        orch.delegate_task("parent_task_01", "subtask_01", "agent_exec", "obj_exec_subtask")
+
+    # Move parent task to ACTIVE
+    orch.ingest_event("STATE_TRANSITION", "parent_task_01", {"target_status": "ACTIVE"})
+
+    # Delegate to unactivated agent should fail
+    with pytest.raises(PermissionError, match="Target agent.*must be fully activated to receive delegated task"):
+        orch.delegate_task("parent_task_01", "subtask_01", "agent_unactivated", "obj_subtask")
+
+    # Delegate task successfully
+    subtask = orch.delegate_task(
+        parent_task_id="parent_task_01",
+        child_task_id="subtask_01",
+        to_agent="agent_exec",
+        objective_id="obj_exec_subtask",
+        initial_context={"diff_size": 25}
+    )
+
+    assert subtask["task_id"] == "subtask_01"
+    assert subtask["parent_task_id"] == "parent_task_01"
+    assert subtask["assigned_agent"] == "agent_exec"
+    assert subtask["agent_role"] == "EXECUTOR"
+    assert subtask["context"]["diff_size"] == 25
+    assert "ref_adr_baseline" in subtask["lineage_references"]
+
+    parent_task = orch.tasks["parent_task_01"]
+    assert "subtask_01" in parent_task["subtask_ids"]
 
 
 def test_human_authorization_visibility():
@@ -156,7 +210,7 @@ def test_human_authorization_visibility():
     orch = DeveloperWorkflowOrchestrator(session_id="session_test_auth")
 
     # Activate agent_worker
-    orch.ingest_event("AGENT_ACTIVATION", "system", {"agent_id": "agent_worker", "supervisor_id": "super", "decision": "AUTHORIZED"})
+    orch.ingest_event("AGENT_ACTIVATION", "system", {"agent_id": "agent_worker", "supervisor_id": "super", "decision": "AUTHORIZED", "role": "EXECUTOR"})
 
     orch.ingest_event(
         "TASK_INIT",
@@ -226,7 +280,7 @@ def test_continuity_records_and_evidence(tmp_path):
     orch = DeveloperWorkflowOrchestrator(session_id="session_test_evidence")
 
     # Activate agent_jules
-    orch.ingest_event("AGENT_ACTIVATION", "system", {"agent_id": "agent_jules", "supervisor_id": "super", "decision": "AUTHORIZED"})
+    orch.ingest_event("AGENT_ACTIVATION", "system", {"agent_id": "agent_jules", "supervisor_id": "super", "decision": "AUTHORIZED", "role": "COORDINATOR"})
 
     orch.ingest_event(
         "TASK_INIT",
@@ -271,6 +325,7 @@ def test_continuity_records_and_evidence(tmp_path):
     ccl_record = evidence["continuity_control_records"]["task_evidence_01"]
     assert ccl_record["record_id"].startswith("CCL-REC-")
     assert ccl_record["task_state_snapshot"]["status"] == "COMPLETED"
+    assert ccl_record["task_state_snapshot"]["agent_role"] == "COORDINATOR"
     assert len(ccl_record["state_integrity"]["state_hash"]) == 64
     assert len(ccl_record["monotonic_sequence_history"]) == 4  # task-specific history (excludes system event)
     assert len(evidence["workflow_events"]) == 5  # entire session event log contains 5 events
@@ -283,11 +338,11 @@ def test_continuity_records_and_evidence(tmp_path):
 
 
 def test_operator_summary():
-    """Verify terminal operator-visible summary formatting and contents."""
+    """Verify terminal operator-visible summary formatting and delegation hierarchies."""
     orch = DeveloperWorkflowOrchestrator(session_id="session_test_summary")
 
     # Activate agents
-    orch.ingest_event("AGENT_ACTIVATION", "system", {"agent_id": "agent_exec", "supervisor_id": "super", "decision": "AUTHORIZED"})
+    orch.ingest_event("AGENT_ACTIVATION", "system", {"agent_id": "agent_exec", "supervisor_id": "super", "decision": "AUTHORIZED", "role": "EXECUTOR"})
     orch.ingest_event("AGENT_ACTIVATION", "system", {"agent_id": "agent_susp", "supervisor_id": "super", "decision": "SUSPENDED"})
 
     orch.ingest_event(
@@ -299,14 +354,20 @@ def test_operator_summary():
         }
     )
 
+    # Delegate child subtask
+    orch.ingest_event("STATE_TRANSITION", "task_summary_01", {"target_status": "ACTIVE"})
+    orch.delegate_task("task_summary_01", "subtask_summary_01", "agent_exec", "obj_render_subtask")
+
     summary = orch.generate_operator_summary()
     assert "SAGE OPERATIONAL COORDINATION & CONTEXT SUMMARY" in summary
     assert "agent_exec" in summary
-    assert "[ACTIVATED]" in summary
+    assert "[ACTIVATED] (Role: EXECUTOR)" in summary
     assert "agent_susp" in summary
     assert "[SUSPENDED]" in summary
     assert "task_summary_01" in summary
     assert "obj_render_summary" in summary
+    assert "subtask_summary_01" in summary
+    assert "obj_render_subtask" in summary
 
 
 def test_core_ast_isolation():
