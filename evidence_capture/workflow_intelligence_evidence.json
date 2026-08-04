@@ -1,5 +1,5 @@
 {
-  "session_id": "session_intel_vis_c0f7f6",
+  "session_id": "session_cand_vis_7ac262",
   "risks": [
     {
       "risk_id": "RISK-ACT-001",
@@ -11,5 +11,5 @@
   "remediations": [
     "Execute 'enforcer.set_agent_state' to ACTIVATE critical agents before task assignment."
   ],
-  "analysis_timestamp": 1785841808.5203192
+  "analysis_timestamp": 1785843669.0376353
 }

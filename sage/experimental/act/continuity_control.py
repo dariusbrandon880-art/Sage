@@ -386,6 +386,7 @@ class DeveloperWorkflowOrchestrator:
         self.shared_workflow_state = {}
         self.coordinated_tasks = {}
         self.improvement_directives = []
+        self.improvement_candidates = []
 
     def scan_git_workspace(self) -> Dict[str, Any]:
         """Programmatically queries git status and diffs for the active workspace."""
@@ -708,6 +709,67 @@ class DeveloperWorkflowOrchestrator:
 
         return report
 
+    def generate_actionable_improvement_candidates(self) -> List[Dict[str, Any]]:
+        """Analyzes active task board, handoff histories, and SAGE-CCL event logs to dynamically synthesize structured SAGE Improvement Candidates with evidence links."""
+        candidates = []
+
+        # 1. Analyze multi-agent handoffs for optimization candidates
+        for task_id, task in self.coordinated_tasks.items():
+            handoffs = [h for h in task.get("handoff_history", []) if h.get("action") == "HANDOFF_LINEAGE_TRANSITION"]
+            if len(handoffs) >= 1:
+                candidates.append({
+                    "candidate_id": f"CANDIDATE-OPT-{uuid.uuid4().hex[:4].upper()}",
+                    "severity": "WARNING",
+                    "friction_pattern": f"Frequent agent transitions detected on task '{task_id}' (count: {len(handoffs)}).",
+                    "evidence_reference": f"session_id={self.session_id}",
+                    "actionable_outcome": "Bundle task scope or assign a single dedicated EXECUTOR role to minimize transitions.",
+                    "validation_criteria": "Handoff count on any task within the session is less than 1."
+                })
+
+        # 2. Analyze blocked attempts for security boundary candidates
+        unauthorized_count = 0
+        for filepath in self.ccl.storage_path.glob("*.json"):
+            try:
+                with open(filepath, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    event_type = data.get("event_type", "")
+                    payload = data.get("evidence_payload", {})
+                    if event_type == "blocked_attempt" or "not authorized to transition" in str(payload) or "is not registered" in str(payload):
+                        unauthorized_count += 1
+            except Exception:
+                pass
+
+        if unauthorized_count >= 1:
+            candidates.append({
+                "candidate_id": f"CANDIDATE-SEC-{uuid.uuid4().hex[:4].upper()}",
+                "severity": "CRITICAL",
+                "friction_pattern": f"Detected {unauthorized_count} blocked execution attempts from unactivated/unauthorized agents in CCL logs.",
+                "evidence_reference": f"ccl_storage_path={self.ccl.storage_path}",
+                "actionable_outcome": "Harden task queue preconditions. Validate agent activation state before registering any tasks.",
+                "validation_criteria": "Zero blocked_attempt events registered in SAGE-CCL ledger files during active workflows."
+            })
+
+        # Default normal continuous improvement candidate if clean
+        if not candidates:
+            candidates.append({
+                "candidate_id": "CANDIDATE-CI-001",
+                "severity": "NORMAL",
+                "friction_pattern": "Execution patterns are fully stable and aligned with objectives.",
+                "evidence_reference": f"session_id={self.session_id}",
+                "actionable_outcome": "Maintain governing constraints and record standard SHA-256 self-validating evidence.",
+                "validation_criteria": "Workflow completes cleanly with zero risks, sequencing blocks, or drift incidents."
+            })
+
+        self.improvement_candidates = candidates
+
+        # Persist the discovery candidates register file to its own evidence file
+        output_path = Path("evidence_capture/discovery_candidates_register.json")
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(output_path, "w", encoding="utf-8") as f:
+            json.dump(candidates, f, indent=2, default=str)
+
+        return candidates
+
     def render_multi_agent_status(self) -> str:
         """Generates an operator-visible summary of multi-agent coordination, roles, tasks, and sequencing."""
         lines = [
@@ -778,6 +840,19 @@ class DeveloperWorkflowOrchestrator:
         lines.append("  Operator Remediation Recommendations:")
         for rem in intel_report["remediations"]:
             lines.append(f"    • {rem}")
+
+        # Retrieve actionable improvement candidates
+        candidates = self.generate_actionable_improvement_candidates()
+        lines.extend([
+            "--------------------------------------------------",
+            "Actionable SAGE Improvement Candidates:"
+        ])
+        for c in candidates:
+            lines.append(f"  • [{c['severity']}] Candidate ID: {c['candidate_id']}")
+            lines.append(f"    Friction Pattern   : {c['friction_pattern']}")
+            lines.append(f"    Actionable Outcome : {c['actionable_outcome']}")
+            lines.append(f"    Validation Criteria: {c['validation_criteria']}")
+            lines.append(f"    Evidence Reference : {c['evidence_reference']}")
 
         lines.append("==================================================")
         return "\n".join(lines)
@@ -854,6 +929,7 @@ class DeveloperWorkflowOrchestrator:
         # Run SAGE Self-Referential Learning Layer analysis dynamically from real events
         learning_report = self.analyze_operational_history_and_learn()
         intel_report = self.generate_workflow_intelligence_report()
+        candidates_report = self.generate_actionable_improvement_candidates()
 
         # Reserialize unified operational evidence file to disk
         unified_report = {
@@ -867,7 +943,8 @@ class DeveloperWorkflowOrchestrator:
             "shared_workflow_state": dict(self.shared_workflow_state),
             "ccl_record": record.model_dump(),
             "learning_report": learning_report,
-            "workflow_intelligence": intel_report
+            "workflow_intelligence": intel_report,
+            "improvement_candidates": candidates_report
         }
 
         # Save to self.evidence_output_path

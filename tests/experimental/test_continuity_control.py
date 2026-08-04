@@ -994,3 +994,123 @@ def test_workflow_intelligence_live_operator_visibility(tmp_path):
     assert "[MEDIUM] Workflow has inactive or suspended agents" in dashboard
     assert "Operator Remediation Recommendations:" in dashboard
     assert "Execute 'enforcer.set_agent_state' to ACTIVATE" in dashboard
+
+
+def test_decision_support_default_ci_candidate(tmp_path):
+    """Verify that a clean run generates the continuous improvement candidate (CANDIDATE-CI-001)."""
+    import uuid
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id=f"session_cand_clean_{uuid.uuid4().hex[:6]}",
+        objective="obj_cand_clean",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    candidates = orchestrator.generate_actionable_improvement_candidates()
+
+    assert len(candidates) == 1
+    assert candidates[0]["candidate_id"] == "CANDIDATE-CI-001"
+    assert candidates[0]["severity"] == "NORMAL"
+
+
+def test_decision_support_high_transition_friction(tmp_path):
+    """Verify that task transitions dynamically synthesize an optimization candidate."""
+    import uuid
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id=f"session_cand_opt_{uuid.uuid4().hex[:6]}",
+        objective="obj_cand_opt",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    # Register task and perform transition to register handoff history
+    orchestrator.add_coordinated_task("task_seq", "Database Migration", "TIER_2_DEVELOPER")
+    orchestrator.assign_agent_to_task("task_seq", "agent_builder_sage")
+
+    orchestrator.enforcer.set_agent_state("agent_builder_sage", "ACTIVATED")
+    override = {"decision": "APPROVED", "supervisor_id": "supervisor_jules"}
+    orchestrator.transition_coordinated_task("task_seq", "agent_scout_sage", "ACTIVE", supervisor_override=override)
+
+    candidates = orchestrator.generate_actionable_improvement_candidates()
+
+    # Verify that an optimization candidate was synthesized
+    opt_candidates = [c for c in candidates if c["candidate_id"].startswith("CANDIDATE-OPT-")]
+    assert len(opt_candidates) >= 1
+    assert opt_candidates[0]["severity"] == "WARNING"
+    assert "Frequent agent transitions detected" in opt_candidates[0]["friction_pattern"]
+
+
+def test_decision_support_blocked_attempts_friction(tmp_path):
+    """Verify that blocked attempts synthesize a security candidate."""
+    import pytest
+    import uuid
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id=f"session_cand_unauth_{uuid.uuid4().hex[:6]}",
+        objective="obj_cand_unauth",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    orchestrator.add_coordinated_task("task_t", "Task", "TIER_1_COORDINATOR")
+    orchestrator.assign_agent_to_task("task_t", "agent_jules_sage")
+
+    # Suspend the agent to cause a blocked execution attempt
+    orchestrator.enforcer.set_agent_state("agent_jules_sage", "SUSPENDED")
+
+    with pytest.raises(PermissionError):
+        orchestrator.execute_active_development_coordination(
+            action_taken="Develop Feature",
+            decision_reasoning="Reasoning"
+        )
+
+    # Run the candidate generator
+    candidates = orchestrator.generate_actionable_improvement_candidates()
+
+    # Verify that a security candidate was synthesized
+    sec_candidates = [c for c in candidates if c["candidate_id"].startswith("CANDIDATE-SEC-")]
+    assert len(sec_candidates) >= 1
+    assert sec_candidates[0]["severity"] == "CRITICAL"
+    assert "blocked execution attempts" in sec_candidates[0]["friction_pattern"]
+
+
+def test_decision_support_operator_visibility(tmp_path):
+    """Verify that synthesized candidates are presented clearly on the operator status console."""
+    import uuid
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id=f"session_cand_vis_{uuid.uuid4().hex[:6]}",
+        objective="obj_cand_vis",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    dashboard = orchestrator.render_multi_agent_status()
+
+    assert "Actionable SAGE Improvement Candidates:" in dashboard
+    assert "[NORMAL] Candidate ID: CANDIDATE-CI-001" in dashboard
+    assert "Friction Pattern   : Execution patterns are fully stable" in dashboard
+    assert "Actionable Outcome : Maintain governing constraints" in dashboard
+    assert "Validation Criteria: Workflow completes cleanly" in dashboard
