@@ -1,0 +1,27 @@
+{
+  "insight_session_id": "session_insight_demo",
+  "timestamp": "2026-08-04T05:20:00.000000+00:00",
+  "run_identifier": "run_insight_eval_01",
+  "validation_report": {
+    "schema_compliance": "PASSED",
+    "boundary_isolation_verified": true,
+    "insight_layer_read_only": true
+  },
+  "boundary_integrity_verification": {
+    "sage_runtime_untouched": true,
+    "sage_core_untouched": true,
+    "sage_acr_untouched": true,
+    "sage_agents_untouched": true
+  },
+  "observed_results": {
+    "components_rendered": [
+      "key_insight_summary",
+      "why_this_matters",
+      "decision_timeline",
+      "operator_takeaway",
+      "readable_evidence_highlights"
+    ],
+    "duration_secs": 0.01,
+    "data_loaded_successfully": true
+  }
+}
