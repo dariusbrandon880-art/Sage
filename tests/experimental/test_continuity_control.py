@@ -878,3 +878,119 @@ def test_active_learning_live_operator_visibility(tmp_path):
     assert "SAGE Self-Referential Active Learning Directives:" in dashboard
     assert "[DIRECTIVE-CI-001]" in dashboard
     assert "SAGE operational coordination flow is perfectly aligned" in dashboard
+
+
+def test_workflow_intelligence_inactive_agent_risk(tmp_path):
+    """Verify that having inactive agents triggers the corresponding operational risk and remediation."""
+    import uuid
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id=f"session_intel_inactive_{uuid.uuid4().hex[:6]}",
+        objective="obj_intel_inactive",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    # Set agent_builder_sage as INACTIVE
+    orchestrator.enforcer.set_agent_state("agent_builder_sage", "INACTIVE")
+
+    report = orchestrator.generate_workflow_intelligence_report()
+    risks = report["risks"]
+
+    assert len(risks) >= 1
+    assert risks[0]["risk_id"] == "RISK-ACT-001"
+    assert "inactive or suspended agents" in risks[0]["description"]
+    assert "enforcer.set_agent_state" in report["remediations"][0]
+
+
+def test_workflow_intelligence_blocked_tasks_friction(tmp_path):
+    """Verify that uncompleted prerequisites trigger task blocked sequencing friction."""
+    import uuid
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id=f"session_intel_blocked_{uuid.uuid4().hex[:6]}",
+        objective="obj_intel_blocked",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    # Add task_2 depending on task_1, task_2 remains PENDING
+    orchestrator.add_coordinated_task("task_1", "Prereq Changes", "TIER_1_COORDINATOR")
+    orchestrator.add_coordinated_task("task_2", "Audit Changes", "TIER_2_AUDITOR", prerequisites=["task_1"])
+
+    report = orchestrator.generate_workflow_intelligence_report()
+    frictions = report["friction_points"]
+
+    assert len(frictions) >= 1
+    assert any(f["friction_id"] == "FRIC-SEQ-002" for f in frictions)
+    assert any("transition_coordinated_task" in r for r in report["remediations"])
+
+
+def test_workflow_intelligence_execution_drift_risk(tmp_path):
+    """Verify that executing a task that duplicates an already completed session action triggers drift risk."""
+    import uuid
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id=f"session_intel_drift_{uuid.uuid4().hex[:6]}",
+        objective="obj_intel_drift",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    # Register task_1 and set status as ACTIVE
+    orchestrator.add_coordinated_task("task_1", "Duplicate Action", "TIER_1_COORDINATOR")
+    orchestrator.assign_agent_to_task("task_1", "agent_jules_sage")
+    orchestrator.coordinated_tasks["task_1"]["status"] = "ACTIVE"
+
+    # Add "Duplicate Action" as completed action in session state
+    orchestrator.session.completed_actions.append("Duplicate Action")
+    session_mgr.save_session(orchestrator.session)
+
+    report = orchestrator.generate_workflow_intelligence_report()
+    risks = report["risks"]
+
+    assert len(risks) >= 1
+    assert any(r["risk_id"] == "RISK-DRIFT-003" for r in risks)
+
+
+def test_workflow_intelligence_live_operator_visibility(tmp_path):
+    """Verify that risks, friction, and remediations are presented clearly in the operator status console."""
+    import uuid
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id=f"session_intel_vis_{uuid.uuid4().hex[:6]}",
+        objective="obj_intel_vis",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    # Force a risk of inactive agent
+    orchestrator.enforcer.set_agent_state("agent_builder_sage", "INACTIVE")
+
+    dashboard = orchestrator.render_multi_agent_status()
+
+    assert "SAGE Workflow Intelligence Signals:" in dashboard
+    assert "Risks Detected:" in dashboard
+    assert "[MEDIUM] Workflow has inactive or suspended agents" in dashboard
+    assert "Operator Remediation Recommendations:" in dashboard
+    assert "Execute 'enforcer.set_agent_state' to ACTIVATE" in dashboard

@@ -1,0 +1,15 @@
+{
+  "session_id": "session_intel_vis_c0f7f6",
+  "risks": [
+    {
+      "risk_id": "RISK-ACT-001",
+      "severity": "medium",
+      "description": "Workflow has inactive or suspended agents: ['agent_builder_sage']."
+    }
+  ],
+  "friction_points": [],
+  "remediations": [
+    "Execute 'enforcer.set_agent_state' to ACTIVATE critical agents before task assignment."
+  ],
+  "analysis_timestamp": 1785841808.5203192
+}

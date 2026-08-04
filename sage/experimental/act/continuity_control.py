@@ -635,6 +635,79 @@ class DeveloperWorkflowOrchestrator:
             "analyzed_at": time.time()
         }
 
+    def generate_workflow_intelligence_report(self) -> Dict[str, Any]:
+        """Aggregates active agent activation states, analyzes execution logs to isolate session drift, detects blocked conditions, and outputs actionable operator signals."""
+        risks = []
+        friction_points = []
+        remediations = []
+
+        # 1. Evaluate Agent activation statuses
+        inactive_agents = []
+        active_agents = []
+        for agent_id, state in self.enforcer._agent_states.items():
+            if state != "ACTIVATED":
+                inactive_agents.append(agent_id)
+            else:
+                active_agents.append(agent_id)
+
+        if inactive_agents:
+            risks.append({
+                "risk_id": "RISK-ACT-001",
+                "severity": "medium",
+                "description": f"Workflow has inactive or suspended agents: {inactive_agents}."
+            })
+            remediations.append("Execute 'enforcer.set_agent_state' to ACTIVATE critical agents before task assignment.")
+
+        # 2. Analyze task dependencies and sequencing
+        blocked_tasks = []
+        for task_id, task in self.coordinated_tasks.items():
+            if task["status"] != "COMPLETED":
+                for prereq_id in task["prerequisites"]:
+                    prereq = self.coordinated_tasks.get(prereq_id)
+                    if not prereq or prereq["status"] != "COMPLETED":
+                        blocked_tasks.append(task_id)
+                        break
+
+        if blocked_tasks:
+            friction_points.append({
+                "friction_id": "FRIC-SEQ-002",
+                "severity": "high",
+                "description": f"Tasks {blocked_tasks} are blocked due to uncompleted sequencing prerequisites."
+            })
+            remediations.append("Transition the prerequisite tasks to 'COMPLETED' using 'transition_coordinated_task'.")
+
+        # 3. Assess context drift or restart behavior
+        # Read from active session completed actions vs current active tasks
+        completed_actions = list(self.session.completed_actions)
+        for task_id, task in self.coordinated_tasks.items():
+            if task["status"] == "ACTIVE" and task["name"] in completed_actions:
+                risks.append({
+                    "risk_id": "RISK-DRIFT-003",
+                    "severity": "high",
+                    "description": f"Potential execution drift on task '{task_id}': Action '{task['name']}' is already in session completed_actions."
+                })
+                remediations.append(f"Inspect task '{task_id}' for redundant execution loops or supply supervisor override to allow replication.")
+
+        # Default continuous improvement recommendation if clean
+        if not risks and not friction_points:
+            remediations.append("Workflow is aligned. Continue monitoring active agent transitions and collect SHA-256 evidence logs.")
+
+        report = {
+            "session_id": self.session_id,
+            "risks": risks,
+            "friction_points": friction_points,
+            "remediations": remediations,
+            "analysis_timestamp": time.time()
+        }
+
+        # Persist the intelligence signal report to its own evidence file
+        output_path = Path("evidence_capture/workflow_intelligence_evidence.json")
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(output_path, "w", encoding="utf-8") as f:
+            json.dump(report, f, indent=2, default=str)
+
+        return report
+
     def render_multi_agent_status(self) -> str:
         """Generates an operator-visible summary of multi-agent coordination, roles, tasks, and sequencing."""
         lines = [
@@ -681,6 +754,30 @@ class DeveloperWorkflowOrchestrator:
                 lines.append(f"  • [{d['directive_id']}] Category={d['category']}")
                 lines.append(f"    Description: {d['description']}")
                 lines.append(f"    Remediation: {d['remedial_action']}")
+
+        # Retrieve workflow intelligence signals
+        intel_report = self.generate_workflow_intelligence_report()
+        lines.extend([
+            "--------------------------------------------------",
+            "SAGE Workflow Intelligence Signals:"
+        ])
+        if intel_report["risks"]:
+            lines.append("  Risks Detected:")
+            for r in intel_report["risks"]:
+                lines.append(f"    • [{r['severity'].upper()}] {r['description']}")
+        else:
+            lines.append("  Risks Detected: None")
+
+        if intel_report["friction_points"]:
+            lines.append("  Friction Points Detected:")
+            for f in intel_report["friction_points"]:
+                lines.append(f"    • [{f['severity'].upper()}] {f['description']}")
+        else:
+            lines.append("  Friction Points Detected: None")
+
+        lines.append("  Operator Remediation Recommendations:")
+        for rem in intel_report["remediations"]:
+            lines.append(f"    • {rem}")
 
         lines.append("==================================================")
         return "\n".join(lines)
@@ -756,6 +853,7 @@ class DeveloperWorkflowOrchestrator:
 
         # Run SAGE Self-Referential Learning Layer analysis dynamically from real events
         learning_report = self.analyze_operational_history_and_learn()
+        intel_report = self.generate_workflow_intelligence_report()
 
         # Reserialize unified operational evidence file to disk
         unified_report = {
@@ -768,7 +866,8 @@ class DeveloperWorkflowOrchestrator:
             "task_status": task["status"],
             "shared_workflow_state": dict(self.shared_workflow_state),
             "ccl_record": record.model_dump(),
-            "learning_report": learning_report
+            "learning_report": learning_report,
+            "workflow_intelligence": intel_report
         }
 
         # Save to self.evidence_output_path
