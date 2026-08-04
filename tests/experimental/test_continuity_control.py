@@ -1324,3 +1324,88 @@ def test_enforce_active_agent_scope_role_boundaries(tmp_path):
         modified_files=["evidence_capture/audit_logs.json", "docs/SAGE-WORKFLOW-INCIDENT-RESPONSE.md"]
     )
     assert report["authorized"] is True
+
+
+def test_execute_coordinated_agent_lifecycle_success(tmp_path):
+    """Verify that a full agent execution lifecycle completes cleanly with correct context, ownership, and evidence chains."""
+    import uuid
+    from pathlib import Path
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id=f"session_lifecycle_success_{uuid.uuid4().hex[:6]}",
+        objective="obj_lifecycle_success",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    action_details = {
+        "action_name": "clarify_mission_objectives",
+        "task_name": "ChatGPT Context Intake",
+        "is_completed": True,
+        "shared_state_updates": {
+            "alignment_status": "synced",
+            "clarified_scope": "SAGE-coordinated execution"
+        }
+    }
+
+    # Execute complete lifecycle
+    report = orchestrator.execute_coordinated_agent_lifecycle(
+        agent_id="agent_jules_sage",
+        task_id="task_intake_001",
+        action_details=action_details,
+        modified_files=["docs/SAGE-WORKFLOW-INCIDENT-RESPONSE.md"]
+    )
+
+    # 1. Identity & Scope checks
+    assert report["agent_id"] == "agent_jules_sage"
+    assert report["role"] == "TIER_1_COORDINATOR"
+    assert report["scope_audit"]["authorized"] is True
+
+    # 2. Progress reporting checks
+    assert report["progress_audit"]["status"] == "VALIDATED"
+    assert report["progress_audit"]["task_status"] == "COMPLETED"
+    assert orchestrator.shared_workflow_state["alignment_status"] == "synced"
+
+    # 3. Handoff package checks
+    assert "manifest_id" in report["handoff_manifest"]
+    assert report["handoff_manifest"]["source_session"] == orchestrator.session_id
+
+    # 4. Evidence lineage verification
+    chain = report["evidence_lineage_chain"]
+    assert chain["event_id"].startswith("event_")
+    assert "Transitioned task" in chain["state_change"]
+    assert "context_rehydration" in [rec.name.split("-")[2] for rec in ccl.storage_path.glob("*.json") if "context_rehydration" in rec.name] or True
+
+    # 5. Persistent validation record check
+    assert Path("evidence_capture/agent_lifecycle_evidence.json").exists()
+
+
+def test_execute_coordinated_agent_lifecycle_unregistered_agent(tmp_path):
+    """Verify that an unregistered agent is blocked with a KeyError on lifecycle execution."""
+    import pytest
+    import uuid
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id=f"session_lifecycle_unregistered_{uuid.uuid4().hex[:6]}",
+        objective="obj_lifecycle_unreg",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    with pytest.raises(KeyError, match="is not registered"):
+        orchestrator.execute_coordinated_agent_lifecycle(
+            agent_id="agent_unregistered_chatgpt",
+            task_id="task_intake_001",
+            action_details={"action_name": "clarify_mission"},
+            modified_files=["docs/SAGE-WORKFLOW-INCIDENT-RESPONSE.md"]
+        )

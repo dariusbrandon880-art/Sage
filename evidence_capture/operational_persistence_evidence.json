@@ -1,7 +1,7 @@
 {
-  "rehydration_id": "rehydrate_76f10d6ff03a",
+  "rehydration_id": "rehydrate_dd802b16583b",
   "source_session_id": "session_source_xyz",
-  "target_session_id": "session_rehydrate_4211b6",
+  "target_session_id": "session_rehydrate_4e0717",
   "rehydrated_objectives": [
     "obj_transferred_mission",
     "obj_extra_audit"
@@ -17,6 +17,8 @@
     ],
     "untracked": [
       "docs/SAGE-WORKFLOW-INCIDENT-RESPONSE.md",
+      "evidence_capture/agent_handoff_manifest.json",
+      "evidence_capture/agent_lifecycle_evidence.json",
       "evidence_capture/ccl_operational_feedback.json",
       "evidence_capture/decision_validation_report.json",
       "evidence_capture/discovery_candidates_register.json",
@@ -25,5 +27,5 @@
       "tests/experimental/test_continuity_control.py"
     ]
   },
-  "timestamp": 1785881029.9352252
+  "timestamp": 1785884050.1385875
 }
