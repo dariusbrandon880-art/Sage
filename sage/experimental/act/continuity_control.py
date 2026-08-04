@@ -292,6 +292,17 @@ class AgentProgressUpdate(BaseModel):
         return v
 
 
+class WorkflowIntelligenceReport(BaseModel):
+    """Represents an aggregated, operator-actionable workflow intelligence analysis report."""
+
+    session_id: str
+    health_score: float
+    workflow_status: str  # HEALTHY, DEGRADED, BLOCKED
+    blocked_conditions: List[str] = Field(default_factory=list)
+    actionable_operator_signals: List[Dict[str, Any]] = Field(default_factory=list)
+    timestamp: float = Field(default_factory=time.time)
+
+
 class DeveloperWorkflowOrchestrator:
     """Orchestrates end-to-end active developer workflows by connecting SAGE-CCL, Context Guard, and CMAPS."""
 
@@ -598,6 +609,97 @@ class DeveloperWorkflowOrchestrator:
             "action": "ALLOW_EXECUTION"
         }
 
+    def generate_workflow_intelligence_report(self) -> Dict[str, Any]:
+        """Aggregates execution states, detects anomalous conditions, and generates actionable operator signals."""
+        workspace = self.scan_git_workspace()
+        modified_files = workspace["modified_files"]
+
+        act_dict = self.session.metadata.get("agent_activation")
+        exec_log = self.session.metadata.get("execution_log", [])
+
+        blocked_conditions = []
+        operator_signals = []
+        health_score = 100.0
+
+        # Check agent activation status
+        if act_dict:
+            state = AgentActivationState(**act_dict)
+            if state.lifecycle_state == "BLOCKED":
+                health_score -= 50.0
+                blocked_conditions.append("Agent activation state is BLOCKED due to a boundary or scope violation.")
+                operator_signals.append({
+                    "severity": "CRITICAL",
+                    "signal_type": "SUPERVISOR_OVERRIDE_REQUIRED",
+                    "description": f"Agent '{state.agent_id}' is blocked from active execution.",
+                    "recommendation": "Perform an audit of the last recorded SAGE-CCL record and submit supervisor_override with a valid signature."
+                })
+            elif state.lifecycle_state == "INITIATED":
+                health_score -= 10.0
+                operator_signals.append({
+                    "severity": "MEDIUM",
+                    "signal_type": "AWAITING_AGENT_ACTIVATION",
+                    "description": f"Agent '{state.agent_id}' is initialized but not yet authorized.",
+                    "recommendation": "Execute authorize_agent_activation with supervisor credentials."
+                })
+        else:
+            health_score -= 20.0
+            operator_signals.append({
+                "severity": "MEDIUM",
+                "signal_type": "NO_AGENT_ACTIVE",
+                "description": "No agent is currently assigned or activated in this session.",
+                "recommendation": "Run initialize_agent_activation to bind an agent identity to the task."
+            })
+
+        # Check workspace friction and uncommitted files
+        if len(modified_files) > 5:
+            health_score -= 15.0
+            operator_signals.append({
+                "severity": "MEDIUM",
+                "signal_type": "HIGH_WORKSPACE_FRICTION",
+                "description": f"High number of uncommitted files ({len(modified_files)}) in the active workspace.",
+                "recommendation": "Run execute_active_development_coordination to commit changes and generate dual-compliant CMAPS audit records."
+            })
+
+        # Check execution history for errors/drift
+        # Search the SAGE-CCL records in storage for recent drift
+        drift_count = 0
+        for f in self.ccl.storage_path.glob("*.json"):
+            try:
+                with open(f, "r", encoding="utf-8") as file:
+                    data = json.load(file)
+                    if data.get("event_type") == "boundary_intercept" and data.get("session_id") == self.session_id:
+                        drift_count += 1
+            except Exception:
+                pass
+
+        if drift_count > 0:
+            health_score -= min(30.0, drift_count * 10.0)
+            operator_signals.append({
+                "severity": "HIGH",
+                "signal_type": "HISTORY_DRIFT_DETECTED",
+                "description": f"Detected {drift_count} prior execution/scope drift incidents in this session history.",
+                "recommendation": "Inspect SAGE-CCL ledger files under sage_data/experimental_ccl/ to identify repetitive drift patterns."
+            })
+
+        # Determine workflow status based on score
+        if health_score < 60.0:
+            workflow_status = "BLOCKED"
+        elif health_score < 90.0:
+            workflow_status = "DEGRADED"
+        else:
+            workflow_status = "HEALTHY"
+
+        # Construct Pydantic Report
+        report = WorkflowIntelligenceReport(
+            session_id=self.session_id,
+            health_score=max(0.0, health_score),
+            workflow_status=workflow_status,
+            blocked_conditions=blocked_conditions,
+            actionable_operator_signals=operator_signals
+        )
+
+        return report.model_dump()
+
     def execute_active_development_coordination(
         self,
         action_taken: str,
@@ -841,6 +943,23 @@ class DeveloperWorkflowOrchestrator:
         else:
             exec_log_info.append("  Execution History: No active steps recorded.")
 
+        # Determine workflow health and intelligence signals
+        report = self.generate_workflow_intelligence_report()
+        health_color = report["workflow_status"]
+
+        intelligence_info = [
+            f"  Workflow Status: {health_color} (Health Score: {report['health_score']:.1f}%)"
+        ]
+        if report["blocked_conditions"]:
+            intelligence_info.append("  Blocked Conditions:")
+            for cond in report["blocked_conditions"]:
+                intelligence_info.append(f"    - {cond}")
+        if report["actionable_operator_signals"]:
+            intelligence_info.append("  Operator Signals & Recommendations:")
+            for sig in report["actionable_operator_signals"][:3]:  # Show top 3 signals
+                intelligence_info.append(f"    * [{sig['severity']}] {sig['signal_type']}: {sig['description']}")
+                intelligence_info.append(f"      Recommendation: {sig['recommendation']}")
+
         dashboard = [
             "==================================================",
             "  SAGE CO-ORDINATION & ACTIVATION STATUS DASHBOARD",
@@ -852,6 +971,9 @@ class DeveloperWorkflowOrchestrator:
             activation_info,
             "--------------------------------------------------",
             "\n".join(exec_log_info),
+            "--------------------------------------------------",
+            "SAGE Operational Intelligence Report:",
+            "\n".join(intelligence_info),
             "--------------------------------------------------",
             "Workspace Track & Guard Status:",
             f"  Uncommitted Files: {len(modified_files)} file(s)",
@@ -1058,6 +1180,13 @@ if __name__ == "__main__":
     with open(exec_evidence_path, "w", encoding="utf-8") as f:
         json.dump(execution_evidence, f, indent=2, default=str)
     print(f"    - Saved Execution Feedback Evidence to: {exec_evidence_path}")
+
+    print(f"\n[*] Generating Workflow Intelligence Analysis Report...")
+    intelligence_report = orchestrator.generate_workflow_intelligence_report()
+    intel_evidence_path = Path("evidence_capture/workflow_intelligence_evidence.json")
+    with open(intel_evidence_path, "w", encoding="utf-8") as f:
+        json.dump(intelligence_report, f, indent=2, default=str)
+    print(f"    - Saved Workflow Intelligence Evidence to: {intel_evidence_path}")
 
     print(f"\n[*] Generating Live Coordination Status Dashboard...")
     dashboard = orchestrator.render_coordination_status()

@@ -1,6 +1,6 @@
 {
-  "manifest_id": "manifest_handoff_a7e415bc2d4d",
-  "timestamp": "2026-08-04T09:39:16.961356Z",
+  "manifest_id": "manifest_handoff_542bf1b75c48",
+  "timestamp": "2026-08-04T10:01:46.692286Z",
   "source_session": "session_realignment_coordination",
   "target_session_objectives": [
     "obj_continuous_development"
@@ -23,38 +23,42 @@
       "evidence_capture/"
     ],
     "human_authorization_signature": "sig_jules_active_gate_992",
-    "timestamp": 1785836356.8981314
+    "timestamp": 1785837706.538237
   },
   "workspace_fingerprint": {
     "evidence_capture/agent_activation_evidence.json": {
-      "sha256": "3e5dd16c4ed9476267a2b3015e6f7163d05f3984a574b61d8a4d96264c23d135",
-      "size_bytes": 1579
-    },
-    "evidence_capture/agent_handoff_manifest.json": {
-      "sha256": "f220447fc569377f9e7181230708660c19998eb81443ca243d33fd3d24edf0b4",
-      "size_bytes": 1916
-    },
-    "evidence_capture/ccl_operational_feedback.json": {
-      "sha256": "b410951f638edf5bedbde88fa3ce1861a7843347117cd1ddbd21c5495ff3e4f5",
-      "size_bytes": 5034
-    },
-    "sage/experimental/act/continuity_control.py": {
-      "sha256": "affc515cf448c2c0762839cba2e3490ffe169affa69505ccce7f05ed1c280925",
-      "size_bytes": 46217
-    },
-    "tests/experimental/test_continuity_control.py": {
-      "sha256": "021f1cd008b8fa16e8ce0a1a1a5477342dc7326c1275ad179a342429ac0e3369",
-      "size_bytes": 28208
+      "sha256": "f0cf19ad2e0e507e8877d8897c861255136570b65505302df828424c62bec6b3",
+      "size_bytes": 1576
     },
     "evidence_capture/agent_execution_feedback_evidence.json": {
-      "sha256": "05e1cf43c904873bec5a5c96311ee8cba23503c9b34cc5782a4f769846b29066",
-      "size_bytes": 1558
+      "sha256": "abf186e921ef73fcae8f98d061a005eebf2a7f9a322f64cf23518ec033ac3810",
+      "size_bytes": 1623
+    },
+    "evidence_capture/agent_handoff_manifest.json": {
+      "sha256": "904d21d4924cd886aa3ceeb401a40c5255af41d601a263799e97b322e3dee7e6",
+      "size_bytes": 2179
+    },
+    "evidence_capture/ccl_operational_feedback.json": {
+      "sha256": "7a3186f360640072bd4731ec4aff6aea1733b859480b57f44c157fd8f4f6b567",
+      "size_bytes": 5366
+    },
+    "sage/experimental/act/continuity_control.py": {
+      "sha256": "8f1711f7ca494af09defa9264ae95d10fce30136e6c3796faf93c79bea20d7c9",
+      "size_bytes": 52541
+    },
+    "tests/experimental/test_continuity_control.py": {
+      "sha256": "f685255d2e7d15f94f13206fbef5f62b65d20f9a5a26452d9a3919bf169ced1d",
+      "size_bytes": 32567
+    },
+    "evidence_capture/workflow_intelligence_evidence.json": {
+      "sha256": "d987458d4579b604a28e174743bf73f5bb636ba3af03c5cf4177c3249fab4465",
+      "size_bytes": 1231
     }
   },
   "coordination_telemetry": {
     "assigned_agent": "agent_jules_sage",
-    "nonce": "949ecb05c31f4849",
-    "rehydration_token": "rehydrate_564d35090a6a4b0f",
+    "nonce": "e944d1011fe243f3",
+    "rehydration_token": "rehydrate_cb4920ddfd0d4275",
     "instructions": "Run DeveloperWorkflowOrchestrator to re-verify context state."
   }
 }

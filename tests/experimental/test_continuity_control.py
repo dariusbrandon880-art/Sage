@@ -669,3 +669,104 @@ def test_record_agent_execution_step_blocked_by_security(tmp_path):
     assert res["status"] == "BLOCKED"
     assert res["drift_detected"] is True
     assert "Security Drift" in res["reason"]
+
+
+def test_workflow_intelligence_healthy(tmp_path):
+    """Verify that a normal active agent with no friction produces a HEALTHY status report."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_intel_healthy_test",
+        objective="obj_continuous_development"
+    )
+    orchestrator.session_manager = session_mgr
+    orchestrator.session = session_mgr.create_session(
+        session_id="session_intel_healthy_test",
+        active_objectives=["obj_continuous_development"]
+    )
+
+    agent_id = "agent_jules_sage"
+    task_id = "task_active_development"
+
+    # Activate agent
+    orchestrator.initialize_agent_activation(agent_id, task_id, ["sage/experimental/"])
+    orchestrator.authorize_agent_activation(agent_id, "supervisor_jules", "sig_jules_9911")
+
+    # Mock git workspace to be empty/clean for isolated test
+    orchestrator.scan_git_workspace = lambda: {"modified_files": [], "diffs": {}}
+
+    # Generate Report
+    report = orchestrator.generate_workflow_intelligence_report()
+    assert report["workflow_status"] == "HEALTHY"
+    assert report["health_score"] >= 90.0
+    assert len(report["blocked_conditions"]) == 0
+
+
+def test_workflow_intelligence_degraded(tmp_path):
+    """Verify that uninitialized agent results in a DEGRADED status report with signals."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_intel_degraded_test",
+        objective="obj_continuous_development"
+    )
+    orchestrator.session_manager = session_mgr
+    orchestrator.session = session_mgr.create_session(
+        session_id="session_intel_degraded_test",
+        active_objectives=["obj_continuous_development"]
+    )
+
+    # Mock git workspace to be empty/clean for isolated test
+    orchestrator.scan_git_workspace = lambda: {"modified_files": [], "diffs": {}}
+
+    # Do not activate agent -> NO_AGENT_ACTIVE -> DEGRADED
+    report = orchestrator.generate_workflow_intelligence_report()
+    assert report["workflow_status"] == "DEGRADED"
+    assert report["health_score"] < 90.0
+    assert any(sig["signal_type"] == "NO_AGENT_ACTIVE" for sig in report["actionable_operator_signals"])
+
+
+def test_workflow_intelligence_blocked(tmp_path):
+    """Verify that a blocked agent results in a BLOCKED workflow report with critical override signals."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_intel_blocked_test",
+        objective="obj_continuous_development"
+    )
+    orchestrator.session_manager = session_mgr
+    orchestrator.session = session_mgr.create_session(
+        session_id="session_intel_blocked_test",
+        active_objectives=["obj_continuous_development"]
+    )
+
+    agent_id = "agent_jules_sage"
+    task_id = "task_active_development"
+
+    orchestrator.initialize_agent_activation(agent_id, task_id, ["sage/experimental/"])
+    orchestrator.authorize_agent_activation(agent_id, "supervisor_jules", "sig_jules_9911")
+
+    # Force block the agent via scope violation
+    orchestrator.enforce_active_agent_scope(agent_id, ["docs/INDEX.md"])
+
+    # Mock git workspace to be empty/clean for isolated test
+    orchestrator.scan_git_workspace = lambda: {"modified_files": [], "diffs": {}}
+
+    # Generate Report
+    report = orchestrator.generate_workflow_intelligence_report()
+    assert report["workflow_status"] == "BLOCKED"
+    assert report["health_score"] < 60.0
+    assert len(report["blocked_conditions"]) == 1
+    assert any(sig["signal_type"] == "SUPERVISOR_OVERRIDE_REQUIRED" for sig in report["actionable_operator_signals"])

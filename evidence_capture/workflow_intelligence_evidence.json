@@ -1,0 +1,29 @@
+{
+  "session_id": "session_realignment_coordination",
+  "health_score": 15.0,
+  "workflow_status": "BLOCKED",
+  "blocked_conditions": [
+    "Agent activation state is BLOCKED due to a boundary or scope violation."
+  ],
+  "actionable_operator_signals": [
+    {
+      "severity": "CRITICAL",
+      "signal_type": "SUPERVISOR_OVERRIDE_REQUIRED",
+      "description": "Agent 'agent_jules_sage' is blocked from active execution.",
+      "recommendation": "Perform an audit of the last recorded SAGE-CCL record and submit supervisor_override with a valid signature."
+    },
+    {
+      "severity": "MEDIUM",
+      "signal_type": "HIGH_WORKSPACE_FRICTION",
+      "description": "High number of uncommitted files (6) in the active workspace.",
+      "recommendation": "Run execute_active_development_coordination to commit changes and generate dual-compliant CMAPS audit records."
+    },
+    {
+      "severity": "HIGH",
+      "signal_type": "HISTORY_DRIFT_DETECTED",
+      "description": "Detected 2 prior execution/scope drift incidents in this session history.",
+      "recommendation": "Inspect SAGE-CCL ledger files under sage_data/experimental_ccl/ to identify repetitive drift patterns."
+    }
+  ],
+  "timestamp": 1785837706.578223
+}
