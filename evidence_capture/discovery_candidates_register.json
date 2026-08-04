@@ -1,0 +1,42 @@
+[
+  {
+    "candidate_id": "DISC-CAN-618A0630928C",
+    "opportunity_type": "OPERATIONAL_EFFICIENCY",
+    "pattern_observed": "Repeated git command invokes are relatively slow in sandboxes",
+    "research_validation_criteria": "Implement high-fidelity workspace memory cache to bypass shell executions",
+    "lifecycle_state": "PROPOSED",
+    "timestamp": 1785840970.28476
+  },
+  {
+    "candidate_id": "DISC-CAN-74C7EA8CF8E0",
+    "opportunity_type": "OPERATIONAL_EFFICIENCY",
+    "pattern_observed": "Repeated git command invokes are relatively slow in sandboxes",
+    "research_validation_criteria": "Implement high-fidelity workspace memory cache to bypass shell executions",
+    "lifecycle_state": "PROPOSED",
+    "timestamp": 1785841050.2596443
+  },
+  {
+    "candidate_id": "DISC-CAN-FF69E0451EC3",
+    "opportunity_type": "OPERATIONAL_EFFICIENCY",
+    "pattern_observed": "Manual bootstrap of poetry environment is slow on clean sandbox containers",
+    "research_validation_criteria": "Implement high-fidelity workspace memory cache and pre-packaged virtualenvs",
+    "lifecycle_state": "PROPOSED",
+    "timestamp": 1785841136.1116467
+  },
+  {
+    "candidate_id": "DISC-CAN-DAA0D80187B6",
+    "opportunity_type": "TEST_INTEGRITY",
+    "pattern_observed": "Pre-commit checks require manual execution of command line suite",
+    "research_validation_criteria": "Integrate programmatic pre-commit hook triggers inside SAGE coordinate loops",
+    "lifecycle_state": "PROPOSED",
+    "timestamp": 1785841136.1133342
+  },
+  {
+    "candidate_id": "DISC-CAN-94BB0605DC0F",
+    "opportunity_type": "OPERATIONAL_EFFICIENCY",
+    "pattern_observed": "Repeated git command invokes are relatively slow in sandboxes",
+    "research_validation_criteria": "Implement high-fidelity workspace memory cache to bypass shell executions",
+    "lifecycle_state": "PROPOSED",
+    "timestamp": 1785841221.6363113
+  }
+]

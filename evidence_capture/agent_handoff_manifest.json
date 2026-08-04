@@ -1,6 +1,6 @@
 {
-  "manifest_id": "manifest_handoff_542bf1b75c48",
-  "timestamp": "2026-08-04T10:01:46.692286Z",
+  "manifest_id": "manifest_handoff_8dcf2c6fceb3",
+  "timestamp": "2026-08-04T10:58:56.258361Z",
   "source_session": "session_realignment_coordination",
   "target_session_objectives": [
     "obj_continuous_development"
@@ -23,42 +23,68 @@
       "evidence_capture/"
     ],
     "human_authorization_signature": "sig_jules_active_gate_992",
-    "timestamp": 1785837706.538237
+    "timestamp": 1785841136.0569408
   },
+  "discovery_candidates": [
+    {
+      "candidate_id": "DISC-CAN-FF69E0451EC3",
+      "opportunity_type": "OPERATIONAL_EFFICIENCY",
+      "pattern_observed": "Manual bootstrap of poetry environment is slow on clean sandbox containers",
+      "research_validation_criteria": "Implement high-fidelity workspace memory cache and pre-packaged virtualenvs",
+      "lifecycle_state": "PROPOSED",
+      "timestamp": 1785841136.1116467
+    },
+    {
+      "candidate_id": "DISC-CAN-DAA0D80187B6",
+      "opportunity_type": "TEST_INTEGRITY",
+      "pattern_observed": "Pre-commit checks require manual execution of command line suite",
+      "research_validation_criteria": "Integrate programmatic pre-commit hook triggers inside SAGE coordinate loops",
+      "lifecycle_state": "PROPOSED",
+      "timestamp": 1785841136.1133342
+    }
+  ],
   "workspace_fingerprint": {
     "evidence_capture/agent_activation_evidence.json": {
-      "sha256": "f0cf19ad2e0e507e8877d8897c861255136570b65505302df828424c62bec6b3",
-      "size_bytes": 1576
+      "sha256": "04171a794ad4281b5ebc58d3a5395e2f2ede1446d22752d1094de529811c00f4",
+      "size_bytes": 1575
     },
     "evidence_capture/agent_execution_feedback_evidence.json": {
-      "sha256": "abf186e921ef73fcae8f98d061a005eebf2a7f9a322f64cf23518ec033ac3810",
-      "size_bytes": 1623
+      "sha256": "6a87737dcf9b65726babff6b754a234057c752e9581b38a87833d263ea892e7c",
+      "size_bytes": 1812
     },
     "evidence_capture/agent_handoff_manifest.json": {
-      "sha256": "904d21d4924cd886aa3ceeb401a40c5255af41d601a263799e97b322e3dee7e6",
-      "size_bytes": 2179
+      "sha256": "dee1c3e1cd42189ebf9df93a362b0eb9f68731cd2f0ac5ee2f6b691f06baf8ea",
+      "size_bytes": 2356
     },
     "evidence_capture/ccl_operational_feedback.json": {
-      "sha256": "7a3186f360640072bd4731ec4aff6aea1733b859480b57f44c157fd8f4f6b567",
-      "size_bytes": 5366
+      "sha256": "982f363ff2b789c36e56aa9ecc7fdd379f11b287326f79d186fc325ed1e88b14",
+      "size_bytes": 6141
     },
-    "sage/experimental/act/continuity_control.py": {
-      "sha256": "8f1711f7ca494af09defa9264ae95d10fce30136e6c3796faf93c79bea20d7c9",
-      "size_bytes": 52541
+    "evidence_capture/discovery_candidates_register.json": {
+      "sha256": "4bad94b5b914788afb4bc7957ec754f1f3c14b3db81ba504db674bdc846783a3",
+      "size_bytes": 1521
     },
-    "tests/experimental/test_continuity_control.py": {
-      "sha256": "f685255d2e7d15f94f13206fbef5f62b65d20f9a5a26452d9a3919bf169ced1d",
-      "size_bytes": 32567
+    "evidence_capture/operational_persistence_evidence.json": {
+      "sha256": "3ff943d09841529dbb0df928b2edebffb8f3323acb927be0318fba6259dd6fd9",
+      "size_bytes": 1308
     },
     "evidence_capture/workflow_intelligence_evidence.json": {
-      "sha256": "d987458d4579b604a28e174743bf73f5bb636ba3af03c5cf4177c3249fab4465",
+      "sha256": "683e79c38c1d5f8fdc92abc47abd4c1a6e57f34b306ed64b6260048019f81be0",
       "size_bytes": 1231
+    },
+    "sage/experimental/act/continuity_control.py": {
+      "sha256": "03efd48223f3d43ec755274ee61f0e8592eda2a2b0f7b19136a54569a3a7bd5a",
+      "size_bytes": 63524
+    },
+    "tests/experimental/test_continuity_control.py": {
+      "sha256": "084c443ae7120a15c7684e53e3eb8d0ea3e4985b7a29c1d01dc2b5d430cd4a61",
+      "size_bytes": 41364
     }
   },
   "coordination_telemetry": {
     "assigned_agent": "agent_jules_sage",
-    "nonce": "e944d1011fe243f3",
-    "rehydration_token": "rehydrate_cb4920ddfd0d4275",
+    "nonce": "3030c62a91f54124",
+    "rehydration_token": "rehydrate_824835893db34dd1",
     "instructions": "Run DeveloperWorkflowOrchestrator to re-verify context state."
   }
 }

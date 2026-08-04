@@ -885,3 +885,96 @@ def test_rehydrate_from_handoff_manifest_divergence(tmp_path):
     assert str(dummy_file) in audit["divergent_files"]
     assert audit["missing_files_count"] == 1
     assert "missing_experimental_file.py" in audit["missing_files"]
+
+
+def test_promote_discovery_candidate_success(tmp_path):
+    """Verify that SAGE programmatically synthesizes, validates, and records discovery candidates."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_discovery_test_1",
+        objective="obj_continuous_development"
+    )
+    orchestrator.session_manager = session_mgr
+    orchestrator.ccl.storage_path = record_storage
+    orchestrator.session = session_mgr.create_session(
+        session_id="session_discovery_test_1",
+        active_objectives=["obj_continuous_development"]
+    )
+
+    # Promote Discovery Candidate
+    candidate = orchestrator.promote_discovery_candidate(
+        opportunity_type="OPERATIONAL_EFFICIENCY",
+        pattern_observed="Repeated git command invokes are relatively slow in sandboxes",
+        research_validation_criteria="Implement high-fidelity workspace memory cache to bypass shell executions"
+    )
+
+    assert candidate["candidate_id"].startswith("DISC-CAN-")
+    assert candidate["opportunity_type"] == "OPERATIONAL_EFFICIENCY"
+    assert candidate["pattern_observed"] == "Repeated git command invokes are relatively slow in sandboxes"
+    assert candidate["lifecycle_state"] == "PROPOSED"
+
+    # Verify session has the candidate
+    stored_candidates = orchestrator.session.metadata.get("discovery_candidates")
+    assert stored_candidates is not None
+    assert len(stored_candidates) == 1
+    assert stored_candidates[0]["candidate_id"] == candidate["candidate_id"]
+
+
+def test_rehydrate_preserves_discovery_candidates(tmp_path):
+    """Verify that loading a handoff manifest containing discovery candidates correctly rehydrates those candidates into session metadata."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    manifest_file = tmp_path / "manifest.json"
+
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+
+    # Create manifest with discovery candidates
+    manifest_data = {
+        "manifest_id": "manifest_test_discovery_rehydrate",
+        "timestamp": "2026-08-04T12:00:00Z",
+        "source_session": "session_rehydrated_discovery",
+        "target_session_objectives": ["obj_continuous_development"],
+        "state_snapshot": {},
+        "agent_activation_state": None,
+        "discovery_candidates": [
+            {
+                "candidate_id": "DISC-CAN-ABCDE12345",
+                "opportunity_type": "TEST_INTEGRITY",
+                "pattern_observed": "Pre-commit tests could be automatically triggered",
+                "research_validation_criteria": "Integrate git pre-commit hooks programmatically",
+                "lifecycle_state": "PROPOSED",
+                "timestamp": 1234567.8
+            }
+        ],
+        "workspace_fingerprint": {}
+    }
+
+    with open(manifest_file, "w", encoding="utf-8") as f:
+        json.dump(manifest_data, f, indent=2)
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_dummy",
+        objective="obj_temporary"
+    )
+    orchestrator.session_manager = session_mgr
+    orchestrator.ccl.storage_path = record_storage
+
+    report = orchestrator.rehydrate_from_handoff_manifest(str(manifest_file))
+
+    # Verify candidates are present in rehydrated session
+    rehydrated_session = session_mgr.retrieve_session("session_rehydrated_discovery")
+    assert rehydrated_session is not None
+    candidates = rehydrated_session.metadata.get("discovery_candidates")
+    assert candidates is not None
+    assert len(candidates) == 1
+    assert candidates[0]["candidate_id"] == "DISC-CAN-ABCDE12345"

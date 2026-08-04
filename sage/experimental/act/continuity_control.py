@@ -304,6 +304,25 @@ class WorkflowIntelligenceReport(BaseModel):
     timestamp: float = Field(default_factory=time.time)
 
 
+class DiscoveryCandidate(BaseModel):
+    """Represents a SAGE Discovery Lane candidate generated from real operational patterns or limitations."""
+
+    candidate_id: str
+    opportunity_type: str  # e.g. TEST_INTEGRITY, BOUNDARY_SECURITY, OPERATIONAL_EFFICIENCY
+    pattern_observed: str
+    research_validation_criteria: str
+    lifecycle_state: str = "PROPOSED"  # PROPOSED, UNDER_REVIEW, VALIDATED, INTEGRATED
+    timestamp: float = Field(default_factory=time.time)
+
+    @field_validator("candidate_id")
+    @classmethod
+    def validate_candidate_id(cls, v: str) -> str:
+        """Enforce strict candidate_id formatting."""
+        if not re.match(r"^DISC-CAN-[a-zA-Z0-9_\-]+$", v):
+            raise ValueError(f"SAGE-Discovery Violation: Invalid candidate_id format: '{v}'")
+        return v
+
+
 class DeveloperWorkflowOrchestrator:
     """Orchestrates end-to-end active developer workflows by connecting SAGE-CCL, Context Guard, and CMAPS."""
 
@@ -740,6 +759,11 @@ class DeveloperWorkflowOrchestrator:
         if act_state_dict:
             self.session.metadata["agent_activation"] = act_state_dict
 
+        # Restore Discovery Candidates
+        disc_candidates = manifest.get("discovery_candidates")
+        if disc_candidates is not None:
+            self.session.metadata["discovery_candidates"] = disc_candidates
+
         self.session_manager.save_session(self.session)
 
         # 3. Active Workspace Divergence Auditing
@@ -812,6 +836,57 @@ class DeveloperWorkflowOrchestrator:
         self.ccl.serialize_record(rec)
 
         return rehydration_report
+
+    def promote_discovery_candidate(
+        self,
+        opportunity_type: str,
+        pattern_observed: str,
+        research_validation_criteria: str
+    ) -> Dict[str, Any]:
+        """Synthesizes, validates, and records a new Discovery Candidate into the SAGE Discovery register."""
+        candidate_id = f"DISC-CAN-{uuid.uuid4().hex[:12].upper()}"
+
+        candidate = DiscoveryCandidate(
+            candidate_id=candidate_id,
+            opportunity_type=opportunity_type,
+            pattern_observed=pattern_observed,
+            research_validation_criteria=research_validation_criteria,
+            lifecycle_state="PROPOSED"
+        )
+
+        # Append to session metadata
+        if "discovery_candidates" not in self.session.metadata:
+            self.session.metadata["discovery_candidates"] = []
+        self.session.metadata["discovery_candidates"].append(candidate.model_dump())
+        self.session_manager.save_session(self.session)
+
+        # Write to the standalone discovery register file
+        register_path = Path("evidence_capture/discovery_candidates_register.json")
+        register_path.parent.mkdir(parents=True, exist_ok=True)
+
+        candidates = []
+        if register_path.exists():
+            try:
+                with open(register_path, "r", encoding="utf-8") as f:
+                    candidates = json.load(f)
+            except Exception:
+                pass
+
+        candidates.append(candidate.model_dump())
+        with open(register_path, "w", encoding="utf-8") as f:
+            json.dump(candidates, f, indent=2, default=str)
+
+        # Record to SAGE-CCL ledger
+        rec = self.ccl.intercept_event(
+            event_type="state_transition",
+            action_taken=f"Promoted Discovery Candidate: {candidate_id}",
+            decision_reasoning=f"Captured operational pattern under opportunity type '{opportunity_type}'",
+            session_id=self.session_id,
+            evidence_payload={"discovery_candidate": candidate.model_dump()}
+        )
+        self.ccl.serialize_record(rec)
+
+        return candidate.model_dump()
 
     def execute_active_development_coordination(
         self,
@@ -1073,6 +1148,17 @@ class DeveloperWorkflowOrchestrator:
                 intelligence_info.append(f"    * [{sig['severity']}] {sig['signal_type']}: {sig['description']}")
                 intelligence_info.append(f"      Recommendation: {sig['recommendation']}")
 
+        # Determine discovery candidates
+        discovery_info = []
+        candidates_list = self.session.metadata.get("discovery_candidates", [])
+        if candidates_list:
+            discovery_info.append("  Discovery Candidates:")
+            for can in candidates_list[-2:]:  # Show last 2 candidates
+                discovery_info.append(f"    * [{can['candidate_id']}] Type: {can['opportunity_type']}")
+                discovery_info.append(f"      Pattern: {can['pattern_observed'][:80]}...")
+        else:
+            discovery_info.append("  Discovery Candidates: None registered.")
+
         dashboard = [
             "==================================================",
             "  SAGE CO-ORDINATION & ACTIVATION STATUS DASHBOARD",
@@ -1087,6 +1173,8 @@ class DeveloperWorkflowOrchestrator:
             "--------------------------------------------------",
             "SAGE Operational Intelligence Report:",
             "\n".join(intelligence_info),
+            "--------------------------------------------------",
+            "\n".join(discovery_info),
             "--------------------------------------------------",
             "Workspace Track & Guard Status:",
             f"  Uncommitted Files: {len(modified_files)} file(s)",
@@ -1128,6 +1216,7 @@ class DeveloperWorkflowOrchestrator:
             }
 
         act_dict = self.session.metadata.get("agent_activation")
+        disc_candidates = self.session.metadata.get("discovery_candidates", [])
 
         manifest = {
             "manifest_id": f"manifest_handoff_{uuid.uuid4().hex[:12]}",
@@ -1140,6 +1229,7 @@ class DeveloperWorkflowOrchestrator:
                 "important_decisions": list(self.session.important_decisions)
             },
             "agent_activation_state": act_dict,
+            "discovery_candidates": disc_candidates,
             "workspace_fingerprint": file_fingerprints,
             "coordination_telemetry": {
                 "assigned_agent": "agent_jules_sage",
@@ -1323,6 +1413,19 @@ if __name__ == "__main__":
     with open(intel_evidence_path, "w", encoding="utf-8") as f:
         json.dump(intelligence_report, f, indent=2, default=str)
     print(f"    - Saved Workflow Intelligence Evidence to: {intel_evidence_path}")
+
+    print(f"\n[*] Promoting SAGE Discovery Intelligence Candidates...")
+    # Promote a high-value operational candidate noticed during real work
+    orchestrator.promote_discovery_candidate(
+        opportunity_type="OPERATIONAL_EFFICIENCY",
+        pattern_observed="Manual bootstrap of poetry environment is slow on clean sandbox containers",
+        research_validation_criteria="Implement high-fidelity workspace memory cache and pre-packaged virtualenvs"
+    )
+    orchestrator.promote_discovery_candidate(
+        opportunity_type="TEST_INTEGRITY",
+        pattern_observed="Pre-commit checks require manual execution of command line suite",
+        research_validation_criteria="Integrate programmatic pre-commit hook triggers inside SAGE coordinate loops"
+    )
 
     print(f"\n[*] Generating Live Coordination Status Dashboard...")
     dashboard = orchestrator.render_coordination_status()
