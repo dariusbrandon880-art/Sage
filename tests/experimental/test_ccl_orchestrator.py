@@ -595,3 +595,53 @@ def test_end_to_end_integrated_system(tmp_path):
     assert " BLOCKED / STALLED TASKS:" in view
     assert " TASK OBJECTIVE DRIFT EVENTS:" in view
     assert " STRUCTURED IMPROVEMENT CANDIDATES GENERATED:" in view
+
+
+def test_realistic_workflow_variation_and_recovery(tmp_path):
+    """Verify SAGE-CCL-OPS resilience under realistic workflow variations and recovery scenarios."""
+    evidence_file = tmp_path / "ccl_realism_evidence.json"
+    orch = DeveloperWorkflowOrchestrator(session_id="session_realism_validation")
+
+    # 1. Activate agent network
+    orch.ingest_event("AGENT_ACTIVATION", "system", {"agent_id": "agent_coord", "supervisor_id": "super", "decision": "AUTHORIZED", "role": "COORDINATOR"})
+    orch.ingest_event("AGENT_ACTIVATION", "system", {"agent_id": "agent_exec", "supervisor_id": "super", "decision": "AUTHORIZED", "role": "EXECUTOR"})
+
+    # 2. TASK_INIT (with initial context)
+    orch.ingest_event("TASK_INIT", "task_parent", {
+        "objective_id": "obj_primary_mission",
+        "assigned_agent": "agent_coord",
+        "initial_context": {"baseline": "v1.0"}
+    })
+    orch.ingest_event("STATE_TRANSITION", "task_parent", {"target_status": "ACTIVE"})
+
+    # 3. Objective Shift (Dynamic change during execution)
+    orch.delegate_task("task_parent", "subtask_variation", "agent_exec", "obj_updated_mission")
+    orch.ingest_event("STATE_TRANSITION", "subtask_variation", {"target_status": "ACTIVE"})
+
+    # 4. Unexpected Agent Delay / Interrupted execution (stalled progress)
+    orch.record_progress("subtask_variation", "agent_exec", 0.0, {"stage": "interrupted"}, "Encountered slow container build. Stalled.")
+
+    # 5. Recovery after Interruption
+    orch.record_progress("subtask_variation", "agent_exec", 100.0, {"stage": "recovered", "status": "all_green"}, "Recovered container and verified AST compliance.")
+
+    # 6. Human Gate Approval
+    orch.ingest_event("HUMAN_APPROVAL", "subtask_variation", {"supervisor_id": "human_supervisor_01", "decision": "AUTHORIZED", "comments": "AST isolation checked after build recovery."})
+    orch.ingest_event("STATE_TRANSITION", "subtask_variation", {"target_status": "COMPLETED", "agent_id": "agent_exec", "comment": "Subtask recovered and completed."})
+
+    orch.ingest_event("HUMAN_APPROVAL", "task_parent", {"supervisor_id": "human_supervisor_01", "decision": "AUTHORIZED", "comments": "Parent mission approved."})
+    orch.ingest_event("STATE_TRANSITION", "task_parent", {"target_status": "COMPLETED", "agent_id": "agent_coord", "comment": "Closing parent task."})
+
+    # 7. Export evidence to verify traceability
+    evidence = orch.export_evidence(str(evidence_file))
+
+    # Assertions for realistic variation & recovery
+    assert evidence["execution_identifier"] == orch.orchestrator_run_id
+    subtask_state = evidence["active_tasks"]["subtask_variation"]
+    assert subtask_state["status"] == "COMPLETED"
+    assert subtask_state["objective_id"] == "obj_updated_mission"  # Verifies shifted objective tracking
+    assert len(subtask_state["operational_feedback"]) == 2
+
+    # Verify SAGE classified the delay opportunity properly
+    report = evidence["workflow_intelligence_report"]
+    opp_categories = [opp["category"] for opp in report["improvement_opportunities"]]
+    assert "LIVELINESS" in opp_categories  # Matches "slow" or "delay" feedback
