@@ -605,3 +605,155 @@ def test_multi_agent_operator_status_dashboard(tmp_path):
     assert "Shared Workflow State (Context Cache):" in dashboard
     assert "agent_jules_sage" in dashboard
     assert "database_replica_status: aligned" in dashboard
+
+
+def test_operational_control_loop_unactivated_agent(tmp_path):
+    """Verify that an unactivated or suspended agent is restricted from reporting progress."""
+    import pytest
+    import uuid
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id=f"session_loop_unactivated_{uuid.uuid4().hex[:6]}",
+        objective="obj_loop_unactivated",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    orchestrator.add_coordinated_task("task_t", "Task", "TIER_1_COORDINATOR")
+    orchestrator.assign_agent_to_task("task_t", "agent_jules_sage")
+
+    # Suspend the agent
+    orchestrator.enforcer.set_agent_state("agent_jules_sage", "SUSPENDED")
+
+    with pytest.raises(PermissionError, match="is not authorized to report progress"):
+        orchestrator.report_agent_progress(
+            agent_id="agent_jules_sage",
+            task_id="task_t",
+            progress_details={"action_name": "build_database", "is_completed": False}
+        )
+
+
+def test_operational_control_loop_incorrect_assignment(tmp_path):
+    """Verify that an agent reporting progress on a task assigned to someone else fails validation."""
+    import pytest
+    import uuid
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id=f"session_loop_assignment_{uuid.uuid4().hex[:6]}",
+        objective="obj_loop_assignment",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    orchestrator.add_coordinated_task("task_t", "Task", "TIER_1_COORDINATOR")
+    orchestrator.assign_agent_to_task("task_t", "agent_jules_sage")
+
+    # agent_scout_sage (ACTIVATED) attempts to report progress for task_t (assigned to agent_jules_sage)
+    with pytest.raises(PermissionError, match="is not assigned to task"):
+        orchestrator.report_agent_progress(
+            agent_id="agent_scout_sage",
+            task_id="task_t",
+            progress_details={"action_name": "build_database", "is_completed": False}
+        )
+
+
+def test_operational_control_loop_execution_drift_detection(tmp_path):
+    """Verify that duplicate execution of completed actions raises drift exceptions, but override bypasses them."""
+    import pytest
+    import uuid
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id=f"session_loop_drift_{uuid.uuid4().hex[:6]}",
+        objective="obj_loop_drift",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    orchestrator.add_coordinated_task("task_t", "Task", "TIER_1_COORDINATOR")
+    orchestrator.assign_agent_to_task("task_t", "agent_jules_sage")
+
+    # Add action_build to completed actions
+    orchestrator.session.completed_actions.append("action_build")
+    session_mgr.save_session(orchestrator.session)
+
+    # Reporting on already completed action_build must raise drift ValueError
+    with pytest.raises(ValueError, match="Execution Drift Detected"):
+        orchestrator.report_agent_progress(
+            agent_id="agent_jules_sage",
+            task_id="task_t",
+            progress_details={"action_name": "action_build", "is_completed": False}
+        )
+
+    # Bypass drift exception with supervisor override
+    override = {"decision": "APPROVED", "supervisor_id": "supervisor_jules"}
+    report = orchestrator.report_agent_progress(
+        agent_id="agent_jules_sage",
+        task_id="task_t",
+        progress_details={"action_name": "action_build", "is_completed": False},
+        supervisor_override=override
+    )
+    assert report["status"] == "VALIDATED"
+
+
+def test_operational_control_loop_successful_flow(tmp_path):
+    """Verify end-to-end progress reporting state updates, context cache, and evidence serialization."""
+    import uuid
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id=f"session_loop_success_{uuid.uuid4().hex[:6]}",
+        objective="obj_loop_success",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence_output.json")
+    )
+
+    orchestrator.add_coordinated_task("task_t", "Task", "TIER_1_COORDINATOR")
+    orchestrator.assign_agent_to_task("task_t", "agent_jules_sage")
+
+    progress = {
+        "action_name": "action_database_replica",
+        "is_completed": True,
+        "shared_state_updates": {
+            "replica_status": "synced_and_active",
+            "replica_nodes_count": 3
+        }
+    }
+
+    report = orchestrator.report_agent_progress(
+        agent_id="agent_jules_sage",
+        task_id="task_t",
+        progress_details=progress
+    )
+
+    # 1. Status verification
+    assert report["status"] == "VALIDATED"
+    assert report["task_status"] == "COMPLETED"
+
+    # 2. Shared context updates
+    assert orchestrator.shared_workflow_state["replica_status"] == "synced_and_active"
+    assert orchestrator.shared_workflow_state["replica_nodes_count"] == 3
+
+    # 3. Session updates
+    assert "action_database_replica" in orchestrator.session.completed_actions
+
+    # 4. File persistence evidence
+    assert (tmp_path / "evidence_output.json").exists()

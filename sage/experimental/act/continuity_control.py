@@ -597,6 +597,95 @@ class DeveloperWorkflowOrchestrator:
         lines.append("==================================================")
         return "\n".join(lines)
 
+    def report_agent_progress(
+        self,
+        agent_id: str,
+        task_id: str,
+        progress_details: Dict[str, Any],
+        supervisor_override: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """Runs the SAGE Agent Operational Control Loop for progress validation and execution intake."""
+        # 1. SAGE Activation Validation
+        agent_state = self.enforcer.get_agent_state(agent_id)
+        if agent_state != "ACTIVATED":
+            if not (supervisor_override and supervisor_override.get("decision") == "APPROVED"):
+                raise PermissionError(
+                    f"Operational Control Loop Error: Agent '{agent_id}' is '{agent_state}' and is not authorized to report progress."
+                )
+
+        # 2. Check task exists and check task ownership / active assignment
+        if task_id not in self.coordinated_tasks:
+            raise KeyError(f"Operational Control Loop Error: Task '{task_id}' is not registered.")
+
+        task = self.coordinated_tasks[task_id]
+
+        # 3. Continuity Alignment Check: check ownership
+        if task["assigned_agent"] != agent_id:
+            if not (supervisor_override and supervisor_override.get("decision") == "APPROVED"):
+                raise PermissionError(
+                    f"Operational Control Loop Error: Agent '{agent_id}' is not assigned to task '{task_id}' (assigned to '{task['assigned_agent']}')."
+                )
+
+        # 4. Result/Progress Intake: detect context drift during execution
+        # Check if the progress results try to redo/re-complete an already completed session action
+        action_name = progress_details.get("action_name", "generic_step")
+        if action_name in self.session.completed_actions:
+            if not (supervisor_override and supervisor_override.get("decision") == "APPROVED"):
+                raise ValueError(
+                    f"Execution Drift Detected: Agent '{agent_id}' attempted duplicate execution of already completed action '{action_name}'."
+                )
+
+        # 5. Task Execution State Updates
+        if task["status"] == "PENDING":
+            task["status"] = "ACTIVE"
+
+        # 6. Shared Workflow State Update
+        shared_updates = progress_details.get("shared_state_updates", {})
+        self.shared_workflow_state.update(shared_updates)
+
+        # 7. Handoff or Completion Decision
+        is_completed = progress_details.get("is_completed", False)
+        if is_completed:
+            task["status"] = "COMPLETED"
+            self.session.completed_actions.append(action_name)
+            self.session_manager.save_session(self.session)
+
+        # 8. Evidence Capture
+        record = self.ccl.intercept_event(
+            event_type="agent_operational_progress",
+            action_taken=f"Progress reported by agent '{agent_id}' on task '{task_id}' (action: '{action_name}')",
+            decision_reasoning=f"Agent progress validation, state update to '{task['status']}', and shared context updates",
+            evidence_payload={
+                "task_id": task_id,
+                "agent_id": agent_id,
+                "progress_details": progress_details,
+                "task_status": task["status"],
+                "shared_state_snapshot": dict(self.shared_workflow_state)
+            },
+            session_id=self.session_id
+        )
+        self.ccl.serialize_record(record)
+
+        # Reserialize unified operational evidence file to disk
+        unified_report = {
+            "timestamp": time.time(),
+            "session_id": self.session_id,
+            "status": "VALIDATED",
+            "agent_id": agent_id,
+            "task_id": task_id,
+            "progress_details": progress_details,
+            "task_status": task["status"],
+            "shared_workflow_state": dict(self.shared_workflow_state),
+            "ccl_record": record.model_dump()
+        }
+
+        # Save to self.evidence_output_path
+        self.evidence_output_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(self.evidence_output_path, "w", encoding="utf-8") as f:
+            json.dump(unified_report, f, indent=2, default=str)
+
+        return unified_report
+
     def execute_active_development_coordination(
         self,
         action_taken: str,
