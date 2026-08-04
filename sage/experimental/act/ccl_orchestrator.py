@@ -93,6 +93,9 @@ class DeveloperWorkflowOrchestrator:
                 "lineage_references": payload.get("lineage_references", []),
                 "parent_task_id": payload.get("parent_task_id"),
                 "subtask_ids": [],
+                "progress_percent": 0.0,
+                "latest_result": {},
+                "operational_feedback": [],
                 "history": [{
                     "status": "INITIATED",
                     "assigned_agent": assigned_agent,
@@ -184,6 +187,68 @@ class DeveloperWorkflowOrchestrator:
             })
 
         return self.tasks[task_id]
+
+    def record_progress(self, task_id: str, agent_id: str, progress_percent: float, result_payload: Dict[str, Any], feedback: Optional[str] = None) -> Dict[str, Any]:
+        """Ingests structured task execution progress and result updates from the assigned, activated agent."""
+        if task_id not in self.tasks:
+            raise ValueError(f"Orchestrator Reference Error: Task '{task_id}' does not exist.")
+
+        task_state = self.tasks[task_id]
+
+        if task_state["status"] not in {"ACTIVE", "HANDOFF"}:
+            raise PermissionError(
+                f"Execution Control Blocked: Cannot record progress on task '{task_id}' "
+                f"because it is currently '{task_state['status']}', not 'ACTIVE' or 'HANDOFF'."
+            )
+
+        # Enforce Ownership: only the assigned agent can record progress
+        if task_state["assigned_agent"] != agent_id:
+            raise PermissionError(
+                f"Security Boundary Violation: Agent '{agent_id}' does not own task '{task_id}' "
+                f"(Currently assigned to '{task_state['assigned_agent']}')."
+            )
+
+        # Verify assigned agent is ACTIVATED
+        if self.agents.get(agent_id) != "ACTIVATED":
+            raise PermissionError(
+                f"Security Boundary Violation: Cannot ingest progress from unactivated agent '{agent_id}'."
+            )
+
+        ts = datetime.now(timezone.utc).isoformat()
+
+        # Update shared continuity state
+        task_state["progress_percent"] = float(progress_percent)
+        task_state["latest_result"].update(result_payload)
+        if feedback:
+            task_state["operational_feedback"].append({
+                "timestamp": ts,
+                "agent_id": agent_id,
+                "feedback": feedback
+            })
+
+        # Append to task history & event log
+        event_record = {
+            "event_id": f"evt_{uuid.uuid4().hex[:8]}",
+            "event_type": "TASK_PROGRESS",
+            "task_id": task_id,
+            "timestamp": ts,
+            "payload": {
+                "agent_id": agent_id,
+                "progress_percent": progress_percent,
+                "result_payload": result_payload,
+                "feedback": feedback
+            }
+        }
+        self.event_log.append(event_record)
+
+        task_state["history"].append({
+            "status": task_state["status"],
+            "assigned_agent": agent_id,
+            "timestamp": ts,
+            "comment": f"Reported execution progress: {progress_percent}%. Feedback: {feedback or 'None'}"
+        })
+
+        return task_state
 
     def delegate_task(self, parent_task_id: str, child_task_id: str, to_agent: str, objective_id: str, initial_context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Delegates a structured child task from an active parent task to another activated agent."""
@@ -307,6 +372,9 @@ class DeveloperWorkflowOrchestrator:
         lines.append(f"{child_spacing}Status  : {t_state['status']}")
         lines.append(f"{child_spacing}Assignee: {t_state['assigned_agent']} ({t_state['agent_role']})")
         lines.append(f"{child_spacing}Objective: {t_state['objective_id']}")
+        lines.append(f"{child_spacing}Progress: {t_state['progress_percent']}%")
+        if t_state["latest_result"]:
+            lines.append(f"{child_spacing}Latest  : {json.dumps(t_state['latest_result'], sort_keys=True)}")
         app = t_state["human_approval"]
         app_str = f"AUTHORIZED by {app['supervisor_id']}" if app else "NONE / PENDING"
         lines.append(f"{child_spacing}Approval: {app_str}")
@@ -331,7 +399,9 @@ class DeveloperWorkflowOrchestrator:
             "task_id": task_state["task_id"],
             "session_id": task_state["session_id"],
             "status": task_state["status"],
-            "context": task_state["context"]
+            "context": task_state["context"],
+            "progress_percent": task_state["progress_percent"],
+            "latest_result": task_state["latest_result"]
         }, sort_keys=True)
 
         state_hash = hashlib.sha256(serialized_state.encode("utf-8")).hexdigest()
@@ -351,6 +421,9 @@ class DeveloperWorkflowOrchestrator:
                 "lineage_references": task_state["lineage_references"],
                 "parent_task_id": task_state["parent_task_id"],
                 "subtask_ids": task_state["subtask_ids"],
+                "progress_percent": task_state["progress_percent"],
+                "latest_result": task_state["latest_result"],
+                "operational_feedback": task_state["operational_feedback"],
                 "human_approval": task_state["human_approval"]
             },
             "state_integrity": {

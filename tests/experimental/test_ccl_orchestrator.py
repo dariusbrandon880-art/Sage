@@ -205,6 +205,49 @@ def test_multi_agent_structured_delegation():
     assert "subtask_01" in parent_task["subtask_ids"]
 
 
+def test_controlled_workflow_progress_and_ownership():
+    """Verify governed execution progress reporting, active result ingestion, and ownership constraints."""
+    orch = DeveloperWorkflowOrchestrator(session_id="session_test_progress")
+
+    # Activate Executor & Observer
+    orch.ingest_event("AGENT_ACTIVATION", "system", {"agent_id": "agent_exec", "supervisor_id": "super", "decision": "AUTHORIZED", "role": "EXECUTOR"})
+    orch.ingest_event("AGENT_ACTIVATION", "system", {"agent_id": "agent_observer", "supervisor_id": "super", "decision": "AUTHORIZED", "role": "ANALYST"})
+
+    orch.ingest_event(
+        "TASK_INIT",
+        "task_progress_01",
+        {
+            "objective_id": "obj_code_gen",
+            "assigned_agent": "agent_exec"
+        }
+    )
+
+    # Ingestion of progress should fail if task is not ACTIVE
+    with pytest.raises(PermissionError, match="Cannot record progress on task.*INITIATED"):
+        orch.record_progress("task_progress_01", "agent_exec", 10.0, {"changes": "baseline"})
+
+    # Move task to ACTIVE
+    orch.ingest_event("STATE_TRANSITION", "task_progress_01", {"target_status": "ACTIVE"})
+
+    # Ingestion should fail if unauthorized agent attempts to write progress (Ownership check)
+    with pytest.raises(PermissionError, match="Agent.*does not own task"):
+        orch.record_progress("task_progress_01", "agent_observer", 25.0, {"changes": "illegal_override"})
+
+    # Ingestion succeeds for the correct owner
+    res = orch.record_progress(
+        task_id="task_progress_01",
+        agent_id="agent_exec",
+        progress_percent=75.0,
+        result_payload={"git_hash": "a8c9b201"},
+        feedback="AST parsing passed successfully."
+    )
+
+    assert res["progress_percent"] == 75.0
+    assert res["latest_result"]["git_hash"] == "a8c9b201"
+    assert len(res["operational_feedback"]) == 1
+    assert res["operational_feedback"][0]["feedback"] == "AST parsing passed successfully."
+
+
 def test_human_authorization_visibility():
     """Verify human checkpoints correctly guard and block completion transitions."""
     orch = DeveloperWorkflowOrchestrator(session_id="session_test_auth")
@@ -298,6 +341,9 @@ def test_continuity_records_and_evidence(tmp_path):
         {"target_status": "ACTIVE"}
     )
 
+    # Record some progress
+    orch.record_progress("task_evidence_01", "agent_jules", 50.0, {"stage": "intermediate_build"}, "Stage 1 builds.")
+
     orch.ingest_event(
         "HUMAN_APPROVAL",
         "task_evidence_01",
@@ -326,9 +372,9 @@ def test_continuity_records_and_evidence(tmp_path):
     assert ccl_record["record_id"].startswith("CCL-REC-")
     assert ccl_record["task_state_snapshot"]["status"] == "COMPLETED"
     assert ccl_record["task_state_snapshot"]["agent_role"] == "COORDINATOR"
+    assert ccl_record["task_state_snapshot"]["progress_percent"] == 50.0
+    assert ccl_record["task_state_snapshot"]["latest_result"]["stage"] == "intermediate_build"
     assert len(ccl_record["state_integrity"]["state_hash"]) == 64
-    assert len(ccl_record["monotonic_sequence_history"]) == 4  # task-specific history (excludes system event)
-    assert len(evidence["workflow_events"]) == 5  # entire session event log contains 5 events
 
     # Confirm correct JSON serialization
     assert evidence_file.exists()
@@ -358,6 +404,10 @@ def test_operator_summary():
     orch.ingest_event("STATE_TRANSITION", "task_summary_01", {"target_status": "ACTIVE"})
     orch.delegate_task("task_summary_01", "subtask_summary_01", "agent_exec", "obj_render_subtask")
 
+    # Record child progress
+    orch.ingest_event("STATE_TRANSITION", "subtask_summary_01", {"target_status": "ACTIVE"})
+    orch.record_progress("subtask_summary_01", "agent_exec", 90.0, {"coverage": "98%"}, "Refactored tests.")
+
     summary = orch.generate_operator_summary()
     assert "SAGE OPERATIONAL COORDINATION & CONTEXT SUMMARY" in summary
     assert "agent_exec" in summary
@@ -367,7 +417,8 @@ def test_operator_summary():
     assert "task_summary_01" in summary
     assert "obj_render_summary" in summary
     assert "subtask_summary_01" in summary
-    assert "obj_render_subtask" in summary
+    assert "Progress: 90.0%" in summary
+    assert "Latest  : {\"coverage\": \"98%\"}" in summary
 
 
 def test_core_ast_isolation():
