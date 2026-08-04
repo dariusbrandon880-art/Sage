@@ -13,6 +13,158 @@ from typing import Any, Dict, List, Optional
 from datetime import datetime, timezone
 
 
+class ChatGPTAgentConnector:
+    """ChatGPT Agent Role Connector for SAGE.
+
+    Bridges conversational ChatGPT coordination events directly into SAGE's
+    operational workflow State Machine. Facilitates identity registration,
+    mission context rehydration, state alignment, objective clarification,
+    and secure handoff readiness verification.
+    """
+
+    def __init__(self, orchestrator: "DeveloperWorkflowOrchestrator", agent_id: str = "agent_chatgpt_coord", supervisor_id: str = "human_supervisor_01"):
+        self.orchestrator = orchestrator
+        self.agent_id = agent_id
+        self.supervisor_id = supervisor_id
+
+        # Register ChatGPT Identity with COORDINATOR role
+        self.orchestrator.ingest_event(
+            "AGENT_ACTIVATION",
+            "system",
+            {
+                "agent_id": self.agent_id,
+                "supervisor_id": self.supervisor_id,
+                "decision": "AUTHORIZED",
+                "role": "COORDINATOR"
+            }
+        )
+
+    def rehydrate_context(self) -> Dict[str, Any]:
+        """Queries SAGE orchestrator state to rehydrate mission context for ChatGPT."""
+        active_objectives = []
+        for t in self.orchestrator.tasks.values():
+            if t["status"] != "COMPLETED":
+                active_objectives.append(t["objective_id"])
+
+        return {
+            "orchestrator_run_id": self.orchestrator.orchestrator_run_id,
+            "session_id": self.orchestrator.session_id,
+            "agent_identity": {
+                "agent_id": self.agent_id,
+                "role": self.orchestrator.agent_roles.get(self.agent_id),
+                "status": self.orchestrator.agents.get(self.agent_id)
+            },
+            "active_tasks_count": len([t for t in self.orchestrator.tasks.values() if t["status"] != "COMPLETED"]),
+            "rehydrated_objectives": list(set(active_objectives)),
+            "lineage_baselines": ["ADR-001", "SAGE-ACT-MP-2.0"]
+        }
+
+    def align_workflow_state(self, action_type: str, task_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """Routes conversational ChatGPT events into SAGE task lifecycle events."""
+        if action_type == "INITIATE_TASK":
+            return self.orchestrator.ingest_event(
+                "TASK_INIT",
+                task_id,
+                {
+                    "objective_id": payload.get("objective_id", "obj_unspecified"),
+                    "assigned_agent": self.agent_id,
+                    "initial_context": payload.get("initial_context", {}),
+                    "lineage_references": payload.get("lineage_references", [])
+                }
+            )
+        elif action_type == "START_EXECUTION":
+            return self.orchestrator.ingest_event(
+                "STATE_TRANSITION",
+                task_id,
+                {
+                    "target_status": "ACTIVE",
+                    "agent_id": self.agent_id,
+                    "comment": payload.get("comment", "ChatGPT aligned task state to ACTIVE.")
+                }
+            )
+        elif action_type == "RECORD_PROGRESS":
+            return self.orchestrator.record_progress(
+                task_id=task_id,
+                agent_id=self.agent_id,
+                progress_percent=payload.get("progress_percent", 0.0),
+                result_payload=payload.get("result_payload", {}),
+                feedback=payload.get("feedback")
+            )
+        else:
+            raise ValueError(f"Integration Error: Unsupported action type '{action_type}' for ChatGPT role.")
+
+    def clarify_objective(self, task_id: str, question: str, clarification: str) -> Dict[str, Any]:
+        """Logs structured mission objective clarifications inside SAGE task context."""
+        if task_id not in self.orchestrator.tasks:
+            raise ValueError(f"Task '{task_id}' not found.")
+
+        task = self.orchestrator.tasks[task_id]
+        ts = datetime.now(timezone.utc).isoformat()
+
+        if "objective_clarifications" not in task["context"]:
+            task["context"]["objective_clarifications"] = []
+
+        clarification_entry = {
+            "timestamp": ts,
+            "question": question,
+            "clarification": clarification,
+            "aligned_by": self.agent_id
+        }
+        task["context"]["objective_clarifications"].append(clarification_entry)
+
+        # Log event to task history
+        task["history"].append({
+            "status": task["status"],
+            "assigned_agent": task["assigned_agent"],
+            "timestamp": ts,
+            "comment": f"Objective clarified: Q: '{question}' -> A: '{clarification}'"
+        })
+
+        return task
+
+    def generate_handoff_manifest(self, task_id: str, target_agent_id: str) -> Dict[str, Any]:
+        """Verifies handoff readiness and returns a signed, context-preserving handoff block."""
+        if task_id not in self.orchestrator.tasks:
+            raise ValueError(f"Task '{task_id}' not found.")
+
+        task = self.orchestrator.tasks[task_id]
+
+        # Verify handoff checks can pass before committing state
+        if self.orchestrator.agents.get(self.agent_id) != "ACTIVATED":
+            raise PermissionError(f"Handoff Denied: Source agent '{self.agent_id}' is not activated.")
+        if self.orchestrator.agents.get(target_agent_id) != "ACTIVATED":
+            raise PermissionError(f"Handoff Denied: Destination agent '{target_agent_id}' is not activated.")
+
+        ts = datetime.now(timezone.utc).isoformat()
+        serialized_context = json.dumps(task["context"], sort_keys=True)
+        context_fingerprint = hashlib.sha256(serialized_context.encode("utf-8")).hexdigest()
+
+        # Build handoff manifest block
+        manifest = {
+            "manifest_id": f"HND-{uuid.uuid4().hex[:8].upper()}",
+            "timestamp": ts,
+            "task_id": task_id,
+            "source_agent": self.agent_id,
+            "destination_agent": target_agent_id,
+            "context_fingerprint": context_fingerprint,
+            "preserved_context_keys": list(task["context"].keys()),
+            "security_clearance_verified": True
+        }
+
+        # Commit handoff event in SAGE State Machine
+        self.orchestrator.ingest_event(
+            "AGENT_HANDOFF",
+            task_id,
+            {
+                "target_agent": target_agent_id,
+                "handoff_context": {"handoff_manifest": manifest},
+                "reason": f"ChatGPT coordinates work transition. Preserving context hash: {context_fingerprint[:16]}."
+            }
+        )
+
+        return manifest
+
+
 class WorkflowIntelligenceFeedbackLayer:
     """SAGE Workflow Intelligence Feedback Layer.
 

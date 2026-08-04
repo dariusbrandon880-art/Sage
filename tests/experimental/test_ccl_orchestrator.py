@@ -4,7 +4,7 @@ import os
 import ast
 import json
 import pytest
-from sage.experimental.act.ccl_orchestrator import DeveloperWorkflowOrchestrator
+from sage.experimental.act.ccl_orchestrator import DeveloperWorkflowOrchestrator, ChatGPTAgentConnector
 
 
 def test_orchestrator_lifecycle_and_transitions():
@@ -476,6 +476,60 @@ def test_operator_summary():
     assert "subtask_summary_01" in summary
     assert "Progress: 90.0%" in summary
     assert "Latest  : {\"coverage\": \"98%\"}" in summary
+
+
+def test_chatgpt_agent_connector():
+    """Verify ChatGPTAgentConnector registration, context rehydration, event alignment, clarification, and handoffs."""
+    orch = DeveloperWorkflowOrchestrator(session_id="session_chatgpt_testing")
+
+    # 1. Verification of Automatic Activations and Role Mapping
+    conn = ChatGPTAgentConnector(orch, agent_id="agent_chat_ops")
+    assert orch.agents["agent_chat_ops"] == "ACTIVATED"
+    assert orch.agent_roles["agent_chat_ops"] == "COORDINATOR"
+
+    # 2. Context Rehydration Check
+    rehydrated = conn.rehydrate_context()
+    assert rehydrated["orchestrator_run_id"] == orch.orchestrator_run_id
+    assert rehydrated["agent_identity"]["role"] == "COORDINATOR"
+    assert "ADR-001" in rehydrated["lineage_baselines"]
+
+    # 3. Conversational State Alignment Routing
+    task = conn.align_workflow_state("INITIATE_TASK", "task_chatgpt_01", {
+        "objective_id": "obj_coordination_test",
+        "initial_context": {"origin": "chat_prompt"},
+        "lineage_references": ["ref_lineage_01"]
+    })
+    assert task["task_id"] == "task_chatgpt_01"
+    assert task["status"] == "INITIATED"
+    assert task["context"]["origin"] == "chat_prompt"
+
+    # Advance state to ACTIVE
+    conn.align_workflow_state("START_EXECUTION", "task_chatgpt_01", {"comment": "Starting test."})
+    assert orch.tasks["task_chatgpt_01"]["status"] == "ACTIVE"
+
+    # Record progress
+    conn.align_workflow_state("RECORD_PROGRESS", "task_chatgpt_01", {
+        "progress_percent": 30.0,
+        "result_payload": {"stage": "analysis_complete"}
+    })
+    assert orch.tasks["task_chatgpt_01"]["progress_percent"] == 30.0
+
+    # 4. Objective Clarification Logging
+    conn.clarify_objective("task_chatgpt_01", "Clarify AST boundary path?", "Paths must be restricted to sage/experimental.")
+    clarifications = orch.tasks["task_chatgpt_01"]["context"]["objective_clarifications"]
+    assert len(clarifications) == 1
+    assert clarifications[0]["question"] == "Clarify AST boundary path?"
+    assert clarifications[0]["clarification"] == "Paths must be restricted to sage/experimental."
+
+    # 5. Handoff Manifest Generation & Verification
+    orch.ingest_event("AGENT_ACTIVATION", "system", {"agent_id": "agent_jules_exec", "supervisor_id": "super", "decision": "AUTHORIZED", "role": "EXECUTOR"})
+    manifest = conn.generate_handoff_manifest("task_chatgpt_01", "agent_jules_exec")
+
+    assert manifest["source_agent"] == "agent_chat_ops"
+    assert manifest["destination_agent"] == "agent_jules_exec"
+    assert "origin" in manifest["preserved_context_keys"]
+    assert orch.tasks["task_chatgpt_01"]["status"] == "HANDOFF"
+    assert orch.tasks["task_chatgpt_01"]["assigned_agent"] == "agent_jules_exec"
 
 
 def test_core_ast_isolation():
