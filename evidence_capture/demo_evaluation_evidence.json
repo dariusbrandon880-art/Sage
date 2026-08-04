@@ -1,6 +1,6 @@
 {
-  "evaluated_at": "2026-08-03T16:10:53.967177+00:00",
-  "evaluation_checksum": "691fe03d739cd3da4fb4c785b0ce1c68ee5d3a87835f01b41806f128a80a0e90",
+  "evaluated_at": "2026-08-04T04:37:43.886594+00:00",
+  "evaluation_checksum": "3f77d362192b7890c8c0c2ff058be22777124568798a2e76a88794d12a38476f",
   "evaluation_id": "eval_b9beebb4",
   "evaluation_metrics": {
     "asymmetric_receipt_verified": true,
@@ -9,7 +9,7 @@
     "divergence_recovery_status": "RECOVERED_SUCCESS",
     "human_authorization_signature_valid": true
   },
-  "measurable_outcome_summary": "================ SAGE EVALUATION SUMMARY ================\nScenario ID Evaluated: scenario_stress_recovery\nEvaluation Time: 2026-08-03T16:10:53.966899+00:00\nBoundary Integrity Score: 100.0%\nBoundary Violations Prevented: 3\nDivergence Recovery Outcome: RECOVERED_SUCCESS\nAsymmetric Receipt Chain Verification: VERIFIED\nHuman Checkpoint Override State: VALID_AUTHORIZATION\n===========================================================",
+  "measurable_outcome_summary": "================ SAGE EVALUATION SUMMARY ================\nScenario ID Evaluated: scenario_stress_recovery\nEvaluation Time: 2026-08-04T04:37:43.886329+00:00\nBoundary Integrity Score: 100.0%\nBoundary Violations Prevented: 3\nDivergence Recovery Outcome: RECOVERED_SUCCESS\nAsymmetric Receipt Chain Verification: VERIFIED\nHuman Checkpoint Override State: VALID_AUTHORIZATION\n===========================================================",
   "readability_display": {
     "highlighted_fields": [
       "boundary_integrity_score",
