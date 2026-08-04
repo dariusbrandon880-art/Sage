@@ -1,0 +1,114 @@
+{
+  "coordination_run_id": "macc_run_fedf97f3bd7f",
+  "timestamp": 1785881231.251303,
+  "registered_agents": {
+    "agent_jules_sage": {
+      "agent_id": "agent_jules_sage",
+      "name": "Jules",
+      "role": "DEVELOPER",
+      "authorized_scope_prefixes": [
+        "sage/experimental/",
+        "tests/experimental/"
+      ],
+      "governance_tier": "TIER_2_DEVELOPER",
+      "timestamp": 1785881231.139019
+    },
+    "agent_chatgpt": {
+      "agent_id": "agent_chatgpt",
+      "name": "ChatGPT",
+      "role": "COORDINATOR",
+      "authorized_scope_prefixes": [
+        "sage/experimental/",
+        "tests/experimental/"
+      ],
+      "governance_tier": "TIER_1_COORDINATOR",
+      "timestamp": 1785881231.1407676
+    },
+    "agent_claude": {
+      "agent_id": "agent_claude",
+      "name": "Claude",
+      "role": "AUDITOR",
+      "authorized_scope_prefixes": [
+        "tests/experimental/"
+      ],
+      "governance_tier": "TIER_1_COORDINATOR",
+      "timestamp": 1785881231.142377
+    },
+    "agent_google": {
+      "agent_id": "agent_google",
+      "name": "Google AI",
+      "role": "RESEARCHER",
+      "authorized_scope_prefixes": [
+        "docs/"
+      ],
+      "governance_tier": "TIER_3_RESEARCHER",
+      "timestamp": 1785881231.1439767
+    }
+  },
+  "context_continuity_package": {
+    "target_agent_id": "agent_chatgpt",
+    "agent_metadata": {
+      "agent_id": "agent_chatgpt",
+      "name": "ChatGPT",
+      "role": "COORDINATOR",
+      "authorized_scope_prefixes": [
+        "sage/experimental/",
+        "tests/experimental/"
+      ],
+      "governance_tier": "TIER_1_COORDINATOR",
+      "timestamp": 1785881231.1407676
+    },
+    "timestamp": 1785881231.2504344,
+    "active_mission": {
+      "session_id": "session_realignment_coordination",
+      "objectives": [
+        "obj_continuous_development"
+      ],
+      "completed_actions": [
+        "step_01:Wrote robust operational progress updates and validation hooks"
+      ],
+      "pending_actions": []
+    },
+    "workspace_context": {
+      "uncommitted_files_count": 9,
+      "uncommitted_files": [
+        "evidence_capture/agent_activation_evidence.json",
+        "evidence_capture/agent_execution_feedback_evidence.json",
+        "evidence_capture/agent_handoff_manifest.json",
+        "evidence_capture/ccl_operational_feedback.json",
+        "evidence_capture/discovery_candidates_register.json",
+        "evidence_capture/operational_persistence_evidence.json",
+        "evidence_capture/workflow_intelligence_evidence.json",
+        "sage/experimental/act/continuity_control.py",
+        "tests/experimental/test_continuity_control.py"
+      ]
+    },
+    "workflow_health": {
+      "status": "BLOCKED",
+      "health_score": 5.0,
+      "blocked_conditions": [
+        "Agent activation state is BLOCKED due to a boundary or scope violation."
+      ],
+      "operator_signals": [
+        {
+          "severity": "CRITICAL",
+          "signal_type": "SUPERVISOR_OVERRIDE_REQUIRED",
+          "description": "Agent 'agent_jules_sage' is blocked from active execution.",
+          "recommendation": "Perform an audit of the last recorded SAGE-CCL record and submit supervisor_override with a valid signature."
+        },
+        {
+          "severity": "MEDIUM",
+          "signal_type": "HIGH_WORKSPACE_FRICTION",
+          "description": "High number of uncommitted files (9) in the active workspace.",
+          "recommendation": "Run execute_active_development_coordination to commit changes and generate dual-compliant CMAPS audit records."
+        },
+        {
+          "severity": "HIGH",
+          "signal_type": "HISTORY_DRIFT_DETECTED",
+          "description": "Detected 6 prior execution/scope drift incidents in this session history.",
+          "recommendation": "Inspect SAGE-CCL ledger files under sage_data/experimental_ccl/ to identify repetitive drift patterns."
+        }
+      ]
+    }
+  }
+}

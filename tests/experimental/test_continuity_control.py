@@ -1143,3 +1143,164 @@ def test_transition_improvement_lifecycle_invalid_state(tmp_path):
             candidate_id=candidate_id,
             new_state="INVALID_STATE"
         )
+
+
+def test_multi_agent_role_registration(tmp_path):
+    """Verify that registering multiple agent identities correctly creates registrations in session metadata."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_macc_test",
+        objective="obj_continuous_development"
+    )
+    orchestrator.session_manager = session_mgr
+    orchestrator.session = session_mgr.create_session(
+        session_id="session_macc_test",
+        active_objectives=["obj_continuous_development"]
+    )
+
+    # Register Jules as DEVELOPER
+    orchestrator.register_agent_role(
+        agent_id="agent_jules_sage",
+        name="Jules",
+        role="DEVELOPER",
+        scope=["sage/experimental/"],
+        tier="TIER_2_DEVELOPER"
+    )
+
+    # Register Claude as AUDITOR
+    orchestrator.register_agent_role(
+        agent_id="agent_claude_auditor",
+        name="Claude",
+        role="AUDITOR",
+        scope=["tests/experimental/"],
+        tier="TIER_1_COORDINATOR"
+    )
+
+    registry = orchestrator.session.metadata.get("agent_registry")
+    assert registry is not None
+    assert "agent_jules_sage" in registry
+    assert "agent_claude_auditor" in registry
+    assert registry["agent_jules_sage"]["role"] == "DEVELOPER"
+    assert registry["agent_claude_auditor"]["role"] == "AUDITOR"
+
+
+def test_role_based_write_permission_enforcement(tmp_path):
+    """Verify SAGE actively blocks non-developer roles from writing or modifying files."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_perm_test",
+        objective="obj_continuous_development"
+    )
+    orchestrator.session_manager = session_mgr
+    orchestrator.session = session_mgr.create_session(
+        session_id="session_perm_test",
+        active_objectives=["obj_continuous_development"]
+    )
+
+    # Register Google as RESEARCHER
+    agent_id = "agent_google_research"
+    orchestrator.register_agent_role(
+        agent_id=agent_id,
+        name="Google AI",
+        role="RESEARCHER",
+        scope=["sage/experimental/"],
+        tier="TIER_3_RESEARCHER"
+    )
+    # Activate agent
+    orchestrator.initialize_agent_activation(agent_id, "task_active_development")
+    orchestrator.authorize_agent_activation(agent_id, "supervisor_jules", "sig_jules_111")
+
+    # RESEARCHER attempts to modify file -> BLOCK (Role Enforcement Violation)
+    res = orchestrator.enforce_active_agent_scope(agent_id, ["sage/experimental/act/continuity_control.py"])
+    assert res["is_allowed"] is False
+    assert "Role Enforcement Violation" in res["reason"]
+
+
+def test_role_based_action_validation_enforcement(tmp_path):
+    """Verify SAGE actively blocks agents from executing progress actions outside their capability boundaries."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, AgentProgressUpdate
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_action_enforce_test",
+        objective="obj_continuous_development"
+    )
+    orchestrator.session_manager = session_mgr
+    orchestrator.session = session_mgr.create_session(
+        session_id="session_action_enforce_test",
+        active_objectives=["obj_continuous_development"]
+    )
+
+    # Register Jules as DEVELOPER
+    agent_id = "agent_jules_sage"
+    orchestrator.register_agent_role(
+        agent_id=agent_id,
+        name="Jules",
+        role="DEVELOPER",
+        scope=["sage/experimental/"],
+        tier="TIER_2_DEVELOPER"
+    )
+    # Activate
+    orchestrator.initialize_agent_activation(agent_id, "task_active_development")
+    orchestrator.authorize_agent_activation(agent_id, "supervisor_jules", "sig_jules_111")
+
+    # DEVELOPER attempts action containing "review" -> BLOCK
+    update = AgentProgressUpdate(
+        agent_id=agent_id,
+        step_id="step_review",
+        action_taken="Review and validate entire continuity architecture",
+        objective_alignment="obj_continuous_development"
+    )
+
+    res = orchestrator.record_agent_execution_step(update)
+    assert res["status"] == "BLOCKED"
+    assert "Role Enforcement Violation" in res["reason"]
+
+
+def test_prepare_agent_context_package(tmp_path):
+    """Verify SAGE programmatically compiles the complete, continuous rehydration context package for an agent."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_context_pack_test",
+        objective="obj_continuous_development"
+    )
+    orchestrator.session_manager = session_mgr
+    orchestrator.session = session_mgr.create_session(
+        session_id="session_context_pack_test",
+        active_objectives=["obj_continuous_development"]
+    )
+
+    # Register Jules
+    agent_id = "agent_jules_sage"
+    orchestrator.register_agent_role(
+        agent_id=agent_id,
+        name="Jules",
+        role="DEVELOPER"
+    )
+
+    orchestrator.scan_git_workspace = lambda: {"modified_files": ["file1.py"], "diffs": {}}
+
+    package = orchestrator.prepare_agent_context_package(agent_id)
+    assert package["target_agent_id"] == agent_id
+    assert package["agent_metadata"]["name"] == "Jules"
+    assert "file1.py" in package["workspace_context"]["uncommitted_files"]
+    assert "active_mission" in package
+    assert package["active_mission"]["session_id"] == "session_context_pack_test"

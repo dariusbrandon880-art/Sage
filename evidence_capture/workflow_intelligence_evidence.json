@@ -21,9 +21,9 @@
     {
       "severity": "HIGH",
       "signal_type": "HISTORY_DRIFT_DETECTED",
-      "description": "Detected 5 prior execution/scope drift incidents in this session history.",
+      "description": "Detected 6 prior execution/scope drift incidents in this session history.",
       "recommendation": "Inspect SAGE-CCL ledger files under sage_data/experimental_ccl/ to identify repetitive drift patterns."
     }
   ],
-  "timestamp": 1785878541.463632
+  "timestamp": 1785881231.1381667
 }

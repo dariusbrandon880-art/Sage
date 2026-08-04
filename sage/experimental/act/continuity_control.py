@@ -328,6 +328,25 @@ class DiscoveryCandidate(BaseModel):
         return v
 
 
+class AgentRoleRegistration(BaseModel):
+    """Represents a SAGE governed multi-agent collaborator registration."""
+
+    agent_id: str
+    name: str
+    role: str  # COORDINATOR, DEVELOPER, AUDITOR, RESEARCHER
+    authorized_scope_prefixes: List[str] = Field(default_factory=list)
+    governance_tier: str = "TIER_2_DEVELOPER"
+    timestamp: float = Field(default_factory=time.time)
+
+    @field_validator("agent_id")
+    @classmethod
+    def validate_agent_id(cls, v: str) -> str:
+        """Enforce strict agent_id formatting."""
+        if not re.match(r"^agent_[a-zA-Z0-9_\-]+$", v):
+            raise ValueError(f"SAGE-MACC Violation: Invalid agent_id format: '{v}'")
+        return v
+
+
 class DeveloperWorkflowOrchestrator:
     """Orchestrates end-to-end active developer workflows by connecting SAGE-CCL, Context Guard, and CMAPS."""
 
@@ -462,6 +481,24 @@ class DeveloperWorkflowOrchestrator:
 
         state = AgentActivationState(**act_dict)
 
+        # Role-based validation
+        registry = self.session.metadata.get("agent_registry", {})
+        agent_reg = registry.get(agent_id)
+        if agent_reg and modified_files:
+            role = agent_reg.get("role")
+            if role not in ["DEVELOPER", "COORDINATOR"]:
+                # Block and transition agent to BLOCKED
+                state.lifecycle_state = "BLOCKED"
+                state.timestamp = time.time()
+                self.session.metadata["agent_activation"] = state.model_dump()
+                self.session_manager.save_session(self.session)
+
+                return {
+                    "is_allowed": False,
+                    "reason": f"SAGE Role Enforcement Violation: Agent '{agent_id}' has role '{role}', which is not authorized to write or modify workspace files.",
+                    "action": "BLOCK_EXECUTION"
+                }
+
         if state.lifecycle_state == "BLOCKED":
             return {
                 "is_allowed": False,
@@ -576,6 +613,20 @@ class DeveloperWorkflowOrchestrator:
             if forbidden in action_lower:
                 drift_detected = True
                 drift_reason = f"Security Drift: Action contains unauthorized execution directive: '{forbidden}'"
+
+        # Check role capability boundaries
+        registry = self.session.metadata.get("agent_registry", {})
+        agent_reg = registry.get(update.agent_id)
+        if agent_reg:
+            role = agent_reg.get("role")
+            if "review" in action_lower or "validate" in action_lower:
+                if role != "AUDITOR" and role != "COORDINATOR":
+                    drift_detected = True
+                    drift_reason = f"SAGE Role Enforcement Violation: Agent '{update.agent_id}' has role '{role}', which is not authorized to review or validate outcomes."
+            if "promote" in action_lower or "authorize" in action_lower:
+                if role != "COORDINATOR":
+                    drift_detected = True
+                    drift_reason = f"SAGE Role Enforcement Violation: Agent '{update.agent_id}' has role '{role}', which is not authorized to promote or authorize decisions."
 
         if drift_detected:
             # Transition agent to BLOCKED
@@ -987,6 +1038,88 @@ class DeveloperWorkflowOrchestrator:
 
         return target_candidate
 
+    def register_agent_role(
+        self,
+        agent_id: str,
+        name: str,
+        role: str,
+        scope: Optional[List[str]] = None,
+        tier: str = "TIER_2_DEVELOPER"
+    ) -> Dict[str, Any]:
+        """Registers an active collaborator identity, assigned role, scope boundaries, and governance tier."""
+        reg = AgentRoleRegistration(
+            agent_id=agent_id,
+            name=name,
+            role=role,
+            authorized_scope_prefixes=scope or ["sage/experimental/", "tests/experimental/"],
+            governance_tier=tier
+        )
+
+        if "agent_registry" not in self.session.metadata:
+            self.session.metadata["agent_registry"] = {}
+
+        self.session.metadata["agent_registry"][agent_id] = reg.model_dump()
+        self.session_manager.save_session(self.session)
+
+        # Log event to SAGE-CCL ledger
+        rec = self.ccl.intercept_event(
+            event_type="state_transition",
+            action_taken=f"Registered Ecosystem Agent Role: {agent_id} ({role})",
+            decision_reasoning=f"Enforce capability boundaries for collaborator {name}.",
+            session_id=self.session_id,
+            evidence_payload={"agent_registration": reg.model_dump()}
+        )
+        self.ccl.serialize_record(rec)
+
+        return reg.model_dump()
+
+    def prepare_agent_context_package(self, target_agent_id: str) -> Dict[str, Any]:
+        """Compiles complete rehydration context package to prevent duplicate analysis or state-drift when entering a workflow."""
+        registry = self.session.metadata.get("agent_registry", {})
+        agent_reg = registry.get(target_agent_id)
+
+        # Determine latest workflow health
+        report = self.generate_workflow_intelligence_report()
+        workspace = self.scan_git_workspace()
+
+        context_package = {
+            "target_agent_id": target_agent_id,
+            "agent_metadata": agent_reg,
+            "timestamp": time.time(),
+            "active_mission": {
+                "session_id": self.session_id,
+                "objectives": list(self.session.active_objectives),
+                "completed_actions": list(self.session.completed_actions),
+                "pending_actions": list(self.session.pending_actions)
+            },
+            "workspace_context": {
+                "uncommitted_files_count": len(workspace["modified_files"]),
+                "uncommitted_files": workspace["modified_files"]
+            },
+            "workflow_health": {
+                "status": report["workflow_status"],
+                "health_score": report["health_score"],
+                "blocked_conditions": report["blocked_conditions"],
+                "operator_signals": report["actionable_operator_signals"]
+            }
+        }
+
+        # Intercept CCL Event
+        rec = self.ccl.intercept_event(
+            event_type="state_transition",
+            action_taken=f"Compiled context package for Agent '{target_agent_id}'",
+            decision_reasoning=f"Ensure continuous memory and ownership alignment across ecosystem handoffs.",
+            session_id=self.session_id,
+            evidence_payload={"context_package_summary": {
+                "target_agent_id": target_agent_id,
+                "uncommitted_files_count": len(workspace["modified_files"]),
+                "status": report["workflow_status"]
+            }}
+        )
+        self.ccl.serialize_record(rec)
+
+        return context_package
+
     def execute_active_development_coordination(
         self,
         action_taken: str,
@@ -1220,6 +1353,16 @@ class DeveloperWorkflowOrchestrator:
                 "  Task ID:    task_active_development"
             )
 
+        # Retrieve registered ecosystem agents
+        registry = self.session.metadata.get("agent_registry", {})
+        ecosystem_info = []
+        if registry:
+            ecosystem_info.append("  Registered Agent Ecosystem:")
+            for aid, reg in registry.items():
+                ecosystem_info.append(f"    - {reg['name']} ({aid}) [Role: {reg['role']}] [Tier: {reg['governance_tier']}]")
+        else:
+            ecosystem_info.append("  Registered Agent Ecosystem: No collaborators registered.")
+
         # Determine agent execution details
         exec_log_info = []
         exec_log = self.session.metadata.get("execution_log", [])
@@ -1270,6 +1413,8 @@ class DeveloperWorkflowOrchestrator:
             "--------------------------------------------------",
             "Agent & Task Assignment Info:",
             activation_info,
+            "--------------------------------------------------",
+            "\n".join(ecosystem_info),
             "--------------------------------------------------",
             "\n".join(exec_log_info),
             "--------------------------------------------------",
@@ -1515,6 +1660,55 @@ if __name__ == "__main__":
     with open(intel_evidence_path, "w", encoding="utf-8") as f:
         json.dump(intelligence_report, f, indent=2, default=str)
     print(f"    - Saved Workflow Intelligence Evidence to: {intel_evidence_path}")
+
+    print(f"\n[*] Registering SAGE Real-World Collaborator Agent Ecosystem...")
+    # Register Jules as DEVELOPER
+    orchestrator.register_agent_role(
+        agent_id="agent_jules_sage",
+        name="Jules",
+        role="DEVELOPER",
+        scope=["sage/experimental/", "tests/experimental/"],
+        tier="TIER_2_DEVELOPER"
+    )
+    # Register ChatGPT as COORDINATOR
+    orchestrator.register_agent_role(
+        agent_id="agent_chatgpt",
+        name="ChatGPT",
+        role="COORDINATOR",
+        scope=["sage/experimental/", "tests/experimental/"],
+        tier="TIER_1_COORDINATOR"
+    )
+    # Register Claude as AUDITOR
+    orchestrator.register_agent_role(
+        agent_id="agent_claude",
+        name="Claude",
+        role="AUDITOR",
+        scope=["tests/experimental/"],
+        tier="TIER_1_COORDINATOR"
+    )
+    # Register Google as RESEARCHER
+    orchestrator.register_agent_role(
+        agent_id="agent_google",
+        name="Google AI",
+        role="RESEARCHER",
+        scope=["docs/"],
+        tier="TIER_3_RESEARCHER"
+    )
+
+    print(f"\n[*] Compiling Rehydration Context Continuity Package for ChatGPT...")
+    chatgpt_package = orchestrator.prepare_agent_context_package("agent_chatgpt")
+
+    # Save Multi-Agent Coordination Evidence
+    multi_agent_evidence = {
+        "coordination_run_id": f"macc_run_{uuid.uuid4().hex[:12]}",
+        "timestamp": time.time(),
+        "registered_agents": orchestrator.session.metadata.get("agent_registry"),
+        "context_continuity_package": chatgpt_package
+    }
+    macc_path = Path("evidence_capture/multi_agent_coordination_evidence.json")
+    with open(macc_path, "w", encoding="utf-8") as f:
+        json.dump(multi_agent_evidence, f, indent=2, default=str)
+    print(f"    - Saved Multi-Agent Ecosystem Evidence to: {macc_path}")
 
     print(f"\n[*] Promoting SAGE Discovery Intelligence Candidates...")
     # Promote a high-value operational candidate noticed during real work

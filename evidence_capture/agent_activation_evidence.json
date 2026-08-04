@@ -1,6 +1,6 @@
 {
-  "run_id": "activation_run_5ac77c0c2ba1",
-  "timestamp": 1785878541.4075773,
+  "run_id": "activation_run_07813c703043",
+  "timestamp": 1785881231.0789135,
   "agent_id": "agent_jules_sage",
   "task_id": "task_active_development",
   "initial_state": {
@@ -14,7 +14,7 @@
       "evidence_capture/"
     ],
     "human_authorization_signature": null,
-    "timestamp": 1785878541.4055002
+    "timestamp": 1785881231.0768752
   },
   "authorized_state": {
     "agent_id": "agent_jules_sage",
@@ -27,7 +27,7 @@
       "evidence_capture/"
     ],
     "human_authorization_signature": "sig_jules_active_gate_992",
-    "timestamp": 1785878541.40622
+    "timestamp": 1785881231.077631
   },
   "enforcement_report": {
     "is_allowed": true,
@@ -45,6 +45,6 @@
       "evidence_capture/"
     ],
     "human_authorization_signature": "sig_jules_active_gate_992",
-    "timestamp": 1785878541.40622
+    "timestamp": 1785881231.077631
   }
 }
