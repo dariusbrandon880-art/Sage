@@ -244,6 +244,102 @@ class ContinuityControlLoop:
         return record
 
 
+class ContinuityEnforcementLayer:
+    """Actively maintains operational alignment of agents during task and session transitions."""
+
+    def __init__(self, ccl: ContinuityControlLoop, session_manager: SessionStateManager):
+        self.ccl = ccl
+        self.session_manager = session_manager
+        # Track agent activation states locally for experimental purposes
+        # "agent_id" -> "INACTIVE" | "ACTIVATED" | "SUSPENDED"
+        self._agent_states = {"agent_jules_sage": "ACTIVATED"}
+
+    def get_agent_state(self, agent_id: str) -> str:
+        return self._agent_states.get(agent_id, "INACTIVE")
+
+    def set_agent_state(self, agent_id: str, state: str) -> None:
+        if state not in {"INACTIVE", "ACTIVATED", "SUSPENDED"}:
+            raise ValueError(f"Enforcement Error: Invalid agent state '{state}'")
+        self._agent_states[agent_id] = state
+
+    def enforce_transition_preconditions(
+        self,
+        session_id: str,
+        agent_id: str,
+        target_action: str,
+        objective: str,
+        proposed_assignee: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Loads mission state, identifies locked checkpoints, detects context drift,
+
+        preserves active task ownership, and validates the agent's activation state before transitions.
+        """
+        # 1. Connect continuity checks to agent activation lifecycle
+        agent_state = self.get_agent_state(agent_id)
+        if agent_state != "ACTIVATED":
+            raise PermissionError(
+                f"Continuity Enforcement Blocked: Agent '{agent_id}' is in state '{agent_state}' and is not authorized to transition."
+            )
+
+        # 2. Load current session/mission state
+        session = self.session_manager.retrieve_session(session_id)
+        if not session:
+            # Create session if not existing
+            session = self.session_manager.create_session(session_id, active_objectives=[objective])
+
+        # 3. Identify completed objectives & locked checkpoints
+        completed_objectives = [obj for obj in session.active_objectives if obj in session.completed_actions]
+
+        # Load locked checkpoints from existing serialized CCL records
+        locked_checkpoints = []
+        for filepath in self.ccl.storage_path.glob("*.json"):
+            try:
+                with open(filepath, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    rec = ContinuityControlRecord(**data)
+                    if rec.session_id == session_id and rec.lifecycle_state == "VALIDATED":
+                        locked_checkpoints.append(rec.record_id)
+            except Exception:
+                pass
+
+        # 4. Detect context drift or restart behavior
+        drift_detected = False
+        drift_reason = None
+        if target_action in session.completed_actions:
+            drift_detected = True
+            drift_reason = f"Duplicate execution of already completed action: '{target_action}'."
+        elif objective in session.completed_actions:
+            drift_detected = True
+            drift_reason = f"Attempted restart behavior of completed objective: '{objective}'."
+
+        # 5. Preserve active task ownership
+        current_owner = "agent_jules_sage"
+        if proposed_assignee and proposed_assignee != current_owner:
+            drift_detected = True
+            drift_reason = f"Task ownership hijacking detected! Expected assignee: '{current_owner}', but got: '{proposed_assignee}'."
+
+        # 6. Surface current required action
+        pending_actions = list(session.pending_actions)
+        required_action = pending_actions[0] if pending_actions else target_action
+
+        enforcement_report = {
+            "session_id": session_id,
+            "agent_id": agent_id,
+            "agent_state": agent_state,
+            "completed_objectives": completed_objectives,
+            "locked_checkpoints_count": len(locked_checkpoints),
+            "drift_detected": drift_detected,
+            "drift_reason": drift_reason,
+            "required_action": required_action,
+            "enforced_at": time.time()
+        }
+
+        if drift_detected:
+            raise ValueError(f"Continuity Enforcement Deviation Alert: {drift_reason}")
+
+        return enforcement_report
+
+
 class DeveloperWorkflowOrchestrator:
     """Orchestrates end-to-end active developer workflows by connecting SAGE-CCL, Context Guard, and CMAPS."""
 
@@ -271,6 +367,9 @@ class DeveloperWorkflowOrchestrator:
         else:
             self.session.add_objective(self.objective)
             self.session_manager.save_session(self.session)
+
+        # Initialize SAGE Continuity Enforcement Layer
+        self.enforcer = ContinuityEnforcementLayer(ccl=self.ccl, session_manager=self.session_manager)
 
     def scan_git_workspace(self) -> Dict[str, Any]:
         """Programmatically queries git status and diffs for the active workspace."""
@@ -332,12 +431,40 @@ class DeveloperWorkflowOrchestrator:
         workflow_friction: Optional[List[Dict[str, Any]]] = None,
         improvement_opportunities: Optional[List[str]] = None,
         supervisor_override: Optional[Dict[str, Any]] = None,
+        agent_id: str = "agent_jules_sage",
+        proposed_assignee: Optional[str] = None
     ) -> Dict[str, Any]:
         """Orchestrates workspace scanning, protection evaluation, lineage/CMAPS validation, and human sign-off."""
         import subprocess
         from datetime import datetime, timezone
         from sage.experimental.act.context_guard import ProtectedChangeDetector
         from sage.experimental.act.contracts import CrossModelAuditPayloadValidator
+
+        # 0. Active Continuity Enforcement Check
+        try:
+            enforcement_report = self.enforcer.enforce_transition_preconditions(
+                session_id=self.session_id,
+                agent_id=agent_id,
+                target_action=action_taken,
+                objective=self.objective,
+                proposed_assignee=proposed_assignee
+            )
+        except (ValueError, PermissionError) as drift_err:
+            if supervisor_override and supervisor_override.get("decision") == "APPROVED":
+                enforcement_report = {
+                    "session_id": self.session_id,
+                    "agent_id": agent_id,
+                    "agent_state": self.enforcer.get_agent_state(agent_id),
+                    "completed_objectives": [],
+                    "locked_checkpoints_count": 0,
+                    "drift_detected": True,
+                    "drift_reason": str(drift_err),
+                    "override_applied": True,
+                    "required_action": action_taken,
+                    "enforced_at": time.time()
+                }
+            else:
+                raise drift_err
 
         # 1. Scan Workspace
         workspace = self.scan_git_workspace()
@@ -508,7 +635,8 @@ class DeveloperWorkflowOrchestrator:
             "developer_telemetry": {
                 "friction": workflow_friction or [],
                 "opportunities": improvement_opportunities or []
-            }
+            },
+            "continuity_enforcement": enforcement_report
         }
 
         # Write final evidence package to disk

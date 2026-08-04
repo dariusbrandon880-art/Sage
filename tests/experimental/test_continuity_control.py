@@ -362,3 +362,117 @@ def test_developer_workflow_orchestrator_scan_git(tmp_path):
     assert "modified_files" in workspace
     assert "diffs" in workspace
     assert len(workspace["modified_files"]) > 0
+
+
+def test_continuity_enforcement_agent_activation(tmp_path):
+    """Verify that agent activation lifecycle restricts or permits task transitions."""
+    import pytest
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_activation_test",
+        objective="obj_test_continuous",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    # Agent state defaults to ACTIVATED for agent_jules_sage
+    assert orchestrator.enforcer.get_agent_state("agent_jules_sage") == "ACTIVATED"
+
+    # Set agent as SUSPENDED
+    orchestrator.enforcer.set_agent_state("agent_jules_sage", "SUSPENDED")
+    with pytest.raises(PermissionError, match="not authorized to transition"):
+        orchestrator.execute_active_development_coordination(
+            action_taken="Develop Feature",
+            decision_reasoning="Reasoning"
+        )
+
+    # Set agent as INACTIVE
+    orchestrator.enforcer.set_agent_state("agent_jules_sage", "INACTIVE")
+    with pytest.raises(PermissionError, match="not authorized to transition"):
+        orchestrator.execute_active_development_coordination(
+            action_taken="Develop Feature",
+            decision_reasoning="Reasoning"
+        )
+
+    # Re-activate and assert success
+    orchestrator.enforcer.set_agent_state("agent_jules_sage", "ACTIVATED")
+    res = orchestrator.execute_active_development_coordination(
+        action_taken="Develop Feature",
+        decision_reasoning="Reasoning"
+    )
+    assert res["status"] == "VALIDATED"
+    assert res["continuity_enforcement"]["agent_state"] == "ACTIVATED"
+
+
+def test_continuity_enforcement_context_drift_and_restart(tmp_path):
+    """Verify that completed action/objective duplication raises drift exceptions, and override bypasses them."""
+    import pytest
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_drift_test",
+        objective="obj_drift_obs",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    # Complete an action in session
+    orchestrator.session.completed_actions.append("Action A")
+    session_mgr.save_session(orchestrator.session)
+
+    # Attempt to execute the already completed action "Action A" should trigger drift exception
+    with pytest.raises(ValueError, match="Duplicate execution of already completed action"):
+        orchestrator.execute_active_development_coordination(
+            action_taken="Action A",
+            decision_reasoning="Reasoning"
+        )
+
+    # Supervisor override should permit it
+    override = {
+        "decision": "APPROVED",
+        "supervisor_id": "supervisor_jules",
+        "comments": "Explicitly allow duplicated action under controlled loop.",
+        "signature": "sig_override_9901"
+    }
+    res = orchestrator.execute_active_development_coordination(
+        action_taken="Action A",
+        decision_reasoning="Reasoning",
+        supervisor_override=override
+    )
+    assert res["status"] == "VALIDATED"
+    assert res["continuity_enforcement"]["drift_detected"] is True
+    assert res["continuity_enforcement"]["override_applied"] is True
+
+
+def test_continuity_enforcement_task_ownership_preservation(tmp_path):
+    """Verify that transition proposed by an unauthorized assignee triggers ownership hijack drift."""
+    import pytest
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_ownership_test",
+        objective="obj_ownership_obs",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    # Attempt task execution with proposed_assignee other than agent_jules_sage
+    with pytest.raises(ValueError, match="Task ownership hijacking detected"):
+        orchestrator.execute_active_development_coordination(
+            action_taken="Develop Feature",
+            decision_reasoning="Reasoning",
+            proposed_assignee="agent_unauthorized_user"
+        )
