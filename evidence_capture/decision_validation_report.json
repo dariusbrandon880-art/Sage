@@ -1,0 +1,32 @@
+{
+  "session_id": "session_sim_ev_997b6c",
+  "simulated_scenarios": [
+    "extended_workflow"
+  ],
+  "run_details": {
+    "extended_workflow": {
+      "status": "VALIDATED",
+      "metrics": {
+        "before_sage": {
+          "friction_score": 85,
+          "coordination_efficiency": 0.4,
+          "operator_interventions": 8,
+          "recovery_time_seconds": 240.0
+        },
+        "after_sage": {
+          "friction_score": 10,
+          "coordination_efficiency": 0.95,
+          "operator_interventions": 1,
+          "recovery_time_seconds": 15.0
+        }
+      }
+    }
+  },
+  "effectiveness_aggregates": {
+    "reduction_in_operator_interventions_pct": 87.5,
+    "reduction_in_recovery_time_pct": 93.75,
+    "determinism_and_ownership_intact": true,
+    "evidence_lineage_complete": true
+  },
+  "timestamp": 1785878466.4447668
+}

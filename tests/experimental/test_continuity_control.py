@@ -1114,3 +1114,61 @@ def test_decision_support_operator_visibility(tmp_path):
     assert "Friction Pattern   : Execution patterns are fully stable" in dashboard
     assert "Actionable Outcome : Maintain governing constraints" in dashboard
     assert "Validation Criteria: Workflow completes cleanly" in dashboard
+
+
+def test_coordination_loop_simulation_aggregates(tmp_path):
+    """Verify that execution loop simulation accurately aggregates and reports before/after effectiveness metrics."""
+    import uuid
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id=f"session_sim_agg_{uuid.uuid4().hex[:6]}",
+        objective="obj_sim_agg",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    scenarios = ["extended_workflow", "interrupted_execution", "repeated_handoffs"]
+    report = orchestrator.execute_coordination_loop_simulation(scenarios)
+
+    aggregates = report["effectiveness_aggregates"]
+    assert aggregates["reduction_in_operator_interventions_pct"] > 50.0
+    assert aggregates["reduction_in_recovery_time_pct"] > 50.0
+    assert aggregates["determinism_and_ownership_intact"] is True
+    assert aggregates["evidence_lineage_complete"] is True
+
+
+def test_coordination_loop_simulation_evidence_capture(tmp_path):
+    """Verify that execution loop simulation persists validation reports and records SAGE-CCL evidence."""
+    import uuid
+    from pathlib import Path
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id=f"session_sim_ev_{uuid.uuid4().hex[:6]}",
+        objective="obj_sim_ev",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    report_path = Path("evidence_capture/decision_validation_report.json")
+    if report_path.exists():
+        report_path.unlink()
+
+    scenarios = ["extended_workflow"]
+    orchestrator.execute_coordination_loop_simulation(scenarios)
+
+    # 1. Report file persistence check
+    assert report_path.exists()
+
+    # 2. SAGE-CCL ledger check
+    records = list(ccl.storage_path.glob("*.json"))
+    assert len(records) >= 1
