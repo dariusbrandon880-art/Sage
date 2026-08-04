@@ -1172,3 +1172,155 @@ def test_coordination_loop_simulation_evidence_capture(tmp_path):
     # 2. SAGE-CCL ledger check
     records = list(ccl.storage_path.glob("*.json"))
     assert len(records) >= 1
+
+
+def test_rehydrate_from_handoff_manifest_success(tmp_path):
+    """Verify that programmatically loading handoff manifests correctly restores session state and audits workspace divergence."""
+    import json
+    import uuid
+    from pathlib import Path
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id=f"session_rehydrate_{uuid.uuid4().hex[:6]}",
+        objective="obj_rehydrate",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    # 1. Create dummy handoff manifest
+    manifest_data = {
+        "manifest_id": "manifest_rehydrate_test",
+        "source_session": "session_source_xyz",
+        "target_session_objectives": ["obj_transferred_mission", "obj_extra_audit"],
+        "state_snapshot": {
+            "completed_actions": ["action_realignment", "action_baseline_lock"],
+            "pending_actions": ["action_governed_agent_transition"],
+            "important_decisions": ["decision_asymmetric_cryptography"]
+        },
+        "workspace_fingerprint": {
+            "sage/experimental/act/continuity_control.py": {
+                "sha256": "dummy_hash_does_not_match_so_divergent",
+                "size_bytes": 1000
+            },
+            "nonexistent_file_abc.py": {
+                "sha256": "nonexistent_hash",
+                "size_bytes": 0
+            }
+        }
+    }
+
+    m_path = tmp_path / "agent_handoff_manifest.json"
+    with open(m_path, "w", encoding="utf-8") as f:
+        json.dump(manifest_data, f)
+
+    # 2. Run rehydration
+    report = orchestrator.rehydrate_from_handoff_manifest(str(m_path))
+
+    # 3. Assert on rehydrated session objectives & completed actions
+    assert "obj_transferred_mission" in orchestrator.session.active_objectives
+    assert "obj_extra_audit" in orchestrator.session.active_objectives
+    assert "action_realignment" in orchestrator.session.completed_actions
+    assert "action_baseline_lock" in orchestrator.session.completed_actions
+    assert "decision_asymmetric_cryptography" in orchestrator.session.important_decisions
+
+    # 4. Assert on workspace divergence audit results
+    audit = report["workspace_divergence_audit"]
+    assert "sage/experimental/act/continuity_control.py" in audit["divergent"]
+    assert "nonexistent_file_abc.py" in audit["missing"]
+
+    # 5. Verify persistence evidence write
+    evidence_path = Path("evidence_capture/operational_persistence_evidence.json")
+    assert evidence_path.exists()
+
+
+def test_enforce_active_agent_scope_activation(tmp_path):
+    """Verify that attempting to enforce scope on an unactivated or suspended agent raises a PermissionError."""
+    import pytest
+    import uuid
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id=f"session_scope_act_{uuid.uuid4().hex[:6]}",
+        objective="obj_scope_act",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    # Suspend agent_jules_sage
+    orchestrator.enforcer.set_agent_state("agent_jules_sage", "SUSPENDED")
+
+    with pytest.raises(PermissionError, match="cannot execute operations"):
+        orchestrator.enforce_active_agent_scope(
+            agent_id="agent_jules_sage",
+            action="modify_code",
+            modified_files=["sage/experimental/act/continuity_control.py"]
+        )
+
+
+def test_enforce_active_agent_scope_protected_paths(tmp_path):
+    """Verify that any agent attempting to mutate critical production paths is blocked with a PermissionError."""
+    import pytest
+    import uuid
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id=f"session_scope_paths_{uuid.uuid4().hex[:6]}",
+        objective="obj_scope_paths",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    # Try to modify protected production path "sage/runtime/engine.py"
+    with pytest.raises(PermissionError, match="mutate production core path"):
+        orchestrator.enforce_active_agent_scope(
+            agent_id="agent_jules_sage",
+            action="modify_code",
+            modified_files=["sage/runtime/engine.py"]
+        )
+
+
+def test_enforce_active_agent_scope_role_boundaries(tmp_path):
+    """Verify that role-based permissions restrict file modifications to authorized zones."""
+    import pytest
+    import uuid
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id=f"session_scope_roles_{uuid.uuid4().hex[:6]}",
+        objective="obj_scope_roles",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    # TIER_2_AUDITOR (agent_scout_sage) is NOT allowed to edit python code files
+    with pytest.raises(PermissionError, match="is not authorized to modify path"):
+        orchestrator.enforce_active_agent_scope(
+            agent_id="agent_scout_sage",
+            action="modify_code",
+            modified_files=["sage/experimental/act/continuity_control.py"]
+        )
+
+    # TIER_2_AUDITOR is allowed to edit evidence files or reports
+    report = orchestrator.enforce_active_agent_scope(
+        agent_id="agent_scout_sage",
+        action="update_reports",
+        modified_files=["evidence_capture/audit_logs.json", "docs/SAGE-WORKFLOW-INCIDENT-RESPONSE.md"]
+    )
+    assert report["authorized"] is True

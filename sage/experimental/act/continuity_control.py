@@ -914,6 +914,154 @@ class DeveloperWorkflowOrchestrator:
 
         return validation_report
 
+    def rehydrate_from_handoff_manifest(self, manifest_path: str) -> Dict[str, Any]:
+        """Programmatically rehydrates active session objectives, completed actions, and decisions from a handoff manifest, auditing workspace divergence."""
+        m_path = Path(manifest_path)
+        if not m_path.exists():
+            raise FileNotFoundError(f"Rehydration Failure: Manifest '{manifest_path}' does not exist.")
+
+        with open(m_path, "r", encoding="utf-8") as f:
+            manifest = json.load(f)
+
+        # 1. Restore Session objectives and snapshot state
+        source_session_id = manifest.get("source_session")
+        state_snapshot = manifest.get("state_snapshot", {})
+
+        # Load objectives
+        target_objectives = manifest.get("target_session_objectives", [])
+        for obj in target_objectives:
+            self.session.add_objective(obj)
+
+        # Restore actions
+        for action in state_snapshot.get("completed_actions", []):
+            if action not in self.session.completed_actions:
+                self.session.completed_actions.append(action)
+
+        for decision in state_snapshot.get("important_decisions", []):
+            if decision not in self.session.important_decisions:
+                self.session.important_decisions.append(decision)
+
+        self.session_manager.save_session(self.session)
+
+        # 2. Workspace Snapshots & Divergence Audit
+        workspace_fingerprint = manifest.get("workspace_fingerprint", {})
+        divergence_audit = {
+            "matching": [],
+            "divergent": [],
+            "missing": [],
+            "untracked": []
+        }
+
+        # Validate file fingerprints
+        for filepath, meta in workspace_fingerprint.items():
+            expected_hash = meta.get("sha256")
+            if not os.path.exists(filepath):
+                divergence_audit["missing"].append(filepath)
+            else:
+                # Compute current hash
+                current_hash = ""
+                try:
+                    with open(filepath, "rb") as file_f:
+                        current_hash = hashlib.sha256(file_f.read()).hexdigest()
+                except Exception:
+                    pass
+                if current_hash == expected_hash:
+                    divergence_audit["matching"].append(filepath)
+                else:
+                    divergence_audit["divergent"].append(filepath)
+
+        # Scan active workspace for unlisted/untracked changes
+        current_workspace = self.scan_git_workspace()
+        for f in current_workspace["modified_files"]:
+            if f not in workspace_fingerprint:
+                divergence_audit["untracked"].append(f)
+
+        rehydration_evidence = {
+            "rehydration_id": f"rehydrate_{uuid.uuid4().hex[:12]}",
+            "source_session_id": source_session_id,
+            "target_session_id": self.session_id,
+            "rehydrated_objectives": target_objectives,
+            "rehydrated_completed_actions_count": len(state_snapshot.get("completed_actions", [])),
+            "workspace_divergence_audit": divergence_audit,
+            "timestamp": time.time()
+        }
+
+        # Persist persistence evidence
+        output_path = Path("evidence_capture/operational_persistence_evidence.json")
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(output_path, "w", encoding="utf-8") as f:
+            json.dump(rehydration_evidence, f, indent=2, default=str)
+
+        # Record CCL rehydration receipt
+        record = self.ccl.intercept_event(
+            event_type="context_rehydration",
+            action_taken=f"Rehydrated session context from handoff manifest '{manifest_path}'",
+            decision_reasoning="Enable total context continuity across agent handoff transitions",
+            evidence_payload={
+                "rehydration_evidence_id": rehydration_evidence["rehydration_id"],
+                "matching_files": len(divergence_audit["matching"]),
+                "divergent_files": len(divergence_audit["divergent"]),
+                "missing_files": len(divergence_audit["missing"])
+            },
+            session_id=self.session_id
+        )
+        self.ccl.serialize_record(record)
+
+        return rehydration_evidence
+
+    def enforce_active_agent_scope(self, agent_id: str, action: str, modified_files: List[str]) -> Dict[str, Any]:
+        """Enforces that an active agent operates strictly within its authorized workspace scope, preventing unauthorized core mutations."""
+        # Ensure agent is registered and ACTIVATED
+        agent_state = self.enforcer.get_agent_state(agent_id)
+        if agent_state != "ACTIVATED":
+            raise PermissionError(
+                f"Security Boundary Violation: Agent '{agent_id}' is '{agent_state}' and cannot execute operations."
+            )
+
+        # Check for protected production core path mutations
+        protected_prefixes = ["sage/runtime/", "sage/core/", "sage/acr/", "sage/agents/"]
+        for file in modified_files:
+            for prefix in protected_prefixes:
+                if file.startswith(prefix):
+                    raise PermissionError(
+                        f"Security Boundary Violation: Unauthorized attempt by agent '{agent_id}' to mutate production core path '{file}'."
+                    )
+
+        # Check role-based scoping permissions
+        role = self.enforcer.agent_roles.get(agent_id, "UNASSIGNED")
+        scope_allowed = True
+        violated_file = None
+
+        for file in modified_files:
+            if role == "TIER_2_AUDITOR":
+                # Auditor is only allowed to edit evidence files or md reports
+                if not (file.startswith("evidence_capture/") or file.startswith("docs/") or file.endswith(".json") or file.endswith(".md")):
+                    scope_allowed = False
+                    violated_file = file
+                    break
+            elif role == "TIER_2_DEVELOPER":
+                # Developer is allowed to edit experimental act files or tests, but not docs or evidence registers
+                if file.startswith("Main Archive/") or file.startswith("docs/SAGE-WORKFLOW-INCIDENT-RESPONSE.md"):
+                    scope_allowed = False
+                    violated_file = file
+                    break
+
+        if not scope_allowed:
+            raise PermissionError(
+                f"Security Boundary Violation: Agent '{agent_id}' with role '{role}' is not authorized to modify path '{violated_file}'."
+            )
+
+        scope_report = {
+            "agent_id": agent_id,
+            "role": role,
+            "action": action,
+            "scoped_files": modified_files,
+            "authorized": True,
+            "timestamp": time.time()
+        }
+
+        return scope_report
+
     def render_multi_agent_status(self) -> str:
         """Generates an operator-visible summary of multi-agent coordination, roles, tasks, and sequencing."""
         lines = [

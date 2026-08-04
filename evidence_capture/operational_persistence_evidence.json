@@ -1,0 +1,29 @@
+{
+  "rehydration_id": "rehydrate_76f10d6ff03a",
+  "source_session_id": "session_source_xyz",
+  "target_session_id": "session_rehydrate_4211b6",
+  "rehydrated_objectives": [
+    "obj_transferred_mission",
+    "obj_extra_audit"
+  ],
+  "rehydrated_completed_actions_count": 2,
+  "workspace_divergence_audit": {
+    "matching": [],
+    "divergent": [
+      "sage/experimental/act/continuity_control.py"
+    ],
+    "missing": [
+      "nonexistent_file_abc.py"
+    ],
+    "untracked": [
+      "docs/SAGE-WORKFLOW-INCIDENT-RESPONSE.md",
+      "evidence_capture/ccl_operational_feedback.json",
+      "evidence_capture/decision_validation_report.json",
+      "evidence_capture/discovery_candidates_register.json",
+      "evidence_capture/operational_persistence_evidence.json",
+      "evidence_capture/workflow_intelligence_evidence.json",
+      "tests/experimental/test_continuity_control.py"
+    ]
+  },
+  "timestamp": 1785881029.9352252
+}

@@ -3,7 +3,7 @@
     "candidate_id": "CANDIDATE-CI-001",
     "severity": "NORMAL",
     "friction_pattern": "Execution patterns are fully stable and aligned with objectives.",
-    "evidence_reference": "session_id=session_cand_vis_31590a",
+    "evidence_reference": "session_id=session_cand_vis_44f4cc",
     "actionable_outcome": "Maintain governing constraints and record standard SHA-256 self-validating evidence.",
     "validation_criteria": "Workflow completes cleanly with zero risks, sequencing blocks, or drift incidents."
   }
