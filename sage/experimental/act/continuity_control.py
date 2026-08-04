@@ -250,9 +250,19 @@ class ContinuityEnforcementLayer:
     def __init__(self, ccl: ContinuityControlLoop, session_manager: SessionStateManager):
         self.ccl = ccl
         self.session_manager = session_manager
-        # Track agent activation states locally for experimental purposes
+        # Track multiple active agents within SAGE Multi-Agent Coordination Flow
         # "agent_id" -> "INACTIVE" | "ACTIVATED" | "SUSPENDED"
-        self._agent_states = {"agent_jules_sage": "ACTIVATED"}
+        self._agent_states = {
+            "agent_jules_sage": "ACTIVATED",
+            "agent_scout_sage": "ACTIVATED",
+            "agent_builder_sage": "INACTIVE"
+        }
+        # Explicit role / responsibility mapping
+        self.agent_roles = {
+            "agent_jules_sage": "TIER_1_COORDINATOR",
+            "agent_scout_sage": "TIER_2_AUDITOR",
+            "agent_builder_sage": "TIER_2_DEVELOPER"
+        }
 
     def get_agent_state(self, agent_id: str) -> str:
         return self._agent_states.get(agent_id, "INACTIVE")
@@ -313,10 +323,11 @@ class ContinuityEnforcementLayer:
             drift_reason = f"Attempted restart behavior of completed objective: '{objective}'."
 
         # 5. Preserve active task ownership
-        current_owner = "agent_jules_sage"
-        if proposed_assignee and proposed_assignee != current_owner:
+        # Let's support both agent_jules_sage and agent_scout_sage as valid active owners
+        valid_owners = {"agent_jules_sage", "agent_scout_sage", "agent_builder_sage"}
+        if proposed_assignee and proposed_assignee not in valid_owners:
             drift_detected = True
-            drift_reason = f"Task ownership hijacking detected! Expected assignee: '{current_owner}', but got: '{proposed_assignee}'."
+            drift_reason = f"Task ownership hijacking detected! Expected authorized assignee, but got: '{proposed_assignee}'."
 
         # 6. Surface current required action
         pending_actions = list(session.pending_actions)
@@ -371,6 +382,10 @@ class DeveloperWorkflowOrchestrator:
         # Initialize SAGE Continuity Enforcement Layer
         self.enforcer = ContinuityEnforcementLayer(ccl=self.ccl, session_manager=self.session_manager)
 
+        # Multi-Agent Coordination attributes
+        self.shared_workflow_state = {}
+        self.coordinated_tasks = {}
+
     def scan_git_workspace(self) -> Dict[str, Any]:
         """Programmatically queries git status and diffs for the active workspace."""
         import subprocess
@@ -423,6 +438,164 @@ class DeveloperWorkflowOrchestrator:
                 "modified_files": ["sage/experimental/act/continuity_control.py"],
                 "diffs": {"sage/experimental/act/continuity_control.py": f"Git scan bypassed due to error: {e}"}
             }
+
+    def add_coordinated_task(
+        self,
+        task_id: str,
+        name: str,
+        role: str,
+        prerequisites: Optional[List[str]] = None
+    ) -> None:
+        """Registers a task with prerequisites (sequencing) and role requirements."""
+        self.coordinated_tasks[task_id] = {
+            "task_id": task_id,
+            "name": name,
+            "role": role,
+            "assigned_agent": None,
+            "status": "PENDING",  # PENDING, ACTIVE, COMPLETED
+            "prerequisites": prerequisites or [],
+            "handoff_history": []
+        }
+
+    def assign_agent_to_task(self, task_id: str, agent_id: str) -> None:
+        """Assigns an agent to a task, enforcing that the agent is registered and has the correct role."""
+        if task_id not in self.coordinated_tasks:
+            raise KeyError(f"Coordination Error: Task '{task_id}' is not registered.")
+
+        task = self.coordinated_tasks[task_id]
+        required_role = task["role"]
+
+        # Verify agent is known to enforcer
+        if agent_id not in self.enforcer.agent_roles:
+            raise KeyError(f"Coordination Error: Agent '{agent_id}' is not registered in the SAGE workflow.")
+
+        # Check role compatibility
+        agent_role = self.enforcer.agent_roles[agent_id]
+        if agent_role != required_role:
+            raise PermissionError(
+                f"Role Mismatch: Agent '{agent_id}' with role '{agent_role}' "
+                f"cannot be assigned to task '{task_id}' requiring role '{required_role}'."
+            )
+
+        task["assigned_agent"] = agent_id
+        task["handoff_history"].append({
+            "agent_id": agent_id,
+            "action": "ASSIGNED",
+            "timestamp": time.time()
+        })
+
+    def transition_coordinated_task(
+        self,
+        task_id: str,
+        agent_id: str,
+        status: str,
+        supervisor_override: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """Transitions a task's status, enforcing activation lifecycle, sequencing, and role rules."""
+        if task_id not in self.coordinated_tasks:
+            raise KeyError(f"Coordination Error: Task '{task_id}' is not registered.")
+
+        task = self.coordinated_tasks[task_id]
+
+        # 1. Enforce agent activation state
+        agent_state = self.enforcer.get_agent_state(agent_id)
+        if agent_state != "ACTIVATED":
+            if not (supervisor_override and supervisor_override.get("decision") == "APPROVED"):
+                raise PermissionError(
+                    f"Continuity Enforcement Blocked: Agent '{agent_id}' is '{agent_state}' and not authorized to transition tasks."
+                )
+
+        # 2. Enforce role assignment rules
+        required_role = task["role"]
+        agent_role = self.enforcer.agent_roles.get(agent_id)
+        if agent_role != required_role:
+            if not (supervisor_override and supervisor_override.get("decision") == "APPROVED"):
+                raise PermissionError(
+                    f"Role Mismatch: Agent '{agent_id}' ({agent_role}) cannot transition task requiring '{required_role}'."
+                )
+
+        # 3. Enforce task sequencing (prerequisites must be completed)
+        for prereq_id in task["prerequisites"]:
+            prereq_task = self.coordinated_tasks.get(prereq_id)
+            if not prereq_task or prereq_task["status"] != "COMPLETED":
+                if not (supervisor_override and supervisor_override.get("decision") == "APPROVED"):
+                    raise ValueError(
+                        f"Task Sequencing Violation: Prerequisite task '{prereq_id}' is not completed (current status: '{prereq_task['status'] if prereq_task else 'UNREGISTERED'}')."
+                    )
+
+        # 4. Handle handoff lineage tracking if agent changes
+        prior_agent = task["assigned_agent"]
+        if prior_agent and prior_agent != agent_id:
+            task["handoff_history"].append({
+                "from_agent": prior_agent,
+                "to_agent": agent_id,
+                "action": f"HANDOFF_LINEAGE_TRANSITION",
+                "timestamp": time.time()
+            })
+
+        # Apply transition
+        task["assigned_agent"] = agent_id
+        task["status"] = status
+        task["handoff_history"].append({
+            "agent_id": agent_id,
+            "action": f"TRANSITION_TO_{status}",
+            "timestamp": time.time()
+        })
+
+        # Intercept in CCL to preserve alignment records
+        record = self.ccl.intercept_event(
+            event_type="multi_agent_transition",
+            action_taken=f"Transitioned task '{task_id}' to '{status}'",
+            decision_reasoning=f"Coordinated execution of task by agent '{agent_id}' under role '{agent_role}'",
+            evidence_payload={
+                "task_id": task_id,
+                "agent_id": agent_id,
+                "role": agent_role,
+                "target_status": status,
+                "handoff_lineage": task["handoff_history"]
+            },
+            session_id=self.session_id
+        )
+        self.ccl.serialize_record(record)
+
+        return task
+
+    def render_multi_agent_status(self) -> str:
+        """Generates an operator-visible summary of multi-agent coordination, roles, tasks, and sequencing."""
+        lines = [
+            "==================================================",
+            "   SAGE MULTI-AGENT WORKFLOW COORDINATION STATE",
+            "==================================================",
+            f"Active Session: {self.session_id}",
+            "--------------------------------------------------",
+            "Agent Activation & Role Registry:"
+        ]
+        for agent_id, state in sorted(self.enforcer._agent_states.items()):
+            role = self.enforcer.agent_roles.get(agent_id, "UNASSIGNED")
+            lines.append(f"  • {agent_id.ljust(22)} : State=[{state}] Role=[{role}]")
+
+        lines.extend([
+            "--------------------------------------------------",
+            "Coordinated Task Board & Sequencing Dependencies:"
+        ])
+        if not self.coordinated_tasks:
+            lines.append("  (No coordinated tasks registered)")
+        for task_id, task in sorted(self.coordinated_tasks.items()):
+            prereqs = f"Prereqs={task['prerequisites']}" if task["prerequisites"] else "Prereqs=None"
+            assignee = f"Assignee={task['assigned_agent']}" if task["assigned_agent"] else "Assignee=Unassigned"
+            lines.append(f"  • Task: {task_id.ljust(12)} : Status=[{task['status'].ljust(9)}] {assignee.ljust(28)} {prereqs}")
+
+        lines.extend([
+            "--------------------------------------------------",
+            "Shared Workflow State (Context Cache):"
+        ])
+        if not self.shared_workflow_state:
+            lines.append("  (Shared workflow context is currently empty)")
+        for k, v in sorted(self.shared_workflow_state.items()):
+            lines.append(f"  • {k}: {v}")
+
+        lines.append("==================================================")
+        return "\n".join(lines)
 
     def execute_active_development_coordination(
         self,

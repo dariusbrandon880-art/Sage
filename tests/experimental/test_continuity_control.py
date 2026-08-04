@@ -476,3 +476,132 @@ def test_continuity_enforcement_task_ownership_preservation(tmp_path):
             decision_reasoning="Reasoning",
             proposed_assignee="agent_unauthorized_user"
         )
+
+
+def test_multi_agent_role_assignment_and_matching(tmp_path):
+    """Verify role/responsibility rules prevent misaligned agent assignments."""
+    import pytest
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_multi_agent_roles",
+        objective="obj_multi_agent",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    # Register coordinated task requiring TIER_2_AUDITOR
+    orchestrator.add_coordinated_task(
+        task_id="task_audit",
+        name="Security Audit",
+        role="TIER_2_AUDITOR"
+    )
+
+    # agent_jules_sage is TIER_1_COORDINATOR and must be rejected for this task
+    with pytest.raises(PermissionError, match="Role Mismatch"):
+        orchestrator.assign_agent_to_task("task_audit", "agent_jules_sage")
+
+    # agent_scout_sage is TIER_2_AUDITOR and must succeed
+    orchestrator.assign_agent_to_task("task_audit", "agent_scout_sage")
+    assert orchestrator.coordinated_tasks["task_audit"]["assigned_agent"] == "agent_scout_sage"
+
+
+def test_multi_agent_task_sequencing_rules(tmp_path):
+    """Verify task sequencing rules prevent execution until prerequisites are COMPLETED."""
+    import pytest
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_sequencing",
+        objective="obj_sequencing",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    # Register task_1 and task_2 (task_2 depends on task_1)
+    orchestrator.add_coordinated_task("task_1", "Code Changes", "TIER_1_COORDINATOR")
+    orchestrator.add_coordinated_task("task_2", "Audit Changes", "TIER_2_AUDITOR", prerequisites=["task_1"])
+
+    # Try to execute/transition task_2 directly before task_1 is completed -> Sequencing violation!
+    with pytest.raises(ValueError, match="Task Sequencing Violation"):
+        orchestrator.transition_coordinated_task("task_2", "agent_scout_sage", "ACTIVE")
+
+    # Complete task_1
+    orchestrator.transition_coordinated_task("task_1", "agent_jules_sage", "COMPLETED")
+    assert orchestrator.coordinated_tasks["task_1"]["status"] == "COMPLETED"
+
+    # Try task_2 transition again -> should succeed!
+    orchestrator.transition_coordinated_task("task_2", "agent_scout_sage", "ACTIVE")
+    assert orchestrator.coordinated_tasks["task_2"]["status"] == "ACTIVE"
+
+
+def test_multi_agent_handoff_lineage_preservation(tmp_path):
+    """Verify task agent lineage transitions are correctly logged in handoff history."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_lineage",
+        objective="obj_lineage",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    # Let's register task_audit and assign agent_scout_sage, then transfer to agent_jules_sage (override)
+    orchestrator.add_coordinated_task("task_audit", "Security Audit", "TIER_2_AUDITOR")
+    orchestrator.assign_agent_to_task("task_audit", "agent_scout_sage")
+
+    # Override role rule using supervisor override to perform handoff lineage transition
+    override = {"decision": "APPROVED", "supervisor_id": "supervisor_jules"}
+    orchestrator.transition_coordinated_task(
+        task_id="task_audit",
+        agent_id="agent_jules_sage",
+        status="ACTIVE",
+        supervisor_override=override
+    )
+
+    # Check that handoff history contains HANDOFF_LINEAGE_TRANSITION from scout to jules
+    history = orchestrator.coordinated_tasks["task_audit"]["handoff_history"]
+    transitions = [h for h in history if h.get("action") == "HANDOFF_LINEAGE_TRANSITION"]
+    assert len(transitions) == 1
+    assert transitions[0]["from_agent"] == "agent_scout_sage"
+    assert transitions[0]["to_agent"] == "agent_jules_sage"
+
+
+def test_multi_agent_operator_status_dashboard(tmp_path):
+    """Verify that render_multi_agent_status correctly produces structured dashboards."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_dashboard",
+        objective="obj_dashboard",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    # Set up some tasks and shared state values
+    orchestrator.add_coordinated_task("task_t", "Task T", "TIER_1_COORDINATOR")
+    orchestrator.shared_workflow_state["database_replica_status"] = "aligned"
+
+    dashboard = orchestrator.render_multi_agent_status()
+    assert "SAGE MULTI-AGENT WORKFLOW COORDINATION STATE" in dashboard
+    assert "Agent Activation & Role Registry:" in dashboard
+    assert "Coordinated Task Board & Sequencing Dependencies:" in dashboard
+    assert "Shared Workflow State (Context Cache):" in dashboard
+    assert "agent_jules_sage" in dashboard
+    assert "database_replica_status: aligned" in dashboard
