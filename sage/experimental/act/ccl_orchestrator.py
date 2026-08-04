@@ -31,6 +31,7 @@ class DeveloperWorkflowOrchestrator:
     def __init__(self, session_id: str = "session_ccl_ops_2026"):
         self.session_id = session_id
         self.tasks: Dict[str, Dict[str, Any]] = {}
+        self.agents: Dict[str, str] = {}  # Tracks agent_id -> activation_state (INACTIVE, ACTIVATED, SUSPENDED)
         self.event_log: List[Dict[str, Any]] = []
         self.orchestrator_run_id = f"ccl_run_{uuid.uuid4().hex[:8]}"
 
@@ -47,6 +48,22 @@ class DeveloperWorkflowOrchestrator:
         }
         self.event_log.append(event_record)
 
+        # Handle agent activation gate
+        if event_type == "AGENT_ACTIVATION":
+            agent_id = payload.get("agent_id")
+            supervisor_id = payload.get("supervisor_id")
+            decision = payload.get("decision")
+
+            if not agent_id or not supervisor_id or not decision:
+                raise ValueError("Activation Failure: Agent ID, supervisor ID, and decision are required.")
+
+            if decision == "AUTHORIZED":
+                self.agents[agent_id] = "ACTIVATED"
+            else:
+                self.agents[agent_id] = "SUSPENDED"
+
+            return {"agent_id": agent_id, "activation_state": self.agents[agent_id]}
+
         # Handle task initialization
         if event_type == "TASK_INIT":
             if task_id in self.tasks:
@@ -54,6 +71,12 @@ class DeveloperWorkflowOrchestrator:
 
             objective_id = payload.get("objective_id", "obj_default")
             assigned_agent = payload.get("assigned_agent", "unassigned")
+
+            # Check that the assigned agent is active
+            if assigned_agent != "unassigned" and self.agents.get(assigned_agent) != "ACTIVATED":
+                raise PermissionError(
+                    f"Security Boundary Violation: Cannot assign unactivated agent '{assigned_agent}' to task '{task_id}'."
+                )
 
             self.tasks[task_id] = {
                 "task_id": task_id,
@@ -84,6 +107,12 @@ class DeveloperWorkflowOrchestrator:
             agent = payload.get("agent_id", task_state["assigned_agent"])
             comment = payload.get("comment", "")
 
+            # Verify that the transitioning agent is currently ACTIVATED
+            if self.agents.get(agent) != "ACTIVATED":
+                raise PermissionError(
+                    f"Security Boundary Violation: Unactivated agent '{agent}' cannot perform state transition."
+                )
+
             self.transition_task_status(task_id, new_status, agent, comment, ts)
 
         # Handle agent-to-agent handoffs with context preservation
@@ -95,6 +124,16 @@ class DeveloperWorkflowOrchestrator:
 
             if not to_agent:
                 raise ValueError("Handoff Failure: Target agent must be specified.")
+
+            # Handoff Readiness Verification: both agents must be fully ACTIVATED
+            if self.agents.get(from_agent) != "ACTIVATED":
+                raise PermissionError(
+                    f"Handoff Refused: Source agent '{from_agent}' is not activated."
+                )
+            if self.agents.get(to_agent) != "ACTIVATED":
+                raise PermissionError(
+                    f"Handoff Refused: Destination agent '{to_agent}' is not activated."
+                )
 
             # Transition task to HANDOFF state first if it's currently ACTIVE
             if task_state["status"] == "ACTIVE":
@@ -168,6 +207,45 @@ class DeveloperWorkflowOrchestrator:
             "comment": comment
         })
 
+    def generate_operator_summary(self) -> str:
+        """Generates a terminal-friendly, operator-visible coordination summary."""
+        lines = [
+            "==========================================================================",
+            "             SAGE OPERATIONAL COORDINATION & CONTEXT SUMMARY              ",
+            "==========================================================================",
+            f" Orchestrator Run ID  : {self.orchestrator_run_id}",
+            f" Active Session ID    : {self.session_id}",
+            f" Active System Agents : {len(self.agents)} registered",
+            "--------------------------------------------------------------------------"
+        ]
+
+        # Render Agent Activation Registry
+        lines.append(" AGENT ACTIVATION REGISTRY:")
+        if not self.agents:
+            lines.append("   (No agents registered)")
+        for agent_id, state in sorted(self.agents.items()):
+            lines.append(f"   • {agent_id.ljust(24)}: [{state}]")
+
+        # Render Task Assignments & States
+        lines.append("\n ACTIVE TASK COORDINATION STATE:")
+        if not self.tasks:
+            lines.append("   (No active tasks coordinated)")
+        for task_id, t_state in sorted(self.tasks.items()):
+            lines.append(f"   • Task ID : {task_id}")
+            lines.append(f"     Status  : {t_state['status']}")
+            lines.append(f"     Assignee: {t_state['assigned_agent']}")
+            lines.append(f"     Objective: {t_state['objective_id']}")
+            app = t_state["human_approval"]
+            app_str = f"AUTHORIZED by {app['supervisor_id']}" if app else "NONE / PENDING"
+            lines.append(f"     Approval: {app_str}")
+
+        lines.extend([
+            "==========================================================================",
+            "          SAGE OPERATIONAL COORDINATION BOUNDARY REMAINS SECURE          ",
+            "=========================================================================="
+        ])
+        return "\n".join(lines)
+
     def generate_continuity_records(self, task_id: str) -> Dict[str, Any]:
         """Generates a formal, machine-validatable SAGE ContinuityControlRecord for a task."""
         if task_id not in self.tasks:
@@ -230,7 +308,9 @@ class DeveloperWorkflowOrchestrator:
             "session_id": self.session_id,
             "workflow_events": self.event_log,
             "active_tasks": self.tasks,
+            "registered_agents": self.agents,
             "continuity_control_records": tasks_records,
+            "operator_summary": self.generate_operator_summary().split("\n"),
             "boundary_checks": {
                 "unauthorized_namespaces_mutated": False,
                 "one_way_import_checked": True

@@ -8,8 +8,19 @@ from sage.experimental.act.ccl_orchestrator import DeveloperWorkflowOrchestrator
 
 
 def test_orchestrator_lifecycle_and_transitions():
-    """Verify standard task registration and allowed/invalid state transitions."""
+    """Verify standard task registration and allowed/invalid state transitions under activation constraints."""
     orch = DeveloperWorkflowOrchestrator(session_id="session_test_lifecycle")
+
+    # Activate agent_initiator
+    orch.ingest_event(
+        "AGENT_ACTIVATION",
+        "system",
+        {
+            "agent_id": "agent_initiator",
+            "supervisor_id": "human_supervisor_01",
+            "decision": "AUTHORIZED"
+        }
+    )
 
     # Ingest initialization event
     task = orch.ingest_event(
@@ -48,9 +59,50 @@ def test_orchestrator_lifecycle_and_transitions():
     assert orch.tasks["task_lifecycle_01"]["status"] == "ACTIVE"
 
 
+def test_unactivated_agent_rejection():
+    """Verify unactivated agents are blocked from task assignment and state transitions."""
+    orch = DeveloperWorkflowOrchestrator(session_id="session_test_unactivated")
+
+    # Trying to assign unactivated agent should raise PermissionError
+    with pytest.raises(PermissionError, match="Cannot assign unactivated agent"):
+        orch.ingest_event(
+            "TASK_INIT",
+            "task_fail_01",
+            {
+                "objective_id": "obj_fail",
+                "assigned_agent": "agent_unactivated"
+            }
+        )
+
+    # Now, initiate a task with an unassigned status
+    orch.ingest_event(
+        "TASK_INIT",
+        "task_fail_01",
+        {
+            "objective_id": "obj_fail",
+            "assigned_agent": "unassigned"
+        }
+    )
+
+    # Trying to transition using an unactivated agent should fail
+    with pytest.raises(PermissionError, match="Unactivated agent.*cannot perform state transition"):
+        orch.ingest_event(
+            "STATE_TRANSITION",
+            "task_fail_01",
+            {
+                "target_status": "ACTIVE",
+                "agent_id": "agent_unactivated"
+            }
+        )
+
+
 def test_context_continuity_and_handoff():
-    """Verify task context and lineage are preserved accurately across handoffs."""
+    """Verify task context and lineage are preserved accurately across handoffs under activation checks."""
     orch = DeveloperWorkflowOrchestrator(session_id="session_test_handoff")
+
+    # Activate analyst and reviewer
+    orch.ingest_event("AGENT_ACTIVATION", "system", {"agent_id": "agent_analyst", "supervisor_id": "super", "decision": "AUTHORIZED"})
+    orch.ingest_event("AGENT_ACTIVATION", "system", {"agent_id": "agent_reviewer", "supervisor_id": "super", "decision": "AUTHORIZED"})
 
     orch.ingest_event(
         "TASK_INIT",
@@ -68,6 +120,17 @@ def test_context_continuity_and_handoff():
         "task_handoff_01",
         {"target_status": "ACTIVE"}
     )
+
+    # Handoff to unactivated agent should fail
+    with pytest.raises(PermissionError, match="Destination agent.*is not activated"):
+        orch.ingest_event(
+            "AGENT_HANDOFF",
+            "task_handoff_01",
+            {
+                "target_agent": "agent_not_active",
+                "reason": "Request audit"
+            }
+        )
 
     # Trigger handoff to reviewer with context updates
     orch.ingest_event(
@@ -91,6 +154,9 @@ def test_context_continuity_and_handoff():
 def test_human_authorization_visibility():
     """Verify human checkpoints correctly guard and block completion transitions."""
     orch = DeveloperWorkflowOrchestrator(session_id="session_test_auth")
+
+    # Activate agent_worker
+    orch.ingest_event("AGENT_ACTIVATION", "system", {"agent_id": "agent_worker", "supervisor_id": "super", "decision": "AUTHORIZED"})
 
     orch.ingest_event(
         "TASK_INIT",
@@ -159,6 +225,9 @@ def test_continuity_records_and_evidence(tmp_path):
     evidence_file = tmp_path / "ccl_evidence.json"
     orch = DeveloperWorkflowOrchestrator(session_id="session_test_evidence")
 
+    # Activate agent_jules
+    orch.ingest_event("AGENT_ACTIVATION", "system", {"agent_id": "agent_jules", "supervisor_id": "super", "decision": "AUTHORIZED"})
+
     orch.ingest_event(
         "TASK_INIT",
         "task_evidence_01",
@@ -203,13 +272,41 @@ def test_continuity_records_and_evidence(tmp_path):
     assert ccl_record["record_id"].startswith("CCL-REC-")
     assert ccl_record["task_state_snapshot"]["status"] == "COMPLETED"
     assert len(ccl_record["state_integrity"]["state_hash"]) == 64
-    assert len(ccl_record["monotonic_sequence_history"]) == 4
+    assert len(ccl_record["monotonic_sequence_history"]) == 4  # task-specific history (excludes system event)
+    assert len(evidence["workflow_events"]) == 5  # entire session event log contains 5 events
 
     # Confirm correct JSON serialization
     assert evidence_file.exists()
     with open(evidence_file, "r", encoding="utf-8") as f:
         loaded = json.load(f)
     assert loaded["execution_identifier"] == evidence["execution_identifier"]
+
+
+def test_operator_summary():
+    """Verify terminal operator-visible summary formatting and contents."""
+    orch = DeveloperWorkflowOrchestrator(session_id="session_test_summary")
+
+    # Activate agents
+    orch.ingest_event("AGENT_ACTIVATION", "system", {"agent_id": "agent_exec", "supervisor_id": "super", "decision": "AUTHORIZED"})
+    orch.ingest_event("AGENT_ACTIVATION", "system", {"agent_id": "agent_susp", "supervisor_id": "super", "decision": "SUSPENDED"})
+
+    orch.ingest_event(
+        "TASK_INIT",
+        "task_summary_01",
+        {
+            "objective_id": "obj_render_summary",
+            "assigned_agent": "agent_exec"
+        }
+    )
+
+    summary = orch.generate_operator_summary()
+    assert "SAGE OPERATIONAL COORDINATION & CONTEXT SUMMARY" in summary
+    assert "agent_exec" in summary
+    assert "[ACTIVATED]" in summary
+    assert "agent_susp" in summary
+    assert "[SUSPENDED]" in summary
+    assert "task_summary_01" in summary
+    assert "obj_render_summary" in summary
 
 
 def test_core_ast_isolation():
