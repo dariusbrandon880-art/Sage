@@ -699,3 +699,87 @@ def test_realistic_workflow_variation_and_recovery(tmp_path):
     report = evidence["workflow_intelligence_report"]
     opp_categories = [opp["category"] for opp in report["improvement_opportunities"]]
     assert "LIVELINESS" in opp_categories  # Matches "slow" or "delay" feedback
+
+
+def test_chatgpt_coordinated_agent_workflow_validation(tmp_path):
+    """Verify and validate SAGE first complete agent integration workflow using ChatGPT coordinator role."""
+    evidence_file = tmp_path / "ccl_chatgpt_validation_evidence.json"
+    orch = DeveloperWorkflowOrchestrator(session_id="session_chatgpt_integration_val")
+
+    # 1. Activation & Role Assignment Gate
+    chatgpt = ChatGPTAgentConnector(orch, agent_id="agent_chatgpt_coord")
+    orch.ingest_event("AGENT_ACTIVATION", "system", {"agent_id": "agent_jules_exec", "supervisor_id": "super", "decision": "AUTHORIZED", "role": "EXECUTOR"})
+    orch.ingest_event("AGENT_ACTIVATION", "system", {"agent_id": "agent_reviewer_gemini", "supervisor_id": "super", "decision": "AUTHORIZED", "role": "REVIEWER"})
+
+    # Validate active profiles in system
+    assert orch.agents["agent_chatgpt_coord"] == "ACTIVATED"
+    assert orch.agent_roles["agent_chatgpt_coord"] == "COORDINATOR"
+    assert orch.agents["agent_jules_exec"] == "ACTIVATED"
+    assert orch.agent_roles["agent_jules_exec"] == "EXECUTOR"
+
+    # 2. Mission Context Rehydration Validation (ChatGPT receives current states & baselines)
+    context_data = chatgpt.rehydrate_context()
+    assert context_data["agent_identity"]["agent_id"] == "agent_chatgpt_coord"
+    assert "ADR-001" in context_data["lineage_baselines"]
+    assert "SAGE-ACT-MP-2.0" in context_data["lineage_baselines"]
+
+    # 3. Conversational state alignment: Initialize parent task
+    parent_task = chatgpt.align_workflow_state("INITIATE_TASK", "task_parent", {
+        "objective_id": "obj_coordinated_refactoring",
+        "initial_context": {"baseline": "v1.0", "milestones_completed": ["Milestone-1-contracts"]},
+        "lineage_references": ["ADR-001", "SAGE-ACT-MP-2.0"]
+    })
+    assert parent_task["task_id"] == "task_parent"
+    assert parent_task["status"] == "INITIATED"
+    assert "Milestone-1-contracts" in parent_task["context"]["milestones_completed"]
+
+    # Start parent execution
+    chatgpt.align_workflow_state("START_EXECUTION", "task_parent", {"comment": "ChatGPT is actively aligning task status to ACTIVE."})
+    assert orch.tasks["task_parent"]["status"] == "ACTIVE"
+
+    # 4. Scoped Task Delegation (ChatGPT coordinates task assignment to Executor)
+    child_task = orch.delegate_task(
+        parent_task_id="task_parent",
+        child_task_id="task_exec_refactor",
+        to_agent="agent_jules_exec",
+        objective_id="obj_write_ccl_orchestrator",
+        initial_context={"files_to_modify": ["sage/experimental/act/ccl_orchestrator.py"]}
+    )
+    assert child_task["parent_task_id"] == "task_parent"
+    assert child_task["assigned_agent"] == "agent_jules_exec"
+    assert child_task["agent_role"] == "EXECUTOR"
+
+    # ChatGPT clarifies objective and guards mission boundaries
+    chatgpt.clarify_objective("task_exec_refactor", "Can we write tests?", "Yes, write comprehensive tests in tests/experimental.")
+    assert len(orch.tasks["task_exec_refactor"]["context"]["objective_clarifications"]) == 1
+
+    # 5. Scoped Execution & Updates (Ingest Executor progress)
+    orch.ingest_event("STATE_TRANSITION", "task_exec_refactor", {"target_status": "ACTIVE"})
+    orch.record_progress("task_exec_refactor", "agent_jules_exec", 100.0, {"stage": "all_tests_passed"}, "Tests verified green under pytest.")
+
+    # 6. Handoff Readiness Manifest (Generate secure manifest to request Reviewer review)
+    handoff_manifest = chatgpt.generate_handoff_manifest("task_exec_refactor", "agent_reviewer_gemini")
+    assert handoff_manifest["source_agent"] == "agent_chatgpt_coord"
+    assert handoff_manifest["destination_agent"] == "agent_reviewer_gemini"
+    assert orch.tasks["task_exec_refactor"]["status"] == "HANDOFF"
+    assert orch.tasks["task_exec_refactor"]["assigned_agent"] == "agent_reviewer_gemini"
+
+    # 7. Operational Traceability (Completions Trace: Event -> State Change -> Evidence Record -> Outcome)
+    orch.ingest_event("HUMAN_APPROVAL", "task_exec_refactor", {"supervisor_id": "human_supervisor_01", "decision": "AUTHORIZED", "comments": "Code matches all guidelines."})
+    orch.ingest_event("STATE_TRANSITION", "task_exec_refactor", {"target_status": "COMPLETED", "agent_id": "agent_reviewer_gemini", "comment": "Review completed successfully."})
+
+    orch.ingest_event("HUMAN_APPROVAL", "task_parent", {"supervisor_id": "human_supervisor_01", "decision": "AUTHORIZED", "comments": "Parent task approved."})
+    orch.ingest_event("STATE_TRANSITION", "task_parent", {"target_status": "COMPLETED", "agent_id": "agent_chatgpt_coord", "comment": "Mission successfully completed."})
+
+    # Export evidence payload
+    evidence = orch.export_evidence(str(evidence_file))
+    assert evidence["execution_identifier"] == orch.orchestrator_run_id
+    assert evidence["active_tasks"]["task_parent"]["status"] == "COMPLETED"
+    assert evidence["active_tasks"]["task_exec_refactor"]["status"] == "COMPLETED"
+
+    # Confirm traceability trace records
+    ccl_record = evidence["continuity_control_records"]["task_exec_refactor"]
+    assert ccl_record["task_state_snapshot"]["parent_task_id"] == "task_parent"
+    assert ccl_record["task_state_snapshot"]["progress_percent"] == 100.0
+    assert ccl_record["task_state_snapshot"]["latest_result"]["stage"] == "all_tests_passed"
+    assert len(ccl_record["monotonic_sequence_history"]) == 6 # Complete traceable chain (TASK_INIT, HUMAN_APPROVALs, STATE_TRANSITIONS, progress)
