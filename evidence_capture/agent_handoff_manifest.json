@@ -1,0 +1,33 @@
+{
+  "manifest_id": "manifest_handoff_d19239e9a150",
+  "timestamp": "2026-08-04T08:30:21.751865Z",
+  "source_session": "session_realignment_coordination",
+  "target_session_objectives": [
+    "obj_continuous_development"
+  ],
+  "state_snapshot": {
+    "completed_actions": [],
+    "pending_actions": [],
+    "important_decisions": []
+  },
+  "workspace_fingerprint": {
+    "evidence_capture/ccl_operational_feedback.json": {
+      "sha256": "527a3c717ed433de5a03fc569e449dee3bf1d807257dfe46a2cd0eecbd663fad",
+      "size_bytes": 4439
+    },
+    "sage/experimental/act/continuity_control.py": {
+      "sha256": "71316288cfed8e9827d46d044843f621b4073f365266bf470449df507088049f",
+      "size_bytes": 28908
+    },
+    "tests/experimental/test_continuity_control.py": {
+      "sha256": "3eee65a0a83542e31a581c20b824aaace2df6e5f1d3ce02e4083982b41a08eb1",
+      "size_bytes": 17345
+    }
+  },
+  "coordination_telemetry": {
+    "assigned_agent": "agent_jules_sage",
+    "nonce": "005b3df7ec564b12",
+    "rehydration_token": "rehydrate_4c4ba343bf434b97",
+    "instructions": "Run DeveloperWorkflowOrchestrator to re-verify context state."
+  }
+}

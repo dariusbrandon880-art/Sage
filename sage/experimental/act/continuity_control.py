@@ -518,6 +518,106 @@ class DeveloperWorkflowOrchestrator:
 
         return unified_evidence
 
+    def render_coordination_status(self) -> str:
+        """Generates a highly structured, operator-readable ASCII coordination dashboard."""
+        workspace = self.scan_git_workspace()
+        modified_files = workspace["modified_files"]
+
+        # Determine human approval/coordination status
+        record_storage = self.ccl.storage_path
+        validated_records = 0
+        proposed_records = 0
+        for f in record_storage.glob("*.json"):
+            try:
+                with open(f, "r", encoding="utf-8") as file:
+                    data = json.load(file)
+                    state = data.get("lifecycle_state")
+                    if state == "VALIDATED":
+                        validated_records += 1
+                    elif state == "PROPOSED":
+                        proposed_records += 1
+            except Exception:
+                pass
+
+        dashboard = [
+            "==================================================",
+            "  SAGE CO-ORDINATION & ACTIVATION STATUS DASHBOARD",
+            "==================================================",
+            f"Active Session: {self.session_id}",
+            f"Active Objectives: {', '.join(self.session.active_objectives)}",
+            "--------------------------------------------------",
+            "Agent & Task Assignment Info:",
+            "  Agent ID:   agent_jules_sage",
+            "  Role:       Senior Software Engineer",
+            "  Tier:       TIER_1_COORDINATOR",
+            "  Task ID:    task_active_development",
+            "--------------------------------------------------",
+            "Workspace Track & Guard Status:",
+            f"  Uncommitted Files: {len(modified_files)} file(s)",
+        ]
+        for f in modified_files[:5]:
+            dashboard.append(f"    - {f}")
+        if len(modified_files) > 5:
+            dashboard.append(f"    - ... and {len(modified_files) - 5} more")
+
+        dashboard.extend([
+            "--------------------------------------------------",
+            "SAGE-CCL Ledger Stats:",
+            f"  Proposed Records:  {proposed_records}",
+            f"  Validated Records: {validated_records}",
+            "=================================================="
+        ])
+
+        return "\n".join(dashboard)
+
+    def prepare_agent_handoff(self, output_path: str = "evidence_capture/agent_handoff_manifest.json") -> Dict[str, Any]:
+        """Compiles active session, workspace cryptographic state, and telemetry into a serialized handoff manifest."""
+        from datetime import datetime, timezone
+        workspace = self.scan_git_workspace()
+        modified_files = workspace["modified_files"]
+
+        # Build file fingerprint map
+        file_fingerprints = {}
+        for file in modified_files:
+            file_hash = hashlib.sha256(file.encode()).hexdigest()
+            if os.path.exists(file):
+                try:
+                    with open(file, "rb") as f:
+                        file_hash = hashlib.sha256(f.read()).hexdigest()
+                except Exception:
+                    pass
+            file_fingerprints[file] = {
+                "sha256": file_hash,
+                "size_bytes": os.path.getsize(file) if os.path.exists(file) else 0
+            }
+
+        manifest = {
+            "manifest_id": f"manifest_handoff_{uuid.uuid4().hex[:12]}",
+            "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+            "source_session": self.session_id,
+            "target_session_objectives": list(self.session.active_objectives),
+            "state_snapshot": {
+                "completed_actions": list(self.session.completed_actions),
+                "pending_actions": list(self.session.pending_actions),
+                "important_decisions": list(self.session.important_decisions)
+            },
+            "workspace_fingerprint": file_fingerprints,
+            "coordination_telemetry": {
+                "assigned_agent": "agent_jules_sage",
+                "nonce": uuid.uuid4().hex[:16],
+                "rehydration_token": f"rehydrate_{uuid.uuid4().hex[:16]}",
+                "instructions": "Run DeveloperWorkflowOrchestrator to re-verify context state."
+            }
+        }
+
+        # Write manifest out
+        m_path = Path(output_path)
+        m_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(m_path, "w", encoding="utf-8") as f:
+            json.dump(manifest, f, indent=2, default=str)
+
+        return manifest
+
 
 if __name__ == "__main__":
     # Interactive CLI mode
@@ -572,4 +672,15 @@ if __name__ == "__main__":
     print(f"    - CMAPS Audit ID: {result['cmaps_payload']['audit_id']}")
     print(f"    - Status: {result['status']}")
     print(f"    - Evidence saved to: {orchestrator.evidence_output_path}")
+
+    print(f"\n[*] Generating Live Coordination Status Dashboard...")
+    dashboard = orchestrator.render_coordination_status()
+    print(dashboard)
+
+    print(f"\n[*] Preparing Structured Agent Handoff Manifest...")
+    handoff = orchestrator.prepare_agent_handoff()
+    print(f"    - Manifest ID: {handoff['manifest_id']}")
+    print(f"    - Source Session: {handoff['source_session']}")
+    print(f"    - Uncommitted File Fingerprints: {len(handoff['workspace_fingerprint'])}")
+    print(f"    - Handoff Manifest saved to: evidence_capture/agent_handoff_manifest.json")
     print("\n====================================================")

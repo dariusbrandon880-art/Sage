@@ -362,3 +362,50 @@ def test_developer_workflow_orchestrator_scan_git(tmp_path):
     assert "modified_files" in workspace
     assert "diffs" in workspace
     assert len(workspace["modified_files"]) > 0
+
+
+def test_operator_status_dashboard_formatting(tmp_path):
+    """Verify the ASCII status dashboard is generated with correct section titles and session values."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_dash_test_123",
+        evidence_output_path=str(tmp_path / "dash_evidence.json")
+    )
+
+    dashboard = orchestrator.render_coordination_status()
+    assert "SAGE CO-ORDINATION & ACTIVATION STATUS DASHBOARD" in dashboard
+    assert "Active Session: session_dash_test_123" in dashboard
+    assert "Agent & Task Assignment Info" in dashboard
+    assert "Workspace Track & Guard Status" in dashboard
+    assert "SAGE-CCL Ledger Stats" in dashboard
+
+
+def test_prepare_handoff_manifest(tmp_path):
+    """Verify that prepare_agent_handoff successfully generates a compliant JSON handoff manifest."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator
+
+    output_manifest = tmp_path / "agent_handoff_manifest.json"
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_handoff_test",
+        evidence_output_path=str(tmp_path / "feedback.json")
+    )
+
+    # Run handoff preparation
+    manifest = orchestrator.prepare_agent_handoff(output_path=str(output_manifest))
+
+    # Assert on manifest structures
+    assert manifest["source_session"] == "session_handoff_test"
+    assert "manifest_id" in manifest
+    assert "timestamp" in manifest
+    assert "workspace_fingerprint" in manifest
+    assert "coordination_telemetry" in manifest
+    assert manifest["coordination_telemetry"]["assigned_agent"] == "agent_jules_sage"
+    assert "rehydration_token" in manifest["coordination_telemetry"]
+
+    # Verify JSON file structure
+    assert output_manifest.exists()
+    with open(output_manifest, "r", encoding="utf-8") as f:
+        loaded = json.load(f)
+    assert loaded["manifest_id"] == manifest["manifest_id"]
+    assert loaded["source_session"] == "session_handoff_test"
