@@ -510,3 +510,88 @@ def test_core_ast_isolation():
                         if node.module:
                             assert "sage.experimental" not in node.module, \
                                 f"AST Isolation Violation in '{filepath}': From-imports '{node.module}'"
+
+
+def test_end_to_end_integrated_system(tmp_path):
+    """Rigorous end-to-end integration test validating the entire SAGE control loop as one cohesive system."""
+    evidence_file = tmp_path / "ccl_integrated_evidence.json"
+    orch = DeveloperWorkflowOrchestrator(session_id="session_root_integration")
+
+    # 1. Agent Activation Registry (Governed Gate)
+    orch.ingest_event("AGENT_ACTIVATION", "system", {"agent_id": "agent_coord", "supervisor_id": "super", "decision": "AUTHORIZED", "role": "COORDINATOR"})
+    orch.ingest_event("AGENT_ACTIVATION", "system", {"agent_id": "agent_exec", "supervisor_id": "super", "decision": "AUTHORIZED", "role": "EXECUTOR"})
+    orch.ingest_event("AGENT_ACTIVATION", "system", {"agent_id": "agent_analyst", "supervisor_id": "super", "decision": "AUTHORIZED", "role": "ANALYST"})
+    orch.ingest_event("AGENT_ACTIVATION", "system", {"agent_id": "agent_reviewer", "supervisor_id": "super", "decision": "AUTHORIZED", "role": "REVIEWER"})
+
+    # 2. Task Initialization (Parent Workflow)
+    orch.ingest_event("TASK_INIT", "task_root", {
+        "objective_id": "obj_root_integration",
+        "assigned_agent": "agent_coord",
+        "initial_context": {"workspace": "sage/experimental/act", "status": "init"},
+        "lineage_references": ["ADR-001", "SAGE-ACT-MP-2.0"]
+    })
+
+    # Move parent task to ACTIVE
+    orch.ingest_event("STATE_TRANSITION", "task_root", {"target_status": "ACTIVE"})
+
+    # 3. Coordinated Task Delegation
+    orch.delegate_task("task_root", "subtask_exec", "agent_exec", "obj_exec_subtask")
+    orch.delegate_task("task_root", "subtask_analyst", "agent_analyst", "obj_analyst_subtask")
+
+    # 4. Controlled Agent Execution (Progress & Feedback Reporting)
+    orch.ingest_event("STATE_TRANSITION", "subtask_exec", {"target_status": "ACTIVE"})
+    orch.record_progress("subtask_exec", "agent_exec", 50.0, {"stage": "code_gen"}, "Verify and test AST compilation limits.")
+    orch.record_progress("subtask_exec", "agent_exec", 100.0, {"stage": "done"}, "Encountered boundary security violations.")
+
+    orch.ingest_event("STATE_TRANSITION", "subtask_analyst", {"target_status": "ACTIVE"})
+    orch.record_progress("subtask_analyst", "agent_analyst", 100.0, {"violations": 0}, "Verified zero AST mutations.")
+
+    # 5. Coordinated Handoff Sequencing
+    orch.ingest_event("AGENT_HANDOFF", "subtask_exec", {
+        "target_agent": "agent_reviewer",
+        "handoff_context": {"git_hash": "a8c9b201"},
+        "reason": "Request code refactor review."
+    })
+
+    # 6. Human Authorization Gateway Checks
+    orch.ingest_event("HUMAN_APPROVAL", "subtask_exec", {"supervisor_id": "human_supervisor_01", "decision": "AUTHORIZED", "comments": "Approved."})
+    orch.ingest_event("STATE_TRANSITION", "subtask_exec", {"target_status": "COMPLETED", "agent_id": "agent_reviewer", "comment": "Reviewer signed off."})
+
+    orch.ingest_event("HUMAN_APPROVAL", "subtask_analyst", {"supervisor_id": "human_supervisor_01", "decision": "AUTHORIZED", "comments": "AST isolation check approved."})
+    orch.ingest_event("STATE_TRANSITION", "subtask_analyst", {"target_status": "COMPLETED", "agent_id": "agent_analyst", "comment": "Analyst signed off."})
+
+    orch.ingest_event("HUMAN_APPROVAL", "task_root", {"supervisor_id": "human_supervisor_01", "decision": "AUTHORIZED", "comments": "Root workflow approved."})
+    orch.ingest_event("STATE_TRANSITION", "task_root", {"target_status": "COMPLETED", "agent_id": "agent_coord", "comment": "Coordinated workflow completed."})
+
+    # 7. Operational Evidence Export & Analytics (SAGE-OWIL)
+    evidence = orch.export_evidence(str(evidence_file))
+
+    # Assertions validating the entire integrated system works as one cohesive unit
+    assert evidence["execution_identifier"] == orch.orchestrator_run_id
+    assert "task_root" in evidence["active_tasks"]
+    assert "subtask_exec" in evidence["active_tasks"]
+    assert "subtask_analyst" in evidence["active_tasks"]
+
+    # Verify state, context preservation, and lineage tracing
+    subtask_exec_state = evidence["active_tasks"]["subtask_exec"]
+    assert subtask_exec_state["status"] == "COMPLETED"
+    assert subtask_exec_state["assigned_agent"] == "agent_reviewer"
+    assert subtask_exec_state["agent_role"] == "REVIEWER"
+    assert subtask_exec_state["context"]["git_hash"] == "a8c9b201"
+    assert subtask_exec_state["context"]["last_handoff_by"] == "agent_exec"
+    assert len(subtask_exec_state["operational_feedback"]) == 2
+
+    # Verify intelligence report is generated
+    report = evidence["workflow_intelligence_report"]
+    assert len(report["active_risks"]) >= 0
+    assert len(report["drift_events"]) >= 0
+    assert len(report["improvement_opportunities"]) == 3
+    assert len(report["structured_improvement_candidates"]) == 3
+
+    # Confirm operator intelligence view console output formatting
+    view = report["operator_intelligence_view"]
+    assert "SAGE WORKFLOW INTELLIGENCE & FEEDBACK LAYER" in view[1]
+    assert " ACTIVE RISKS DETECTED:" in view
+    assert " BLOCKED / STALLED TASKS:" in view
+    assert " TASK OBJECTIVE DRIFT EVENTS:" in view
+    assert " STRUCTURED IMPROVEMENT CANDIDATES GENERATED:" in view
