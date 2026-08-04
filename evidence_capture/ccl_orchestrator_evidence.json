@@ -9,62 +9,92 @@
           "assigned_agent": "agent_analyst",
           "comment": "Task initiated.",
           "status": "INITIATED",
-          "timestamp": "2026-08-04T09:59:24.306366+00:00"
+          "timestamp": "2026-08-04T10:29:13.178809+00:00"
+        },
+        {
+          "assigned_agent": "agent_analyst",
+          "comment": "Human approval verdict by human_supervisor_01: AUTHORIZED. Comments: AST isolation checked.",
+          "status": "INITIATED",
+          "timestamp": "2026-08-04T10:29:13.178957+00:00"
         },
         {
           "assigned_agent": "agent_analyst",
           "comment": "",
           "status": "ACTIVE",
-          "timestamp": "2026-08-04T09:59:24.306441+00:00"
-        },
-        {
-          "assigned_agent": "agent_analyst",
-          "comment": "Reported execution progress: 100.0%. Feedback: Verified 100% boundary isolation.",
-          "status": "ACTIVE",
-          "timestamp": "2026-08-04T09:59:24.306455+00:00"
-        },
-        {
-          "assigned_agent": "agent_analyst",
-          "comment": "Human approval verdict by human_supervisor_01: AUTHORIZED. Comments: AST isolation checked and verified.",
-          "status": "ACTIVE",
-          "timestamp": "2026-08-04T09:59:24.306517+00:00"
+          "timestamp": "2026-08-04T10:29:13.178974+00:00"
         },
         {
           "assigned_agent": "agent_analyst",
           "comment": "Analyst verified zero core mutations.",
           "status": "COMPLETED",
-          "timestamp": "2026-08-04T09:59:24.306535+00:00"
+          "timestamp": "2026-08-04T10:29:13.178989+00:00"
         }
       ],
       "human_approval": {
-        "checkpoint_id": "chk_3e744646",
-        "comments": "AST isolation checked and verified.",
+        "checkpoint_id": "chk_74056302",
+        "comments": "AST isolation checked.",
         "decision": "AUTHORIZED",
         "supervisor_id": "human_supervisor_01",
-        "timestamp": "2026-08-04T09:59:24.306517+00:00"
+        "timestamp": "2026-08-04T10:29:13.178957+00:00"
       },
-      "latest_result": {
-        "core_untouched": true,
-        "violations": 0
-      },
-      "lineage_references": [
-        "ADR-001",
-        "SAGE-ACT-MP-2.0"
-      ],
+      "latest_result": {},
+      "lineage_references": [],
       "objective_id": "obj_verify_ast_isolation",
-      "operational_feedback": [
-        {
-          "agent_id": "agent_analyst",
-          "feedback": "Verified 100% boundary isolation.",
-          "timestamp": "2026-08-04T09:59:24.306455+00:00"
-        }
-      ],
+      "operational_feedback": [],
       "parent_task_id": "task_ops_parent",
-      "progress_percent": 100.0,
+      "progress_percent": 0.0,
       "session_id": "session_ccl_ops_2026",
       "status": "COMPLETED",
       "subtask_ids": [],
       "task_id": "subtask_analyst"
+    },
+    "subtask_drift": {
+      "agent_role": "ANALYST",
+      "assigned_agent": "agent_analyst",
+      "context": {},
+      "history": [
+        {
+          "assigned_agent": "agent_analyst",
+          "comment": "Task initiated.",
+          "status": "INITIATED",
+          "timestamp": "2026-08-04T10:29:13.178825+00:00"
+        },
+        {
+          "assigned_agent": "agent_analyst",
+          "comment": "Human approval verdict by human_supervisor_01: AUTHORIZED. Comments: AST isolation checked.",
+          "status": "INITIATED",
+          "timestamp": "2026-08-04T10:29:13.179000+00:00"
+        },
+        {
+          "assigned_agent": "agent_analyst",
+          "comment": "",
+          "status": "ACTIVE",
+          "timestamp": "2026-08-04T10:29:13.179018+00:00"
+        },
+        {
+          "assigned_agent": "agent_analyst",
+          "comment": "Analyst verified zero core mutations.",
+          "status": "COMPLETED",
+          "timestamp": "2026-08-04T10:29:13.179032+00:00"
+        }
+      ],
+      "human_approval": {
+        "checkpoint_id": "chk_2bfbf914",
+        "comments": "AST isolation checked.",
+        "decision": "AUTHORIZED",
+        "supervisor_id": "human_supervisor_01",
+        "timestamp": "2026-08-04T10:29:13.179000+00:00"
+      },
+      "latest_result": {},
+      "lineage_references": [],
+      "objective_id": "obj_unrelated_drift_objective",
+      "operational_feedback": [],
+      "parent_task_id": "task_ops_parent",
+      "progress_percent": 0.0,
+      "session_id": "session_ccl_ops_2026",
+      "status": "COMPLETED",
+      "subtask_ids": [],
+      "task_id": "subtask_drift"
     },
     "subtask_exec": {
       "agent_role": "REVIEWER",
@@ -80,78 +110,73 @@
           "assigned_agent": "agent_exec",
           "comment": "Task initiated.",
           "status": "INITIATED",
-          "timestamp": "2026-08-04T09:59:24.306347+00:00"
+          "timestamp": "2026-08-04T10:29:13.178790+00:00"
         },
         {
           "assigned_agent": "agent_exec",
           "comment": "",
           "status": "ACTIVE",
-          "timestamp": "2026-08-04T09:59:24.306382+00:00"
+          "timestamp": "2026-08-04T10:29:13.178845+00:00"
         },
         {
           "assigned_agent": "agent_exec",
-          "comment": "Reported execution progress: 25.0%. Feedback: Completed workspace scanning.",
+          "comment": "Reported execution progress: 50.0%. Feedback: Verify and test AST compilation limits.",
           "status": "ACTIVE",
-          "timestamp": "2026-08-04T09:59:24.306398+00:00"
+          "timestamp": "2026-08-04T10:29:13.178866+00:00"
         },
         {
           "assigned_agent": "agent_exec",
-          "comment": "Reported execution progress: 100.0%. Feedback: Finished implementation and manual checks.",
+          "comment": "Reported execution progress: 100.0%. Feedback: Encountered boundary security violations.",
           "status": "ACTIVE",
-          "timestamp": "2026-08-04T09:59:24.306422+00:00"
+          "timestamp": "2026-08-04T10:29:13.178895+00:00"
         },
         {
           "assigned_agent": "agent_exec",
-          "comment": "Handoff to agent_reviewer initiated: Request peer code review and AST safety compliance checks.",
+          "comment": "Handoff to agent_reviewer initiated: Request peer code review.",
           "status": "HANDOFF",
-          "timestamp": "2026-08-04T09:59:24.306471+00:00"
+          "timestamp": "2026-08-04T10:29:13.178911+00:00"
         },
         {
           "assigned_agent": "agent_reviewer",
           "comment": "Context handed off from agent_exec to agent_reviewer.",
           "status": "HANDOFF",
-          "timestamp": "2026-08-04T09:59:24.306471+00:00"
+          "timestamp": "2026-08-04T10:29:13.178911+00:00"
         },
         {
           "assigned_agent": "agent_reviewer",
           "comment": "Human approval verdict by human_supervisor_01: AUTHORIZED. Comments: Code looks exceptional.",
           "status": "HANDOFF",
-          "timestamp": "2026-08-04T09:59:24.306487+00:00"
+          "timestamp": "2026-08-04T10:29:13.178927+00:00"
         },
         {
           "assigned_agent": "agent_reviewer",
           "comment": "Reviewer signed off on code refactoring.",
           "status": "COMPLETED",
-          "timestamp": "2026-08-04T09:59:24.306505+00:00"
+          "timestamp": "2026-08-04T10:29:13.178945+00:00"
         }
       ],
       "human_approval": {
-        "checkpoint_id": "chk_9a6847b7",
+        "checkpoint_id": "chk_693b6220",
         "comments": "Code looks exceptional.",
         "decision": "AUTHORIZED",
         "supervisor_id": "human_supervisor_01",
-        "timestamp": "2026-08-04T09:59:24.306487+00:00"
+        "timestamp": "2026-08-04T10:29:13.178927+00:00"
       },
       "latest_result": {
-        "diff_size": 180,
-        "git_hash": "a8c9b201",
-        "stage": "parsing_files"
+        "git_hash": "a8c9b201"
       },
-      "lineage_references": [
-        "ADR-001",
-        "SAGE-ACT-MP-2.0"
-      ],
+      "lineage_references": [],
       "objective_id": "obj_write_ccl_orchestrator",
       "operational_feedback": [
         {
           "agent_id": "agent_exec",
-          "feedback": "Completed workspace scanning.",
-          "timestamp": "2026-08-04T09:59:24.306398+00:00"
+          "feedback": "Verify and test AST compilation limits.",
+          "timestamp": "2026-08-04T10:29:13.178866+00:00"
         },
         {
           "agent_id": "agent_exec",
-          "feedback": "Finished implementation and manual checks.",
-          "timestamp": "2026-08-04T09:59:24.306422+00:00"
+          "feedback": "Encountered boundary security violations.",
+          "timestamp": "2026-08-04T10:29:13.178895+00:00"
         }
       ],
       "parent_task_id": "task_ops_parent",
@@ -173,51 +198,54 @@
           "assigned_agent": "agent_coord",
           "comment": "Task initiated.",
           "status": "INITIATED",
-          "timestamp": "2026-08-04T09:59:24.306316+00:00"
+          "timestamp": "2026-08-04T10:29:13.178759+00:00"
         },
         {
           "assigned_agent": "agent_coord",
           "comment": "Coordinator initiated workflow.",
           "status": "ACTIVE",
-          "timestamp": "2026-08-04T09:59:24.306331+00:00"
+          "timestamp": "2026-08-04T10:29:13.178774+00:00"
         },
         {
           "assigned_agent": "agent_coord",
-          "comment": "Delegated subtask 'subtask_exec' to agent_exec (Role: EXECUTOR).",
+          "comment": "Delegated subtask 'subtask_exec' to agent_exec (Role: GENERAL_AGENT).",
           "status": "ACTIVE",
-          "timestamp": "2026-08-04T09:59:24.306347+00:00"
+          "timestamp": "2026-08-04T10:29:13.178790+00:00"
         },
         {
           "assigned_agent": "agent_coord",
           "comment": "Delegated subtask 'subtask_analyst' to agent_analyst (Role: ANALYST).",
           "status": "ACTIVE",
-          "timestamp": "2026-08-04T09:59:24.306366+00:00"
+          "timestamp": "2026-08-04T10:29:13.178809+00:00"
+        },
+        {
+          "assigned_agent": "agent_coord",
+          "comment": "Delegated subtask 'subtask_drift' to agent_analyst (Role: ANALYST).",
+          "status": "ACTIVE",
+          "timestamp": "2026-08-04T10:29:13.178825+00:00"
         },
         {
           "assigned_agent": "agent_coord",
           "comment": "Human approval verdict by human_supervisor_01: AUTHORIZED. Comments: Multi-agent coordination tree satisfies all safety and isolation boundaries. Approved.",
           "status": "ACTIVE",
-          "timestamp": "2026-08-04T09:59:24.306547+00:00"
+          "timestamp": "2026-08-04T10:29:13.179049+00:00"
         },
         {
           "assigned_agent": "agent_coord",
           "comment": "All subtasks completed successfully. Closing parent workflow.",
           "status": "COMPLETED",
-          "timestamp": "2026-08-04T09:59:24.306567+00:00"
+          "timestamp": "2026-08-04T10:29:13.179101+00:00"
         }
       ],
       "human_approval": {
-        "checkpoint_id": "chk_f3a2f945",
+        "checkpoint_id": "chk_07cbf33a",
         "comments": "Multi-agent coordination tree satisfies all safety and isolation boundaries. Approved.",
         "decision": "AUTHORIZED",
         "supervisor_id": "human_supervisor_01",
-        "timestamp": "2026-08-04T09:59:24.306547+00:00"
+        "timestamp": "2026-08-04T10:29:13.179049+00:00"
       },
       "latest_result": {},
-      "lineage_references": [
-        "ADR-001",
-        "SAGE-ACT-MP-2.0"
-      ],
+      "lineage_references": [],
       "objective_id": "obj_code_review_refactor",
       "operational_feedback": [],
       "parent_task_id": null,
@@ -226,7 +254,8 @@
       "status": "COMPLETED",
       "subtask_ids": [
         "subtask_exec",
-        "subtask_analyst"
+        "subtask_analyst",
+        "subtask_drift"
       ],
       "task_id": "task_ops_parent"
     }
@@ -234,7 +263,7 @@
   "agent_roles": {
     "agent_analyst": "ANALYST",
     "agent_coord": "COORDINATOR",
-    "agent_exec": "EXECUTOR",
+    "agent_exec": "GENERAL_AGENT",
     "agent_reviewer": "REVIEWER"
   },
   "boundary_checks": {
@@ -251,58 +280,40 @@
       },
       "monotonic_sequence_history": [
         {
-          "event_id": "evt_c2c3c562",
+          "event_id": "evt_67178af9",
           "event_type": "TASK_INIT",
           "payload": {
             "assigned_agent": "agent_analyst",
             "initial_context": {},
-            "lineage_references": [
-              "ADR-001",
-              "SAGE-ACT-MP-2.0"
-            ],
+            "lineage_references": [],
             "objective_id": "obj_verify_ast_isolation",
             "parent_task_id": "task_ops_parent"
           },
           "task_id": "subtask_analyst",
-          "timestamp": "2026-08-04T09:59:24.306366+00:00"
+          "timestamp": "2026-08-04T10:29:13.178809+00:00"
         },
         {
-          "event_id": "evt_b79ed2cd",
+          "event_id": "evt_8dbd2ba4",
+          "event_type": "HUMAN_APPROVAL",
+          "payload": {
+            "comments": "AST isolation checked.",
+            "decision": "AUTHORIZED",
+            "supervisor_id": "human_supervisor_01"
+          },
+          "task_id": "subtask_analyst",
+          "timestamp": "2026-08-04T10:29:13.178957+00:00"
+        },
+        {
+          "event_id": "evt_b42a16c6",
           "event_type": "STATE_TRANSITION",
           "payload": {
             "target_status": "ACTIVE"
           },
           "task_id": "subtask_analyst",
-          "timestamp": "2026-08-04T09:59:24.306441+00:00"
+          "timestamp": "2026-08-04T10:29:13.178974+00:00"
         },
         {
-          "event_id": "evt_4f8f4e7b",
-          "event_type": "TASK_PROGRESS",
-          "payload": {
-            "agent_id": "agent_analyst",
-            "feedback": "Verified 100% boundary isolation.",
-            "progress_percent": 100.0,
-            "result_payload": {
-              "core_untouched": true,
-              "violations": 0
-            }
-          },
-          "task_id": "subtask_analyst",
-          "timestamp": "2026-08-04T09:59:24.306455+00:00"
-        },
-        {
-          "event_id": "evt_1a5656bf",
-          "event_type": "HUMAN_APPROVAL",
-          "payload": {
-            "comments": "AST isolation checked and verified.",
-            "decision": "AUTHORIZED",
-            "supervisor_id": "human_supervisor_01"
-          },
-          "task_id": "subtask_analyst",
-          "timestamp": "2026-08-04T09:59:24.306517+00:00"
-        },
-        {
-          "event_id": "evt_db8d6f99",
+          "event_id": "evt_1a6f62b8",
           "event_type": "STATE_TRANSITION",
           "payload": {
             "agent_id": "agent_analyst",
@@ -310,50 +321,121 @@
             "target_status": "COMPLETED"
           },
           "task_id": "subtask_analyst",
-          "timestamp": "2026-08-04T09:59:24.306535+00:00"
+          "timestamp": "2026-08-04T10:29:13.178989+00:00"
         }
       ],
-      "orchestrator_run_id": "ccl_run_cd12da42",
-      "record_id": "CCL-REC-20260804-e802daa10a3b",
+      "orchestrator_run_id": "ccl_run_fe5c4272",
+      "record_id": "CCL-REC-20260804-088f9a79de13",
       "session_id": "session_ccl_ops_2026",
       "state_integrity": {
-        "chain_hash": "3e97668541db4de01a669ff967afebe316cf0719576d59e56661849302860c3b",
-        "state_hash": "fb43cabfabc6e0b39e57438a3e409c2b15a50b00467ef13596c53591b3d7efc3"
+        "chain_hash": "4796b5265b5a3523d6d1ad266015b42a740838c4b70e120a3922064166b677d9",
+        "state_hash": "49730b133d00d9955d111cba4f49790abe245f1df7f6ce5a7bdf9e6ae653b25a"
       },
       "task_state_snapshot": {
         "agent_role": "ANALYST",
         "assigned_agent": "agent_analyst",
         "context": {},
         "human_approval": {
-          "checkpoint_id": "chk_3e744646",
-          "comments": "AST isolation checked and verified.",
+          "checkpoint_id": "chk_74056302",
+          "comments": "AST isolation checked.",
           "decision": "AUTHORIZED",
           "supervisor_id": "human_supervisor_01",
-          "timestamp": "2026-08-04T09:59:24.306517+00:00"
+          "timestamp": "2026-08-04T10:29:13.178957+00:00"
         },
-        "latest_result": {
-          "core_untouched": true,
-          "violations": 0
-        },
-        "lineage_references": [
-          "ADR-001",
-          "SAGE-ACT-MP-2.0"
-        ],
+        "latest_result": {},
+        "lineage_references": [],
         "objective_id": "obj_verify_ast_isolation",
-        "operational_feedback": [
-          {
-            "agent_id": "agent_analyst",
-            "feedback": "Verified 100% boundary isolation.",
-            "timestamp": "2026-08-04T09:59:24.306455+00:00"
-          }
-        ],
+        "operational_feedback": [],
         "parent_task_id": "task_ops_parent",
-        "progress_percent": 100.0,
+        "progress_percent": 0.0,
         "status": "COMPLETED",
         "subtask_ids": [],
         "task_id": "subtask_analyst"
       },
-      "timestamp": "2026-08-04T09:59:24.306737+00:00"
+      "timestamp": "2026-08-04T10:29:13.179263+00:00"
+    },
+    "subtask_drift": {
+      "boundary_isolation_verified": {
+        "sage_acr_untouched": true,
+        "sage_agents_untouched": true,
+        "sage_core_untouched": true,
+        "sage_runtime_untouched": true
+      },
+      "monotonic_sequence_history": [
+        {
+          "event_id": "evt_744e0ba1",
+          "event_type": "TASK_INIT",
+          "payload": {
+            "assigned_agent": "agent_analyst",
+            "initial_context": {},
+            "lineage_references": [],
+            "objective_id": "obj_unrelated_drift_objective",
+            "parent_task_id": "task_ops_parent"
+          },
+          "task_id": "subtask_drift",
+          "timestamp": "2026-08-04T10:29:13.178825+00:00"
+        },
+        {
+          "event_id": "evt_f7dcde1e",
+          "event_type": "HUMAN_APPROVAL",
+          "payload": {
+            "comments": "AST isolation checked.",
+            "decision": "AUTHORIZED",
+            "supervisor_id": "human_supervisor_01"
+          },
+          "task_id": "subtask_drift",
+          "timestamp": "2026-08-04T10:29:13.179000+00:00"
+        },
+        {
+          "event_id": "evt_513a81cb",
+          "event_type": "STATE_TRANSITION",
+          "payload": {
+            "target_status": "ACTIVE"
+          },
+          "task_id": "subtask_drift",
+          "timestamp": "2026-08-04T10:29:13.179018+00:00"
+        },
+        {
+          "event_id": "evt_dd3ad931",
+          "event_type": "STATE_TRANSITION",
+          "payload": {
+            "agent_id": "agent_analyst",
+            "comment": "Analyst verified zero core mutations.",
+            "target_status": "COMPLETED"
+          },
+          "task_id": "subtask_drift",
+          "timestamp": "2026-08-04T10:29:13.179032+00:00"
+        }
+      ],
+      "orchestrator_run_id": "ccl_run_fe5c4272",
+      "record_id": "CCL-REC-20260804-b2646f381a52",
+      "session_id": "session_ccl_ops_2026",
+      "state_integrity": {
+        "chain_hash": "dbf428ed268b854030a68f1b9f57249852a381d1b60b3d2362d1d7f1f7a3b55e",
+        "state_hash": "e2d1c322ca51d2e957b04af642cbf0f9e214e7c7e21501d1a7c7e5cd1c187955"
+      },
+      "task_state_snapshot": {
+        "agent_role": "ANALYST",
+        "assigned_agent": "agent_analyst",
+        "context": {},
+        "human_approval": {
+          "checkpoint_id": "chk_2bfbf914",
+          "comments": "AST isolation checked.",
+          "decision": "AUTHORIZED",
+          "supervisor_id": "human_supervisor_01",
+          "timestamp": "2026-08-04T10:29:13.179000+00:00"
+        },
+        "latest_result": {},
+        "lineage_references": [],
+        "objective_id": "obj_unrelated_drift_objective",
+        "operational_feedback": [],
+        "parent_task_id": "task_ops_parent",
+        "progress_percent": 0.0,
+        "status": "COMPLETED",
+        "subtask_ids": [],
+        "task_id": "subtask_drift"
+      },
+      "timestamp": "2026-08-04T10:29:13.179304+00:00"
     },
     "subtask_exec": {
       "boundary_isolation_verified": {
@@ -364,7 +446,7 @@
       },
       "monotonic_sequence_history": [
         {
-          "event_id": "evt_a3eec667",
+          "event_id": "evt_22a29f50",
           "event_type": "TASK_INIT",
           "payload": {
             "assigned_agent": "agent_exec",
@@ -374,56 +456,50 @@
                 "sage/experimental/act/ccl_orchestrator.py"
               ]
             },
-            "lineage_references": [
-              "ADR-001",
-              "SAGE-ACT-MP-2.0"
-            ],
+            "lineage_references": [],
             "objective_id": "obj_write_ccl_orchestrator",
             "parent_task_id": "task_ops_parent"
           },
           "task_id": "subtask_exec",
-          "timestamp": "2026-08-04T09:59:24.306347+00:00"
+          "timestamp": "2026-08-04T10:29:13.178790+00:00"
         },
         {
-          "event_id": "evt_3991ab81",
+          "event_id": "evt_f8160b1a",
           "event_type": "STATE_TRANSITION",
           "payload": {
             "target_status": "ACTIVE"
           },
           "task_id": "subtask_exec",
-          "timestamp": "2026-08-04T09:59:24.306382+00:00"
+          "timestamp": "2026-08-04T10:29:13.178845+00:00"
         },
         {
-          "event_id": "evt_7a85ef5a",
+          "event_id": "evt_b0adc182",
           "event_type": "TASK_PROGRESS",
           "payload": {
             "agent_id": "agent_exec",
-            "feedback": "Completed workspace scanning.",
-            "progress_percent": 25.0,
-            "result_payload": {
-              "stage": "parsing_files"
-            }
+            "feedback": "Verify and test AST compilation limits.",
+            "progress_percent": 50.0,
+            "result_payload": {}
           },
           "task_id": "subtask_exec",
-          "timestamp": "2026-08-04T09:59:24.306398+00:00"
+          "timestamp": "2026-08-04T10:29:13.178866+00:00"
         },
         {
-          "event_id": "evt_ef3d102b",
+          "event_id": "evt_f84af3f3",
           "event_type": "TASK_PROGRESS",
           "payload": {
             "agent_id": "agent_exec",
-            "feedback": "Finished implementation and manual checks.",
+            "feedback": "Encountered boundary security violations.",
             "progress_percent": 100.0,
             "result_payload": {
-              "diff_size": 180,
               "git_hash": "a8c9b201"
             }
           },
           "task_id": "subtask_exec",
-          "timestamp": "2026-08-04T09:59:24.306422+00:00"
+          "timestamp": "2026-08-04T10:29:13.178895+00:00"
         },
         {
-          "event_id": "evt_52913e52",
+          "event_id": "evt_9eb1fa0f",
           "event_type": "AGENT_HANDOFF",
           "payload": {
             "handoff_context": {
@@ -431,14 +507,14 @@
                 "sage/experimental/act/ccl_orchestrator.py"
               ]
             },
-            "reason": "Request peer code review and AST safety compliance checks.",
+            "reason": "Request peer code review.",
             "target_agent": "agent_reviewer"
           },
           "task_id": "subtask_exec",
-          "timestamp": "2026-08-04T09:59:24.306471+00:00"
+          "timestamp": "2026-08-04T10:29:13.178911+00:00"
         },
         {
-          "event_id": "evt_95ad6ec4",
+          "event_id": "evt_886cd955",
           "event_type": "HUMAN_APPROVAL",
           "payload": {
             "comments": "Code looks exceptional.",
@@ -446,10 +522,10 @@
             "supervisor_id": "human_supervisor_01"
           },
           "task_id": "subtask_exec",
-          "timestamp": "2026-08-04T09:59:24.306487+00:00"
+          "timestamp": "2026-08-04T10:29:13.178927+00:00"
         },
         {
-          "event_id": "evt_6672cc8c",
+          "event_id": "evt_06001abb",
           "event_type": "STATE_TRANSITION",
           "payload": {
             "agent_id": "agent_reviewer",
@@ -457,15 +533,15 @@
             "target_status": "COMPLETED"
           },
           "task_id": "subtask_exec",
-          "timestamp": "2026-08-04T09:59:24.306505+00:00"
+          "timestamp": "2026-08-04T10:29:13.178945+00:00"
         }
       ],
-      "orchestrator_run_id": "ccl_run_cd12da42",
-      "record_id": "CCL-REC-20260804-4bc0ca060d91",
+      "orchestrator_run_id": "ccl_run_fe5c4272",
+      "record_id": "CCL-REC-20260804-e0d57bd78abf",
       "session_id": "session_ccl_ops_2026",
       "state_integrity": {
-        "chain_hash": "40e9296840a05489a59cb1b3673b536fb30b746b31e8d53b61036808db0c60af",
-        "state_hash": "66e413172744c31ae2b2d23ba5651c46ce787e3c5180a37b3c90629135f3ea3a"
+        "chain_hash": "3aea4c8f6f8907d3091478ccdc3d4ad14c4948051b3a6786e652a09c188b822f",
+        "state_hash": "55a488828cd6f5854f8c59332d4a841fa2fdd40b2207ee99265e71bf4a1484df"
       },
       "task_state_snapshot": {
         "agent_role": "REVIEWER",
@@ -477,32 +553,27 @@
           ]
         },
         "human_approval": {
-          "checkpoint_id": "chk_9a6847b7",
+          "checkpoint_id": "chk_693b6220",
           "comments": "Code looks exceptional.",
           "decision": "AUTHORIZED",
           "supervisor_id": "human_supervisor_01",
-          "timestamp": "2026-08-04T09:59:24.306487+00:00"
+          "timestamp": "2026-08-04T10:29:13.178927+00:00"
         },
         "latest_result": {
-          "diff_size": 180,
-          "git_hash": "a8c9b201",
-          "stage": "parsing_files"
+          "git_hash": "a8c9b201"
         },
-        "lineage_references": [
-          "ADR-001",
-          "SAGE-ACT-MP-2.0"
-        ],
+        "lineage_references": [],
         "objective_id": "obj_write_ccl_orchestrator",
         "operational_feedback": [
           {
             "agent_id": "agent_exec",
-            "feedback": "Completed workspace scanning.",
-            "timestamp": "2026-08-04T09:59:24.306398+00:00"
+            "feedback": "Verify and test AST compilation limits.",
+            "timestamp": "2026-08-04T10:29:13.178866+00:00"
           },
           {
             "agent_id": "agent_exec",
-            "feedback": "Finished implementation and manual checks.",
-            "timestamp": "2026-08-04T09:59:24.306422+00:00"
+            "feedback": "Encountered boundary security violations.",
+            "timestamp": "2026-08-04T10:29:13.178895+00:00"
           }
         ],
         "parent_task_id": "task_ops_parent",
@@ -511,7 +582,7 @@
         "subtask_ids": [],
         "task_id": "subtask_exec"
       },
-      "timestamp": "2026-08-04T09:59:24.306681+00:00"
+      "timestamp": "2026-08-04T10:29:13.179216+00:00"
     },
     "task_ops_parent": {
       "boundary_isolation_verified": {
@@ -522,7 +593,7 @@
       },
       "monotonic_sequence_history": [
         {
-          "event_id": "evt_e7a35e1e",
+          "event_id": "evt_5f51c0df",
           "event_type": "TASK_INIT",
           "payload": {
             "assigned_agent": "agent_coord",
@@ -530,27 +601,23 @@
               "status_check": "passed",
               "workspace": "sage/experimental/act"
             },
-            "lineage_references": [
-              "ADR-001",
-              "SAGE-ACT-MP-2.0"
-            ],
             "objective_id": "obj_code_review_refactor"
           },
           "task_id": "task_ops_parent",
-          "timestamp": "2026-08-04T09:59:24.306316+00:00"
+          "timestamp": "2026-08-04T10:29:13.178759+00:00"
         },
         {
-          "event_id": "evt_d39f3d67",
+          "event_id": "evt_18778e5f",
           "event_type": "STATE_TRANSITION",
           "payload": {
             "comment": "Coordinator initiated workflow.",
             "target_status": "ACTIVE"
           },
           "task_id": "task_ops_parent",
-          "timestamp": "2026-08-04T09:59:24.306331+00:00"
+          "timestamp": "2026-08-04T10:29:13.178774+00:00"
         },
         {
-          "event_id": "evt_25c82f21",
+          "event_id": "evt_83a5a484",
           "event_type": "HUMAN_APPROVAL",
           "payload": {
             "comments": "Multi-agent coordination tree satisfies all safety and isolation boundaries. Approved.",
@@ -558,10 +625,10 @@
             "supervisor_id": "human_supervisor_01"
           },
           "task_id": "task_ops_parent",
-          "timestamp": "2026-08-04T09:59:24.306547+00:00"
+          "timestamp": "2026-08-04T10:29:13.179049+00:00"
         },
         {
-          "event_id": "evt_6939c494",
+          "event_id": "evt_386075f0",
           "event_type": "STATE_TRANSITION",
           "payload": {
             "agent_id": "agent_coord",
@@ -569,11 +636,11 @@
             "target_status": "COMPLETED"
           },
           "task_id": "task_ops_parent",
-          "timestamp": "2026-08-04T09:59:24.306567+00:00"
+          "timestamp": "2026-08-04T10:29:13.179101+00:00"
         }
       ],
-      "orchestrator_run_id": "ccl_run_cd12da42",
-      "record_id": "CCL-REC-20260804-592b80a45430",
+      "orchestrator_run_id": "ccl_run_fe5c4272",
+      "record_id": "CCL-REC-20260804-c8c02807b660",
       "session_id": "session_ccl_ops_2026",
       "state_integrity": {
         "chain_hash": "6ae2362331b6af2c729e6138dc2e91e3c325b3ecd8941ef3a266835fa4d0f746",
@@ -587,17 +654,14 @@
           "workspace": "sage/experimental/act"
         },
         "human_approval": {
-          "checkpoint_id": "chk_f3a2f945",
+          "checkpoint_id": "chk_07cbf33a",
           "comments": "Multi-agent coordination tree satisfies all safety and isolation boundaries. Approved.",
           "decision": "AUTHORIZED",
           "supervisor_id": "human_supervisor_01",
-          "timestamp": "2026-08-04T09:59:24.306547+00:00"
+          "timestamp": "2026-08-04T10:29:13.179049+00:00"
         },
         "latest_result": {},
-        "lineage_references": [
-          "ADR-001",
-          "SAGE-ACT-MP-2.0"
-        ],
+        "lineage_references": [],
         "objective_id": "obj_code_review_refactor",
         "operational_feedback": [],
         "parent_task_id": null,
@@ -605,26 +669,27 @@
         "status": "COMPLETED",
         "subtask_ids": [
           "subtask_exec",
-          "subtask_analyst"
+          "subtask_analyst",
+          "subtask_drift"
         ],
         "task_id": "task_ops_parent"
       },
-      "timestamp": "2026-08-04T09:59:24.306582+00:00"
+      "timestamp": "2026-08-04T10:29:13.179117+00:00"
     }
   },
-  "execution_identifier": "ccl_run_cd12da42",
+  "execution_identifier": "ccl_run_fe5c4272",
   "operator_summary": [
     "==========================================================================",
     "             SAGE OPERATIONAL COORDINATION & CONTEXT SUMMARY              ",
     "==========================================================================",
-    " Orchestrator Run ID  : ccl_run_cd12da42",
+    " Orchestrator Run ID  : ccl_run_fe5c4272",
     " Active Session ID    : session_ccl_ops_2026",
     " Active System Agents : 4 registered",
     "--------------------------------------------------------------------------",
     " ACTIVE AGENT REGISTRY & NETWORK ROLES:",
     "   \u2022 agent_analyst           : [ACTIVATED] (Role: ANALYST)",
     "   \u2022 agent_coord             : [ACTIVATED] (Role: COORDINATOR)",
-    "   \u2022 agent_exec              : [ACTIVATED] (Role: EXECUTOR)",
+    "   \u2022 agent_exec              : [ACTIVATED] (Role: GENERAL_AGENT)",
     "   \u2022 agent_reviewer          : [ACTIVATED] (Role: REVIEWER)",
     "",
     " ACTIVE TASK COORDINATION STATE:",
@@ -640,14 +705,19 @@
     "        Assignee: agent_reviewer (REVIEWER)",
     "        Objective: obj_write_ccl_orchestrator",
     "        Progress: 100.0%",
-    "        Latest  : {\"diff_size\": 180, \"git_hash\": \"a8c9b201\", \"stage\": \"parsing_files\"}",
+    "        Latest  : {\"git_hash\": \"a8c9b201\"}",
     "        Approval: AUTHORIZED by human_supervisor_01",
     "      \u2022 Task ID : subtask_analyst",
     "        Status  : COMPLETED",
     "        Assignee: agent_analyst (ANALYST)",
     "        Objective: obj_verify_ast_isolation",
-    "        Progress: 100.0%",
-    "        Latest  : {\"core_untouched\": true, \"violations\": 0}",
+    "        Progress: 0.0%",
+    "        Approval: AUTHORIZED by human_supervisor_01",
+    "      \u2022 Task ID : subtask_drift",
+    "        Status  : COMPLETED",
+    "        Assignee: agent_analyst (ANALYST)",
+    "        Objective: obj_unrelated_drift_objective",
+    "        Progress: 0.0%",
     "        Approval: AUTHORIZED by human_supervisor_01",
     "==========================================================================",
     "          SAGE OPERATIONAL COORDINATION BOUNDARY REMAINS SECURE          ",
@@ -660,10 +730,10 @@
     "agent_reviewer": "ACTIVATED"
   },
   "session_id": "session_ccl_ops_2026",
-  "timestamp": "2026-08-04T09:59:24.306578+00:00",
+  "timestamp": "2026-08-04T10:29:13.179113+00:00",
   "workflow_events": [
     {
-      "event_id": "evt_2787bd91",
+      "event_id": "evt_f931b611",
       "event_type": "AGENT_ACTIVATION",
       "payload": {
         "agent_id": "agent_coord",
@@ -672,22 +742,22 @@
         "supervisor_id": "human_supervisor_01"
       },
       "task_id": "system",
-      "timestamp": "2026-08-04T09:59:24.306214+00:00"
+      "timestamp": "2026-08-04T10:29:13.178675+00:00"
     },
     {
-      "event_id": "evt_23f1809a",
+      "event_id": "evt_51020f99",
       "event_type": "AGENT_ACTIVATION",
       "payload": {
         "agent_id": "agent_exec",
         "decision": "AUTHORIZED",
-        "role": "EXECUTOR",
+        "role": "GENERAL_AGENT",
         "supervisor_id": "human_supervisor_01"
       },
       "task_id": "system",
-      "timestamp": "2026-08-04T09:59:24.306268+00:00"
+      "timestamp": "2026-08-04T10:29:13.178716+00:00"
     },
     {
-      "event_id": "evt_5f371f00",
+      "event_id": "evt_5dd3e184",
       "event_type": "AGENT_ACTIVATION",
       "payload": {
         "agent_id": "agent_analyst",
@@ -696,10 +766,10 @@
         "supervisor_id": "human_supervisor_01"
       },
       "task_id": "system",
-      "timestamp": "2026-08-04T09:59:24.306285+00:00"
+      "timestamp": "2026-08-04T10:29:13.178734+00:00"
     },
     {
-      "event_id": "evt_935fd875",
+      "event_id": "evt_00d7a3b2",
       "event_type": "AGENT_ACTIVATION",
       "payload": {
         "agent_id": "agent_reviewer",
@@ -708,10 +778,10 @@
         "supervisor_id": "human_supervisor_01"
       },
       "task_id": "system",
-      "timestamp": "2026-08-04T09:59:24.306297+00:00"
+      "timestamp": "2026-08-04T10:29:13.178746+00:00"
     },
     {
-      "event_id": "evt_e7a35e1e",
+      "event_id": "evt_5f51c0df",
       "event_type": "TASK_INIT",
       "payload": {
         "assigned_agent": "agent_coord",
@@ -719,27 +789,23 @@
           "status_check": "passed",
           "workspace": "sage/experimental/act"
         },
-        "lineage_references": [
-          "ADR-001",
-          "SAGE-ACT-MP-2.0"
-        ],
         "objective_id": "obj_code_review_refactor"
       },
       "task_id": "task_ops_parent",
-      "timestamp": "2026-08-04T09:59:24.306316+00:00"
+      "timestamp": "2026-08-04T10:29:13.178759+00:00"
     },
     {
-      "event_id": "evt_d39f3d67",
+      "event_id": "evt_18778e5f",
       "event_type": "STATE_TRANSITION",
       "payload": {
         "comment": "Coordinator initiated workflow.",
         "target_status": "ACTIVE"
       },
       "task_id": "task_ops_parent",
-      "timestamp": "2026-08-04T09:59:24.306331+00:00"
+      "timestamp": "2026-08-04T10:29:13.178774+00:00"
     },
     {
-      "event_id": "evt_a3eec667",
+      "event_id": "evt_22a29f50",
       "event_type": "TASK_INIT",
       "payload": {
         "assigned_agent": "agent_exec",
@@ -749,96 +815,76 @@
             "sage/experimental/act/ccl_orchestrator.py"
           ]
         },
-        "lineage_references": [
-          "ADR-001",
-          "SAGE-ACT-MP-2.0"
-        ],
+        "lineage_references": [],
         "objective_id": "obj_write_ccl_orchestrator",
         "parent_task_id": "task_ops_parent"
       },
       "task_id": "subtask_exec",
-      "timestamp": "2026-08-04T09:59:24.306347+00:00"
+      "timestamp": "2026-08-04T10:29:13.178790+00:00"
     },
     {
-      "event_id": "evt_c2c3c562",
+      "event_id": "evt_67178af9",
       "event_type": "TASK_INIT",
       "payload": {
         "assigned_agent": "agent_analyst",
         "initial_context": {},
-        "lineage_references": [
-          "ADR-001",
-          "SAGE-ACT-MP-2.0"
-        ],
+        "lineage_references": [],
         "objective_id": "obj_verify_ast_isolation",
         "parent_task_id": "task_ops_parent"
       },
       "task_id": "subtask_analyst",
-      "timestamp": "2026-08-04T09:59:24.306366+00:00"
+      "timestamp": "2026-08-04T10:29:13.178809+00:00"
     },
     {
-      "event_id": "evt_3991ab81",
+      "event_id": "evt_744e0ba1",
+      "event_type": "TASK_INIT",
+      "payload": {
+        "assigned_agent": "agent_analyst",
+        "initial_context": {},
+        "lineage_references": [],
+        "objective_id": "obj_unrelated_drift_objective",
+        "parent_task_id": "task_ops_parent"
+      },
+      "task_id": "subtask_drift",
+      "timestamp": "2026-08-04T10:29:13.178825+00:00"
+    },
+    {
+      "event_id": "evt_f8160b1a",
       "event_type": "STATE_TRANSITION",
       "payload": {
         "target_status": "ACTIVE"
       },
       "task_id": "subtask_exec",
-      "timestamp": "2026-08-04T09:59:24.306382+00:00"
+      "timestamp": "2026-08-04T10:29:13.178845+00:00"
     },
     {
-      "event_id": "evt_7a85ef5a",
+      "event_id": "evt_b0adc182",
       "event_type": "TASK_PROGRESS",
       "payload": {
         "agent_id": "agent_exec",
-        "feedback": "Completed workspace scanning.",
-        "progress_percent": 25.0,
-        "result_payload": {
-          "stage": "parsing_files"
-        }
+        "feedback": "Verify and test AST compilation limits.",
+        "progress_percent": 50.0,
+        "result_payload": {}
       },
       "task_id": "subtask_exec",
-      "timestamp": "2026-08-04T09:59:24.306398+00:00"
+      "timestamp": "2026-08-04T10:29:13.178866+00:00"
     },
     {
-      "event_id": "evt_ef3d102b",
+      "event_id": "evt_f84af3f3",
       "event_type": "TASK_PROGRESS",
       "payload": {
         "agent_id": "agent_exec",
-        "feedback": "Finished implementation and manual checks.",
+        "feedback": "Encountered boundary security violations.",
         "progress_percent": 100.0,
         "result_payload": {
-          "diff_size": 180,
           "git_hash": "a8c9b201"
         }
       },
       "task_id": "subtask_exec",
-      "timestamp": "2026-08-04T09:59:24.306422+00:00"
+      "timestamp": "2026-08-04T10:29:13.178895+00:00"
     },
     {
-      "event_id": "evt_b79ed2cd",
-      "event_type": "STATE_TRANSITION",
-      "payload": {
-        "target_status": "ACTIVE"
-      },
-      "task_id": "subtask_analyst",
-      "timestamp": "2026-08-04T09:59:24.306441+00:00"
-    },
-    {
-      "event_id": "evt_4f8f4e7b",
-      "event_type": "TASK_PROGRESS",
-      "payload": {
-        "agent_id": "agent_analyst",
-        "feedback": "Verified 100% boundary isolation.",
-        "progress_percent": 100.0,
-        "result_payload": {
-          "core_untouched": true,
-          "violations": 0
-        }
-      },
-      "task_id": "subtask_analyst",
-      "timestamp": "2026-08-04T09:59:24.306455+00:00"
-    },
-    {
-      "event_id": "evt_52913e52",
+      "event_id": "evt_9eb1fa0f",
       "event_type": "AGENT_HANDOFF",
       "payload": {
         "handoff_context": {
@@ -846,14 +892,14 @@
             "sage/experimental/act/ccl_orchestrator.py"
           ]
         },
-        "reason": "Request peer code review and AST safety compliance checks.",
+        "reason": "Request peer code review.",
         "target_agent": "agent_reviewer"
       },
       "task_id": "subtask_exec",
-      "timestamp": "2026-08-04T09:59:24.306471+00:00"
+      "timestamp": "2026-08-04T10:29:13.178911+00:00"
     },
     {
-      "event_id": "evt_95ad6ec4",
+      "event_id": "evt_886cd955",
       "event_type": "HUMAN_APPROVAL",
       "payload": {
         "comments": "Code looks exceptional.",
@@ -861,10 +907,10 @@
         "supervisor_id": "human_supervisor_01"
       },
       "task_id": "subtask_exec",
-      "timestamp": "2026-08-04T09:59:24.306487+00:00"
+      "timestamp": "2026-08-04T10:29:13.178927+00:00"
     },
     {
-      "event_id": "evt_6672cc8c",
+      "event_id": "evt_06001abb",
       "event_type": "STATE_TRANSITION",
       "payload": {
         "agent_id": "agent_reviewer",
@@ -872,21 +918,30 @@
         "target_status": "COMPLETED"
       },
       "task_id": "subtask_exec",
-      "timestamp": "2026-08-04T09:59:24.306505+00:00"
+      "timestamp": "2026-08-04T10:29:13.178945+00:00"
     },
     {
-      "event_id": "evt_1a5656bf",
+      "event_id": "evt_8dbd2ba4",
       "event_type": "HUMAN_APPROVAL",
       "payload": {
-        "comments": "AST isolation checked and verified.",
+        "comments": "AST isolation checked.",
         "decision": "AUTHORIZED",
         "supervisor_id": "human_supervisor_01"
       },
       "task_id": "subtask_analyst",
-      "timestamp": "2026-08-04T09:59:24.306517+00:00"
+      "timestamp": "2026-08-04T10:29:13.178957+00:00"
     },
     {
-      "event_id": "evt_db8d6f99",
+      "event_id": "evt_b42a16c6",
+      "event_type": "STATE_TRANSITION",
+      "payload": {
+        "target_status": "ACTIVE"
+      },
+      "task_id": "subtask_analyst",
+      "timestamp": "2026-08-04T10:29:13.178974+00:00"
+    },
+    {
+      "event_id": "evt_1a6f62b8",
       "event_type": "STATE_TRANSITION",
       "payload": {
         "agent_id": "agent_analyst",
@@ -894,10 +949,41 @@
         "target_status": "COMPLETED"
       },
       "task_id": "subtask_analyst",
-      "timestamp": "2026-08-04T09:59:24.306535+00:00"
+      "timestamp": "2026-08-04T10:29:13.178989+00:00"
     },
     {
-      "event_id": "evt_25c82f21",
+      "event_id": "evt_f7dcde1e",
+      "event_type": "HUMAN_APPROVAL",
+      "payload": {
+        "comments": "AST isolation checked.",
+        "decision": "AUTHORIZED",
+        "supervisor_id": "human_supervisor_01"
+      },
+      "task_id": "subtask_drift",
+      "timestamp": "2026-08-04T10:29:13.179000+00:00"
+    },
+    {
+      "event_id": "evt_513a81cb",
+      "event_type": "STATE_TRANSITION",
+      "payload": {
+        "target_status": "ACTIVE"
+      },
+      "task_id": "subtask_drift",
+      "timestamp": "2026-08-04T10:29:13.179018+00:00"
+    },
+    {
+      "event_id": "evt_dd3ad931",
+      "event_type": "STATE_TRANSITION",
+      "payload": {
+        "agent_id": "agent_analyst",
+        "comment": "Analyst verified zero core mutations.",
+        "target_status": "COMPLETED"
+      },
+      "task_id": "subtask_drift",
+      "timestamp": "2026-08-04T10:29:13.179032+00:00"
+    },
+    {
+      "event_id": "evt_83a5a484",
       "event_type": "HUMAN_APPROVAL",
       "payload": {
         "comments": "Multi-agent coordination tree satisfies all safety and isolation boundaries. Approved.",
@@ -905,10 +991,10 @@
         "supervisor_id": "human_supervisor_01"
       },
       "task_id": "task_ops_parent",
-      "timestamp": "2026-08-04T09:59:24.306547+00:00"
+      "timestamp": "2026-08-04T10:29:13.179049+00:00"
     },
     {
-      "event_id": "evt_6939c494",
+      "event_id": "evt_386075f0",
       "event_type": "STATE_TRANSITION",
       "payload": {
         "agent_id": "agent_coord",
@@ -916,7 +1002,134 @@
         "target_status": "COMPLETED"
       },
       "task_id": "task_ops_parent",
-      "timestamp": "2026-08-04T09:59:24.306567+00:00"
+      "timestamp": "2026-08-04T10:29:13.179101+00:00"
     }
-  ]
+  ],
+  "workflow_intelligence_report": {
+    "active_risks": [
+      {
+        "details": "Task 'task_ops_parent' is initiated without preceding lineage or ADR references.",
+        "severity": "MEDIUM",
+        "task_id": "task_ops_parent"
+      },
+      {
+        "details": "Task 'subtask_exec' is initiated without preceding lineage or ADR references.",
+        "severity": "MEDIUM",
+        "task_id": "subtask_exec"
+      },
+      {
+        "details": "Task 'subtask_analyst' is initiated without preceding lineage or ADR references.",
+        "severity": "MEDIUM",
+        "task_id": "subtask_analyst"
+      },
+      {
+        "details": "Task 'subtask_drift' is initiated without preceding lineage or ADR references.",
+        "severity": "MEDIUM",
+        "task_id": "subtask_drift"
+      }
+    ],
+    "blocked_tasks": [],
+    "drift_events": [
+      {
+        "details": "Task objective 'obj_write_ccl_orchestrator' has drifted from parent objective 'obj_code_review_refactor'.",
+        "parent_task_id": "task_ops_parent",
+        "task_id": "subtask_exec"
+      },
+      {
+        "details": "Task objective 'obj_verify_ast_isolation' has drifted from parent objective 'obj_code_review_refactor'.",
+        "parent_task_id": "task_ops_parent",
+        "task_id": "subtask_analyst"
+      },
+      {
+        "details": "Task objective 'obj_unrelated_drift_objective' has drifted from parent objective 'obj_code_review_refactor'.",
+        "parent_task_id": "task_ops_parent",
+        "task_id": "subtask_drift"
+      }
+    ],
+    "improvement_opportunities": [
+      {
+        "agent_id": "agent_exec",
+        "category": "TEST_INTEGRITY",
+        "observed_friction": "Verify and test AST compilation limits.",
+        "opportunity_id": "opp_f6e0edc1",
+        "originating_task_id": "subtask_exec",
+        "timestamp": "2026-08-04T10:29:13.178866+00:00"
+      },
+      {
+        "agent_id": "agent_exec",
+        "category": "BOUNDARY_SECURITY",
+        "observed_friction": "Encountered boundary security violations.",
+        "opportunity_id": "opp_885c0f6c",
+        "originating_task_id": "subtask_exec",
+        "timestamp": "2026-08-04T10:29:13.178895+00:00"
+      }
+    ],
+    "operator_intelligence_view": [
+      "==========================================================================",
+      "                 SAGE WORKFLOW INTELLIGENCE & FEEDBACK LAYER              ",
+      "==========================================================================",
+      " Run ID               : ccl_run_fe5c4272",
+      " Timestamp            : 2026-08-04T10:29:13.179606+00:00",
+      "--------------------------------------------------------------------------",
+      " ACTIVE RISKS DETECTED:",
+      "   [!] MEDIUM Severity on Task 'task_ops_parent':",
+      "       Details: Task 'task_ops_parent' is initiated without preceding lineage or ADR references.",
+      "   [!] MEDIUM Severity on Task 'subtask_exec':",
+      "       Details: Task 'subtask_exec' is initiated without preceding lineage or ADR references.",
+      "   [!] MEDIUM Severity on Task 'subtask_analyst':",
+      "       Details: Task 'subtask_analyst' is initiated without preceding lineage or ADR references.",
+      "   [!] MEDIUM Severity on Task 'subtask_drift':",
+      "       Details: Task 'subtask_drift' is initiated without preceding lineage or ADR references.",
+      "",
+      " BLOCKED / STALLED TASKS:",
+      "   \u2714 All coordinated tasks are progressing normally.",
+      "",
+      " TASK OBJECTIVE DRIFT EVENTS:",
+      "   [!] Objective Drift on Task 'subtask_exec':",
+      "       Details: Task objective 'obj_write_ccl_orchestrator' has drifted from parent objective 'obj_code_review_refactor'.",
+      "   [!] Objective Drift on Task 'subtask_analyst':",
+      "       Details: Task objective 'obj_verify_ast_isolation' has drifted from parent objective 'obj_code_review_refactor'.",
+      "   [!] Objective Drift on Task 'subtask_drift':",
+      "       Details: Task objective 'obj_unrelated_drift_objective' has drifted from parent objective 'obj_code_review_refactor'.",
+      "",
+      " STRUCTURED IMPROVEMENT CANDIDATES GENERATED:",
+      "   \u2022 Candidate ID: SAGE-IMPR-60EF0942",
+      "     Category    : AUTOMATION_TEST_INTEGRITY",
+      "     Target Task : subtask_exec",
+      "     Proposed Act: Inject auto-validation metrics or pre-checks for category 'TEST_INTEGRITY'.",
+      "     Backed By   : Verify and test AST compilation limits.",
+      "   \u2022 Candidate ID: SAGE-IMPR-C2889142",
+      "     Category    : AUTOMATION_BOUNDARY_SECURITY",
+      "     Target Task : subtask_exec",
+      "     Proposed Act: Inject auto-validation metrics or pre-checks for category 'BOUNDARY_SECURITY'.",
+      "     Backed By   : Encountered boundary security violations.",
+      "==========================================================================",
+      "             SAGE INTEGRITY CONTINUUM ACTIVELY TUNES WORKFLOWS           ",
+      "=========================================================================="
+    ],
+    "structured_improvement_candidates": [
+      {
+        "candidate_id": "SAGE-IMPR-60EF0942",
+        "category": "AUTOMATION_TEST_INTEGRITY",
+        "evidence_backing": {
+          "friction_details": "Verify and test AST compilation limits.",
+          "originating_agent": "agent_exec"
+        },
+        "proposed_action": "Inject auto-validation metrics or pre-checks for category 'TEST_INTEGRITY'.",
+        "target_task_id": "subtask_exec",
+        "timestamp": "2026-08-04T10:29:13.179585+00:00"
+      },
+      {
+        "candidate_id": "SAGE-IMPR-C2889142",
+        "category": "AUTOMATION_BOUNDARY_SECURITY",
+        "evidence_backing": {
+          "friction_details": "Encountered boundary security violations.",
+          "originating_agent": "agent_exec"
+        },
+        "proposed_action": "Inject auto-validation metrics or pre-checks for category 'BOUNDARY_SECURITY'.",
+        "target_task_id": "subtask_exec",
+        "timestamp": "2026-08-04T10:29:13.179585+00:00"
+      }
+    ]
+  }
 }

@@ -13,6 +13,204 @@ from typing import Any, Dict, List, Optional
 from datetime import datetime, timezone
 
 
+class WorkflowIntelligenceFeedbackLayer:
+    """SAGE Workflow Intelligence Feedback Layer.
+
+    Analyzes workflow event logs, active task configurations, and captured
+    operational feedback to identify execution risks, blocked states, and drift,
+    converting validated observations into structured improvement candidates.
+    """
+
+    def __init__(self, orchestrator: "DeveloperWorkflowOrchestrator"):
+        self.orchestrator = orchestrator
+        self.improvement_candidates: List[Dict[str, Any]] = []
+
+    def analyze_workflow_state(self) -> Dict[str, Any]:
+        """Evaluates active workflow conditions and identifies execution health signals."""
+        active_risks = []
+        blocked_tasks = []
+        drift_events = []
+
+        for task_id, task in self.orchestrator.tasks.items():
+            assigned_agent = task["assigned_agent"]
+            status = task["status"]
+
+            # 1. Detect Blocked Tasks
+            # Stuck in INITIATED or HANDOFF, or active but no progress made
+            if status in {"INITIATED", "HANDOFF"} and not task.get("human_approval"):
+                blocked_tasks.append({
+                    "task_id": task_id,
+                    "reason": f"Awaiting human approval checkpoints or supervisor gate sign-off in state '{status}'."
+                })
+            elif status == "ACTIVE" and task.get("progress_percent", 0.0) == 0.0:
+                blocked_tasks.append({
+                    "task_id": task_id,
+                    "reason": f"Task '{task_id}' is ACTIVE but progress is stalled at 0.0%."
+                })
+
+            # 2. Detect Active Risks
+            # Assignment of general agents to specialized tasks, or lack of lineage references
+            role = task.get("agent_role", "UNASSIGNED")
+            if assigned_agent != "unassigned" and role == "GENERAL_AGENT":
+                active_risks.append({
+                    "task_id": task_id,
+                    "severity": "LOW",
+                    "details": f"Task assigned to General Agent '{assigned_agent}' instead of specialized role."
+                })
+            if not task.get("lineage_references"):
+                active_risks.append({
+                    "task_id": task_id,
+                    "severity": "MEDIUM",
+                    "details": f"Task '{task_id}' is initiated without preceding lineage or ADR references."
+                })
+
+            # 3. Detect Drift Events
+            # Check for objective mismatches between tasks and parent workflows
+            if task.get("parent_task_id"):
+                parent_task = self.orchestrator.tasks[task["parent_task_id"]]
+                if task["objective_id"] != parent_task["objective_id"]:
+                    drift_events.append({
+                        "task_id": task_id,
+                        "parent_task_id": task["parent_task_id"],
+                        "details": (
+                            f"Task objective '{task['objective_id']}' has drifted from parent objective "
+                            f"'{parent_task['objective_id']}'."
+                        )
+                    })
+
+        return {
+            "active_risks": active_risks,
+            "blocked_tasks": blocked_tasks,
+            "drift_events": drift_events
+        }
+
+    def process_operational_feedback(self) -> List[Dict[str, Any]]:
+        """Consumes existing execution feedback records and classifies improvement opportunities."""
+        opportunities = []
+
+        for task_id, task in self.orchestrator.tasks.items():
+            for fb in task.get("operational_feedback", []):
+                feedback_text = fb["feedback"]
+                agent_id = fb["agent_id"]
+
+                # Classify feedback text into categorized opportunities
+                category = "OPERATIONAL_EFFICIENCY"
+                if "isolation" in feedback_text.lower() or "boundary" in feedback_text.lower():
+                    category = "BOUNDARY_SECURITY"
+                elif "test" in feedback_text.lower() or "verify" in feedback_text.lower():
+                    category = "TEST_INTEGRITY"
+                elif "delay" in feedback_text.lower() or "slow" in feedback_text.lower():
+                    category = "LIVELINESS"
+
+                opportunity = {
+                    "opportunity_id": f"opp_{uuid.uuid4().hex[:8]}",
+                    "category": category,
+                    "originating_task_id": task_id,
+                    "agent_id": agent_id,
+                    "observed_friction": feedback_text,
+                    "timestamp": fb["timestamp"]
+                }
+                opportunities.append(opportunity)
+
+        return opportunities
+
+    def generate_improvement_candidates(self) -> List[Dict[str, Any]]:
+        """Converts validated operational observations and friction into structured improvement candidates."""
+        self.improvement_candidates.clear()
+        analysis = self.analyze_workflow_state()
+        opportunities = self.process_operational_feedback()
+
+        ts = datetime.now(timezone.utc).isoformat()
+
+        # Build candidates from blocked tasks & opportunities
+        for blocked in analysis["blocked_tasks"]:
+            candidate = {
+                "candidate_id": f"SAGE-IMPR-{uuid.uuid4().hex[:8].upper()}",
+                "timestamp": ts,
+                "category": "WORKFLOW_COORDINATION_REPAIR",
+                "target_task_id": blocked["task_id"],
+                "proposed_action": f"Optimize human checkpoint visibility or auto-escalate approval to speed up state transition.",
+                "evidence_backing": {
+                    "friction_details": blocked["reason"],
+                    "state_at_observation": self.orchestrator.tasks[blocked["task_id"]]["status"]
+                }
+            }
+            self.improvement_candidates.append(candidate)
+
+        for opp in opportunities:
+            proposed_action = f"Inject auto-validation metrics or pre-checks for category '{opp['category']}'."
+            candidate = {
+                "candidate_id": f"SAGE-IMPR-{uuid.uuid4().hex[:8].upper()}",
+                "timestamp": ts,
+                "category": f"AUTOMATION_{opp['category']}",
+                "target_task_id": opp["originating_task_id"],
+                "proposed_action": proposed_action,
+                "evidence_backing": {
+                    "friction_details": opp["observed_friction"],
+                    "originating_agent": opp["agent_id"]
+                }
+            }
+            self.improvement_candidates.append(candidate)
+
+        return self.improvement_candidates
+
+    def generate_operator_intelligence_view(self) -> str:
+        """Exposes active risks, blocked tasks, drift events, and improvement opportunities in a clear format."""
+        analysis = self.analyze_workflow_state()
+        candidates = self.generate_improvement_candidates()
+
+        lines = [
+            "==========================================================================",
+            "                 SAGE WORKFLOW INTELLIGENCE & FEEDBACK LAYER              ",
+            "==========================================================================",
+            f" Run ID               : {self.orchestrator.orchestrator_run_id}",
+            f" Timestamp            : {datetime.now(timezone.utc).isoformat()}",
+            "--------------------------------------------------------------------------"
+        ]
+
+        # Active Risks
+        lines.append(" ACTIVE RISKS DETECTED:")
+        if not analysis["active_risks"]:
+            lines.append("   ✔ No active risks detected in active task configurations.")
+        for risk in analysis["active_risks"]:
+            lines.append(f"   [!] {risk['severity']} Severity on Task '{risk['task_id']}':")
+            lines.append(f"       Details: {risk['details']}")
+
+        # Blocked Tasks
+        lines.append("\n BLOCKED / STALLED TASKS:")
+        if not analysis["blocked_tasks"]:
+            lines.append("   ✔ All coordinated tasks are progressing normally.")
+        for blocked in analysis["blocked_tasks"]:
+            lines.append(f"   [!] Task '{blocked['task_id']}' is Blocked:")
+            lines.append(f"       Reason: {blocked['reason']}")
+
+        # Drift Events
+        lines.append("\n TASK OBJECTIVE DRIFT EVENTS:")
+        if not analysis["drift_events"]:
+            lines.append("   ✔ Zero objective or role drift observed.")
+        for drift in analysis["drift_events"]:
+            lines.append(f"   [!] Objective Drift on Task '{drift['task_id']}':")
+            lines.append(f"       Details: {drift['details']}")
+
+        # Improvement Candidates
+        lines.append("\n STRUCTURED IMPROVEMENT CANDIDATES GENERATED:")
+        if not candidates:
+            lines.append("   (No improvement opportunities classified yet)")
+        for cand in candidates:
+            lines.append(f"   • Candidate ID: {cand['candidate_id']}")
+            lines.append(f"     Category    : {cand['category']}")
+            lines.append(f"     Target Task : {cand['target_task_id']}")
+            lines.append(f"     Proposed Act: {cand['proposed_action']}")
+            lines.append(f"     Backed By   : {cand['evidence_backing']['friction_details']}")
+
+        lines.extend([
+            "==========================================================================",
+            "             SAGE INTEGRITY CONTINUUM ACTIVELY TUNES WORKFLOWS           ",
+            "=========================================================================="
+        ])
+        return "\n".join(lines)
+
+
 class DeveloperWorkflowOrchestrator:
     """Lightweight operational workflow orchestrator for AI-assisted workspaces.
 
@@ -35,6 +233,7 @@ class DeveloperWorkflowOrchestrator:
         self.agent_roles: Dict[str, str] = {}  # Tracks agent_id -> operational_role (e.g., COORDINATOR, EXECUTOR, etc.)
         self.event_log: List[Dict[str, Any]] = []
         self.orchestrator_run_id = f"ccl_run_{uuid.uuid4().hex[:8]}"
+        self.intelligence = WorkflowIntelligenceFeedbackLayer(self)
 
     def ingest_event(self, event_type: str, task_id: str, payload: Dict[str, Any], timestamp: Optional[str] = None) -> Dict[str, Any]:
         """Ingests a structured workflow event, advancing state and tracking lineage."""
@@ -448,6 +647,11 @@ class DeveloperWorkflowOrchestrator:
         for t_id in self.tasks:
             tasks_records[t_id] = self.generate_continuity_records(t_id)
 
+        # Trigger workflow intelligence analysis
+        analysis = self.intelligence.analyze_workflow_state()
+        opportunities = self.intelligence.process_operational_feedback()
+        candidates = self.intelligence.generate_improvement_candidates()
+
         evidence_pack = {
             "execution_identifier": self.orchestrator_run_id,
             "timestamp": ts,
@@ -458,6 +662,14 @@ class DeveloperWorkflowOrchestrator:
             "agent_roles": self.agent_roles,
             "continuity_control_records": tasks_records,
             "operator_summary": self.generate_operator_summary().split("\n"),
+            "workflow_intelligence_report": {
+                "active_risks": analysis["active_risks"],
+                "blocked_tasks": analysis["blocked_tasks"],
+                "drift_events": analysis["drift_events"],
+                "improvement_opportunities": opportunities,
+                "structured_improvement_candidates": candidates,
+                "operator_intelligence_view": self.intelligence.generate_operator_intelligence_view().split("\n")
+            },
             "boundary_checks": {
                 "unauthorized_namespaces_mutated": False,
                 "one_way_import_checked": True

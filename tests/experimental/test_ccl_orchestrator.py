@@ -248,6 +248,63 @@ def test_controlled_workflow_progress_and_ownership():
     assert res["operational_feedback"][0]["feedback"] == "AST parsing passed successfully."
 
 
+def test_workflow_intelligence_feedback_layer():
+    """Verify workflow state analysis, risk/drift/blocked detections, and structured improvement candidate generation."""
+    orch = DeveloperWorkflowOrchestrator(session_id="session_test_intelligence")
+
+    # Activate Coordinator, Executor, and General Agent
+    orch.ingest_event("AGENT_ACTIVATION", "system", {"agent_id": "agent_coord", "supervisor_id": "super", "decision": "AUTHORIZED", "role": "COORDINATOR"})
+    orch.ingest_event("AGENT_ACTIVATION", "system", {"agent_id": "agent_exec", "supervisor_id": "super", "decision": "AUTHORIZED", "role": "GENERAL_AGENT"}) # Lack of specialized role
+
+    # 1. Initialize Parent Task - Active Risk: assigned general agent, missing lineage refs
+    orch.ingest_event(
+        "TASK_INIT",
+        "parent_task_01",
+        {
+            "objective_id": "obj_main_refactor",
+            "assigned_agent": "agent_exec"
+        }
+    )
+
+    # 2. Blocked Task: parent task is ACTIVE but progress is stalled at 0.0%
+    orch.ingest_event("STATE_TRANSITION", "parent_task_01", {"target_status": "ACTIVE"})
+
+    # 3. Drift Event: Child task objective is different from parent task
+    orch.delegate_task("parent_task_01", "subtask_drift", "agent_coord", "obj_different_drift")
+
+    # 4. Ingest Operational feedback for classification
+    orch.record_progress("parent_task_01", "agent_exec", 10.0, {}, "Verify and test AST compilation limits.") # TEST_INTEGRITY
+    orch.record_progress("parent_task_01", "agent_exec", 50.0, {}, "Encountered boundary security violations.") # BOUNDARY_SECURITY
+
+    # Analyze
+    analysis = orch.intelligence.analyze_workflow_state()
+    assert len(analysis["active_risks"]) >= 2
+    assert len(analysis["blocked_tasks"]) >= 1
+    assert len(analysis["drift_events"]) >= 1
+
+    # Verify Feedback Classification
+    opps = orch.intelligence.process_operational_feedback()
+    categories = [opp["category"] for opp in opps]
+    assert "TEST_INTEGRITY" in categories
+    assert "BOUNDARY_SECURITY" in categories
+
+    # Verify Improvement Candidates
+    candidates = orch.intelligence.generate_improvement_candidates()
+    assert len(candidates) >= 3
+    categories_cand = [cand["category"] for cand in candidates]
+    assert "AUTOMATION_TEST_INTEGRITY" in categories_cand
+    assert "AUTOMATION_BOUNDARY_SECURITY" in categories_cand
+    assert "WORKFLOW_COORDINATION_REPAIR" in categories_cand
+
+    # Verify Operator Intelligence View rendering
+    view = orch.intelligence.generate_operator_intelligence_view()
+    assert "SAGE WORKFLOW INTELLIGENCE & FEEDBACK LAYER" in view
+    assert "ACTIVE RISKS DETECTED" in view
+    assert "BLOCKED / STALLED TASKS" in view
+    assert "TASK OBJECTIVE DRIFT EVENTS" in view
+    assert "STRUCTURED IMPROVEMENT CANDIDATES" in view
+
+
 def test_human_authorization_visibility():
     """Verify human checkpoints correctly guard and block completion transitions."""
     orch = DeveloperWorkflowOrchestrator(session_id="session_test_auth")
