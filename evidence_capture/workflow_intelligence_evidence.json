@@ -15,15 +15,15 @@
     {
       "severity": "MEDIUM",
       "signal_type": "HIGH_WORKSPACE_FRICTION",
-      "description": "High number of uncommitted files (9) in the active workspace.",
+      "description": "High number of uncommitted files (11) in the active workspace.",
       "recommendation": "Run execute_active_development_coordination to commit changes and generate dual-compliant CMAPS audit records."
     },
     {
       "severity": "HIGH",
       "signal_type": "HISTORY_DRIFT_DETECTED",
-      "description": "Detected 6 prior execution/scope drift incidents in this session history.",
+      "description": "Detected 9 prior execution/scope drift incidents in this session history.",
       "recommendation": "Inspect SAGE-CCL ledger files under sage_data/experimental_ccl/ to identify repetitive drift patterns."
     }
   ],
-  "timestamp": 1785881231.1381667
+  "timestamp": 1785884262.1959832
 }

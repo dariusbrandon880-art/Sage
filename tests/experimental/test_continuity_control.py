@@ -1304,3 +1304,102 @@ def test_prepare_agent_context_package(tmp_path):
     assert "file1.py" in package["workspace_context"]["uncommitted_files"]
     assert "active_mission" in package
     assert package["active_mission"]["session_id"] == "session_context_pack_test"
+
+
+def test_execute_coordination_loop_simulation_success(tmp_path):
+    """Verify that a successful multi-agent coordination simulation calculates correct efficiency indicators."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_sim_success_test",
+        objective="obj_continuous_development"
+    )
+    orchestrator.session_manager = session_mgr
+    orchestrator.ccl.storage_path = record_storage
+    orchestrator.session = session_mgr.create_session(
+        session_id="session_sim_success_test",
+        active_objectives=["obj_continuous_development"]
+    )
+
+    # Register Jules as DEVELOPER and activate
+    agent_id = "agent_jules_sage"
+    orchestrator.register_agent_role(agent_id, "Jules", "DEVELOPER")
+    orchestrator.initialize_agent_activation(agent_id, "task_active_development")
+    orchestrator.authorize_agent_activation(agent_id, "supervisor_jules", "sig_jules_123")
+
+    steps = [
+        {
+            "step_id": "step_01",
+            "agent_id": agent_id,
+            "action_taken": "Wrote experimental continuity controllers",
+            "objective_alignment": "obj_continuous_development",
+            "modified_files": ["sage/experimental/act/continuity_control.py"]
+        }
+    ]
+
+    report = orchestrator.execute_coordination_loop_simulation(steps)
+    assert report["simulated_steps_count"] == 1
+    metrics = report["coordination_metrics"]
+    assert metrics["successful_steps_count"] == 1
+    assert metrics["blocked_violations_count"] == 0
+    assert metrics["recovery_duration_avoided_secs"] == 0.0
+    assert metrics["operator_interventions_avoided_count"] == 1
+
+
+def test_execute_coordination_loop_simulation_failures(tmp_path):
+    """Verify SAGE programmatically blocks drifting steps inside the e2e coordination loop."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_sim_fail_test",
+        objective="obj_continuous_development"
+    )
+    orchestrator.session_manager = session_mgr
+    orchestrator.ccl.storage_path = record_storage
+    orchestrator.session = session_mgr.create_session(
+        session_id="session_sim_fail_test",
+        active_objectives=["obj_continuous_development"]
+    )
+
+    agent_id = "agent_jules_sage"
+    orchestrator.register_agent_role(agent_id, "Jules", "DEVELOPER")
+    orchestrator.initialize_agent_activation(agent_id, "task_active_development")
+    orchestrator.authorize_agent_activation(agent_id, "supervisor_jules", "sig_jules_123")
+
+    steps = [
+        # Aligned Step
+        {
+            "step_id": "step_01",
+            "agent_id": agent_id,
+            "action_taken": "Wrote experimental continuity controllers",
+            "objective_alignment": "obj_continuous_development",
+            "modified_files": ["sage/experimental/act/continuity_control.py"]
+        },
+        # Drifting Step
+        {
+            "step_id": "step_02",
+            "agent_id": agent_id,
+            "action_taken": "Attempting server config overwrite",
+            "objective_alignment": "obj_unauthorized_server_maintenance"
+        }
+    ]
+
+    report = orchestrator.execute_coordination_loop_simulation(steps)
+    assert report["simulated_steps_count"] == 2
+    metrics = report["coordination_metrics"]
+    assert metrics["successful_steps_count"] == 1
+    assert metrics["blocked_violations_count"] == 1
+    assert metrics["recovery_duration_avoided_secs"] == 60.0
+    assert metrics["operator_interventions_avoided_count"] == 2
