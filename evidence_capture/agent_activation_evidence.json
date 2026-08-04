@@ -1,0 +1,50 @@
+{
+  "run_id": "activation_run_682438272aa7",
+  "timestamp": 1785834455.1523666,
+  "agent_id": "agent_jules_sage",
+  "task_id": "task_active_development",
+  "initial_state": {
+    "agent_id": "agent_jules_sage",
+    "session_id": "session_realignment_coordination",
+    "assigned_task_id": "task_active_development",
+    "lifecycle_state": "INITIATED",
+    "authorized_scope_prefixes": [
+      "sage/experimental/",
+      "tests/experimental/",
+      "evidence_capture/"
+    ],
+    "human_authorization_signature": null,
+    "timestamp": 1785834455.1508982
+  },
+  "authorized_state": {
+    "agent_id": "agent_jules_sage",
+    "session_id": "session_realignment_coordination",
+    "assigned_task_id": "task_active_development",
+    "lifecycle_state": "ACTIVE",
+    "authorized_scope_prefixes": [
+      "sage/experimental/",
+      "tests/experimental/",
+      "evidence_capture/"
+    ],
+    "human_authorization_signature": "sig_jules_active_gate_992",
+    "timestamp": 1785834455.1514738
+  },
+  "enforcement_report": {
+    "is_allowed": true,
+    "reason": "All modifications comply with authorized scope boundaries.",
+    "action": "ALLOW_EXECUTION"
+  },
+  "final_state": {
+    "agent_id": "agent_jules_sage",
+    "session_id": "session_realignment_coordination",
+    "assigned_task_id": "task_active_development",
+    "lifecycle_state": "COMPLETED",
+    "authorized_scope_prefixes": [
+      "sage/experimental/",
+      "tests/experimental/",
+      "evidence_capture/"
+    ],
+    "human_authorization_signature": "sig_jules_active_gate_992",
+    "timestamp": 1785834455.1523979
+  }
+}

@@ -409,3 +409,136 @@ def test_prepare_handoff_manifest(tmp_path):
         loaded = json.load(f)
     assert loaded["manifest_id"] == manifest["manifest_id"]
     assert loaded["source_session"] == "session_handoff_test"
+
+
+def test_agent_activation_lifecycle(tmp_path):
+    """Verify that agent activation states transition properly along their expected lifecycle."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_act_test",
+        objective="obj_continuous_development"
+    )
+    # Patch session storage for orchestrator
+    orchestrator.session_manager = session_mgr
+    orchestrator.session = session_mgr.create_session(
+        session_id="session_act_test",
+        active_objectives=["obj_continuous_development"]
+    )
+
+    # 1. Initialize Activation State
+    agent_id = "agent_jules_sage"
+    task_id = "task_active_development"
+    state = orchestrator.initialize_agent_activation(
+        agent_id=agent_id,
+        assigned_task_id=task_id,
+        authorized_scope=["sage/experimental/"]
+    )
+    assert state.agent_id == agent_id
+    assert state.assigned_task_id == task_id
+    assert state.lifecycle_state == "INITIATED"
+    assert "sage/experimental/" in state.authorized_scope_prefixes
+
+    # 2. Authorize Activation State
+    authorized_state = orchestrator.authorize_agent_activation(
+        agent_id=agent_id,
+        supervisor_id="supervisor_jules",
+        signature="sig_jules_auth_88"
+    )
+    assert authorized_state.lifecycle_state == "ACTIVE"
+    assert authorized_state.human_authorization_signature == "sig_jules_auth_88"
+
+    # 3. Complete Activation State
+    completed_state = orchestrator.complete_agent_activation(agent_id=agent_id)
+    assert completed_state.lifecycle_state == "COMPLETED"
+
+
+def test_active_agent_scope_enforcement(tmp_path):
+    """Verify that SAGE actively enforces authorized boundaries and blocks violations."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_enforce_test",
+        objective="obj_continuous_development"
+    )
+    orchestrator.session_manager = session_mgr
+    orchestrator.session = session_mgr.create_session(
+        session_id="session_enforce_test",
+        active_objectives=["obj_continuous_development"]
+    )
+
+    agent_id = "agent_jules_sage"
+    task_id = "task_active_development"
+
+    # Set up INITIATED state (should fail enforcement because not ACTIVE yet)
+    orchestrator.initialize_agent_activation(
+        agent_id=agent_id,
+        assigned_task_id=task_id,
+        authorized_scope=["sage/experimental/"]
+    )
+    res_initiated = orchestrator.enforce_active_agent_scope(agent_id, ["sage/experimental/act/continuity_control.py"])
+    assert res_initiated["is_allowed"] is False
+    assert "Must be ACTIVE to execute" in res_initiated["reason"]
+
+    # Authorize agent to ACTIVE
+    orchestrator.authorize_agent_activation(agent_id, "supervisor_jules", "sig_jules_123")
+
+    # Clean modification within scope -> ALLOW
+    res_clean = orchestrator.enforce_active_agent_scope(agent_id, ["sage/experimental/act/continuity_control.py"])
+    assert res_clean["is_allowed"] is True
+    assert res_clean["action"] == "ALLOW_EXECUTION"
+
+    # Out of scope modification -> BLOCK & transition to BLOCKED
+    res_out_of_scope = orchestrator.enforce_active_agent_scope(agent_id, ["docs/INDEX.md"])
+    assert res_out_of_scope["is_allowed"] is False
+    assert "is outside the authorized scope" in res_out_of_scope["reason"]
+    assert res_out_of_scope["action"] == "BLOCK_EXECUTION"
+
+    # Re-verify that agent is now BLOCKED
+    res_blocked_repeat = orchestrator.enforce_active_agent_scope(agent_id, ["sage/experimental/act/continuity_control.py"])
+    assert res_blocked_repeat["is_allowed"] is False
+    assert "is BLOCKED due to previous boundary violations" in res_blocked_repeat["reason"]
+
+
+def test_active_agent_protected_namespace_enforcement(tmp_path):
+    """Verify that SAGE actively blocks modifications to core protected namespaces even if initialized as ACTIVE."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_protected_enforce_test",
+        objective="obj_continuous_development"
+    )
+    orchestrator.session_manager = session_mgr
+    orchestrator.session = session_mgr.create_session(
+        session_id="session_protected_enforce_test",
+        active_objectives=["obj_continuous_development"]
+    )
+
+    agent_id = "agent_jules_sage"
+    task_id = "task_active_development"
+
+    # Initialize and authorize with very broad scope prefix
+    orchestrator.initialize_agent_activation(
+        agent_id=agent_id,
+        assigned_task_id=task_id,
+        authorized_scope=["sage/"]
+    )
+    orchestrator.authorize_agent_activation(agent_id, "supervisor_jules", "sig_jules_456")
+
+    # Attempt modifying a protected production namespace file -> BLOCK & transition to BLOCKED
+    res_protected = orchestrator.enforce_active_agent_scope(agent_id, ["sage/runtime/engine.py"])
+    assert res_protected["is_allowed"] is False
+    assert "modification of protected core file" in res_protected["reason"]
+    assert res_protected["action"] == "BLOCK_EXECUTION"

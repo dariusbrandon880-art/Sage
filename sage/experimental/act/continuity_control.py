@@ -244,6 +244,34 @@ class ContinuityControlLoop:
         return record
 
 
+class AgentActivationState(BaseModel):
+    """Represents the operational activation state and authorization boundaries of an active SAGE agent."""
+
+    agent_id: str
+    session_id: str
+    assigned_task_id: str
+    lifecycle_state: str = "INITIATED"  # INITIATED, ACTIVE, DELEGATED, COMPLETED, BLOCKED
+    authorized_scope_prefixes: List[str] = Field(default_factory=list)
+    human_authorization_signature: Optional[str] = None
+    timestamp: float = Field(default_factory=time.time)
+
+    @field_validator("agent_id")
+    @classmethod
+    def validate_agent_id(cls, v: str) -> str:
+        """Enforce strict agent_id formatting."""
+        if not re.match(r"^agent_[a-zA-Z0-9_\-]+$", v):
+            raise ValueError(f"SAGE-CCL Violation: Invalid agent_id format: '{v}'")
+        return v
+
+    @field_validator("assigned_task_id")
+    @classmethod
+    def validate_task_id(cls, v: str) -> str:
+        """Enforce strict task_id formatting."""
+        if not re.match(r"^task_[a-zA-Z0-9_\-]+$", v):
+            raise ValueError(f"SAGE-CCL Violation: Invalid task_id format: '{v}'")
+        return v
+
+
 class DeveloperWorkflowOrchestrator:
     """Orchestrates end-to-end active developer workflows by connecting SAGE-CCL, Context Guard, and CMAPS."""
 
@@ -324,6 +352,133 @@ class DeveloperWorkflowOrchestrator:
                 "modified_files": ["sage/experimental/act/continuity_control.py"],
                 "diffs": {"sage/experimental/act/continuity_control.py": f"Git scan bypassed due to error: {e}"}
             }
+
+    def initialize_agent_activation(
+        self,
+        agent_id: str,
+        assigned_task_id: str,
+        authorized_scope: Optional[List[str]] = None
+    ) -> AgentActivationState:
+        """Registers the initial INITIATED activation state for an agent."""
+        state = AgentActivationState(
+            agent_id=agent_id,
+            session_id=self.session_id,
+            assigned_task_id=assigned_task_id,
+            lifecycle_state="INITIATED",
+            authorized_scope_prefixes=authorized_scope or ["sage/experimental/", "tests/experimental/"]
+        )
+        self.session.metadata["agent_activation"] = state.model_dump()
+        self.session_manager.save_session(self.session)
+        return state
+
+    def authorize_agent_activation(
+        self,
+        agent_id: str,
+        supervisor_id: str,
+        signature: str
+    ) -> AgentActivationState:
+        """Examines human authorization and transitions the agent's state to ACTIVE."""
+        act_dict = self.session.metadata.get("agent_activation")
+        if not act_dict or act_dict.get("agent_id") != agent_id:
+            raise ValueError(f"SAGE-CCL Error: No active activation record found for agent '{agent_id}'.")
+
+        state = AgentActivationState(**act_dict)
+        state.lifecycle_state = "ACTIVE"
+        state.human_authorization_signature = signature
+        state.timestamp = time.time()
+
+        self.session.metadata["agent_activation"] = state.model_dump()
+        self.session_manager.save_session(self.session)
+        return state
+
+    def enforce_active_agent_scope(self, agent_id: str, modified_files: List[str]) -> Dict[str, Any]:
+        """Actively enforces that an agent stays strictly within authorized boundaries and clean namespaces.
+
+        If a boundary is crossed or is not authorized, the agent's state is set to BLOCKED.
+        """
+        act_dict = self.session.metadata.get("agent_activation")
+        if not act_dict or act_dict.get("agent_id") != agent_id:
+            return {
+                "is_allowed": False,
+                "reason": f"Agent '{agent_id}' is not currently activated or registered.",
+                "action": "BLOCK_EXECUTION"
+            }
+
+        state = AgentActivationState(**act_dict)
+
+        if state.lifecycle_state == "BLOCKED":
+            return {
+                "is_allowed": False,
+                "reason": "Agent execution is BLOCKED due to previous boundary violations.",
+                "action": "BLOCK_EXECUTION"
+            }
+
+        if state.lifecycle_state != "ACTIVE":
+            return {
+                "is_allowed": False,
+                "reason": f"Agent activation lifecycle state is '{state.lifecycle_state}'. Must be ACTIVE to execute.",
+                "action": "BLOCK_EXECUTION"
+            }
+
+        # Check path authorizations
+        for file in modified_files:
+            normalized_file = file.replace("\\", "/")
+            # Core protected namespaces are always forbidden
+            for protected in ["sage/runtime/", "sage/core/", "sage/acr/", "sage/agents/"]:
+                if normalized_file.startswith(protected) or normalized_file.startswith("./" + protected):
+                    # Block and transition agent to BLOCKED
+                    state.lifecycle_state = "BLOCKED"
+                    state.timestamp = time.time()
+                    self.session.metadata["agent_activation"] = state.model_dump()
+                    self.session_manager.save_session(self.session)
+
+                    return {
+                        "is_allowed": False,
+                        "reason": f"SAGE Boundary Violation: Direct modification of protected core file '{file}' is forbidden.",
+                        "action": "BLOCK_EXECUTION"
+                    }
+
+            # Must fall inside authorized scope
+            allowed = False
+            for prefix in state.authorized_scope_prefixes:
+                if normalized_file.startswith(prefix) or normalized_file.startswith("./" + prefix):
+                    allowed = True
+                    break
+            if not allowed:
+                # Block and transition agent to BLOCKED
+                state.lifecycle_state = "BLOCKED"
+                state.timestamp = time.time()
+                self.session.metadata["agent_activation"] = state.model_dump()
+                self.session_manager.save_session(self.session)
+
+                return {
+                    "is_allowed": False,
+                    "reason": f"SAGE Boundary Violation: File '{file}' is outside the authorized scope prefixes {state.authorized_scope_prefixes}.",
+                    "action": "BLOCK_EXECUTION"
+                }
+
+        return {
+            "is_allowed": True,
+            "reason": "All modifications comply with authorized scope boundaries.",
+            "action": "ALLOW_EXECUTION"
+        }
+
+    def complete_agent_activation(self, agent_id: str) -> AgentActivationState:
+        """Transitions the agent activation state to COMPLETED upon successful task execution."""
+        act_dict = self.session.metadata.get("agent_activation")
+        if not act_dict or act_dict.get("agent_id") != agent_id:
+            raise ValueError(f"SAGE-CCL Error: No active activation record found for agent '{agent_id}'.")
+
+        state = AgentActivationState(**act_dict)
+        if state.lifecycle_state == "BLOCKED":
+            raise ValueError("SAGE-CCL Error: Cannot complete a BLOCKED agent activation.")
+
+        state.lifecycle_state = "COMPLETED"
+        state.timestamp = time.time()
+
+        self.session.metadata["agent_activation"] = state.model_dump()
+        self.session_manager.save_session(self.session)
+        return state
 
     def execute_active_development_coordination(
         self,
@@ -539,6 +694,25 @@ class DeveloperWorkflowOrchestrator:
             except Exception:
                 pass
 
+        # Determine agent activation details
+        activation_info = "  None"
+        act_dict = self.session.metadata.get("agent_activation")
+        if act_dict:
+            act_state = AgentActivationState(**act_dict)
+            activation_info = (
+                f"  Agent ID:   {act_state.agent_id}\n"
+                f"  Status:     {act_state.lifecycle_state}\n"
+                f"  Scope:      {', '.join(act_state.authorized_scope_prefixes)}\n"
+                f"  Auth Sig:   {act_state.human_authorization_signature or 'Awaiting Signature'}"
+            )
+        else:
+            activation_info = (
+                "  Agent ID:   agent_jules_sage\n"
+                "  Role:       Senior Software Engineer\n"
+                "  Tier:       TIER_1_COORDINATOR\n"
+                "  Task ID:    task_active_development"
+            )
+
         dashboard = [
             "==================================================",
             "  SAGE CO-ORDINATION & ACTIVATION STATUS DASHBOARD",
@@ -547,10 +721,7 @@ class DeveloperWorkflowOrchestrator:
             f"Active Objectives: {', '.join(self.session.active_objectives)}",
             "--------------------------------------------------",
             "Agent & Task Assignment Info:",
-            "  Agent ID:   agent_jules_sage",
-            "  Role:       Senior Software Engineer",
-            "  Tier:       TIER_1_COORDINATOR",
-            "  Task ID:    task_active_development",
+            activation_info,
             "--------------------------------------------------",
             "Workspace Track & Guard Status:",
             f"  Uncommitted Files: {len(modified_files)} file(s)",
@@ -591,6 +762,8 @@ class DeveloperWorkflowOrchestrator:
                 "size_bytes": os.path.getsize(file) if os.path.exists(file) else 0
             }
 
+        act_dict = self.session.metadata.get("agent_activation")
+
         manifest = {
             "manifest_id": f"manifest_handoff_{uuid.uuid4().hex[:12]}",
             "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
@@ -601,6 +774,7 @@ class DeveloperWorkflowOrchestrator:
                 "pending_actions": list(self.session.pending_actions),
                 "important_decisions": list(self.session.important_decisions)
             },
+            "agent_activation_state": act_dict,
             "workspace_fingerprint": file_fingerprints,
             "coordination_telemetry": {
                 "assigned_agent": "agent_jules_sage",
@@ -672,6 +846,50 @@ if __name__ == "__main__":
     print(f"    - CMAPS Audit ID: {result['cmaps_payload']['audit_id']}")
     print(f"    - Status: {result['status']}")
     print(f"    - Evidence saved to: {orchestrator.evidence_output_path}")
+
+    print(f"\n[*] Generating Live Coordination Status Dashboard...")
+    dashboard = orchestrator.render_coordination_status()
+    print(dashboard)
+
+    print(f"\n[*] Initializing Governed Agent Activation...")
+    agent_id = "agent_jules_sage"
+    task_id = "task_active_development"
+    init_state = orchestrator.initialize_agent_activation(
+        agent_id=agent_id,
+        assigned_task_id=task_id,
+        authorized_scope=["sage/experimental/", "tests/experimental/", "evidence_capture/"]
+    )
+    print(f"    - Agent ID: {init_state.agent_id} initialized in state: {init_state.lifecycle_state}")
+
+    print(f"\n[*] Authorizing Agent Activation via Human Signature...")
+    auth_state = orchestrator.authorize_agent_activation(
+        agent_id=agent_id,
+        supervisor_id="supervisor_jules",
+        signature="sig_jules_active_gate_992"
+    )
+    print(f"    - Agent state promoted to: {auth_state.lifecycle_state} with Signature: {auth_state.human_authorization_signature}")
+
+    print(f"\n[*] Actively Enforcing Agent Scope on Workspace Changes...")
+    enforce_res = orchestrator.enforce_active_agent_scope(agent_id, workspace["modified_files"])
+    print(f"    - Enforcement Action: {enforce_res['action']}")
+    print(f"    - Reason: {enforce_res['reason']}")
+
+    # Save Agent Activation Evidence
+    activation_evidence = {
+        "run_id": f"activation_run_{uuid.uuid4().hex[:12]}",
+        "timestamp": time.time(),
+        "agent_id": agent_id,
+        "task_id": task_id,
+        "initial_state": init_state.model_dump(),
+        "authorized_state": auth_state.model_dump(),
+        "enforcement_report": enforce_res,
+        "final_state": orchestrator.complete_agent_activation(agent_id).model_dump()
+    }
+    evidence_path = Path("evidence_capture/agent_activation_evidence.json")
+    evidence_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(evidence_path, "w", encoding="utf-8") as f:
+        json.dump(activation_evidence, f, indent=2, default=str)
+    print(f"    - Saved Activation Evidence to: {evidence_path}")
 
     print(f"\n[*] Generating Live Coordination Status Dashboard...")
     dashboard = orchestrator.render_coordination_status()

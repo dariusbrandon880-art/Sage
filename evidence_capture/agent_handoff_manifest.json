@@ -1,6 +1,6 @@
 {
-  "manifest_id": "manifest_handoff_d19239e9a150",
-  "timestamp": "2026-08-04T08:30:21.751865Z",
+  "manifest_id": "manifest_handoff_ae0a69c5269e",
+  "timestamp": "2026-08-04T09:07:35.207956Z",
   "source_session": "session_realignment_coordination",
   "target_session_objectives": [
     "obj_continuous_development"
@@ -10,24 +10,45 @@
     "pending_actions": [],
     "important_decisions": []
   },
+  "agent_activation_state": {
+    "agent_id": "agent_jules_sage",
+    "session_id": "session_realignment_coordination",
+    "assigned_task_id": "task_active_development",
+    "lifecycle_state": "COMPLETED",
+    "authorized_scope_prefixes": [
+      "sage/experimental/",
+      "tests/experimental/",
+      "evidence_capture/"
+    ],
+    "human_authorization_signature": "sig_jules_active_gate_992",
+    "timestamp": 1785834455.1523979
+  },
   "workspace_fingerprint": {
+    "evidence_capture/agent_handoff_manifest.json": {
+      "sha256": "2bd7df8601d070120d5c10dfcec6aad127feee318a148924e606f1f703cbeaed",
+      "size_bytes": 1134
+    },
     "evidence_capture/ccl_operational_feedback.json": {
-      "sha256": "527a3c717ed433de5a03fc569e449dee3bf1d807257dfe46a2cd0eecbd663fad",
-      "size_bytes": 4439
+      "sha256": "4002810dcb04da4a3bee55028e572aa79c8e56daa6d695aace21abc5b2cd5761",
+      "size_bytes": 4727
     },
     "sage/experimental/act/continuity_control.py": {
-      "sha256": "71316288cfed8e9827d46d044843f621b4073f365266bf470449df507088049f",
-      "size_bytes": 28908
+      "sha256": "b1dce7829a8cda48e6059b43a5d68b46bd2091f2ff30f8ec5a59e127d0153b59",
+      "size_bytes": 38651
     },
     "tests/experimental/test_continuity_control.py": {
-      "sha256": "3eee65a0a83542e31a581c20b824aaace2df6e5f1d3ce02e4083982b41a08eb1",
-      "size_bytes": 17345
+      "sha256": "cd6b14dc436e019392e51b4ec5d9cc4d57f8e6b80a167112ab84d320e7100e4b",
+      "size_bytes": 23095
+    },
+    "evidence_capture/agent_activation_evidence.json": {
+      "sha256": "2c6217627247879595392f0bffa470c10a615302cfe7540b056c46aaf1fe5aac",
+      "size_bytes": 1582
     }
   },
   "coordination_telemetry": {
     "assigned_agent": "agent_jules_sage",
-    "nonce": "005b3df7ec564b12",
-    "rehydration_token": "rehydrate_4c4ba343bf434b97",
+    "nonce": "09a616bbcdd04c17",
+    "rehydration_token": "rehydrate_69d835c06edb4a10",
     "instructions": "Run DeveloperWorkflowOrchestrator to re-verify context state."
   }
 }
