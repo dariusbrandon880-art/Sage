@@ -1,6 +1,6 @@
 {
-  "run_id": "activation_run_682438272aa7",
-  "timestamp": 1785834455.1523666,
+  "run_id": "activation_run_24d0bf48bc51",
+  "timestamp": 1785836356.8962612,
   "agent_id": "agent_jules_sage",
   "task_id": "task_active_development",
   "initial_state": {
@@ -14,7 +14,7 @@
       "evidence_capture/"
     ],
     "human_authorization_signature": null,
-    "timestamp": 1785834455.1508982
+    "timestamp": 1785836356.8950493
   },
   "authorized_state": {
     "agent_id": "agent_jules_sage",
@@ -27,7 +27,7 @@
       "evidence_capture/"
     ],
     "human_authorization_signature": "sig_jules_active_gate_992",
-    "timestamp": 1785834455.1514738
+    "timestamp": 1785836356.8955467
   },
   "enforcement_report": {
     "is_allowed": true,
@@ -38,13 +38,13 @@
     "agent_id": "agent_jules_sage",
     "session_id": "session_realignment_coordination",
     "assigned_task_id": "task_active_development",
-    "lifecycle_state": "COMPLETED",
+    "lifecycle_state": "ACTIVE",
     "authorized_scope_prefixes": [
       "sage/experimental/",
       "tests/experimental/",
       "evidence_capture/"
     ],
     "human_authorization_signature": "sig_jules_active_gate_992",
-    "timestamp": 1785834455.1523979
+    "timestamp": 1785836356.8955467
   }
 }

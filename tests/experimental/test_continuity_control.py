@@ -542,3 +542,130 @@ def test_active_agent_protected_namespace_enforcement(tmp_path):
     assert res_protected["is_allowed"] is False
     assert "modification of protected core file" in res_protected["reason"]
     assert res_protected["action"] == "BLOCK_EXECUTION"
+
+
+def test_record_agent_execution_step_allowed(tmp_path):
+    """Verify that an aligned agent execution step is recorded successfully and logged in session metadata."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, AgentProgressUpdate
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_exec_allowed_test",
+        objective="obj_continuous_development"
+    )
+    orchestrator.session_manager = session_mgr
+    orchestrator.session = session_mgr.create_session(
+        session_id="session_exec_allowed_test",
+        active_objectives=["obj_continuous_development"]
+    )
+
+    agent_id = "agent_jules_sage"
+    task_id = "task_active_development"
+
+    # Set up and authorize agent activation
+    orchestrator.initialize_agent_activation(agent_id, task_id, ["sage/experimental/"])
+    orchestrator.authorize_agent_activation(agent_id, "supervisor_jules", "sig_jules_9911")
+
+    # Clean aligned step
+    update = AgentProgressUpdate(
+        agent_id=agent_id,
+        step_id="step_01",
+        action_taken="Wrote telemetry method inside experimental namespaces",
+        objective_alignment="obj_continuous_development",
+        modified_files=["sage/experimental/act/continuity_control.py"]
+    )
+
+    res = orchestrator.record_agent_execution_step(update)
+    assert res["status"] == "ACTIVE"
+    assert res["drift_detected"] is False
+    assert res["action"] == "ALLOW_EXECUTION"
+
+    # Verify session log
+    exec_log = orchestrator.session.metadata.get("execution_log")
+    assert exec_log is not None
+    assert len(exec_log) == 1
+    assert exec_log[0]["step_id"] == "step_01"
+    assert exec_log[0]["status"] == "ALIGNED"
+
+
+def test_record_agent_execution_step_blocked_by_drift(tmp_path):
+    """Verify that an execution step with objective drift is blocked and transitions the agent to BLOCKED."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, AgentProgressUpdate
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_exec_drift_test",
+        objective="obj_continuous_development"
+    )
+    orchestrator.session_manager = session_mgr
+    orchestrator.session = session_mgr.create_session(
+        session_id="session_exec_drift_test",
+        active_objectives=["obj_continuous_development"]
+    )
+
+    agent_id = "agent_jules_sage"
+    task_id = "task_active_development"
+
+    orchestrator.initialize_agent_activation(agent_id, task_id, ["sage/experimental/"])
+    orchestrator.authorize_agent_activation(agent_id, "supervisor_jules", "sig_jules_9911")
+
+    # Drifting step (claiming alignment to an unassigned objective)
+    update = AgentProgressUpdate(
+        agent_id=agent_id,
+        step_id="step_drift",
+        action_taken="Modifying server configurations",
+        objective_alignment="obj_unauthorized_server_maintenance"
+    )
+
+    res = orchestrator.record_agent_execution_step(update)
+    assert res["status"] == "BLOCKED"
+    assert res["drift_detected"] is True
+    assert "Objective Drift" in res["reason"]
+
+    # Re-verify agent status is now BLOCKED
+    act_dict = orchestrator.session.metadata.get("agent_activation")
+    assert act_dict["lifecycle_state"] == "BLOCKED"
+
+
+def test_record_agent_execution_step_blocked_by_security(tmp_path):
+    """Verify that execution containing unauthorized api directives is actively blocked."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, AgentProgressUpdate
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_exec_sec_test",
+        objective="obj_continuous_development"
+    )
+    orchestrator.session_manager = session_mgr
+    orchestrator.session = session_mgr.create_session(
+        session_id="session_exec_sec_test",
+        active_objectives=["obj_continuous_development"]
+    )
+
+    agent_id = "agent_jules_sage"
+    task_id = "task_active_development"
+
+    orchestrator.initialize_agent_activation(agent_id, task_id, ["sage/experimental/"])
+    orchestrator.authorize_agent_activation(agent_id, "supervisor_jules", "sig_jules_9911")
+
+    # Unauthorized action string
+    update = AgentProgressUpdate(
+        agent_id=agent_id,
+        step_id="step_sec_fail",
+        action_taken="Executing bypass_policies command",
+        objective_alignment="obj_continuous_development"
+    )
+
+    res = orchestrator.record_agent_execution_step(update)
+    assert res["status"] == "BLOCKED"
+    assert res["drift_detected"] is True
+    assert "Security Drift" in res["reason"]

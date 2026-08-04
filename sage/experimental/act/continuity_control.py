@@ -272,6 +272,26 @@ class AgentActivationState(BaseModel):
         return v
 
 
+class AgentProgressUpdate(BaseModel):
+    """Represents a structured operational progress update submitted by an active agent."""
+
+    agent_id: str
+    step_id: str
+    action_taken: str
+    objective_alignment: str
+    modified_files: List[str] = Field(default_factory=list)
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+    timestamp: float = Field(default_factory=time.time)
+
+    @field_validator("agent_id")
+    @classmethod
+    def validate_agent_id(cls, v: str) -> str:
+        """Enforce strict agent_id formatting."""
+        if not re.match(r"^agent_[a-zA-Z0-9_\-]+$", v):
+            raise ValueError(f"SAGE-CCL Violation: Invalid agent_id format: '{v}'")
+        return v
+
+
 class DeveloperWorkflowOrchestrator:
     """Orchestrates end-to-end active developer workflows by connecting SAGE-CCL, Context Guard, and CMAPS."""
 
@@ -479,6 +499,104 @@ class DeveloperWorkflowOrchestrator:
         self.session.metadata["agent_activation"] = state.model_dump()
         self.session_manager.save_session(self.session)
         return state
+
+    def record_agent_execution_step(self, update: AgentProgressUpdate) -> Dict[str, Any]:
+        """Accepts, validates, and records a structured agent progress update during active execution."""
+        act_dict = self.session.metadata.get("agent_activation")
+        if not act_dict or act_dict.get("agent_id") != update.agent_id:
+            raise ValueError(f"SAGE-CCL Error: Agent '{update.agent_id}' is not activated or registered.")
+
+        state = AgentActivationState(**act_dict)
+        if state.lifecycle_state == "BLOCKED":
+            return {
+                "status": "BLOCKED",
+                "drift_detected": True,
+                "reason": "Execution blocked: Agent is in a BLOCKED state.",
+                "action": "BLOCK_EXECUTION"
+            }
+
+        # 1. Enforce scope
+        scope_res = self.enforce_active_agent_scope(update.agent_id, update.modified_files)
+        if not scope_res["is_allowed"]:
+            return {
+                "status": "BLOCKED",
+                "drift_detected": True,
+                "reason": f"Scope Violation: {scope_res['reason']}",
+                "action": "BLOCK_EXECUTION"
+            }
+
+        # 2. Drift Detection: verify objective alignment
+        drift_detected = False
+        drift_reason = None
+
+        # Check objective alignment
+        if update.objective_alignment not in self.session.active_objectives:
+            drift_detected = True
+            drift_reason = f"Objective Drift: Claimed objective alignment '{update.objective_alignment}' is not listed in active session objectives {self.session.active_objectives}."
+
+        # Check potential unauthorized markers in action or metadata
+        action_lower = update.action_taken.lower()
+        for forbidden in ["unauthorized_api_call", "tamper_logs", "bypass_policies"]:
+            if forbidden in action_lower:
+                drift_detected = True
+                drift_reason = f"Security Drift: Action contains unauthorized execution directive: '{forbidden}'"
+
+        if drift_detected:
+            # Transition agent to BLOCKED
+            state.lifecycle_state = "BLOCKED"
+            state.timestamp = time.time()
+            self.session.metadata["agent_activation"] = state.model_dump()
+            self.session_manager.save_session(self.session)
+
+            # Record blocked event in SAGE-CCL
+            blocked_rec = self.ccl.intercept_event(
+                event_type="boundary_intercept",
+                action_taken=f"BLOCKED: {update.action_taken}",
+                decision_reasoning=f"Agent execution drift detected: {drift_reason}",
+                session_id=self.session_id,
+                failure_context={"drift_reason": drift_reason, "step_id": update.step_id}
+            )
+            self.ccl.serialize_record(blocked_rec)
+
+            return {
+                "status": "BLOCKED",
+                "drift_detected": True,
+                "reason": drift_reason,
+                "action": "BLOCK_EXECUTION"
+            }
+
+        # 3. Successful, aligned execution step
+        self.session.add_completed_action(f"{update.step_id}:{update.action_taken}")
+        self.session_manager.save_session(self.session)
+
+        # Log to SAGE-CCL Ledger
+        rec = self.ccl.intercept_event(
+            event_type="state_transition",
+            action_taken=update.action_taken,
+            decision_reasoning=f"Execution step validated against active objective '{update.objective_alignment}'",
+            session_id=self.session_id,
+            evidence_payload={"step_id": update.step_id, "modified_files": update.modified_files, "metadata": update.metadata}
+        )
+        self.ccl.serialize_record(rec)
+
+        # Format and append execution log in session
+        if "execution_log" not in self.session.metadata:
+            self.session.metadata["execution_log"] = []
+        self.session.metadata["execution_log"].append({
+            "step_id": update.step_id,
+            "timestamp": update.timestamp,
+            "action_taken": update.action_taken,
+            "objective_alignment": update.objective_alignment,
+            "status": "ALIGNED"
+        })
+        self.session_manager.save_session(self.session)
+
+        return {
+            "status": "ACTIVE",
+            "drift_detected": False,
+            "reason": "Execution step matches active objective and scope boundaries.",
+            "action": "ALLOW_EXECUTION"
+        }
 
     def execute_active_development_coordination(
         self,
@@ -713,6 +831,16 @@ class DeveloperWorkflowOrchestrator:
                 "  Task ID:    task_active_development"
             )
 
+        # Determine agent execution details
+        exec_log_info = []
+        exec_log = self.session.metadata.get("execution_log", [])
+        if exec_log:
+            exec_log_info.append("  Execution History:")
+            for step in exec_log[-3:]:  # Show last 3 steps
+                exec_log_info.append(f"    [{step['step_id']}] {step['action_taken']} ({step['status']})")
+        else:
+            exec_log_info.append("  Execution History: No active steps recorded.")
+
         dashboard = [
             "==================================================",
             "  SAGE CO-ORDINATION & ACTIVATION STATUS DASHBOARD",
@@ -722,6 +850,8 @@ class DeveloperWorkflowOrchestrator:
             "--------------------------------------------------",
             "Agent & Task Assignment Info:",
             activation_info,
+            "--------------------------------------------------",
+            "\n".join(exec_log_info),
             "--------------------------------------------------",
             "Workspace Track & Guard Status:",
             f"  Uncommitted Files: {len(modified_files)} file(s)",
@@ -883,13 +1013,51 @@ if __name__ == "__main__":
         "initial_state": init_state.model_dump(),
         "authorized_state": auth_state.model_dump(),
         "enforcement_report": enforce_res,
-        "final_state": orchestrator.complete_agent_activation(agent_id).model_dump()
+        "final_state": auth_state.model_dump()
     }
     evidence_path = Path("evidence_capture/agent_activation_evidence.json")
     evidence_path.parent.mkdir(parents=True, exist_ok=True)
     with open(evidence_path, "w", encoding="utf-8") as f:
         json.dump(activation_evidence, f, indent=2, default=str)
     print(f"    - Saved Activation Evidence to: {evidence_path}")
+
+    print(f"\n[*] Submitting Aligned Agent Progress Update...")
+    update_clean = AgentProgressUpdate(
+        agent_id=agent_id,
+        step_id="step_01",
+        action_taken="Wrote robust operational progress updates and validation hooks",
+        objective_alignment="obj_continuous_development",
+        modified_files=workspace["modified_files"]
+    )
+    res_clean = orchestrator.record_agent_execution_step(update_clean)
+    print(f"    - Progress Update Step ID: {update_clean.step_id} -> {res_clean['status']} (Action: {res_clean['action']})")
+
+    print(f"\n[*] Submitting Drifting Agent Progress Update (Simulation)...")
+    update_drift = AgentProgressUpdate(
+        agent_id=agent_id,
+        step_id="step_02_drift",
+        action_taken="Attempting to execute unauthorized API call to host",
+        objective_alignment="obj_unauthorized_scope_mutation"
+    )
+    res_drift = orchestrator.record_agent_execution_step(update_drift)
+    print(f"    - Progress Update Step ID: {update_drift.step_id} -> {res_drift['status']} (Action: {res_drift['action']})")
+    print(f"    - Drift Reason: {res_drift['reason']}")
+
+    # Save Agent Execution Feedback Evidence
+    execution_evidence = {
+        "run_id": f"execution_run_{uuid.uuid4().hex[:12]}",
+        "timestamp": time.time(),
+        "agent_id": agent_id,
+        "task_id": task_id,
+        "aligned_progress_step": update_clean.model_dump(),
+        "aligned_enforcement": res_clean,
+        "drifting_progress_step": update_drift.model_dump(),
+        "drifting_enforcement": res_drift
+    }
+    exec_evidence_path = Path("evidence_capture/agent_execution_feedback_evidence.json")
+    with open(exec_evidence_path, "w", encoding="utf-8") as f:
+        json.dump(execution_evidence, f, indent=2, default=str)
+    print(f"    - Saved Execution Feedback Evidence to: {exec_evidence_path}")
 
     print(f"\n[*] Generating Live Coordination Status Dashboard...")
     dashboard = orchestrator.render_coordination_status()
