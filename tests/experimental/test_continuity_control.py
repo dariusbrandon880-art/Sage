@@ -770,3 +770,118 @@ def test_workflow_intelligence_blocked(tmp_path):
     assert report["health_score"] < 60.0
     assert len(report["blocked_conditions"]) == 1
     assert any(sig["signal_type"] == "SUPERVISOR_OVERRIDE_REQUIRED" for sig in report["actionable_operator_signals"])
+
+
+def test_rehydrate_from_handoff_manifest_success(tmp_path):
+    """Verify that SAGE programmatically restores session objectives and agent activation from handoff manifest."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    manifest_file = tmp_path / "manifest.json"
+
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+
+    # 1. Create a dummy manifest
+    manifest_data = {
+        "manifest_id": "manifest_test_rehydrate",
+        "timestamp": "2026-08-04T12:00:00Z",
+        "source_session": "session_rehydrated_99",
+        "target_session_objectives": ["obj_persistent_continuity", "obj_continuous_development"],
+        "state_snapshot": {
+            "completed_actions": ["task_setup_persistence"],
+            "pending_actions": ["task_verify_rehydration"],
+            "important_decisions": []
+        },
+        "agent_activation_state": {
+            "agent_id": "agent_jules_sage",
+            "session_id": "session_rehydrated_99",
+            "assigned_task_id": "task_active_development",
+            "lifecycle_state": "ACTIVE",
+            "authorized_scope_prefixes": ["sage/experimental/"],
+            "human_authorization_signature": "sig_supervisor_jules_11"
+        },
+        "workspace_fingerprint": {}
+    }
+
+    with open(manifest_file, "w", encoding="utf-8") as f:
+        json.dump(manifest_data, f, indent=2)
+
+    # 2. Run Rehydration
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_dummy",
+        objective="obj_temporary"
+    )
+    orchestrator.session_manager = session_mgr
+    orchestrator.ccl.storage_path = record_storage
+
+    report = orchestrator.rehydrate_from_handoff_manifest(str(manifest_file))
+
+    # 3. Assert on restored state
+    assert report["rehydrated_session_id"] == "session_rehydrated_99"
+    assert "obj_persistent_continuity" in report["target_objectives"]
+    assert report["agent_activation_state"]["agent_id"] == "agent_jules_sage"
+    assert report["agent_activation_state"]["lifecycle_state"] == "ACTIVE"
+
+    # Verify session is fully rehydrated in SessionStateManager
+    rehydrated_session = session_mgr.retrieve_session("session_rehydrated_99")
+    assert rehydrated_session is not None
+    assert "obj_persistent_continuity" in rehydrated_session.active_objectives
+    assert "task_setup_persistence" in rehydrated_session.completed_actions
+
+
+def test_rehydrate_from_handoff_manifest_divergence(tmp_path):
+    """Verify SAGE actively detects workspace state divergence and flags missing/modified files."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    manifest_file = tmp_path / "manifest.json"
+    dummy_file = tmp_path / "dummy_experimental.py"
+
+    # Create dummy workspace file with custom content
+    dummy_file.write_text("print('original state')", encoding="utf-8")
+
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+
+    # Manifest specifying dummy_file but with divergent size/checksum, and a missing file
+    manifest_data = {
+        "manifest_id": "manifest_test_divergence",
+        "timestamp": "2026-08-04T12:00:00Z",
+        "source_session": "session_divergence_99",
+        "target_session_objectives": ["obj_continuous_development"],
+        "state_snapshot": {},
+        "agent_activation_state": None,
+        "workspace_fingerprint": {
+            str(dummy_file): {
+                "sha256": "wrong_hash_to_trigger_divergence",
+                "size_bytes": 9999
+            },
+            "missing_experimental_file.py": {
+                "sha256": "any_hash",
+                "size_bytes": 42
+            }
+        }
+    }
+
+    with open(manifest_file, "w", encoding="utf-8") as f:
+        json.dump(manifest_data, f, indent=2)
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_dummy",
+        objective="obj_temporary"
+    )
+    orchestrator.session_manager = session_mgr
+    orchestrator.ccl.storage_path = record_storage
+
+    report = orchestrator.rehydrate_from_handoff_manifest(str(manifest_file))
+
+    # Assert on divergence audit findings
+    audit = report["divergence_audit"]
+    assert audit["divergence_detected"] is True
+    assert audit["divergent_files_count"] == 1
+    assert str(dummy_file) in audit["divergent_files"]
+    assert audit["missing_files_count"] == 1
+    assert "missing_experimental_file.py" in audit["missing_files"]

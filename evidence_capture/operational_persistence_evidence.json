@@ -1,0 +1,40 @@
+{
+  "rehydrated_session_id": "session_realignment_coordination",
+  "target_objectives": [
+    "obj_continuous_development"
+  ],
+  "agent_activation_state": {
+    "agent_id": "agent_jules_sage",
+    "session_id": "session_realignment_coordination",
+    "assigned_task_id": "task_active_development",
+    "lifecycle_state": "BLOCKED",
+    "authorized_scope_prefixes": [
+      "sage/experimental/",
+      "tests/experimental/",
+      "evidence_capture/"
+    ],
+    "human_authorization_signature": "sig_jules_active_gate_992",
+    "timestamp": 1785837706.538237
+  },
+  "divergence_audit": {
+    "divergence_detected": true,
+    "matching_files_count": 4,
+    "divergent_files_count": 3,
+    "missing_files_count": 0,
+    "untracked_additions_count": 0,
+    "matching_files": [
+      "evidence_capture/agent_activation_evidence.json",
+      "evidence_capture/agent_execution_feedback_evidence.json",
+      "evidence_capture/ccl_operational_feedback.json",
+      "evidence_capture/workflow_intelligence_evidence.json"
+    ],
+    "divergent_files": [
+      "evidence_capture/agent_handoff_manifest.json",
+      "sage/experimental/act/continuity_control.py",
+      "tests/experimental/test_continuity_control.py"
+    ],
+    "missing_files": [],
+    "untracked_additions": []
+  },
+  "timestamp": 1785840054.6197252
+}

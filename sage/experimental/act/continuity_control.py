@@ -200,6 +200,7 @@ class ContinuityControlLoop:
 
     def serialize_record(self, record: ContinuityControlRecord) -> Path:
         """Persists the continuity record to the workspace staging directory."""
+        self.storage_path.mkdir(parents=True, exist_ok=True)
         filepath = self.storage_path / f"{record.record_id}.json"
         with open(filepath, "w", encoding="utf-8") as f:
             json.dump(record.model_dump(), f, indent=2, default=str)
@@ -700,6 +701,118 @@ class DeveloperWorkflowOrchestrator:
 
         return report.model_dump()
 
+    def rehydrate_from_handoff_manifest(self, manifest_path: str) -> Dict[str, Any]:
+        """Programmatically loads a handoff manifest, restores session context/activation state, and audits workspace divergence."""
+        m_path = Path(manifest_path)
+        if not m_path.exists():
+            raise FileNotFoundError(f"SAGE Operational Continuity Error: Handoff manifest '{manifest_path}' not found.")
+
+        with open(m_path, "r", encoding="utf-8") as f:
+            manifest = json.load(f)
+
+        # 1. Restore/Rehydrate Session State
+        source_session_id = manifest["source_session"]
+        target_objectives = manifest.get("target_session_objectives", [])
+        state_snap = manifest.get("state_snapshot", {})
+
+        # Load or create session
+        self.session_id = source_session_id
+        self.session = self.session_manager.retrieve_session(self.session_id)
+        if not self.session:
+            self.session = self.session_manager.create_session(
+                session_id=self.session_id,
+                active_objectives=target_objectives
+            )
+        else:
+            for obj in target_objectives:
+                self.session.add_objective(obj)
+
+        # Rehydrate completed and pending actions
+        for act in state_snap.get("completed_actions", []):
+            self.session.add_completed_action(act)
+        for act in state_snap.get("pending_actions", []):
+            self.session.add_pending_action(act)
+        for dec in state_snap.get("important_decisions", []):
+            self.session.add_decision(dec)
+
+        # 2. Restore Agent Activation State
+        act_state_dict = manifest.get("agent_activation_state")
+        if act_state_dict:
+            self.session.metadata["agent_activation"] = act_state_dict
+
+        self.session_manager.save_session(self.session)
+
+        # 3. Active Workspace Divergence Auditing
+        workspace = self.scan_git_workspace()
+        current_modified_files = workspace["modified_files"]
+        manifest_fingerprints = manifest.get("workspace_fingerprint", {})
+
+        matching_files = []
+        divergent_files = []
+        missing_files = []
+        untracked_additions = []
+
+        # Audit files listed in manifest
+        for filepath, fp in manifest_fingerprints.items():
+            if not os.path.exists(filepath):
+                missing_files.append(filepath)
+                continue
+
+            # Compute current file fingerprint
+            try:
+                with open(filepath, "rb") as file_bin:
+                    curr_hash = hashlib.sha256(file_bin.read()).hexdigest()
+                curr_size = os.path.getsize(filepath)
+            except Exception:
+                curr_hash = ""
+                curr_size = 0
+
+            if curr_hash == fp.get("sha256") and curr_size == fp.get("size_bytes"):
+                matching_files.append(filepath)
+            else:
+                divergent_files.append(filepath)
+
+        # Audit files modified in workspace but not listed in manifest
+        for filepath in current_modified_files:
+            if filepath not in manifest_fingerprints:
+                untracked_additions.append(filepath)
+
+        divergence_detected = len(divergent_files) > 0 or len(missing_files) > 0 or len(untracked_additions) > 0
+
+        rehydration_report = {
+            "rehydrated_session_id": self.session_id,
+            "target_objectives": target_objectives,
+            "agent_activation_state": act_state_dict,
+            "divergence_audit": {
+                "divergence_detected": divergence_detected,
+                "matching_files_count": len(matching_files),
+                "divergent_files_count": len(divergent_files),
+                "missing_files_count": len(missing_files),
+                "untracked_additions_count": len(untracked_additions),
+                "matching_files": matching_files,
+                "divergent_files": divergent_files,
+                "missing_files": missing_files,
+                "untracked_additions": untracked_additions
+            },
+            "timestamp": time.time()
+        }
+
+        # Save rehydration trace to session metadata
+        self.session.metadata["last_rehydration_report"] = rehydration_report
+        self.session_manager.save_session(self.session)
+
+        # Intercept CCL Event
+        rec = self.ccl.intercept_event(
+            event_type="state_transition",
+            action_taken=f"Rehydrated session from manifest: {manifest['manifest_id']}",
+            decision_reasoning=f"Restored operational session context. Divergence detected: {divergence_detected}",
+            session_id=self.session_id,
+            evidence_payload={"rehydration_report": rehydration_report}
+        )
+        self.ccl.serialize_record(rec)
+
+        return rehydration_report
+
     def execute_active_development_coordination(
         self,
         action_taken: str,
@@ -1057,6 +1170,7 @@ if __name__ == "__main__":
     parser.add_argument("--reasoning", type=str, default="Complete SAGE continuity capabilities and connect validated interfaces into usable workflows", help="Decision reasoning")
     parser.add_argument("--friction", type=str, action="append", help="Capture a workflow friction point")
     parser.add_argument("--opportunity", type=str, action="append", help="Capture a SAGE improvement opportunity")
+    parser.add_argument("--rehydrate", type=str, help="Path to a handoff manifest to restore operational state")
 
     args = parser.parse_args()
 
@@ -1077,6 +1191,28 @@ if __name__ == "__main__":
         session_id="session_realignment_coordination",
         objective="obj_continuous_development"
     )
+
+    if args.rehydrate:
+        print(f"\n[*] Executing SAGE Operational Rehydration from: {args.rehydrate}...")
+        rehydrate_report = orchestrator.rehydrate_from_handoff_manifest(args.rehydrate)
+        print(f"    - Rehydrated Session: {rehydrate_report['rehydrated_session_id']}")
+        print(f"    - Target Objectives: {rehydrate_report['target_objectives']}")
+
+        audit = rehydrate_report["divergence_audit"]
+        print(f"    - Workspace Divergence Detected: {audit['divergence_detected']}")
+        print(f"      + Matching Files: {audit['matching_files_count']}")
+        print(f"      + Divergent Files: {audit['divergent_files_count']}")
+        print(f"      + Missing Files: {audit['missing_files_count']}")
+        print(f"      + Untracked Additions: {audit['untracked_additions_count']}")
+
+        # Save Operational Persistence Evidence
+        pers_path = Path("evidence_capture/operational_persistence_evidence.json")
+        with open(pers_path, "w", encoding="utf-8") as f:
+            json.dump(rehydrate_report, f, indent=2, default=str)
+        print(f"    - Saved Operational Persistence Evidence to: {pers_path}")
+        print("\n====================================================")
+        import sys
+        sys.exit(0)
 
     print(f"[*] Scanning workspace via git...")
     workspace = orchestrator.scan_git_workspace()
