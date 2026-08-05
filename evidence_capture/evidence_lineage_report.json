@@ -1,10 +1,10 @@
 {
-  "timestamp": 1785945700.5633004,
+  "timestamp": 1785948531.608081,
   "session_id": "session_endurance_test_99",
   "evidence_integrity_verified": true,
   "rollback_capability_active": true,
   "evidence_artifacts": [
-    "/tmp/pytest-of-jules/pytest-35/test_sage_coordinated_loop_end0/evidence/ccl_feedback.json",
+    "/tmp/pytest-of-jules/pytest-37/test_sage_coordinated_loop_end0/evidence/ccl_feedback.json",
     "evidence_capture/operational_endurance_report.json"
   ]
 }
