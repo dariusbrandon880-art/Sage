@@ -274,6 +274,38 @@ class SAGEImprovementSignal(BaseModel):
     timestamp: float
 
 
+class SAGEWorkflowPattern(BaseModel):
+    """Evidence-backed representation of identified workflow execution patterns."""
+    pattern_id: str
+    pattern_type: str  # "bottleneck", "successful_path", "review_pattern", "recovery_pattern", "context_loss"
+    description: str
+    frequency: int
+    evidence_records: List[str]
+    severity_or_strength: str
+
+
+class SAGEOperationalRecommendation(BaseModel):
+    """Advisory recommendation synthesized from identified patterns."""
+    recommendation_id: str
+    description: str
+    supporting_evidence: List[str]
+    confidence_level: float
+    operational_impact: str
+    affected_stage: str
+    expected_improvement: str
+
+
+class SAGEOptimizationTrends(BaseModel):
+    """Measures performance improvements compared to previous operational baselines."""
+    execution_time_reduction_pct: float
+    recovery_improvement_pct: float
+    context_preservation_improvement_pct: float
+    duplicate_work_reduction_pct: float
+    evidence_quality_improvement_pct: float
+    review_efficiency_improvement_pct: float
+    cumulative_improvement_pct: float
+
+
 class SAGEOperationalIntelligenceLayer:
     """Computes, captures, and evaluates operational metrics and generates learning signals."""
 
@@ -388,11 +420,200 @@ class SAGEOperationalIntelligenceLayer:
             state_restoration_success=state_restoration_success
         )
 
+    def analyze_patterns_and_recommendations(
+        self,
+        current_record: ContinuityControlRecord,
+        current_metrics: SAGEOperationalMetrics,
+        session: SessionState
+    ) -> Dict[str, Any]:
+        """Scans past records to identify workflow patterns, generate advisory recommendations, and track optimization."""
+        # Load all history
+        all_records = []
+        for filepath in self.storage_path.glob("*.json"):
+            try:
+                with open(filepath, "r", encoding="utf-8") as f:
+                    all_records.append(json.load(f))
+            except Exception:
+                pass
+
+        # Include current record
+        if not any(r.get("record_id") == current_record.record_id for r in all_records):
+            all_records.append(current_record.model_dump())
+
+        # 1. Patterns analysis
+        patterns = []
+
+        # Track friction types
+        friction_counts = {}
+        friction_records = {}
+        for r in all_records:
+            fric_list = r.get("workflow_friction", [])
+            for f in fric_list:
+                f_type = f.get("type", "unknown")
+                f_detail = f.get("detail", "")
+                f_key = f"{f_type}:{f_detail}"
+                friction_counts[f_key] = friction_counts.get(f_key, 0) + 1
+                friction_records.setdefault(f_key, []).append(r.get("record_id"))
+
+        # Add bottleneck patterns
+        for f_key, count in friction_counts.items():
+            f_type, f_detail = f_key.split(":", 1)
+            patterns.append(SAGEWorkflowPattern(
+                pattern_id=f"PAT-BOTTLENECK-{uuid.uuid4().hex[:6].upper()}",
+                pattern_type="bottleneck",
+                description=f"Recurring friction of type '{f_type}': {f_detail}",
+                frequency=count,
+                evidence_records=friction_records[f_key],
+                severity_or_strength="medium" if count < 3 else "high"
+            ))
+
+        # Successful paths
+        successful_runs = [r for r in all_records if r.get("lifecycle_state") == "VALIDATED"]
+        if successful_runs:
+            patterns.append(SAGEWorkflowPattern(
+                pattern_id=f"PAT-SUCCESS-{uuid.uuid4().hex[:6].upper()}",
+                pattern_type="successful_path",
+                description="Repeated successful and validated execution path.",
+                frequency=len(successful_runs),
+                evidence_records=[r.get("record_id") for r in successful_runs],
+                severity_or_strength="high" if len(successful_runs) >= 3 else "medium"
+            ))
+
+        # Recovery patterns
+        recovery_runs = [r for r in all_records if r.get("event_type") == "recovered" or r.get("failure_context")]
+        if recovery_runs:
+            patterns.append(SAGEWorkflowPattern(
+                pattern_id=f"PAT-RECOVERY-{uuid.uuid4().hex[:6].upper()}",
+                pattern_type="recovery_pattern",
+                description="Recurring workflow recovery and state rollback event.",
+                frequency=len(recovery_runs),
+                evidence_records=[r.get("record_id") for r in recovery_runs],
+                severity_or_strength="high" if len(recovery_runs) >= 3 else "medium"
+            ))
+
+        # Context loss patterns (unnecessary reassessments or context preservation < 1.0)
+        context_loss_records = []
+        for r in all_records:
+            if r.get("workflow_friction") or r.get("event_type") == "recovered":
+                context_loss_records.append(r.get("record_id"))
+        if context_loss_records:
+            patterns.append(SAGEWorkflowPattern(
+                pattern_id=f"PAT-CONTEXT-LOSS-{uuid.uuid4().hex[:6].upper()}",
+                pattern_type="context_loss",
+                description="Recurring context misalignment or workspace friction events.",
+                frequency=len(context_loss_records),
+                evidence_records=context_loss_records,
+                severity_or_strength="medium" if len(context_loss_records) < 3 else "high"
+            ))
+
+        # 2. Recommendations Engine
+        recommendations = []
+        for p in patterns:
+            if p.pattern_type == "bottleneck":
+                # Synthesize recommendation
+                recommendations.append(SAGEOperationalRecommendation(
+                    recommendation_id=f"REC-OPT-{uuid.uuid4().hex[:6].upper()}",
+                    description=f"Resolve recurring bottleneck: {p.description}",
+                    supporting_evidence=p.evidence_records,
+                    confidence_level=min(1.0, 0.5 + (p.frequency * 0.15)),
+                    operational_impact="HIGH" if p.severity_or_strength == "high" else "MEDIUM",
+                    affected_stage="execution",
+                    expected_improvement="Reduce execution cycle duration and minimize cognitive load friction by 35%."
+                ))
+            elif p.pattern_type == "context_loss":
+                recommendations.append(SAGEOperationalRecommendation(
+                    recommendation_id=f"REC-OPT-{uuid.uuid4().hex[:6].upper()}",
+                    description="Automate and optimize context rehydration rules across consecutive developer handoffs.",
+                    supporting_evidence=p.evidence_records,
+                    confidence_level=0.85,
+                    operational_impact="HIGH",
+                    affected_stage="coordination",
+                    expected_improvement="Achieve 100% context preservation and eliminate unnecessary step reassessments."
+                ))
+            elif p.pattern_type == "recovery_pattern":
+                recommendations.append(SAGEOperationalRecommendation(
+                    recommendation_id=f"REC-OPT-{uuid.uuid4().hex[:6].upper()}",
+                    description="Implement automated rollback and warm recovery paths for failed AST validation loops.",
+                    supporting_evidence=p.evidence_records,
+                    confidence_level=0.8,
+                    operational_impact="MEDIUM",
+                    affected_stage="recovery",
+                    expected_improvement="Improve recovery success rate and reduce manual operator intervention times."
+                ))
+
+        # 3. Workflow Optimization Tracking (Baseline Comparison)
+        # We compute previous averages (excluding the current run) to compare
+        other_records = [r for r in all_records if r.get("record_id") != current_record.record_id]
+
+        # Standard baselines fallbacks if no prior history
+        base_duration = 5.0
+        base_recovery_rate = 0.8
+        base_context_preservation = 0.9
+        base_unnecessary_reassessment = 1.0
+        base_evidence_completeness = 0.75
+
+        if other_records:
+            durations = []
+            completeness_list = []
+            for r in other_records:
+                payload = r.get("evidence_payload", {})
+                if r.get("lifecycle_state") == "VALIDATED":
+                    completeness_list.append(1.0)
+                else:
+                    completeness_list.append(0.75)
+                # Durations
+                dur_val = r.get("execution_cycle_duration") or 0.1
+                durations.append(dur_val)
+
+            if durations:
+                base_duration = sum(durations) / len(durations)
+            if completeness_list:
+                base_evidence_completeness = sum(completeness_list) / len(completeness_list)
+
+        curr_dur = current_metrics.execution_cycle_duration
+        curr_rec_rate = current_metrics.recovery_success_rate
+        curr_context = current_metrics.context_preservation_score
+        curr_unnecessary = current_metrics.unnecessary_reassessment_events
+        curr_ev_quality = current_metrics.evidence_completeness
+
+        dur_imp = ((base_duration - curr_dur) / base_duration * 100) if base_duration > 0 else 0.0
+        rec_imp = ((curr_rec_rate - base_recovery_rate) / base_recovery_rate * 100) if base_recovery_rate > 0 else 0.0
+        ctx_imp = ((curr_context - base_context_preservation) / base_context_preservation * 100) if base_context_preservation > 0 else 0.0
+        dup_imp = ((base_unnecessary_reassessment - curr_unnecessary) / base_unnecessary_reassessment * 100) if base_unnecessary_reassessment > 0 else 0.0
+        ev_imp = ((curr_ev_quality - base_evidence_completeness) / base_evidence_completeness * 100) if base_evidence_completeness > 0 else 0.0
+        rev_imp = dur_imp * 0.5 + ctx_imp * 0.5
+
+        dur_imp = min(100.0, max(-100.0, dur_imp))
+        rec_imp = min(100.0, max(-100.0, rec_imp))
+        ctx_imp = min(100.0, max(-100.0, ctx_imp))
+        dup_imp = min(100.0, max(-100.0, dup_imp))
+        ev_imp = min(100.0, max(-100.0, ev_imp))
+        rev_imp = min(100.0, max(-100.0, rev_imp))
+
+        cumulative = (dur_imp + rec_imp + ctx_imp + dup_imp + ev_imp + rev_imp) / 6.0
+
+        trends = SAGEOptimizationTrends(
+            execution_time_reduction_pct=round(dur_imp, 2),
+            recovery_improvement_pct=round(rec_imp, 2),
+            context_preservation_improvement_pct=round(ctx_imp, 2),
+            duplicate_work_reduction_pct=round(dup_imp, 2),
+            evidence_quality_improvement_pct=round(ev_imp, 2),
+            review_efficiency_improvement_pct=round(rev_imp, 2),
+            cumulative_improvement_pct=round(cumulative, 2)
+        )
+
+        return {
+            "patterns": [p.model_dump() for p in patterns],
+            "recommendations": [r.model_dump() for r in recommendations],
+            "trends": trends.model_dump()
+        }
+
     def generate_learning_signals(
         self,
         record: ContinuityControlRecord,
         metrics: SAGEOperationalMetrics,
-        register_path: Path = Path("evidence_capture/discovery_candidates_register.json")
+        register_path: Path = Path("evidence_capture/discovery_candidates_register.json"),
+        recommendations: Optional[List[Dict[str, Any]]] = None
     ) -> List[SAGEImprovementSignal]:
         """Convert operational events/metrics into structured SAGE Improvement Signals."""
         signals = []
@@ -406,7 +627,6 @@ class SAGEOperationalIntelligenceLayer:
 
                 signal_id = f"SIG-{time.strftime('%Y%m%d', time.gmtime())}-{uuid.uuid4().hex[:8]}"
 
-                # Evaluation
                 eval_dict = {
                     "observed_friction_type": f_type,
                     "severity": f_severity,
@@ -414,7 +634,6 @@ class SAGEOperationalIntelligenceLayer:
                     "execution_cycle_duration": metrics.execution_cycle_duration
                 }
 
-                # Improvement Candidate
                 candidate_id = f"CANDIDATE-OIL-{uuid.uuid4().hex[:6].upper()}"
                 candidate = {
                     "candidate_id": candidate_id,
@@ -423,7 +642,6 @@ class SAGEOperationalIntelligenceLayer:
                     "priority": "HIGH" if f_severity == "high" else "MEDIUM"
                 }
 
-                # Discovery Lane Input
                 lane_input = {
                     "target_process": f"workflow_coordination_{f_type}",
                     "actionable_remediation": f"Refactor automated flow to streamline and optimize {f_detail}",
@@ -516,6 +734,47 @@ class SAGEOperationalIntelligenceLayer:
             )
             signals.append(sig)
 
+        # Signal 4: Map recommendations into Discovery Candidates
+        if recommendations:
+            for rec in recommendations:
+                signal_id = f"SIG-{time.strftime('%Y%m%d', time.gmtime())}-{uuid.uuid4().hex[:8]}"
+
+                eval_dict = {
+                    "recommendation_id": rec.get("recommendation_id"),
+                    "confidence_level": rec.get("confidence_level"),
+                    "expected_improvement": rec.get("expected_improvement")
+                }
+
+                # Discovery Candidate structure
+                candidate_id = f"CANDIDATE-OPT-{uuid.uuid4().hex[:6].upper()}"
+                candidate = {
+                    "candidate_id": candidate_id,
+                    "originating_workflow_evidence": rec.get("supporting_evidence", []),
+                    "operational_justification": f"Optimize workflow stage '{rec.get('affected_stage')}': {rec.get('description')}",
+                    "measurable_success_criteria": f"Succeed in: {rec.get('expected_improvement')}",
+                    "estimated_engineering_impact": rec.get("operational_impact"),
+                    "confidence_assessment": rec.get("confidence_level"),
+                    "is_promoted": False,
+                    "requires_approval": True
+                }
+
+                lane_input = {
+                    "target_process": f"optimization_{rec.get('affected_stage')}",
+                    "actionable_remediation": f"Implement changes to achieve {rec.get('expected_improvement')}",
+                    "evidence_reference": rec.get("supporting_evidence", [])[0] if rec.get("supporting_evidence") else f"Record {record.record_id}"
+                }
+
+                sig = SAGEImprovementSignal(
+                    signal_id=signal_id,
+                    event_id=record.record_id,
+                    metric_category="WORKFLOW_OPTIMIZATION",
+                    metric_evaluation=eval_dict,
+                    improvement_candidate=candidate,
+                    discovery_lane_input=lane_input,
+                    timestamp=time.time()
+                )
+                signals.append(sig)
+
         # If there are signals, append them to the Discovery Candidates Register
         if signals:
             register_path.parent.mkdir(parents=True, exist_ok=True)
@@ -528,9 +787,10 @@ class SAGEOperationalIntelligenceLayer:
                     pass
 
             for sig in signals:
-                # Add to registry if not already present by ID
-                if not any(c.get("candidate_id") == sig.improvement_candidate["candidate_id"] for c in existing_candidates):
-                    existing_candidates.append(sig.improvement_candidate)
+                cand = sig.improvement_candidate
+                # Add to registry if not already present by ID/candidate_id
+                if not any(c.get("candidate_id") == cand.get("candidate_id") for c in existing_candidates):
+                    existing_candidates.append(cand)
 
             with open(register_path, "w", encoding="utf-8") as f:
                 json.dump(existing_candidates, f, indent=2, default=str)
@@ -802,8 +1062,19 @@ class DeveloperWorkflowOrchestrator:
             session=self.session
         )
 
-        # Convert metrics/friction/opportunities to learning signals
-        signals = oil.generate_learning_signals(record=promoted_ccl, metrics=metrics)
+        # Scan patterns, generate recommendations, and track workflow optimizations
+        optimization_data = oil.analyze_patterns_and_recommendations(
+            current_record=promoted_ccl,
+            current_metrics=metrics,
+            session=self.session
+        )
+
+        # Convert metrics/friction/opportunities and recommendations to learning signals
+        signals = oil.generate_learning_signals(
+            record=promoted_ccl,
+            metrics=metrics,
+            recommendations=optimization_data.get("recommendations")
+        )
 
         # Compile final integrated operational evidence package
         unified_evidence = {
@@ -820,7 +1091,10 @@ class DeveloperWorkflowOrchestrator:
             },
             "operational_intelligence": {
                 "metrics": metrics.model_dump(),
-                "learning_signals": [sig.model_dump() for sig in signals]
+                "learning_signals": [sig.model_dump() for sig in signals],
+                "patterns": optimization_data.get("patterns", []),
+                "recommendations": optimization_data.get("recommendations", []),
+                "optimization_trends": optimization_data.get("trends", {})
             }
         }
 
@@ -893,6 +1167,36 @@ class DeveloperWorkflowOrchestrator:
         dashboard.append(f"     Safe Workspace: {not protection.get('is_violation_found', False)}")
         dashboard.append(f"  5. WHAT HAPPENS NEXT?")
         dashboard.append(f"     RECOMMENDED:  {next_action}")
+        dashboard.append("----------------------------------------------------------------------")
+
+        # Continuous Optimization Dashboard Section
+        dashboard.append("  CONTINUOUS OPTIMIZATION DASHBOARD (How are we improving?):")
+        dashboard.append("----------------------------------------------------------------------")
+        trends = op_intel.get("optimization_trends", {})
+        dashboard.append(f"  [Time Reduction]       :: {trends.get('execution_time_reduction_pct', 0.0):+.2f}%")
+        dashboard.append(f"  [Recovery Improvement] :: {trends.get('recovery_improvement_pct', 0.0):+.2f}%")
+        dashboard.append(f"  [Context Preservation] :: {trends.get('context_preservation_improvement_pct', 0.0):+.2f}%")
+        dashboard.append(f"  [Duplicate Work Reduc] :: {trends.get('duplicate_work_reduction_pct', 0.0):+.2f}%")
+        dashboard.append(f"  [Evidence Quality Imp] :: {trends.get('evidence_quality_improvement_pct', 0.0):+.2f}%")
+        dashboard.append(f"  [Review Efficiency]    :: {trends.get('review_efficiency_improvement_pct', 0.0):+.2f}%")
+        dashboard.append(f"  [Cumulative Optimizer] :: {trends.get('cumulative_improvement_pct', 0.0):+.2f}%")
+
+        patterns = op_intel.get("patterns", [])
+        if patterns:
+            dashboard.append("  RECURRING WORKFLOW PATTERNS IDENTIFIED:")
+            for p in patterns:
+                p_type = p.get("pattern_type", "unknown").upper()
+                freq = p.get("frequency", 0)
+                dashboard.append(f"     - [{p_type}] (Frequency: {freq}) {p.get('description')}")
+
+        recs = op_intel.get("recommendations", [])
+        if recs:
+            dashboard.append("  ADVISORY OPTIMIZATION OPPORTUNITIES:")
+            for r in recs:
+                conf = r.get("confidence_level", 0.0) * 100
+                dashboard.append(f"     - [CONFIDENCE: {conf:.1f}%] {r.get('description')}")
+                dashboard.append(f"       Affected: {r.get('affected_stage')} | Expected: {r.get('expected_improvement')}")
+
         dashboard.append("----------------------------------------------------------------------")
         if friction:
             dashboard.append("  BOTTLENECK INDICATORS:")

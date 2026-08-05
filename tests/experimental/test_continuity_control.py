@@ -427,6 +427,9 @@ def test_sage_operational_intelligence_layer_integration(tmp_path):
     op_intel = result["operational_intelligence"]
     assert "metrics" in op_intel
     assert "learning_signals" in op_intel
+    assert "patterns" in op_intel
+    assert "recommendations" in op_intel
+    assert "optimization_trends" in op_intel
 
     metrics = op_intel["metrics"]
     assert metrics["lifecycle_completion_rate"] == 1.0  # Approved/Validated
@@ -442,9 +445,28 @@ def test_sage_operational_intelligence_layer_integration(tmp_path):
     assert metrics["repeated_execution_prevention"] is False
     assert metrics["state_restoration_success"] is True
 
+    # Pattern and Recommendation verification
+    patterns = op_intel["patterns"]
+    assert len(patterns) >= 1
+    bottleneck_pattern = next(p for p in patterns if p["pattern_type"] == "bottleneck")
+    assert "environmental_latency" in bottleneck_pattern["description"]
+    assert bottleneck_pattern["frequency"] == 1
+
+    recs = op_intel["recommendations"]
+    assert len(recs) >= 1
+    assert any("environmental_latency" in r["description"] for r in recs)
+    bottleneck_rec = next(r for r in recs if "environmental_latency" in r["description"])
+    assert bottleneck_rec["operational_impact"] == "MEDIUM"
+    assert bottleneck_rec["confidence_level"] > 0.0
+    assert bottleneck_rec["affected_stage"] == "execution"
+
+    trends = op_intel["optimization_trends"]
+    assert "cumulative_improvement_pct" in trends
+    assert "execution_time_reduction_pct" in trends
+
     # 4. Validate Signal Generation Flow
     learning_signals = op_intel["learning_signals"]
-    assert len(learning_signals) >= 2 # Observed friction signal + Unnecessary reassessments signal
+    assert len(learning_signals) >= 3 # Observed friction, Unnecessary reassessments, and optimization recommendations
 
     # Verify that the signals map to the original record and contain correct fields
     friction_sig = next(s for s in learning_signals if s["metric_category"] == "OPERATIONAL_EFFICIENCY")
@@ -452,6 +474,12 @@ def test_sage_operational_intelligence_layer_integration(tmp_path):
     assert friction_sig["metric_evaluation"]["observed_friction_type"] == "environmental_latency"
     assert "CANDIDATE-OIL-" in friction_sig["improvement_candidate"]["candidate_id"]
     assert friction_sig["discovery_lane_input"]["target_process"] == "workflow_coordination_environmental_latency"
+
+    # Verify that recommendation signal generates standard Candidate block
+    opt_sig = next(s for s in learning_signals if s["metric_category"] == "WORKFLOW_OPTIMIZATION")
+    assert opt_sig["improvement_candidate"]["candidate_id"].startswith("CANDIDATE-OPT-")
+    assert opt_sig["improvement_candidate"]["is_promoted"] is False
+    assert opt_sig["improvement_candidate"]["requires_approval"] is True
 
     # Verify that discovery candidates are correctly saved in the persistent register
     oil = SAGEOperationalIntelligenceLayer(storage_path=record_storage)
@@ -463,14 +491,15 @@ def test_sage_operational_intelligence_layer_integration(tmp_path):
     custom_signals = oil.generate_learning_signals(
         record=promoted_record,
         metrics=metrics_obj,
-        register_path=discovery_register
+        register_path=discovery_register,
+        recommendations=recs
     )
-    assert len(custom_signals) >= 2
+    assert len(custom_signals) >= 3
     assert discovery_register.exists()
     with open(discovery_register, "r", encoding="utf-8") as f:
         register_data = json.load(f)
-    assert len(register_data) >= 2
-    assert any(c["candidate_id"].startswith("CANDIDATE-OIL-") for c in register_data)
+    assert len(register_data) >= 3
+    assert any(c["candidate_id"].startswith("CANDIDATE-OPT-") for c in register_data)
 
     # 5. Verify high-fidelity ASCII Control Tower Console Dashboard rendering
     dashboard_str = orchestrator.render_control_tower_summary(result)
@@ -481,4 +510,7 @@ def test_sage_operational_intelligence_layer_integration(tmp_path):
     assert "3. WHY IS IT HAPPENING?" in dashboard_str
     assert "4. WHAT EVIDENCE SUPPORTS IT?" in dashboard_str
     assert "5. WHAT HAPPENS NEXT?" in dashboard_str
+    assert "CONTINUOUS OPTIMIZATION DASHBOARD" in dashboard_str
+    assert "RECURRING WORKFLOW PATTERNS IDENTIFIED" in dashboard_str
+    assert "ADVISORY OPTIMIZATION OPPORTUNITIES" in dashboard_str
     assert "BOTTLENECK INDICATORS:" in dashboard_str
