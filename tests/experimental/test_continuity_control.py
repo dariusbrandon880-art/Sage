@@ -1403,3 +1403,127 @@ def test_execute_coordination_loop_simulation_failures(tmp_path):
     assert metrics["blocked_violations_count"] == 1
     assert metrics["recovery_duration_avoided_secs"] == 60.0
     assert metrics["operator_interventions_avoided_count"] == 2
+
+
+def test_execute_agent_handoff_success(tmp_path):
+    """Verify SAGE programmatically manages and traces consecutive custody handoffs across registered agents."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_ho_test",
+        objective="obj_continuous_development"
+    )
+    orchestrator.session_manager = session_mgr
+    orchestrator.ccl.storage_path = record_storage
+    orchestrator.session = session_mgr.create_session(
+        session_id="session_ho_test",
+        active_objectives=["obj_continuous_development"]
+    )
+
+    # Register Jules as DEVELOPER and Claude as AUDITOR
+    orchestrator.register_agent_role("agent_jules_sage", "Jules", "DEVELOPER")
+    orchestrator.register_agent_role("agent_claude", "Claude", "AUDITOR")
+
+    # Activate Claude (receiver)
+    orchestrator.initialize_agent_activation("agent_claude", "task_active_development")
+    orchestrator.authorize_agent_activation("agent_claude", "supervisor_jules", "sig_jules_123")
+
+    handoff = orchestrator.execute_agent_handoff("agent_jules_sage", "agent_claude")
+    assert handoff["from_agent"]["agent_id"] == "agent_jules_sage"
+    assert handoff["to_agent"]["agent_id"] == "agent_claude"
+    assert handoff["context_package"]["target_agent_id"] == "agent_claude"
+
+    # Verify history is saved
+    history = orchestrator.session.metadata.get("handoff_history")
+    assert history is not None
+    assert len(history) == 1
+    assert history[0]["handoff_id"] == handoff["handoff_id"]
+
+
+def test_task_sequencing_enforcement_allowed(tmp_path):
+    """Verify AUDITOR reviews are allowed after DEVELOPER implementations."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, AgentProgressUpdate
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_seq_allowed",
+        objective="obj_continuous_development"
+    )
+    orchestrator.session_manager = session_mgr
+    orchestrator.session = session_mgr.create_session(
+        session_id="session_seq_allowed",
+        active_objectives=["obj_continuous_development"]
+    )
+
+    # Register roles
+    orchestrator.register_agent_role("agent_jules_sage", "Jules", "DEVELOPER")
+    orchestrator.register_agent_role("agent_claude", "Claude", "AUDITOR")
+
+    # 1. DEVELOPER completes implementation
+    orchestrator.initialize_agent_activation("agent_jules_sage", "task_active_development")
+    orchestrator.authorize_agent_activation("agent_jules_sage", "supervisor_jules", "sig_jules_123")
+    update_dev = AgentProgressUpdate(
+        agent_id="agent_jules_sage",
+        step_id="step_01",
+        action_taken="Wrote robust continuity checks",
+        objective_alignment="obj_continuous_development"
+    )
+    res_dev = orchestrator.record_agent_execution_step(update_dev)
+    assert res_dev["status"] == "ACTIVE"
+
+    # 2. AUDITOR runs review -> ALLOW
+    orchestrator.initialize_agent_activation("agent_claude", "task_active_development")
+    orchestrator.authorize_agent_activation("agent_claude", "supervisor_jules", "sig_jules_123")
+    update_audit = AgentProgressUpdate(
+        agent_id="agent_claude",
+        step_id="step_02",
+        action_taken="Review and validate structural schemas",
+        objective_alignment="obj_continuous_development"
+    )
+    res_audit = orchestrator.record_agent_execution_step(update_audit)
+    assert res_audit["status"] == "ACTIVE"
+
+
+def test_task_sequencing_enforcement_blocked(tmp_path):
+    """Verify AUDITOR reviews are blocked if no DEVELOPER implementation occurs first."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, AgentProgressUpdate
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_seq_blocked",
+        objective="obj_continuous_development"
+    )
+    orchestrator.session_manager = session_mgr
+    orchestrator.session = session_mgr.create_session(
+        session_id="session_seq_blocked",
+        active_objectives=["obj_continuous_development"]
+    )
+
+    # Register roles
+    orchestrator.register_agent_role("agent_jules_sage", "Jules", "DEVELOPER")
+    orchestrator.register_agent_role("agent_claude", "Claude", "AUDITOR")
+
+    # AUDITOR attempts to review first -> BLOCKED (Task Sequencing Violation)
+    orchestrator.initialize_agent_activation("agent_claude", "task_active_development")
+    orchestrator.authorize_agent_activation("agent_claude", "supervisor_jules", "sig_jules_123")
+    update_audit = AgentProgressUpdate(
+        agent_id="agent_claude",
+        step_id="step_01",
+        action_taken="Review and validate structural schemas",
+        objective_alignment="obj_continuous_development"
+    )
+    res_audit = orchestrator.record_agent_execution_step(update_audit)
+    assert res_audit["status"] == "BLOCKED"
+    assert "Task Sequencing Violation" in res_audit["reason"]

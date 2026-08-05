@@ -623,6 +623,18 @@ class DeveloperWorkflowOrchestrator:
                 if role != "AUDITOR" and role != "COORDINATOR":
                     drift_detected = True
                     drift_reason = f"SAGE Role Enforcement Violation: Agent '{update.agent_id}' has role '{role}', which is not authorized to review or validate outcomes."
+
+                # Task sequencing rule enforcement
+                if role == "AUDITOR":
+                    has_dev_step = False
+                    for step in self.session.metadata.get("execution_log", []):
+                        if "wrote" in step.get("action_taken", "").lower() or "implement" in step.get("action_taken", "").lower():
+                            has_dev_step = True
+                            break
+                    if not has_dev_step:
+                        drift_detected = True
+                        drift_reason = f"SAGE Task Sequencing Violation: Agent '{update.agent_id}' (AUDITOR) cannot perform review/validation before a DEVELOPER implementation task is completed."
+
             if "promote" in action_lower or "authorize" in action_lower:
                 if role != "COORDINATOR":
                     drift_detected = True
@@ -1120,6 +1132,51 @@ class DeveloperWorkflowOrchestrator:
 
         return context_package
 
+    def execute_agent_handoff(self, from_agent_id: str, to_agent_id: str) -> Dict[str, Any]:
+        """Validates and records a consecutive custody transition from one registered collaborator to another."""
+        registry = self.session.metadata.get("agent_registry", {})
+        if from_agent_id not in registry or to_agent_id not in registry:
+            raise ValueError(f"SAGE-MACC Error: Handoff requires both agents ('{from_agent_id}', '{to_agent_id}') to be registered.")
+
+        from_reg = registry[from_agent_id]
+        to_reg = registry[to_agent_id]
+
+        # Verify receiving agent activation
+        act_dict = self.session.metadata.get("agent_activation")
+        if not act_dict or act_dict.get("agent_id") != to_agent_id:
+            raise ValueError(f"SAGE-MACC Error: Target agent '{to_agent_id}' must be initialized or activated for handoff.")
+
+        handoff_id = f"handoff_trace_{uuid.uuid4().hex[:8]}"
+        handoff_record = {
+            "handoff_id": handoff_id,
+            "timestamp": time.time(),
+            "from_agent": from_reg,
+            "to_agent": to_reg,
+            "context_package": self.prepare_agent_context_package(to_agent_id)
+        }
+
+        if "handoff_history" not in self.session.metadata:
+            self.session.metadata["handoff_history"] = []
+
+        self.session.metadata["handoff_history"].append(handoff_record)
+        self.session_manager.save_session(self.session)
+
+        # Log event in SAGE-CCL ledger
+        rec = self.ccl.intercept_event(
+            event_type="state_transition",
+            action_taken=f"Custody Handoff completed: {from_agent_id} -> {to_agent_id}",
+            decision_reasoning=f"Centralized handoff tracking completed cleanly. Trace ID: {handoff_id}",
+            session_id=self.session_id,
+            evidence_payload={"handoff_record_summary": {
+                "handoff_id": handoff_id,
+                "from_agent_id": from_agent_id,
+                "to_agent_id": to_agent_id
+            }}
+        )
+        self.ccl.serialize_record(rec)
+
+        return handoff_record
+
     def execute_coordination_loop_simulation(self, steps: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Stress-tests multi-agent work streams under realistic conditions, calculating macro-level coordination metrics."""
         step_traces = []
@@ -1503,6 +1560,16 @@ class DeveloperWorkflowOrchestrator:
         else:
             discovery_info.append("  Discovery Candidates: None registered.")
 
+        # Determine handoff lineage history
+        handoff_info = []
+        handoff_history = self.session.metadata.get("handoff_history", [])
+        if handoff_history:
+            handoff_info.append("  SAGE Operational Handoff Lineage History:")
+            for ho in handoff_history[-3:]:  # Show last 3 handoffs
+                handoff_info.append(f"    * {ho['from_agent']['name']} -> {ho['to_agent']['name']} [Trace ID: {ho['handoff_id']}]")
+        else:
+            handoff_info.append("  SAGE Operational Handoff Lineage History: No handoffs completed.")
+
         dashboard = [
             "==================================================",
             "  SAGE CO-ORDINATION & ACTIVATION STATUS DASHBOARD",
@@ -1521,6 +1588,8 @@ class DeveloperWorkflowOrchestrator:
             "\n".join(intelligence_info),
             "--------------------------------------------------",
             "\n".join(discovery_info),
+            "--------------------------------------------------",
+            "\n".join(handoff_info),
             "--------------------------------------------------",
             "Workspace Track & Guard Status:",
             f"  Uncommitted Files: {len(modified_files)} file(s)",
