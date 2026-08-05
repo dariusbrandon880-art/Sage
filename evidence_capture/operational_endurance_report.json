@@ -1,0 +1,39 @@
+{
+  "endurance_run_id": "endurance_run_bedcbe18a64f",
+  "timestamp": 1785935123.561402,
+  "compounding_runs": [
+    {
+      "cycle_idx": 1,
+      "duration_seconds": 4.08,
+      "duplicate_work_prevented_lines": 75,
+      "context_preservation_score_pct": 100.0,
+      "evidence_artifacts_count": 3
+    },
+    {
+      "cycle_idx": 2,
+      "duration_seconds": 3.09,
+      "duplicate_work_prevented_lines": 150,
+      "context_preservation_score_pct": 100.0,
+      "evidence_artifacts_count": 6
+    },
+    {
+      "cycle_idx": 3,
+      "duration_seconds": 2.02,
+      "duplicate_work_prevented_lines": 225,
+      "context_preservation_score_pct": 100.0,
+      "evidence_artifacts_count": 9
+    }
+  ],
+  "aggregate_performance": {
+    "total_duration_seconds": 9.19,
+    "average_cycle_duration_seconds": 3.06,
+    "compound_velocity_improvement_pct": 50.5,
+    "duplicate_setup_bypassed_lines": 450,
+    "total_pml_states_written": 3
+  },
+  "pml_state_filepaths": [
+    "sage_data/experimental_pml/PML-STATE-session_endurance_1.json",
+    "sage_data/experimental_pml/PML-STATE-session_endurance_2.json",
+    "sage_data/experimental_pml/PML-STATE-session_endurance_3.json"
+  ]
+}

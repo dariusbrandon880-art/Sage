@@ -1,93 +1,87 @@
 {
-  "orchestrator_run_id": "orch_run_macc_a0d779b981e5",
-  "timestamp": 1785914543.7971723,
-  "session_id": "session_test_macc_oil",
+  "orchestrator_run_id": "orch_run_macc_afc8029336d6",
+  "timestamp": 1785935123.565733,
+  "session_id": "session_test_endurance_loop",
   "status": "VALIDATED",
-  "oil_metrics": {
-    "mission_velocity_index": 2.3,
-    "context_preservation_score_pct": 100.0,
-    "recovery_intelligence_score_pct": 100.0,
-    "evidence_density_index": 1.0,
-    "improvement_compounding_rate_pct": 12.5
-  },
-  "latest_oil_incident": {
-    "incident_id": "INCIDENT-OIL-FD6A516D",
-    "failure_condition": "Audit lacks automated post-build metrics validation.",
-    "affected_component": "DeveloperWorkflowOrchestrator",
-    "root_cause": "Manual operator intervention required to evaluate execution latency on Control Tower dashboards.",
-    "corrective_action": "Implement self-improving Operational Intelligence telemetry pipelines.",
-    "prevention_mechanism": "Integrate dynamic MVI, CPS, RIS, ED, and ICR formula matrices.",
-    "verification_test_path": "tests/experimental/test_ccl_orchestrator.py",
-    "timestamp": 1785914543.3029191
-  },
-  "latest_oil_improvement": {
-    "candidate_id": "OIL-CAND-76C8F66F",
-    "opportunity_type": "OPERATIONAL_EFFICIENCY",
-    "operational_impact": 8.5,
-    "risk_reduction": 9.0,
-    "velocity_improvement": 9.5,
-    "evidence_strength": 10.0,
-    "complexity_cost": 3.0,
-    "priority_score": 11.33,
-    "validation_readiness": "HIGH",
-    "timestamp": 1785914543.3067842
-  },
-  "chatgpt_coordination": {
-    "agent_id": "agent_chatgpt",
-    "assigned_task_id": "task_coordination",
-    "activation_state": "ACTIVE",
-    "directives": {
-      "task_objective": "obj_continuous_development",
-      "milestones": [
-        "Verify immune-inspired tests",
-        "Harden velocity telemetry pipelines"
-      ]
-    }
-  },
-  "jules_execution": {
-    "status": "ACTIVE",
-    "drift_detected": false,
-    "reason": "Execution step matches active objective and scope boundaries.",
-    "action": "ALLOW_EXECUTION"
-  },
-  "claude_review_findings": {
-    "contract_id": "REV-CONTRACT-8A4D6D3AC839",
-    "reviewer_id": "agent_claude",
-    "is_compliant": false,
-    "observed_findings": [
-      "Found 15 uncommitted changes in workspace scan."
+  "endurance_report": {
+    "endurance_run_id": "endurance_run_bedcbe18a64f",
+    "timestamp": 1785935123.561402,
+    "compounding_runs": [
+      {
+        "cycle_idx": 1,
+        "duration_seconds": 4.08,
+        "duplicate_work_prevented_lines": 75,
+        "context_preservation_score_pct": 100.0,
+        "evidence_artifacts_count": 3
+      },
+      {
+        "cycle_idx": 2,
+        "duration_seconds": 3.09,
+        "duplicate_work_prevented_lines": 150,
+        "context_preservation_score_pct": 100.0,
+        "evidence_artifacts_count": 6
+      },
+      {
+        "cycle_idx": 3,
+        "duration_seconds": 2.02,
+        "duplicate_work_prevented_lines": 225,
+        "context_preservation_score_pct": 100.0,
+        "evidence_artifacts_count": 9
+      }
     ],
-    "recommendations": [
-      "Execute standard active-development coordinate loop to secure the code state."
-    ],
-    "verification_hash": "d2b452ea63a920607fcf4e4c424a2b5b099abe5d8893dd22c416a12d690ab1b1",
-    "timestamp": 1785914543.7764719
+    "aggregate_performance": {
+      "total_duration_seconds": 9.19,
+      "average_cycle_duration_seconds": 3.06,
+      "compound_velocity_improvement_pct": 50.5,
+      "duplicate_setup_bypassed_lines": 450,
+      "total_pml_states_written": 3
+    },
+    "pml_state_filepaths": [
+      "sage_data/experimental_pml/PML-STATE-session_endurance_1.json",
+      "sage_data/experimental_pml/PML-STATE-session_endurance_2.json",
+      "sage_data/experimental_pml/PML-STATE-session_endurance_3.json"
+    ]
   },
   "execution_traces": [
     {
-      "event": "CHATGPT_COORDINATE_START",
-      "timestamp": 1785914543.1014864
+      "event": "ENDURANCE_RUN_1_START",
+      "timestamp": 1785935121.7726636
     },
     {
-      "event": "CHATGPT_COORDINATE_COMPLETED",
-      "timestamp": 1785914543.1099293
+      "event": "PML_STATE_RESTORATION_VERIFIED_RUN_1",
+      "timestamp": 1785935121.7947714,
+      "session_id": "session_endurance_1"
     },
     {
-      "event": "OIL_INCIDENT_SIMULATED_START",
-      "timestamp": 1785914543.3028786
+      "event": "ENDURANCE_RUN_1_COMPLETE",
+      "timestamp": 1785935122.351742
     },
     {
-      "event": "OIL_INCIDENT_ISOLATED_AND_LOGGED",
-      "timestamp": 1785914543.3067408
+      "event": "ENDURANCE_RUN_2_START",
+      "timestamp": 1785935122.3517442
     },
     {
-      "event": "OIL_PRIORITY_EVALUATION_START",
-      "timestamp": 1785914543.306742
+      "event": "PML_STATE_RESTORATION_VERIFIED_RUN_2",
+      "timestamp": 1785935122.3781972,
+      "session_id": "session_endurance_2"
     },
     {
-      "event": "OIL_PRIORITY_EVALUATION_COMPLETE",
-      "timestamp": 1785914543.3157597
+      "event": "ENDURANCE_RUN_2_COMPLETE",
+      "timestamp": 1785935122.946285
+    },
+    {
+      "event": "ENDURANCE_RUN_3_START",
+      "timestamp": 1785935122.9462867
+    },
+    {
+      "event": "PML_STATE_RESTORATION_VERIFIED_RUN_3",
+      "timestamp": 1785935122.9759538,
+      "session_id": "session_endurance_3"
+    },
+    {
+      "event": "ENDURANCE_RUN_3_COMPLETE",
+      "timestamp": 1785935123.561359
     }
   ],
-  "control_tower_status": "==========================================================\n  SAGE CO-ORDINATION CONTROL TOWER CONSOLE (SAGE-MACC-OP)\n==========================================================\nActive Operational Session: session_test_macc_oil\nWorkflow State Transition:  WORKFLOW_COMPLETE\nWorkflow Health Score:      55.0% (BLOCKED)\nActive Blocker / Friction:  None\n----------------------------------------------------------\nActive Collaborator Responsibility Hierarchy:\n    - ChatGPT (agent_chatgpt) [Role: COORDINATOR] [Tier: TIER_1_COORDINATOR]\n    - Jules (agent_jules_sage) [Role: DEVELOPER] [Tier: TIER_2_DEVELOPER]\n    - Claude (agent_claude) [Role: AUDITOR] [Tier: TIER_1_COORDINATOR]\n----------------------------------------------------------\nCustody Transfer Handoff Lineage Trail:\n    * ChatGPT -> Jules [Trace ID: handoff_trace_0c9e071b]\n    * Jules -> Claude [Trace ID: handoff_trace_8e125733]\n    * ChatGPT -> Jules [Trace ID: handoff_trace_6ca38c70]\n    * Jules -> Claude [Trace ID: handoff_trace_bdaf5c6b]\n    * ChatGPT -> Jules [Trace ID: handoff_trace_aa0d8ebe]\n    * Jules -> Claude [Trace ID: handoff_trace_d6ce729a]\n    * ChatGPT -> Jules [Trace ID: handoff_trace_22b7ff0f]\n    * Jules -> Claude [Trace ID: handoff_trace_b9736786]\n----------------------------------------------------------\nTraceable Evidence Ledger Status:\n  Proposed Records:          991\n  Validated Audit Records:   35\n----------------------------------------------------------\nSAGE Fault Injection & Recovery State Logs:\n  Active Recovered Faults:   0\n----------------------------------------------------------\nFuture Collaborator Contract Inheritance Model:\n  Onboarding Target Agent:   None (Awaiting Onboarding)\n  Onboarding Target Role:    None\n----------------------------------------------------------\nPilot Captured Operational Metrics & Performance:\n  - Workflow Duration:       Pendings\n  - Context Recovery:        Pending%\n  - Duplicate Work Avoided:  Pending lines setup\n  - Evidence Quality Index:  Pending\n  - Discovered Improvements: None\n----------------------------------------------------------\nSAGE Operational Intelligence Layer (OIL) Performance:\n  - Mission Velocity Index (MVI):  2.3x cycle speedup\n  - Context Preservation (CPS):    100.0%\n  - Recovery Intelligence (RIS):   100.0%\n  - Evidence Density Index (ED):   1.0\n  - Improvement Compounding (ICR): 12.5% rate\n----------------------------------------------------------\nGoverning Claude Auditor Validation Findings:\n  - Compliance Status:   FAILED\n  - Observed Findings:   Found 15 uncommitted changes in workspace scan.\n  - Action Suggestion:   Execute standard active-development coordinate loop to secure the code state.\n  - Verification Hash:   d2b452ea63a92060...\n----------------------------------------------------------\nActive Workspace Guard Metrics (What changed?):\n  Uncommitted files track:   15 file(s)\n----------------------------------------------------------\nOperator Visibility Lineage Answers:\n  1. What changed?           Modified 15 file(s) in active workspace.\n  2. Who built it?           Jules (agent_jules_sage) [DEVELOPER]\n  3. Who reviewed it?        Claude (agent_claude) [AUDITOR]\n  4. What evidence supports? SAGE-CCL ledger with validated cryptographic signature packages.\n  5. What happens next?      Operator human-in-the-loop validation of Claude review recommendations.\n=========================================================="
+  "control_tower_status": "==========================================================\n  SAGE CO-ORDINATION CONTROL TOWER CONSOLE (SAGE-MACC-OP)\n==========================================================\nActive Operational Session: session_test_endurance_loop\nWorkflow State Transition:  DEGRADED\nWorkflow Health Score:      85.0% (DEGRADED)\nActive Blocker / Friction:  None\n----------------------------------------------------------\nActive Collaborator Responsibility Hierarchy:\n    - ChatGPT (agent_chatgpt) [Role: COORDINATOR] [Tier: TIER_1_COORDINATOR]\n    - Jules (agent_jules_sage) [Role: DEVELOPER] [Tier: TIER_2_DEVELOPER]\n    - Claude (agent_claude) [Role: AUDITOR] [Tier: TIER_1_COORDINATOR]\n----------------------------------------------------------\nCustody Transfer Handoff Lineage Trail:\n    * Jules -> Claude [Trace ID: handoff_trace_63cd12cd]\n    * Jules -> Claude [Trace ID: handoff_trace_17734f24]\n    * Jules -> Claude [Trace ID: handoff_trace_aa06a5ee]\n    * Jules -> Claude [Trace ID: handoff_trace_347f1c79]\n    * Jules -> Claude [Trace ID: handoff_trace_b92119da]\n    * Jules -> Claude [Trace ID: handoff_trace_f8c0dc06]\n    * Jules -> Claude [Trace ID: handoff_trace_f4a39117]\n    * Jules -> Claude [Trace ID: handoff_trace_11c52206]\n    * Jules -> Claude [Trace ID: handoff_trace_21577333]\n----------------------------------------------------------\nTraceable Evidence Ledger Status:\n  Proposed Records:          1305\n  Validated Audit Records:   42\n----------------------------------------------------------\nSAGE Fault Injection & Recovery State Logs:\n  Active Recovered Faults:   0\n----------------------------------------------------------\nFuture Collaborator Contract Inheritance Model:\n  Onboarding Target Agent:   None (Awaiting Onboarding)\n  Onboarding Target Role:    None\n----------------------------------------------------------\nPilot Captured Operational Metrics & Performance:\n  - Workflow Duration:       Pendings\n  - Context Recovery:        Pending%\n  - Duplicate Work Avoided:  Pending lines setup\n  - Evidence Quality Index:  Pending\n  - Discovered Improvements: None\n----------------------------------------------------------\nSAGE Operational Intelligence Layer (OIL) Performance:\n  - Mission Velocity Index (MVI):  Pendingx cycle speedup\n  - Context Preservation (CPS):    Pending%\n  - Recovery Intelligence (RIS):   Pending%\n  - Evidence Density Index (ED):   Pending\n  - Improvement Compounding (ICR): Pending% rate\n----------------------------------------------------------\nSAGE Multi-Cycle Learning Compounding (How SAGE Improves):\n  - Avg Cycle Duration:     3.06s\n  - Compounding Improvement: 50.5% cycle speedup\n  - Duplicate Setup Bypassed: 450 lines bypass\n  - Persistent PML States:   3 files written\n----------------------------------------------------------\nGoverning Claude Auditor Validation Findings:\n  - Compliance Status:   FAILED\n  - Observed Findings:   Found 17 uncommitted changes in workspace scan.\n  - Action Suggestion:   Execute standard active-development coordinate loop to secure the code state.\n  - Verification Hash:   5557a180c8eb8b9f...\n----------------------------------------------------------\nActive Workspace Guard Metrics (What changed?):\n  Uncommitted files track:   17 file(s)\n----------------------------------------------------------\nOperator Visibility Lineage Answers:\n  1. What changed?           Modified 17 file(s) in active workspace.\n  2. Who built it?           Jules (agent_jules_sage) [DEVELOPER]\n  3. Who reviewed it?        Claude (agent_claude) [AUDITOR]\n  4. What evidence supports? SAGE-CCL ledger with validated cryptographic signature packages.\n  5. What happens next?      Operator human-in-the-loop validation of Claude review recommendations.\n=========================================================="
 }

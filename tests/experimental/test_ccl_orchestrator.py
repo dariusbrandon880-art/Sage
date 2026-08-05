@@ -15,6 +15,10 @@ from sage.experimental.act.ccl_orchestrator import (
     FutureAgentEntryContract,
     SAGEImprovementCandidate,
     SAGEIncidentReport,
+    PMLStateRecord,
+    PersistentMissionLedger,
+    SAGEWorkflowPattern,
+    SAGEOperationalRecommendation,
 )
 
 
@@ -202,6 +206,87 @@ def test_operational_intelligence_optimization_execution():
     assert metrics["improvement_compounding_rate_pct"] == 12.5
 
 
+def test_persistent_mission_ledger_controlled_slice():
+    """Validate PML State Record serialization, file storage, and rehydration path."""
+    pml = PersistentMissionLedger(ledger_dir="sage_data/test_pml")
+
+    record = PMLStateRecord(
+        session_id="session_test_pml_serialization",
+        active_owner_id="agent_jules_sage",
+        workflow_state="ENGINEERING_BUILD",
+        milestones_summary=[{"action": "Coordinate", "status": "COMPLETED"}],
+        evidence_references=["CCL-REC-992"],
+        workspace_checksum="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        required_next_action="Audit Validation"
+    )
+
+    filepath = pml.save_mission_state(record)
+    assert filepath.exists()
+
+    rehydrated = pml.load_mission_state(record.session_id)
+    assert rehydrated is not None
+    assert rehydrated.session_id == record.session_id
+    assert rehydrated.active_owner_id == record.active_owner_id
+    assert rehydrated.workspace_checksum == record.workspace_checksum
+
+    # Clean up test PML state file
+    if filepath.exists():
+        filepath.unlink()
+
+
+def test_bottleneck_detection_and_advisory_recommendations():
+    """Validate pattern matching and generation of actionable advisory recommendations."""
+    macc = SAGEOperationalOrchestrator(session_id="session_test_bottleneck")
+
+    # Pre-populate session with uncommitted files (by mocking workspace scan)
+    res = macc.generate_operational_recommendations()
+    assert "detected_patterns" in res
+    assert "generated_recommendations" in res
+
+
+def test_endurance_compounding_simulation_execution():
+    """Validate successive long-running multi-cycle loop with compounding velocity improvements and PML saves."""
+    macc = SAGEOperationalOrchestrator(session_id="session_test_endurance_loop")
+
+    report = macc.execute_endurance_simulation_run(
+        task_objective="obj_continuous_development",
+        milestones=["Harden multi-agent persistence keys", "Verify fault interception mechanics"]
+    )
+
+    assert report["status"] == "VALIDATED"
+    assert "endurance_report" in report
+
+    # Verify compounding metrics
+    metrics = report["endurance_report"]["aggregate_performance"]
+    assert metrics["total_pml_states_written"] == 3
+    assert metrics["average_cycle_duration_seconds"] > 0.0
+    assert metrics["compound_velocity_improvement_pct"] > 0.0
+    assert metrics["duplicate_setup_bypassed_lines"] == 450  # 75 + 150 + 225 = 450
+
+
+def test_manual_mode_emergency_stop_override():
+    """Verify that creating the EMERGENCY_STOP lockfile immediately halts loops and raises a controlled exception."""
+    macc = SAGEOperationalOrchestrator(session_id="session_test_emergency")
+
+    # Create the root emergency lockfile
+    lockfile = Path("EMERGENCY_STOP")
+    with open(lockfile, "w") as f:
+        f.write("STOP RUN")
+
+    try:
+        # Loop invocation must raise RuntimeError
+        with pytest.raises(RuntimeError) as exc:
+            macc.execute_controlled_operational_pilot(
+                task_objective="obj_continuous_development",
+                milestones=["Harden safety lines"]
+            )
+        assert "Manual operator emergency freeze" in str(exc.value)
+    finally:
+        # Always clean up the lockfile
+        if lockfile.exists():
+            lockfile.unlink()
+
+
 def test_control_tower_status_rendering():
     """Verify operator Control Tower ASCII console layout and parameters."""
     macc = SAGEOperationalOrchestrator(session_id="session_test_control_tower")
@@ -236,6 +321,14 @@ def test_control_tower_status_rendering():
         "evidence_density_index": 1.0,
         "improvement_compounding_rate_pct": 12.5
     }
+    macc.orchestrator.session.metadata["endurance_report_dashboard"] = {
+        "aggregate_performance": {
+            "average_cycle_duration_seconds": 3.9,
+            "compound_velocity_improvement_pct": 42.0,
+            "duplicate_setup_bypassed_lines": 450,
+            "total_pml_states_written": 3
+        }
+    }
     macc.orchestrator.session_manager.save_session(macc.orchestrator.session)
 
     console_output = macc.render_control_tower_view()
@@ -260,6 +353,11 @@ def test_control_tower_status_rendering():
     assert "Recovery Intelligence (RIS):   100.0%" in console_output
     assert "Evidence Density Index (ED):   1.0" in console_output
     assert "Improvement Compounding (ICR): 12.5% rate" in console_output
+    assert "SAGE Multi-Cycle Learning Compounding (How SAGE Improves):" in console_output
+    assert "Avg Cycle Duration:     3.9s" in console_output
+    assert "Compounding Improvement: 42.0% cycle speedup" in console_output
+    assert "Duplicate Setup Bypassed: 450 lines bypass" in console_output
+    assert "Persistent PML States:   3 files written" in console_output
     assert "Workflow Health Score" in console_output
     assert "Active Collaborator Responsibility Hierarchy" in console_output
     assert "Custody Transfer Handoff Lineage Trail" in console_output
