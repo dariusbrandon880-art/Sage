@@ -1,0 +1,434 @@
+{
+  "orchestrator_run_id": "orch_run_macc_d1f1f21d70a5",
+  "timestamp": 1785893138.149203,
+  "session_id": "session_test_macc_loop",
+  "status": "VALIDATED",
+  "chatgpt_coordination": {
+    "agent_id": "agent_chatgpt",
+    "assigned_task_id": "task_coordination",
+    "activation_state": "ACTIVE",
+    "directives": {
+      "task_objective": "obj_continuous_development",
+      "milestones": [
+        "Task 1",
+        "Task 2"
+      ]
+    }
+  },
+  "jules_execution": {
+    "agent_id": "agent_jules_sage",
+    "assigned_task_id": "task_active_development",
+    "activation_state": "ACTIVE",
+    "rehydrated_milestones": [
+      {
+        "id": "milestone_0",
+        "action": "Task 1",
+        "status": "PENDING"
+      },
+      {
+        "id": "milestone_1",
+        "action": "Task 2",
+        "status": "PENDING"
+      }
+    ]
+  },
+  "review_contract": {
+    "contract_id": "REV-CONTRACT-26145E414DB4",
+    "timestamp": 1785893138.1461809,
+    "target_auditor_id": "agent_claude",
+    "inherited_state": {
+      "active_mission": {
+        "session_id": "session_test_macc_loop",
+        "objectives": [
+          "obj_continuous_development"
+        ],
+        "active_owner_id": "agent_jules_sage",
+        "owner_metadata": {
+          "agent_id": "agent_jules_sage",
+          "name": "Jules",
+          "role": "DEVELOPER",
+          "authorized_scope_prefixes": [
+            "sage/experimental/",
+            "tests/experimental/",
+            "evidence_capture/"
+          ],
+          "governance_tier": "TIER_2_DEVELOPER",
+          "timestamp": 1785893137.4041529
+        }
+      },
+      "workflow_state": "DEGRADED",
+      "milestones": [
+        {
+          "id": "milestone_0",
+          "action": "Task 1",
+          "status": "PENDING"
+        },
+        {
+          "id": "milestone_1",
+          "action": "Task 2",
+          "status": "PENDING"
+        }
+      ],
+      "scope": [
+        "sage/experimental/",
+        "tests/experimental/",
+        "evidence_capture/"
+      ],
+      "repo_context": {
+        "uncommitted_files": [
+          "evidence_capture/agent_activation_evidence.json",
+          "evidence_capture/agent_execution_feedback_evidence.json",
+          "evidence_capture/agent_handoff_manifest.json",
+          "evidence_capture/ccl_operational_feedback.json",
+          "evidence_capture/ccl_orchestrator_evidence.json",
+          "evidence_capture/decision_validation_report.json",
+          "evidence_capture/discovery_candidates_register.json",
+          "evidence_capture/multi_agent_coordination_evidence.json",
+          "evidence_capture/operational_persistence_evidence.json",
+          "evidence_capture/workflow_intelligence_evidence.json",
+          "sage/experimental/act/ccl_orchestrator.py",
+          "sage/experimental/act/continuity_control.py",
+          "scripts/run_ccl_orchestrator.py",
+          "tests/experimental/test_ccl_orchestrator.py",
+          "tests/experimental/test_continuity_control.py"
+        ],
+        "file_fingerprints": {
+          "evidence_capture/agent_activation_evidence.json": {
+            "sha256": "a958c016dbd6a0295ead9dfe340981f38f1bbb246f34f8373ffe475e44a6fe2c",
+            "size_bytes": 1576
+          },
+          "evidence_capture/agent_execution_feedback_evidence.json": {
+            "sha256": "62374071c34e5bbea418b742875383c94d09cb44e91ae221e371b68b6b1e0f74",
+            "size_bytes": 1919
+          },
+          "evidence_capture/agent_handoff_manifest.json": {
+            "sha256": "4c0068d8071c6f925f6ec37c8faf098e3cc191486849f70123f92e437d0c7aa0",
+            "size_bytes": 3795
+          },
+          "evidence_capture/ccl_operational_feedback.json": {
+            "sha256": "8840374cfed925ee6c4e3a53ace21a0f6fbc4efa3151e262c394e10b351b0ae9",
+            "size_bytes": 6881
+          },
+          "evidence_capture/ccl_orchestrator_evidence.json": {
+            "sha256": "43bf3cdd54506d363419ca0fff379523f616c9196cc7afda16fed72ed911e522",
+            "size_bytes": 14564
+          },
+          "evidence_capture/decision_validation_report.json": {
+            "sha256": "80ba6663e855e46b9f3807b81b105b75971ba110609b112bb382f64096621ee1",
+            "size_bytes": 1066
+          },
+          "evidence_capture/discovery_candidates_register.json": {
+            "sha256": "32e51aef1e710ecd7a1133e9f23cae881e025588eeb0f95eb093b94a3978b9b1",
+            "size_bytes": 33492
+          },
+          "evidence_capture/multi_agent_coordination_evidence.json": {
+            "sha256": "a5e4137a4e9d27d61f275cbc6d2a708ed94923b2c58b0718429972e906582470",
+            "size_bytes": 4284
+          },
+          "evidence_capture/operational_persistence_evidence.json": {
+            "sha256": "3ff943d09841529dbb0df928b2edebffb8f3323acb927be0318fba6259dd6fd9",
+            "size_bytes": 1308
+          },
+          "evidence_capture/workflow_intelligence_evidence.json": {
+            "sha256": "cc5f7f71255510119c7ea9587c1ec45338670646a48b5914db7f4014bff165f5",
+            "size_bytes": 1233
+          },
+          "sage/experimental/act/ccl_orchestrator.py": {
+            "sha256": "53deb63060b087af78eca948b9b9392d97437f9b6e4104eb1aabfed283e72fd3",
+            "size_bytes": 20408
+          },
+          "sage/experimental/act/continuity_control.py": {
+            "sha256": "b161c50cec6fd7690964010c32f7cadc909d617c2f913c66180faaddcc746dd6",
+            "size_bytes": 88035
+          },
+          "scripts/run_ccl_orchestrator.py": {
+            "sha256": "74623bce2167a9bf2ad0f23721ee44a523ee16532f2800e48cda6c445121eb61",
+            "size_bytes": 1546
+          },
+          "tests/experimental/test_ccl_orchestrator.py": {
+            "sha256": "053982ecf87cba58adfee64ee0dd2851a85fd1255e9247ab32725c1e24e781ff",
+            "size_bytes": 2841
+          },
+          "tests/experimental/test_continuity_control.py": {
+            "sha256": "d1fccc2cd485e12f628c0fcad101b6201346d723dc7bf124f6c55295ce541073",
+            "size_bytes": 63936
+          }
+        }
+      },
+      "blockers": [],
+      "required_actions": [
+        "Run execute_active_development_coordination to commit changes and generate dual-compliant CMAPS audit records.",
+        "Inspect SAGE-CCL ledger files under sage_data/experimental_ccl/ to identify repetitive drift patterns."
+      ],
+      "evidence_history": [
+        {
+          "record_id": "CCL-REC-20260805-a26bad32-99ce-4d16-bc54-e19a818dc811",
+          "event_type": "state_transition",
+          "action_taken": "Registered Ecosystem Agent Role: agent_chatgpt (COORDINATOR)",
+          "timestamp": 1785892714.9760413,
+          "lifecycle_state": "PROPOSED"
+        },
+        {
+          "record_id": "CCL-REC-20260805-0042468c-637a-40ba-aa4e-e78b4738495a",
+          "event_type": "state_transition",
+          "action_taken": "Registered Ecosystem Agent Role: agent_jules_sage (DEVELOPER)",
+          "timestamp": 1785892714.9773974,
+          "lifecycle_state": "PROPOSED"
+        },
+        {
+          "record_id": "CCL-REC-20260805-de05b001-d619-481a-9333-3ba018c0d243",
+          "event_type": "state_transition",
+          "action_taken": "Registered Ecosystem Agent Role: agent_claude (AUDITOR)",
+          "timestamp": 1785892714.9788241,
+          "lifecycle_state": "PROPOSED"
+        },
+        {
+          "record_id": "CCL-REC-20260805-2c166a59-a23e-4a63-86ba-0c6e8084b170",
+          "event_type": "state_transition",
+          "action_taken": "Compiled context package for Agent 'agent_jules_sage'",
+          "timestamp": 1785892715.326101,
+          "lifecycle_state": "PROPOSED"
+        },
+        {
+          "record_id": "CCL-REC-20260805-208261dc-4763-420b-8520-6a0440699dae",
+          "event_type": "state_transition",
+          "action_taken": "Custody Handoff completed: agent_chatgpt -> agent_jules_sage",
+          "timestamp": 1785892715.3276224,
+          "lifecycle_state": "PROPOSED"
+        },
+        {
+          "record_id": "CCL-REC-20260805-723e6ffc-0308-4ed7-8751-8dea942d373d",
+          "event_type": "state_transition",
+          "action_taken": "Registered Ecosystem Agent Role: agent_chatgpt (COORDINATOR)",
+          "timestamp": 1785892837.9012709,
+          "lifecycle_state": "PROPOSED"
+        },
+        {
+          "record_id": "CCL-REC-20260805-b4688202-9d8b-4d16-9eb7-2ee3b830a6b0",
+          "event_type": "state_transition",
+          "action_taken": "Registered Ecosystem Agent Role: agent_jules_sage (DEVELOPER)",
+          "timestamp": 1785892837.9026165,
+          "lifecycle_state": "PROPOSED"
+        },
+        {
+          "record_id": "CCL-REC-20260805-94f2110e-eacf-4ff3-84f6-91b9b1141805",
+          "event_type": "state_transition",
+          "action_taken": "Registered Ecosystem Agent Role: agent_claude (AUDITOR)",
+          "timestamp": 1785892837.9041119,
+          "lifecycle_state": "PROPOSED"
+        },
+        {
+          "record_id": "CCL-REC-20260805-ad928cd5-b979-480b-b3ce-1f4e453744c3",
+          "event_type": "state_transition",
+          "action_taken": "Compiled context package for Agent 'agent_jules_sage'",
+          "timestamp": 1785892838.196532,
+          "lifecycle_state": "PROPOSED"
+        },
+        {
+          "record_id": "CCL-REC-20260805-ce93e63f-5f2b-4922-ae9d-54d01509438a",
+          "event_type": "state_transition",
+          "action_taken": "Custody Handoff completed: agent_chatgpt -> agent_jules_sage",
+          "timestamp": 1785892838.1984725,
+          "lifecycle_state": "PROPOSED"
+        },
+        {
+          "record_id": "CCL-REC-20260805-96a64205-b562-43cc-a3b6-57c02cf34ee6",
+          "event_type": "boundary_intercept",
+          "action_taken": "SIMULATED INTERRUPT: Network delay / partial task completion",
+          "timestamp": 1785892838.2013397,
+          "lifecycle_state": "PROPOSED"
+        },
+        {
+          "record_id": "CCL-REC-20260805-a01daec3-8f70-407c-bf9f-31e20b0bec18",
+          "event_type": "state_transition",
+          "action_taken": "Rehydrated session from manifest: manifest_handoff_cedcef7bc393",
+          "timestamp": 1785892838.4032419,
+          "lifecycle_state": "PROPOSED"
+        },
+        {
+          "record_id": "CCL-REC-20260805-3383ccb7-41c3-4b00-9f27-df11846da050",
+          "event_type": "state_transition",
+          "action_taken": "Wrote high-fidelity ccl_orchestrator multi-agent validation pathways",
+          "timestamp": 1785892838.4056807,
+          "lifecycle_state": "PROPOSED"
+        },
+        {
+          "record_id": "CCL-REC-20260805-c611b6b5-29e6-4d5d-8786-423ddfdf5664",
+          "event_type": "state_transition",
+          "action_taken": "Prepared Future Auditor Review Contract: REV-CONTRACT-C95111D6DFA3",
+          "timestamp": 1785892838.5622118,
+          "lifecycle_state": "PROPOSED"
+        },
+        {
+          "record_id": "CCL-REC-20260805-f5277a70-53db-4fb1-a67e-167c868ce3b9",
+          "event_type": "state_transition",
+          "action_taken": "Registered Ecosystem Agent Role: agent_chatgpt (COORDINATOR)",
+          "timestamp": 1785893137.4034495,
+          "lifecycle_state": "PROPOSED"
+        },
+        {
+          "record_id": "CCL-REC-20260805-9c2b6165-48c6-4a21-a0e4-2d039f35e9fe",
+          "event_type": "state_transition",
+          "action_taken": "Registered Ecosystem Agent Role: agent_jules_sage (DEVELOPER)",
+          "timestamp": 1785893137.4056077,
+          "lifecycle_state": "PROPOSED"
+        },
+        {
+          "record_id": "CCL-REC-20260805-98f11108-bb25-4e71-b695-dfacb312cf9a",
+          "event_type": "state_transition",
+          "action_taken": "Registered Ecosystem Agent Role: agent_claude (AUDITOR)",
+          "timestamp": 1785893137.4074488,
+          "lifecycle_state": "PROPOSED"
+        },
+        {
+          "record_id": "CCL-REC-20260805-0c0d0c13-a3a0-4fe2-a831-04c7c6ba5d71",
+          "event_type": "state_transition",
+          "action_taken": "Compiled context package for Agent 'agent_jules_sage'",
+          "timestamp": 1785893137.7316751,
+          "lifecycle_state": "PROPOSED"
+        },
+        {
+          "record_id": "CCL-REC-20260805-936c8a95-10ac-494d-96d7-80a37a08c5c5",
+          "event_type": "state_transition",
+          "action_taken": "Custody Handoff completed: agent_chatgpt -> agent_jules_sage",
+          "timestamp": 1785893137.7343411,
+          "lifecycle_state": "PROPOSED"
+        },
+        {
+          "record_id": "CCL-REC-20260805-df393766-7da4-4bb2-b947-ebfa7c88b712",
+          "event_type": "boundary_intercept",
+          "action_taken": "SIMULATED INTERRUPT: Network delay / partial task completion",
+          "timestamp": 1785893137.7387118,
+          "lifecycle_state": "PROPOSED"
+        },
+        {
+          "record_id": "CCL-REC-20260805-7ba40623-82ad-4946-a0a6-6d089461a8fd",
+          "event_type": "state_transition",
+          "action_taken": "Rehydrated session from manifest: manifest_handoff_2817932a605d",
+          "timestamp": 1785893137.9625728,
+          "lifecycle_state": "PROPOSED"
+        },
+        {
+          "record_id": "CCL-REC-20260805-a45a2c22-afc8-4202-b0ef-bcbed8f52fd8",
+          "event_type": "state_transition",
+          "action_taken": "Wrote high-fidelity ccl_orchestrator multi-agent validation pathways",
+          "timestamp": 1785893137.9649951,
+          "lifecycle_state": "PROPOSED"
+        }
+      ]
+    },
+    "governance_status": "AWAITING_ACTIVATION",
+    "instructions": "Audit implementation history, verify cryptographic checksums, and sign to transition records to INTEGRATED."
+  },
+  "execution_traces": [
+    {
+      "event": "CHATGPT_COORDINATE_START",
+      "timestamp": 1785893137.4082706
+    },
+    {
+      "event": "CHATGPT_COORDINATE_COMPLETED",
+      "timestamp": 1785893137.412899,
+      "details": {
+        "agent_id": "agent_chatgpt",
+        "assigned_task_id": "task_coordination",
+        "activation_state": "ACTIVE",
+        "directives": {
+          "task_objective": "obj_continuous_development",
+          "milestones": [
+            "Task 1",
+            "Task 2"
+          ]
+        }
+      }
+    },
+    {
+      "event": "HANDOFF_CHATGPT_TO_JULES_START",
+      "timestamp": 1785893137.5827127
+    },
+    {
+      "event": "HANDOFF_CHATGPT_TO_JULES_COMPLETED",
+      "timestamp": 1785893137.7351377,
+      "handoff_id": "handoff_trace_fa834a3c"
+    },
+    {
+      "event": "JULES_EXECUTION_START",
+      "timestamp": 1785893137.7351396
+    },
+    {
+      "event": "RECOVERY_SIMULATION_INTERRUPT",
+      "timestamp": 1785893137.73866
+    },
+    {
+      "event": "RECOVERY_SIMULATION_RESUMED",
+      "timestamp": 1785893137.9632382,
+      "rehydration_details": {
+        "rehydrated_session_id": "session_test_macc_loop",
+        "target_objectives": [
+          "obj_continuous_development"
+        ],
+        "agent_activation_state": {
+          "agent_id": "agent_jules_sage",
+          "session_id": "session_test_macc_loop",
+          "assigned_task_id": "task_active_development",
+          "lifecycle_state": "ACTIVE",
+          "authorized_scope_prefixes": [
+            "sage/experimental/",
+            "tests/experimental/",
+            "evidence_capture/"
+          ],
+          "human_authorization_signature": "sig_jules_act_c94d22",
+          "timestamp": 1785893137.7369277
+        },
+        "divergence_audit": {
+          "divergence_detected": true,
+          "matching_files_count": 14,
+          "divergent_files_count": 1,
+          "missing_files_count": 0,
+          "untracked_additions_count": 0,
+          "matching_files": [
+            "evidence_capture/agent_activation_evidence.json",
+            "evidence_capture/agent_execution_feedback_evidence.json",
+            "evidence_capture/ccl_operational_feedback.json",
+            "evidence_capture/ccl_orchestrator_evidence.json",
+            "evidence_capture/decision_validation_report.json",
+            "evidence_capture/discovery_candidates_register.json",
+            "evidence_capture/multi_agent_coordination_evidence.json",
+            "evidence_capture/operational_persistence_evidence.json",
+            "evidence_capture/workflow_intelligence_evidence.json",
+            "sage/experimental/act/ccl_orchestrator.py",
+            "sage/experimental/act/continuity_control.py",
+            "scripts/run_ccl_orchestrator.py",
+            "tests/experimental/test_ccl_orchestrator.py",
+            "tests/experimental/test_continuity_control.py"
+          ],
+          "divergent_files": [
+            "evidence_capture/agent_handoff_manifest.json"
+          ],
+          "missing_files": [],
+          "untracked_additions": []
+        },
+        "timestamp": 1785893137.9608011
+      }
+    },
+    {
+      "event": "JULES_EXECUTION_COMPLETED",
+      "timestamp": 1785893137.9672294,
+      "details": {
+        "status": "ACTIVE",
+        "drift_detected": false,
+        "reason": "Execution step matches active objective and scope boundaries.",
+        "action": "ALLOW_EXECUTION"
+      }
+    },
+    {
+      "event": "REVIEW_PREPARATION_START",
+      "timestamp": 1785893137.969216
+    },
+    {
+      "event": "REVIEW_PREPARATION_COMPLETED",
+      "timestamp": 1785893138.1491725,
+      "contract_id": "REV-CONTRACT-26145E414DB4"
+    }
+  ],
+  "control_tower_status": "==========================================================\n  SAGE CO-ORDINATION CONTROL TOWER CONSOLE (SAGE-MACC-OP)\n==========================================================\nActive Operational Session: session_test_macc_loop\nWorkflow Health Score:      65.0% (DEGRADED)\n----------------------------------------------------------\nActive Collaborator Responsibility Hierarchy:\n    - ChatGPT (agent_chatgpt) [Role: COORDINATOR] [Tier: TIER_1_COORDINATOR]\n    - Jules (agent_jules_sage) [Role: DEVELOPER] [Tier: TIER_2_DEVELOPER]\n    - Claude (agent_claude) [Role: AUDITOR] [Tier: TIER_1_COORDINATOR]\n----------------------------------------------------------\nCustody Transfer Handoff Lineage Trail:\n    * ChatGPT -> Jules [Trace ID: handoff_trace_8e16c9a4]\n    * ChatGPT -> Jules [Trace ID: handoff_trace_422f2a3d]\n    * ChatGPT -> Jules [Trace ID: handoff_trace_fa834a3c]\n----------------------------------------------------------\nTraceable Evidence Ledger Status:\n  Proposed Records:          260\n  Validated Audit Records:   13\n----------------------------------------------------------\nActive Workspace Guard Metrics:\n  Uncommitted files track:   15 file(s)\n=========================================================="
+}
