@@ -482,3 +482,190 @@ def test_sage_operational_intelligence_layer_integration(tmp_path):
     assert "4. WHAT EVIDENCE SUPPORTS IT?" in dashboard_str
     assert "5. WHAT HAPPENS NEXT?" in dashboard_str
     assert "BOTTLENECK INDICATORS:" in dashboard_str
+
+
+def test_sage_continuous_execution_and_governance_loop(tmp_path):
+    """Verify continuous execution, backlog queue integration, loop safety controls,
+
+    checkpoint/rollback recovery, failure escalation protection, and drift detection.
+    """
+    from sage.experimental.act.continuity_control import (
+        DeveloperWorkflowOrchestrator,
+        ContinuityControlLoop,
+        SAGEMissionTask
+    )
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    evidence_output = tmp_path / "evidence" / "ccl_feedback.json"
+
+    # Setup session manager and orchestrator
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_continuous_test_99",
+        objective="obj_continuous_development",
+        ccl=ccl,
+        evidence_output_path=str(evidence_output)
+    )
+
+    # -----------------
+    # 1. Mission Queue Processing & Priorities
+    # -----------------
+    task_low = SAGEMissionTask(
+        task_id="task_low_priority",
+        objective_id="obj_continuous_development",
+        priority_score=10.0,
+        authorized=True,
+        description="Low priority task"
+    )
+    task_high = SAGEMissionTask(
+        task_id="task_high_priority",
+        objective_id="obj_continuous_development",
+        priority_score=90.0,
+        authorized=True,
+        description="High priority task"
+    )
+    task_unauthorized = SAGEMissionTask(
+        task_id="task_unauthorized_99",
+        objective_id="obj_continuous_development",
+        priority_score=95.0,
+        authorized=False,
+        description="Unauthorized task"
+    )
+
+    orchestrator.mission_queue.add_task(task_low)
+    orchestrator.mission_queue.add_task(task_high)
+    orchestrator.mission_queue.add_task(task_unauthorized)
+
+    # Next approved task should be high priority, not the unauthorized even though it has a higher score
+    next_task = orchestrator.mission_queue.get_next_approved_task(orchestrator.session.active_objectives)
+    assert next_task is not None
+    assert next_task.task_id == "task_high_priority"
+
+    # -----------------
+    # 2. Runtime State Transitions & Manual Pause / Resume / Stop
+    # -----------------
+    assert orchestrator.loop_state["mode"] == "CONTINUOUS"
+
+    # Test manual pause
+    orchestrator.pause_mission_execution_loop()
+    assert orchestrator.loop_state["mode"] == "MANUAL_INTERVENTION_PAUSED"
+
+    # Attempt running should instantly exit
+    res_paused = orchestrator.execute_autonomous_mission_loop(max_cycles=1)
+    assert res_paused["status"] == "MANUAL_INTERVENTION_PAUSED"
+    assert len(res_paused["executed_tasks"]) == 0
+
+    # Test resume
+    orchestrator.resume_mission_execution_loop()
+    assert orchestrator.loop_state["mode"] == "CONTINUOUS"
+
+    # Test emergency stop
+    orchestrator.emergency_stop()
+    assert orchestrator.loop_state["mode"] == "STOPPED"
+
+    with pytest.raises(ValueError, match="Stopped loop cannot be resumed"):
+        orchestrator.resume_mission_execution_loop()
+
+    # Reset loop to CONTINUOUS for remaining tests
+    orchestrator.loop_state["mode"] = "CONTINUOUS"
+    orchestrator.save_loop_state()
+
+    # -----------------
+    # 3. Execution, Evidence Generation, and Learning Cycle
+    # -----------------
+    res_exec = orchestrator.execute_autonomous_mission_loop(max_cycles=1)
+    assert res_exec["status"] == "CONTINUOUS"
+    assert "task_high_priority" in res_exec["executed_tasks"]
+
+    # Verify task was completed
+    t_high = orchestrator.mission_queue.get_task("task_high_priority")
+    assert t_high.status == "COMPLETED"
+    assert "task_high_priority" in orchestrator.session.completed_actions
+
+    # Verify evidence generation
+    assert evidence_output.exists()
+    with open(evidence_output, "r", encoding="utf-8") as f:
+        evidence_data = json.load(f)
+    assert evidence_data["cmaps_payload"]["task_lineage"]["current_task_id"] == "task_high_priority"
+
+    # -----------------
+    # 4. Checkpoint & Rollback
+    # -----------------
+    checkpoint_id = orchestrator.loop_state["last_checkpoint_id"]
+    assert checkpoint_id is not None
+
+    # Mutate active objectives of session (simulation of context corruption)
+    orchestrator.session.active_objectives = ["obj_corrupted_state"]
+    orchestrator.session_manager.save_session(orchestrator.session)
+
+    # Rollback to checkpoint
+    orchestrator.rollback_to_checkpoint(checkpoint_id)
+    assert "obj_continuous_development" in orchestrator.session.active_objectives
+    assert "obj_corrupted_state" not in orchestrator.session.active_objectives
+
+    # -----------------
+    # 5. Failure Escalation Protection
+    # -----------------
+    # Add failing tasks
+    f1 = SAGEMissionTask(task_id="task_fail_1", objective_id="obj_continuous_development", authorized=True, description="Inject fail 1")
+    f2 = SAGEMissionTask(task_id="task_fail_2", objective_id="obj_continuous_development", authorized=True, description="Inject fail 2")
+    f3 = SAGEMissionTask(task_id="task_fail_3", objective_id="obj_continuous_development", authorized=True, description="Inject fail 3")
+    orchestrator.mission_queue.add_task(f1)
+    orchestrator.mission_queue.add_task(f2)
+    orchestrator.mission_queue.add_task(f3)
+
+    # Run loop to execute failing tasks
+    res_fails = orchestrator.execute_autonomous_mission_loop(max_cycles=3)
+    assert res_fails["status"] == "MANUAL_INTERVENTION_PAUSED" # Safety freeze triggered!
+    assert res_fails["consecutive_failures"] == 3
+    assert orchestrator.mission_queue.get_task("task_fail_1").status == "FAILED"
+    assert orchestrator.mission_queue.get_task("task_fail_2").status == "FAILED"
+    assert orchestrator.mission_queue.get_task("task_fail_3").status == "FAILED"
+
+    # Reset mode and failures for remaining checks
+    orchestrator.loop_state["mode"] = "CONTINUOUS"
+    orchestrator.loop_state["consecutive_failures"] = 0
+    orchestrator.save_loop_state()
+
+    # -----------------
+    # 6. Discovery-to-Engineering Handoff
+    # -----------------
+    # Seed discovery candidates register
+    discovery_reg = tmp_path / "discovery_register.json"
+    cand = {
+        "candidate_id": "CANDIDATE-OIL-TEST99",
+        "description": "Optimize pre-compilation caches",
+        "validation_criteria": "Reduces startup time",
+        "priority": "HIGH"
+    }
+    with open(discovery_reg, "w", encoding="utf-8") as f:
+        json.dump([cand], f)
+
+    # Override target register file path in OIL to point to our temp file
+    import unittest.mock as mock
+    with mock.patch("sage.experimental.act.continuity_control.Path") as mock_path:
+        # Let's make Path("evidence_capture/discovery_candidates_register.json") return our mocked register file
+        mock_path.side_effect = lambda *args: discovery_reg if "discovery_candidates_register.json" in str(args) else Path(*args)
+
+        task_hand = orchestrator.handoff_discovery_candidate_to_mission("CANDIDATE-OIL-TEST99")
+        assert task_hand.task_id == "task_impr_CANDIDATE-OIL-TEST99"
+        assert task_hand.priority_score == 80.0
+        assert task_hand.lane == "optimization"
+        assert task_hand.authorized is True
+
+    # -----------------
+    # 7. External Workspace Drift Detection
+    # -----------------
+    with mock.patch.object(orchestrator, "scan_git_workspace") as mock_scan:
+        mock_scan.return_value = {
+            "modified_files": ["sage/runtime/engine.py"],
+            "diffs": {"sage/runtime/engine.py": "mutation in core engine"}
+        }
+
+        is_drift = orchestrator.detect_external_workspace_drift()
+        assert is_drift is True
+        assert orchestrator.loop_state["mode"] == "MANUAL_INTERVENTION_PAUSED"
