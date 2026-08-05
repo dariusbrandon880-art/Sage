@@ -1548,3 +1548,93 @@ def test_operational_lifecycle_reliability_and_control_tower_hardening(tmp_path)
     assert "task_reliability_loop_secondary" in evidence["active_tasks"]
     assert "task_reliability_loop_primary" in evidence["active_tasks"]
     assert "task_future_agent" in evidence["active_tasks"]
+
+
+def test_real_workflow_pilot_activation_and_measurements(tmp_path):
+    """Validate SAGE real workflow pilot activation and operational measurements.
+
+    Covers:
+      1. Real Workflow Execution Pilot (Intake -> Coordinator -> Context -> Builder -> Reviewer -> Human Gate -> Outcome).
+      2. Operational Measurements Capture (time_saved_minutes, context_recovery_quality, duplicate_work_prevented_percent, decisions_preserved_count, evidence_completeness_ratio).
+      3. Real Artifact Validation (verifying the reconstructable lifecycle chain).
+      4. Control Tower Production Pass (expanded visibility summary).
+      5. Future Integration Readiness (identity, role, boundaries, evidence, handoffs).
+    """
+    evidence_file = tmp_path / "ccl_pilot_measurements.json"
+    orch = DeveloperWorkflowOrchestrator(session_id="session_pilot_pass")
+
+    # Connect ChatGPT Coordinator, Jules Executor, Gemini Reviewer
+    chatgpt = ChatGPTAgentConnector(orch, agent_id="agent_chatgpt_coord")
+    jules = JulesAgentConnector(orch, agent_id="agent_jules_exec")
+    reviewer = ReviewerAgentConnector(orch, agent_id="agent_reviewer_gemini")
+
+    # --- STEP 1: Mission Intake & Context rehydration (ChatGPT Coordinated) ---
+    chatgpt.align_workflow_state(
+        "INITIATE_TASK",
+        "task_pilot_loop",
+        {
+            "objective_id": "obj_pilot_hardening",
+            "initial_context": {
+                "files_to_modify": ["sage/experimental/act/ccl_orchestrator.py"],
+                "milestones_completed": ["Milestone-1-contracts", "Milestone-2-ccl-ops"]
+            },
+            "lineage_references": ["ADR-001", "SAGE-ACT-MP-2.0"]
+        }
+    )
+
+    # 1. Handoff to Executor (Preserving context across transitions)
+    chatgpt.generate_handoff_manifest("task_pilot_loop", "agent_jules_exec")
+    jules.align_task_state("task_pilot_loop", "ACTIVE", "Jules starts the pilot task.")
+
+    # --- STEP 2: Scoped Engineering Execution (Jules Builder) ---
+    jules.report_progress(
+        task_id="task_pilot_loop",
+        progress_percent=100.0,
+        result_payload={"git_hash": "pilot7777", "tests_passing": True, "coverage": "99%"},
+        feedback="Jules completes structural pilot coding changes."
+    )
+
+    # --- STEP 3: Context-Preserving Review Transfer (Reviewer Validator) ---
+    jules.generate_handoff_manifest("task_pilot_loop", "agent_reviewer_gemini")
+    review_ctx = reviewer.rehydrate_review_context("task_pilot_loop")
+    preceding_hash = review_ctx["evidence_package"]["preceding_records_hashes"][0]
+
+    reviewer.submit_review_finding(
+        task_id="task_pilot_loop",
+        finding_details="AST boundary safety and isolation verified clean in pilot loop.",
+        evidence_hash_reference=preceding_hash
+    )
+
+    # --- STEP 4: Human-in-the-loop Governance (Human Gate) ---
+    orch.ingest_event("HUMAN_APPROVAL", "task_pilot_loop", {"supervisor_id": "super", "decision": "AUTHORIZED", "comments": "Pilot loop verified clean."})
+    orch.ingest_event("STATE_TRANSITION", "task_pilot_loop", {"target_status": "COMPLETED", "agent_id": "agent_reviewer_gemini", "comment": "Cycle 1 sign-off."})
+
+    assert orch.tasks["task_pilot_loop"]["status"] == "COMPLETED"
+
+    # --- STEP 5: Operational Measurement Capture & Evidence Chain Verification ---
+    evidence = orch.export_evidence(str(evidence_file))
+
+    # Assert that our dynamic real-world measurements are correctly computed and exported
+    measurements = evidence["operational_measurements"]
+    assert measurements["time_saved_minutes"] == 20.0  # (1 completed task * 15.0) + (1 progress report * 5.0)
+    assert measurements["context_recovery_quality"] == 1.0
+    assert measurements["duplicate_work_prevented_percent"] == 100.0
+    assert measurements["decisions_preserved_count"] == 1  # 1 Human Approval
+    assert measurements["evidence_completeness_ratio"] == 1.0  # 1 task out of 1 has correct hash
+
+    # Assert on reconstructable lifecycle chain inside evidence records
+    assert "task_pilot_loop" in evidence["active_tasks"]
+    record = evidence["continuity_control_records"]["task_pilot_loop"]
+    assert record["task_state_snapshot"]["latest_result"]["git_hash"] == "pilot7777"
+    assert record["task_state_snapshot"]["human_approval"]["decision"] == "AUTHORIZED"
+    assert len(record["state_integrity"]["state_hash"]) == 64
+
+    # Assert on Control Tower ASCII summary contents
+    summary = orch.generate_operator_summary()
+    assert "SAGE GOVERNANCE CONTROL TOWER RELIABILITY PASS:" in summary
+    assert "1. What is happening?" in summary
+    assert "Task 'task_pilot_loop': status=COMPLETED, progress=100.0%" in summary
+    assert "2. Who owns it?" in summary
+    assert "3. Why is it happening?" in summary
+    assert "4. What proves it?" in summary
+    assert "5. What happens next?" in summary
