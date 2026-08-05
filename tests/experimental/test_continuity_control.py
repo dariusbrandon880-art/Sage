@@ -362,3 +362,123 @@ def test_developer_workflow_orchestrator_scan_git(tmp_path):
     assert "modified_files" in workspace
     assert "diffs" in workspace
     assert len(workspace["modified_files"]) > 0
+
+
+def test_sage_operational_intelligence_layer_integration(tmp_path):
+    """Verify the end-to-end SAGE Operational Intelligence Layer (SAGE-OIL) capability.
+
+    Validates:
+    - Dynamic performance and context efficiency metrics computation.
+    - SAGE Improvement Signal generation (Event -> Evidence -> Metric -> Signal).
+    - Preservation and traceability of metrics in the unified evidence package.
+    - Generation of discovery lane candidates in discovery_candidates_register.json.
+    - High-fidelity ASCII Control Tower summary rendering.
+    """
+    from sage.experimental.act.continuity_control import (
+        DeveloperWorkflowOrchestrator,
+        ContinuityControlLoop,
+        SAGEOperationalIntelligenceLayer,
+        ContinuityControlRecord
+    )
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    evidence_output = tmp_path / "evidence" / "ccl_operational_feedback.json"
+    discovery_register = tmp_path / "evidence" / "discovery_candidates_register.json"
+
+    # 1. Initialize custom managers and loop
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+
+    # Initialize session state with duplicated active/completed actions to trigger efficiency metrics
+    session = session_mgr.create_session(
+        session_id="session_oil_test",
+        active_objectives=["obj_validate_oil_integration"]
+    )
+    session.add_completed_action("task_compile_source")
+    # Add identical pending action (bypassing state safeguard) to simulate unnecessary reassessment
+    session.pending_actions.append("task_compile_source")
+    session_mgr.save_session(session)
+
+    # Initialize orchestrator
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_oil_test",
+        objective="obj_validate_oil_integration",
+        ccl=ccl,
+        evidence_output_path=str(evidence_output)
+    )
+
+    action = "SAGE Operational Intelligence Integration Validation"
+    reasoning = "Test dynamic metrics computation, improvement signals, and Control Tower dashboards"
+    friction = [{"type": "environmental_latency", "detail": "high setup and download latency", "severity": "medium"}]
+    opportunities = ["Auto-cache local packages and mock network boundaries"]
+
+    # 2. Run active development coordination loop
+    result = orchestrator.execute_active_development_coordination(
+        action_taken=action,
+        decision_reasoning=reasoning,
+        workflow_friction=friction,
+        improvement_opportunities=opportunities
+    )
+
+    # 3. Assert on results structure and metrics
+    assert "operational_intelligence" in result
+    op_intel = result["operational_intelligence"]
+    assert "metrics" in op_intel
+    assert "learning_signals" in op_intel
+
+    metrics = op_intel["metrics"]
+    assert metrics["lifecycle_completion_rate"] == 1.0  # Approved/Validated
+    assert metrics["recovery_success_rate"] == 1.0       # Standard clean run
+    assert metrics["evidence_completeness"] == 1.0       # All required keys are populated
+    assert metrics["decision_trace_completeness"] == 1.0 # Fully complete decision event
+    assert metrics["workflow_state_accuracy"] == 1.0     # Clean status matching VALIDATED
+    assert metrics["execution_cycle_duration"] > 0.0     # Non-trivial execution time
+
+    # Context Efficiency Tracking checks
+    assert metrics["context_preservation_score"] == 1.0
+    assert metrics["unnecessary_reassessment_events"] == 1 # "task_compile_source" is duplicate
+    assert metrics["repeated_execution_prevention"] is False
+    assert metrics["state_restoration_success"] is True
+
+    # 4. Validate Signal Generation Flow
+    learning_signals = op_intel["learning_signals"]
+    assert len(learning_signals) >= 2 # Observed friction signal + Unnecessary reassessments signal
+
+    # Verify that the signals map to the original record and contain correct fields
+    friction_sig = next(s for s in learning_signals if s["metric_category"] == "OPERATIONAL_EFFICIENCY")
+    assert friction_sig["event_id"] == result["ccl_record"]["record_id"]
+    assert friction_sig["metric_evaluation"]["observed_friction_type"] == "environmental_latency"
+    assert "CANDIDATE-OIL-" in friction_sig["improvement_candidate"]["candidate_id"]
+    assert friction_sig["discovery_lane_input"]["target_process"] == "workflow_coordination_environmental_latency"
+
+    # Verify that discovery candidates are correctly saved in the persistent register
+    oil = SAGEOperationalIntelligenceLayer(storage_path=record_storage)
+    promoted_record = ContinuityControlRecord(**result["ccl_record"])
+    from pydantic import BaseModel
+    from sage.experimental.act.continuity_control import SAGEOperationalMetrics
+    metrics_obj = SAGEOperationalMetrics(**metrics)
+
+    custom_signals = oil.generate_learning_signals(
+        record=promoted_record,
+        metrics=metrics_obj,
+        register_path=discovery_register
+    )
+    assert len(custom_signals) >= 2
+    assert discovery_register.exists()
+    with open(discovery_register, "r", encoding="utf-8") as f:
+        register_data = json.load(f)
+    assert len(register_data) >= 2
+    assert any(c["candidate_id"].startswith("CANDIDATE-OIL-") for c in register_data)
+
+    # 5. Verify high-fidelity ASCII Control Tower Console Dashboard rendering
+    dashboard_str = orchestrator.render_control_tower_summary(result)
+    assert "SAGE CONTROL TOWER - OPERATIONAL INTELLIGENCE VIEW" in dashboard_str
+    assert "[Workflow Health]" in dashboard_str
+    assert "1. WHAT HAPPENED?" in dashboard_str
+    assert "2. WHO OWNS IT?" in dashboard_str
+    assert "3. WHY IS IT HAPPENING?" in dashboard_str
+    assert "4. WHAT EVIDENCE SUPPORTS IT?" in dashboard_str
+    assert "5. WHAT HAPPENS NEXT?" in dashboard_str
+    assert "BOTTLENECK INDICATORS:" in dashboard_str

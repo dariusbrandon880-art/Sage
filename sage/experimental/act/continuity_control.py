@@ -244,6 +244,300 @@ class ContinuityControlLoop:
         return record
 
 
+class SAGEOperationalMetrics(BaseModel):
+    """Structured operational metrics capturing performance and context efficiency."""
+
+    # Workflow Performance Metrics
+    lifecycle_completion_rate: float
+    recovery_success_rate: float
+    evidence_completeness: float
+    decision_trace_completeness: float
+    workflow_state_accuracy: float
+    execution_cycle_duration: float
+
+    # Context Efficiency Metrics
+    context_preservation_score: float
+    unnecessary_reassessment_events: int
+    repeated_execution_prevention: bool
+    state_restoration_success: bool
+
+
+class SAGEImprovementSignal(BaseModel):
+    """Structured signal mapping workflow event to metric evaluation to improvement candidate."""
+
+    signal_id: str
+    event_id: str
+    metric_category: str
+    metric_evaluation: Dict[str, Any]
+    improvement_candidate: Dict[str, Any]
+    discovery_lane_input: Dict[str, Any]
+    timestamp: float
+
+
+class SAGEOperationalIntelligenceLayer:
+    """Computes, captures, and evaluates operational metrics and generates learning signals."""
+
+    def __init__(self, storage_path: Path):
+        self.storage_path = Path(storage_path)
+
+    def compute_metrics(
+        self,
+        record: ContinuityControlRecord,
+        cmaps_payload: Dict[str, Any],
+        duration: float,
+        session: SessionState
+    ) -> SAGEOperationalMetrics:
+        """Compute the high-fidelity operational and context efficiency metrics."""
+
+        # 1. Lifecycle Completion Rate
+        all_records = []
+        validated_count = 0
+        for filepath in self.storage_path.glob("*.json"):
+            try:
+                with open(filepath, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    all_records.append(data)
+                    if data.get("lifecycle_state") == "VALIDATED":
+                        validated_count += 1
+            except Exception:
+                pass
+
+        # Add current record if not already serialized or counted
+        current_in_all = any(r.get("record_id") == record.record_id for r in all_records)
+        if not current_in_all:
+            all_records.append(record.model_dump())
+            if record.lifecycle_state == "VALIDATED":
+                validated_count += 1
+
+        total_records = len(all_records)
+        lifecycle_completion_rate = (validated_count / total_records) if total_records > 0 else 1.0
+
+        # 2. Recovery Success Rate
+        recovery_records = [r for r in all_records if r.get("event_type") == "recovered" or r.get("failure_context")]
+        recovered_and_validated = [r for r in recovery_records if r.get("lifecycle_state") == "VALIDATED"]
+
+        recovery_success_rate = (len(recovered_and_validated) / len(recovery_records)) if recovery_records else 1.0
+
+        # 3. Evidence Completeness
+        # Check presence of standard key items in current record/payload
+        payload_dict = record.evidence_payload or {}
+        expected_items = {
+            "git_commit": "git_commit" in payload_dict,
+            "protection_report": "protection_report" in payload_dict,
+            "cmaps_audit_id": "cmaps_audit_id" in payload_dict,
+            "human_approval_record": "human_approval_record" in payload_dict
+        }
+        present_count = sum(1 for v in expected_items.values() if v)
+        evidence_completeness = present_count / len(expected_items)
+
+        # 4. Decision Trace Completeness
+        decision_events = cmaps_payload.get("decision_events", [])
+        complete_decisions = 0
+        for d in decision_events:
+            if d.get("decision_id") and d.get("timestamp") and d.get("summary") and d.get("reasoning"):
+                # verify confidence is present and valid
+                if isinstance(d.get("confidence"), (int, float)) and d.get("confidence") > 0.0:
+                    complete_decisions += 1
+        decision_trace_completeness = (complete_decisions / len(decision_events)) if decision_events else 1.0
+
+        # 5. Workflow State Accuracy
+        # If failures are documented, status must be recovered, if approved it must be VALIDATED
+        failures_exist = bool(record.failure_context or cmaps_payload.get("failure_events"))
+        is_state_accurate = True
+        if failures_exist and record.event_type != "recovered":
+            is_state_accurate = False
+        if record.lifecycle_state == "VALIDATED" and "human_approval_record" not in payload_dict:
+            is_state_accurate = False
+        workflow_state_accuracy = 1.0 if is_state_accurate else 0.0
+
+        # 6. Execution Cycle Duration
+        execution_cycle_duration = duration
+
+        # --- Context Efficiency Metrics ---
+        # 1. Context Preservation Score
+        # Check if the active objectives retrieved are complete and valid
+        has_objectives = bool(session.active_objectives)
+        # Score is 1.0 if we successfully rehydrated and preserved active objectives
+        context_preservation_score = 1.0 if has_objectives else 0.0
+
+        # 2. Unnecessary Reassessment Events
+        # Let's count if any of the requested/proposed tasks are already in completed actions
+        # (e.g. repeated/redundant tasks)
+        completed_set = set(session.completed_actions)
+        pending_set = set(session.pending_actions)
+        unnecessary_reassessment_events = len(completed_set.intersection(pending_set))
+
+        # 3. Repeated Execution Prevention
+        # If unnecessary_reassessment_events is 0, we successfully prevented repeated executions of completed milestones
+        repeated_execution_prevention = unnecessary_reassessment_events == 0
+
+        # 4. State Restoration Success
+        # State restoration is True if session_id is found and retrieved successfully
+        state_restoration_success = bool(session)
+
+        return SAGEOperationalMetrics(
+            lifecycle_completion_rate=lifecycle_completion_rate,
+            recovery_success_rate=recovery_success_rate,
+            evidence_completeness=evidence_completeness,
+            decision_trace_completeness=decision_trace_completeness,
+            workflow_state_accuracy=workflow_state_accuracy,
+            execution_cycle_duration=execution_cycle_duration,
+            context_preservation_score=context_preservation_score,
+            unnecessary_reassessment_events=unnecessary_reassessment_events,
+            repeated_execution_prevention=repeated_execution_prevention,
+            state_restoration_success=state_restoration_success
+        )
+
+    def generate_learning_signals(
+        self,
+        record: ContinuityControlRecord,
+        metrics: SAGEOperationalMetrics,
+        register_path: Path = Path("evidence_capture/discovery_candidates_register.json")
+    ) -> List[SAGEImprovementSignal]:
+        """Convert operational events/metrics into structured SAGE Improvement Signals."""
+        signals = []
+
+        # Signal 1: If there's any workflow friction observed
+        if record.workflow_friction:
+            for friction in record.workflow_friction:
+                f_type = friction.get("type", "unknown")
+                f_detail = friction.get("detail", "")
+                f_severity = friction.get("severity", "medium")
+
+                signal_id = f"SIG-{time.strftime('%Y%m%d', time.gmtime())}-{uuid.uuid4().hex[:8]}"
+
+                # Evaluation
+                eval_dict = {
+                    "observed_friction_type": f_type,
+                    "severity": f_severity,
+                    "detail": f_detail,
+                    "execution_cycle_duration": metrics.execution_cycle_duration
+                }
+
+                # Improvement Candidate
+                candidate_id = f"CANDIDATE-OIL-{uuid.uuid4().hex[:6].upper()}"
+                candidate = {
+                    "candidate_id": candidate_id,
+                    "description": f"Address {f_type} friction: {f_detail}",
+                    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+                    "priority": "HIGH" if f_severity == "high" else "MEDIUM"
+                }
+
+                # Discovery Lane Input
+                lane_input = {
+                    "target_process": f"workflow_coordination_{f_type}",
+                    "actionable_remediation": f"Refactor automated flow to streamline and optimize {f_detail}",
+                    "evidence_reference": f"Record {record.record_id}"
+                }
+
+                sig = SAGEImprovementSignal(
+                    signal_id=signal_id,
+                    event_id=record.record_id,
+                    metric_category="OPERATIONAL_EFFICIENCY",
+                    metric_evaluation=eval_dict,
+                    improvement_candidate=candidate,
+                    discovery_lane_input=lane_input,
+                    timestamp=time.time()
+                )
+                signals.append(sig)
+
+        # Signal 2: If evidence completeness is < 1.0 (e.g. missing signature or approval)
+        if metrics.evidence_completeness < 1.0:
+            signal_id = f"SIG-{time.strftime('%Y%m%d', time.gmtime())}-{uuid.uuid4().hex[:8]}"
+
+            eval_dict = {
+                "completeness_score": metrics.evidence_completeness,
+                "missing_fields": [
+                    field for field, present in {
+                        "git_commit": "git_commit" in record.evidence_payload,
+                        "protection_report": "protection_report" in record.evidence_payload,
+                        "cmaps_audit_id": "cmaps_audit_id" in record.evidence_payload,
+                        "human_approval_record": "human_approval_record" in record.evidence_payload
+                    }.items() if not present
+                ]
+            }
+
+            candidate_id = f"CANDIDATE-OIL-{uuid.uuid4().hex[:6].upper()}"
+            candidate = {
+                "candidate_id": candidate_id,
+                "description": "Auto-populate missing evidence fields on active workspace handoffs.",
+                "validation_criteria": "Achieve 100% evidence completeness across consecutive runs.",
+                "priority": "MEDIUM"
+            }
+
+            lane_input = {
+                "target_process": "evidence_generation",
+                "actionable_remediation": f"Implement validation hooks to block incomplete state records.",
+                "evidence_reference": f"Record {record.record_id}"
+            }
+
+            sig = SAGEImprovementSignal(
+                signal_id=signal_id,
+                event_id=record.record_id,
+                metric_category="EVIDENCE_INTEGRITY",
+                metric_evaluation=eval_dict,
+                improvement_candidate=candidate,
+                discovery_lane_input=lane_input,
+                timestamp=time.time()
+            )
+            signals.append(sig)
+
+        # Signal 3: If unnecessary reassessments exist
+        if metrics.unnecessary_reassessment_events > 0:
+            signal_id = f"SIG-{time.strftime('%Y%m%d', time.gmtime())}-{uuid.uuid4().hex[:8]}"
+
+            eval_dict = {
+                "unnecessary_reassessment_events": metrics.unnecessary_reassessment_events,
+                "repeated_execution_prevention": metrics.repeated_execution_prevention
+            }
+
+            candidate_id = f"CANDIDATE-OIL-{uuid.uuid4().hex[:6].upper()}"
+            candidate = {
+                "candidate_id": candidate_id,
+                "description": "Optimize context preservation to prevent redundant reassessment of completed actions.",
+                "validation_criteria": "Ensure redundant step count resolves to 0.",
+                "priority": "HIGH"
+            }
+
+            lane_input = {
+                "target_process": "context_rehydration",
+                "actionable_remediation": "Strictly filter pending actions against completed ones before executing subtasks.",
+                "evidence_reference": f"Record {record.record_id}"
+            }
+
+            sig = SAGEImprovementSignal(
+                signal_id=signal_id,
+                event_id=record.record_id,
+                metric_category="CONTEXT_EFFICIENCY",
+                metric_evaluation=eval_dict,
+                improvement_candidate=candidate,
+                discovery_lane_input=lane_input,
+                timestamp=time.time()
+            )
+            signals.append(sig)
+
+        # If there are signals, append them to the Discovery Candidates Register
+        if signals:
+            register_path.parent.mkdir(parents=True, exist_ok=True)
+            existing_candidates = []
+            if register_path.exists():
+                try:
+                    with open(register_path, "r", encoding="utf-8") as f:
+                        existing_candidates = json.load(f)
+                except Exception:
+                    pass
+
+            for sig in signals:
+                # Add to registry if not already present by ID
+                if not any(c.get("candidate_id") == sig.improvement_candidate["candidate_id"] for c in existing_candidates):
+                    existing_candidates.append(sig.improvement_candidate)
+
+            with open(register_path, "w", encoding="utf-8") as f:
+                json.dump(existing_candidates, f, indent=2, default=str)
+
+        return signals
+
+
 class DeveloperWorkflowOrchestrator:
     """Orchestrates end-to-end active developer workflows by connecting SAGE-CCL, Context Guard, and CMAPS."""
 
@@ -255,8 +549,8 @@ class DeveloperWorkflowOrchestrator:
         evidence_output_path: str = "evidence_capture/ccl_operational_feedback.json"
     ):
         import subprocess
-        self.session_manager = SessionStateManager()
-        self.ccl = ccl or ContinuityControlLoop(session_manager=self.session_manager)
+        self.ccl = ccl or ContinuityControlLoop(session_manager=SessionStateManager())
+        self.session_manager = self.ccl.session_manager
         self.evidence_output_path = Path(evidence_output_path)
 
         # Ensure session
@@ -334,6 +628,7 @@ class DeveloperWorkflowOrchestrator:
         supervisor_override: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """Orchestrates workspace scanning, protection evaluation, lineage/CMAPS validation, and human sign-off."""
+        start_time = time.time()
         import subprocess
         from datetime import datetime, timezone
         from sage.experimental.act.context_guard import ProtectedChangeDetector
@@ -496,6 +791,20 @@ class DeveloperWorkflowOrchestrator:
         cmaps_payload["attestation"]["signature"] = signature
         cmaps_payload["attestation"]["signer_identity"] = supervisor_id
 
+        duration = time.time() - start_time
+
+        # Instantiate SAGE-OIL and compute metrics
+        oil = SAGEOperationalIntelligenceLayer(storage_path=self.ccl.storage_path)
+        metrics = oil.compute_metrics(
+            record=promoted_ccl,
+            cmaps_payload=cmaps_payload,
+            duration=duration,
+            session=self.session
+        )
+
+        # Convert metrics/friction/opportunities to learning signals
+        signals = oil.generate_learning_signals(record=promoted_ccl, metrics=metrics)
+
         # Compile final integrated operational evidence package
         unified_evidence = {
             "orchestrator_run_id": f"orch_run_{uuid.uuid4().hex[:12]}",
@@ -508,6 +817,10 @@ class DeveloperWorkflowOrchestrator:
             "developer_telemetry": {
                 "friction": workflow_friction or [],
                 "opportunities": improvement_opportunities or []
+            },
+            "operational_intelligence": {
+                "metrics": metrics.model_dump(),
+                "learning_signals": [sig.model_dump() for sig in signals]
             }
         }
 
@@ -516,7 +829,82 @@ class DeveloperWorkflowOrchestrator:
         with open(self.evidence_output_path, "w", encoding="utf-8") as f:
             json.dump(unified_evidence, f, indent=2, default=str)
 
+        # Render Control Tower summary to operator
+        self.render_control_tower_summary(unified_evidence)
+
         return unified_evidence
+
+    def render_control_tower_summary(self, evidence_package: Dict[str, Any]) -> str:
+        """Renders a beautiful, operator-visible ASCII dashboard answering 5 core visibility questions."""
+        op_intel = evidence_package.get("operational_intelligence", {})
+        metrics = op_intel.get("metrics", {})
+        ccl_record = evidence_package.get("ccl_record", {})
+        cmaps = evidence_package.get("cmaps_payload", {})
+
+        # 1. Compute dynamic health status
+        health = "HEALTHY"
+        friction = evidence_package.get("developer_telemetry", {}).get("friction", [])
+        if friction:
+            health = "DEGRADED"
+        if evidence_package.get("status") == "REJECTED" or ccl_record.get("event_type") == "recovered":
+            if evidence_package.get("status") != "VALIDATED":
+                health = "BLOCKED"
+
+        # 2. Compute dynamic next recommended action
+        next_action = "Operational loop complete and authorized. Ready to push/integrate changes."
+        if evidence_package.get("status") == "REJECTED":
+            next_action = "Review rejected by supervisor. Revise local workspace and coordinate loop."
+        elif friction:
+            next_action = "Address observed workspace friction and optimize automated development flows."
+        elif metrics.get("evidence_completeness", 1.0) < 1.0:
+            next_action = "Verify attestation signature and auto-populate missing evidence fields."
+        elif ccl_record.get("event_type") == "recovered" and evidence_package.get("status") != "VALIDATED":
+            next_action = "Initiate recovery rollback or seek supervisor override approval."
+
+        # 3. Construct ASCII dashboard
+        dashboard = []
+        dashboard.append("======================================================================")
+        dashboard.append("            SAGE CONTROL TOWER - OPERATIONAL INTELLIGENCE VIEW        ")
+        dashboard.append("======================================================================")
+        dashboard.append(f"  [Workflow Health]       :: {health}")
+        dashboard.append(f"  [Completion Rate]      :: {metrics.get('lifecycle_completion_rate', 1.0) * 100:.1f}%")
+        dashboard.append(f"  [Recovery Success Rate]:: {metrics.get('recovery_success_rate', 1.0) * 100:.1f}%")
+        dashboard.append(f"  [Evidence Quality]     :: {metrics.get('evidence_completeness', 1.0) * 100:.1f}% (Completeness Score)")
+        dashboard.append(f"  [Cycle Duration]       :: {metrics.get('execution_cycle_duration', 0.0):.4f} seconds")
+        dashboard.append("----------------------------------------------------------------------")
+        dashboard.append("  OPERATIONAL VISIBILITY - FIVE CORE QUESTIONS:")
+        dashboard.append("----------------------------------------------------------------------")
+        dashboard.append(f"  1. WHAT HAPPENED?")
+        dashboard.append(f"     Action Taken: {ccl_record.get('action_taken')}")
+        dashboard.append(f"     Status:       {evidence_package.get('status')}")
+        dashboard.append(f"  2. WHO OWNS IT?")
+        dashboard.append(f"     Agent:        {cmaps.get('agent_identity', {}).get('name')} ({cmaps.get('agent_identity', {}).get('role')})")
+        approval_rec = ccl_record.get("evidence_payload", {}).get("human_approval_record", {})
+        if approval_rec:
+            dashboard.append(f"     Supervisor:   {approval_rec.get('supervisor_id')} (Signed: {approval_rec.get('signature')[:12]}...)")
+        else:
+            dashboard.append("     Supervisor:   PENDING AUTHORIZATION")
+        dashboard.append(f"  3. WHY IS IT HAPPENING?")
+        dashboard.append(f"     Reasoning:    {ccl_record.get('decision_reasoning')}")
+        dashboard.append(f"  4. WHAT EVIDENCE SUPPORTS IT?")
+        dashboard.append(f"     Commit:       {ccl_record.get('evidence_payload', {}).get('git_commit')[:10] if ccl_record.get('evidence_payload', {}).get('git_commit') else 'N/A'}")
+        dashboard.append(f"     CMAPS Audit:  {cmaps.get('audit_id')}")
+        protection = ccl_record.get('evidence_payload', {}).get('protection_report', {})
+        dashboard.append(f"     Safe Workspace: {not protection.get('is_violation_found', False)}")
+        dashboard.append(f"  5. WHAT HAPPENS NEXT?")
+        dashboard.append(f"     RECOMMENDED:  {next_action}")
+        dashboard.append("----------------------------------------------------------------------")
+        if friction:
+            dashboard.append("  BOTTLENECK INDICATORS:")
+            for idx, f in enumerate(friction, 1):
+                dashboard.append(f"     - [{f.get('severity', 'MEDIUM').upper()}] {f.get('type')}: {f.get('detail')}")
+        if metrics.get("unnecessary_reassessment_events", 0) > 0:
+            dashboard.append(f"     - [WARNING] Detected {metrics.get('unnecessary_reassessment_events')} unnecessary reassessments.")
+        dashboard.append("======================================================================")
+
+        summary_str = "\n".join(dashboard)
+        print(summary_str)
+        return summary_str
 
 
 if __name__ == "__main__":
