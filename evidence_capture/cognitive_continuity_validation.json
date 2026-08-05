@@ -1,6 +1,6 @@
 {
   "report_id": "cognitive_continuity_validation",
-  "timestamp": 1785962192.9527264,
+  "timestamp": 1785963229.2780178,
   "state_loaded": {
     "session_id": "session_evidence_generation",
     "cognitive_state_dump": {
@@ -51,7 +51,7 @@
       },
       "confidence_state": {
         "overall_confidence": 0.5,
-        "last_updated": 1785962192.895502,
+        "last_updated": 1785963229.226715,
         "notes": "State loaded and reconstructed from session state and active mission queue"
       },
       "next_action": {
