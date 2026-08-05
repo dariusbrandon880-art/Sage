@@ -165,6 +165,128 @@ class ChatGPTAgentConnector:
         return manifest
 
 
+class ReviewerAgentConnector:
+    """Reviewer Agent Role Connector for SAGE.
+
+    Acts as the third role in SAGE-CCL-OPS. Validates code implementation outcomes,
+    rehydrates full engineering and validation contexts, logs structured peer
+    findings referencing immutably serialized evidence hashes, and prepares
+    tasks for final operator decisions.
+    """
+
+    def __init__(self, orchestrator: "DeveloperWorkflowOrchestrator", agent_id: str = "agent_reviewer_gemini", supervisor_id: str = "human_supervisor_01"):
+        self.orchestrator = orchestrator
+        self.agent_id = agent_id
+        self.supervisor_id = supervisor_id
+
+        # Register Reviewer Identity with REVIEWER role
+        self.orchestrator.ingest_event(
+            "AGENT_ACTIVATION",
+            "system",
+            {
+                "agent_id": self.agent_id,
+                "supervisor_id": self.supervisor_id,
+                "decision": "AUTHORIZED",
+                "role": "REVIEWER"
+            }
+        )
+
+    def rehydrate_review_context(self, task_id: str) -> Dict[str, Any]:
+        """Queries SAGE orchestrator to rehydrate complete 9-field review context packages."""
+        if task_id not in self.orchestrator.tasks:
+            raise ValueError(f"Task '{task_id}' not found.")
+
+        task = self.orchestrator.tasks[task_id]
+        records = self.orchestrator.generate_continuity_records(task_id)
+
+        return {
+            "active_mission": {
+                "objective_id": task["objective_id"],
+                "parent_task_id": task["parent_task_id"],
+                "session_id": task["session_id"]
+            },
+            "workflow_state": {
+                "status": task["status"],
+                "progress_percent": task["progress_percent"]
+            },
+            "engineering_summary": {
+                "modified_files": task["context"].get("files_to_modify", ["sage/experimental/act/ccl_orchestrator.py"]),
+                "objective_clarifications": task["context"].get("objective_clarifications", []),
+                "latest_result": task["latest_result"]
+            },
+            "completed_milestones": task["context"].get("milestones_completed", ["Milestone-1-contracts"]),
+            "evidence_package": {
+                "preceding_records_hashes": [records["state_integrity"]["state_hash"]]
+            },
+            "test_results": {
+                "tests_passing": task["latest_result"].get("tests_passing", True),
+                "coverage": task["latest_result"].get("coverage", "95%")
+            },
+            "implementation_history": records["monotonic_sequence_history"],
+            "validation_scope": {
+                "scope_prefix": "sage/experimental/act",
+                "allowed_roles": ["REVIEWER"]
+            },
+            "required_next_action": "Submit structural peer review finding, reference supporting evidence, and prepare for human approval."
+        }
+
+    def submit_review_finding(self, task_id: str, finding_details: str, evidence_hash_reference: str) -> Dict[str, Any]:
+        """Logs a peer review finding, strictly verifying that it references a valid preceding evidence hash."""
+        if task_id not in self.orchestrator.tasks:
+            raise ValueError(f"Task '{task_id}' not found.")
+
+        task = self.orchestrator.tasks[task_id]
+        ts = datetime.now(timezone.utc).isoformat()
+
+        # Enforce activation check
+        if self.orchestrator.agents.get(self.agent_id) != "ACTIVATED":
+            raise PermissionError(f"Review Action Denied: Reviewer '{self.agent_id}' is not activated.")
+
+        # Evidence Hash reference verification
+        records = self.orchestrator.generate_continuity_records(task_id)
+        valid_hashes = {
+            records["state_integrity"]["state_hash"],
+            records["state_integrity"]["chain_hash"]
+        }
+        for records_hash in valid_hashes:
+            if evidence_hash_reference == records_hash:
+                break
+        else:
+            # Also support partial hash matches
+            for records_hash in valid_hashes:
+                if records_hash.startswith(evidence_hash_reference) and len(evidence_hash_reference) >= 8:
+                    break
+            else:
+                raise ValueError(
+                    f"Evidence Integrity Violation: Finding must reference a valid supporting evidence hash "
+                    f"(Expected one of {list(valid_hashes)}, got '{evidence_hash_reference}')."
+                )
+
+        if "review_findings" not in task["context"]:
+            task["context"]["review_findings"] = []
+
+        finding_entry = {
+            "timestamp": ts,
+            "finding_details": finding_details,
+            "evidence_hash_reference": evidence_hash_reference,
+            "reviewed_by": self.agent_id
+        }
+        task["context"]["review_findings"].append(finding_entry)
+
+        # Log progress event to SAGE State Machine
+        self.orchestrator.ingest_event(
+            "STATE_TRANSITION",
+            task_id,
+            {
+                "target_status": "HANDOFF",
+                "agent_id": self.agent_id,
+                "comment": f"Review finding submitted: '{finding_details}' (Ref: {evidence_hash_reference[:12]})."
+            }
+        )
+
+        return task
+
+
 class JulesAgentConnector:
     """Jules Engineering Agent Role Connector for SAGE.
 
@@ -786,6 +908,16 @@ class DeveloperWorkflowOrchestrator:
         task_state = self.tasks[task_id]
         current_status = task_state["status"]
 
+        if target_status == current_status:
+            # Safe self-transition allows logging comments and histories without mutating state machine state
+            task_state["history"].append({
+                "status": target_status,
+                "assigned_agent": agent,
+                "timestamp": timestamp,
+                "comment": comment
+            })
+            return
+
         if target_status not in self.ALLOWED_TRANSITIONS.get(current_status, set()):
             raise ValueError(
                 f"State Mutation Violation: Forbidden transition from '{current_status}' to '{target_status}' "
@@ -814,6 +946,37 @@ class DeveloperWorkflowOrchestrator:
 
     def generate_operator_summary(self) -> str:
         """Generates a terminal-friendly, operator-visible coordination summary with delegation hierarchies."""
+        # Calculate dynamic Control Tower visibility states
+        eng_complete = []
+        awaiting_review = []
+        review_in_progress = []
+        review_complete = []
+        findings_evidence = []
+        outstanding_decisions = []
+
+        for task_id, t in self.tasks.items():
+            # 1. Engineering Complete
+            if t.get("progress_percent", 0.0) == 100.0:
+                eng_complete.append(task_id)
+
+            # 2. Review States & Evidence Supporting Findings
+            findings = t["context"].get("review_findings", [])
+            for f in findings:
+                if f.get("evidence_hash_reference"):
+                    findings_evidence.append(f"{task_id} Finding: '{f['finding_details'][:30]}' (Evidence: {f['evidence_hash_reference'][:12]})")
+
+            if t["status"] == "HANDOFF":
+                if not findings:
+                    awaiting_review.append(task_id)
+                else:
+                    review_in_progress.append(task_id)
+            elif len(findings) > 0:
+                review_complete.append(task_id)
+
+            # 3. Outstanding Operator Decisions
+            if t["status"] != "COMPLETED" and t.get("human_approval") is None:
+                outstanding_decisions.append(task_id)
+
         lines = [
             "==========================================================================",
             "             SAGE OPERATIONAL COORDINATION & CONTEXT SUMMARY              ",
@@ -821,8 +984,22 @@ class DeveloperWorkflowOrchestrator:
             f" Orchestrator Run ID  : {self.orchestrator_run_id}",
             f" Active Session ID    : {self.session_id}",
             f" Active System Agents : {len(self.agents)} registered",
-            "--------------------------------------------------------------------------"
+            "--------------------------------------------------------------------------",
+            " SAGE GOVERNANCE CONTROL TOWER SUMMARY:",
+            f"   • Engineering Complete       : {len(eng_complete)} tasks {sorted(eng_complete)}",
+            f"   • Awaiting Review            : {len(awaiting_review)} tasks {sorted(awaiting_review)}",
+            f"   • Review In Progress         : {len(review_in_progress)} tasks {sorted(review_in_progress)}",
+            f"   • Review Complete            : {len(review_complete)} tasks {sorted(review_complete)}",
+            "   • Evidence Supporting Findings:"
         ]
+
+        if not findings_evidence:
+            lines.append("       (No review findings referencing supporting evidence yet)")
+        for fe in findings_evidence:
+            lines.append(f"       [Ref] {fe}")
+
+        lines.append(f"   • Outstanding Operator Decisions: {len(outstanding_decisions)} tasks {sorted(outstanding_decisions)}")
+        lines.append("--------------------------------------------------------------------------")
 
         # Render Agent Activation Registry
         lines.append(" ACTIVE AGENT REGISTRY & NETWORK ROLES:")

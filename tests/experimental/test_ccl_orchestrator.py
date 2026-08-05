@@ -8,6 +8,7 @@ from sage.experimental.act.ccl_orchestrator import (
     DeveloperWorkflowOrchestrator,
     ChatGPTAgentConnector,
     JulesAgentConnector,
+    ReviewerAgentConnector,
 )
 
 
@@ -1182,3 +1183,157 @@ def test_repeated_execution_and_extended_continuity_hardening(tmp_path):
     # 4. WHAT HAPPENS NEXT?
     # Proven by COMPLETED status indicating review readiness for next stages
     assert record["task_state_snapshot"]["status"] == "COMPLETED"
+
+
+def test_three_role_governed_workflow_lifecycle(tmp_path):
+    """Validate SAGE first complete governed development workflow by introducing the Reviewer role.
+
+    Covers:
+      1. First Three-Role Operational Lifecycle (Mission -> Coordinator -> Executor -> Evidence -> Reviewer -> Human Gate -> Outcome).
+      2. Review Context Package Verification (perfect rehydration of all 9 fields).
+      3. Review Evidence Hash Integration (every review finding references supporting evidence).
+      4. Control Tower Expansion (engineering complete, awaiting review, review in progress, review complete, evidence, decisions).
+      5. Operator Governance & Human Override checks.
+    """
+    evidence_file = tmp_path / "ccl_three_role_lifecycle.json"
+    orch = DeveloperWorkflowOrchestrator(session_id="session_three_role_governed")
+
+    # Activate three roles via Activation Registry
+    chatgpt = ChatGPTAgentConnector(orch, agent_id="agent_chatgpt_coord")
+    jules = JulesAgentConnector(orch, agent_id="agent_jules_exec")
+    reviewer = ReviewerAgentConnector(orch, agent_id="agent_reviewer_gemini")
+
+    # --- STEP 1: Mission Coordination (ChatGPT) ---
+    chatgpt.align_workflow_state(
+        "INITIATE_TASK",
+        "task_three_role_loop",
+        {
+            "objective_id": "obj_governed_lifecycle",
+            "initial_context": {
+                "files_to_modify": ["sage/experimental/act/ccl_orchestrator.py"],
+                "milestones_completed": ["Milestone-1-contracts", "Milestone-2-ccl-ops"]
+            },
+            "lineage_references": ["ADR-001", "SAGE-ACT-MP-2.0"]
+        }
+    )
+
+    # Coordinator moves task to ACTIVE before handing off to Executor
+    chatgpt.align_workflow_state("START_EXECUTION", "task_three_role_loop", {"comment": "Coordinator activates task before handoff."})
+    assert orch.tasks["task_three_role_loop"]["status"] == "ACTIVE"
+
+    # Coordinator hands off the task to the Jules Executor to transfer ownership
+    chatgpt.generate_handoff_manifest("task_three_role_loop", "agent_jules_exec")
+    assert orch.tasks["task_three_role_loop"]["status"] == "HANDOFF"
+    assert orch.tasks["task_three_role_loop"]["assigned_agent"] == "agent_jules_exec"
+
+    # Jules transitions the task state back to ACTIVE to begin engineering action
+    jules.align_task_state("task_three_role_loop", "ACTIVE", "Jules starts code execution on assigned work.")
+    assert orch.tasks["task_three_role_loop"]["status"] == "ACTIVE"
+
+    # Assert Control Tower State initially: Outstanding Operator Decisions exists, Review not started
+    summary_init = orch.generate_operator_summary()
+    assert "• Outstanding Operator Decisions: 1 tasks ['task_three_role_loop']" in summary_init
+    assert "• Engineering Complete       : 0" in summary_init
+    assert "• Review Complete            : 0" in summary_init
+
+    # --- STEP 2: Scoped Engineering Execution (Jules) ---
+    jules.report_progress(
+        task_id="task_three_role_loop",
+        progress_percent=100.0,
+        result_payload={"git_hash": "a8c9b201", "tests_passing": True, "coverage": "98%"},
+        feedback="Jules completes structural coding changes."
+    )
+
+    # Jules generates context-preserving handoff manifest to transfer task to Reviewer
+    jules.generate_handoff_manifest("task_three_role_loop", "agent_reviewer_gemini")
+    assert orch.tasks["task_three_role_loop"]["status"] == "HANDOFF"
+    assert orch.tasks["task_three_role_loop"]["assigned_agent"] == "agent_reviewer_gemini"
+
+    # Assert Control Tower: Engineering Complete and Awaiting Review
+    summary_eng_done = orch.generate_operator_summary()
+    assert "• Engineering Complete       : 1 tasks ['task_three_role_loop']" in summary_eng_done
+    assert "• Awaiting Review            : 1 tasks ['task_three_role_loop']" in summary_eng_done
+
+    # --- STEP 3: Review Context Package Rehydration (Reviewer) ---
+    review_ctx = reviewer.rehydrate_review_context("task_three_role_loop")
+
+    # Assert all 9 fields are perfectly present:
+    assert review_ctx["active_mission"]["objective_id"] == "obj_governed_lifecycle"  # Field 1: Active Mission
+    assert review_ctx["workflow_state"]["status"] == "HANDOFF"                       # Field 2: Workflow State
+    assert "ccl_orchestrator.py" in review_ctx["engineering_summary"]["modified_files"][0] # Field 3: Engineering Summary
+    assert "Milestone-2-ccl-ops" in review_ctx["completed_milestones"]              # Field 4: Completed Milestones
+    assert len(review_ctx["evidence_package"]["preceding_records_hashes"][0]) == 64  # Field 5: Evidence Package
+    assert review_ctx["test_results"]["tests_passing"] is True                       # Field 6: Test Results
+    assert len(review_ctx["implementation_history"]) >= 4                             # Field 7: Implementation History
+    assert review_ctx["validation_scope"]["scope_prefix"] == "sage/experimental/act" # Field 8: Validation Scope
+    assert "Submit structural peer review" in review_ctx["required_next_action"]     # Field 9: Required Next Action
+
+    # --- STEP 4: Review Evidence Hashing Integration ---
+    preceding_hash = review_ctx["evidence_package"]["preceding_records_hashes"][0]
+
+    # Submitting finding with invalid evidence hash reference must fail
+    with pytest.raises(ValueError, match="Evidence Integrity Violation"):
+        reviewer.submit_review_finding(
+            task_id="task_three_role_loop",
+            finding_details="Verify AST bounds looks secure.",
+            evidence_hash_reference="invalid_unverified_hash_override"
+        )
+
+    # Submitting finding referencing valid preceding evidence hash succeeds
+    reviewer.submit_review_finding(
+        task_id="task_three_role_loop",
+        finding_details="AST boundary safety and isolation verified clean.",
+        evidence_hash_reference=preceding_hash
+    )
+
+    # Assert Control Tower: Review In Progress & Evidence Supporting Findings displayed
+    summary_review = orch.generate_operator_summary()
+    assert "• Review In Progress         : 1 tasks ['task_three_role_loop']" in summary_review
+    assert f"task_three_role_loop Finding: 'AST boundary safety and isolat' (Evidence: {preceding_hash[:12]})" in summary_review
+
+    # --- STEP 5: Final Operator Decision Validation & Oversight (Human Gate) ---
+    # Final approval must require a manual operator oversight gate override before task completes
+    with pytest.raises(PermissionError, match="Cannot complete task.*without.*AUTHORIZED.*human checkpoint"):
+        orch.ingest_event(
+            "STATE_TRANSITION",
+            "task_three_role_loop",
+            {"target_status": "COMPLETED", "agent_id": "agent_reviewer_gemini"}
+        )
+
+    # Human Gate review authorization approved
+    orch.ingest_event(
+        "HUMAN_APPROVAL",
+        "task_three_role_loop",
+        {
+            "supervisor_id": "human_supervisor_01",
+            "decision": "AUTHORIZED",
+            "comments": "End-to-end 3-role governed lifecycle validated."
+        }
+    )
+
+    # Peer reviewer transitions task to COMPLETED
+    orch.ingest_event(
+        "STATE_TRANSITION",
+        "task_three_role_loop",
+        {
+            "target_status": "COMPLETED",
+            "agent_id": "agent_reviewer_gemini",
+            "comment": "Final sign-off on three-role governed lifecycle."
+        }
+    )
+
+    assert orch.tasks["task_three_role_loop"]["status"] == "COMPLETED"
+
+    # Assert Control Tower: Outstanding Operator Decisions is now zero, Review Complete is 1
+    summary_final = orch.generate_operator_summary()
+    assert "• Outstanding Operator Decisions: 0 tasks []" in summary_final
+    assert "• Review Complete            : 1 tasks ['task_three_role_loop']" in summary_final
+
+    # Export final SAGE evidence package
+    evidence = orch.export_evidence(str(evidence_file))
+    assert evidence["active_tasks"]["task_three_role_loop"]["status"] == "COMPLETED"
+
+    # Ensure review findings are recorded inside evidence package
+    findings_recorded = evidence["active_tasks"]["task_three_role_loop"]["context"]["review_findings"]
+    assert len(findings_recorded) == 1
+    assert findings_recorded[0]["evidence_hash_reference"] == preceding_hash

@@ -1,8 +1,8 @@
 """Run script for SAGE Continuity Control Loop (SAGE-CCL) Operational Coordination Engine.
 
-Executes a complete coordinated loop involving ChatGPTAgentConnector (COORDINATOR)
-and JulesAgentConnector (EXECUTOR), generates operational intelligence summaries,
-and exports the formal SAGE evidence package.
+Executes a complete coordinated loop involving ChatGPTAgentConnector (COORDINATOR),
+JulesAgentConnector (EXECUTOR), and ReviewerAgentConnector (REVIEWER), generates
+operational control tower and intelligence summaries, and exports the formal SAGE evidence package.
 """
 
 import sys
@@ -15,21 +15,23 @@ from sage.experimental.act.ccl_orchestrator import (
     DeveloperWorkflowOrchestrator,
     ChatGPTAgentConnector,
     JulesAgentConnector,
+    ReviewerAgentConnector,
 )
 
 
 def run_coordination_loop():
-    print("--- Starting SAGE Continuity Control Loop (SAGE-CCL-OPS) Run ---")
+    print("--- Starting SAGE Three-Role Governed Operational Loop (SAGE-CCL-OPS) Run ---")
 
     # Initialize Orchestrator
     orch = DeveloperWorkflowOrchestrator(session_id="session_ccl_ops_2026")
 
     # 1. Register and Activate Agents
-    print("[1/6] Activating Agent Network Registry & Connectors...")
+    print("[1/7] Activating Agent Network Registry & Connectors...")
     chatgpt = ChatGPTAgentConnector(orch, agent_id="agent_chatgpt_coord")
     jules = JulesAgentConnector(orch, agent_id="agent_jules_exec")
+    reviewer = ReviewerAgentConnector(orch, agent_id="agent_reviewer_gemini")
 
-    # Activate additional Analyst and Reviewer agents
+    # Activate additional Analyst agent
     orch.ingest_event(
         "AGENT_ACTIVATION",
         "system",
@@ -40,19 +42,9 @@ def run_coordination_loop():
             "role": "ANALYST",
         },
     )
-    orch.ingest_event(
-        "AGENT_ACTIVATION",
-        "system",
-        {
-            "agent_id": "agent_reviewer_gemini",
-            "supervisor_id": "human_supervisor_01",
-            "decision": "AUTHORIZED",
-            "role": "REVIEWER",
-        },
-    )
 
     # 2. ChatGPT Coordinator Rehydrates Mission Context and Initiates Task
-    print("[2/6] ChatGPT Coordinated Context Rehydration & Task Initiation...")
+    print("[2/7] ChatGPT Coordinated Context Rehydration & Task Initiation...")
     rehydrated = chatgpt.rehydrate_context()
     print(f"      Rehydrated Objectives: {rehydrated['rehydrated_objectives']}")
     print(f"      Lineage Baselines    : {rehydrated['lineage_baselines']}")
@@ -77,7 +69,7 @@ def run_coordination_loop():
     )
 
     # 3. Task Delegation to Executor (Jules) and Analyst (Claude)
-    print("[3/6] Dynamic Task Delegation Tree Assembly...")
+    print("[3/7] Dynamic Task Delegation Tree Assembly...")
     orch.delegate_task(
         parent_task_id="task_ops_parent",
         child_task_id="subtask_exec",
@@ -104,7 +96,7 @@ def run_coordination_loop():
     )
 
     # 4. Jules Rehydrates Engineering Context, Commits State, and Reports Execution Progress
-    print("[4/6] Jules Engineering Agent Context Rehydration & Execution...")
+    print("[4/7] Jules Engineering Agent Context Rehydration & Execution...")
     jules_ctx = jules.rehydrate_engineering_context("subtask_exec")
     print(f"      Jules Active Mission: {jules_ctx['active_mission']}")
     print(f"      Jules Assigned Scope: {jules_ctx['assigned_engineering_responsibility']['target_files']}")
@@ -139,19 +131,32 @@ def run_coordination_loop():
     )
 
     # 5. Peer Review and Coordinated Agent Handoff Manifest Assembly
-    print("[5/6] Context-Preserving Peer Handoff...")
+    print("[5/7] Context-Preserving Peer Handoff...")
     # Generate the handoff manifest to transfer subtask_exec from Jules to Reviewer
     jules.generate_handoff_manifest("subtask_exec", "agent_reviewer_gemini")
 
-    # 6. Human Authorization Checkpoints & Multi-Agent Completion
-    print("[6/6] Human Checkpoint Sign-offs & Workflow Completion...")
+    # 6. Review Context package Rehydration & Peer Finding submission (Gemini Reviewer)
+    print("[6/7] Reviewer Context Rehydration & Evidence-Backed Peer Review...")
+    review_ctx = reviewer.rehydrate_review_context("subtask_exec")
+    preceding_hash = review_ctx["evidence_package"]["preceding_records_hashes"][0]
+    print(f"      Reviewer Active Mission  : {review_ctx['active_mission']}")
+    print(f"      Reviewer Preceding Hash  : {preceding_hash[:16]}")
+
+    reviewer.submit_review_finding(
+        task_id="subtask_exec",
+        finding_details="AST boundary safety and isolation verified clean.",
+        evidence_hash_reference=preceding_hash
+    )
+
+    # 7. Human Authorization Checkpoints & Multi-Agent Completion
+    print("[7/7] Human Checkpoint Sign-offs & Workflow Completion...")
     orch.ingest_event(
         "HUMAN_APPROVAL",
         "subtask_exec",
         {
             "supervisor_id": "human_supervisor_01",
             "decision": "AUTHORIZED",
-            "comments": "Code implementation is verified secure.",
+            "comments": "Code implementation is verified secure and reviewed clean.",
         },
     )
     orch.ingest_event(
@@ -160,7 +165,7 @@ def run_coordination_loop():
         {
             "target_status": "COMPLETED",
             "agent_id": "agent_reviewer_gemini",
-            "comment": "Reviewer signed off on code refactoring.",
+            "comment": "Reviewer signed off on code refactoring and findings.",
         },
     )
 
@@ -217,7 +222,7 @@ def run_coordination_loop():
     print(f"\n[✔] SAGE Evidence Package exported to: {evidence_path}")
 
     # Output terminal view
-    print(orch.intelligence.generate_operator_intelligence_view())
+    print(orch.generate_operator_summary())
 
 
 if __name__ == "__main__":
