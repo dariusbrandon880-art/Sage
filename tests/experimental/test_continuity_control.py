@@ -628,3 +628,72 @@ def test_real_workflow_optimization_cycle(tmp_path):
     assert "How are we improving?" in dashboard_2
     assert f"[Duplicate Work Reduc] :: +100.00%" in dashboard_2
     assert "[Cumulative Optimizer]" in dashboard_2
+
+
+def test_external_agent_connection_bridge(tmp_path):
+    """Verify SAGE state retrieval and write-back connection bridge for external agents.
+
+    Validates:
+    - SAGE Interface Contract: retrieve_external_agent_context retrieves mission state,
+      workflow state, ownership, authorization boundaries, evidence history, and next required actions.
+    - Write-Back Path: submit_external_agent_output validates agent permissions,
+      updates session state, captures evidence via SAGE-CCL, and returns validated coordination results.
+    """
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    evidence_output = tmp_path / "evidence" / "ccl_bridge_feedback.json"
+
+    # Set up loop and orchestrator
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_bridge_test",
+        objective="obj_test_external_bridge",
+        ccl=ccl,
+        evidence_output_path=str(evidence_output)
+    )
+
+    # 1. Test Interface Contract (Retrieve Context)
+    context = orchestrator.retrieve_external_agent_context()
+    assert context["active_mission_state"]["session_id"] == "session_bridge_test"
+    assert "obj_test_external_bridge" in context["active_mission_state"]["active_objectives"]
+    assert context["ownership"]["assigned_agent"] == "agent_jules_sage"
+    assert "sage/runtime/" in context["authorization_boundaries"]["protected_namespaces"]
+    assert context["next_required_action"] == "Fulfill active objectives and record initial baseline coordination"
+
+    # 2. Test Write-Back Path (Submit Agent Output)
+    # Attempt unauthorized agent write-back (should fail)
+    import pytest
+    with pytest.raises(PermissionError, match="Unauthorized agent"):
+        orchestrator.submit_external_agent_output(
+            agent_id="agent_rogue_hacker",
+            action_taken="Mutate core",
+            decision_reasoning="Bypass"
+        )
+
+    # Submit valid agent output
+    result = orchestrator.submit_external_agent_output(
+        agent_id="agent_coord_chatgpt",
+        action_taken="ChatGPT external session coordination complete",
+        decision_reasoning="Link external agent sessions into durable SAGE state",
+        completed_action="task_bridge_setup",
+        pending_action="task_bridge_verify"
+    )
+
+    # Validate state update
+    assert "task_bridge_setup" in orchestrator.session.completed_actions
+    assert "task_bridge_verify" in orchestrator.session.pending_actions
+
+    # Validate SAGE-CCL evidence generation
+    assert result["status"] == "VALIDATED"
+    assert result["ccl_record"]["action_taken"] == "ChatGPT external session coordination complete"
+    assert result["ccl_record"]["evidence_payload"]["human_approval_record"]["supervisor_id"] == "supervisor_external_agent"
+
+    # Validate Google account link and workspace synchronization
+    assert "google_account_link" in result
+    assert result["google_account_link"]["agent_identity_linked"] == "agent_coord_chatgpt"
+    assert result["google_account_link"]["linked_account_status"] in ["synced", "dry_run_authorized", "offline_fallback"]
