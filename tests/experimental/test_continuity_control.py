@@ -697,3 +697,96 @@ def test_external_agent_connection_bridge(tmp_path):
     assert "google_account_link" in result
     assert result["google_account_link"]["agent_identity_linked"] == "agent_coord_chatgpt"
     assert result["google_account_link"]["linked_account_status"] in ["synced", "dry_run_authorized", "offline_fallback"]
+
+
+def test_sage_intelligence_augmentation_and_continuity_layer(tmp_path):
+    """Verify SAGE Intelligence Augmentation, Agent Binding, Search, Reasoning, and Rehydration.
+
+    Validates:
+    - Reusable Agent Runtime Binding (ChatGPT, Jules, Claude, Gemini).
+    - Super Search Capability (source ref, confidence, relevance mapping).
+    - SAGE Context Enhancement before agent execution.
+    - Evidence-Aware Reasoning with unsupported conclusions filtration.
+    - Persistent state restoration (Context rehydration and session recovery).
+    """
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    evidence_output = tmp_path / "evidence" / "ccl_intel_feedback.json"
+
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_intel_test",
+        objective="obj_test_intel_layer",
+        ccl=ccl,
+        evidence_output_path=str(evidence_output)
+    )
+
+    # 1. Test Agent Runtime Binding
+    binding_chatgpt = orchestrator.register_agent_runtime_binding(
+        agent_id="agent_coord_chatgpt",
+        role="Coordinator",
+        governance_tier="TIER_1_COORDINATOR"
+    )
+    assert binding_chatgpt["role"] == "Coordinator"
+    assert binding_chatgpt["governance_tier"] == "TIER_1_COORDINATOR"
+
+    binding_jules = orchestrator.register_agent_runtime_binding(
+        agent_id="agent_exec_jules",
+        role="Executor",
+        governance_tier="TIER_1_COORDINATOR"
+    )
+    assert binding_jules["role"] == "Executor"
+
+    # 2. Execute an initial run to establish persistent history record
+    result = orchestrator.execute_active_development_coordination(
+        action_taken="Initial setup action for intelligence test",
+        decision_reasoning="Setup baseline records",
+        workflow_friction=[{"type": "cognitive_load", "detail": "manual rehydration of files", "severity": "medium"}],
+        improvement_opportunities=["Auto-scan workspace"]
+    )
+    record_id = result["ccl_record"]["record_id"]
+
+    # 3. Test SAGE Super Search
+    search_results = orchestrator.execute_super_search("cognitive_load")
+    assert len(search_results) >= 1
+    match = search_results[0]
+    assert match["source_reference"] == record_id
+    assert match["confidence"] > 0.0
+    assert "Matches friction" in match["relevance"]
+
+    # 4. Test Context Enhancement
+    enhanced_context = orchestrator.enhance_agent_execution_context()
+    assert enhanced_context["current_mission"]["session_id"] == "session_intel_test"
+    assert "Frozen Core Production Protection active." in enhanced_context["required_constraints"]
+    assert record_id in enhanced_context["relevant_history"]
+
+    # 5. Test Evidence-Aware Reasoning
+    reasoning = orchestrator.request_evidence_aware_reasoning("How to address manual rehydration friction?")
+    assert reasoning["question"] == "How to address manual rehydration friction?"
+    assert len(reasoning["evidence_retrieved"]) >= 1
+    assert "modular workspace caching" in reasoning["advisory_recommendation"]["description"]
+    assert reasoning["advisory_recommendation"]["confidence_level"] == 0.85
+
+    # Filter unsupported conclusion (empty results query)
+    empty_reasoning = orchestrator.request_evidence_aware_reasoning("unrelated random keyword")
+    assert "No preceding operational evidence found" in empty_reasoning["advisory_recommendation"]["description"]
+    assert empty_reasoning["advisory_recommendation"]["confidence_level"] == 0.1
+
+    # 6. Test Persistent state rehydration (Session reset simulation)
+    new_orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_intel_test_recovered",
+        objective="obj_fresh_unloaded",
+        ccl=ContinuityControlLoop(session_manager=SessionStateManager(storage_path=str(session_storage)), storage_path=str(record_storage)),
+        evidence_output_path=str(evidence_output)
+    )
+
+    rehydrated = new_orchestrator.rehydrate_persistent_session_state()
+    assert rehydrated["restored"] is True
+    assert rehydrated["restored_record_id"] == record_id
+    assert "obj_test_intel_layer" in rehydrated["active_mission"]
+    assert rehydrated["workflow_position"]["completed_actions"] == []

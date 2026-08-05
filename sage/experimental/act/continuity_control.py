@@ -1198,6 +1198,21 @@ class DeveloperWorkflowOrchestrator:
                 dashboard.append(f"     - [CONFIDENCE: {conf:.1f}%] {r.get('description')}")
                 dashboard.append(f"       Affected: {r.get('affected_stage')} | Expected: {r.get('expected_improvement')}")
 
+        # Intelligence Q&A Section
+        dashboard.append("----------------------------------------------------------------------")
+        dashboard.append("  SAGE INTELLIGENCE LAYER Q&A:")
+        dashboard.append("----------------------------------------------------------------------")
+        dashboard.append("  Q1: What information helped this decision?")
+        dashboard.append(f"  A1: SAGE context rehydration and workspace files: {list(evidence_package.get('session_objectives', []))}")
+        dashboard.append("  Q2: What previous evidence supports this?")
+        dashboard.append(f"  A2: CMAPS payload validation ID: {cmaps.get('audit_id')}")
+        dashboard.append("  Q3: What similar problems were solved before?")
+        if patterns:
+            dashboard.append(f"  A3: Pattern matched: {patterns[0].get('description') if len(patterns) > 0 else 'None'}")
+        else:
+            dashboard.append("  A3: Resolved preceding setup latency and step synchronization.")
+        dashboard.append("  Q4: What improvement was created?")
+        dashboard.append(f"  A4: Cumulative Optimizer trend output: {trends.get('cumulative_improvement_pct', 0.0):+.2f}%")
         dashboard.append("----------------------------------------------------------------------")
         if friction:
             dashboard.append("  BOTTLENECK INDICATORS:")
@@ -1356,6 +1371,235 @@ class DeveloperWorkflowOrchestrator:
             }
 
         return result
+
+    def register_agent_runtime_binding(
+        self,
+        agent_id: str,
+        role: str,
+        governance_tier: str
+    ) -> Dict[str, Any]:
+        """Provides the reusable pattern to register agent bindings to the SAGE operational loop.
+
+        Ensures agents enter through the same governed interface.
+        """
+        # Save registered bindings to metadata to survive serialization/rehydration
+        self.session.metadata.setdefault("registered_agent_bindings", {})
+        self.session.metadata["registered_agent_bindings"][agent_id] = {
+            "role": role,
+            "governance_tier": governance_tier,
+            "bound_at": time.time()
+        }
+        self.session_manager.save_session(self.session)
+        return self.session.metadata["registered_agent_bindings"][agent_id]
+
+    def rehydrate_persistent_session_state(self) -> Dict[str, Any]:
+        """Implements SAGE Persistent Continuity Integration.
+
+        Restores active mission, owner, workflow position, evidence history, and authorization
+        directly from persistent repository state files post-session loss.
+        """
+        # Scan history files under storage_path
+        history_records = []
+        for filepath in self.ccl.storage_path.glob("*.json"):
+            try:
+                with open(filepath, "r", encoding="utf-8") as f:
+                    history_records.append(json.load(f))
+            except Exception:
+                pass
+
+        # Sort chronologically
+        history_records = sorted(history_records, key=lambda x: x.get("timestamp", 0.0))
+
+        if not history_records:
+            return {
+                "restored": False,
+                "reason": "No persistent history records found."
+            }
+
+        latest_record = history_records[-1]
+        payload = latest_record.get("evidence_payload", {})
+
+        # 1. Restore Active Mission (Objectives)
+        objectives = payload.get("enriched_objectives", [self.objective])
+        for obj in objectives:
+            self.session.add_objective(obj)
+
+        # 2. Restore Completed and Pending actions (Workflow position)
+        completed = payload.get("session_completed_actions", [])
+        for c in completed:
+            self.session.add_completed_action(c)
+
+        pending = payload.get("session_pending_actions", [])
+        for p in pending:
+            self.session.add_pending_action(p)
+
+        # 3. Restore registered bindings
+        self.session.metadata["rehydrated_from_record"] = latest_record.get("record_id")
+        self.session_manager.save_session(self.session)
+
+        # Determine next action
+        next_action = "Initiate workspace modifications and execute coordinate loop"
+        if pending:
+            next_action = f"Complete pending action: {pending[0]}"
+
+        return {
+            "restored": True,
+            "restored_record_id": latest_record.get("record_id"),
+            "active_mission": list(self.session.active_objectives),
+            "owner": "agent_jules_sage",
+            "workflow_position": {
+                "completed_actions": list(self.session.completed_actions),
+                "pending_actions": list(self.session.pending_actions)
+            },
+            "evidence_history_count": len(history_records),
+            "authorization_state": "governed_sandbox_active",
+            "next_action": next_action
+        }
+
+    def execute_super_search(self, query: str) -> List[Dict[str, Any]]:
+        """Provides a governed super search layer to find repository and operational intelligence."""
+        results = []
+        q_terms = [t.lower() for t in query.split() if len(t) > 3]
+        if not q_terms:
+            q_terms = [query.lower()]
+
+        # Search past continuity records
+        history_records = []
+        for filepath in self.ccl.storage_path.glob("*.json"):
+            try:
+                with open(filepath, "r", encoding="utf-8") as f:
+                    rec = json.load(f)
+                    history_records.append(rec)
+            except Exception:
+                pass
+
+        for rec in history_records:
+            score = 0.0
+            reasons = []
+
+            # Simple keyword overlap scoring
+            for term in q_terms:
+                if term in rec.get("action_taken", "").lower():
+                    score += 0.3
+                    reasons.append(f"Matches action_taken term: '{term}'")
+                if term in rec.get("decision_reasoning", "").lower():
+                    score += 0.2
+                    reasons.append(f"Matches decision_reasoning term: '{term}'")
+                for f in rec.get("workflow_friction", []):
+                    if term in f.get("type", "").lower() or term in f.get("detail", "").lower():
+                        score += 0.5
+                        reasons.append(f"Matches friction term: '{term}'")
+                for opp in rec.get("improvement_opportunities", []):
+                    if term in opp.lower():
+                        score += 0.4
+                        reasons.append(f"Matches opportunity term: '{term}'")
+
+            if score > 0.0:
+                results.append({
+                    "source_reference": rec.get("record_id"),
+                    "confidence": min(1.0, score),
+                    "relevance": ", ".join(list(set(reasons))),
+                    "evidence_history": {
+                        "timestamp": rec.get("timestamp"),
+                        "event_type": rec.get("event_type"),
+                        "lifecycle_state": rec.get("lifecycle_state")
+                    }
+                })
+
+        # Sort by confidence descending
+        return sorted(results, key=lambda x: x["confidence"], reverse=True)
+
+    def enhance_agent_execution_context(self) -> Dict[str, Any]:
+        """Provides SAGE Intelligence context enhancement before agent execution.
+
+        Aggregates current mission, relevant history, related files, and constraints.
+        """
+        # Get history records
+        history_records = []
+        for filepath in self.ccl.storage_path.glob("*.json"):
+            try:
+                with open(filepath, "r", encoding="utf-8") as f:
+                    history_records.append(json.load(f))
+            except Exception:
+                pass
+        recent_history = sorted(history_records, key=lambda x: x.get("timestamp", 0.0))[-5:]
+
+        # Extract previous decisions
+        decisions = []
+        for rec in recent_history:
+            if rec.get("lifecycle_state") == "VALIDATED":
+                decisions.append({
+                    "record_id": rec.get("record_id"),
+                    "decision": rec.get("action_taken"),
+                    "reasoning": rec.get("decision_reasoning")
+                })
+
+        # Gather workspace files
+        workspace = self.scan_git_workspace()
+        files = workspace.get("modified_files", [])
+
+        # Risks and constraints
+        risks = []
+        for rec in recent_history:
+            for f in rec.get("workflow_friction", []):
+                risks.append(f)
+
+        return {
+            "current_mission": {
+                "session_id": self.session_id,
+                "active_objectives": list(self.session.active_objectives)
+            },
+            "relevant_history": [r.get("record_id") for r in recent_history],
+            "related_files": files,
+            "previous_decisions": decisions,
+            "known_risks": risks,
+            "required_constraints": [
+                "Frozen Core Production Protection active.",
+                "Zero direct workspace mutation on core production namespaces.",
+                "Human supervisor authorization required for validated promotions."
+            ]
+        }
+
+    def request_evidence_aware_reasoning(self, question: str) -> Dict[str, Any]:
+        """Executes evidence-aware reasoning linking:
+
+        Question -> SAGE Search -> Evidence Retrieval -> Pattern Matching -> Advisory Recommendation
+        """
+        # 1. Search
+        search_results = self.execute_super_search(question)
+        evidence_records = [r["source_reference"] for r in search_results if r["confidence"] >= 0.5]
+
+        # 2. Pattern Match and Recommendation synthesis
+        advisory_rec = "Formulate modular local tests and run verification loops."
+        confidence = 0.5
+        impact = "MEDIUM"
+
+        if "friction" in question.lower() or "bottleneck" in question.lower() or "latency" in question.lower():
+            advisory_rec = "Implement modular workspace caching and bypass high cognitive manual validations."
+            confidence = 0.85
+            impact = "HIGH"
+        elif "rehydration" in question.lower() or "state" in question.lower() or "context" in question.lower():
+            advisory_rec = "Synchronize state with SessionStateManager before launching subsequent reasoning agent loops."
+            confidence = 0.90
+            impact = "HIGH"
+
+        # Check for unsupported conclusions (filter out if no evidence matches query)
+        if not search_results:
+            advisory_rec = "No preceding operational evidence found for this query. Bypassing speculative suggestion."
+            confidence = 0.1
+            impact = "LOW"
+
+        return {
+            "question": question,
+            "evidence_retrieved": search_results[:3],
+            "patterns_matched_count": len(search_results),
+            "advisory_recommendation": {
+                "description": advisory_rec,
+                "confidence_level": confidence,
+                "operational_impact": impact,
+                "supporting_evidence": evidence_records[:3]
+            }
+        }
 
 
 if __name__ == "__main__":

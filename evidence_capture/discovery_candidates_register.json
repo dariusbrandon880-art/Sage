@@ -1312,5 +1312,977 @@
     "confidence_assessment": 0.85,
     "is_promoted": false,
     "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-F20F7A",
+    "description": "Address cognitive_load friction: high manual step friction",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-4576DB",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-052241d1-77f3-4cfe-b911-84c6228334a9"
+    ],
+    "operational_justification": "Optimize workflow stage 'execution': Resolve recurring bottleneck: Recurring friction of type 'cognitive_load': high manual step friction",
+    "measurable_success_criteria": "Succeed in: Reduce execution cycle duration and minimize cognitive load friction by 35%.",
+    "estimated_engineering_impact": "MEDIUM",
+    "confidence_assessment": 0.65,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-19343C",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-052241d1-77f3-4cfe-b911-84c6228334a9"
+    ],
+    "operational_justification": "Optimize workflow stage 'coordination': Automate and optimize context rehydration rules across consecutive developer handoffs.",
+    "measurable_success_criteria": "Succeed in: Achieve 100% context preservation and eliminate unnecessary step reassessments.",
+    "estimated_engineering_impact": "HIGH",
+    "confidence_assessment": 0.85,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-D0BCA3",
+    "description": "Address environmental_latency friction: high setup and download latency",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-E32909",
+    "description": "Optimize context preservation to prevent redundant reassessment of completed actions.",
+    "validation_criteria": "Ensure redundant step count resolves to 0.",
+    "priority": "HIGH"
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-6348AE",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-f4aa28ba-abe0-4040-b75d-e67026670b37"
+    ],
+    "operational_justification": "Optimize workflow stage 'execution': Resolve recurring bottleneck: Recurring friction of type 'environmental_latency': high setup and download latency",
+    "measurable_success_criteria": "Succeed in: Reduce execution cycle duration and minimize cognitive load friction by 35%.",
+    "estimated_engineering_impact": "MEDIUM",
+    "confidence_assessment": 0.65,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-DD9322",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-f4aa28ba-abe0-4040-b75d-e67026670b37"
+    ],
+    "operational_justification": "Optimize workflow stage 'coordination': Automate and optimize context rehydration rules across consecutive developer handoffs.",
+    "measurable_success_criteria": "Succeed in: Achieve 100% context preservation and eliminate unnecessary step reassessments.",
+    "estimated_engineering_impact": "HIGH",
+    "confidence_assessment": 0.85,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-62A7B3",
+    "description": "Address cognitive_load friction: high manual step coordination",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-8B1C30",
+    "description": "Optimize context preservation to prevent redundant reassessment of completed actions.",
+    "validation_criteria": "Ensure redundant step count resolves to 0.",
+    "priority": "HIGH"
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-4B5E3E",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-8d9ed227-7ffa-4deb-9430-e4d9d3060a81"
+    ],
+    "operational_justification": "Optimize workflow stage 'execution': Resolve recurring bottleneck: Recurring friction of type 'cognitive_load': high manual step coordination",
+    "measurable_success_criteria": "Succeed in: Reduce execution cycle duration and minimize cognitive load friction by 35%.",
+    "estimated_engineering_impact": "MEDIUM",
+    "confidence_assessment": 0.65,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-8D0AEF",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-8d9ed227-7ffa-4deb-9430-e4d9d3060a81"
+    ],
+    "operational_justification": "Optimize workflow stage 'coordination': Automate and optimize context rehydration rules across consecutive developer handoffs.",
+    "measurable_success_criteria": "Succeed in: Achieve 100% context preservation and eliminate unnecessary step reassessments.",
+    "estimated_engineering_impact": "HIGH",
+    "confidence_assessment": 0.85,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-FE6EEE",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-8d9ed227-7ffa-4deb-9430-e4d9d3060a81"
+    ],
+    "operational_justification": "Optimize workflow stage 'execution': Resolve recurring bottleneck: Recurring friction of type 'cognitive_load': high manual step coordination",
+    "measurable_success_criteria": "Succeed in: Reduce execution cycle duration and minimize cognitive load friction by 35%.",
+    "estimated_engineering_impact": "MEDIUM",
+    "confidence_assessment": 0.65,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-D6402B",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-8d9ed227-7ffa-4deb-9430-e4d9d3060a81"
+    ],
+    "operational_justification": "Optimize workflow stage 'coordination': Automate and optimize context rehydration rules across consecutive developer handoffs.",
+    "measurable_success_criteria": "Succeed in: Achieve 100% context preservation and eliminate unnecessary step reassessments.",
+    "estimated_engineering_impact": "HIGH",
+    "confidence_assessment": 0.85,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-1C69D7",
+    "description": "Address cognitive_load friction: high manual step friction",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-A7F220",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-5fe23da7-c839-4b98-8876-6cc71d4936f0"
+    ],
+    "operational_justification": "Optimize workflow stage 'execution': Resolve recurring bottleneck: Recurring friction of type 'cognitive_load': high manual step friction",
+    "measurable_success_criteria": "Succeed in: Reduce execution cycle duration and minimize cognitive load friction by 35%.",
+    "estimated_engineering_impact": "MEDIUM",
+    "confidence_assessment": 0.65,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-1BC085",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-5fe23da7-c839-4b98-8876-6cc71d4936f0"
+    ],
+    "operational_justification": "Optimize workflow stage 'coordination': Automate and optimize context rehydration rules across consecutive developer handoffs.",
+    "measurable_success_criteria": "Succeed in: Achieve 100% context preservation and eliminate unnecessary step reassessments.",
+    "estimated_engineering_impact": "HIGH",
+    "confidence_assessment": 0.85,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-BADD6A",
+    "description": "Address environmental_latency friction: high setup and download latency",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-283166",
+    "description": "Optimize context preservation to prevent redundant reassessment of completed actions.",
+    "validation_criteria": "Ensure redundant step count resolves to 0.",
+    "priority": "HIGH"
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-40DBA1",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-aa1af6ff-0c80-486f-b5dd-e58ec7dc370d"
+    ],
+    "operational_justification": "Optimize workflow stage 'execution': Resolve recurring bottleneck: Recurring friction of type 'environmental_latency': high setup and download latency",
+    "measurable_success_criteria": "Succeed in: Reduce execution cycle duration and minimize cognitive load friction by 35%.",
+    "estimated_engineering_impact": "MEDIUM",
+    "confidence_assessment": 0.65,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-139548",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-aa1af6ff-0c80-486f-b5dd-e58ec7dc370d"
+    ],
+    "operational_justification": "Optimize workflow stage 'coordination': Automate and optimize context rehydration rules across consecutive developer handoffs.",
+    "measurable_success_criteria": "Succeed in: Achieve 100% context preservation and eliminate unnecessary step reassessments.",
+    "estimated_engineering_impact": "HIGH",
+    "confidence_assessment": 0.85,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-CB19A3",
+    "description": "Address cognitive_load friction: high manual step coordination",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-1984E7",
+    "description": "Optimize context preservation to prevent redundant reassessment of completed actions.",
+    "validation_criteria": "Ensure redundant step count resolves to 0.",
+    "priority": "HIGH"
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-E4799E",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-2d5c13d6-2841-4ab3-8a10-24b73ce45b79"
+    ],
+    "operational_justification": "Optimize workflow stage 'execution': Resolve recurring bottleneck: Recurring friction of type 'cognitive_load': high manual step coordination",
+    "measurable_success_criteria": "Succeed in: Reduce execution cycle duration and minimize cognitive load friction by 35%.",
+    "estimated_engineering_impact": "MEDIUM",
+    "confidence_assessment": 0.65,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-79E937",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-2d5c13d6-2841-4ab3-8a10-24b73ce45b79"
+    ],
+    "operational_justification": "Optimize workflow stage 'coordination': Automate and optimize context rehydration rules across consecutive developer handoffs.",
+    "measurable_success_criteria": "Succeed in: Achieve 100% context preservation and eliminate unnecessary step reassessments.",
+    "estimated_engineering_impact": "HIGH",
+    "confidence_assessment": 0.85,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-3F0367",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-2d5c13d6-2841-4ab3-8a10-24b73ce45b79"
+    ],
+    "operational_justification": "Optimize workflow stage 'execution': Resolve recurring bottleneck: Recurring friction of type 'cognitive_load': high manual step coordination",
+    "measurable_success_criteria": "Succeed in: Reduce execution cycle duration and minimize cognitive load friction by 35%.",
+    "estimated_engineering_impact": "MEDIUM",
+    "confidence_assessment": 0.65,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-600FD8",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-2d5c13d6-2841-4ab3-8a10-24b73ce45b79"
+    ],
+    "operational_justification": "Optimize workflow stage 'coordination': Automate and optimize context rehydration rules across consecutive developer handoffs.",
+    "measurable_success_criteria": "Succeed in: Achieve 100% context preservation and eliminate unnecessary step reassessments.",
+    "estimated_engineering_impact": "HIGH",
+    "confidence_assessment": 0.85,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-3B37DE",
+    "description": "Address cognitive_load friction: high manual step friction",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-7B01F2",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-c3ae9da3-cf7f-47b8-951c-5c41105641ea"
+    ],
+    "operational_justification": "Optimize workflow stage 'execution': Resolve recurring bottleneck: Recurring friction of type 'cognitive_load': high manual step friction",
+    "measurable_success_criteria": "Succeed in: Reduce execution cycle duration and minimize cognitive load friction by 35%.",
+    "estimated_engineering_impact": "MEDIUM",
+    "confidence_assessment": 0.65,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-6976DA",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-c3ae9da3-cf7f-47b8-951c-5c41105641ea"
+    ],
+    "operational_justification": "Optimize workflow stage 'coordination': Automate and optimize context rehydration rules across consecutive developer handoffs.",
+    "measurable_success_criteria": "Succeed in: Achieve 100% context preservation and eliminate unnecessary step reassessments.",
+    "estimated_engineering_impact": "HIGH",
+    "confidence_assessment": 0.85,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-E7A5F7",
+    "description": "Address environmental_latency friction: high setup and download latency",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-D7E622",
+    "description": "Optimize context preservation to prevent redundant reassessment of completed actions.",
+    "validation_criteria": "Ensure redundant step count resolves to 0.",
+    "priority": "HIGH"
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-69B2F9",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-3d16e3f4-685e-476c-a78e-11023e7d9b76"
+    ],
+    "operational_justification": "Optimize workflow stage 'execution': Resolve recurring bottleneck: Recurring friction of type 'environmental_latency': high setup and download latency",
+    "measurable_success_criteria": "Succeed in: Reduce execution cycle duration and minimize cognitive load friction by 35%.",
+    "estimated_engineering_impact": "MEDIUM",
+    "confidence_assessment": 0.65,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-665E7E",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-3d16e3f4-685e-476c-a78e-11023e7d9b76"
+    ],
+    "operational_justification": "Optimize workflow stage 'coordination': Automate and optimize context rehydration rules across consecutive developer handoffs.",
+    "measurable_success_criteria": "Succeed in: Achieve 100% context preservation and eliminate unnecessary step reassessments.",
+    "estimated_engineering_impact": "HIGH",
+    "confidence_assessment": 0.85,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-7516B2",
+    "description": "Address cognitive_load friction: high manual step coordination",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-99D4C9",
+    "description": "Optimize context preservation to prevent redundant reassessment of completed actions.",
+    "validation_criteria": "Ensure redundant step count resolves to 0.",
+    "priority": "HIGH"
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-BBB3F2",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-52e20e8e-c5be-4b8a-9606-0166c59478a2"
+    ],
+    "operational_justification": "Optimize workflow stage 'execution': Resolve recurring bottleneck: Recurring friction of type 'cognitive_load': high manual step coordination",
+    "measurable_success_criteria": "Succeed in: Reduce execution cycle duration and minimize cognitive load friction by 35%.",
+    "estimated_engineering_impact": "MEDIUM",
+    "confidence_assessment": 0.65,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-765E68",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-52e20e8e-c5be-4b8a-9606-0166c59478a2"
+    ],
+    "operational_justification": "Optimize workflow stage 'coordination': Automate and optimize context rehydration rules across consecutive developer handoffs.",
+    "measurable_success_criteria": "Succeed in: Achieve 100% context preservation and eliminate unnecessary step reassessments.",
+    "estimated_engineering_impact": "HIGH",
+    "confidence_assessment": 0.85,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-8E8E3B",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-52e20e8e-c5be-4b8a-9606-0166c59478a2"
+    ],
+    "operational_justification": "Optimize workflow stage 'execution': Resolve recurring bottleneck: Recurring friction of type 'cognitive_load': high manual step coordination",
+    "measurable_success_criteria": "Succeed in: Reduce execution cycle duration and minimize cognitive load friction by 35%.",
+    "estimated_engineering_impact": "MEDIUM",
+    "confidence_assessment": 0.65,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-D376A0",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-52e20e8e-c5be-4b8a-9606-0166c59478a2"
+    ],
+    "operational_justification": "Optimize workflow stage 'coordination': Automate and optimize context rehydration rules across consecutive developer handoffs.",
+    "measurable_success_criteria": "Succeed in: Achieve 100% context preservation and eliminate unnecessary step reassessments.",
+    "estimated_engineering_impact": "HIGH",
+    "confidence_assessment": 0.85,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-070E2F",
+    "description": "Address cognitive_load friction: high manual step friction",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-2AEBE8",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-d3ebb7fc-b14c-41d5-95ea-cbcf77f83c79"
+    ],
+    "operational_justification": "Optimize workflow stage 'execution': Resolve recurring bottleneck: Recurring friction of type 'cognitive_load': high manual step friction",
+    "measurable_success_criteria": "Succeed in: Reduce execution cycle duration and minimize cognitive load friction by 35%.",
+    "estimated_engineering_impact": "MEDIUM",
+    "confidence_assessment": 0.65,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-FA24DB",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-d3ebb7fc-b14c-41d5-95ea-cbcf77f83c79"
+    ],
+    "operational_justification": "Optimize workflow stage 'coordination': Automate and optimize context rehydration rules across consecutive developer handoffs.",
+    "measurable_success_criteria": "Succeed in: Achieve 100% context preservation and eliminate unnecessary step reassessments.",
+    "estimated_engineering_impact": "HIGH",
+    "confidence_assessment": 0.85,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-114639",
+    "description": "Address environmental_latency friction: high setup and download latency",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-85B28D",
+    "description": "Optimize context preservation to prevent redundant reassessment of completed actions.",
+    "validation_criteria": "Ensure redundant step count resolves to 0.",
+    "priority": "HIGH"
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-B03A21",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-923f933a-a120-4af8-8d98-90553d1a521f"
+    ],
+    "operational_justification": "Optimize workflow stage 'execution': Resolve recurring bottleneck: Recurring friction of type 'environmental_latency': high setup and download latency",
+    "measurable_success_criteria": "Succeed in: Reduce execution cycle duration and minimize cognitive load friction by 35%.",
+    "estimated_engineering_impact": "MEDIUM",
+    "confidence_assessment": 0.65,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-52AAE2",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-923f933a-a120-4af8-8d98-90553d1a521f"
+    ],
+    "operational_justification": "Optimize workflow stage 'coordination': Automate and optimize context rehydration rules across consecutive developer handoffs.",
+    "measurable_success_criteria": "Succeed in: Achieve 100% context preservation and eliminate unnecessary step reassessments.",
+    "estimated_engineering_impact": "HIGH",
+    "confidence_assessment": 0.85,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-FF4148",
+    "description": "Address cognitive_load friction: high manual step coordination",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-277459",
+    "description": "Optimize context preservation to prevent redundant reassessment of completed actions.",
+    "validation_criteria": "Ensure redundant step count resolves to 0.",
+    "priority": "HIGH"
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-0BF738",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-331e951c-e024-4a37-b299-7a63a46b64f2"
+    ],
+    "operational_justification": "Optimize workflow stage 'execution': Resolve recurring bottleneck: Recurring friction of type 'cognitive_load': high manual step coordination",
+    "measurable_success_criteria": "Succeed in: Reduce execution cycle duration and minimize cognitive load friction by 35%.",
+    "estimated_engineering_impact": "MEDIUM",
+    "confidence_assessment": 0.65,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-36B8C4",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-331e951c-e024-4a37-b299-7a63a46b64f2"
+    ],
+    "operational_justification": "Optimize workflow stage 'coordination': Automate and optimize context rehydration rules across consecutive developer handoffs.",
+    "measurable_success_criteria": "Succeed in: Achieve 100% context preservation and eliminate unnecessary step reassessments.",
+    "estimated_engineering_impact": "HIGH",
+    "confidence_assessment": 0.85,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-CD0C5A",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-331e951c-e024-4a37-b299-7a63a46b64f2"
+    ],
+    "operational_justification": "Optimize workflow stage 'execution': Resolve recurring bottleneck: Recurring friction of type 'cognitive_load': high manual step coordination",
+    "measurable_success_criteria": "Succeed in: Reduce execution cycle duration and minimize cognitive load friction by 35%.",
+    "estimated_engineering_impact": "MEDIUM",
+    "confidence_assessment": 0.65,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-BC17F0",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-331e951c-e024-4a37-b299-7a63a46b64f2"
+    ],
+    "operational_justification": "Optimize workflow stage 'coordination': Automate and optimize context rehydration rules across consecutive developer handoffs.",
+    "measurable_success_criteria": "Succeed in: Achieve 100% context preservation and eliminate unnecessary step reassessments.",
+    "estimated_engineering_impact": "HIGH",
+    "confidence_assessment": 0.85,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-0E7BC8",
+    "description": "Address cognitive_load friction: high manual step friction",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-610191",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-bc54a863-6fab-44f4-a830-ef9ce8900358"
+    ],
+    "operational_justification": "Optimize workflow stage 'execution': Resolve recurring bottleneck: Recurring friction of type 'cognitive_load': high manual step friction",
+    "measurable_success_criteria": "Succeed in: Reduce execution cycle duration and minimize cognitive load friction by 35%.",
+    "estimated_engineering_impact": "MEDIUM",
+    "confidence_assessment": 0.65,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-6284E0",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-bc54a863-6fab-44f4-a830-ef9ce8900358"
+    ],
+    "operational_justification": "Optimize workflow stage 'coordination': Automate and optimize context rehydration rules across consecutive developer handoffs.",
+    "measurable_success_criteria": "Succeed in: Achieve 100% context preservation and eliminate unnecessary step reassessments.",
+    "estimated_engineering_impact": "HIGH",
+    "confidence_assessment": 0.85,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-363006",
+    "description": "Address environmental_latency friction: high setup and download latency",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-D2599F",
+    "description": "Optimize context preservation to prevent redundant reassessment of completed actions.",
+    "validation_criteria": "Ensure redundant step count resolves to 0.",
+    "priority": "HIGH"
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-712C3C",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-1cc7da79-86d8-42ce-8f1a-403af8c442ca"
+    ],
+    "operational_justification": "Optimize workflow stage 'execution': Resolve recurring bottleneck: Recurring friction of type 'environmental_latency': high setup and download latency",
+    "measurable_success_criteria": "Succeed in: Reduce execution cycle duration and minimize cognitive load friction by 35%.",
+    "estimated_engineering_impact": "MEDIUM",
+    "confidence_assessment": 0.65,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-5C6201",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-1cc7da79-86d8-42ce-8f1a-403af8c442ca"
+    ],
+    "operational_justification": "Optimize workflow stage 'coordination': Automate and optimize context rehydration rules across consecutive developer handoffs.",
+    "measurable_success_criteria": "Succeed in: Achieve 100% context preservation and eliminate unnecessary step reassessments.",
+    "estimated_engineering_impact": "HIGH",
+    "confidence_assessment": 0.85,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-739CFB",
+    "description": "Address cognitive_load friction: high manual step coordination",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-9D5AB4",
+    "description": "Optimize context preservation to prevent redundant reassessment of completed actions.",
+    "validation_criteria": "Ensure redundant step count resolves to 0.",
+    "priority": "HIGH"
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-9A23F7",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-48b84dd7-efd7-4b49-a883-c48002ff6b25"
+    ],
+    "operational_justification": "Optimize workflow stage 'execution': Resolve recurring bottleneck: Recurring friction of type 'cognitive_load': high manual step coordination",
+    "measurable_success_criteria": "Succeed in: Reduce execution cycle duration and minimize cognitive load friction by 35%.",
+    "estimated_engineering_impact": "MEDIUM",
+    "confidence_assessment": 0.65,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-C9F7C7",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-48b84dd7-efd7-4b49-a883-c48002ff6b25"
+    ],
+    "operational_justification": "Optimize workflow stage 'coordination': Automate and optimize context rehydration rules across consecutive developer handoffs.",
+    "measurable_success_criteria": "Succeed in: Achieve 100% context preservation and eliminate unnecessary step reassessments.",
+    "estimated_engineering_impact": "HIGH",
+    "confidence_assessment": 0.85,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-2DECC9",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-48b84dd7-efd7-4b49-a883-c48002ff6b25"
+    ],
+    "operational_justification": "Optimize workflow stage 'execution': Resolve recurring bottleneck: Recurring friction of type 'cognitive_load': high manual step coordination",
+    "measurable_success_criteria": "Succeed in: Reduce execution cycle duration and minimize cognitive load friction by 35%.",
+    "estimated_engineering_impact": "MEDIUM",
+    "confidence_assessment": 0.65,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-5E1053",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-48b84dd7-efd7-4b49-a883-c48002ff6b25"
+    ],
+    "operational_justification": "Optimize workflow stage 'coordination': Automate and optimize context rehydration rules across consecutive developer handoffs.",
+    "measurable_success_criteria": "Succeed in: Achieve 100% context preservation and eliminate unnecessary step reassessments.",
+    "estimated_engineering_impact": "HIGH",
+    "confidence_assessment": 0.85,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-9FB891",
+    "description": "Address cognitive_load friction: manual rehydration of files",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-6A2D71",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-6a9707fc-91f6-4b10-aa57-55a7c3f40083"
+    ],
+    "operational_justification": "Optimize workflow stage 'execution': Resolve recurring bottleneck: Recurring friction of type 'cognitive_load': manual rehydration of files",
+    "measurable_success_criteria": "Succeed in: Reduce execution cycle duration and minimize cognitive load friction by 35%.",
+    "estimated_engineering_impact": "MEDIUM",
+    "confidence_assessment": 0.65,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-DA17B7",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-6a9707fc-91f6-4b10-aa57-55a7c3f40083"
+    ],
+    "operational_justification": "Optimize workflow stage 'coordination': Automate and optimize context rehydration rules across consecutive developer handoffs.",
+    "measurable_success_criteria": "Succeed in: Achieve 100% context preservation and eliminate unnecessary step reassessments.",
+    "estimated_engineering_impact": "HIGH",
+    "confidence_assessment": 0.85,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-151017",
+    "description": "Address cognitive_load friction: high manual step friction",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-E1990A",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-0dbf2ba5-9b4c-42a1-ac85-89f83b3249be"
+    ],
+    "operational_justification": "Optimize workflow stage 'execution': Resolve recurring bottleneck: Recurring friction of type 'cognitive_load': high manual step friction",
+    "measurable_success_criteria": "Succeed in: Reduce execution cycle duration and minimize cognitive load friction by 35%.",
+    "estimated_engineering_impact": "MEDIUM",
+    "confidence_assessment": 0.65,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-0723A6",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-0dbf2ba5-9b4c-42a1-ac85-89f83b3249be"
+    ],
+    "operational_justification": "Optimize workflow stage 'coordination': Automate and optimize context rehydration rules across consecutive developer handoffs.",
+    "measurable_success_criteria": "Succeed in: Achieve 100% context preservation and eliminate unnecessary step reassessments.",
+    "estimated_engineering_impact": "HIGH",
+    "confidence_assessment": 0.85,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-C76AD8",
+    "description": "Address environmental_latency friction: high setup and download latency",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-909A3E",
+    "description": "Optimize context preservation to prevent redundant reassessment of completed actions.",
+    "validation_criteria": "Ensure redundant step count resolves to 0.",
+    "priority": "HIGH"
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-AF7F7B",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-f57cf1d1-1541-45e9-8b03-b085f3728ca9"
+    ],
+    "operational_justification": "Optimize workflow stage 'execution': Resolve recurring bottleneck: Recurring friction of type 'environmental_latency': high setup and download latency",
+    "measurable_success_criteria": "Succeed in: Reduce execution cycle duration and minimize cognitive load friction by 35%.",
+    "estimated_engineering_impact": "MEDIUM",
+    "confidence_assessment": 0.65,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-162894",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-f57cf1d1-1541-45e9-8b03-b085f3728ca9"
+    ],
+    "operational_justification": "Optimize workflow stage 'coordination': Automate and optimize context rehydration rules across consecutive developer handoffs.",
+    "measurable_success_criteria": "Succeed in: Achieve 100% context preservation and eliminate unnecessary step reassessments.",
+    "estimated_engineering_impact": "HIGH",
+    "confidence_assessment": 0.85,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-523B0E",
+    "description": "Address cognitive_load friction: high manual step coordination",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-C20689",
+    "description": "Optimize context preservation to prevent redundant reassessment of completed actions.",
+    "validation_criteria": "Ensure redundant step count resolves to 0.",
+    "priority": "HIGH"
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-F92138",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-4ba9c7f4-3764-4ae8-96c7-94419629664b"
+    ],
+    "operational_justification": "Optimize workflow stage 'execution': Resolve recurring bottleneck: Recurring friction of type 'cognitive_load': high manual step coordination",
+    "measurable_success_criteria": "Succeed in: Reduce execution cycle duration and minimize cognitive load friction by 35%.",
+    "estimated_engineering_impact": "MEDIUM",
+    "confidence_assessment": 0.65,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-425AB8",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-4ba9c7f4-3764-4ae8-96c7-94419629664b"
+    ],
+    "operational_justification": "Optimize workflow stage 'coordination': Automate and optimize context rehydration rules across consecutive developer handoffs.",
+    "measurable_success_criteria": "Succeed in: Achieve 100% context preservation and eliminate unnecessary step reassessments.",
+    "estimated_engineering_impact": "HIGH",
+    "confidence_assessment": 0.85,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-6FAFCD",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-4ba9c7f4-3764-4ae8-96c7-94419629664b"
+    ],
+    "operational_justification": "Optimize workflow stage 'execution': Resolve recurring bottleneck: Recurring friction of type 'cognitive_load': high manual step coordination",
+    "measurable_success_criteria": "Succeed in: Reduce execution cycle duration and minimize cognitive load friction by 35%.",
+    "estimated_engineering_impact": "MEDIUM",
+    "confidence_assessment": 0.65,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-D1D575",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-4ba9c7f4-3764-4ae8-96c7-94419629664b"
+    ],
+    "operational_justification": "Optimize workflow stage 'coordination': Automate and optimize context rehydration rules across consecutive developer handoffs.",
+    "measurable_success_criteria": "Succeed in: Achieve 100% context preservation and eliminate unnecessary step reassessments.",
+    "estimated_engineering_impact": "HIGH",
+    "confidence_assessment": 0.85,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-B27400",
+    "description": "Address cognitive_load friction: manual rehydration of files",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-F4C711",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-520db68a-e615-407a-92e2-9fe4f50d15c7"
+    ],
+    "operational_justification": "Optimize workflow stage 'execution': Resolve recurring bottleneck: Recurring friction of type 'cognitive_load': manual rehydration of files",
+    "measurable_success_criteria": "Succeed in: Reduce execution cycle duration and minimize cognitive load friction by 35%.",
+    "estimated_engineering_impact": "MEDIUM",
+    "confidence_assessment": 0.65,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-44F70D",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-520db68a-e615-407a-92e2-9fe4f50d15c7"
+    ],
+    "operational_justification": "Optimize workflow stage 'coordination': Automate and optimize context rehydration rules across consecutive developer handoffs.",
+    "measurable_success_criteria": "Succeed in: Achieve 100% context preservation and eliminate unnecessary step reassessments.",
+    "estimated_engineering_impact": "HIGH",
+    "confidence_assessment": 0.85,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-6C8A8C",
+    "description": "Address cognitive_load friction: high manual step friction",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-B770B2",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-4066a9d6-50da-426f-8883-2264cdbd5586"
+    ],
+    "operational_justification": "Optimize workflow stage 'execution': Resolve recurring bottleneck: Recurring friction of type 'cognitive_load': high manual step friction",
+    "measurable_success_criteria": "Succeed in: Reduce execution cycle duration and minimize cognitive load friction by 35%.",
+    "estimated_engineering_impact": "MEDIUM",
+    "confidence_assessment": 0.65,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-0C28A5",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-4066a9d6-50da-426f-8883-2264cdbd5586"
+    ],
+    "operational_justification": "Optimize workflow stage 'coordination': Automate and optimize context rehydration rules across consecutive developer handoffs.",
+    "measurable_success_criteria": "Succeed in: Achieve 100% context preservation and eliminate unnecessary step reassessments.",
+    "estimated_engineering_impact": "HIGH",
+    "confidence_assessment": 0.85,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-1EC4D8",
+    "description": "Address environmental_latency friction: high setup and download latency",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-5D9FDD",
+    "description": "Optimize context preservation to prevent redundant reassessment of completed actions.",
+    "validation_criteria": "Ensure redundant step count resolves to 0.",
+    "priority": "HIGH"
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-2D5302",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-872ccd6c-255f-45df-b1ac-67d3e6831a26"
+    ],
+    "operational_justification": "Optimize workflow stage 'execution': Resolve recurring bottleneck: Recurring friction of type 'environmental_latency': high setup and download latency",
+    "measurable_success_criteria": "Succeed in: Reduce execution cycle duration and minimize cognitive load friction by 35%.",
+    "estimated_engineering_impact": "MEDIUM",
+    "confidence_assessment": 0.65,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-4E55EA",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-872ccd6c-255f-45df-b1ac-67d3e6831a26"
+    ],
+    "operational_justification": "Optimize workflow stage 'coordination': Automate and optimize context rehydration rules across consecutive developer handoffs.",
+    "measurable_success_criteria": "Succeed in: Achieve 100% context preservation and eliminate unnecessary step reassessments.",
+    "estimated_engineering_impact": "HIGH",
+    "confidence_assessment": 0.85,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-75A886",
+    "description": "Address cognitive_load friction: high manual step coordination",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-4E34B5",
+    "description": "Optimize context preservation to prevent redundant reassessment of completed actions.",
+    "validation_criteria": "Ensure redundant step count resolves to 0.",
+    "priority": "HIGH"
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-33CF86",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-149acd28-3d76-4613-940f-7510f8ca7629"
+    ],
+    "operational_justification": "Optimize workflow stage 'execution': Resolve recurring bottleneck: Recurring friction of type 'cognitive_load': high manual step coordination",
+    "measurable_success_criteria": "Succeed in: Reduce execution cycle duration and minimize cognitive load friction by 35%.",
+    "estimated_engineering_impact": "MEDIUM",
+    "confidence_assessment": 0.65,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-1745AB",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-149acd28-3d76-4613-940f-7510f8ca7629"
+    ],
+    "operational_justification": "Optimize workflow stage 'coordination': Automate and optimize context rehydration rules across consecutive developer handoffs.",
+    "measurable_success_criteria": "Succeed in: Achieve 100% context preservation and eliminate unnecessary step reassessments.",
+    "estimated_engineering_impact": "HIGH",
+    "confidence_assessment": 0.85,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-1BD69C",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-149acd28-3d76-4613-940f-7510f8ca7629"
+    ],
+    "operational_justification": "Optimize workflow stage 'execution': Resolve recurring bottleneck: Recurring friction of type 'cognitive_load': high manual step coordination",
+    "measurable_success_criteria": "Succeed in: Reduce execution cycle duration and minimize cognitive load friction by 35%.",
+    "estimated_engineering_impact": "MEDIUM",
+    "confidence_assessment": 0.65,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-08036F",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-149acd28-3d76-4613-940f-7510f8ca7629"
+    ],
+    "operational_justification": "Optimize workflow stage 'coordination': Automate and optimize context rehydration rules across consecutive developer handoffs.",
+    "measurable_success_criteria": "Succeed in: Achieve 100% context preservation and eliminate unnecessary step reassessments.",
+    "estimated_engineering_impact": "HIGH",
+    "confidence_assessment": 0.85,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-E3AAA6",
+    "description": "Address cognitive_load friction: manual rehydration of files",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-A76103",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-2aef7e39-d75e-465a-8480-42a306d6a42f"
+    ],
+    "operational_justification": "Optimize workflow stage 'execution': Resolve recurring bottleneck: Recurring friction of type 'cognitive_load': manual rehydration of files",
+    "measurable_success_criteria": "Succeed in: Reduce execution cycle duration and minimize cognitive load friction by 35%.",
+    "estimated_engineering_impact": "MEDIUM",
+    "confidence_assessment": 0.65,
+    "is_promoted": false,
+    "requires_approval": true
+  },
+  {
+    "candidate_id": "CANDIDATE-OPT-EABE4C",
+    "originating_workflow_evidence": [
+      "CCL-REC-20260805-2aef7e39-d75e-465a-8480-42a306d6a42f"
+    ],
+    "operational_justification": "Optimize workflow stage 'coordination': Automate and optimize context rehydration rules across consecutive developer handoffs.",
+    "measurable_success_criteria": "Succeed in: Achieve 100% context preservation and eliminate unnecessary step reassessments.",
+    "estimated_engineering_impact": "HIGH",
+    "confidence_assessment": 0.85,
+    "is_promoted": false,
+    "requires_approval": true
   }
 ]
