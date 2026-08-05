@@ -1160,6 +1160,12 @@ def test_chatgpt_runtime_governed_execution(tmp_path):
         assert report_data["authentication_result"] == "SUCCESS"
         assert report_data["validation_status"] == "VALIDATED"
 
-        # Clean up connection report file
-        if report_file.exists():
-            report_file.unlink()
+        # Verify final activation report generated on disk
+        activation_file = Path("evidence_capture/chatgpt_live_runtime_final_activation.json")
+        assert activation_file.exists()
+
+        with open(activation_file, "r", encoding="utf-8") as f:
+            act_data = json.load(f)
+        assert act_data["live_runtime_status"] == "ACTIVE"
+        assert act_data["agent_identity"]["agent_id"] == "chatgpt-runtime-agent"
+        assert act_data["context_recovered_from_sage_state"]["current_task_boundary"] == "task_rt_verify_loop"
