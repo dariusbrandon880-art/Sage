@@ -174,6 +174,21 @@ class SAGEMissionQueue:
             json.dump({k: v.model_dump() for k, v in self.tasks.items()}, f, indent=2, default=str)
 
 
+class SAGEIncidentReport(BaseModel):
+    """Immutable representation of a SAGE Escalation / Incident Report under strict governance."""
+
+    incident_id: str
+    timestamp: float = Field(default_factory=time.time)
+    severity: str = "NORMAL"  # NORMAL, WARNING, CRITICAL
+    source_workflow: str = "DeveloperWorkflowOrchestrator"
+    affected_task_id: Optional[str] = None
+    failure_signature: str = "UnknownFailure"
+    evidence_references: List[str] = Field(default_factory=list)
+    required_response: str = "Capture evidence and retry"
+    authority_requirement: str = "SYSTEM_AUTO"  # SYSTEM_AUTO, OPERATOR_REVIEW, OPERATOR_SIGN_OFF
+    recovery_status: str = "PENDING"  # PENDING, RESOLVED, ROLLBACK_REQUIRED
+
+
 class ContinuityControlRecord(BaseModel):
     """Immutable representation of a SAGE Continuity Control Loop record."""
 
@@ -907,19 +922,79 @@ class DeveloperWorkflowOrchestrator:
         if self.loop_state_file.exists():
             try:
                 with open(self.loop_state_file, "r", encoding="utf-8") as f:
-                    return json.load(f)
+                    state = json.load(f)
+                    if "incidents" not in state:
+                        state["incidents"] = []
+                    if "task_retries" not in state:
+                        state["task_retries"] = {}
+                    return state
             except Exception:
                 pass
         return {
             "mode": "CONTINUOUS",  # CONTINUOUS, MANUAL_INTERVENTION_PAUSED, STOPPED
             "consecutive_failures": 0,
-            "last_checkpoint_id": None
+            "last_checkpoint_id": None,
+            "incidents": [],
+            "task_retries": {}
         }
 
     def save_loop_state(self) -> None:
         """Saves continuous execution loop state to disk."""
         with open(self.loop_state_file, "w", encoding="utf-8") as f:
             json.dump(self.loop_state, f, indent=2, default=str)
+
+    def register_incident_report(
+        self,
+        severity: str,
+        task_id: Optional[str],
+        failure_sig: str,
+        details: str
+    ) -> SAGEIncidentReport:
+        """Registers and persists a structured incident report to model and handle escalations."""
+        incident_id = f"INC-{time.strftime('%Y%m%d', time.gmtime())}-{uuid.uuid4().hex[:6].upper()}"
+
+        req_response = "Capture evidence and retry within limits"
+        authority_req = "SYSTEM_AUTO"
+        rec_status = "PENDING"
+
+        if severity == "WARNING":
+            req_response = "Pause execution loop for supervisor review"
+            authority_req = "OPERATOR_REVIEW"
+            self.loop_state["mode"] = "MANUAL_INTERVENTION_PAUSED"
+        elif severity == "CRITICAL":
+            req_response = "Freeze execution, preserve checkpoint and hold for operator"
+            authority_req = "OPERATOR_SIGN_OFF"
+            self.loop_state["mode"] = "STOPPED"
+
+        report = SAGEIncidentReport(
+            incident_id=incident_id,
+            timestamp=time.time(),
+            severity=severity,
+            source_workflow="DeveloperWorkflowOrchestrator",
+            affected_task_id=task_id,
+            failure_signature=failure_sig,
+            evidence_references=[str(self.evidence_output_path)],
+            required_response=req_response,
+            authority_requirement=authority_req,
+            recovery_status=rec_status
+        )
+
+        # Persist to local state list
+        if "incidents" not in self.loop_state:
+            self.loop_state["incidents"] = []
+        self.loop_state["incidents"].append(report.model_dump())
+        self.save_loop_state()
+
+        # Capture in SAGE-CCL
+        self.ccl.intercept_event(
+            event_type="incident_report",
+            action_taken=f"Registered {severity} incident {incident_id}",
+            decision_reasoning=f"Governance safety escalation handler registered operational event: {details}",
+            failure_context=report.model_dump(),
+            session_id=self.session_id
+        )
+
+        return report
 
     def pause_mission_execution_loop(self) -> None:
         """Pauses execution loop and logs human-in-the-loop intervention."""
@@ -1139,23 +1214,56 @@ class DeveloperWorkflowOrchestrator:
                         self.handoff_discovery_candidate_to_mission(cand_id)
 
             except Exception as e:
-                # Failure escalation protection
-                task.status = "FAILED"
+                # Failure escalation protection & multi-tier deterministic recovery paths
                 self.loop_state["consecutive_failures"] += 1
 
-                # Check if failure count crosses the safety threshold
-                if self.loop_state["consecutive_failures"] >= 3:
-                    self.loop_state["mode"] = "MANUAL_INTERVENTION_PAUSED"
+                # Fetch task retry history
+                task_id = task.task_id
+                retries = self.loop_state.get("task_retries", {})
+                if task_id not in retries:
+                    retries[task_id] = 0
+                retries[task_id] += 1
+                self.loop_state["task_retries"] = retries
 
-                # Intercept failure in SAGE-CCL
-                self.ccl.intercept_event(
-                    event_type="recovered",
-                    action_taken=f"Execution failed for task {task.task_id}",
-                    decision_reasoning="Continuous execution loop error handler intercepted active agent failure",
-                    failure_context={"error": "task_execution_failed", "exception": str(e), "consecutive_failures": self.loop_state["consecutive_failures"]},
-                    recovery_path="hold_for_manual_operator_remediation" if self.loop_state["consecutive_failures"] >= 3 else "continue_next_queue_task",
-                    session_id=self.session_id
-                )
+                # Determine escalation severity based on retry thresholds or critical triggers
+                if "critical" in task_id or "critical" in task.description.lower() or "critical" in str(e).lower():
+                    # CRITICAL: Freeze, preserve state checkpoint, operator authorization required
+                    task.status = "FAILED"
+                    self.loop_state["mode"] = "STOPPED"
+
+                    self.register_incident_report(
+                        severity="CRITICAL",
+                        task_id=task_id,
+                        failure_sig="CriticalSystemViolation",
+                        details=f"Critical unrecoverable error during task '{task_id}': {e}"
+                    )
+
+                    # Create critical checkpoint
+                    self.checkpoint_manager.create_checkpoint(
+                        current_sage_state=self.session.model_dump(),
+                        active_goals=list(self.session.active_objectives),
+                        recent_decisions=[],
+                        validation_status={"task_id": task_id, "status": "CRITICAL_FREEZE", "error": str(e)}
+                    )
+                elif retries[task_id] < 2:
+                    # NORMAL: capture evidence, retry, continue
+                    task.status = "PENDING"  # allow retry on next iteration
+                    self.register_incident_report(
+                        severity="NORMAL",
+                        task_id=task_id,
+                        failure_sig="TransientExecutionFailure",
+                        details=f"Transient failure on task '{task_id}' (attempt {retries[task_id]}): {e}"
+                    )
+                else:
+                    # WARNING: Repeated retries, pause loop review, notify operator, operatorapproved resume
+                    task.status = "FAILED"
+                    self.loop_state["mode"] = "MANUAL_INTERVENTION_PAUSED"
+                    self.register_incident_report(
+                        severity="WARNING",
+                        task_id=task_id,
+                        failure_sig="RepeatedRetryExhausted",
+                        details=f"Retry limit exhausted on task '{task_id}': {e}"
+                    )
 
             self.mission_queue.save_queue()
             self.save_loop_state()
@@ -1540,6 +1648,15 @@ class DeveloperWorkflowOrchestrator:
             dashboard.append("  RECENT COMPLETED WORK:")
             for t in completed_tasks[-3:]:
                 dashboard.append(f"     - [{t.task_id}] Completed in {t.completion_time_secs or 0.0:.1f}s (Conf: {t.recommendation_confidence:.2f})")
+        # Fetch loop incidents
+        incidents = self.loop_state.get("incidents", [])
+        if incidents:
+            dashboard.append("  ACTIVE GOVERNANCE ESCALATIONS & SAFETY INCIDENTS:")
+            for inc in incidents[-3:]:
+                dashboard.append(f"     - [{inc.get('severity')} - {inc.get('incident_id')}] Task: {inc.get('affected_task_id')} | Sig: {inc.get('failure_signature')}")
+                dashboard.append(f"       Response:  {inc.get('required_response')}")
+                dashboard.append(f"       Authority: {inc.get('authority_requirement')} | Recovery: {inc.get('recovery_status')}")
+
         if friction:
             dashboard.append("  BOTTLENECK INDICATORS:")
             for idx, f in enumerate(friction, 1):

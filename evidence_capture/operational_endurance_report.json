@@ -1,9 +1,9 @@
 {
-  "timestamp": 1785938951.2315934,
+  "timestamp": 1785940513.0924006,
   "session_id": "session_endurance_test_99",
   "total_cycles": 3,
-  "total_duration_secs": 0.33988118171691895,
-  "compounding_duration_reduction_percent": 38.494512066558215,
+  "total_duration_secs": 0.3301706314086914,
+  "compounding_duration_reduction_percent": 40.27610636822037,
   "recovery_success_rate": 1.0,
   "history": [
     {
@@ -12,23 +12,23 @@
       "executed_tasks": [
         "task_sim_1"
       ],
-      "duration_secs": 0.2194465160369873,
+      "duration_secs": 0.21464142799377442,
       "metrics": {
         "lifecycle_completion_rate": 0.25,
         "recovery_success_rate": 1.0,
         "evidence_completeness": 0.0,
         "decision_trace_completeness": 1.0,
         "workflow_state_accuracy": 1.0,
-        "execution_cycle_duration": 0.2194465160369873,
+        "execution_cycle_duration": 0.21464142799377442,
         "context_preservation_score": 1.0,
         "unnecessary_reassessment_events": 0,
         "repeated_execution_prevention": true,
         "state_restoration_success": true,
         "queue_throughput": 1.0,
-        "average_task_completion_time": 0.045975685119628906,
+        "average_task_completion_time": 0.0453643798828125,
         "duplicate_work_avoided_percent": 100.0,
         "recommendation_accuracy": 1.0,
-        "improvement_velocity": 1305.0376485718434,
+        "improvement_velocity": 1322.6236125126136,
         "recommendation_precision": 0.95,
         "queue_efficiency": 0.3333333333333333,
         "operator_effort_reduction_percent": 85.0
@@ -40,23 +40,23 @@
       "executed_tasks": [
         "task_sim_2"
       ],
-      "duration_secs": 0.16466813087463378,
+      "duration_secs": 0.16679577827453612,
       "metrics": {
         "lifecycle_completion_rate": 0.3333333333333333,
         "recovery_success_rate": 1.0,
         "evidence_completeness": 0.0,
         "decision_trace_completeness": 1.0,
         "workflow_state_accuracy": 1.0,
-        "execution_cycle_duration": 0.16466813087463378,
+        "execution_cycle_duration": 0.16679577827453612,
         "context_preservation_score": 1.0,
         "unnecessary_reassessment_events": 0,
         "repeated_execution_prevention": true,
         "state_restoration_success": true,
         "queue_throughput": 2.0,
-        "average_task_completion_time": 0.045389771461486816,
+        "average_task_completion_time": 0.0459136962890625,
         "duplicate_work_avoided_percent": 100.0,
         "recommendation_accuracy": 1.0,
-        "improvement_velocity": 2643.7674422269324,
+        "improvement_velocity": 2613.5992023928216,
         "recommendation_precision": 0.95,
         "queue_efficiency": 0.5,
         "operator_effort_reduction_percent": 85.0
@@ -66,25 +66,25 @@
       "cycle_index": 3,
       "status": "CONTINUOUS",
       "executed_tasks": [
-        "task_impr_CANDIDATE-OIL-SPEED-9B8676"
+        "task_impr_CANDIDATE-OIL-SPEED-B7AB29"
       ],
-      "duration_secs": 0.13497165044148762,
+      "duration_secs": 0.1281922181447347,
       "metrics": {
         "lifecycle_completion_rate": 0.2857142857142857,
         "recovery_success_rate": 1.0,
         "evidence_completeness": 0.0,
         "decision_trace_completeness": 1.0,
         "workflow_state_accuracy": 1.0,
-        "execution_cycle_duration": 0.13497165044148762,
+        "execution_cycle_duration": 0.1281922181447347,
         "context_preservation_score": 1.0,
         "unnecessary_reassessment_events": 0,
         "repeated_execution_prevention": true,
         "state_restoration_success": true,
         "queue_throughput": 2.0,
-        "average_task_completion_time": 0.045389771461486816,
+        "average_task_completion_time": 0.0459136962890625,
         "duplicate_work_avoided_percent": 100.0,
         "recommendation_accuracy": 1.0,
-        "improvement_velocity": 2643.7674422269324,
+        "improvement_velocity": 2613.5992023928216,
         "recommendation_precision": 0.95,
         "queue_efficiency": 0.5,
         "operator_effort_reduction_percent": 85.0

@@ -621,10 +621,9 @@ def test_sage_continuous_execution_and_governance_loop(tmp_path):
     # Run loop to execute failing tasks
     res_fails = orchestrator.execute_autonomous_mission_loop(max_cycles=3)
     assert res_fails["status"] == "MANUAL_INTERVENTION_PAUSED" # Safety freeze triggered!
-    assert res_fails["consecutive_failures"] == 3
+    assert res_fails["consecutive_failures"] == 2
     assert orchestrator.mission_queue.get_task("task_fail_1").status == "FAILED"
-    assert orchestrator.mission_queue.get_task("task_fail_2").status == "FAILED"
-    assert orchestrator.mission_queue.get_task("task_fail_3").status == "FAILED"
+    assert orchestrator.mission_queue.get_task("task_fail_2").status == "PENDING"
 
     # Reset mode and failures for remaining checks
     orchestrator.loop_state["mode"] = "CONTINUOUS"
@@ -878,3 +877,108 @@ def test_sage_coordinated_loop_endurance_simulation(tmp_path):
 
     queue_file = Path("evidence_capture/queue_intelligence_report.json")
     assert queue_file.exists()
+
+
+def test_sage_escalation_rules_lifecycle(tmp_path):
+    """Verify consecutive failure retries, warning loop pauses, critical freezes,
+
+    incident report log generation, and operator overrides.
+    """
+    from sage.experimental.act.continuity_control import (
+        DeveloperWorkflowOrchestrator,
+        ContinuityControlLoop,
+        SAGEMissionTask
+    )
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    evidence_output = tmp_path / "evidence" / "ccl_feedback.json"
+
+    # Setup session manager and orchestrator
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_escalation_test_99",
+        objective="obj_continuous_development",
+        ccl=ccl,
+        evidence_output_path=str(evidence_output)
+    )
+
+    # 1. Test NORMAL escalation (retry loop)
+    task_normal_fail = SAGEMissionTask(
+        task_id="task_fail_transient",
+        objective_id="obj_continuous_development",
+        priority_score=100.0,
+        authorized=True,
+        description="Transient fail task"
+    )
+    orchestrator.mission_queue.add_task(task_normal_fail)
+
+    # First attempt: should fail, log NORMAL, and remain PENDING for retry
+    res_1 = orchestrator.execute_autonomous_mission_loop(max_cycles=1)
+    assert res_1["status"] == "CONTINUOUS"
+
+    t_normal = orchestrator.mission_queue.get_task("task_fail_transient")
+    assert t_normal.status == "PENDING"
+    assert orchestrator.loop_state["task_retries"]["task_fail_transient"] == 1
+
+    # Verify NORMAL incident report registered
+    assert len(orchestrator.loop_state["incidents"]) == 1
+    assert orchestrator.loop_state["incidents"][0]["severity"] == "NORMAL"
+
+    # Second attempt: should fail again, exhaust retries, log WARNING, and pause the loop
+    res_2 = orchestrator.execute_autonomous_mission_loop(max_cycles=1)
+    assert res_2["status"] == "MANUAL_INTERVENTION_PAUSED"
+
+    t_warning = orchestrator.mission_queue.get_task("task_fail_transient")
+    assert t_warning.status == "FAILED"
+    assert orchestrator.loop_state["task_retries"]["task_fail_transient"] == 2
+
+    # Verify WARNING incident report registered
+    assert len(orchestrator.loop_state["incidents"]) == 2
+    assert orchestrator.loop_state["incidents"][1]["severity"] == "WARNING"
+
+    # 2. Test CRITICAL escalation (instant freeze and state checkpoint preservation)
+    orchestrator.loop_state["mode"] = "CONTINUOUS"
+    orchestrator.save_loop_state()
+
+    task_critical_fail = SAGEMissionTask(
+        task_id="task_fail_critical_violation",
+        objective_id="obj_continuous_development",
+        priority_score=150.0,
+        authorized=True,
+        description="Critical unrecoverable task"
+    )
+    orchestrator.mission_queue.add_task(task_critical_fail)
+
+    # Execution should instantly stop (freeze), logging a CRITICAL incident and saving a checkpoint
+    res_3 = orchestrator.execute_autonomous_mission_loop(max_cycles=1)
+    assert res_3["status"] == "STOPPED"
+
+    t_critical = orchestrator.mission_queue.get_task("task_fail_critical_violation")
+    assert t_critical.status == "FAILED"
+
+    # Verify CRITICAL incident report registered
+    assert len(orchestrator.loop_state["incidents"]) == 3
+    assert orchestrator.loop_state["incidents"][2]["severity"] == "CRITICAL"
+    assert orchestrator.loop_state["incidents"][2]["authority_requirement"] == "OPERATOR_SIGN_OFF"
+
+    # Verify critical checkpoint was saved
+    checkpoints = orchestrator.checkpoint_manager.list_all()
+    assert len(checkpoints) > 0
+    assert any("CRITICAL_FREEZE" in str(cp.validation_status) for cp in checkpoints)
+
+    # 3. Test Operator Override / Recovery Safety Gates
+    with pytest.raises(ValueError, match="Stopped loop cannot be resumed"):
+        orchestrator.resume_mission_execution_loop()
+
+    # Manual supervisor override: override status back to CONTINUOUS and reset failures
+    orchestrator.loop_state["mode"] = "CONTINUOUS"
+    orchestrator.loop_state["consecutive_failures"] = 0
+    orchestrator.save_loop_state()
+
+    orchestrator.resume_mission_execution_loop()
+    assert orchestrator.loop_state["mode"] == "CONTINUOUS"
+    assert orchestrator.loop_state["consecutive_failures"] == 0

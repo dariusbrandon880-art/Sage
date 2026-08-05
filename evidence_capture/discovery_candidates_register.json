@@ -534,5 +534,131 @@
     "description": "Optimize context preservation to prevent redundant reassessment of completed actions.",
     "validation_criteria": "Ensure redundant step count resolves to 0.",
     "priority": "HIGH"
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-2C7A9F",
+    "description": "Address cognitive_load friction: high manual step friction",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-2D3C80",
+    "description": "Address environmental_latency friction: high setup and download latency",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-92A6E4",
+    "description": "Optimize context preservation to prevent redundant reassessment of completed actions.",
+    "validation_criteria": "Ensure redundant step count resolves to 0.",
+    "priority": "HIGH"
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-7E191B",
+    "description": "Address cognitive_load friction: high manual step friction",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-E81FA7",
+    "description": "Address environmental_latency friction: high setup and download latency",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-144982",
+    "description": "Optimize context preservation to prevent redundant reassessment of completed actions.",
+    "validation_criteria": "Ensure redundant step count resolves to 0.",
+    "priority": "HIGH"
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-F27B24",
+    "description": "Address cognitive_load friction: high manual step friction",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-B49EA8",
+    "description": "Address environmental_latency friction: high setup and download latency",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-EDF24C",
+    "description": "Optimize context preservation to prevent redundant reassessment of completed actions.",
+    "validation_criteria": "Ensure redundant step count resolves to 0.",
+    "priority": "HIGH"
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-EFC9CD",
+    "description": "Address cognitive_load friction: high manual step friction",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-E5DB17",
+    "description": "Address environmental_latency friction: high setup and download latency",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-532CF7",
+    "description": "Optimize context preservation to prevent redundant reassessment of completed actions.",
+    "validation_criteria": "Ensure redundant step count resolves to 0.",
+    "priority": "HIGH"
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-952678",
+    "description": "Address cognitive_load friction: high manual step friction",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-D92DE5",
+    "description": "Address environmental_latency friction: high setup and download latency",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-5859B3",
+    "description": "Optimize context preservation to prevent redundant reassessment of completed actions.",
+    "validation_criteria": "Ensure redundant step count resolves to 0.",
+    "priority": "HIGH"
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-ECCB21",
+    "description": "Address cognitive_load friction: high manual step friction",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-F9CE07",
+    "description": "Address environmental_latency friction: high setup and download latency",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-A54C4C",
+    "description": "Optimize context preservation to prevent redundant reassessment of completed actions.",
+    "validation_criteria": "Ensure redundant step count resolves to 0.",
+    "priority": "HIGH"
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-D85F87",
+    "description": "Address cognitive_load friction: high manual step friction",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-18B1ED",
+    "description": "Address environmental_latency friction: high setup and download latency",
+    "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
+    "priority": "MEDIUM"
+  },
+  {
+    "candidate_id": "CANDIDATE-OIL-F36FC0",
+    "description": "Optimize context preservation to prevent redundant reassessment of completed actions.",
+    "validation_criteria": "Ensure redundant step count resolves to 0.",
+    "priority": "HIGH"
   }
 ]
