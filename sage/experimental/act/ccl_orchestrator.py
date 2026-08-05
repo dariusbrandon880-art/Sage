@@ -323,11 +323,17 @@ class WorkflowIntelligenceFeedbackLayer:
                     "task_id": task_id,
                     "reason": f"Awaiting human approval checkpoints or supervisor gate sign-off in state '{status}'."
                 })
-            elif status == "ACTIVE" and task.get("progress_percent", 0.0) == 0.0:
-                blocked_tasks.append({
-                    "task_id": task_id,
-                    "reason": f"Task '{task_id}' is ACTIVE but progress is stalled at 0.0%."
-                })
+            elif status == "ACTIVE":
+                if task.get("progress_percent", 0.0) == 0.0:
+                    blocked_tasks.append({
+                        "task_id": task_id,
+                        "reason": f"Task '{task_id}' is ACTIVE but progress is stalled at 0.0%."
+                    })
+                elif task.get("latest_result", {}).get("build_failure") and task.get("latest_result", {}).get("build_failure") != "NONE":
+                    blocked_tasks.append({
+                        "task_id": task_id,
+                        "reason": f"Task '{task_id}' has encountered a reported execution build failure: '{task.get('latest_result', {}).get('build_failure')}'."
+                    })
 
             # 2. Detect Active Risks
             # Assignment of general agents to specialized tasks, or lack of lineage references

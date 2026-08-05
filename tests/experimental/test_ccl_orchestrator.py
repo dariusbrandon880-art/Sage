@@ -1027,3 +1027,158 @@ def test_two_role_coordination_and_recovery_loop(tmp_path):
     # Ensure state hashes align and are non-repudiable
     assert len(record["state_integrity"]["state_hash"]) == 64
     assert len(record["state_integrity"]["chain_hash"]) == 64
+
+
+def test_repeated_execution_and_extended_continuity_hardening(tmp_path):
+    """Validate repeated engineering cycles and extended continuity hardening (ChatGPT Coordinator -> Jules Executor).
+
+    Covers:
+      1. Repeated Execution Validation (multiple cycles of plan -> assign -> execute -> progress -> capture).
+      2. Extended Workflow Continuity (longer-running tasks, paused/resumed progress, priority shift, interruption).
+      3. High-Quality Evidence Reconstruction (What changed? Why? Who owned it? What evidence? What happens next?).
+      4. Hand-off Contract Stability (Reviewer readiness for future Claude Review Role).
+    """
+    evidence_file = tmp_path / "ccl_hardening_validation.json"
+    orch = DeveloperWorkflowOrchestrator(session_id="session_extended_hardening")
+
+    # Connect ChatGPT and Jules roles
+    chatgpt = ChatGPTAgentConnector(orch, agent_id="agent_chatgpt_coord")
+    jules = JulesAgentConnector(orch, agent_id="agent_jules_exec")
+
+    # Activate Reviewer role (future Claude role preparation)
+    orch.ingest_event("AGENT_ACTIVATION", "system", {"agent_id": "agent_reviewer", "supervisor_id": "super", "decision": "AUTHORIZED", "role": "REVIEWER"})
+
+    # --- CYCLE 1: Initialization & Primary Feature Engineering ---
+    chatgpt.align_workflow_state(
+        "INITIATE_TASK",
+        "task_ccl_ops_refactoring",
+        {
+            "objective_id": "obj_experimental_refactoring",
+            "initial_context": {
+                "files_to_modify": ["sage/experimental/act/ccl_orchestrator.py"],
+                "milestones_completed": ["Milestone-1-contracts"]
+            },
+            "lineage_references": ["ADR-001"]
+        }
+    )
+
+    # Jules retrieves context and transitions task to ACTIVE
+    jules_ctx = jules.rehydrate_engineering_context("task_ccl_ops_refactoring")
+    assert jules_ctx["workflow_state"]["status"] == "INITIATED"
+    assert "Milestone-1-contracts" in jules_ctx["completed_milestones"]
+
+    jules.align_task_state("task_ccl_ops_refactoring", "ACTIVE", "Jules starts Cycle 1.")
+
+    # Cycle 1 Progress Update
+    jules.report_progress(
+        task_id="task_ccl_ops_refactoring",
+        progress_percent=50.0,
+        result_payload={"ast_check_1": "PASSED"},
+        feedback="Cycle 1: 50% complete. Intermediate AST parsing looks clean."
+    )
+
+    # Cycle 1 Completion Progress
+    jules.report_progress(
+        task_id="task_ccl_ops_refactoring",
+        progress_percent=100.0,
+        result_payload={"git_hash_cycle_1": "h1111111", "milestones_completed": ["Milestone-1-contracts", "Milestone-2-cycle-1-passed"]},
+        feedback="Cycle 1 completed. Added Connector tests."
+    )
+
+    # Human approval checkpoint locks Cycle 1
+    orch.ingest_event("HUMAN_APPROVAL", "task_ccl_ops_refactoring", {"supervisor_id": "super", "decision": "AUTHORIZED", "comments": "Cycle 1 approved."})
+    orch.ingest_event("STATE_TRANSITION", "task_ccl_ops_refactoring", {"target_status": "COMPLETED", "agent_id": "agent_jules_exec", "comment": "Jules completes Cycle 1 task."})
+
+    # Assert Cycle 1 task is locked in completed state
+    assert orch.tasks["task_ccl_ops_refactoring"]["status"] == "COMPLETED"
+    assert "Milestone-2-cycle-1-passed" in orch.tasks["task_ccl_ops_refactoring"]["latest_result"]["milestones_completed"]
+
+    # --- CYCLE 2: Repeated Execution & Extended Workflow (Resumed, Paused, Priority Shifts) ---
+
+    # Task 2 is initialized inheriting the completed milestones from Cycle 1 to prevent restarting completed work
+    chatgpt.align_workflow_state(
+        "INITIATE_TASK",
+        "task_ccl_ops_hardening",
+        {
+            "objective_id": "obj_experimental_hardening",
+            "initial_context": {
+                "files_to_modify": ["sage/experimental/act/ccl_orchestrator.py"],
+                "milestones_completed": ["Milestone-1-contracts", "Milestone-2-cycle-1-passed"]
+            },
+            "lineage_references": ["ADR-001", "SAGE-ACT-MP-2.0"]
+        }
+    )
+
+    # Jules starts Task 2
+    jules_ctx_2 = jules.rehydrate_engineering_context("task_ccl_ops_hardening")
+    assert "Milestone-2-cycle-1-passed" in jules_ctx_2["completed_milestones"]  # Verified context inheritance!
+
+    jules.align_task_state("task_ccl_ops_hardening", "ACTIVE", "Jules starts Cycle 2.")
+
+    # Extended Progress updates
+    jules.report_progress(
+        task_id="task_ccl_ops_hardening",
+        progress_percent=20.0,
+        result_payload={"ast_check_2": "PASSED"},
+        feedback="Cycle 2: 20% complete. Secondary AST verification."
+    )
+
+    # Workflow Paused / Resumed / Priority Shift simulation
+    # Simulate an interruption / priority change (e.g. slow container compile / compiler failure)
+    jules.report_progress(
+        task_id="task_ccl_ops_hardening",
+        progress_percent=20.0,
+        result_payload={"build_failure": "Timeout during multi-role execution test"},
+        feedback="Priority Shift: Multi-agent coordination latency encountered. Pausing workflow."
+    )
+
+    # Verify no context loss after interruption
+    jules_ctx_interrupted = jules.rehydrate_engineering_context("task_ccl_ops_hardening")
+    assert jules_ctx_interrupted["workflow_state"]["status"] == "ACTIVE"
+    assert jules_ctx_interrupted["workflow_state"]["progress_percent"] == 20.0
+    assert "Timeout during multi-role execution test" in jules_ctx_interrupted["current_blocker"]
+
+    # Jules resumes the paused workflow and reports execution success
+    jules.report_progress(
+        task_id="task_ccl_ops_hardening",
+        progress_percent=100.0,
+        result_payload={"git_hash_cycle_2": "h2222222", "build_failure": "NONE", "milestones_completed": ["Milestone-1-contracts", "Milestone-2-cycle-1-passed", "Milestone-3-cycle-2-hardened"]},
+        feedback="Cycle 2 resumed and completed. All SAGE operational loops fully hardened."
+    )
+
+    # --- PART 3: Engineering Evidence Quality Reconstruction ---
+    # Construct complete hand-off manifest contract for the Reviewer
+    jules.generate_handoff_manifest("task_ccl_ops_hardening", "agent_reviewer")
+    assert orch.tasks["task_ccl_ops_hardening"]["status"] == "HANDOFF"
+    assert orch.tasks["task_ccl_ops_hardening"]["assigned_agent"] == "agent_reviewer"
+
+    # Human Gate review
+    orch.ingest_event("HUMAN_APPROVAL", "task_ccl_ops_hardening", {"supervisor_id": "super", "decision": "AUTHORIZED", "comments": "Cycle 2 approved."})
+    orch.ingest_event("STATE_TRANSITION", "task_ccl_ops_hardening", {"target_status": "COMPLETED", "agent_id": "agent_reviewer", "comment": "Reviewer signed off on Cycle 2."})
+
+    # Export final SAGE evidence package
+    evidence = orch.export_evidence(str(evidence_file))
+
+    # Assert complete trace and reconstruction questions
+    assert "task_ccl_ops_hardening" in evidence["active_tasks"]
+    record = evidence["continuity_control_records"]["task_ccl_ops_hardening"]
+
+    # 1. WHAT CHANGED & WHY?
+    # Proven by the latest result payload and the objective clarifications
+    assert record["task_state_snapshot"]["latest_result"]["git_hash_cycle_2"] == "h2222222"
+    assert record["task_state_snapshot"]["objective_id"] == "obj_experimental_hardening"
+
+    # 2. WHO OWNED IT?
+    # Proven by the task assignee and role registrations
+    assert record["task_state_snapshot"]["assigned_agent"] == "agent_reviewer"
+    assert record["task_state_snapshot"]["agent_role"] == "REVIEWER"
+
+    # 3. WHAT EVIDENCE PROVES IT?
+    # Proven by monotonic sequence history length, human approvals, and state integrity hashes
+    assert len(record["monotonic_sequence_history"]) >= 6
+    assert record["task_state_snapshot"]["human_approval"]["decision"] == "AUTHORIZED"
+    assert len(record["state_integrity"]["state_hash"]) == 64
+
+    # 4. WHAT HAPPENS NEXT?
+    # Proven by COMPLETED status indicating review readiness for next stages
+    assert record["task_state_snapshot"]["status"] == "COMPLETED"
