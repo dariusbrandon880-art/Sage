@@ -856,3 +856,174 @@ def test_jules_agent_connector(tmp_path):
     orch.agents["agent_jules_exec"] = "SUSPENDED"
     with pytest.raises(PermissionError, match="Handoff Refused"):
         jules.generate_handoff_manifest("task_jules_01", "agent_reviewer")
+
+
+def test_two_role_coordination_and_recovery_loop(tmp_path):
+    """Validate the first real two-role SAGE operational loop (ChatGPT Coordinator -> Jules Executor).
+
+    Covers:
+      1. Coordinator -> Executor transfer of 8 fields.
+      2. Complete execution traceability (Assignment -> Action -> Progress -> State Transition -> Evidence -> Outcome).
+      3. Recovery validation (Interrupted tasks, paused workflows, resumed execution, incomplete handoffs).
+      4. Review readiness preparation (ChatGPT -> Jules -> Evidence -> Reviewer).
+      5. Shared state consistency and validation.
+    """
+    evidence_file = tmp_path / "ccl_two_role_validation.json"
+    orch = DeveloperWorkflowOrchestrator(session_id="session_two_role_validation")
+
+    # [Agent Activation Gate]
+    chatgpt = ChatGPTAgentConnector(orch, agent_id="agent_chatgpt_coord")
+    jules = JulesAgentConnector(orch, agent_id="agent_jules_exec")
+    orch.ingest_event("AGENT_ACTIVATION", "system", {"agent_id": "agent_reviewer", "supervisor_id": "super", "decision": "AUTHORIZED", "role": "REVIEWER"})
+
+    # --- PART 1: Coordinator -> Executor Transfer ---
+    # ChatGPT coordinates the initiation of the engineering refactoring mission
+    orch.ingest_event(
+        "TASK_INIT",
+        "task_engineering_exec",
+        {
+            "objective_id": "obj_experimental_hardening",
+            "assigned_agent": "agent_jules_exec",
+            "initial_context": {
+                "files_to_modify": ["sage/experimental/act/ccl_orchestrator.py"],
+                "milestones_completed": ["Milestone-1-contracts", "Milestone-2-ccl-ops"]
+            },
+            "lineage_references": ["ADR-001", "SAGE-ACT-MP-2.0"]
+        }
+    )
+
+    # Rehydrate engineering context for Jules and assert all 8 fields are perfectly present and transferred
+    jules_ctx = jules.rehydrate_engineering_context("task_engineering_exec")
+
+    # Field 1: Active Mission
+    assert jules_ctx["active_mission"]["objective_id"] == "obj_experimental_hardening"
+    assert jules_ctx["active_mission"]["session_id"] == "session_two_role_validation"
+
+    # Field 2: Current Workflow State
+    assert jules_ctx["workflow_state"]["status"] == "INITIATED"
+    assert jules_ctx["workflow_state"]["progress_percent"] == 0.0
+
+    # Field 3: Completed Milestones
+    assert "Milestone-2-ccl-ops" in jules_ctx["completed_milestones"]
+
+    # Field 4: Engineering Scope
+    assert jules_ctx["assigned_engineering_responsibility"]["scope_prefix"] == "sage/experimental/act"
+    assert "sage/experimental/act/ccl_orchestrator.py" in jules_ctx["assigned_engineering_responsibility"]["target_files"]
+
+    # Field 5: Repository Context
+    assert jules_ctx["repository_context"]["workspace_clean"] is True
+    assert jules_ctx["repository_context"]["ast_restricted"] is True
+
+    # Field 6: Blockers
+    # The task is INITIATED and lacks a human approval gate, which intelligence reports as a coordination blocker
+    assert "awaiting human approval" in jules_ctx["current_blocker"].lower()
+
+    # Field 7: Required Action
+    assert "Transition to ACTIVE state" in jules_ctx["required_next_action"]
+
+    # Field 8: Evidence History (Preceding record state hash)
+    assert len(jules_ctx["evidence_history"]["preceding_records_hashes"]) == 1
+    assert len(jules_ctx["evidence_history"]["preceding_records_hashes"][0]) == 64
+
+    # --- PART 2: Engineering Execution Traceability ---
+    # Step 1: State Transition (Start execution)
+    jules.align_task_state("task_engineering_exec", "ACTIVE", "Jules starts code-modification loop.")
+    assert orch.tasks["task_engineering_exec"]["status"] == "ACTIVE"
+
+    # Step 2: Progress Updates
+    jules.report_progress(
+        task_id="task_engineering_exec",
+        progress_percent=40.0,
+        result_payload={"ast_parsed": True},
+        feedback="AST parsed successfully. Writing new connector tests."
+    )
+
+    task_state = orch.tasks["task_engineering_exec"]
+    assert task_state["progress_percent"] == 40.0
+    assert task_state["latest_result"]["ast_parsed"] is True
+    assert task_state["operational_feedback"][-1]["feedback"] == "AST parsed successfully. Writing new connector tests."
+
+    # --- PART 3: Recovery Validation ---
+    # Scenario A: Interrupted engineering task / paused workflow
+    # Jules reports an interruption or delay (e.g., container compile slow down)
+    jules.report_progress(
+        task_id="task_engineering_exec",
+        progress_percent=40.0,
+        result_payload={"build_failure": "Timeout compiling assets"},
+        feedback="Slow compiler build. Interrupted workflow."
+    )
+
+    # Let's verify our SAGE intelligence detects the LIVELINESS / delay friction and assigns candidate candidacy
+    analysis_interrupted = orch.intelligence.analyze_workflow_state()
+    # Task progress is not 0% (it is 40%), but we logged "slow" feedback, which is processed as friction opportunity
+    opps = orch.intelligence.process_operational_feedback()
+    liveliness_opps = [opp for opp in opps if opp["category"] == "LIVELINESS"]
+    assert len(liveliness_opps) >= 1
+    assert "slow" in liveliness_opps[0]["observed_friction"].lower()
+
+    # Scenario B: Resumed Execution & Priority Shift
+    # Jules resumes the interrupted workflow and completes 100% of the assigned work
+    jules.report_progress(
+        task_id="task_engineering_exec",
+        progress_percent=100.0,
+        result_payload={"git_hash": "a8c9b201", "tests_passing": True, "build_failure": "NONE"},
+        feedback="Recovered container compilation, completed loop. All unit tests green."
+    )
+
+    # Assert state updates correctly and is fully preserved
+    assert orch.tasks["task_engineering_exec"]["progress_percent"] == 100.0
+    assert orch.tasks["task_engineering_exec"]["latest_result"]["tests_passing"] is True
+    assert orch.tasks["task_engineering_exec"]["latest_result"]["build_failure"] == "NONE"
+
+    # --- PART 4: Review Readiness Preparation ---
+    # ChatGPT Coordinator coordinates reviewer handoff readiness
+    # Prepare the peer handoff block (transfer task ownership from Jules to the Reviewer role)
+    jules.generate_handoff_manifest("task_engineering_exec", "agent_reviewer")
+
+    assert orch.tasks["task_engineering_exec"]["status"] == "HANDOFF"
+    assert orch.tasks["task_engineering_exec"]["assigned_agent"] == "agent_reviewer"
+    assert orch.tasks["task_engineering_exec"]["agent_role"] == "REVIEWER"
+
+    # Human checkpoint gate authorization before final task completion
+    orch.ingest_event(
+        "HUMAN_APPROVAL",
+        "task_engineering_exec",
+        {
+            "supervisor_id": "human_supervisor_01",
+            "decision": "AUTHORIZED",
+            "comments": "Two-role coordination loop successfully validated."
+        }
+    )
+
+    # Transition task to COMPLETED by Reviewer
+    orch.ingest_event(
+        "STATE_TRANSITION",
+        "task_engineering_exec",
+        {
+            "target_status": "COMPLETED",
+            "agent_id": "agent_reviewer",
+            "comment": "Peer reviewer verifies engineering action aligns 100% with objective."
+        }
+    )
+
+    assert orch.tasks["task_engineering_exec"]["status"] == "COMPLETED"
+
+    # --- PART 5: Shared State Consistency & Evidence Completeness ---
+    evidence = orch.export_evidence(str(evidence_file))
+
+    # Assert complete end-to-end trace reconstruction
+    assert "task_engineering_exec" in evidence["active_tasks"]
+    record = evidence["continuity_control_records"]["task_engineering_exec"]
+
+    # Verify monotonically ordered history events are preserved
+    assert len(record["monotonic_sequence_history"]) >= 6
+    event_types = [evt["event_type"] for evt in record["monotonic_sequence_history"]]
+    assert "TASK_INIT" in event_types
+    assert "STATE_TRANSITION" in event_types
+    assert "TASK_PROGRESS" in event_types
+    assert "AGENT_HANDOFF" in event_types
+    assert "HUMAN_APPROVAL" in event_types
+
+    # Ensure state hashes align and are non-repudiable
+    assert len(record["state_integrity"]["state_hash"]) == 64
+    assert len(record["state_integrity"]["chain_hash"]) == 64
