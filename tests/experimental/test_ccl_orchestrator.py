@@ -1232,9 +1232,9 @@ def test_three_role_governed_workflow_lifecycle(tmp_path):
 
     # Assert Control Tower State initially: Outstanding Operator Decisions exists, Review not started
     summary_init = orch.generate_operator_summary()
-    assert "• Outstanding Operator Decisions: 1 tasks ['task_three_role_loop']" in summary_init
-    assert "• Engineering Complete       : 0" in summary_init
-    assert "• Review Complete            : 0" in summary_init
+    assert "Outstanding Decisions      : 1 tasks ['task_three_role_loop']" in summary_init
+    assert "Awaiting Review            : 0 tasks []" in summary_init
+    assert "Review Complete            : 0 tasks []" in summary_init
 
     # --- STEP 2: Scoped Engineering Execution (Jules) ---
     jules.report_progress(
@@ -1251,8 +1251,8 @@ def test_three_role_governed_workflow_lifecycle(tmp_path):
 
     # Assert Control Tower: Engineering Complete and Awaiting Review
     summary_eng_done = orch.generate_operator_summary()
-    assert "• Engineering Complete       : 1 tasks ['task_three_role_loop']" in summary_eng_done
-    assert "• Awaiting Review            : 1 tasks ['task_three_role_loop']" in summary_eng_done
+    assert "progress=100.0%" in summary_eng_done
+    assert "Awaiting Review            : 1 tasks ['task_three_role_loop']" in summary_eng_done
 
     # --- STEP 3: Review Context Package Rehydration (Reviewer) ---
     review_ctx = reviewer.rehydrate_review_context("task_three_role_loop")
@@ -1288,7 +1288,7 @@ def test_three_role_governed_workflow_lifecycle(tmp_path):
 
     # Assert Control Tower: Review In Progress & Evidence Supporting Findings displayed
     summary_review = orch.generate_operator_summary()
-    assert "• Review In Progress         : 1 tasks ['task_three_role_loop']" in summary_review
+    assert "Review In Progress         : 1 tasks ['task_three_role_loop']" in summary_review
     assert f"task_three_role_loop Finding: 'AST boundary safety and isolat' (Evidence: {preceding_hash[:12]})" in summary_review
 
     # --- STEP 5: Final Operator Decision Validation & Oversight (Human Gate) ---
@@ -1326,8 +1326,8 @@ def test_three_role_governed_workflow_lifecycle(tmp_path):
 
     # Assert Control Tower: Outstanding Operator Decisions is now zero, Review Complete is 1
     summary_final = orch.generate_operator_summary()
-    assert "• Outstanding Operator Decisions: 0 tasks []" in summary_final
-    assert "• Review Complete            : 1 tasks ['task_three_role_loop']" in summary_final
+    assert "Outstanding Decisions      : 0 tasks []" in summary_final
+    assert "Review Complete            : 1 tasks ['task_three_role_loop']" in summary_final
 
     # Export final SAGE evidence package
     evidence = orch.export_evidence(str(evidence_file))
@@ -1337,3 +1337,214 @@ def test_three_role_governed_workflow_lifecycle(tmp_path):
     findings_recorded = evidence["active_tasks"]["task_three_role_loop"]["context"]["review_findings"]
     assert len(findings_recorded) == 1
     assert findings_recorded[0]["evidence_hash_reference"] == preceding_hash
+
+
+def test_operational_lifecycle_reliability_and_control_tower_hardening(tmp_path):
+    """Validate SAGE reliability as a repeatable, continuous AI development operating loop.
+
+    Covers:
+      1. Repeated Full Lifecycle Validation (re-initiating and coordinating subsequent missions cleanly).
+      2. Lifecycle Failure Recovery (engineering interruption, review rejection, revision request, pause/resume, incomplete evidence, conflicts).
+      3. Complete Evidence Chain Verification ("What changed?", "Who changed it?", "Why?", "What proves it?", "What happens next?").
+      4. Control Tower Reliability Pass (systematically answering the five core operational questions).
+      5. Future Agent Readiness Check (reusable protocols for roles, identity, scope, packaging, boundaries, handoffs).
+    """
+    evidence_file = tmp_path / "ccl_reliability_hardening.json"
+    orch = DeveloperWorkflowOrchestrator(session_id="session_reliability_pass")
+
+    # Connect ChatGPT Coordinator, Jules Executor, Gemini Reviewer
+    chatgpt = ChatGPTAgentConnector(orch, agent_id="agent_chatgpt_coord")
+    jules = JulesAgentConnector(orch, agent_id="agent_jules_exec")
+    reviewer = ReviewerAgentConnector(orch, agent_id="agent_reviewer_gemini")
+
+    # --- PART 1: Repeated Full Lifecycle Validation ---
+    print("[Harden] Dynamic Task Lifecycle Initiations...")
+    chatgpt.align_workflow_state(
+        "INITIATE_TASK",
+        "task_reliability_loop_primary",
+        {
+            "objective_id": "obj_primary_reliability_mission",
+            "initial_context": {
+                "files_to_modify": ["sage/experimental/act/ccl_orchestrator.py"],
+                "milestones_completed": ["Milestone-1-contracts"]
+            },
+            "lineage_references": ["ADR-001"]
+        }
+    )
+
+    # 1. Ownership & Handoff to Executor
+    chatgpt.generate_handoff_manifest("task_reliability_loop_primary", "agent_jules_exec")
+    jules.align_task_state("task_reliability_loop_primary", "ACTIVE", "Jules starting execution.")
+
+    # 2. Scoped execution and progress updates
+    jules.report_progress(
+        task_id="task_reliability_loop_primary",
+        progress_percent=100.0,
+        result_payload={"git_hash": "abc12345", "tests_passing": True},
+        feedback="Primary cycle execution complete."
+    )
+
+    # 3. Transfer to Reviewer
+    jules.generate_handoff_manifest("task_reliability_loop_primary", "agent_reviewer_gemini")
+    review_ctx = reviewer.rehydrate_review_context("task_reliability_loop_primary")
+    preceding_hash = review_ctx["evidence_package"]["preceding_records_hashes"][0]
+
+    # 4. Reviewer finding submission referencing supporting evidence
+    reviewer.submit_review_finding(
+        task_id="task_reliability_loop_primary",
+        finding_details="Review completed successfully.",
+        evidence_hash_reference=preceding_hash
+    )
+
+    # 5. Human Authorization Checkpoint & Outcome Integration
+    orch.ingest_event("HUMAN_APPROVAL", "task_reliability_loop_primary", {"supervisor_id": "super", "decision": "AUTHORIZED", "comments": "Primary loop verified."})
+    orch.ingest_event("STATE_TRANSITION", "task_reliability_loop_primary", {"target_status": "COMPLETED", "agent_id": "agent_reviewer_gemini", "comment": "Cycle 1 sign-off."})
+
+    assert orch.tasks["task_reliability_loop_primary"]["status"] == "COMPLETED"
+
+    # --- PART 2: Lifecycle Failure Recovery Testing ---
+    # We initiate a secondary task representing a longer-running workflow with active interruptions and rejections
+    chatgpt.align_workflow_state(
+        "INITIATE_TASK",
+        "task_reliability_loop_secondary",
+        {
+            "objective_id": "obj_secondary_reliability_mission",
+            "initial_context": {
+                "files_to_modify": ["sage/experimental/act/ccl_orchestrator.py"],
+                "milestones_completed": ["Milestone-1-contracts", "Milestone-2-primary-completed"]
+            },
+            "lineage_references": ["ADR-001", "SAGE-ACT-MP-2.0"]
+        }
+    )
+
+    # Transfer to Jules
+    chatgpt.generate_handoff_manifest("task_reliability_loop_secondary", "agent_jules_exec")
+    jules.align_task_state("task_reliability_loop_secondary", "ACTIVE", "Jules starting Task 2.")
+
+    # Interruption 1: Engineering interruption (Slow compile / timeout build failure)
+    jules.report_progress(
+        task_id="task_reliability_loop_secondary",
+        progress_percent=30.0,
+        result_payload={"build_failure": "Timeout compiling container resources"},
+        feedback="Engineering interruption: slow docker build."
+    )
+
+    # Validate SAGE restores correct context and flags the blocker in rehydration packages
+    jules_ctx_recovery = jules.rehydrate_engineering_context("task_reliability_loop_secondary")
+    assert jules_ctx_recovery["workflow_state"]["status"] == "ACTIVE"
+    assert jules_ctx_recovery["workflow_state"]["progress_percent"] == 30.0
+    assert "Timeout compiling container resources" in jules_ctx_recovery["current_blocker"]
+
+    # Resume workflow execution and complete engineering action
+    jules.report_progress(
+        task_id="task_reliability_loop_secondary",
+        progress_percent=100.0,
+        result_payload={"git_hash": "def67890", "tests_passing": True, "build_failure": "NONE"},
+        feedback="Jules resumed execution and completed secondary action."
+    )
+
+    # Handoff to Reviewer
+    jules.generate_handoff_manifest("task_reliability_loop_secondary", "agent_reviewer_gemini")
+
+    # Interruption 2: Incomplete evidence check (Prohibiting review submission without valid hash references)
+    with pytest.raises(ValueError, match="Evidence Integrity Violation"):
+        reviewer.submit_review_finding(
+            task_id="task_reliability_loop_secondary",
+            finding_details="Review completed with warning.",
+            evidence_hash_reference="invalid_corrupted_state_hash"
+        )
+
+    # Interruption 3: Review Rejection & Revision Request
+    # Reviewer submits finding noting a rejection/revision needed, referencing a valid hash
+    review_ctx_2 = reviewer.rehydrate_review_context("task_reliability_loop_secondary")
+    preceding_hash_2 = review_ctx_2["evidence_package"]["preceding_records_hashes"][0]
+
+    reviewer.submit_review_finding(
+        task_id="task_reliability_loop_secondary",
+        finding_details="REJECTED: AST checks require stricter isolation bounds.",
+        evidence_hash_reference=preceding_hash_2
+    )
+
+    # Since it's rejected, Coordinator requests revisions and transitions task back to ACTIVE, handing off to Jules
+    orch.ingest_event("HUMAN_APPROVAL", "task_reliability_loop_secondary", {"supervisor_id": "super", "decision": "REJECTED", "comments": "AST isolation revisions needed."})
+
+    # Handoff back to Jules for corrections (resumed workflow corrects and completes work)
+    reviewer.generate_handoff_manifest("task_reliability_loop_secondary", "agent_jules_exec")
+    jules.align_task_state("task_reliability_loop_secondary", "ACTIVE", "Jules starts code revisions.")
+
+    jules.report_progress(
+        task_id="task_reliability_loop_secondary",
+        progress_percent=100.0,
+        result_payload={"git_hash": "def67890-revised", "tests_passing": True},
+        feedback="Corrections committed. Stricter AST limits implemented."
+    )
+
+    # Secondary handoff to Reviewer
+    jules.generate_handoff_manifest("task_reliability_loop_secondary", "agent_reviewer_gemini")
+    review_ctx_final = reviewer.rehydrate_review_context("task_reliability_loop_secondary")
+    preceding_hash_final = review_ctx_final["evidence_package"]["preceding_records_hashes"][0]
+
+    reviewer.submit_review_finding(
+        task_id="task_reliability_loop_secondary",
+        finding_details="APPROVED: Stricter AST checks validated successfully.",
+        evidence_hash_reference=preceding_hash_final
+    )
+
+    # Final Operator Sign-off
+    orch.ingest_event("HUMAN_APPROVAL", "task_reliability_loop_secondary", {"supervisor_id": "super", "decision": "AUTHORIZED", "comments": "Revisions approved."})
+    orch.ingest_event("STATE_TRANSITION", "task_reliability_loop_secondary", {"target_status": "COMPLETED", "agent_id": "agent_reviewer_gemini", "comment": "Final validated sign-off."})
+
+    assert orch.tasks["task_reliability_loop_secondary"]["status"] == "COMPLETED"
+
+    # --- PART 3: Control Tower & Visibility Pass Verification ---
+    summary = orch.generate_operator_summary()
+
+    # Verify our hardened Control Tower answers the 5 core questions
+    assert "SAGE GOVERNANCE CONTROL TOWER RELIABILITY PASS:" in summary
+    assert "1. What is happening?" in summary
+    assert "status=COMPLETED" in summary
+    assert "2. Who owns it?" in summary
+    assert "role=REVIEWER, status=[ACTIVATED]" in summary
+    assert "3. Why is it happening?" in summary
+    assert "Objective : obj_primary_reliability_mission" in summary
+    assert "4. What proves it?" in summary
+    assert "Approval  : AUTHORIZED by super" in summary
+    assert "task_reliability_loop_secondary Finding: 'APPROVED: Stricter AST checks '" in summary
+    assert "5. What happens next?" in summary
+    assert "Outstanding Decisions      : 0 tasks []" in summary
+
+    # --- PART 4: Future Agent Readiness Check ---
+    # Validate that future agent connector roles can be registered with identical lifecycle, boundaries and rules
+    future_agent_id = "agent_scout_sage"
+    orch.ingest_event(
+        "AGENT_ACTIVATION",
+        "system",
+        {
+            "agent_id": future_agent_id,
+            "supervisor_id": "super",
+            "decision": "AUTHORIZED",
+            "role": "ANALYST"
+        }
+    )
+    assert orch.agents[future_agent_id] == "ACTIVATED"
+    assert orch.agent_roles[future_agent_id] == "ANALYST"
+
+    # Verify task initiation and ownership boundaries for this future agent
+    chatgpt.align_workflow_state(
+        "INITIATE_TASK",
+        "task_future_agent",
+        {
+            "objective_id": "obj_reusable_scouting",
+            "initial_context": {"baseline": "v1.0"},
+            "lineage_references": ["ADR-001"]
+        }
+    )
+    chatgpt.generate_handoff_manifest("task_future_agent", future_agent_id)
+    assert orch.tasks["task_future_agent"]["assigned_agent"] == future_agent_id
+    assert orch.tasks["task_future_agent"]["agent_role"] == "ANALYST"
+
+    # Export final SAGE evidence package
+    evidence = orch.export_evidence(str(evidence_file))
+    assert "task_reliability_loop_secondary" in evidence["active_tasks"]
+    assert "task_reliability_loop_primary" in evidence["active_tasks"]
+    assert "task_future_agent" in evidence["active_tasks"]

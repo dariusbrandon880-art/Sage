@@ -286,6 +286,45 @@ class ReviewerAgentConnector:
 
         return task
 
+    def generate_handoff_manifest(self, task_id: str, target_agent_id: str) -> Dict[str, Any]:
+        """Prepares a secure, context-preserving handoff manifest to request revisions or route tasks."""
+        if task_id not in self.orchestrator.tasks:
+            raise ValueError(f"Task '{task_id}' not found.")
+
+        task = self.orchestrator.tasks[task_id]
+
+        if self.orchestrator.agents.get(self.agent_id) != "ACTIVATED":
+            raise PermissionError(f"Handoff Refused: Source agent '{self.agent_id}' is not activated.")
+        if self.orchestrator.agents.get(target_agent_id) != "ACTIVATED":
+            raise PermissionError(f"Handoff Refused: Destination agent '{target_agent_id}' is not activated.")
+
+        ts = datetime.now(timezone.utc).isoformat()
+        serialized_context = json.dumps(task["context"], sort_keys=True)
+        context_fingerprint = hashlib.sha256(serialized_context.encode("utf-8")).hexdigest()
+
+        manifest = {
+            "manifest_id": f"HND-{uuid.uuid4().hex[:8].upper()}",
+            "timestamp": ts,
+            "task_id": task_id,
+            "source_agent": self.agent_id,
+            "destination_agent": target_agent_id,
+            "context_fingerprint": context_fingerprint,
+            "preserved_context_keys": list(task["context"].keys()),
+            "security_clearance_verified": True
+        }
+
+        self.orchestrator.ingest_event(
+            "AGENT_HANDOFF",
+            task_id,
+            {
+                "target_agent": target_agent_id,
+                "handoff_context": {"handoff_manifest": manifest},
+                "reason": f"Reviewer hands off task for revision or action. Preserving context hash: {context_fingerprint[:16]}."
+            }
+        )
+
+        return manifest
+
 
 class JulesAgentConnector:
     """Jules Engineering Agent Role Connector for SAGE.
@@ -977,6 +1016,7 @@ class DeveloperWorkflowOrchestrator:
             if t["status"] != "COMPLETED" and t.get("human_approval") is None:
                 outstanding_decisions.append(task_id)
 
+        # Assemble high-visibility Control Tower answering the 5 core questions
         lines = [
             "==========================================================================",
             "             SAGE OPERATIONAL COORDINATION & CONTEXT SUMMARY              ",
@@ -985,20 +1025,51 @@ class DeveloperWorkflowOrchestrator:
             f" Active Session ID    : {self.session_id}",
             f" Active System Agents : {len(self.agents)} registered",
             "--------------------------------------------------------------------------",
-            " SAGE GOVERNANCE CONTROL TOWER SUMMARY:",
-            f"   • Engineering Complete       : {len(eng_complete)} tasks {sorted(eng_complete)}",
-            f"   • Awaiting Review            : {len(awaiting_review)} tasks {sorted(awaiting_review)}",
-            f"   • Review In Progress         : {len(review_in_progress)} tasks {sorted(review_in_progress)}",
-            f"   • Review Complete            : {len(review_complete)} tasks {sorted(review_complete)}",
-            "   • Evidence Supporting Findings:"
+            " SAGE GOVERNANCE CONTROL TOWER RELIABILITY PASS:",
+            "  1. What is happening?",
+            f"     - Active Coordinated Tasks   : {len(self.tasks)} tracked"
         ]
 
-        if not findings_evidence:
-            lines.append("       (No review findings referencing supporting evidence yet)")
-        for fe in findings_evidence:
-            lines.append(f"       [Ref] {fe}")
+        for task_id, t in sorted(self.tasks.items()):
+            lines.append(f"     - Task '{task_id}': status={t['status']}, progress={t['progress_percent']}%")
 
-        lines.append(f"   • Outstanding Operator Decisions: {len(outstanding_decisions)} tasks {sorted(outstanding_decisions)}")
+        lines.extend([
+            "  2. Who owns it?",
+            f"     - Active Agent Registry      : {len(self.agents)} activated"
+        ])
+
+        for agent_id, state in sorted(self.agents.items()):
+            role = self.agent_roles.get(agent_id, "GENERAL_AGENT")
+            lines.append(f"     - Agent '{agent_id}': role={role}, status=[{state}]")
+
+        for task_id, t in sorted(self.tasks.items()):
+            lines.append(f"     - Task '{task_id}' Assignee  : {t['assigned_agent']} ({t['agent_role']})")
+
+        lines.append("  3. Why is it happening?")
+        for task_id, t in sorted(self.tasks.items()):
+            lines.append(f"     - Task '{task_id}' Objective : {t['objective_id']}")
+            lines.append(f"     - Lineage Baselines          : {t['lineage_references']}")
+
+        lines.append("  4. What proves it?")
+        # List of evidence findings and approvals
+        for task_id, t in sorted(self.tasks.items()):
+            app = t.get("human_approval")
+            app_str = f"AUTHORIZED by {app['supervisor_id']}" if app else "NONE / PENDING"
+            lines.append(f"     - Task '{task_id}' Approval  : {app_str}")
+
+        if not findings_evidence:
+            lines.append("     - Review Findings            : (No review findings referencing supporting evidence yet)")
+        for fe in findings_evidence:
+            lines.append(f"     - [Ref] {fe}")
+
+        lines.extend([
+            "  5. What happens next?",
+            f"     - Outstanding Decisions      : {len(outstanding_decisions)} tasks {sorted(outstanding_decisions)}",
+            f"     - Awaiting Review            : {len(awaiting_review)} tasks {sorted(awaiting_review)}",
+            f"     - Review In Progress         : {len(review_in_progress)} tasks {sorted(review_in_progress)}",
+            f"     - Review Complete            : {len(review_complete)} tasks {sorted(review_complete)}"
+        ])
+
         lines.append("--------------------------------------------------------------------------")
 
         # Render Agent Activation Registry
