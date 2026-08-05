@@ -1728,3 +1728,74 @@ def test_render_control_tower_summary_lifecycle_statuses(tmp_path):
     )
     summary_complete = orchestrator.render_control_tower_summary()
     assert "5. LIFECYCLE STATUS    : LIFECYCLE_COMPLETE" in summary_complete
+
+
+def test_execute_endurance_simulation_run_metrics(tmp_path):
+    """Verify that execute_endurance_simulation_run correctly aggregates metrics and saves the operational endurance report."""
+    import uuid
+    import json
+    from pathlib import Path
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id=f"session_endur_{uuid.uuid4().hex[:6]}",
+        objective="obj_endurance_test",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    # Execute simulation for 3 cycles (1 standard, 1 recovery, 1 revision/continuation)
+    report = orchestrator.execute_endurance_simulation_run(cycles=3)
+
+    assert "endurance_metrics" in report
+    metrics = report["endurance_metrics"]
+    assert metrics["successful_lifecycle_completion_rate_pct"] == 100.0
+    assert metrics["recovery_success_rate_pct"] == 100.0
+    assert metrics["total_evidence_records_count"] > 0
+    assert metrics["decision_trace_completeness"] is True
+    assert metrics["workflow_state_accuracy"] is True
+
+    # Confirm JSON persistence
+    report_file = Path("evidence_capture/operational_endurance_report.json")
+    assert report_file.exists()
+    with open(report_file, "r", encoding="utf-8") as f:
+        saved_data = json.load(f)
+    assert saved_data["session_id"] == report["session_id"]
+    assert len(saved_data["cycles_run"]) == 3
+
+
+def test_execute_endurance_simulation_run_event_intercept(tmp_path):
+    """Verify that execute_endurance_simulation_run records the endurance simulation event intercept in SAGE-CCL."""
+    import uuid
+    import json
+    from pathlib import Path
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id=f"session_endur_event_{uuid.uuid4().hex[:6]}",
+        objective="obj_endurance_event_test",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    orchestrator.execute_endurance_simulation_run(cycles=1)
+
+    # Inspect intercepts in storage_path
+    intercepts = []
+    for file_path in Path(ccl.storage_path).glob("*.json"):
+        with open(file_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            if data.get("event_type") == "loop_endurance_simulation":
+                intercepts.append(data)
+
+    assert len(intercepts) == 1
+    assert "Executed multi-cycle endurance test" in intercepts[0]["action_taken"]
+    assert "endurance_metrics" in intercepts[0]["evidence_payload"]

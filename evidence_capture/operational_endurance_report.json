@@ -1,0 +1,20 @@
+{
+  "session_id": "session_endur_event_3dc08f",
+  "cycles_requested": 1,
+  "cycles_run": [
+    {
+      "cycle": 1,
+      "cycle_id": "cycle_1_0a30",
+      "task_id": "task_endur_1",
+      "outcome": "COMPLETED_CLEANLY"
+    }
+  ],
+  "endurance_metrics": {
+    "successful_lifecycle_completion_rate_pct": 100.0,
+    "recovery_success_rate_pct": 0.0,
+    "total_evidence_records_count": 2,
+    "decision_trace_completeness": true,
+    "workflow_state_accuracy": true
+  },
+  "timestamp": 1785907474.2449193
+}

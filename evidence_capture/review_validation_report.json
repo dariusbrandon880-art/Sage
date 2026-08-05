@@ -1,17 +1,17 @@
 {
-  "session_id": "session_tower_statuses_1b4bf6",
-  "task_id": "task_audit_t",
-  "prior_status": "ACTIVE",
+  "session_id": "session_endur_event_3dc08f",
+  "task_id": "task_endur_1",
+  "prior_status": "COMPLETED",
   "final_status": "VALIDATED",
   "verdict": "ACCEPTED",
   "operator_id": "operator_darius",
   "comments": "",
   "evidence_lineage_chain": {
-    "event_id": "event_ac151537e462",
-    "state_change": "Transitioned task 'task_audit_t' status to 'VALIDATED'",
+    "event_id": "event_8b6512b6ba36",
+    "state_change": "Transitioned task 'task_endur_1' status to 'VALIDATED'",
     "agent_action": "Operator 'operator_darius' applied verdict 'ACCEPTED'",
-    "decision": "Validated and resolved findings with signature: 'sig_darius_ok_1122'",
-    "evidence_ref": "CCL-REC-20260805-0ccfc906-7938-4a8c-bf3a-55ddb051af8f"
+    "decision": "Validated and resolved findings with signature: 'sig_ok'",
+    "evidence_ref": "CCL-REC-20260805-209175ce-a3c2-4685-9abf-994f1da28387"
   },
-  "timestamp": 1785898875.1580577
+  "timestamp": 1785907474.2445593
 }

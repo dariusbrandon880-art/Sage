@@ -1,30 +1,30 @@
 {
-  "session_id": "session_recovery_success_6754b3",
-  "task_id": "task_block",
-  "recovery_checkpoint_id": "CCL-REC-20260804-fallback-xyz",
+  "session_id": "session_endur_be1a79",
+  "task_id": "task_endur_2",
+  "recovery_checkpoint_id": "CCL-REC-20260804-rec-2",
   "status": "RECOVERED",
   "restored_objectives": [
-    "obj_recovery_active"
+    "obj_endurance_test"
   ],
   "reconstructed_lineage": {
-    "record_id": "CCL-REC-20260805-3c3a5d38-a2fe-4c71-9719-a5e0bd6f990c",
-    "session_id": "session_recovery_success_6754b3",
+    "record_id": "CCL-REC-20260805-4e4f5264-4d2d-4de2-aade-9a5c0527d62d",
+    "session_id": "session_endur_be1a79",
     "event_type": "recovered",
-    "timestamp": 1785898874.841526,
-    "action_taken": "Recovered workflow task 'task_block' from checkpoint 'CCL-REC-20260804-fallback-xyz'",
+    "timestamp": 1785907474.1837735,
+    "action_taken": "Recovered workflow task 'task_endur_2' from checkpoint 'CCL-REC-20260804-rec-2'",
     "decision_reasoning": "Resolve blocked or failed transitions and restore complete context",
     "evidence_payload": {
-      "task_id": "task_block",
-      "recovery_checkpoint_id": "CCL-REC-20260804-fallback-xyz",
+      "task_id": "task_endur_2",
+      "recovery_checkpoint_id": "CCL-REC-20260804-rec-2",
       "restored_objectives": [
-        "obj_recovery_active"
+        "obj_endurance_test"
       ],
       "enriched_objectives": [
-        "obj_recovery_active"
+        "obj_experimental_coordination"
       ],
       "session_completed_actions": [],
       "session_pending_actions": [],
-      "enrichment_timestamp": 1785898874.8414764
+      "enrichment_timestamp": 1785907474.1837428
     },
     "failure_context": {
       "error": "failed_handoff_or_blocked_execution"
@@ -34,5 +34,5 @@
     "workflow_friction": [],
     "improvement_opportunities": []
   },
-  "timestamp": 1785898874.8422942
+  "timestamp": 1785907474.1840081
 }

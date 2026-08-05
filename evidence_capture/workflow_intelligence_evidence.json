@@ -1,5 +1,5 @@
 {
-  "session_id": "session_three_role_411fe6",
+  "session_id": "session_endur_event_3dc08f",
   "risks": [
     {
       "risk_id": "RISK-ACT-001",
@@ -11,5 +11,5 @@
   "remediations": [
     "Execute 'enforcer.set_agent_state' to ACTIVATE critical agents before task assignment."
   ],
-  "analysis_timestamp": 1785898874.9914248
+  "analysis_timestamp": 1785907474.2429464
 }
