@@ -2,6 +2,9 @@
 
 import time
 import pytest
+from pathlib import Path
+from sage.acr.session.session_state import SessionStateManager, SessionState
+from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, SAGEMissionTask
 from sage.experimental.cognitive import (
     CognitiveAgentIdentity,
     CognitiveActiveMission,
@@ -14,6 +17,9 @@ from sage.experimental.cognitive import (
     CognitiveState,
     PrefrontalCortexSimulator,
     DecisionGateOutcome,
+    CognitiveStateLoader,
+    ContinuityRetrievalInterface,
+    PFCGovernedExecutor,
 )
 
 
@@ -177,3 +183,211 @@ def test_confidence_state_recorded(base_cognitive_state):
     assert low_confidence_report.outcome == DecisionGateOutcome.REQUEST_CLARIFICATION
     assert "Confidence level is too low" in low_confidence_report.reason
     assert low_confidence_report.confidence_recorded == 0.4
+
+
+# ==========================================
+# Phase 1: Continuation & Integration Tests
+# ==========================================
+
+def test_cognitive_state_restoration(tmp_path):
+    """Verify SAGE session can be successfully restored and loaded into a CognitiveState object."""
+    session_storage = tmp_path / "sessions"
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+
+    # Create a persistent session state on disk
+    session = session_mgr.create_session(
+        session_id="session_restoration_01",
+        active_objectives=["obj_cognitive_continuity"]
+    )
+    session.add_completed_action("task_foundation_validated")
+    session.add_pending_action("task_restoration_verification")
+    session.add_decision("decision_use_pydantic_v2")
+    session_mgr.save_session(session)
+
+    # Load CognitiveState from persistent session
+    cognitive_state = CognitiveStateLoader.load_cognitive_state(
+        session_state=session,
+        mission_queue=None
+    )
+
+    # Assert accurate state mapping
+    assert cognitive_state.active_mission.mission_id == "session_restoration_01"
+    assert "obj_cognitive_continuity" in cognitive_state.active_mission.objective
+    assert len(cognitive_state.completed_milestones) == 1
+    assert cognitive_state.completed_milestones[0].milestone_id == "task_foundation_validated"
+    assert len(cognitive_state.validated_facts) == 1
+    assert "decision_use_pydantic_v2" in cognitive_state.validated_facts[0].fact_id
+    assert cognitive_state.confidence_state.overall_confidence > 0.0
+
+
+def test_completed_milestone_protection_with_loader(tmp_path):
+    """Verify completed milestone protection blocks reopening of completed work loaded from SAGE state."""
+    session_storage = tmp_path / "sessions"
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+
+    session = session_mgr.create_session(
+        session_id="session_protection_02",
+        active_objectives=["obj_completed_work_protection"]
+    )
+    session.add_completed_action("task_milestone_secured")
+    session_mgr.save_session(session)
+
+    # Construct next action targeting the completed milestone
+    state = CognitiveStateLoader.load_cognitive_state(
+        session_state=session,
+        mission_queue=None
+    )
+    state.next_action = CognitiveNextAction(
+        action_id="task_milestone_secured",
+        description="Attempt to reopen or modify task_milestone_secured",
+        assigned_agent="agent_jules_sage"
+    )
+
+    # Evaluate using PFC Simulator
+    simulator = PrefrontalCortexSimulator()
+    report = simulator.evaluate_decision(state)
+
+    assert report.outcome == DecisionGateOutcome.BLOCK
+    assert "Completed milestone reopening/modification blocked" in report.reason
+
+
+def test_mission_continuity_fresh_session(tmp_path):
+    """Verify a fresh runtime session can fully reconstruct and verify essential cognitive states using the interface."""
+    session_storage = tmp_path / "sessions"
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+
+    session = session_mgr.create_session(
+        session_id="session_fresh_session_03",
+        active_objectives=["obj_continuity_verification"]
+    )
+    session.add_completed_action("task_setup_environment")
+    session.add_pending_action("task_run_full_continuity_verification")
+    session_mgr.save_session(session)
+
+    # Fresh session: reinitialize continuity manager
+    retrieval_interface = ContinuityRetrievalInterface()
+    reconstructed_state = retrieval_interface.reconstruct_and_verify(
+        session_id="session_fresh_session_03",
+        session_manager=session_mgr,
+        mission_queue=None
+    )
+
+    # Verify key continuity invariants are successfully preserved
+    assert reconstructed_state.active_mission.mission_id == "session_fresh_session_03"
+    assert reconstructed_state.completed_milestones[0].milestone_id == "task_setup_environment"
+    assert len(reconstructed_state.forbidden_regressions) > 0
+    assert reconstructed_state.next_action.action_id == "task_run_full_continuity_verification"
+    assert reconstructed_state.confidence_state.overall_confidence > 0.0
+
+
+def test_pfc_execution_gate_integration(tmp_path):
+    """Verify PFCGovernedExecutor intercepts SAGE developer workflows and coordinates execution on PROCEED."""
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    evidence_output = tmp_path / "evidence" / "ccl_feedback.json"
+
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    from sage.experimental.act.continuity_control import ContinuityControlLoop
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_pfc_integration_04",
+        objective="Verify PFC integration gate",
+        ccl=ccl,
+        evidence_output_path=str(evidence_output)
+    )
+
+    task = SAGEMissionTask(
+        task_id="task_pfc_integration_gate",
+        objective_id="Verify PFC integration gate",
+        priority_score=95.0,
+        authorized=True,
+        description="Verify PFC integration gate",
+        assigned_agent="agent_jules_sage",
+        evidence_requirements=[]
+    )
+    orchestrator.mission_queue.add_task(task)
+
+    executor = PFCGovernedExecutor(orchestrator=orchestrator)
+
+    # 1. Evaluate with a clean aligned state (PROCEED outcome)
+    res_proceed = executor.execute_governed_cycle(task_id="task_pfc_integration_gate")
+    assert res_proceed["execution_status"] == "EXECUTED"
+    assert res_proceed["decision_outcome"] == DecisionGateOutcome.PROCEED
+    assert orchestrator.mission_queue.get_task("task_pfc_integration_gate").status == "COMPLETED"
+
+    # 2. Evaluate with a blocked state (e.g., trying to execute a completed task)
+    res_blocked = executor.execute_governed_cycle(task_id="task_pfc_integration_gate")
+    assert res_blocked["execution_status"] == "BLOCKED"
+    assert res_blocked["decision_outcome"] == DecisionGateOutcome.BLOCK
+    assert orchestrator.loop_state["mode"] == "MANUAL_INTERVENTION_PAUSED"
+
+
+def test_generate_cognitive_continuity_validation_evidence(tmp_path):
+    """Run an end-to-end governed cycle and generate the cognitive continuity validation evidence report."""
+    import json
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    evidence_output = tmp_path / "evidence" / "ccl_feedback.json"
+
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    from sage.experimental.act.continuity_control import ContinuityControlLoop
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_evidence_generation",
+        objective="Verify PFC integration gate",
+        ccl=ccl,
+        evidence_output_path=str(evidence_output)
+    )
+
+    task = SAGEMissionTask(
+        task_id="task_continuity_validation",
+        objective_id="Verify PFC integration gate",
+        priority_score=95.0,
+        authorized=True,
+        description="Verify PFC integration gate",
+        assigned_agent="agent_jules_sage",
+        evidence_requirements=[]
+    )
+    orchestrator.mission_queue.add_task(task)
+
+    executor = PFCGovernedExecutor(orchestrator=orchestrator)
+    cycle_res = executor.execute_governed_cycle(task_id="task_continuity_validation")
+
+    # Construct standard-compliant evidence package
+    evidence_package = {
+        "report_id": "cognitive_continuity_validation",
+        "timestamp": time.time(),
+        "state_loaded": {
+            "session_id": orchestrator.session_id,
+            "cognitive_state_dump": cycle_res["cognitive_state_dump"]
+        },
+        "mission_recovered": {
+            "mission_id": orchestrator.session_id,
+            "recovered_objectives": orchestrator.session.active_objectives,
+            "recovered_completed_actions": orchestrator.session.completed_actions
+        },
+        "pfc_decision": {
+            "outcome": cycle_res["decision_outcome"],
+            "reason": cycle_res["decision_reason"],
+            "confidence_recorded": cycle_res["confidence_recorded"],
+            "checks_performed": cycle_res["checks_performed"]
+        },
+        "validation_result": {
+            "execution_status": cycle_res["execution_status"],
+            "success": cycle_res["execution_status"] == "EXECUTED"
+        },
+        "artifact_references": {
+            "state_loader_source": "sage/experimental/cognitive/state_loader.py",
+            "pfc_integration_source": "sage/experimental/cognitive/pfc_integration.py",
+            "test_suite": "tests/experimental/test_cognitive_kernel.py"
+        }
+    }
+
+    evidence_path = Path("evidence_capture/cognitive_continuity_validation.json")
+    evidence_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(evidence_path, "w", encoding="utf-8") as f:
+        json.dump(evidence_package, f, indent=2, default=str)
+
+    assert evidence_path.exists()

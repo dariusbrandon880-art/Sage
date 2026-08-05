@@ -16,6 +16,13 @@ from sage.experimental.cognitive.prefrontal_cortex import (
     PFCDecisionReport,
     PrefrontalCortexSimulator,
 )
+from sage.experimental.cognitive.state_loader import (
+    CognitiveStateLoader,
+    ContinuityRetrievalInterface,
+)
+from sage.experimental.cognitive.pfc_integration import (
+    PFCGovernedExecutor,
+)
 
 __all__ = [
     "CognitiveAgentIdentity",
@@ -30,4 +37,7 @@ __all__ = [
     "DecisionGateOutcome",
     "PFCDecisionReport",
     "PrefrontalCortexSimulator",
+    "CognitiveStateLoader",
+    "ContinuityRetrievalInterface",
+    "PFCGovernedExecutor",
 ]
