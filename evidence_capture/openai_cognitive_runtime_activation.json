@@ -3,8 +3,8 @@
   "session_id": "session_openai_activation",
   "authentication_result": {
     "success": true,
-    "auth_token_hash": "c8a6f0f276efe27ba4eb9e39f760b387473165c72523fc0a998bc0336237d3ff",
-    "timestamp": 1785964004.581124,
+    "auth_token_hash": "b942f2e78b763c31c495d976fd7ed33825d6238122e495f70ba9b0f9b63ea80d",
+    "timestamp": 1785964632.8589497,
     "message": "Authentication Succeeded: Secure handshake verified."
   },
   "cognitive_state_result": {
@@ -58,7 +58,7 @@
       },
       "confidence_state": {
         "overall_confidence": 0.5,
-        "last_updated": 1785964004.5815647,
+        "last_updated": 1785964632.8592794,
         "notes": "State loaded and reconstructed from session state and active mission queue"
       },
       "next_action": {
@@ -84,18 +84,18 @@
     "status": "EXECUTED",
     "success": true,
     "orchestrator_result": {
-      "orchestrator_run_id": "orch_run_ddcdf3d15535",
-      "timestamp": "2026-08-05T21:06:44.632613Z",
+      "orchestrator_run_id": "orch_run_0446b9e8f21f",
+      "timestamp": "2026-08-05T21:17:12.901482Z",
       "session_id": "session_openai_activation",
       "session_objectives": [
         "Verify PFC integration gate"
       ],
       "status": "VALIDATED",
       "ccl_record": {
-        "record_id": "CCL-REC-20260805-1b792056-df3f-459d-ba67-aad0d9667028",
+        "record_id": "CCL-REC-20260805-a86e0d15-32dd-4be3-9481-d1aec9148f44",
         "session_id": "session_openai_activation",
         "event_type": "state_transition",
-        "timestamp": 1785964004.6328418,
+        "timestamp": 1785964632.9016783,
         "action_taken": "PFC PROCEED: Executing task task_openai_runtime_activation",
         "decision_reasoning": "PFC evaluated PROCEED with confidence 0.5",
         "evidence_payload": {
@@ -107,7 +107,7 @@
             "violations": [],
             "status": "CLEAN_WORKSPACE"
           },
-          "cmaps_audit_id": "audit_f2d71271508c4baf9ced35b23ec0e871",
+          "cmaps_audit_id": "audit_d5aa4d5e167a4a4188b6bc240484ffb6",
           "enriched_objectives": [
             "Verify PFC integration gate"
           ],
@@ -115,12 +115,12 @@
           "session_pending_actions": [
             "task_openai_runtime_activation"
           ],
-          "enrichment_timestamp": 1785964004.6328163,
+          "enrichment_timestamp": 1785964632.9016528,
           "human_approval_record": {
             "supervisor_id": "supervisor_jules",
-            "signature": "sig_jules_d91d0daf8a30",
+            "signature": "sig_jules_72f8fc2b1bac",
             "decision": "APPROVED",
-            "approved_at": 1785964004.634141
+            "approved_at": 1785964632.9025385
           }
         },
         "failure_context": null,
@@ -130,8 +130,8 @@
         "improvement_opportunities": []
       },
       "cmaps_payload": {
-        "audit_id": "audit_f2d71271508c4baf9ced35b23ec0e871",
-        "timestamp": "2026-08-05T21:06:44.632613Z",
+        "audit_id": "audit_d5aa4d5e167a4a4188b6bc240484ffb6",
+        "timestamp": "2026-08-05T21:17:12.901482Z",
         "agent_identity": {
           "agent_id": "agent_jules_sage",
           "name": "Jules",
@@ -144,11 +144,11 @@
           "temperature": 0.2
         },
         "execution_state": {
-          "run_id": "run_b6f790e5e6ef49ee90b6",
+          "run_id": "run_ccaa8bb239964a37b2b2",
           "status": "completed",
           "step_counter": 1,
-          "started_at": "2026-08-05T21:06:44.632613Z",
-          "updated_at": "2026-08-05T21:06:44.632613Z"
+          "started_at": "2026-08-05T21:17:12.901482Z",
+          "updated_at": "2026-08-05T21:17:12.901482Z"
         },
         "task_lineage": {
           "session_id": "session_6ae632c7",
@@ -158,7 +158,7 @@
         "decision_events": [
           {
             "decision_id": "decision_coordinate_dev_loop",
-            "timestamp": "2026-08-05T21:06:44.632613Z",
+            "timestamp": "2026-08-05T21:17:12.901482Z",
             "summary": "PFC PROCEED: Executing task task_openai_runtime_activation",
             "reasoning": "PFC evaluated PROCEED with confidence 0.5",
             "confidence": 1.0
@@ -168,19 +168,9 @@
         "recovery_checkpoints": [],
         "evidence_relationships": [
           {
-            "artifact_path": "evidence_capture/cognitive_continuity_validation.json",
-            "git_commit": "5be818ead3483cd85799542195c405f00ceba9c8",
-            "sha256_checksum": "5877bb526983c93c71fa40c5d45a020e584f22f6af2aeec41c0056457660cdf4"
-          },
-          {
             "artifact_path": "evidence_capture/cognitive_kernel_foundation_report.json",
             "git_commit": "5be818ead3483cd85799542195c405f00ceba9c8",
             "sha256_checksum": "bdf7a5f382869f10eaa49b36cfc2b77224487f5d532cc543d2848e2e023886ec"
-          },
-          {
-            "artifact_path": "evidence_capture/openai_cognitive_runtime_activation.json",
-            "git_commit": "5be818ead3483cd85799542195c405f00ceba9c8",
-            "sha256_checksum": "fad7ded031f91999dbfb147f30be8f862ac0618460159896ab5ccd335229b092"
           },
           {
             "artifact_path": "sage/experimental/cognitive/__init__.py",
@@ -216,11 +206,16 @@
             "artifact_path": "tests/experimental/test_cognitive_kernel.py",
             "git_commit": "5be818ead3483cd85799542195c405f00ceba9c8",
             "sha256_checksum": "bd4205fa03b78b76530260b8db3a9d88071e91cc3a09ac0f4aa895290b5adfc7"
+          },
+          {
+            "artifact_path": "evidence_capture/cognitive_continuity_validation.json",
+            "git_commit": "5be818ead3483cd85799542195c405f00ceba9c8",
+            "sha256_checksum": "9c76ac2c80d2823cc47a53ea596db97a89602e82fb95834db283563e08479a0a"
           }
         ],
         "attestation": {
-          "nonce": "e03e23b89a494660",
-          "signature": "sig_jules_d91d0daf8a30",
+          "nonce": "bc1655d2fc3e4f41",
+          "signature": "sig_jules_72f8fc2b1bac",
           "signer_identity": "supervisor_jules"
         }
       },
@@ -235,7 +230,7 @@
           "evidence_completeness": 1.0,
           "decision_trace_completeness": 1.0,
           "workflow_state_accuracy": 1.0,
-          "execution_cycle_duration": 0.052504539489746094,
+          "execution_cycle_duration": 0.04337048530578613,
           "context_preservation_score": 1.0,
           "unnecessary_reassessment_events": 0,
           "repeated_execution_prevention": true,
