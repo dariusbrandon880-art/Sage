@@ -864,3 +864,238 @@ def test_sage_managed_agent_operating_loop(tmp_path):
     assert "Q2: What previous evidence supports this?" in dashboard
     assert "Q3: What similar problems were solved before?" in dashboard
     assert "Q4: What improvement was created?" in dashboard
+
+
+def test_sage_continuous_mission_execution_loop(tmp_path):
+    """Verify SAGE Autonomous Continuous Mission Execution Loop.
+
+    Validates:
+    - Mission Queue & Backlog: Append and serialize structured backlog objectives.
+    - Discovery-to-Task Handoff: Automate transition from discovery candidates to backlog tasks.
+    - Autonomous Execution Cycle: Complete sequential loops with SAGE-CCL checkpoints.
+    - Human Intervention Gates: Code boundaries freezing the loop on active blockers or consecutive failures.
+    """
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+    from pathlib import Path
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    evidence_output = tmp_path / "evidence" / "ccl_loop_feedback.json"
+
+    # Set up loop and managers
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_autonomous_loop_test",
+        objective="obj_continuous_mission_execution",
+        ccl=ccl,
+        evidence_output_path=str(evidence_output)
+    )
+
+    # 1. Test Mission Queue appending
+    t1 = orchestrator.append_mission_to_queue(objective="Automate pre-commit validations")
+    assert t1.objective == "Automate pre-commit validations"
+    assert t1.status == "queued"
+
+    t2 = orchestrator.append_mission_to_queue(objective="Refactor local cache buffers")
+    assert t2.status == "queued"
+
+    # 2. Test Discovery-to-Task Handoff
+    # Create mock discovery candidate
+    import json
+    register_path = Path("evidence_capture/discovery_candidates_register.json")
+    register_path.parent.mkdir(parents=True, exist_ok=True)
+    mock_candidates = [{
+        "candidate_id": "CANDIDATE-OPT-MOCK1",
+        "description": "Optimize state rehydration",
+        "operational_justification": "Mitigate session loss during coordinate loops",
+        "priority": "HIGH"
+    }]
+    with open(register_path, "w", encoding="utf-8") as f:
+        json.dump(mock_candidates, f, indent=2)
+
+    t3 = orchestrator.handoff_discovery_candidate_to_mission(candidate_id="CANDIDATE-OPT-MOCK1")
+    assert "Mitigate session loss" in t3.objective
+    assert t3.status == "queued"
+
+    # 3. Test Autonomous Execution Cycle & State Checkpoints
+    results = orchestrator.execute_autonomous_mission_loop()
+    assert len(results) == 3
+    # Verify tasks are marked completed
+    queue = orchestrator.session.metadata["mission_queue"]
+    assert all(t["status"] == "completed" for t in queue)
+
+    # Verify that SAGE-CCL records were generated for completed tasks
+    history_records = list(record_storage.glob("*.json"))
+    assert len(history_records) >= 3
+
+    # 4. Test Human Intervention Freeze Gates (Code Contamination / Blocker)
+    # Reset queue and append a blocked task
+    orchestrator.session.metadata["mission_queue"] = []
+    t_blocked = orchestrator.append_mission_to_queue(objective="Process failed or broken module validation")
+
+    results_blocked = orchestrator.execute_autonomous_mission_loop()
+    assert len(results_blocked) == 0  # Aborted immediately
+    queue_blocked = orchestrator.session.metadata["mission_queue"]
+    assert queue_blocked[0]["status"] == "blocked"
+    assert "HUMAN INTERVENTION GATED" in queue_blocked[0]["failure_reason"]
+
+
+def test_sage_operator_override_and_manual_mode(tmp_path):
+    """Verify SAGE Operator Override and Manual Control boundaries.
+
+    Validates:
+    - Manual operator pause/freeze controls (`pause_mission_execution_loop`).
+    - Preservation of state, active objectives, and session position during pause.
+    - Blocking/Freezing new execution cycles while in manual mode.
+    - Manually redirecting backlog objectives and priority lists.
+    - Resuming execution safely from the validated checkpoint record.
+    """
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    evidence_output = tmp_path / "evidence" / "ccl_pause_feedback.json"
+
+    # Set up managers and orchestrator
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_manual_control_test",
+        objective="obj_operator_control_validation",
+        ccl=ccl,
+        evidence_output_path=str(evidence_output)
+    )
+
+    # Ingest a task
+    orchestrator.append_mission_to_queue(objective="Task 1: Generate setup documents")
+
+    # 1. Test Manual Operator Pause
+    pause_res = orchestrator.pause_mission_execution_loop()
+    assert pause_res["status"] == "PAUSED"
+    assert pause_res["loop_mode"] == "MANUAL_INTERVENTION_PAUSED"
+    assert orchestrator.session.metadata["execution_loop_mode"] == "MANUAL_INTERVENTION_PAUSED"
+
+    # Check SAGE-CCL logged the intervention event
+    history_records = list(record_storage.glob("*.json"))
+    assert len(history_records) == 1
+
+    # 2. Test Execution Freeze (continuous loop must not run when paused)
+    results = orchestrator.execute_autonomous_mission_loop()
+    assert len(results) == 0  # Execution was frozen/blocked
+
+    # 3. Test Mission Priority Redirection
+    new_tasks = orchestrator.redirect_mission_priorities(new_backlog_objectives=[
+        "Task 2: Refactor test suite bounds",
+        "Task 3: Output structural metrics"
+    ])
+    assert len(new_tasks) == 2
+    assert orchestrator.session.metadata["mission_queue"][0]["objective"] == "Task 2: Refactor test suite bounds"
+
+    # Verify execution is still frozen because mode is still paused
+    results_after_redirect = orchestrator.execute_autonomous_mission_loop()
+    assert len(results_after_redirect) == 0
+
+    # 4. Test Resume and Continuation
+    resume_res = orchestrator.resume_mission_execution_loop()
+    assert resume_res["status"] == "RESUMED"
+    assert resume_res["loop_mode"] == "CONTINUOUS_EXECUTION"
+    assert orchestrator.session.metadata["execution_loop_mode"] == "CONTINUOUS_EXECUTION"
+
+    # Loop should now process redirected tasks autonomously
+    results_after_resume = orchestrator.execute_autonomous_mission_loop()
+    assert len(results_after_resume) == 2
+
+    # Verify both completed
+    queue = orchestrator.session.metadata["mission_queue"]
+    assert all(t["status"] == "completed" for t in queue)
+
+    # Lineage remains fully intact
+    history_records_final = list(record_storage.glob("*.json"))
+    # 1 pause + 1 resume + 2 task execution records = 4 records
+    assert len(history_records_final) == 4
+
+
+def test_sage_safety_alignment_and_drift_detection(tmp_path):
+    """Verify SAGE safety alignment, drift-gates, and failure protection boundaries.
+
+    Validates:
+    - SAGE external drift detection on protected core production namespaces.
+    - Autonomously freezing loop and locking to MANUAL_INTERVENTION_PAUSED on drift detection.
+    - Failure Escalation Protection stopping consecutive runtime loops.
+    """
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+    from pathlib import Path
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    evidence_output = tmp_path / "evidence" / "ccl_safety_feedback.json"
+
+    # Set up loop and managers
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_safety_test",
+        objective="obj_safety_validation",
+        ccl=ccl,
+        evidence_output_path=str(evidence_output)
+    )
+
+    # 1. Test External Drift Detection
+    # Mock workspace files scan returning a change in sage/core protected namespace
+    def mock_scan():
+        return {
+            "modified_files": ["sage/core/engine.py", "sage/experimental/act/continuity_control.py"],
+            "diffs": {"sage/core/engine.py": "unauthorized edit"}
+        }
+    orchestrator.scan_git_workspace = mock_scan
+
+    drift_report = orchestrator.detect_external_workspace_drift()
+    assert drift_report["drift_detected"] is True
+    assert "External Drift Detected" in drift_report["reason"]
+    assert "sage/core/engine.py" in drift_report["affected_files"]
+
+    # 2. Test Drift-Gate Loop Abort
+    # Ingest task and try to run autonomous loop while drift exists
+    orchestrator.append_mission_to_queue(objective="Normal continuous coordination task")
+
+    results = orchestrator.execute_autonomous_mission_loop()
+    assert len(results) == 0  # Zero tasks completed
+
+    # Check that loop was blocked and loop mode locked to paused
+    queue = orchestrator.session.metadata["mission_queue"]
+    assert queue[0]["status"] == "blocked"
+    assert "CRITICAL INTEGRITY GATED" in queue[0]["failure_reason"]
+    assert orchestrator.session.metadata["execution_loop_mode"] == "MANUAL_INTERVENTION_PAUSED"
+
+    # 3. Test Failure Escalation Protection Stop-Gate
+    # Reset queue, clear drift, simulate consecutive failures
+    orchestrator.session.metadata["mission_queue"] = []
+    orchestrator.session.metadata["execution_loop_mode"] = "CONTINUOUS_EXECUTION"
+    orchestrator.scan_git_workspace = lambda: {"modified_files": [], "diffs": {}} # clean
+
+    # Mock submit_external_agent_output to raise an exception simulating task failure
+    def mock_fail(*args, **kwargs):
+        raise ValueError("Simulated runtime connection failure")
+    orchestrator.submit_external_agent_output = mock_fail
+
+    # Append 3 tasks
+    orchestrator.append_mission_to_queue(objective="Task 1")
+    orchestrator.append_mission_to_queue(objective="Task 2")
+    orchestrator.append_mission_to_queue(objective="Task 3")
+
+    results_fail = orchestrator.execute_autonomous_mission_loop()
+    assert len(results_fail) == 2 # 2 failed, 3rd blocked by escalation gate before execution
+
+    # Check task statuses
+    queue_fail = orchestrator.session.metadata["mission_queue"]
+    assert queue_fail[0]["status"] == "failed"
+    assert queue_fail[1]["status"] == "failed"
+    assert queue_fail[2]["status"] == "blocked"  # Gated by consecutive failures count
+    assert "HUMAN INTERVENTION GATED" in queue_fail[2]["failure_reason"]
