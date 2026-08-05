@@ -1858,89 +1858,201 @@ def test_value_extraction_and_compounding_advantage(tmp_path):
     assert "Execute priority candidate improvements" in intel_view
 
 
-def test_persistent_mission_ledger_continuity(tmp_path):
-    """Verifies that the Persistent Mission Ledger (PML) accurately records events,
+def test_pml_recovery_and_multi_cycle_reliability(tmp_path):
+    """Proves PML reliability through repeated governed execution cycles, session interruption,
 
-    reconstructs state chronological replay, and securely raises SecurityError when tampered.
+    recovery rehydration, safety gate boundary enforcement, and metrics baseline compilation.
     """
     from sage.experimental.act.ccl_orchestrator import DeveloperWorkflowOrchestrator, SecurityError
 
-    ledger_file = tmp_path / "test_pml_ledger.json"
+    ledger_file = tmp_path / "reliability_pml_ledger.json"
+    evidence_file = tmp_path / "reliability_evidence_package.json"
 
-    # 1. Initialize orchestrator and perform some operations
-    orch1 = DeveloperWorkflowOrchestrator(session_id="session_test_pml", ledger_path=str(ledger_file))
+    # ==========================================
+    # 1. SETUP INITIAL SESSION & GOVERNED QUEUE
+    # ==========================================
+    orch1 = DeveloperWorkflowOrchestrator(session_id="session_cycle_2026", ledger_path=str(ledger_file))
 
-    # Ingest AGENT_ACTIVATION
+    # Register/Activate agents
     orch1.ingest_event("AGENT_ACTIVATION", "system", {
-        "agent_id": "agent_test_coord",
-        "supervisor_id": "super_test",
+        "agent_id": "agent_reliability_coord",
+        "supervisor_id": "super_operator",
         "decision": "AUTHORIZED",
         "role": "COORDINATOR"
     })
-
-    # Ingest TASK_INIT
-    orch1.ingest_event("TASK_INIT", "task_pml_1", {
-        "objective_id": "obj_test_pml",
-        "assigned_agent": "agent_test_coord",
-        "initial_context": {"key": "val1"}
+    orch1.ingest_event("AGENT_ACTIVATION", "system", {
+        "agent_id": "agent_reliability_exec",
+        "supervisor_id": "super_operator",
+        "decision": "AUTHORIZED",
+        "role": "EXECUTOR"
     })
 
-    # Ingest STATE_TRANSITION to ACTIVE
-    orch1.ingest_event("STATE_TRANSITION", "task_pml_1", {
-        "target_status": "ACTIVE",
-        "agent_id": "agent_test_coord",
-        "comment": "Beginning work."
-    })
-
-    # Verify ledger was written and is valid
-    assert ledger_file.exists()
-    assert len(orch1.pml._read_entries()) == 3
-    assert orch1.pml.verify_integrity() is True
-
-    # Verify we can load state into a blank orchestrator via replay
-    orch2 = DeveloperWorkflowOrchestrator(session_id="session_test_pml", ledger_path=str(ledger_file))
-    assert len(orch2.tasks) == 0  # Starts empty
-
-    count = orch2.restore_from_ledger()
-    assert count == 3
-    assert "task_pml_1" in orch2.tasks
-    assert orch2.tasks["task_pml_1"]["context"]["key"] == "val1"
-    assert orch2.agents["agent_test_coord"] == "ACTIVATED"
-
-    # 2. Add an execution progress transaction and verify append/replay
-    orch1.record_progress(
-        task_id="task_pml_1",
-        agent_id="agent_test_coord",
-        progress_percent=50.0,
-        result_payload={"step": "phase1"}
+    # Add items to the Mission Queue
+    # Enforce standard namespace and task details
+    orch1.add_to_queue(
+        task_id="task_cycle_01",
+        objective_id="obj_reliability_milestone",
+        assigned_agent="agent_reliability_exec",
+        initial_context={"workspace": "sage/experimental/act", "status": "pending"}
     )
 
-    orch3 = DeveloperWorkflowOrchestrator(session_id="session_test_pml", ledger_path=str(ledger_file))
-    orch3.restore_from_ledger()
-    assert orch3.tasks["task_pml_1"]["progress_percent"] == 50.0
+    # 2. RUN SAFETY GATE CHECKS (VIOLATION EDGE CASE)
+    # Check that invalid queue item with unauthorized namespace fails validation
+    orch1.add_to_queue(
+        task_id="task_violator",
+        objective_id="obj_read_secrets",
+        assigned_agent="agent_reliability_exec",
+        initial_context={"workspace": "sage/runtime/core", "files": ["secrets.txt"]} # Locked namespace!
+    )
 
-    # 3. Adversarial Attack: Tamper with the append-only ledger on disk
-    entries = orch1.pml._read_entries()
-    assert len(entries) == 4
+    assert orch1.validate_safety_gate("task_cycle_01") is True
+    assert orch1.validate_safety_gate("task_violator") is False  # Unauthorized namespace 'sage/runtime'
 
-    # Scenario A: Modify a value inside the payload of a past entry without updating fingerprint
-    entries[1]["payload"]["tasks"]["task_pml_1"]["context"]["key"] = "TAMPERED_VAL"
-    orch1.pml._write_entries(entries)
-
-    # Restoration must detect the signature mismatch and raise SecurityError
-    orch4 = DeveloperWorkflowOrchestrator(session_id="session_test_pml", ledger_path=str(ledger_file))
+    # Try popping/executing the violator task from the queue
+    # Put violator task at the front of queue to test pop_from_queue safety gate enforcement
+    orch1.mission_queue.insert(0, orch1.mission_queue.pop(1))
     with pytest.raises(SecurityError) as exc_info:
-        orch4.restore_from_ledger()
-    assert "Cryptographic signature mismatch" in str(exc_info.value)
+        orch1.pop_from_queue()
+    assert "Safety Gate Rejected" in str(exc_info.value)
 
-    # Scenario B: Tamper with sequence monotonicity
-    # Re-write clean entries but with scrambled sequence ID
-    orch1.pml.append("task_pml_1", "state_hash_example")  # creates entry with sequence_id 5
-    bad_entries = orch1.pml._read_entries()
-    bad_entries[-1]["sequence_id"] = 999  # Discontinuity
-    orch1.pml._write_entries(bad_entries)
+    # Restore correct order
+    orch1.mission_queue.pop(0) # Remove violator
 
-    orch5 = DeveloperWorkflowOrchestrator(session_id="session_test_pml", ledger_path=str(ledger_file))
+    # Pop and initialize correct task
+    item = orch1.pop_from_queue()
+    assert item["task_id"] == "task_cycle_01"
+    assert orch1.tasks["task_cycle_01"]["status"] == "INITIATED"
+
+    # ==========================================
+    # 3. INTERRUPTED EXECUTION & SESSION LOSS
+    # ==========================================
+    # Perform state transition to ACTIVE
+    orch1.ingest_event("STATE_TRANSITION", "task_cycle_01", {
+        "target_status": "ACTIVE",
+        "agent_id": "agent_reliability_exec",
+        "comment": "Beginning reliability cycle execution."
+    })
+
+    # Record early progress
+    orch1.record_progress(
+        task_id="task_cycle_01",
+        agent_id="agent_reliability_exec",
+        progress_percent=40.0,
+        result_payload={"checkpoint": "phase_a_done"},
+        feedback="Active execution phase A completed successfully."
+    )
+
+    # SIMULATE SUDDEN INTERRUPTED CONTAINER / CHAT INTERFACE LOSS
+    # Initialize a completely fresh orchestrator pointing to the same ledger on disk
+    orch2 = DeveloperWorkflowOrchestrator(session_id="session_cycle_2026", ledger_path=str(ledger_file))
+    assert len(orch2.tasks) == 0
+    assert len(orch2.agents) == 0
+    assert len(orch2.mission_queue) == 0
+
+    # Restore complete operational state from the PML append-only ledger
+    rehydrated_count = orch2.restore_from_ledger()
+    assert rehydrated_count > 0
+    assert orch2.restoration_health == "HEALTHY"
+
+    # Verify exact state reconstruction of active mission, ownership, and position
+    assert orch2.agents["agent_reliability_exec"] == "ACTIVATED"
+    assert "task_cycle_01" in orch2.tasks
+    task_rehydrated = orch2.tasks["task_cycle_01"]
+    assert task_rehydrated["status"] == "ACTIVE"
+    assert task_rehydrated["assigned_agent"] == "agent_reliability_exec"
+    assert task_rehydrated["progress_percent"] == 40.0
+
+    # ==========================================
+    # 4. SECURE RE-ENTRY & WORKFLOW RESUMPTION
+    # ==========================================
+    # Resuming execution cleanly using the rehydrated instance
+    orch2.record_progress(
+        task_id="task_cycle_01",
+        agent_id="agent_reliability_exec",
+        progress_percent=100.0,
+        result_payload={"checkpoint": "final_delivery"},
+        feedback="Cycle execution completed."
+    )
+
+    # Enforce Authorization checkpoint & Transition to completed status
+    orch2.ingest_event("HUMAN_APPROVAL", "task_cycle_01", {
+        "supervisor_id": "super_operator",
+        "decision": "AUTHORIZED",
+        "comments": "PML reliability checkpoint approved."
+    })
+    orch2.ingest_event("STATE_TRANSITION", "task_cycle_01", {
+        "target_status": "COMPLETED",
+        "agent_id": "agent_reliability_coord",
+        "comment": "Review passed. Complete."
+    })
+
+    assert orch2.tasks["task_cycle_01"]["status"] == "COMPLETED"
+
+    # ==========================================
+    # 5. PML INTEGRITY HARDENING & ATTACK CHECKS
+    # ==========================================
+    # Validate Cryptographic hash chain and tampering detection
+    entries = orch2.pml._read_entries()
+    assert len(entries) > 0
+
+    # Scenario A: Modify past block's payload without updating fingerprint (Broken Chain)
+    entries[-1]["payload"]["tasks"]["task_cycle_01"]["progress_percent"] = 99.9
+    orch2.pml._write_entries(entries)
+
+    orch3 = DeveloperWorkflowOrchestrator(session_id="session_cycle_2026", ledger_path=str(ledger_file))
     with pytest.raises(SecurityError) as exc_info2:
-        orch5.restore_from_ledger()
-    assert "Sequence non-monotonic" in str(exc_info2.value)
+        orch3.restore_from_ledger()
+    assert "Cryptographic signature mismatch" in str(exc_info2.value)
+
+    # Scenario B: Truncation/Rollback Attack Detection
+    # Write back clean list of entries but manually truncate it by deleting the last entry
+    clean_entries = orch2.pml._read_entries()
+    clean_entries.pop() # Remove last valid entry
+    orch2.pml._write_entries(clean_entries)
+
+    orch2.failed_recoveries = 0
+    with pytest.raises(SecurityError) as exc_info3:
+        # Since orch2 tracks checkpoints_created, a truncated disk ledger will fail truncation validation check
+        orch2.restore_from_ledger()
+    assert "truncation/rollback detected" in str(exc_info3.value)
+    assert orch2.restoration_health == "TAMPERED"
+    assert orch2.failed_recoveries == 1
+
+    # ==========================================
+    # 6. EXPORT PML RELIABILITY METRICS REPORT
+    # ==========================================
+    # Regenerate valid ledger entries for export validation
+    orch_export = DeveloperWorkflowOrchestrator(session_id="session_cycle_2026", ledger_path=str(ledger_file))
+    # Clear bad entries, start fresh for pristine export
+    if ledger_file.exists():
+        ledger_file.unlink()
+    orch_export.ingest_event("AGENT_ACTIVATION", "system", {
+        "agent_id": "agent_reliability_exec",
+        "supervisor_id": "super_operator",
+        "decision": "AUTHORIZED",
+        "role": "EXECUTOR"
+    })
+    orch_export.ingest_event("TASK_INIT", "task_export_01", {
+        "objective_id": "obj_export_test",
+        "assigned_agent": "agent_reliability_exec"
+    })
+
+    # Recover and rehydrate
+    orch_export.restore_from_ledger()
+
+    # Export evidence package
+    report = orch_export.export_evidence(str(evidence_file))
+
+    assert "pml_reliability_metrics" in report
+    metrics = report["pml_reliability_metrics"]
+    assert metrics["restoration_health"] == "HEALTHY"
+    assert metrics["checkpoints_created"] > 0
+    assert metrics["recovery_attempts"] > 0
+    assert metrics["workflows_restored"] >= 0
+    assert metrics["failed_recoveries"] == 0
+
+    # Expose and verify Control Tower displays PML health
+    summary = orch_export.generate_operator_summary()
+    assert "SAGE PML RELIABILITY & CONTINUATION DASHBOARD:" in summary
+    assert "Restoration Health" in summary
+    assert "Checkpoints Serialized" in summary

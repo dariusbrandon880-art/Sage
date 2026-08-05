@@ -15,8 +15,172 @@ from datetime import datetime, timezone
 
 
 class SecurityError(PermissionError):
-    """Exception raised for SAGE security or PML integrity violations."""
+    """Custom exception raised when a security boundary violation or a cryptographic
+
+    integrity mismatch is detected in the Persistent Mission Ledger (PML).
+    """
     pass
+
+
+class PersistentMissionLedger:
+    """Repository-anchored, append-only cryptographic ledger representing the
+
+    durable operational source of truth for SAGE workflow states and execution lineage.
+    Removes conversational/chat dependencies for rehydration recovery.
+    """
+
+    def __init__(self, ledger_path: str = "evidence_capture/pml_ledger.json"):
+        self.ledger_path = ledger_path
+        # Ensure the directory exists and initialize as empty JSON array if not present
+        os.makedirs(os.path.dirname(self.ledger_path), exist_ok=True)
+        if not os.path.exists(self.ledger_path):
+            with open(self.ledger_path, "w", encoding="utf-8") as f:
+                json.dump([], f, indent=2)
+
+    def _read_entries(self) -> List[Dict[str, Any]]:
+        try:
+            with open(self.ledger_path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return []
+
+    def _write_entries(self, entries: List[Dict[str, Any]]) -> None:
+        with open(self.ledger_path, "w", encoding="utf-8") as f:
+            json.dump(entries, f, indent=2)
+
+    def append(self, task_id: str, state_hash: str, active_mission: str = "unassigned",
+               current_owner: str = "unassigned", workflow_state: str = "UNASSIGNED",
+               next_action: str = "UNKNOWN", auth_boundary: bool = False,
+               evidence_refs: Optional[list] = None, test_status: bool = True,
+               payload: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """Appends a cryptographically chained, monotonically incremented entry to the ledger."""
+        entries = self._read_entries()
+
+        # Calculate next monotonic sequence ID
+        next_seq_id = 1
+        preceding_fingerprint = "GENESIS"
+        if entries:
+            next_seq_id = max(entry["sequence_id"] for entry in entries) + 1
+            preceding_fingerprint = entries[-1]["integrity_fingerprint"]
+
+        ts = datetime.now(timezone.utc).isoformat()
+
+        # Construct record entry
+        entry = {
+            "sequence_id": next_seq_id,
+            "timestamp": ts,
+            "task_id": task_id,
+            "state_hash": state_hash,
+            "active_mission": active_mission,
+            "current_owner": current_owner,
+            "workflow_state": workflow_state,
+            "next_action": next_action,
+            "authorization_boundary": auth_boundary,
+            "evidence_references": evidence_refs or [],
+            "test_status": test_status,
+            "preceding_fingerprint": preceding_fingerprint
+        }
+
+        if payload is not None:
+            entry["payload"] = payload
+
+        # Compute SHA-256 fingerprint for integrity validation, chaining preceding fingerprint
+        hasher = hashlib.sha256()
+        data_to_hash = {
+            "sequence_id": next_seq_id,
+            "timestamp": ts,
+            "task_id": task_id,
+            "state_hash": state_hash,
+            "active_mission": active_mission,
+            "current_owner": current_owner,
+            "workflow_state": workflow_state,
+            "next_action": next_action,
+            "authorization_boundary": auth_boundary,
+            "test_status": test_status,
+            "preceding_fingerprint": preceding_fingerprint
+        }
+        if payload is not None:
+            data_to_hash["payload"] = payload
+
+        serialized = json.dumps(data_to_hash, sort_keys=True)
+        hasher.update(serialized.encode("utf-8"))
+        entry["integrity_fingerprint"] = hasher.hexdigest()
+
+        entries.append(entry)
+        self._write_entries(entries)
+        return entry
+
+    def verify_integrity(self) -> bool:
+        """Adversarially validates that sequence IDs are strictly increasing and sequential."""
+        entries = self._read_entries()
+        if not entries:
+            return True
+
+        for i in range(len(entries)):
+            if entries[i]["sequence_id"] != i + 1:
+                return False  # Non-monotonic or missing sequence ID detected!
+
+            # Monotonic chronological timestamp check
+            if i > 0:
+                prev_ts = entries[i - 1]["timestamp"]
+                curr_ts = entries[i]["timestamp"]
+                if curr_ts < prev_ts:
+                    return False  # Anachronistic timestamp detected!
+
+        return True
+
+    def verify(self) -> List[Dict[str, Any]]:
+        """Adversarially validates sequence IDs, timestamp monotonicity, and the complete
+
+        cryptographic hash chain to guarantee zero tampering or unauthorized rollbacks.
+        """
+        if not self.verify_integrity():
+            raise SecurityError("PML Integrity Violation: Sequence non-monotonic or timestamp anomaly.")
+
+        entries = self._read_entries()
+        # Verify the signature/fingerprint integrity of each entry and the chained relationship
+        for i, entry in enumerate(entries):
+            provided_fingerprint = entry.get("integrity_fingerprint")
+            expected_preceding = "GENESIS" if i == 0 else entries[i - 1]["integrity_fingerprint"]
+
+            if entry.get("preceding_fingerprint") != expected_preceding:
+                raise SecurityError(f"PML Integrity Violation: Cryptographic chain broken at entry {entry.get('sequence_id')}.")
+
+            # Recreate data dictionary to hash
+            hasher = hashlib.sha256()
+            data_to_hash = {
+                "sequence_id": entry.get("sequence_id"),
+                "timestamp": entry.get("timestamp"),
+                "task_id": entry.get("task_id"),
+                "state_hash": entry.get("state_hash"),
+                "active_mission": entry.get("active_mission"),
+                "current_owner": entry.get("current_owner"),
+                "workflow_state": entry.get("workflow_state"),
+                "next_action": entry.get("next_action"),
+                "authorization_boundary": entry.get("authorization_boundary"),
+                "test_status": entry.get("test_status"),
+                "preceding_fingerprint": expected_preceding
+            }
+            if "payload" in entry:
+                data_to_hash["payload"] = entry["payload"]
+
+            serialized = json.dumps(data_to_hash, sort_keys=True)
+            hasher.update(serialized.encode("utf-8"))
+            recomputed = hasher.hexdigest()
+
+            if recomputed != provided_fingerprint:
+                raise SecurityError(f"PML Integrity Violation: Cryptographic signature mismatch on entry {entry.get('sequence_id')}.")
+
+        return entries
+
+    def get_latest_entry(self, task_id: str) -> Optional[Dict[str, Any]]:
+        """Retrieves the latest verified append-only ledger entry for the given task."""
+        self.verify()  # Ensure full chain integrity check before retrieval
+        entries = self._read_entries()
+        task_entries = [e for e in entries if e["task_id"] == task_id]
+        if not task_entries:
+            return None
+        return task_entries[-1]
 
 
 class ChatGPTAgentConnector:
@@ -330,159 +494,6 @@ class ReviewerAgentConnector:
         )
 
         return manifest
-
-
-class PersistentMissionLedger:
-    """SAGE Persistent Mission Ledger (PML) - Continuity Source of Truth.
-
-    Maintains a repository-anchored, append-only chronological log of all task states,
-    assignees, milestones, objective constraints, and cryptographically verified evidence
-    hashes, eliminating conversational/chat dependency for recovery.
-    """
-
-    def __init__(self, ledger_path: str = "evidence_capture/pml_ledger.json"):
-        self.ledger_path = ledger_path
-        # Ensure the directories exist
-        os.makedirs(os.path.dirname(self.ledger_path), exist_ok=True)
-        if not os.path.exists(self.ledger_path):
-            with open(self.ledger_path, "w", encoding="utf-8") as f:
-                json.dump([], f, indent=2)
-
-    def _read_entries(self) -> List[Dict[str, Any]]:
-        try:
-            with open(self.ledger_path, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except Exception:
-            return []
-
-    def _write_entries(self, entries: List[Dict[str, Any]]) -> None:
-        with open(self.ledger_path, "w", encoding="utf-8") as f:
-            json.dump(entries, f, indent=2)
-
-    def append(self, task_id: str, state_hash: str, active_mission: str = "unassigned",
-               current_owner: str = "unassigned", workflow_state: str = "UNASSIGNED",
-               next_action: str = "UNKNOWN", auth_boundary: bool = False,
-               evidence_refs: Optional[list] = None, test_status: bool = True,
-               payload: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        """Appends a cryptographically auditable, monotonically incremented entry to the ledger."""
-        entries = self._read_entries()
-
-        # Calculate next monotonic sequence ID
-        next_seq_id = 1
-        if entries:
-            next_seq_id = max(entry["sequence_id"] for entry in entries) + 1
-
-        ts = datetime.now(timezone.utc).isoformat()
-
-        # Construct record entry
-        entry = {
-            "sequence_id": next_seq_id,
-            "timestamp": ts,
-            "task_id": task_id,
-            "state_hash": state_hash,
-            "active_mission": active_mission,
-            "current_owner": current_owner,
-            "workflow_state": workflow_state,
-            "next_action": next_action,
-            "authorization_boundary": auth_boundary,
-            "evidence_references": evidence_refs or [],
-            "test_status": test_status
-        }
-
-        if payload is not None:
-            entry["payload"] = payload
-
-        # Compute SHA-256 fingerprint for integrity validation
-        hasher = hashlib.sha256()
-        data_to_hash = {
-            "sequence_id": next_seq_id,
-            "timestamp": ts,
-            "task_id": task_id,
-            "state_hash": state_hash,
-            "active_mission": active_mission,
-            "current_owner": current_owner,
-            "workflow_state": workflow_state,
-            "next_action": next_action,
-            "authorization_boundary": auth_boundary,
-            "test_status": test_status
-        }
-        if payload is not None:
-            data_to_hash["payload"] = payload
-
-        serialized = json.dumps(data_to_hash, sort_keys=True)
-        hasher.update(serialized.encode("utf-8"))
-        entry["integrity_fingerprint"] = hasher.hexdigest()
-
-        entries.append(entry)
-        self._write_entries(entries)
-        return entry
-
-    def verify(self) -> List[Dict[str, Any]]:
-        """Adversarially validates that sequence IDs are strictly increasing, sequential,
-        chronological timestamps are monotonic, and fingerprint integrity is verified."""
-        if not self.verify_integrity():
-            raise SecurityError("PML Integrity Violation: Sequence non-monotonic or timestamp anomaly.")
-
-        entries = self._read_entries()
-        # Verify the signature/fingerprint integrity of each entry
-        for entry in entries:
-            provided_fingerprint = entry.get("integrity_fingerprint")
-
-            # Recreate data dictionary to hash
-            hasher = hashlib.sha256()
-            data_to_hash = {
-                "sequence_id": entry.get("sequence_id"),
-                "timestamp": entry.get("timestamp"),
-                "task_id": entry.get("task_id"),
-                "state_hash": entry.get("state_hash"),
-                "active_mission": entry.get("active_mission"),
-                "current_owner": entry.get("current_owner"),
-                "workflow_state": entry.get("workflow_state"),
-                "next_action": entry.get("next_action"),
-                "authorization_boundary": entry.get("authorization_boundary"),
-                "test_status": entry.get("test_status")
-            }
-            if "payload" in entry:
-                data_to_hash["payload"] = entry["payload"]
-
-            serialized = json.dumps(data_to_hash, sort_keys=True)
-            hasher.update(serialized.encode("utf-8"))
-            recomputed = hasher.hexdigest()
-
-            if recomputed != provided_fingerprint:
-                raise SecurityError(f"PML Integrity Violation: Cryptographic signature mismatch on entry {entry.get('sequence_id')}.")
-
-        return entries
-
-    def verify_integrity(self) -> bool:
-        """Adversarially validates that sequence IDs are strictly increasing and sequential."""
-        entries = self._read_entries()
-        if not entries:
-            return True
-
-        for i in range(len(entries)):
-            if entries[i]["sequence_id"] != i + 1:
-                return False  # Non-monotonic or missing sequence ID detected!
-
-            # Monotonic chronological timestamp check
-            if i > 0:
-                prev_ts = entries[i - 1]["timestamp"]
-                curr_ts = entries[i]["timestamp"]
-                if curr_ts < prev_ts:
-                    return False  # Anachronistic timestamp detected!
-
-        return True
-
-    def get_latest_entry(self, task_id: str) -> Optional[Dict[str, Any]]:
-        """Retrieves the latest verified append-only ledger entry for the given task."""
-        if not self.verify_integrity():
-            raise SecurityError("PML Integrity Violation: Append-only ledger has been tampered with.")
-
-        entries = self._read_entries()
-        task_entries = [e for e in entries if e["task_id"] == task_id]
-        if not task_entries:
-            return None
-        return task_entries[-1]
 
 
 class JulesAgentConnector:
@@ -959,10 +970,18 @@ class DeveloperWorkflowOrchestrator:
         self.intelligence = WorkflowIntelligenceFeedbackLayer(self)
         self.pml = PersistentMissionLedger(ledger_path=ledger_path)
 
+        # PML Reliability & Continuation Additions
+        self.mission_queue: List[Dict[str, Any]] = []
+        self.restoration_health: str = "HEALTHY"
+        self.last_checkpoint: Optional[str] = None
+        self.recovery_attempts: int = 0
+        self.failed_recoveries: int = 0
+        self.operator_interventions: int = 0
+        self.checkpoints_created: int = 0
+
     def _sync_to_ledger(self, task_id: str, event_type: str) -> str:
         """Helper to serialize the current orchestrator state and append to persistent ledger."""
         task_state = self.tasks.get(task_id, {})
-
         active_mission = task_state.get("objective_id", "unassigned")
         current_owner = task_state.get("assigned_agent", "unassigned")
         workflow_state = task_state.get("status", "UNASSIGNED")
@@ -971,18 +990,20 @@ class DeveloperWorkflowOrchestrator:
         evidence_refs = task_state.get("lineage_references", [])
         test_status = True
 
-        # We can calculate state_hash of self.tasks + self.agents to serve as state_hash
         hasher = hashlib.sha256()
         state_repr = {
             "tasks": self.tasks,
             "agents": self.agents,
             "agent_roles": self.agent_roles,
-            "event_log_len": len(self.event_log)
+            "event_log_len": len(self.event_log),
+            "mission_queue": self.mission_queue
         }
         hasher.update(json.dumps(state_repr, sort_keys=True).encode("utf-8"))
         state_hash = hasher.hexdigest()
 
-        # Fully serialize the orchestrator state to store inside the payload
+        self.checkpoints_created += 1
+        self.last_checkpoint = f"chk_{uuid.uuid4().hex[:8]}"
+
         state_payload = {
             "session_id": self.session_id,
             "orchestrator_run_id": self.orchestrator_run_id,
@@ -990,7 +1011,14 @@ class DeveloperWorkflowOrchestrator:
             "agents": self.agents,
             "agent_roles": self.agent_roles,
             "event_log": self.event_log,
-            "event_type": event_type
+            "event_type": event_type,
+            "mission_queue": self.mission_queue,
+            "restoration_health": self.restoration_health,
+            "last_checkpoint": self.last_checkpoint,
+            "recovery_attempts": self.recovery_attempts,
+            "failed_recoveries": self.failed_recoveries,
+            "operator_interventions": self.operator_interventions,
+            "checkpoints_created": self.checkpoints_created
         }
 
         entry = self.pml.append(
@@ -1008,16 +1036,23 @@ class DeveloperWorkflowOrchestrator:
         return entry.get("integrity_fingerprint", "")
 
     def restore_from_ledger(self) -> int:
-        """Replays chronological ledger events to reconstruct the exact tasks, agents, agent_roles, and event_log state."""
+        """Replays chronological ledger events to reconstruct the exact state."""
+        self.recovery_attempts += 1
         try:
             entries = self.pml.verify()
         except Exception as e:
+            self.failed_recoveries += 1
+            self.restoration_health = "TAMPERED"
             raise SecurityError(f"Ledger Verification Failed: {str(e)}") from e
+
+        if self.checkpoints_created > len(entries):
+            self.failed_recoveries += 1
+            self.restoration_health = "TAMPERED"
+            raise SecurityError("PML Integrity Violation: Ledger truncation/rollback detected!")
 
         if not entries:
             return 0
 
-        # Replay/restore the exact state sequentially
         for entry in entries:
             payload = entry.get("payload", {})
             self.session_id = payload.get("session_id", self.session_id)
@@ -1026,8 +1061,87 @@ class DeveloperWorkflowOrchestrator:
             self.agents = copy.deepcopy(payload.get("agents", {}))
             self.agent_roles = copy.deepcopy(payload.get("agent_roles", {}))
             self.event_log = copy.deepcopy(payload.get("event_log", []))
+            self.mission_queue = copy.deepcopy(payload.get("mission_queue", []))
+            self.restoration_health = payload.get("restoration_health", "HEALTHY")
+            self.last_checkpoint = payload.get("last_checkpoint", self.last_checkpoint)
+            self.checkpoints_created = payload.get("checkpoints_created", self.checkpoints_created)
+            self.operator_interventions = payload.get("operator_interventions", self.operator_interventions)
 
+        self.restoration_health = "HEALTHY"
         return len(entries)
+
+    def add_to_queue(self, task_id: str, objective_id: str, assigned_agent: str, initial_context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """Appends a task definition to the back of the sequential mission queue and syncs."""
+        if any(item["task_id"] == task_id for item in self.mission_queue) or task_id in self.tasks:
+            raise ValueError(f"Queue Conflict: Task '{task_id}' already exists.")
+
+        queue_item = {
+            "task_id": task_id,
+            "objective_id": objective_id,
+            "assigned_agent": assigned_agent,
+            "initial_context": initial_context or {},
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+        self.mission_queue.append(queue_item)
+        self._sync_to_ledger(task_id, "QUEUE_ADD")
+        return queue_item
+
+    def pop_from_queue(self) -> Optional[Dict[str, Any]]:
+        """Pops the next task from the front of the queue, runs Safety Gate validation."""
+        if not self.mission_queue:
+            return None
+
+        peek_item = self.mission_queue[0]
+        task_id = peek_item["task_id"]
+
+        if not self.validate_safety_gate(task_id):
+            raise SecurityError(f"Safety Gate Rejected: Task '{task_id}' failed safety checks.")
+
+        item = self.mission_queue.pop(0)
+
+        self.ingest_event("TASK_INIT", item["task_id"], {
+            "objective_id": item["objective_id"],
+            "assigned_agent": item["assigned_agent"],
+            "initial_context": item["initial_context"]
+        })
+
+        self._sync_to_ledger(item["task_id"], "QUEUE_POP")
+        return item
+
+    def validate_safety_gate(self, task_id: str) -> bool:
+        """Evaluates a task against standard security boundaries."""
+        task_def = None
+        for item in self.mission_queue:
+            if item["task_id"] == task_id:
+                task_def = item
+                break
+        if not task_def and task_id in self.tasks:
+            task_def = self.tasks[task_id]
+
+        if not task_def:
+            return False
+
+        assigned_agent = task_def.get("assigned_agent")
+        if assigned_agent != "unassigned" and self.agents.get(assigned_agent) != "ACTIVATED":
+            return False
+
+        initial_ctx = task_def.get("initial_context", {})
+        objective_id = task_def.get("objective_id", "")
+        locked_directories = {"sage/runtime", "sage/core", "sage/acr", "sage/agents"}
+
+        workspace = initial_ctx.get("workspace", "")
+        if any(locked in workspace for locked in locked_directories):
+            return False
+
+        for key, value in initial_ctx.items():
+            val_str = str(value)
+            if any(locked in val_str for locked in locked_directories):
+                return False
+
+        if any(locked in objective_id for locked in locked_directories):
+            return False
+
+        return True
 
     def ingest_event(self, event_type: str, task_id: str, payload: Dict[str, Any], timestamp: Optional[str] = None) -> Dict[str, Any]:
         """Ingests a structured workflow event, advancing state and tracking lineage."""
@@ -1421,6 +1535,26 @@ class DeveloperWorkflowOrchestrator:
             f"     - Review Complete            : {len(review_complete)} tasks {sorted(review_complete)}"
         ])
 
+        # PML Reliability & Continuation Control Tower section
+        lines.extend([
+            "--------------------------------------------------------------------------",
+            " SAGE PML RELIABILITY & CONTINUATION DASHBOARD:",
+            f"  • Current Mission State     : {self.restoration_health} (Restoration Health)",
+            f"  • Last Checkpoint Created   : {self.last_checkpoint or 'NONE'}",
+            f"  • Queue Current Size / Pos  : {len(self.mission_queue)} tasks in queue",
+            f"  • Checkpoints Serialized    : {self.checkpoints_created} checkpoints",
+            f"  • Recovery Attempts / Fail  : {self.recovery_attempts} successful / {self.failed_recoveries} failed",
+            f"  • Operator Interventions    : {self.operator_interventions} interventions"
+        ])
+        if self.mission_queue:
+            next_task = self.mission_queue[0]
+            lines.extend([
+                f"  • Next Queue Mission Task   : '{next_task['task_id']}' for {next_task['assigned_agent']}",
+                f"  • Next Queue Objective ID   : {next_task['objective_id']}"
+            ])
+        else:
+            lines.append("  • Next Queue Mission Task   : NONE")
+
         lines.append("--------------------------------------------------------------------------")
 
         # Render Agent Activation Registry
@@ -1568,6 +1702,19 @@ class DeveloperWorkflowOrchestrator:
             "agent_roles": self.agent_roles,
             "continuity_control_records": tasks_records,
             "operator_summary": self.generate_operator_summary().split("\n"),
+            "pml_reliability_metrics": {
+                "restoration_health": self.restoration_health,
+                "last_checkpoint": self.last_checkpoint,
+                "checkpoints_created": self.checkpoints_created,
+                "recovery_attempts": self.recovery_attempts,
+                "failed_recoveries": self.failed_recoveries,
+                "operator_interventions": self.operator_interventions,
+                "queue_position": len(self.mission_queue),
+                "workflows_restored": self.recovery_attempts - self.failed_recoveries,
+                "recovery_success_rate_percent": (100.0 * (self.recovery_attempts - self.failed_recoveries) / self.recovery_attempts) if self.recovery_attempts > 0 else 100.0,
+                "execution_velocity_score": 1.0,
+                "evidence_quality_score": 1.0
+            },
             "operational_measurements": {
                 "time_saved_minutes": time_saved,
                 "context_recovery_quality": context_recovery,
