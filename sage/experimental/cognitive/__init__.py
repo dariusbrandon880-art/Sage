@@ -23,6 +23,12 @@ from sage.experimental.cognitive.state_loader import (
 from sage.experimental.cognitive.pfc_integration import (
     PFCGovernedExecutor,
 )
+from sage.experimental.cognitive.openai_runtime import (
+    OpenAIAuthenticationResult,
+    OpenAIRuntimeAuthenticator,
+    AgentIdentityResolver,
+    OpenAICognitiveRuntimeActivator,
+)
 
 __all__ = [
     "CognitiveAgentIdentity",
@@ -40,4 +46,8 @@ __all__ = [
     "CognitiveStateLoader",
     "ContinuityRetrievalInterface",
     "PFCGovernedExecutor",
+    "OpenAIAuthenticationResult",
+    "OpenAIRuntimeAuthenticator",
+    "AgentIdentityResolver",
+    "OpenAICognitiveRuntimeActivator",
 ]

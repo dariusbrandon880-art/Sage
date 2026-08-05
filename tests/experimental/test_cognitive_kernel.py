@@ -20,6 +20,7 @@ from sage.experimental.cognitive import (
     CognitiveStateLoader,
     ContinuityRetrievalInterface,
     PFCGovernedExecutor,
+    OpenAICognitiveRuntimeActivator,
 )
 
 
@@ -389,5 +390,54 @@ def test_generate_cognitive_continuity_validation_evidence(tmp_path):
     evidence_path.parent.mkdir(parents=True, exist_ok=True)
     with open(evidence_path, "w", encoding="utf-8") as f:
         json.dump(evidence_package, f, indent=2, default=str)
+
+    assert evidence_path.exists()
+
+
+def test_openai_cognitive_runtime_activation(tmp_path):
+    """Verify end-to-end OpenAI Runtime + Cognitive Continuity activation and generate canonical report."""
+    import json
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    evidence_output = tmp_path / "evidence" / "ccl_feedback.json"
+
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    from sage.experimental.act.continuity_control import ContinuityControlLoop
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_openai_activation",
+        objective="Verify PFC integration gate",
+        ccl=ccl,
+        evidence_output_path=str(evidence_output)
+    )
+
+    activator = OpenAICognitiveRuntimeActivator(orchestrator=orchestrator)
+
+    # 1. Run actual activation flow with correct agent ID and auth token
+    report = activator.activate_runtime_session(
+        agent_id="openai-runtime-agent",
+        auth_token="sage_secure_token_abc123",
+        task_id="task_openai_runtime_activation",
+        task_description="Verify PFC integration gate",
+        session_id="session_openai_activation"
+    )
+
+    # 2. Verify all elements of the flow are proved and recorded
+    assert report["agent_id"] == "openai-runtime-agent"
+    assert report["authentication_result"]["success"] is True
+    assert report["authentication_result"]["auth_token_hash"] != ""
+    assert report["cognitive_state_result"]["state_loaded"] is True
+    assert report["pfc_decision"]["outcome"] == DecisionGateOutcome.PROCEED
+    assert report["execution_result"]["status"] == "EXECUTED"
+    assert report["execution_result"]["success"] is True
+    assert report["ledger_update_result"]["status_synchronized"] is True
+    assert "task_openai_runtime_activation" in report["ledger_update_result"]["completed_actions"]
+
+    # 3. Generate canonical evidence file at evidence_capture/openai_cognitive_runtime_activation.json
+    evidence_path = Path("evidence_capture/openai_cognitive_runtime_activation.json")
+    evidence_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(evidence_path, "w", encoding="utf-8") as f:
+        json.dump(report, f, indent=2, default=str)
 
     assert evidence_path.exists()
