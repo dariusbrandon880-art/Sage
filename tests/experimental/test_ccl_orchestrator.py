@@ -38,6 +38,7 @@ def test_two_role_coordination_and_recovery_loop():
     assert report["status"] == "VALIDATED"
     assert "chatgpt_coordination" in report
     assert "jules_execution" in report
+    assert "claude_review_findings" in report
     assert "review_contract" in report
 
     # Assert execution traces exist
@@ -47,7 +48,10 @@ def test_two_role_coordination_and_recovery_loop():
     assert "HANDOFF_CHATGPT_TO_JULES_START" in events
     assert "RECOVERY_SIMULATION_INTERRUPT" in events
     assert "RECOVERY_SIMULATION_RESUMED" in events
-    assert "REVIEW_PREPARATION_COMPLETED" in events
+    assert "CLAUDE_REVIEW_START" in events
+    assert "HANDOFF_JULES_TO_CLAUDE_START" in events
+    assert "CLAUDE_REVIEW_COMPLETED" in events
+    assert "HUMAN_OPERATOR_DECISION_START" in events
 
     # Assert 8-field complete context window properties
     contract = report["review_contract"]
@@ -65,6 +69,16 @@ def test_two_role_coordination_and_recovery_loop():
 def test_control_tower_status_rendering():
     """Verify operator Control Tower ASCII console layout and parameters."""
     macc = SAGEOperationalOrchestrator(session_id="session_test_control_tower")
+
+    # Pre-populate review findings to test explicit visibility
+    macc.orchestrator.session.metadata["latest_review_findings"] = {
+        "is_compliant": True,
+        "observed_findings": ["All systems compliant."],
+        "recommendations": ["No actions required."],
+        "verification_hash": "a" * 64
+    }
+    macc.orchestrator.session_manager.save_session(macc.orchestrator.session)
+
     console_output = macc.render_control_tower_view()
 
     assert "SAGE CO-ORDINATION CONTROL TOWER CONSOLE" in console_output
@@ -72,3 +86,8 @@ def test_control_tower_status_rendering():
     assert "Workflow Health Score" in console_output
     assert "Active Collaborator Responsibility Hierarchy" in console_output
     assert "Custody Transfer Handoff Lineage Trail" in console_output
+    assert "Governing Claude Auditor Validation Findings" in console_output
+    assert "Compliance Status:" in console_output
+    assert "Operator Visibility Lineage Answers" in console_output
+    assert "Who built it?           Jules" in console_output
+    assert "Who reviewed it?        Claude" in console_output

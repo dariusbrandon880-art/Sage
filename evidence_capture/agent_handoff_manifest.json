@@ -1,6 +1,6 @@
 {
-  "manifest_id": "manifest_handoff_2817932a605d",
-  "timestamp": "2026-08-05T01:25:37.889965Z",
+  "manifest_id": "manifest_handoff_5d25cabd152b",
+  "timestamp": "2026-08-05T01:58:37.480783Z",
   "source_session": "session_test_macc_loop",
   "target_session_objectives": [
     "obj_continuous_development"
@@ -25,8 +25,8 @@
       "tests/experimental/",
       "evidence_capture/"
     ],
-    "human_authorization_signature": "sig_jules_act_c94d22",
-    "timestamp": 1785893137.7369277
+    "human_authorization_signature": "sig_jules_act_317bcc",
+    "timestamp": 1785895117.3131995
   },
   "discovery_candidates": [],
   "workspace_fingerprint": {
@@ -39,24 +39,24 @@
       "size_bytes": 1919
     },
     "evidence_capture/agent_handoff_manifest.json": {
-      "sha256": "4e15b48ca0dca34e0609fbd67f3722bf9555fda177195edc7fe1d8d88b3f4c91",
-      "size_bytes": 3825
+      "sha256": "c7b9744d5747489c791766d89c4503721ae81fa3e9b1ccbc0b5955c358cc6f37",
+      "size_bytes": 3926
     },
     "evidence_capture/ccl_operational_feedback.json": {
       "sha256": "8840374cfed925ee6c4e3a53ace21a0f6fbc4efa3151e262c394e10b351b0ae9",
       "size_bytes": 6881
     },
     "evidence_capture/ccl_orchestrator_evidence.json": {
-      "sha256": "43bf3cdd54506d363419ca0fff379523f616c9196cc7afda16fed72ed911e522",
-      "size_bytes": 14564
+      "sha256": "8f4d182e1588fd22cfe36b4cc6ea62ebe1bfd6ab08c8fb62e712d14f0c4a8316",
+      "size_bytes": 19926
     },
     "evidence_capture/decision_validation_report.json": {
-      "sha256": "80ba6663e855e46b9f3807b81b105b75971ba110609b112bb382f64096621ee1",
+      "sha256": "6fefe02fdc782652ce86ae576ffa977df82bd0ecc78593a5ba7115e22a15f60b",
       "size_bytes": 1066
     },
     "evidence_capture/discovery_candidates_register.json": {
-      "sha256": "32e51aef1e710ecd7a1133e9f23cae881e025588eeb0f95eb093b94a3978b9b1",
-      "size_bytes": 33492
+      "sha256": "ca26d1378b723c1e681de0adcfb5c51070d341d79cc81d62bf6f46d6c400b840",
+      "size_bytes": 36160
     },
     "evidence_capture/multi_agent_coordination_evidence.json": {
       "sha256": "a5e4137a4e9d27d61f275cbc6d2a708ed94923b2c58b0718429972e906582470",
@@ -71,8 +71,8 @@
       "size_bytes": 1233
     },
     "sage/experimental/act/ccl_orchestrator.py": {
-      "sha256": "53deb63060b087af78eca948b9b9392d97437f9b6e4104eb1aabfed283e72fd3",
-      "size_bytes": 20408
+      "sha256": "65356515a256c680026c7d2b207e61f6ca210de0f6c12684e17162c437eea3ed",
+      "size_bytes": 27942
     },
     "sage/experimental/act/continuity_control.py": {
       "sha256": "b161c50cec6fd7690964010c32f7cadc909d617c2f913c66180faaddcc746dd6",
@@ -83,8 +83,8 @@
       "size_bytes": 1546
     },
     "tests/experimental/test_ccl_orchestrator.py": {
-      "sha256": "053982ecf87cba58adfee64ee0dd2851a85fd1255e9247ab32725c1e24e781ff",
-      "size_bytes": 2841
+      "sha256": "a179405cbd8ebb23b732dd203f4144ac0d065e52a5cea85bada1d94f2995bd24",
+      "size_bytes": 3747
     },
     "tests/experimental/test_continuity_control.py": {
       "sha256": "d1fccc2cd485e12f628c0fcad101b6201346d723dc7bf124f6c55295ce541073",
@@ -93,8 +93,8 @@
   },
   "coordination_telemetry": {
     "assigned_agent": "agent_jules_sage",
-    "nonce": "3a94e39ec6bc4e83",
-    "rehydration_token": "rehydrate_1e8ad264bfca4beb",
+    "nonce": "92fdaba203a94032",
+    "rehydration_token": "rehydrate_08d92e9a1f4a4ce5",
     "instructions": "Run DeveloperWorkflowOrchestrator to re-verify context state."
   }
 }
