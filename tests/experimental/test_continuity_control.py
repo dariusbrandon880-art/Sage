@@ -1172,3 +1172,66 @@ def test_chatgpt_runtime_governed_execution(tmp_path):
         assert act_data["context_retrieval_result"]["current_task_boundary"] == "task_rt_verify_loop"
         assert act_data["execution_result"]["completion_status"] == "SUCCESS"
         assert act_data["validation_result"]["status"] == "VALIDATED"
+
+
+def test_sage_cognitive_kernel_state_and_pfc_gate(tmp_path):
+    """Verify SAGE Cognitive Kernel state loader, forbidden regressions, and PFC decision gate integrations."""
+    from sage.experimental.act.continuity_control import (
+        DeveloperWorkflowOrchestrator,
+        ContinuityControlLoop,
+        CognitiveState,
+        SAGEMissionTask
+    )
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    evidence_output = tmp_path / "evidence" / "ccl_feedback.json"
+
+    # Setup session manager and orchestrator
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_cognitive_test_88",
+        objective="obj_continuous_development",
+        ccl=ccl,
+        evidence_output_path=str(evidence_output)
+    )
+
+    # 1. Test Cognitive State Loader
+    orchestrator.session.add_completed_action("task_setup")
+    orchestrator.session_manager.save_session(orchestrator.session)
+
+    # Add an authorized pending task to queue to satisfy permitted actions
+    t = SAGEMissionTask(task_id="task_development_step", objective_id="obj_continuous_development", authorized=True, description="Backlog Task")
+    orchestrator.mission_queue.add_task(t)
+
+    cog_state = orchestrator.load_cognitive_state()
+    assert cog_state.active_mission == "obj_continuous_development"
+    assert "task_setup" in cog_state.completed_work
+    assert "task_setup" in cog_state.forbidden_regressions
+
+    # 2. Test PFC Decision Gate
+    decision_proceed = orchestrator.evaluate_pfc_decision_gate(cog_state)
+    assert decision_proceed == "PROCEED"
+
+    # Test BLOCK on forbidden regression attempt
+    corrupted_state = CognitiveState(
+        active_mission="obj_continuous_development",
+        completed_work=["task_setup", "task_corrupted"],
+        forbidden_regressions=["task_setup", "task_corrupted"],
+        permitted_actions=[]
+    )
+    decision_block = orchestrator.evaluate_pfc_decision_gate(corrupted_state)
+    assert decision_block == "BLOCK"
+
+    # Test REQUEST_CLARIFICATION on empty actions
+    empty_state = CognitiveState(
+        active_mission="obj_continuous_development",
+        completed_work=[],
+        forbidden_regressions=[],
+        permitted_actions=[]
+    )
+    decision_clarify = orchestrator.evaluate_pfc_decision_gate(empty_state)
+    assert decision_clarify == "REQUEST_CLARIFICATION"

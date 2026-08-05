@@ -1,5 +1,5 @@
 {
-  "timestamp": 1785958913.4581156,
+  "timestamp": 1785961094.053511,
   "strengthened_capabilities": {
     "governed_continuous_execution_loop": "operational",
     "persistent_mission_ledger": "operational",
@@ -10,7 +10,7 @@
     "control_tower_visibility": "operational"
   },
   "measurable_improvements": {
-    "duration_reduction_percent": 31.50858613866673,
+    "duration_reduction_percent": 29.372811434952013,
     "recovery_success_rate": 1.0,
     "evidence_completeness_ratio": 1.0
   }

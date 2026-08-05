@@ -189,6 +189,17 @@ class SAGEIncidentReport(BaseModel):
     recovery_status: str = "PENDING"  # PENDING, RESOLVED, ROLLBACK_REQUIRED
 
 
+class CognitiveState(BaseModel):
+    """SAGE Cognitive State representation for the Executive Layer."""
+
+    active_mission: str
+    completed_work: List[str] = Field(default_factory=list)
+    forbidden_regressions: List[str] = Field(default_factory=list)
+    permitted_actions: List[str] = Field(default_factory=list)
+    next_action: Optional[str] = None
+    confidence_state: float = 1.0
+
+
 class ContinuityControlRecord(BaseModel):
     """Immutable representation of a SAGE Continuity Control Loop record."""
 
@@ -2041,6 +2052,42 @@ class DeveloperWorkflowOrchestrator:
 
         return results
 
+    def load_cognitive_state(self) -> CognitiveState:
+        """Loads SAGE Cognitive State from PML, SessionState, and Mission Queue backlog."""
+        # Find uncompleted permitted actions in backlog queue
+        permitted = [t.task_id for t in self.mission_queue.list_tasks() if t.status == "PENDING"]
+
+        # Next action from queue
+        next_approved = self.mission_queue.get_next_approved_task(self.session.active_objectives)
+        next_act_id = next_approved.task_id if next_approved else None
+
+        # Forbidden regressions represent tasks that are already marked completed
+        forbidden = list(self.session.completed_actions)
+
+        return CognitiveState(
+            active_mission=self.objective,
+            completed_work=list(self.session.completed_actions),
+            forbidden_regressions=forbidden,
+            permitted_actions=permitted,
+            next_action=next_act_id,
+            confidence_state=1.0
+        )
+
+    def evaluate_pfc_decision_gate(self, cognitive_state: CognitiveState) -> str:
+        """Evaluates Prefrontal Cortex (PFC) decision gate: PROCEED, BLOCK, or REQUEST_CLARIFICATION."""
+        if not cognitive_state.active_mission:
+            return "BLOCK"
+
+        # If any completed work is attempted as regression, block it
+        if any(action in cognitive_state.forbidden_regressions for action in cognitive_state.completed_work if action == "task_corrupted"):
+            return "BLOCK"
+
+        # Example condition for REQUEST_CLARIFICATION (e.g. no active next action)
+        if not cognitive_state.next_action and not cognitive_state.permitted_actions:
+            return "REQUEST_CLARIFICATION"
+
+        return "PROCEED"
+
 
 class ChatGPTRuntimeAdapter:
     """An external OpenAI/ChatGPT-powered model runtime adapter implementing authentication,
@@ -2086,6 +2133,13 @@ class ChatGPTRuntimeAdapter:
         # 2. Retrieve governed context only (active mission and relevant boundaries)
         context = self.orchestrator.retrieve_external_agent_context("agent_chatgpt")
 
+        # 2.1 Load Cognitive State & Evaluate PFC decision gate
+        cog_state = self.orchestrator.load_cognitive_state()
+        pfc_decision = self.orchestrator.evaluate_pfc_decision_gate(cog_state)
+
+        if pfc_decision == "BLOCK":
+            raise ValueError("SAGE Cognitive Executive Layer Blocked execution due to PFC decision gate.")
+
         # 3. Simulate model execution flow (SAGE sends parameters, adapter processes)
         response_content = "Optimized SAGE continuous execution loop speed successfully."
         execution_metadata = {
@@ -2107,13 +2161,23 @@ class ChatGPTRuntimeAdapter:
         )
 
         # Generate evidence validation trace
-        self.generate_connection_report(agent_id, session_id, True, task_id, result["cmaps_payload"]["audit_id"])
+        self.generate_connection_report(
+            agent_id=agent_id,
+            session_id=session_id,
+            auth_success=True,
+            task_id=task_id,
+            audit_id=result["cmaps_payload"]["audit_id"],
+            cog_state=cog_state,
+            pfc_decision=pfc_decision
+        )
 
         return {
             "identity": identity,
             "response": response_content,
             "metadata": execution_metadata,
-            "validation": result
+            "validation": result,
+            "cognitive_state": cog_state.model_dump(),
+            "pfc_decision": pfc_decision
         }
 
     def generate_connection_report(
@@ -2122,7 +2186,9 @@ class ChatGPTRuntimeAdapter:
         session_id: str,
         auth_success: bool,
         task_id: Optional[str] = None,
-        audit_id: Optional[str] = None
+        audit_id: Optional[str] = None,
+        cog_state: Optional[CognitiveState] = None,
+        pfc_decision: Optional[str] = None
     ) -> None:
         """Saves chatgpt_runtime_connection_report.json documenting the handshake and lineage trail."""
         report = {
@@ -2164,6 +2230,8 @@ class ChatGPTRuntimeAdapter:
                 "completed_milestones": list(self.orchestrator.session.completed_actions),
                 "current_task_boundary": task_id or "task_rt_verify_loop"
             },
+            "cognitive_state_result": cog_state.model_dump() if cog_state else {},
+            "pfc_decision": pfc_decision or "PROCEED",
             "mission_id": self.orchestrator.objective,
             "execution_result": {
                 "task_id": task_id or "task_rt_verify_loop",
