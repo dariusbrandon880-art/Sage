@@ -17,6 +17,83 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field, field_validator
 
 from sage.acr.session.session_state import SessionStateManager, SessionState
+from sage.acr.session.checkpoint import CheckpointManager, ContinuityCheckpoint
+
+
+class SAGEMissionTask(BaseModel):
+    """Immutable representation of a SAGE Mission Task under strict governance."""
+
+    task_id: str
+    objective_id: str
+    priority_score: float = 50.0
+    lane: str = "engineering"
+    authorized: bool = False
+    evidence_requirements: List[str] = Field(default_factory=lambda: ["git_commit", "protection_report", "cmaps_audit_id"])
+    completion_criteria: List[str] = Field(default_factory=list)
+    status: str = "PENDING"  # PENDING, RUNNING, COMPLETED, FAILED, PAUSED
+    assigned_agent: str = "agent_jules_sage"
+    description: str = ""
+    created_at: float = Field(default_factory=time.time)
+
+    @field_validator("task_id")
+    @classmethod
+    def validate_task_id(cls, v: str) -> str:
+        """Enforce strict task_id formatting."""
+        if not re.match(r"^task_[a-zA-Z0-9_\-]+$", v):
+            raise ValueError(f"SAGE Mission Queue Violation: Invalid task_id format: '{v}'")
+        return v
+
+
+class SAGEMissionQueue:
+    """A controlled backlog mechanism managing queued tasks under strict governance."""
+
+    def __init__(self, storage_path: Path):
+        self.storage_path = Path(storage_path)
+        self.storage_path.mkdir(parents=True, exist_ok=True)
+        self.queue_file = self.storage_path / "mission_queue.json"
+        self.tasks: Dict[str, SAGEMissionTask] = {}
+        self.load_queue()
+
+    def add_task(self, task: SAGEMissionTask) -> None:
+        """Add an approved objective task to the backlog."""
+        self.tasks[task.task_id] = task
+        self.save_queue()
+
+    def get_task(self, task_id: str) -> Optional[SAGEMissionTask]:
+        """Retrieve task by its ID."""
+        return self.tasks.get(task_id)
+
+    def list_tasks(self) -> List[SAGEMissionTask]:
+        """List all queued tasks."""
+        return list(self.tasks.values())
+
+    def get_next_approved_task(self, approved_objectives: List[str]) -> Optional[SAGEMissionTask]:
+        """Query for the next approved, pending task belonging to approved objectives, sorted by priority."""
+        eligible = [
+            t for t in self.tasks.values()
+            if t.status == "PENDING" and t.authorized and t.objective_id in approved_objectives
+        ]
+        if not eligible:
+            return None
+        # Sort by priority_score descending, then older created_at first
+        sorted_tasks = sorted(eligible, key=lambda x: (-x.priority_score, x.created_at))
+        return sorted_tasks[0]
+
+    def load_queue(self) -> None:
+        """Load queued tasks from persistent storage."""
+        if self.queue_file.exists():
+            try:
+                with open(self.queue_file, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    for k, v in data.items():
+                        self.tasks[k] = SAGEMissionTask(**v)
+            except Exception:
+                pass
+
+    def save_queue(self) -> None:
+        """Persist queued tasks to disk."""
+        with open(self.queue_file, "w", encoding="utf-8") as f:
+            json.dump({k: v.model_dump() for k, v in self.tasks.items()}, f, indent=2, default=str)
 
 
 class ContinuityControlRecord(BaseModel):
@@ -566,6 +643,261 @@ class DeveloperWorkflowOrchestrator:
             self.session.add_objective(self.objective)
             self.session_manager.save_session(self.session)
 
+        self.active_task_id = None
+        self.mission_queue = SAGEMissionQueue(storage_path=self.ccl.storage_path)
+        self.checkpoint_manager = CheckpointManager(storage_path=str(self.ccl.storage_path / "checkpoints"))
+        self.loop_state_file = self.ccl.storage_path / "loop_state.json"
+        self.loop_state = self.load_loop_state()
+
+    def load_loop_state(self) -> Dict[str, Any]:
+        """Loads continuous execution loop state from disk."""
+        if self.loop_state_file.exists():
+            try:
+                with open(self.loop_state_file, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception:
+                pass
+        return {
+            "mode": "CONTINUOUS",  # CONTINUOUS, MANUAL_INTERVENTION_PAUSED, STOPPED
+            "consecutive_failures": 0,
+            "last_checkpoint_id": None
+        }
+
+    def save_loop_state(self) -> None:
+        """Saves continuous execution loop state to disk."""
+        with open(self.loop_state_file, "w", encoding="utf-8") as f:
+            json.dump(self.loop_state, f, indent=2, default=str)
+
+    def pause_mission_execution_loop(self) -> None:
+        """Pauses execution loop and logs human-in-the-loop intervention."""
+        self.loop_state["mode"] = "MANUAL_INTERVENTION_PAUSED"
+        self.save_loop_state()
+        self.ccl.intercept_event(
+            event_type="loop_control",
+            action_taken="Paused execution loop",
+            decision_reasoning="Manual intervention triggered by operator pause request",
+            session_id=self.session_id
+        )
+
+    def resume_mission_execution_loop(self) -> None:
+        """Resumes execution loop from manual pause."""
+        if self.loop_state["mode"] == "STOPPED":
+            raise ValueError("SAGE continuous execution violation: Stopped loop cannot be resumed. Restart orchestrator.")
+        self.loop_state["mode"] = "CONTINUOUS"
+        self.loop_state["consecutive_failures"] = 0
+        self.save_loop_state()
+        self.ccl.intercept_event(
+            event_type="loop_control",
+            action_taken="Resumed execution loop",
+            decision_reasoning="Operator cleared pause state and requested resume",
+            session_id=self.session_id
+        )
+
+    def emergency_stop(self) -> None:
+        """Instantly transitions mode to STOPPED to halt all autonomous execution."""
+        self.loop_state["mode"] = "STOPPED"
+        self.save_loop_state()
+        self.ccl.intercept_event(
+            event_type="loop_control",
+            action_taken="Emergency stop",
+            decision_reasoning="Operator executed emergency stop boundary control",
+            session_id=self.session_id
+        )
+
+    def redirect_mission_priorities(self, objective_id: str, priority_score: float) -> None:
+        """Updates tasks' priority scores matching the objective ID to redirect work focus."""
+        for task in self.mission_queue.list_tasks():
+            if task.objective_id == objective_id:
+                task.priority_score = priority_score
+        self.mission_queue.save_queue()
+        self.ccl.intercept_event(
+            event_type="priority_redirect",
+            action_taken=f"Redirected priorities for objective '{objective_id}' to score {priority_score}",
+            decision_reasoning="Human operator directed dynamic objective realignment",
+            session_id=self.session_id
+        )
+
+    def rollback_to_checkpoint(self, checkpoint_id: str) -> None:
+        """Restores session state matching the checkpoint record."""
+        checkpoint = self.checkpoint_manager.retrieve_checkpoint(checkpoint_id)
+        if not checkpoint:
+            raise ValueError(f"SAGE Recovery Violation: Checkpoint {checkpoint_id} not found.")
+
+        state_data = checkpoint.current_sage_state
+        self.session = SessionState(**state_data)
+        self.session_manager.save_session(self.session)
+
+        self.ccl.intercept_event(
+            event_type="recovered",
+            action_taken=f"Restored session to checkpoint {checkpoint_id}",
+            decision_reasoning="Initiate recovery rollback from validated checkpoint state",
+            failure_context={"error": "rollback_triggered"},
+            recovery_path=f"rehydrated_checkpoint_{checkpoint_id}",
+            session_id=self.session_id
+        )
+
+    def detect_external_workspace_drift(self) -> bool:
+        """Automatically scans the repository for untracked or unauthorized changes to frozen core production namespaces."""
+        workspace = self.scan_git_workspace()
+        modified_files = workspace.get("modified_files", [])
+
+        from sage.experimental.act.context_guard import ProtectedChangeDetector
+        detector = ProtectedChangeDetector()
+        protection_report = detector.audit_changes({"modified_files": modified_files})
+
+        if protection_report.get("is_violation_found", False):
+            # Drift or unauthorized change detected in frozen core namespaces!
+            self.loop_state["mode"] = "MANUAL_INTERVENTION_PAUSED"
+            self.save_loop_state()
+            self.ccl.intercept_event(
+                event_type="drift_detected",
+                action_taken="Freezing runtime and locking mode to MANUAL_INTERVENTION_PAUSED",
+                decision_reasoning="SAGE safety alignment alert: untracked or unauthorized core namespace changes detected",
+                failure_context={"error": "external_workspace_drift_detected", "report": protection_report},
+                recovery_path="manual_operator_verification_required",
+                session_id=self.session_id
+            )
+            return True
+        return False
+
+    def handoff_discovery_candidate_to_mission(self, candidate_id: str, objective_id: Optional[str] = None) -> SAGEMissionTask:
+        """Transforms high-value discovery candidate into an authorized engineering task in the backlog queue."""
+        obj_id = objective_id or self.objective
+        description = "Implement automated improvement"
+        priority_score = 50.0
+
+        # Try to find candidate from register
+        register_path = Path("evidence_capture/discovery_candidates_register.json")
+        if register_path.exists():
+            try:
+                with open(register_path, "r", encoding="utf-8") as f:
+                    candidates = json.load(f)
+                    for cand in candidates:
+                        if cand.get("candidate_id") == candidate_id:
+                            description = cand.get("description", description)
+                            p_str = cand.get("priority", "MEDIUM")
+                            if p_str == "HIGH":
+                                priority_score = 80.0
+                            elif p_str == "MEDIUM":
+                                priority_score = 50.0
+                            else:
+                                priority_score = 20.0
+                            break
+            except Exception:
+                pass
+
+        # Create valid task_id e.g. task_impr_CANDIDATE_ID
+        normalized_cand_id = re.sub(r"[^a-zA-Z0-9_\-]", "", candidate_id)
+        task_id = f"task_impr_{normalized_cand_id}"
+
+        task = SAGEMissionTask(
+            task_id=task_id,
+            objective_id=obj_id,
+            priority_score=priority_score,
+            lane="optimization" if "optimization" in description.lower() or "optimize" in description.lower() else "engineering",
+            authorized=True,
+            completion_criteria=[f"Implement recommendations for {candidate_id}", "Verify performance improvements"],
+            description=description
+        )
+
+        self.mission_queue.add_task(task)
+
+        self.ccl.intercept_event(
+            event_type="handoff",
+            action_taken=f"Handoff discovery candidate {candidate_id} to mission task",
+            decision_reasoning="Programmatically promote approved discovery lane candidate to engineering queue",
+            session_id=self.session_id
+        )
+        return task
+
+    def execute_autonomous_mission_loop(self, max_cycles: int = 5) -> Dict[str, Any]:
+        """Runs the controlled continuous execution loop, processing approved and authorized queue backlog tasks."""
+        completed_cycles = 0
+        executed_tasks = []
+
+        while completed_cycles < max_cycles:
+            # 1. Boundary / Safety Gates Check
+            if self.loop_state["mode"] != "CONTINUOUS":
+                break
+
+            if self.detect_external_workspace_drift():
+                break
+
+            # 2. Select Next Task (SAGE never selects random work)
+            task = self.mission_queue.get_next_approved_task(self.session.active_objectives)
+            if not task:
+                break
+
+            # 3. Pre-execution Checkpoint
+            pre_chk = self.checkpoint_manager.create_checkpoint(
+                current_sage_state=self.session.model_dump(),
+                active_goals=list(self.session.active_objectives),
+                recent_decisions=[],
+                validation_status={"task_id": task.task_id, "status": "PRE_EXECUTION"}
+            )
+
+            # 4. Agent Execution Simulation
+            task.status = "RUNNING"
+            self.mission_queue.save_queue()
+            self.active_task_id = task.task_id
+
+            try:
+                # Simulate task failure conditions (controlled failure injection)
+                if "fail" in task.task_id or "fail" in task.description.lower():
+                    raise RuntimeError(f"Simulated execution failure for task '{task.task_id}'")
+
+                # Successful execution coordination
+                result_evidence = self.execute_active_development_coordination(
+                    action_taken=f"Executed task {task.task_id}: {task.description}",
+                    decision_reasoning=f"Automatic execution of queued authorized development task",
+                )
+
+                # Reset failures on success
+                self.loop_state["consecutive_failures"] = 0
+                task.status = "COMPLETED"
+                self.session.add_completed_action(task.task_id)
+                self.session_manager.save_session(self.session)
+
+                # 5. Post-execution Checkpoint
+                post_chk = self.checkpoint_manager.create_checkpoint(
+                    current_sage_state=self.session.model_dump(),
+                    active_goals=list(self.session.active_objectives),
+                    recent_decisions=[task.task_id],
+                    validation_status={"task_id": task.task_id, "status": "SUCCESS"}
+                )
+                self.loop_state["last_checkpoint_id"] = post_chk.id
+
+            except Exception as e:
+                # Failure escalation protection
+                task.status = "FAILED"
+                self.loop_state["consecutive_failures"] += 1
+
+                # Check if failure count crosses the safety threshold
+                if self.loop_state["consecutive_failures"] >= 3:
+                    self.loop_state["mode"] = "MANUAL_INTERVENTION_PAUSED"
+
+                # Intercept failure in SAGE-CCL
+                self.ccl.intercept_event(
+                    event_type="recovered",
+                    action_taken=f"Execution failed for task {task.task_id}",
+                    decision_reasoning="Continuous execution loop error handler intercepted active agent failure",
+                    failure_context={"error": "task_execution_failed", "exception": str(e), "consecutive_failures": self.loop_state["consecutive_failures"]},
+                    recovery_path="hold_for_manual_operator_remediation" if self.loop_state["consecutive_failures"] >= 3 else "continue_next_queue_task",
+                    session_id=self.session_id
+                )
+
+            self.mission_queue.save_queue()
+            self.save_loop_state()
+            executed_tasks.append(task.task_id)
+            completed_cycles += 1
+
+        return {
+            "status": self.loop_state["mode"],
+            "completed_cycles": completed_cycles,
+            "executed_tasks": executed_tasks,
+            "consecutive_failures": self.loop_state["consecutive_failures"]
+        }
+
     def scan_git_workspace(self) -> Dict[str, Any]:
         """Programmatically queries git status and diffs for the active workspace."""
         import subprocess
@@ -717,7 +1049,7 @@ class DeveloperWorkflowOrchestrator:
             },
             "task_lineage": {
                 "session_id": "session_" + hashlib.md5(self.session_id.encode()).hexdigest()[:8],
-                "current_task_id": "task_active_development",
+                "current_task_id": self.active_task_id if getattr(self, "active_task_id", None) else "task_active_development",
                 "subtask_ids": []
             },
             "decision_events": [
