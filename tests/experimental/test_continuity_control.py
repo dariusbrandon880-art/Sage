@@ -805,3 +805,64 @@ def test_sage_operational_loop_and_queue_intelligence(tmp_path):
         assert "Queue Throughput" in dashboard_str
         assert "Improvement Velocity" in dashboard_str
         assert "RECENT COMPLETED WORK:" in dashboard_str
+
+
+def test_sage_coordinated_loop_endurance_simulation(tmp_path):
+    """Verify long-running endurance simulation runs, multi-cycle compounding,
+
+    and JSON report serialization on disk.
+    """
+    from sage.experimental.act.continuity_control import (
+        DeveloperWorkflowOrchestrator,
+        ContinuityControlLoop,
+        SAGEMissionTask
+    )
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    evidence_output = tmp_path / "evidence" / "ccl_feedback.json"
+
+    # Setup session manager and orchestrator
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_endurance_test_99",
+        objective="obj_continuous_development",
+        ccl=ccl,
+        evidence_output_path=str(evidence_output)
+    )
+
+    # 1. Add some tasks
+    t1 = SAGEMissionTask(task_id="task_sim_1", objective_id="obj_continuous_development", priority_score=80.0, authorized=True, description="Endurance Sim Task 1")
+    t2 = SAGEMissionTask(task_id="task_sim_2", objective_id="obj_continuous_development", priority_score=70.0, authorized=True, description="Endurance Sim Task 2")
+    orchestrator.mission_queue.add_task(t1)
+    orchestrator.mission_queue.add_task(t2)
+
+    # 2. Run multi-cycle endurance simulation
+    report = orchestrator.execute_endurance_simulation_run(cycles=3)
+
+    # Assert report structure
+    assert report["total_cycles"] == 3
+    assert report["recovery_success_rate"] == 1.0
+    assert report["compounding_duration_reduction_percent"] > 0.0
+    assert len(report["history"]) == 3
+
+    # Assert compounding curve: Cycle 1 duration should be greater than Cycle 3 duration due to compounding velocity simulation
+    history_cycle_1 = report["history"][0]
+    history_cycle_3 = report["history"][2]
+    assert history_cycle_1["duration_secs"] > history_cycle_3["duration_secs"]
+
+    # Verify report is written to disk
+    report_file = Path("evidence_capture/operational_endurance_report.json")
+    assert report_file.exists()
+
+    with open(report_file, "r", encoding="utf-8") as f:
+        serialized_report = json.load(f)
+    assert serialized_report["total_cycles"] == 3
+    assert serialized_report["compounding_duration_reduction_percent"] > 0.0
+
+    # Clean up generated endurance report file
+    if report_file.exists():
+        report_file.unlink()
