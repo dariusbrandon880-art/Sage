@@ -1,8 +1,8 @@
 {
-  "evaluation_id": "EVAL-20260805-F037FDAB",
+  "evaluation_id": "EVAL-20260805-8F64A3B4",
   "agent_id": "test-chatgpt-runtime",
   "session_id": "session_live_chatgpt_test",
-  "timestamp": 1785951986.5777404,
+  "timestamp": 1785953652.3961382,
   "mission_id": "obj_continuous_development",
   "authentication_result": {
     "success": true,
@@ -32,12 +32,12 @@
   },
   "ledger_update_result": {
     "success": true,
-    "ccl_record_id": "CCL-REC-20260805-85da1bce-3318-4d2e-8fa7-ef731bf65d37",
-    "checkpoint_id": "chk_b2528ddc",
+    "ccl_record_id": "CCL-REC-20260805-3537101d-8403-49fc-8a69-9682e9327c1c",
+    "checkpoint_id": "chk_e21b42de",
     "lifecycle_state": "VALIDATED"
   },
   "artifact_references": {
-    "ccl_record_path": "/tmp/pytest-of-jules/pytest-10/test_chatgpt_runtime_deploymen0/records/CCL-REC-20260805-85da1bce-3318-4d2e-8fa7-ef731bf65d37.json",
-    "checkpoint_path": "/tmp/pytest-of-jules/pytest-10/test_chatgpt_runtime_deploymen0/records/checkpoints/chk_b2528ddc.json"
+    "ccl_record_path": "/tmp/pytest-of-jules/pytest-12/test_chatgpt_runtime_deploymen0/records/CCL-REC-20260805-3537101d-8403-49fc-8a69-9682e9327c1c.json",
+    "checkpoint_path": "/tmp/pytest-of-jules/pytest-12/test_chatgpt_runtime_deploymen0/records/checkpoints/chk_e21b42de.json"
   }
 }
