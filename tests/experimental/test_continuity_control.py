@@ -826,3 +826,192 @@ def test_sage_managed_agent_operating_loop(tmp_path):
         candidates = json.load(f)
     assert len(candidates) >= 1
     assert any("CANDIDATE-OIL-" in c["candidate_id"] for c in candidates)
+
+
+def test_chatgpt_runtime_deployment_and_hardening(tmp_path):
+    """Verify live ChatGPT agent runtime authentication, context recovery, permission enforcement, result ingestion, and emergency stop."""
+    from sage.experimental.act.continuity_control import (
+        DeveloperWorkflowOrchestrator,
+        ContinuityControlLoop,
+        SAGEMissionTask,
+        ChatGPTAgentRegistration
+    )
+    import hashlib
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    evidence_output = tmp_path / "evidence" / "ccl_live_agent_feedback.json"
+
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_live_chatgpt_test",
+        objective="obj_continuous_development",
+        ccl=ccl,
+        evidence_output_path=str(evidence_output)
+    )
+
+    # Pre-seed a custom test agent
+    token = "test_openai_live_token_abc"
+    orchestrator.register_agent(ChatGPTAgentRegistration(
+        agent_id="test-chatgpt-runtime",
+        provider="openai",
+        runtime_type="external_reasoning_agent",
+        status="active",
+        permissions=["execute_approved_work", "query_sage_context"],
+        credentials_hash=hashlib.sha256(token.encode()).hexdigest()
+    ))
+
+    # Add a mock authorized pending task
+    task = SAGEMissionTask(
+        task_id="task_live_execution_verify",
+        objective_id="obj_continuous_development",
+        priority_score=85.0,
+        authorized=True,
+        assigned_agent="test-chatgpt-runtime",
+        description="Verify live runtime execution"
+    )
+    orchestrator.mission_queue.add_task(task)
+
+    # ----------------------------------------------------
+    # 1. ChatGPT Runtime Authentication Handshake Checks
+    # ----------------------------------------------------
+    # Valid agent accepted
+    assert orchestrator.authenticate_external_agent("test-chatgpt-runtime", token) is True
+    # Invalid agent rejected
+    assert orchestrator.authenticate_external_agent("non-existent-agent", token) is False
+    assert orchestrator.authenticate_external_agent("test-chatgpt-runtime", "wrong_token") is False
+
+    # Revoked status agent rejected
+    orchestrator.agent_registry["test-chatgpt-runtime"].status = "revoked"
+    assert orchestrator.authenticate_external_agent("test-chatgpt-runtime", token) is False
+    # Reset status
+    orchestrator.agent_registry["test-chatgpt-runtime"].status = "active"
+
+    # ----------------------------------------------------
+    # 2. Governed Context Restoration (Phase 4 recovery)
+    # ----------------------------------------------------
+    # Recover state on a fresh runtime session connection
+    payload = orchestrator.initialize_governed_session(
+        agent_id="test-chatgpt-runtime",
+        auth_token=token,
+        session_id="session_live_chatgpt_test"
+    )
+    assert payload["status"] == "CONNECTION_ESTABLISHED"
+    assert payload["agent_id"] == "test-chatgpt-runtime"
+    assert payload["role"] == "external_reasoning_agent"
+    assert "obj_continuous_development" in payload["active_mission"]
+    assert "execute_approved_work" in payload["permitted_actions"]
+    assert "mutate_production_namespaces" in payload["restricted_actions"]
+    assert payload["required_next_action"] is not None
+    assert payload["required_next_action"]["task_id"] == "task_live_execution_verify"
+
+    # ----------------------------------------------------
+    # 3. Permission Enforcement
+    # ----------------------------------------------------
+    # Restricted actions blocked
+    bad_action_payload = {
+        "action": "mutate_production_namespaces",
+        "modified_files": ["sage/runtime/engine.py"]
+    }
+    with pytest.raises(PermissionError, match="lacks permission for action"):
+        orchestrator.execute_live_agent_mission(
+            agent_id="test-chatgpt-runtime",
+            auth_token=token,
+            session_id="session_live_chatgpt_test",
+            task_id="task_live_execution_verify",
+            action_data=bad_action_payload
+        )
+
+    # Protected paths blocked
+    bad_path_payload = {
+        "action": "execute_approved_work",
+        "modified_files": ["sage/runtime/engine.py"]
+    }
+    with pytest.raises(PermissionError, match="Unauthorized mutation attempt on protected path"):
+        orchestrator.execute_live_agent_mission(
+            agent_id="test-chatgpt-runtime",
+            auth_token=token,
+            session_id="session_live_chatgpt_test",
+            task_id="task_live_execution_verify",
+            action_data=bad_path_payload
+        )
+
+    # Unassigned or unauthorized tasks blocked
+    task_unauth = SAGEMissionTask(
+        task_id="task_live_unauth",
+        objective_id="obj_continuous_development",
+        priority_score=10.0,
+        authorized=False, # Unapproved task
+        assigned_agent="test-chatgpt-runtime",
+        description="Unapproved live task"
+    )
+    orchestrator.mission_queue.add_task(task_unauth)
+    valid_payload = {
+        "action": "execute_approved_work",
+        "modified_files": ["sage/experimental/agent_output.py"]
+    }
+    with pytest.raises(PermissionError, match="Execution blocked for unauthorized task"):
+        orchestrator.execute_live_agent_mission(
+            agent_id="test-chatgpt-runtime",
+            auth_token=token,
+            session_id="session_live_chatgpt_test",
+            task_id="task_live_unauth",
+            action_data=valid_payload
+        )
+
+    # ----------------------------------------------------
+    # 4. Result Ingestion & Phase 6 Report Verification
+    # ----------------------------------------------------
+    report = orchestrator.execute_live_agent_mission(
+        agent_id="test-chatgpt-runtime",
+        auth_token=token,
+        session_id="session_live_chatgpt_test",
+        task_id="task_live_execution_verify",
+        action_data=valid_payload
+    )
+
+    # Ensure mission task was updated to COMPLETED in the ledger
+    updated_task = orchestrator.mission_queue.get_task("task_live_execution_verify")
+    assert updated_task.status == "COMPLETED"
+    assert "task_live_execution_verify" in orchestrator.session.completed_actions
+
+    # Verify report is written to disk and all required fields are present
+    report_file = Path("evidence_capture/chatgpt_runtime_activation_report.json")
+    assert report_file.exists()
+    with open(report_file, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    assert "evaluation_id" in data
+    assert data["agent_id"] == "test-chatgpt-runtime"
+    assert data["session_id"] == "session_live_chatgpt_test"
+    assert "timestamp" in data
+    assert data["mission_id"] == "obj_continuous_development"
+    assert data["authentication_result"]["success"] is True
+    assert data["context_retrieval_result"]["success"] is True
+    assert data["execution_result"]["success"] is True
+    assert data["validation_result"]["success"] is True
+    assert data["ledger_update_result"]["success"] is True
+    assert "artifact_references" in data
+
+    # ----------------------------------------------------
+    # 5. Emergency Stop Enforcements
+    # ----------------------------------------------------
+    orchestrator.emergency_stop()
+    assert orchestrator.loop_state["mode"] == "STOPPED"
+
+    # Emergency stop blocks session initiation
+    with pytest.raises(PermissionError, match="SAGE Connection Blocked"):
+        orchestrator.initialize_governed_session("test-chatgpt-runtime", token, "session_live_chatgpt_test")
+
+    # Emergency stop blocks session execution
+    with pytest.raises(PermissionError, match="SAGE Execution Blocked"):
+        orchestrator.execute_live_agent_mission(
+            agent_id="test-chatgpt-runtime",
+            auth_token=token,
+            session_id="session_live_chatgpt_test",
+            task_id="task_live_execution_verify",
+            action_data=valid_payload
+        )
