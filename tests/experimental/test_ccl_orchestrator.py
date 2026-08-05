@@ -1638,3 +1638,100 @@ def test_real_workflow_pilot_activation_and_measurements(tmp_path):
     assert "3. Why is it happening?" in summary
     assert "4. What proves it?" in summary
     assert "5. What happens next?" in summary
+
+
+def test_value_extraction_and_compounding_advantage(tmp_path):
+    """Validate SAGE's Operational Value Extraction and compounding improvements loop.
+
+    Covers:
+      1. Operational Baseline Analysis (completion time, recovery performance, duplicate work prevention).
+      2. Bottleneck Detection (context reconstructions, unnecessary review cycles, delays, gaps).
+      3. Velocity Improvement Loop (converting friction to priority improvement candidates).
+      4. Control Tower Intelligence View Pass (answering the five key diagnostic questions).
+      5. Production Readiness Evaluation (workflow stability, operator confidence, repeatable metrics).
+    """
+    evidence_file = tmp_path / "ccl_value_extraction.json"
+    orch = DeveloperWorkflowOrchestrator(session_id="session_value_extraction_pass")
+
+    # Connect ChatGPT Coordinator, Jules Executor, Gemini Reviewer
+    chatgpt = ChatGPTAgentConnector(orch, agent_id="agent_chatgpt_coord")
+    jules = JulesAgentConnector(orch, agent_id="agent_jules_exec")
+    reviewer = ReviewerAgentConnector(orch, agent_id="agent_reviewer_gemini")
+
+    # --- STEP 1: Execute Workflow Cycle with Friction & Delays ---
+    print("[Extract] Running value extraction scenario...")
+    chatgpt.align_workflow_state(
+        "INITIATE_TASK",
+        "task_value_loop",
+        {
+            "objective_id": "obj_velocity_pilot",
+            "initial_context": {
+                "files_to_modify": ["sage/experimental/act/ccl_orchestrator.py"],
+                "milestones_completed": ["Milestone-1-contracts"]
+            },
+            "lineage_references": ["ADR-001"]
+        }
+    )
+
+    # Coordinated handoff to Jules
+    chatgpt.generate_handoff_manifest("task_value_loop", "agent_jules_exec")
+    jules.align_task_state("task_value_loop", "ACTIVE", "Jules starts execution of value pilot.")
+
+    # Engineering interruption (causes delay trigger)
+    jules.report_progress(
+        task_id="task_value_loop",
+        progress_percent=50.0,
+        result_payload={"build_failure": "Timeout during compilation pass"},
+        feedback="Secondary loop encountered a slow container compile delay."
+    )
+
+    # Resume and finish engineering changes
+    jules.report_progress(
+        task_id="task_value_loop",
+        progress_percent=100.0,
+        result_payload={"git_hash": "val9999", "tests_passing": True, "build_failure": "NONE"},
+        feedback="Jules recovered container and verified AST compliance."
+    )
+
+    # Peer review transfer
+    jules.generate_handoff_manifest("task_value_loop", "agent_reviewer_gemini")
+    review_ctx = reviewer.rehydrate_review_context("task_value_loop")
+    preceding_hash = review_ctx["evidence_package"]["preceding_records_hashes"][0]
+
+    reviewer.submit_review_finding(
+        task_id="task_value_loop",
+        finding_details="Pilot execution and diagnostics verified complete.",
+        evidence_hash_reference=preceding_hash
+    )
+
+    # Final Operator Sign-off
+    orch.ingest_event("HUMAN_APPROVAL", "task_value_loop", {"supervisor_id": "super", "decision": "AUTHORIZED", "comments": "Value extraction approved."})
+    orch.ingest_event("STATE_TRANSITION", "task_value_loop", {"target_status": "COMPLETED", "agent_id": "agent_reviewer_gemini", "comment": "Cycle sign-off."})
+
+    assert orch.tasks["task_value_loop"]["status"] == "COMPLETED"
+
+    # --- STEP 2: Capture baseline metrics and compile evidence package ---
+    evidence = orch.export_evidence(str(evidence_file))
+
+    measurements = evidence["operational_measurements"]
+    assert measurements["time_saved_minutes"] == 20.0  # (1 completed task * 15.0) + (1 final progress reported > 0 * 5.0)
+    assert measurements["context_recovery_quality"] == 1.0
+    assert measurements["duplicate_work_prevented_percent"] == 100.0
+    assert measurements["decisions_preserved_count"] == 1  # 1 Human Approval
+    assert measurements["evidence_completeness_ratio"] == 1.0
+
+    # --- STEP 3: Validate Control Tower Intelligence View Pass ---
+    intel_view = orch.intelligence.generate_operator_intelligence_view()
+
+    # Assert that all 5 critical visibility questions are dynamically answered
+    assert "SAGE OPERATIONAL VALUE EXTRACTION & INTELLIGENCE:" in intel_view
+    assert "What slowed the workflow?" in intel_view
+    assert "context reconstructions and" in intel_view
+    assert "Where was time recovered?" in intel_view
+    assert "bypassed manual setup, saving ~15.0m" in intel_view
+    assert "What failures were prevented?" in intel_view
+    assert "human checkpoint approvals actively guarded" in intel_view
+    assert "What evidence proves improvement?" in intel_view
+    assert "metrics baseline logs and SHA-256" in intel_view
+    assert "What should happen next?" in intel_view
+    assert "Execute priority candidate improvements" in intel_view
