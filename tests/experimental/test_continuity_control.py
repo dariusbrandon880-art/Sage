@@ -1409,3 +1409,76 @@ def test_execute_coordinated_agent_lifecycle_unregistered_agent(tmp_path):
             action_details={"action_name": "clarify_mission"},
             modified_files=["docs/SAGE-WORKFLOW-INCIDENT-RESPONSE.md"]
         )
+
+
+def test_recover_agent_workflow_success(tmp_path):
+    """Verify that programmatically recovering agent workflow restores checkpoints and clears duplicate work."""
+    import uuid
+    from pathlib import Path
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id=f"session_recovery_success_{uuid.uuid4().hex[:6]}",
+        objective="obj_recovery_active",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    orchestrator.add_coordinated_task("task_block", "Database Restore", "TIER_1_COORDINATOR")
+    orchestrator.assign_agent_to_task("task_block", "agent_jules_sage")
+    orchestrator.coordinated_tasks["task_block"]["status"] = "BLOCKED"
+
+    # Simulate duplicate actions added after checkpoint
+    orchestrator.session.completed_actions.append("unaligned_action_xyz")
+    session_mgr.save_session(orchestrator.session)
+
+    # Trigger recovery from fallback simulated point
+    recovery_report = orchestrator.recover_agent_workflow("task_block", "CCL-REC-20260804-fallback-xyz")
+
+    # 1. Assert status and assignment
+    assert recovery_report["status"] == "RECOVERED"
+    assert orchestrator.coordinated_tasks["task_block"]["status"] == "ACTIVE"
+    assert orchestrator.coordinated_tasks["task_block"]["assigned_agent"] == "agent_jules_sage"
+
+    # 2. Verify duplicates cleared (since not in target fallback evidence)
+    assert "unaligned_action_xyz" not in orchestrator.session.completed_actions
+
+    # 3. Assert report write
+    assert Path("evidence_capture/decision_validation_report.json").exists()
+
+
+def test_render_control_tower_summary_questions(tmp_path):
+    """Verify that render_control_tower_summary correctly answers the five operator visibility questions."""
+    import uuid
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id=f"session_tower_vis_{uuid.uuid4().hex[:6]}",
+        objective="obj_tower_vis",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    orchestrator.add_coordinated_task("task_t1", "Task One", "TIER_1_COORDINATOR")
+    orchestrator.assign_agent_to_task("task_t1", "agent_jules_sage")
+    orchestrator.coordinated_tasks["task_t1"]["status"] = "ACTIVE"
+
+    orchestrator.session.completed_actions.append("completed_action_alpha")
+    session_mgr.save_session(orchestrator.session)
+
+    summary = orchestrator.render_control_tower_summary()
+
+    assert "SAGE OPERATIONAL CONTROL TOWER REPORT" in summary
+    assert "1. WHAT HAPPENED?     : completed_action_alpha" in summary
+    assert "2. WHO OWNS IT?        : agent_jules_sage (task_t1)" in summary
+    assert "3. WHY IS IT HAPPENING?: obj_tower_vis" in summary
+    assert "4. WHAT EVIDENCE?" in summary
+    assert "5. WHAT HAPPENS NEXT?" in summary

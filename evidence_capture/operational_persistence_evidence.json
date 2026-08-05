@@ -1,7 +1,7 @@
 {
-  "rehydration_id": "rehydrate_dd802b16583b",
+  "rehydration_id": "rehydrate_b5777507f2fc",
   "source_session_id": "session_source_xyz",
-  "target_session_id": "session_rehydrate_4e0717",
+  "target_session_id": "session_rehydrate_cd40e3",
   "rehydrated_objectives": [
     "obj_transferred_mission",
     "obj_extra_audit"
@@ -27,5 +27,5 @@
       "tests/experimental/test_continuity_control.py"
     ]
   },
-  "timestamp": 1785884050.1385875
+  "timestamp": 1785891023.1936126
 }

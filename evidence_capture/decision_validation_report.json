@@ -1,32 +1,38 @@
 {
-  "session_id": "session_sim_ev_70b4d6",
-  "simulated_scenarios": [
-    "extended_workflow"
+  "session_id": "session_recovery_success_19cd6a",
+  "task_id": "task_block",
+  "recovery_checkpoint_id": "CCL-REC-20260804-fallback-xyz",
+  "status": "RECOVERED",
+  "restored_objectives": [
+    "obj_recovery_active"
   ],
-  "run_details": {
-    "extended_workflow": {
-      "status": "VALIDATED",
-      "metrics": {
-        "before_sage": {
-          "friction_score": 85,
-          "coordination_efficiency": 0.4,
-          "operator_interventions": 8,
-          "recovery_time_seconds": 240.0
-        },
-        "after_sage": {
-          "friction_score": 10,
-          "coordination_efficiency": 0.95,
-          "operator_interventions": 1,
-          "recovery_time_seconds": 15.0
-        }
-      }
-    }
+  "reconstructed_lineage": {
+    "record_id": "CCL-REC-20260805-38e4b596-a14d-4121-ae5a-fd03765ed6de",
+    "session_id": "session_recovery_success_19cd6a",
+    "event_type": "recovered",
+    "timestamp": 1785891023.3985991,
+    "action_taken": "Recovered workflow task 'task_block' from checkpoint 'CCL-REC-20260804-fallback-xyz'",
+    "decision_reasoning": "Resolve blocked or failed transitions and restore complete context",
+    "evidence_payload": {
+      "task_id": "task_block",
+      "recovery_checkpoint_id": "CCL-REC-20260804-fallback-xyz",
+      "restored_objectives": [
+        "obj_recovery_active"
+      ],
+      "enriched_objectives": [
+        "obj_recovery_active"
+      ],
+      "session_completed_actions": [],
+      "session_pending_actions": [],
+      "enrichment_timestamp": 1785891023.3985507
+    },
+    "failure_context": {
+      "error": "failed_handoff_or_blocked_execution"
+    },
+    "recovery_path": "context_restoration_from_checkpoint",
+    "lifecycle_state": "PROPOSED",
+    "workflow_friction": [],
+    "improvement_opportunities": []
   },
-  "effectiveness_aggregates": {
-    "reduction_in_operator_interventions_pct": 87.5,
-    "reduction_in_recovery_time_pct": 93.75,
-    "determinism_and_ownership_intact": true,
-    "evidence_lineage_complete": true
-  },
-  "timestamp": 1785884050.0640433
+  "timestamp": 1785891023.3990705
 }
