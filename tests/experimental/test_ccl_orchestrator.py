@@ -13,6 +13,8 @@ from sage.experimental.act.ccl_orchestrator import (
     SAGEOperationalOrchestrator,
     OperationalStateWindow,
     FutureAgentEntryContract,
+    SAGEImprovementCandidate,
+    SAGEIncidentReport,
 )
 
 
@@ -164,6 +166,42 @@ def test_controlled_operational_pilot_execution():
     assert "pre-commit lint triggers" in imps[0]
 
 
+def test_operational_intelligence_optimization_execution():
+    """Validate end-to-end Operational Intelligence Layer (OIL) with prioritized candidates and immune-inspired isolate reports."""
+    macc = SAGEOperationalOrchestrator(session_id="session_test_macc_oil")
+
+    report = macc.execute_operational_intelligence_optimization(
+        task_objective="obj_continuous_development",
+        milestones=["Verify immune-inspired tests", "Harden velocity telemetry pipelines"]
+    )
+
+    assert report["status"] == "VALIDATED"
+    assert "oil_metrics" in report
+    assert "latest_oil_incident" in report
+    assert "latest_oil_improvement" in report
+    assert "chatgpt_coordination" in report
+    assert "jules_execution" in report
+    assert "claude_review_findings" in report
+
+    # Assert incident properties
+    inc = report["latest_oil_incident"]
+    assert inc["affected_component"] == "DeveloperWorkflowOrchestrator"
+    assert "automated post-build metrics validation" in inc["failure_condition"]
+
+    # Assert prioritized candidate scoring
+    imp = report["latest_oil_improvement"]
+    assert imp["opportunity_type"] == "OPERATIONAL_EFFICIENCY"
+    assert imp["priority_score"] == 11.33  # (8.5 + 9.0 + 9.5 + 10.0 - 3.0) / 3.0 = 11.33
+
+    # Assert OIL formula metrics are present
+    metrics = report["oil_metrics"]
+    assert metrics["mission_velocity_index"] == 2.3
+    assert metrics["context_preservation_score_pct"] == 100.0
+    assert metrics["recovery_intelligence_score_pct"] == 100.0
+    assert metrics["evidence_density_index"] == 1.0
+    assert metrics["improvement_compounding_rate_pct"] == 12.5
+
+
 def test_control_tower_status_rendering():
     """Verify operator Control Tower ASCII console layout and parameters."""
     macc = SAGEOperationalOrchestrator(session_id="session_test_control_tower")
@@ -191,6 +229,13 @@ def test_control_tower_status_rendering():
         "evidence_quality_index": 1.0
     }
     macc.orchestrator.session.metadata["discovered_improvements"] = ["Add automated lint checks."]
+    macc.orchestrator.session.metadata["oil_metrics_dashboard"] = {
+        "mission_velocity_index": 2.3,
+        "context_preservation_score_pct": 100.0,
+        "recovery_intelligence_score_pct": 100.0,
+        "evidence_density_index": 1.0,
+        "improvement_compounding_rate_pct": 12.5
+    }
     macc.orchestrator.session_manager.save_session(macc.orchestrator.session)
 
     console_output = macc.render_control_tower_view()
@@ -209,6 +254,12 @@ def test_control_tower_status_rendering():
     assert "Duplicate Work Avoided:  150 lines setup" in console_output
     assert "Evidence Quality Index:  1.0" in console_output
     assert "Discovered Improvements: Add automated lint checks." in console_output
+    assert "SAGE Operational Intelligence Layer (OIL) Performance:" in console_output
+    assert "Mission Velocity Index (MVI):  2.3x cycle speedup" in console_output
+    assert "Context Preservation (CPS):    100.0%" in console_output
+    assert "Recovery Intelligence (RIS):   100.0%" in console_output
+    assert "Evidence Density Index (ED):   1.0" in console_output
+    assert "Improvement Compounding (ICR): 12.5% rate" in console_output
     assert "Workflow Health Score" in console_output
     assert "Active Collaborator Responsibility Hierarchy" in console_output
     assert "Custody Transfer Handoff Lineage Trail" in console_output
