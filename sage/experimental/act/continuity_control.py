@@ -1601,6 +1601,89 @@ class DeveloperWorkflowOrchestrator:
             }
         }
 
+    def request_agent_context_package(self, agent_id: str) -> Dict[str, Any]:
+        """Provides the Real Context Injection Path for SAGE-managed agent nodes.
+
+        Retrieves identity, role, mission state, authorization boundaries, next required action,
+        and automatically invokes Super Search to inject preceding operational intelligence.
+        """
+        # Validate permissions
+        authorized_agents = ["agent_jules_sage", "agent_coord_chatgpt", "agent_analyst_claude", "agent_review_gemini"]
+        if agent_id not in authorized_agents:
+            raise PermissionError(f"SAGE-CCL Violation: Unauthorized agent '{agent_id}' requested context package.")
+
+        # Expose binding info
+        bindings = self.session.metadata.get("registered_agent_bindings", {})
+        agent_info = bindings.get(agent_id, {
+            "role": "General Agent",
+            "governance_tier": "TIER_1_COORDINATOR"
+        })
+
+        # 1. Base Context Enhancement
+        base_ctx = self.enhance_agent_execution_context()
+
+        # 2. Super Search Operational Use: Auto-search preceding solutions & validated patterns
+        search_query = f"resolved bottleneck {list(self.session.active_objectives)[0] if self.session.active_objectives else ''}"
+        search_results = self.execute_super_search(search_query)
+
+        # 3. Compile context package
+        package = {
+            "agent_identity": {
+                "agent_id": agent_id,
+                "role": agent_info.get("role"),
+                "governance_tier": agent_info.get("governance_tier")
+            },
+            "active_mission": base_ctx["current_mission"],
+            "constraints": base_ctx["required_constraints"],
+            "previous_decisions": base_ctx["previous_decisions"],
+            "related_files": base_ctx["related_files"],
+            "known_risks": base_ctx["known_risks"],
+            "injected_intelligence": {
+                "super_search_query": search_query,
+                "preceding_solutions": [s for s in search_results if s["confidence"] >= 0.5],
+                "evidence_history": base_ctx["relevant_history"]
+            },
+            "next_required_action": "Complete coordination loop and submit validated result package"
+        }
+
+        # Log SAGE-CCL record for context request
+        rec = self.ccl.intercept_event(
+            event_type="context_request",
+            action_taken=f"Injected context package to agent '{agent_id}'",
+            decision_reasoning="Enable intelligence-assisted execution with previous solution evidence",
+            session_id=self.session_id,
+            evidence_payload={"agent_id": agent_id, "objectives": list(self.session.active_objectives)}
+        )
+        self.ccl.serialize_record(rec)
+
+        return package
+
+    def submit_intelligence_assisted_agent_response(
+        self,
+        agent_id: str,
+        action_taken: str,
+        decision_reasoning: str,
+        workflow_friction: Optional[List[Dict[str, Any]]] = None,
+        improvement_opportunities: Optional[List[str]] = None,
+        completed_action: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Routes agent result through SAGE: Result -> Evidence -> Context -> State -> Learning.
+
+        Sequence:
+        Agent Result -> Evidence Check -> Context Alignment -> Workflow State Update -> Learning Capture
+        """
+        # Execute write-back pipeline (handles validation, state update, SAGE-CCL, and OIL metrics)
+        result = self.submit_external_agent_output(
+            agent_id=agent_id,
+            action_taken=action_taken,
+            decision_reasoning=decision_reasoning,
+            workflow_friction=workflow_friction,
+            improvement_opportunities=improvement_opportunities,
+            completed_action=completed_action
+        )
+
+        return result
+
 
 if __name__ == "__main__":
     # Interactive CLI mode

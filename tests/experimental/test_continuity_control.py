@@ -790,3 +790,77 @@ def test_sage_intelligence_augmentation_and_continuity_layer(tmp_path):
     assert rehydrated["restored_record_id"] == record_id
     assert "obj_test_intel_layer" in rehydrated["active_mission"]
     assert rehydrated["workflow_position"]["completed_actions"] == []
+
+
+def test_sage_managed_agent_operating_loop(tmp_path):
+    """Verify SAGE-managed agent operating loop (context package retrieval and result submission).
+
+    Validates:
+    - Context package retrieval with identity, role, objectives, and Super Search injected intelligence.
+    - Security / Permission Boundaries: Unauthorized agent requests are strictly blocked.
+    - Intelligence-assisted result submission with evidence check and context state update.
+    - Upgraded Control Tower Dashboards rendering intelligence Q&As.
+    """
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    evidence_output = tmp_path / "evidence" / "ccl_loop_feedback.json"
+
+    # Set up loop and managers
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_loop_test",
+        objective="obj_test_agent_execution",
+        ccl=ccl,
+        evidence_output_path=str(evidence_output)
+    )
+
+    # Pre-register agent runtime binding
+    orchestrator.register_agent_runtime_binding(
+        agent_id="agent_coord_chatgpt",
+        role="Coordinator",
+        governance_tier="TIER_1_COORDINATOR"
+    )
+
+    # 1. Test Context Package Retrieval
+    context_package = orchestrator.request_agent_context_package(agent_id="agent_coord_chatgpt")
+    assert context_package["agent_identity"]["agent_id"] == "agent_coord_chatgpt"
+    assert context_package["agent_identity"]["role"] == "Coordinator"
+    assert "obj_test_agent_execution" in context_package["active_mission"]["active_objectives"]
+    assert "injected_intelligence" in context_package
+    assert context_package["next_required_action"] == "Complete coordination loop and submit validated result package"
+
+    # Verify that a CCL record was generated for context request
+    history_records = list(record_storage.glob("*.json"))
+    assert len(history_records) >= 1
+
+    # 2. Test Permission Boundary Enforcement
+    import pytest
+    with pytest.raises(PermissionError, match="Unauthorized agent"):
+        orchestrator.request_agent_context_package(agent_id="agent_malicious_attacker")
+
+    # 3. Test Intelligence-Assisted Result Submission
+    result = orchestrator.submit_intelligence_assisted_agent_response(
+        agent_id="agent_coord_chatgpt",
+        action_taken="Completed joint research subtask",
+        decision_reasoning="Fulfill coordinator requirements under SAGE-managed session state",
+        workflow_friction=[{"type": "api_drift", "detail": "redundant proposal loops", "severity": "low"}],
+        completed_action="task_research_complete"
+    )
+
+    # Validate state update
+    assert "task_research_complete" in orchestrator.session.completed_actions
+    assert result["status"] == "VALIDATED"
+    assert result["ccl_record"]["action_taken"] == "Completed joint research subtask"
+
+    # 4. Verify Control Tower Dashboard displays intelligence Q&As
+    dashboard = orchestrator.render_control_tower_summary(result)
+    assert "SAGE INTELLIGENCE LAYER Q&A:" in dashboard
+    assert "Q1: What information helped this decision?" in dashboard
+    assert "Q2: What previous evidence supports this?" in dashboard
+    assert "Q3: What similar problems were solved before?" in dashboard
+    assert "Q4: What improvement was created?" in dashboard
