@@ -1,0 +1,94 @@
+{
+  "timestamp": 1785938951.2315934,
+  "session_id": "session_endurance_test_99",
+  "total_cycles": 3,
+  "total_duration_secs": 0.33988118171691895,
+  "compounding_duration_reduction_percent": 38.494512066558215,
+  "recovery_success_rate": 1.0,
+  "history": [
+    {
+      "cycle_index": 1,
+      "status": "CONTINUOUS",
+      "executed_tasks": [
+        "task_sim_1"
+      ],
+      "duration_secs": 0.2194465160369873,
+      "metrics": {
+        "lifecycle_completion_rate": 0.25,
+        "recovery_success_rate": 1.0,
+        "evidence_completeness": 0.0,
+        "decision_trace_completeness": 1.0,
+        "workflow_state_accuracy": 1.0,
+        "execution_cycle_duration": 0.2194465160369873,
+        "context_preservation_score": 1.0,
+        "unnecessary_reassessment_events": 0,
+        "repeated_execution_prevention": true,
+        "state_restoration_success": true,
+        "queue_throughput": 1.0,
+        "average_task_completion_time": 0.045975685119628906,
+        "duplicate_work_avoided_percent": 100.0,
+        "recommendation_accuracy": 1.0,
+        "improvement_velocity": 1305.0376485718434,
+        "recommendation_precision": 0.95,
+        "queue_efficiency": 0.3333333333333333,
+        "operator_effort_reduction_percent": 85.0
+      }
+    },
+    {
+      "cycle_index": 2,
+      "status": "CONTINUOUS",
+      "executed_tasks": [
+        "task_sim_2"
+      ],
+      "duration_secs": 0.16466813087463378,
+      "metrics": {
+        "lifecycle_completion_rate": 0.3333333333333333,
+        "recovery_success_rate": 1.0,
+        "evidence_completeness": 0.0,
+        "decision_trace_completeness": 1.0,
+        "workflow_state_accuracy": 1.0,
+        "execution_cycle_duration": 0.16466813087463378,
+        "context_preservation_score": 1.0,
+        "unnecessary_reassessment_events": 0,
+        "repeated_execution_prevention": true,
+        "state_restoration_success": true,
+        "queue_throughput": 2.0,
+        "average_task_completion_time": 0.045389771461486816,
+        "duplicate_work_avoided_percent": 100.0,
+        "recommendation_accuracy": 1.0,
+        "improvement_velocity": 2643.7674422269324,
+        "recommendation_precision": 0.95,
+        "queue_efficiency": 0.5,
+        "operator_effort_reduction_percent": 85.0
+      }
+    },
+    {
+      "cycle_index": 3,
+      "status": "CONTINUOUS",
+      "executed_tasks": [
+        "task_impr_CANDIDATE-OIL-SPEED-9B8676"
+      ],
+      "duration_secs": 0.13497165044148762,
+      "metrics": {
+        "lifecycle_completion_rate": 0.2857142857142857,
+        "recovery_success_rate": 1.0,
+        "evidence_completeness": 0.0,
+        "decision_trace_completeness": 1.0,
+        "workflow_state_accuracy": 1.0,
+        "execution_cycle_duration": 0.13497165044148762,
+        "context_preservation_score": 1.0,
+        "unnecessary_reassessment_events": 0,
+        "repeated_execution_prevention": true,
+        "state_restoration_success": true,
+        "queue_throughput": 2.0,
+        "average_task_completion_time": 0.045389771461486816,
+        "duplicate_work_avoided_percent": 100.0,
+        "recommendation_accuracy": 1.0,
+        "improvement_velocity": 2643.7674422269324,
+        "recommendation_precision": 0.95,
+        "queue_efficiency": 0.5,
+        "operator_effort_reduction_percent": 85.0
+      }
+    }
+  ]
+}

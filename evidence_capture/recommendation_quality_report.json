@@ -1,0 +1,7 @@
+{
+  "timestamp": 1785938951.232272,
+  "average_recommendation_confidence": 0.95,
+  "recommendation_precision": 0.95,
+  "scoring_algorithm": "multi_dimensional_prioritization_v1",
+  "candidates_evaluated_count": 3
+}

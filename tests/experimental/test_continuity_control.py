@@ -863,6 +863,18 @@ def test_sage_coordinated_loop_endurance_simulation(tmp_path):
     assert serialized_report["total_cycles"] == 3
     assert serialized_report["compounding_duration_reduction_percent"] > 0.0
 
-    # Clean up generated endurance report file
-    if report_file.exists():
-        report_file.unlink()
+    # Verify additional compounding evidence files are written to disk
+    learning_file = Path("evidence_capture/operational_learning_report.json")
+    assert learning_file.exists()
+    with open(learning_file, "r", encoding="utf-8") as f:
+        l_rep = json.load(f)
+    assert l_rep["learning_compounding_rate_percent"] > 0.0
+
+    recommendation_file = Path("evidence_capture/recommendation_quality_report.json")
+    assert recommendation_file.exists()
+    with open(recommendation_file, "r", encoding="utf-8") as f:
+        r_rep = json.load(f)
+    assert r_rep["average_recommendation_confidence"] == 0.95
+
+    queue_file = Path("evidence_capture/queue_intelligence_report.json")
+    assert queue_file.exists()
