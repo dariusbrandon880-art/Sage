@@ -206,6 +206,42 @@ def test_operational_intelligence_optimization_execution():
     assert metrics["improvement_compounding_rate_pct"] == 12.5
 
 
+def test_controlled_runtime_activation_validation_execution():
+    """Validate startup recovery, rehydration, and corrupted checkpoint rollback paths."""
+    macc = SAGEOperationalOrchestrator(session_id="session_test_macc_activation")
+
+    report = macc.execute_controlled_runtime_activation_validation(
+        task_objective="obj_continuous_development",
+        milestones=["Task A", "Task B"]
+    )
+
+    assert report["status"] == "VALIDATED"
+    assert "metrics_baseline" in report
+    assert "failure_recovery_logs" in report
+    assert "claude_review_findings" in report
+
+    # Assert recovery logs contain corrupted checkpoint rollback trace
+    rec_logs = report["failure_recovery_logs"]
+    assert len(rec_logs) == 1
+    assert rec_logs[0]["type"] == "CORRUPTED_CHECKPOINT_ROLLBACK"
+    assert rec_logs[0]["rollback_action"] == "RESTORED_CLEAN_CHECKPOINT"
+
+    # Assert baseline metrics
+    baseline = report["metrics_baseline"]
+    assert baseline["tasks_processed"] == 2
+    assert baseline["successful_recoveries"] == 1
+    assert baseline["evidence_completeness_ratio"] == 1.0
+
+    # Assert execution traces
+    traces = report["execution_traces"]
+    events = [t["event"] for t in traces]
+    assert "RUNTIME_ACTIVATION_SAFETY_INITIALIZATION" in events
+    assert "PML_STARTUP_RECOVERY_START" in events
+    assert "PML_REHYDRATION_SUCCESSFUL" in events
+    assert "CORRUPTED_CHECKPOINT_DETECTED" in events
+    assert "CORRUPTED_CHECKPOINT_ROLLBACK_RESOLVED" in events
+
+
 def test_persistent_mission_ledger_controlled_slice():
     """Validate PML State Record serialization, file storage, and rehydration path."""
     pml = PersistentMissionLedger(ledger_dir="sage_data/test_pml")
@@ -329,6 +365,13 @@ def test_control_tower_status_rendering():
             "total_pml_states_written": 3
         }
     }
+    macc.orchestrator.session.metadata["latest_metrics_baseline"] = {
+        "tasks_processed": 3,
+        "successful_recoveries": 1,
+        "blocked_tasks": 0,
+        "emergency_stops_triggered": 0,
+        "evidence_completeness_ratio": 1.0
+    }
     macc.orchestrator.session_manager.save_session(macc.orchestrator.session)
 
     console_output = macc.render_control_tower_view()
@@ -358,6 +401,12 @@ def test_control_tower_status_rendering():
     assert "Compounding Improvement: 42.0% cycle speedup" in console_output
     assert "Duplicate Setup Bypassed: 450 lines bypass" in console_output
     assert "Persistent PML States:   3 files written" in console_output
+    assert "SAGE Controlled Runtime Activation Metrics Baseline:" in console_output
+    assert "Tasks Processed:         3" in console_output
+    assert "Recoveries Successful:   1" in console_output
+    assert "Blocked Tasks Count:     0" in console_output
+    assert "Emergency Stops:         0" in console_output
+    assert "Evidence Completeness:   1.0" in console_output
     assert "Workflow Health Score" in console_output
     assert "Active Collaborator Responsibility Hierarchy" in console_output
     assert "Custody Transfer Handoff Lineage Trail" in console_output

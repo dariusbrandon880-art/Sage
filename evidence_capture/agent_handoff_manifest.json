@@ -1,6 +1,6 @@
 {
-  "manifest_id": "manifest_handoff_252c28c5f720",
-  "timestamp": "2026-08-05T13:05:12.183799Z",
+  "manifest_id": "manifest_handoff_a7bf8d4b243e",
+  "timestamp": "2026-08-05T15:06:43.889177Z",
   "source_session": "session_test_macc_loop",
   "target_session_objectives": [
     "obj_continuous_development"
@@ -25,8 +25,8 @@
       "tests/experimental/",
       "evidence_capture/"
     ],
-    "human_authorization_signature": "sig_jules_act_7b3488",
-    "timestamp": 1785935111.9470391
+    "human_authorization_signature": "sig_jules_act_95da52",
+    "timestamp": 1785942403.5953925
   },
   "discovery_candidates": [],
   "workspace_fingerprint": {
@@ -43,31 +43,31 @@
       "size_bytes": 1919
     },
     "evidence_capture/agent_handoff_manifest.json": {
-      "sha256": "a6fd71f0b64b7439c27d107d0454c53e36b7e7099ff2007daac5384b5d858b4f",
-      "size_bytes": 4131
+      "sha256": "4be85a912296f9ad2e7258a9a9833df944911a67d3ef30f1d5bd29039d962aaa",
+      "size_bytes": 4130
     },
     "evidence_capture/ccl_operational_feedback.json": {
       "sha256": "8840374cfed925ee6c4e3a53ace21a0f6fbc4efa3151e262c394e10b351b0ae9",
       "size_bytes": 6881
     },
     "evidence_capture/ccl_orchestrator_evidence.json": {
-      "sha256": "03d52a60ef89cdeb07fc287dcd44364b63dcfb89d0eeeb7d1ce66267020ace37",
-      "size_bytes": 6184
+      "sha256": "90bc91637149c706def4e89c8caa22f2e93697586ca046b5bd0ea5a0ecfc3c75",
+      "size_bytes": 7011
     },
     "evidence_capture/decision_validation_report.json": {
-      "sha256": "6deda656922f982a554504978f5a9c226c8488aa6db2bbc2461adabcdf55020a",
-      "size_bytes": 1065
+      "sha256": "7d79ffc572b9753a0f931fab2bb073689aefc4ec057b5b84bcee9f1df8169fe5",
+      "size_bytes": 1066
     },
     "evidence_capture/discovery_candidates_register.json": {
-      "sha256": "a1a6319781efe2e51cf4195ca75610bf60d12e3b9df6ca962638bcbb14383b37",
-      "size_bytes": 55905
+      "sha256": "f575ed7ab002056550b1a540999de33a13a4836f8cd2070428a20364d9bbf6d6",
+      "size_bytes": 60179
     },
     "evidence_capture/multi_agent_coordination_evidence.json": {
       "sha256": "a5e4137a4e9d27d61f275cbc6d2a708ed94923b2c58b0718429972e906582470",
       "size_bytes": 4284
     },
     "evidence_capture/operational_endurance_report.json": {
-      "sha256": "19f5039830af70d753f621c9d7980fe241724d4dba1debd3fae95380c707d5d6",
+      "sha256": "ea9ed1189d4eb98ed74302c6286ae00c72454a4a27ebc0f34fd5598139fbe22a",
       "size_bytes": 1189
     },
     "evidence_capture/operational_persistence_evidence.json": {
@@ -79,20 +79,20 @@
       "size_bytes": 1233
     },
     "sage/experimental/act/ccl_orchestrator.py": {
-      "sha256": "83abf86fd8e948687aba830279e409a6e6d3958dc0a7522417b4870cbc2e71da",
-      "size_bytes": 85885
+      "sha256": "742fdf1eeda65c5988b51935c47d8701f620f93bedb66b75a2dc7c4797ec2fab",
+      "size_bytes": 94181
     },
     "sage/experimental/act/continuity_control.py": {
       "sha256": "b161c50cec6fd7690964010c32f7cadc909d617c2f913c66180faaddcc746dd6",
       "size_bytes": 88035
     },
     "scripts/run_ccl_orchestrator.py": {
-      "sha256": "91e2dbbeb74c966052e3864b42c76a0866259f3d0c43feb4d2fcbfe47b3a296f",
-      "size_bytes": 2269
+      "sha256": "9b0960e1a876651d5042bf4600cc5f4110a95f835b589e497b2845306d84a2ad",
+      "size_bytes": 1938
     },
     "tests/experimental/test_ccl_orchestrator.py": {
-      "sha256": "8cabdefaf8a9b7e725c2c9af49cae288ead36845b2ca688717227e8bf33d68a8",
-      "size_bytes": 16382
+      "sha256": "6963a68051e28d623b2659259c427603003c6d32e1790bdcdb9377b6c67d13f1",
+      "size_bytes": 18517
     },
     "tests/experimental/test_continuity_control.py": {
       "sha256": "d1fccc2cd485e12f628c0fcad101b6201346d723dc7bf124f6c55295ce541073",
@@ -101,8 +101,8 @@
   },
   "coordination_telemetry": {
     "assigned_agent": "agent_jules_sage",
-    "nonce": "8bf9045f48024bd6",
-    "rehydration_token": "rehydrate_63d170f3e2064774",
+    "nonce": "5ac5ccc931a54910",
+    "rehydration_token": "rehydrate_4ae112f21ced411c",
     "instructions": "Run DeveloperWorkflowOrchestrator to re-verify context state."
   }
 }

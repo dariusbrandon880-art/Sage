@@ -23,8 +23,8 @@ def main():
     macc_orch.check_emergency_stop_override()
     print("    - Safety check passed cleanly. No EMERGENCY_STOP files found.")
 
-    print("\n[*] Running end-to-end SAGE Endurance & Learning Compounding loop simulation...")
-    report = macc_orch.execute_endurance_simulation_run(
+    print("\n[*] Running end-to-end SAGE Controlled Runtime Activation Validation loop...")
+    report = macc_orch.execute_controlled_runtime_activation_validation(
         task_objective="obj_continuous_development",
         milestones=[
             "Formulate multi-agent operational boundaries",
@@ -33,12 +33,10 @@ def main():
         ]
     )
 
-    print("\n[+] Endurance & Compounding Learning Scenario Run Succeeded!")
+    print("\n[+] Controlled Runtime Activation Run Succeeded!")
     print(f"    - Run ID: {report['orchestrator_run_id']}")
-    print(f"    - Avg Cycle Duration: {report['endurance_report']['aggregate_performance']['average_cycle_duration_seconds']}s")
-    print(f"    - Compounding Improvement Speedup: {report['endurance_report']['aggregate_performance']['compound_velocity_improvement_pct']}%")
-    print(f"    - Duplicate Setup Bypassed: {report['endurance_report']['aggregate_performance']['duplicate_setup_bypassed_lines']} lines")
-    print(f"    - PML State Files Written: {report['endurance_report']['aggregate_performance']['total_pml_states_written']}")
+    print(f"    - Active Recoveries (Rollback Corrupted PML Checkpoints): {len(report['failure_recovery_logs'])}")
+    print(f"    - Baseline Tasks Processed: {report['metrics_baseline']['tasks_processed']}")
     print(f"    - Evidence logged to: {macc_orch.evidence_output_path}\n")
     print(report["control_tower_status"])
     print("==========================================================")
