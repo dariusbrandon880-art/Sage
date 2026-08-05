@@ -133,6 +133,37 @@ def test_production_reliability_simulation_execution():
     assert "FAILURE_INJECTION_FAILED_HANDOFF_RESOLVED" in events
 
 
+def test_controlled_operational_pilot_execution():
+    """Validate end-to-end controlled operational pilot with metrics collection and improvement discovery."""
+    macc = SAGEOperationalOrchestrator(session_id="session_test_macc_pilot")
+
+    report = macc.execute_controlled_operational_pilot(
+        task_objective="obj_continuous_development",
+        milestones=["Formulate multi-agent operational boundaries", "Coordinate secure custody handoffs"]
+    )
+
+    assert report["status"] == "VALIDATED"
+    assert "pilot_operational_metrics" in report
+    assert "discovered_improvements" in report
+    assert "chatgpt_coordination" in report
+    assert "jules_execution" in report
+    assert "claude_review_findings" in report
+
+    # Validate pilot metrics structure and constraints
+    metrics = report["pilot_operational_metrics"]
+    assert metrics["workflow_duration_seconds"] >= 0.0
+    assert metrics["context_recovery_effectiveness_pct"] == 100.0
+    assert metrics["duplicate_work_avoided_lines_bypassed"] == 150
+    assert metrics["evidence_quality_index"] == 1.0
+    assert metrics["operator_visibility_score_answers_present"] == 5
+    assert metrics["recovery_effectiveness_pct"] == 100.0
+
+    # Validate improvements
+    imps = report["discovered_improvements"]
+    assert len(imps) == 1
+    assert "pre-commit lint triggers" in imps[0]
+
+
 def test_control_tower_status_rendering():
     """Verify operator Control Tower ASCII console layout and parameters."""
     macc = SAGEOperationalOrchestrator(session_id="session_test_control_tower")
@@ -153,6 +184,13 @@ def test_control_tower_status_rendering():
         "agent_id": "agent_gemini_scout",
         "role": "RESEARCHER"
     }
+    macc.orchestrator.session.metadata["pilot_operational_metrics"] = {
+        "workflow_duration_seconds": 12.34,
+        "context_recovery_effectiveness_pct": 100.0,
+        "duplicate_work_avoided_lines_bypassed": 150,
+        "evidence_quality_index": 1.0
+    }
+    macc.orchestrator.session.metadata["discovered_improvements"] = ["Add automated lint checks."]
     macc.orchestrator.session_manager.save_session(macc.orchestrator.session)
 
     console_output = macc.render_control_tower_view()
@@ -165,6 +203,12 @@ def test_control_tower_status_rendering():
     assert "Active Recovered Faults:   1" in console_output
     assert "Future Collaborator Contract Inheritance Model:" in console_output
     assert "Onboarding Target Agent:   agent_gemini_scout" in console_output
+    assert "Pilot Captured Operational Metrics & Performance:" in console_output
+    assert "Workflow Duration:       12.34s" in console_output
+    assert "Context Recovery:        100.0%" in console_output
+    assert "Duplicate Work Avoided:  150 lines setup" in console_output
+    assert "Evidence Quality Index:  1.0" in console_output
+    assert "Discovered Improvements: Add automated lint checks." in console_output
     assert "Workflow Health Score" in console_output
     assert "Active Collaborator Responsibility Hierarchy" in console_output
     assert "Custody Transfer Handoff Lineage Trail" in console_output

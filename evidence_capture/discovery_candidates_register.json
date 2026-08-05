@@ -1234,5 +1234,83 @@
     "validation_readiness": "LOW",
     "priority_score": 5.0,
     "timestamp": 1785901075.5180328
+  },
+  {
+    "candidate_id": "DISC-CAN-C0141C2A4E63",
+    "opportunity_type": "OPERATIONAL_EFFICIENCY",
+    "pattern_observed": "Repeated git command invokes are relatively slow in sandboxes",
+    "research_validation_criteria": "Implement high-fidelity workspace memory cache to bypass shell executions",
+    "lifecycle_state": "PROPOSED",
+    "operational_impact": 5.0,
+    "frequency_score": 5.0,
+    "risk_level": "MEDIUM",
+    "validation_readiness": "LOW",
+    "priority_score": 5.0,
+    "timestamp": 1785906304.869577
+  },
+  {
+    "candidate_id": "DISC-CAN-B182F8BF0381",
+    "opportunity_type": "OPERATIONAL_EFFICIENCY",
+    "pattern_observed": "Low impact item",
+    "research_validation_criteria": "Simple fix",
+    "lifecycle_state": "PROPOSED",
+    "operational_impact": 3.0,
+    "frequency_score": 2.0,
+    "risk_level": "MEDIUM",
+    "validation_readiness": "LOW",
+    "priority_score": 2.5,
+    "timestamp": 1785906304.9740052
+  },
+  {
+    "candidate_id": "DISC-CAN-B222038DE3C2",
+    "opportunity_type": "TEST_INTEGRITY",
+    "pattern_observed": "High impact item",
+    "research_validation_criteria": "Complex fix",
+    "lifecycle_state": "PROPOSED",
+    "operational_impact": 9.0,
+    "frequency_score": 8.0,
+    "risk_level": "MEDIUM",
+    "validation_readiness": "LOW",
+    "priority_score": 8.5,
+    "timestamp": 1785906304.9784334
+  },
+  {
+    "candidate_id": "DISC-CAN-AE236831BAB6",
+    "opportunity_type": "TEST_INTEGRITY",
+    "pattern_observed": "Hook tests",
+    "research_validation_criteria": "criteria",
+    "lifecycle_state": "PROPOSED",
+    "operational_impact": 6.0,
+    "frequency_score": 5.0,
+    "risk_level": "MEDIUM",
+    "validation_readiness": "LOW",
+    "priority_score": 5.5,
+    "timestamp": 1785906304.9956338
+  },
+  {
+    "candidate_id": "DISC-CAN-C2D928C47ABB",
+    "opportunity_type": "TEST_INTEGRITY",
+    "pattern_observed": "Manual pre-commits are slow",
+    "research_validation_criteria": "Automate pre-commit hooks [Evidence Path: evidence_capture/operational_persistence_evidence.json]",
+    "lifecycle_state": "VALIDATED",
+    "operational_impact": 5.0,
+    "frequency_score": 5.0,
+    "risk_level": "MEDIUM",
+    "validation_readiness": "LOW",
+    "priority_score": 5.0,
+    "timestamp": 1785906305.0145369
+  },
+  {
+    "candidate_id": "DISC-CAN-738314FE1C4B",
+    "opportunity_type": "TEST_INTEGRITY",
+    "pattern_observed": "observation",
+    "research_validation_criteria": "criteria",
+    "lifecycle_state": "PROPOSED",
+    "operational_impact": 5.0,
+    "frequency_score": 5.0,
+    "risk_level": "MEDIUM",
+    "validation_readiness": "LOW",
+    "priority_score": 5.0,
+    "timestamp": 1785906305.0356095
   }
 ]

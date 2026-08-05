@@ -17,20 +17,20 @@ def main():
 
     macc_orch = SAGEOperationalOrchestrator(session_id="session_operational_validation")
 
-    print("[*] Running end-to-end Production Reliability & Failure Injection simulation...")
-    report = macc_orch.execute_production_reliability_simulation(
+    print("[*] Running end-to-end Controlled Operational Pilot Execution scenario...")
+    report = macc_orch.execute_controlled_operational_pilot(
         task_objective="obj_continuous_development",
         milestones=[
-            "Harden multi-agent persistence keys",
-            "Verify fault interception mechanics",
-            "Onboard future Gemini validation scouts"
+            "Formulate multi-agent operational boundaries",
+            "Coordinate secure custody handoffs",
+            "Audit state-window contextual checksums"
         ]
     )
 
-    print("\n[+] Operational Production Reliability Scenario Run Succeeded!")
+    print("\n[+] Controlled Operational Pilot Run Succeeded!")
     print(f"    - Run ID: {report['orchestrator_run_id']}")
-    print(f"    - Onboarded Future Contract ID: {report['future_agent_entry_contract']['agent_id']}")
-    print(f"    - Active Recovered Faults: {len(report['failure_recovery_logs'])}")
+    print(f"    - Workflow Duration: {report['pilot_operational_metrics']['workflow_duration_seconds']}s")
+    print(f"    - Discovered Improvement: {report['discovered_improvements'][0]}")
     print(f"    - Evidence logged to: {macc_orch.evidence_output_path}\n")
     print(report["control_tower_status"])
     print("==========================================================")
