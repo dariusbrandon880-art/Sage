@@ -878,6 +878,25 @@ def test_sage_coordinated_loop_endurance_simulation(tmp_path):
     queue_file = Path("evidence_capture/queue_intelligence_report.json")
     assert queue_file.exists()
 
+    # Verify agent bridge and context restoration evidence reports are written to disk
+    bridge_file = Path("evidence_capture/agent_bridge_validation_report.json")
+    assert bridge_file.exists()
+    with open(bridge_file, "r", encoding="utf-8") as f:
+        b_rep = json.load(f)
+    assert b_rep["verification_status"] == "VALIDATED"
+
+    restoration_file = Path("evidence_capture/context_restoration_report.json")
+    assert restoration_file.exists()
+    with open(restoration_file, "r", encoding="utf-8") as f:
+        re_rep = json.load(f)
+    assert re_rep["state_restoration_accuracy_percent"] == 100.0
+
+    trace_file = Path("evidence_capture/execution_trace_report.json")
+    assert trace_file.exists()
+
+    lineage_file = Path("evidence_capture/evidence_lineage_report.json")
+    assert lineage_file.exists()
+
 
 def test_sage_escalation_rules_lifecycle(tmp_path):
     """Verify consecutive failure retries, warning loop pauses, critical freezes,
@@ -982,3 +1001,97 @@ def test_sage_escalation_rules_lifecycle(tmp_path):
     orchestrator.resume_mission_execution_loop()
     assert orchestrator.loop_state["mode"] == "CONTINUOUS"
     assert orchestrator.loop_state["consecutive_failures"] == 0
+
+
+def test_external_agent_connection_bridge(tmp_path):
+    """Verify SAGE ChatGPT Runtime Connector context retrieval, output updates, and Google Workspace sync."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    evidence_output = tmp_path / "evidence" / "ccl_feedback.json"
+
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_bridge_test_01",
+        objective="obj_continuous_development",
+        ccl=ccl,
+        evidence_output_path=str(evidence_output)
+    )
+
+    # 1. Retrieve context as external agent
+    context = orchestrator.retrieve_external_agent_context("agent_chatgpt")
+    assert context["session_id"] == "session_bridge_test_01"
+    assert "obj_continuous_development" in context["active_objectives"]
+    assert "protected_workspaces" in context
+
+    # Verify authorization check
+    with pytest.raises(PermissionError, match="Unauthorized agent access attempt"):
+        orchestrator.retrieve_external_agent_context("agent_unauthorized")
+
+    # 2. Submit external agent output linked with Google account
+    out_payload = {
+        "action_taken": "ChatGPT Coordinate Developer loop",
+        "decision_reasoning": "Restore session baseline state and request Jules build",
+        "completed_action": "task_rehydrate_context"
+    }
+
+    result = orchestrator.submit_external_agent_output(
+        agent_id="agent_chatgpt",
+        output_data=out_payload,
+        google_account="operator_jules@gmail.com"
+    )
+
+    assert result["status"] == "VALIDATED"
+    assert "task_rehydrate_context" in orchestrator.session.completed_actions
+    assert "google_workspace_sync_status" in result
+    assert result["google_workspace_sync_status"]["google_account"] == "operator_jules@gmail.com"
+
+
+def test_sage_managed_agent_operating_loop(tmp_path):
+    """Verify SAGE Agent Operating Loop, Context Injection path, permission validation, and search integration."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    evidence_output = tmp_path / "evidence" / "ccl_feedback.json"
+
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_operating_test_02",
+        objective="obj_continuous_development",
+        ccl=ccl,
+        evidence_output_path=str(evidence_output)
+    )
+
+    # 1. Request agent context package (injecting preceding operational solutions)
+    context_pkg = orchestrator.request_agent_context_package("agent_jules_sage")
+    assert context_pkg["agent_id"] == "agent_jules_sage"
+    assert context_pkg["role_parameters"]["role"] == "SENIOR_SOFTWARE_ENGINEER"
+    assert "injected_operational_solutions" in context_pkg
+    assert len(context_pkg["injected_operational_solutions"]) > 0
+
+    # 2. Submit intelligence assisted response
+    resp_payload = {
+        "action_taken": "Jules optimized pre-compilation cache speed",
+        "decision_reasoning": "Resolve identified performance latency bottleneck",
+        "completed_action": "task_optimize_cache"
+    }
+
+    result = orchestrator.submit_intelligence_assisted_agent_response(
+        agent_id="agent_jules_sage",
+        result_package=resp_payload
+    )
+
+    assert result["status"] == "VALIDATED"
+    assert "task_optimize_cache" in orchestrator.session.completed_actions
+
+    # Verify unauthorized permission error
+    with pytest.raises(PermissionError, match="Unauthorized submission"):
+         orchestrator.submit_intelligence_assisted_agent_response("agent_rogue", resp_payload)

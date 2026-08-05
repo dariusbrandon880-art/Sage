@@ -1,11 +1,8 @@
 {
-  "timestamp": 1785945700.5609455,
+  "timestamp": 1785945700.562888,
   "session_id": "session_endurance_test_99",
-  "total_cycles": 3,
-  "total_duration_secs": 0.4062528610229492,
-  "compounding_duration_reduction_percent": 35.00353901879459,
-  "recovery_success_rate": 1.0,
-  "history": [
+  "executed_traces_count": 3,
+  "traces": [
     {
       "cycle_index": 1,
       "status": "CONTINUOUS",
