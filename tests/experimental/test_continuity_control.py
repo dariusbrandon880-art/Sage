@@ -1480,5 +1480,139 @@ def test_render_control_tower_summary_questions(tmp_path):
     assert "1. WHAT HAPPENED?     : completed_action_alpha" in summary
     assert "2. WHO OWNS IT?        : agent_jules_sage (task_t1)" in summary
     assert "3. WHY IS IT HAPPENING?: obj_tower_vis" in summary
-    assert "4. WHAT EVIDENCE?" in summary
-    assert "5. WHAT HAPPENS NEXT?" in summary
+    assert "4. WHO REVIEWED IT?    : None / Pending Authorization" in summary
+    assert "5. WHAT EVIDENCE?" in summary
+    assert "6. WHAT HAPPENS NEXT?" in summary
+
+
+def test_execute_coordinated_review_success(tmp_path):
+    """Verify that programmatically coordinates SAGE review transitions task status and compiles summary package."""
+    import uuid
+    from pathlib import Path
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id=f"session_review_success_{uuid.uuid4().hex[:6]}",
+        objective="obj_review_validate",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    # Setup task to review
+    orchestrator.add_coordinated_task("task_audit_t", "Security Code Audit", "TIER_2_AUDITOR")
+    orchestrator.assign_agent_to_task("task_audit_t", "agent_scout_sage")
+
+    findings_data = {
+        "verdict": "APPROVED_ADVISORY",
+        "comments": "Code changes perfectly preserve production directory safety.",
+        "evidence_refs": ["ref_hash_continuity_control_py_001"]
+    }
+
+    report = orchestrator.execute_coordinated_review(
+        reviewer_id="agent_scout_sage",
+        task_id="task_audit_t",
+        findings=findings_data
+    )
+
+    # Assert status and findings capture
+    assert report["status"] == "REVIEWED"
+    assert report["findings_details"]["verdict"] == "APPROVED_ADVISORY"
+    assert "task_audit_t" in report["engineering_summary"]["task_id"]
+
+    # Verify report is written to disk
+    assert Path("evidence_capture/review_validation_report.json").exists()
+
+
+def test_execute_coordinated_review_boundary_restrictions(tmp_path):
+    """Verify that review scope enforcement blocks unassigned roles and missing evidence refs."""
+    import pytest
+    import uuid
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id=f"session_review_unauth_{uuid.uuid4().hex[:6]}",
+        objective="obj_review_unauth",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    orchestrator.add_coordinated_task("task_audit_t", "Security Code Audit", "TIER_2_AUDITOR")
+    orchestrator.assign_agent_to_task("task_audit_t", "agent_scout_sage")
+
+    # 1. Non-auditor (agent_builder_sage) tries to review -> raises PermissionError
+    orchestrator.enforcer.set_agent_state("agent_builder_sage", "ACTIVATED")
+    with pytest.raises(PermissionError, match="does not possess TIER_2_AUDITOR review role"):
+        orchestrator.execute_coordinated_review(
+            reviewer_id="agent_builder_sage",
+            task_id="task_audit_t",
+            findings={"verdict": "APPROVED", "evidence_refs": ["ref_1"]}
+        )
+
+    # 2. Auditor tries to review but provides empty evidence_refs -> raises ValueError
+    with pytest.raises(ValueError, match="must reference valid validation evidence refs"):
+        orchestrator.execute_coordinated_review(
+            reviewer_id="agent_scout_sage",
+            task_id="task_audit_t",
+            findings={"verdict": "APPROVED", "evidence_refs": []}
+        )
+
+
+def test_three_role_coordination_and_review_lineage(tmp_path):
+    """Verify that a full three-role development lifecycle runs cleanly with perfect context preservation."""
+    import uuid
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id=f"session_three_role_{uuid.uuid4().hex[:6]}",
+        objective="obj_three_role_lifecycle",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    # Role 1: Coordinator (Intake / Clarify)
+    orchestrator.session.completed_actions.append("intake_clarify_mission")
+    session_mgr.save_session(orchestrator.session)
+
+    # Role 2: Jules Executor (Engineering)
+    action_details = {
+        "action_name": "build_enforcement_layer",
+        "is_completed": True,
+        "shared_state_updates": {"build_status": "done"}
+    }
+    orchestrator.execute_coordinated_agent_lifecycle(
+        agent_id="agent_jules_sage",
+        task_id="task_eng_01",
+        action_details=action_details,
+        modified_files=["docs/SAGE-WORKFLOW-INCIDENT-RESPONSE.md"]
+    )
+
+    # Role 3: Scout Auditor (Review validation)
+    orchestrator.add_coordinated_task("task_audit_01", "Security Code Audit", "TIER_2_AUDITOR")
+    orchestrator.assign_agent_to_task("task_audit_01", "agent_scout_sage")
+
+    findings = {
+        "verdict": "APPROVED_ADVISORY",
+        "comments": "Prerequisites met.",
+        "evidence_refs": ["ref_control_py_hash"]
+    }
+    report = orchestrator.execute_coordinated_review(
+        reviewer_id="agent_scout_sage",
+        task_id="task_audit_01",
+        findings=findings
+    )
+
+    # Verify trace completeness
+    assert report["engineering_summary"]["completed_milestones"] == ["intake_clarify_mission", "build_enforcement_layer"]
+    assert report["findings_details"]["verdict"] == "APPROVED_ADVISORY"

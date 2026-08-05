@@ -1266,6 +1266,94 @@ class DeveloperWorkflowOrchestrator:
 
         return recovery_report
 
+    def execute_coordinated_review(
+        self,
+        reviewer_id: str,
+        task_id: str,
+        findings: Dict[str, Any],
+        supervisor_override: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """Programmatically coordinates the SAGE validation and review workflow, assigning a reviewer role and capturing trace findings."""
+        # 1. Identity & Role assignment check
+        if reviewer_id not in self.enforcer.agent_roles:
+            raise KeyError(f"Identity Verification Failure: Reviewer '{reviewer_id}' is not registered in SAGE.")
+
+        role = self.enforcer.agent_roles[reviewer_id]
+        if role != "TIER_2_AUDITOR":
+            raise PermissionError(f"Security Boundary Violation: Agent '{reviewer_id}' does not possess TIER_2_AUDITOR review role.")
+
+        # 2. Review Boundary Enforcement
+        # Ensure findings require evidence refs
+        evidence_refs = findings.get("evidence_refs", [])
+        if not evidence_refs:
+            raise ValueError("Review Boundary Violation: Review findings must reference valid validation evidence refs.")
+
+        # Ensure task exists
+        if task_id not in self.coordinated_tasks:
+            raise KeyError(f"Coordination Error: Task '{task_id}' is not registered.")
+
+        task = self.coordinated_tasks[task_id]
+
+        # 3. Compile context rehydration package for reviewer
+        engineering_summary = {
+            "session_id": self.session_id,
+            "active_mission": list(self.session.active_objectives),
+            "completed_milestones": list(self.session.completed_actions),
+            "task_id": task_id,
+            "task_name": task["name"],
+            "assigned_agent": task["assigned_agent"],
+            "decision_history": list(self.session.important_decisions),
+            "known_risks": [d["description"] for d in self.improvement_directives]
+        }
+
+        # 4. Transition task status to REVIEWED (outcome remains advisory until authorized)
+        task["status"] = "REVIEWED"
+        task["handoff_history"].append({
+            "reviewer_id": reviewer_id,
+            "action": "REVIEWED_AND_VALIDATED",
+            "timestamp": time.time()
+        })
+
+        # 5. Record CCL event trace
+        record = self.ccl.intercept_event(
+            event_type="agent_coordinated_review",
+            action_taken=f"Task '{task_id}' reviewed and outcome validated by '{reviewer_id}'",
+            decision_reasoning="Synthesize complete planning -> execution -> review evidence lineages",
+            evidence_payload={
+                "task_id": task_id,
+                "reviewer_id": reviewer_id,
+                "findings": findings,
+                "engineering_summary": engineering_summary
+            },
+            session_id=self.session_id
+        )
+        self.ccl.serialize_record(record)
+
+        review_report = {
+            "session_id": self.session_id,
+            "reviewer_id": reviewer_id,
+            "task_id": task_id,
+            "status": "REVIEWED",
+            "findings_details": findings,
+            "engineering_summary": engineering_summary,
+            "evidence_lineage_chain": {
+                "event_id": f"event_{uuid.uuid4().hex[:12]}",
+                "state_change": "Transitioned task to REVIEWED status",
+                "agent_action": f"Audited and accepted engineering outcome: {findings.get('verdict')}",
+                "decision": "Outcome is locked as advisory pending human supervisor final validation.",
+                "evidence_ref": record.record_id
+            },
+            "timestamp": time.time()
+        }
+
+        # Persist review report
+        output_path = Path("evidence_capture/review_validation_report.json")
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(output_path, "w", encoding="utf-8") as f:
+            json.dump(review_report, f, indent=2, default=str)
+
+        return review_report
+
     def render_control_tower_summary(self) -> str:
         """Generates an executive-level summary of active agent states, responsibilities, blockers, and recommendations, answering critical operator questions."""
         # 1. What happened?
@@ -1287,7 +1375,14 @@ class DeveloperWorkflowOrchestrator:
         records = list(self.ccl.storage_path.glob("*.json"))
         what_evidence_supports_it = f"Found {len(records)} verified append-only CCL records."
 
-        # 5. What happens next?
+        # 5. Who reviewed it?
+        reviewers = []
+        for t_id, task in self.coordinated_tasks.items():
+            if task["status"] == "REVIEWED":
+                reviewers.append(task["assigned_agent"])
+        who_reviewed_it = ", ".join(reviewers) if reviewers else "None / Pending Authorization"
+
+        # 6. What happens next?
         pending = list(self.session.pending_actions)
         what_happens_next = pending[0] if pending else "Validate and finalize next execution checkpoint."
 
@@ -1298,8 +1393,9 @@ class DeveloperWorkflowOrchestrator:
             f" 1. WHAT HAPPENED?     : {what_happened}",
             f" 2. WHO OWNS IT?        : {who_owns_it}",
             f" 3. WHY IS IT HAPPENING?: {why_is_it_happening}",
-            f" 4. WHAT EVIDENCE?     : {what_evidence_supports_it}",
-            f" 5. WHAT HAPPENS NEXT?  : {what_happens_next}",
+            f" 4. WHO REVIEWED IT?    : {who_reviewed_it}",
+            f" 5. WHAT EVIDENCE?     : {what_evidence_supports_it}",
+            f" 6. WHAT HAPPENS NEXT?  : {what_happens_next}",
             "=================================================="
         ]
         return "\n".join(tower)

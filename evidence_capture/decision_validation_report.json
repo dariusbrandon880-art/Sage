@@ -1,5 +1,5 @@
 {
-  "session_id": "session_recovery_success_19cd6a",
+  "session_id": "session_recovery_success_28d223",
   "task_id": "task_block",
   "recovery_checkpoint_id": "CCL-REC-20260804-fallback-xyz",
   "status": "RECOVERED",
@@ -7,10 +7,10 @@
     "obj_recovery_active"
   ],
   "reconstructed_lineage": {
-    "record_id": "CCL-REC-20260805-38e4b596-a14d-4121-ae5a-fd03765ed6de",
-    "session_id": "session_recovery_success_19cd6a",
+    "record_id": "CCL-REC-20260805-2d15c069-2c1e-48d4-abae-a9f3bfb27834",
+    "session_id": "session_recovery_success_28d223",
     "event_type": "recovered",
-    "timestamp": 1785891023.3985991,
+    "timestamp": 1785894565.26186,
     "action_taken": "Recovered workflow task 'task_block' from checkpoint 'CCL-REC-20260804-fallback-xyz'",
     "decision_reasoning": "Resolve blocked or failed transitions and restore complete context",
     "evidence_payload": {
@@ -24,7 +24,7 @@
       ],
       "session_completed_actions": [],
       "session_pending_actions": [],
-      "enrichment_timestamp": 1785891023.3985507
+      "enrichment_timestamp": 1785894565.2618163
     },
     "failure_context": {
       "error": "failed_handoff_or_blocked_execution"
@@ -34,5 +34,5 @@
     "workflow_friction": [],
     "improvement_opportunities": []
   },
-  "timestamp": 1785891023.3990705
+  "timestamp": 1785894565.2621677
 }

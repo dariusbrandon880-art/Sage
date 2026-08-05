@@ -1,7 +1,7 @@
 {
-  "rehydration_id": "rehydrate_b5777507f2fc",
+  "rehydration_id": "rehydrate_7e22454aa672",
   "source_session_id": "session_source_xyz",
-  "target_session_id": "session_rehydrate_cd40e3",
+  "target_session_id": "session_rehydrate_29ed63",
   "rehydrated_objectives": [
     "obj_transferred_mission",
     "obj_extra_audit"
@@ -23,9 +23,10 @@
       "evidence_capture/decision_validation_report.json",
       "evidence_capture/discovery_candidates_register.json",
       "evidence_capture/operational_persistence_evidence.json",
+      "evidence_capture/review_validation_report.json",
       "evidence_capture/workflow_intelligence_evidence.json",
       "tests/experimental/test_continuity_control.py"
     ]
   },
-  "timestamp": 1785891023.1936126
+  "timestamp": 1785894565.0003247
 }
