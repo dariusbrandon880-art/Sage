@@ -267,3 +267,56 @@ def test_ingest_reason_verify_endpoints():
         assert response.status_code == 200
         res_verify = response.json()
         assert "is_valid" in res_verify
+
+
+def test_sage_governed_agent_connection_api_endpoints():
+    """Verify live agent connection FastAPI endpoints connect, retrieve context, execute loops, and submit results."""
+    with TestClient(app) as client:
+        session_id = "session_live_agent_api_test"
+
+        # 1. Test /agent/connect endpoint
+        connect_data = {
+            "agent_id": "agent_chatgpt",
+            "session_id": session_id
+        }
+        response = client.post("/agent/connect", json=connect_data)
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "AUTHENTICATED"
+        assert data["context"]["session_id"] == session_id
+
+        # Unauthorized connect should return 400 bad request error detail from FastAPI
+        response = client.post("/agent/connect", json={"agent_id": "agent_unauthorized", "session_id": session_id})
+        assert response.status_code == 400
+
+        # 2. Test /context/retrieve endpoint
+        response = client.get(f"/context/retrieve?agent_id=agent_chatgpt&session_id={session_id}")
+        assert response.status_code == 200
+        context = response.json()
+        assert context["session_id"] == session_id
+        assert "protected_workspaces" in context
+
+        # 3. Test /mission/execute endpoint
+        # First ensure there is at least one approved task in queue
+        # Let's submit an authorized mission task via our submit result endpoint or just execute
+        # Execute loops
+        response = client.post("/mission/execute", json={"agent_id": "agent_chatgpt", "session_id": session_id})
+        assert response.status_code == 200
+
+        # 4. Test /result/submit endpoint
+        submit_payload = {
+            "agent_id": "agent_chatgpt",
+            "session_id": session_id,
+            "output_data": {
+                "action_taken": "ChatGPT executed operational api checks",
+                "decision_reasoning": "Verify live governed REST API endpoints are fully active and validated",
+                "completed_action": "task_verify_live_endpoints"
+            },
+            "google_account": "operator_jules@gmail.com"
+        }
+        response = client.post("/result/submit", json=submit_payload)
+        assert response.status_code == 200
+        result = response.json()
+        assert result["status"] == "VALIDATED"
+        assert "google_workspace_sync_status" in result
+        assert result["google_workspace_sync_status"]["google_account"] == "operator_jules@gmail.com"

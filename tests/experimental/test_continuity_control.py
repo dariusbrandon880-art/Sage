@@ -1095,3 +1095,71 @@ def test_sage_managed_agent_operating_loop(tmp_path):
     # Verify unauthorized permission error
     with pytest.raises(PermissionError, match="Unauthorized submission"):
          orchestrator.submit_intelligence_assisted_agent_response("agent_rogue", resp_payload)
+
+
+def test_chatgpt_runtime_authentication(tmp_path):
+    """Verify live ChatGPT runtime authentication handshakes and identity resolutions."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ChatGPTRuntimeAdapter
+    import unittest.mock as mock
+
+    orchestrator = DeveloperWorkflowOrchestrator(session_id="session_auth_test_11")
+
+    # Configure variables matching environment configuration
+    with mock.patch.dict(os.environ, {
+        "SAGE_AGENT_ID": "chatgpt-runtime-agent",
+        "SAGE_AUTH_SECRET": "safe_secret_99"
+    }):
+        adapter = ChatGPTRuntimeAdapter(orchestrator)
+
+        # Valid handshake
+        identity = adapter.authenticate_handshake("chatgpt-runtime-agent", "safe_secret_99")
+        assert identity["agent_id"] == "chatgpt-runtime-agent"
+        assert identity["provider"] == "openai"
+        assert identity["status"] == "authenticated"
+
+        # Invalid agent_id rejected
+        with pytest.raises(PermissionError, match="Unknown agent ID"):
+            adapter.authenticate_handshake("invalid-agent", "safe_secret_99")
+
+        # Invalid secret credentials rejected
+        with pytest.raises(PermissionError, match="Invalid credentials/secret"):
+            adapter.authenticate_handshake("chatgpt-runtime-agent", "wrong_secret")
+
+
+def test_chatgpt_runtime_governed_execution(tmp_path):
+    """Verify live ChatGPT runtime context retrieval, task execution, result submissions, and evidence logs."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ChatGPTRuntimeAdapter
+    import unittest.mock as mock
+
+    orchestrator = DeveloperWorkflowOrchestrator(session_id="session_exec_test_12")
+
+    with mock.patch.dict(os.environ, {
+        "SAGE_AGENT_ID": "chatgpt-runtime-agent",
+        "SAGE_AUTH_SECRET": "safe_secret_99"
+    }):
+        adapter = ChatGPTRuntimeAdapter(orchestrator)
+
+        # Execute governed task
+        result = adapter.execute_governed_task(
+            agent_id="chatgpt-runtime-agent",
+            task_id="task_rt_verify_loop",
+            secret="safe_secret_99"
+        )
+
+        assert result["identity"]["status"] == "authenticated"
+        assert result["response"] == "Optimized SAGE continuous execution loop speed successfully."
+        assert result["validation"]["status"] == "VALIDATED"
+
+        # Verify evidence proof generated on disk
+        report_file = Path("evidence_capture/chatgpt_runtime_connection_report.json")
+        assert report_file.exists()
+
+        with open(report_file, "r", encoding="utf-8") as f:
+            report_data = json.load(f)
+        assert report_data["connection_success"] is True
+        assert report_data["authentication_result"] == "SUCCESS"
+        assert report_data["validation_status"] == "VALIDATED"
+
+        # Clean up connection report file
+        if report_file.exists():
+            report_file.unlink()

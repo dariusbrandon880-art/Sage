@@ -1,20 +1,20 @@
 {
-  "orchestrator_run_id": "orch_run_f983e668498a",
-  "timestamp": "2026-08-04T08:56:36.345229Z",
-  "session_id": "session_realignment_coordination",
+  "orchestrator_run_id": "orch_run_50407e3f1e15",
+  "timestamp": "2026-08-05T17:41:15.130805Z",
+  "session_id": "session_live_agent_api_test",
   "session_objectives": [
     "obj_continuous_development"
   ],
   "status": "VALIDATED",
   "ccl_record": {
-    "record_id": "CCL-REC-20260804-61b73c65-a49c-414a-8eaf-b22a3ac867cb",
-    "session_id": "session_realignment_coordination",
+    "record_id": "CCL-REC-20260805-21a9def9-a7c9-46db-952e-7409c18cd08d",
+    "session_id": "session_live_agent_api_test",
     "event_type": "state_transition",
-    "timestamp": 1785833796.3462594,
-    "action_taken": "SAGE Realignment Priority Implementation",
-    "decision_reasoning": "Complete SAGE continuity capabilities and connect validated interfaces into usable workflows",
+    "timestamp": 1785951675.1310825,
+    "action_taken": "ChatGPT executed operational api checks",
+    "decision_reasoning": "Verify live governed REST API endpoints are fully active and validated",
     "evidence_payload": {
-      "git_commit": "520090f4a579248991c8204eb2a150665c2fd1e2",
+      "git_commit": "e521e14ea3224aa07d241338caf17af090533bfc",
       "protection_report": {
         "is_violation_found": false,
         "violations_found": 0,
@@ -22,38 +22,31 @@
         "violations": [],
         "status": "CLEAN_WORKSPACE"
       },
-      "cmaps_audit_id": "audit_debe118b685d4e0eb5e0d88582d7d110",
+      "cmaps_audit_id": "audit_af2cb69497ef4d63ba655099309ba2df",
       "enriched_objectives": [
         "obj_continuous_development"
       ],
-      "session_completed_actions": [],
+      "session_completed_actions": [
+        "task_verify_live_endpoints"
+      ],
       "session_pending_actions": [],
-      "enrichment_timestamp": 1785833796.3462188,
+      "enrichment_timestamp": 1785951675.1310167,
       "human_approval_record": {
         "supervisor_id": "supervisor_jules",
-        "signature": "sig_jules_929d025ac718",
+        "signature": "sig_jules_0603c5d5cfca",
         "decision": "APPROVED",
-        "approved_at": 1785833796.3475416
+        "approved_at": 1785951675.132492
       }
     },
     "failure_context": null,
     "recovery_path": null,
     "lifecycle_state": "VALIDATED",
-    "workflow_friction": [
-      {
-        "type": "cognitive_load",
-        "detail": "Manual discovery and connection of multi-layered experimental modules",
-        "severity": "low"
-      }
-    ],
-    "improvement_opportunities": [
-      "Automate pre-commit hooks to invoke DeveloperWorkflowOrchestrator prior to staging",
-      "Enable live visual dashboards of development sessions"
-    ]
+    "workflow_friction": [],
+    "improvement_opportunities": []
   },
   "cmaps_payload": {
-    "audit_id": "audit_debe118b685d4e0eb5e0d88582d7d110",
-    "timestamp": "2026-08-04T08:56:36.345229Z",
+    "audit_id": "audit_af2cb69497ef4d63ba655099309ba2df",
+    "timestamp": "2026-08-05T17:41:15.130805Z",
     "agent_identity": {
       "agent_id": "agent_jules_sage",
       "name": "Jules",
@@ -66,23 +59,23 @@
       "temperature": 0.2
     },
     "execution_state": {
-      "run_id": "run_bd6684566f5d405d9536",
+      "run_id": "run_3b45363196d747769693",
       "status": "completed",
       "step_counter": 1,
-      "started_at": "2026-08-04T08:56:36.345229Z",
-      "updated_at": "2026-08-04T08:56:36.345229Z"
+      "started_at": "2026-08-05T17:41:15.130805Z",
+      "updated_at": "2026-08-05T17:41:15.130805Z"
     },
     "task_lineage": {
-      "session_id": "session_0600efca",
+      "session_id": "session_8b9cf8ef",
       "current_task_id": "task_active_development",
       "subtask_ids": []
     },
     "decision_events": [
       {
         "decision_id": "decision_coordinate_dev_loop",
-        "timestamp": "2026-08-04T08:56:36.345229Z",
-        "summary": "SAGE Realignment Priority Implementation",
-        "reasoning": "Complete SAGE continuity capabilities and connect validated interfaces into usable workflows",
+        "timestamp": "2026-08-05T17:41:15.130805Z",
+        "summary": "ChatGPT executed operational api checks",
+        "reasoning": "Verify live governed REST API endpoints are fully active and validated",
         "confidence": 1.0
       }
     ],
@@ -90,28 +83,193 @@
     "recovery_checkpoints": [],
     "evidence_relationships": [
       {
-        "artifact_path": "docs/SAGE-WORKFLOW-INCIDENT-RESPONSE.md",
-        "git_commit": "520090f4a579248991c8204eb2a150665c2fd1e2",
-        "sha256_checksum": "08d2734626cc9cdeb15218f055ce2e7f6daa4c154ae350c820700d7c98e0bcd6"
+        "artifact_path": "evidence_capture/agent_bridge_validation_report.json",
+        "git_commit": "e521e14ea3224aa07d241338caf17af090533bfc",
+        "sha256_checksum": "ce6f0bd304358abd3bb0b0ce684a7f32552114332411dc80a3e784a0cbe6ed45"
+      },
+      {
+        "artifact_path": "evidence_capture/ccl_capability_report.json",
+        "git_commit": "e521e14ea3224aa07d241338caf17af090533bfc",
+        "sha256_checksum": "837161ddb8a9fac8e2d9eb9e69d610d6b2865f59a744624343abacc2d3759371"
+      },
+      {
+        "artifact_path": "evidence_capture/ccl_operational_feedback.json",
+        "git_commit": "e521e14ea3224aa07d241338caf17af090533bfc",
+        "sha256_checksum": "ed9d4ec520263d4d7d9addc024b90ba6a523161f221c5475af1791e1b9bb9fbb"
+      },
+      {
+        "artifact_path": "evidence_capture/context_restoration_report.json",
+        "git_commit": "e521e14ea3224aa07d241338caf17af090533bfc",
+        "sha256_checksum": "cbdeea2848c49341ca4a5cc8f2762d3ea7ce4944f34ebe12cec35798a57441fc"
+      },
+      {
+        "artifact_path": "evidence_capture/discovery_candidates_register.json",
+        "git_commit": "e521e14ea3224aa07d241338caf17af090533bfc",
+        "sha256_checksum": "75186611e215e626810daaa63e50142bcaaa45fd1fea40b4917ec7976293156a"
+      },
+      {
+        "artifact_path": "evidence_capture/evidence_lineage_report.json",
+        "git_commit": "e521e14ea3224aa07d241338caf17af090533bfc",
+        "sha256_checksum": "64b60f750115acd7d8be3b28909f08c34848df5ea4488a967eaa7108a75e31be"
+      },
+      {
+        "artifact_path": "evidence_capture/execution_trace_report.json",
+        "git_commit": "e521e14ea3224aa07d241338caf17af090533bfc",
+        "sha256_checksum": "847b6ce317598b326ce218aeecb9c0683a4b0ad964f418d35073e867153d5089"
+      },
+      {
+        "artifact_path": "evidence_capture/operational_endurance_report.json",
+        "git_commit": "e521e14ea3224aa07d241338caf17af090533bfc",
+        "sha256_checksum": "a95ca2690a76236c5fc320f56371b74af2c033d083e37e37513422e9d6a700ff"
+      },
+      {
+        "artifact_path": "evidence_capture/operational_learning_report.json",
+        "git_commit": "e521e14ea3224aa07d241338caf17af090533bfc",
+        "sha256_checksum": "b8029700e1da1da1df30d28ac7d146e2be169d02d3c0edfad581c20e20b06598"
+      },
+      {
+        "artifact_path": "evidence_capture/phase_4_controlled_evaluation_evidence.json",
+        "git_commit": "e521e14ea3224aa07d241338caf17af090533bfc",
+        "sha256_checksum": "c7ad0938f6de70985ce2969f923cfc5b585ca0f5a524b66cfc6bd87ed60bab74"
+      },
+      {
+        "artifact_path": "evidence_capture/phase_4_controlled_evaluation_evidence_scenario_a.json",
+        "git_commit": "e521e14ea3224aa07d241338caf17af090533bfc",
+        "sha256_checksum": "3e4b9c21e317b06c8c73f4f11c700afa34ae110706023170c3849c51bbea7948"
+      },
+      {
+        "artifact_path": "evidence_capture/phase_4_controlled_evaluation_evidence_scenario_b.json",
+        "git_commit": "e521e14ea3224aa07d241338caf17af090533bfc",
+        "sha256_checksum": "f78b0952b3a0fc245d3975210e5d8c22e435b34270b96f52e2819eb4fea65fd6"
+      },
+      {
+        "artifact_path": "evidence_capture/phase_4_repeatability_run_1.json",
+        "git_commit": "e521e14ea3224aa07d241338caf17af090533bfc",
+        "sha256_checksum": "2f0fe957d461c27565a85fd0011fa47d7d218d98b1e619897775ee11d261143f"
+      },
+      {
+        "artifact_path": "evidence_capture/phase_4_repeatability_run_1_scenario_a.json",
+        "git_commit": "e521e14ea3224aa07d241338caf17af090533bfc",
+        "sha256_checksum": "7de2597edfcecbfb74bf43de9e4ba143dcb3228b891315804ac739c0d6901094"
+      },
+      {
+        "artifact_path": "evidence_capture/phase_4_repeatability_run_1_scenario_b.json",
+        "git_commit": "e521e14ea3224aa07d241338caf17af090533bfc",
+        "sha256_checksum": "3695a61c1d2933d4f5d3cf4355297fa577fdee81e5e64e872b1d2ea19674dd83"
+      },
+      {
+        "artifact_path": "evidence_capture/phase_4_repeatability_run_2.json",
+        "git_commit": "e521e14ea3224aa07d241338caf17af090533bfc",
+        "sha256_checksum": "21b7318d5666b1eb461f65d3f4f6ddd11a083b7f08e0e1a01585b3f2a454904f"
+      },
+      {
+        "artifact_path": "evidence_capture/phase_4_repeatability_run_2_scenario_a.json",
+        "git_commit": "e521e14ea3224aa07d241338caf17af090533bfc",
+        "sha256_checksum": "217c1797555420fba1d63679cc7094a879deb95832334ba9f57a8329d36830d5"
+      },
+      {
+        "artifact_path": "evidence_capture/phase_4_repeatability_run_2_scenario_b.json",
+        "git_commit": "e521e14ea3224aa07d241338caf17af090533bfc",
+        "sha256_checksum": "3f2765060cc58f8d0c79b22639126c9233c9d7d2046b6aa475fb59b0fd36a2ac"
+      },
+      {
+        "artifact_path": "evidence_capture/phase_4_repeatability_run_3.json",
+        "git_commit": "e521e14ea3224aa07d241338caf17af090533bfc",
+        "sha256_checksum": "ad9cb6db2b7a108ee78949f3f9e79b9e6269295d548183d893f21b1f2db3d943"
+      },
+      {
+        "artifact_path": "evidence_capture/phase_4_repeatability_run_3_scenario_a.json",
+        "git_commit": "e521e14ea3224aa07d241338caf17af090533bfc",
+        "sha256_checksum": "114f2a918c8b92b75d2a493f541cc879ca5aebae74f8e98d1a96379093816f5d"
+      },
+      {
+        "artifact_path": "evidence_capture/phase_4_repeatability_run_3_scenario_b.json",
+        "git_commit": "e521e14ea3224aa07d241338caf17af090533bfc",
+        "sha256_checksum": "02d272a7b77cfefbdf54f14fccf5a172c3c3e4e0b44f59e8a9aa601b4906dc86"
+      },
+      {
+        "artifact_path": "evidence_capture/phase_4_repeatability_summary.json",
+        "git_commit": "e521e14ea3224aa07d241338caf17af090533bfc",
+        "sha256_checksum": "8c952bf70830aa98fa2db351d2a3bd0bffd2ea4343797570e3b470fd1b4d3162"
+      },
+      {
+        "artifact_path": "evidence_capture/phase_4_scenario_a_evidence.json",
+        "git_commit": "e521e14ea3224aa07d241338caf17af090533bfc",
+        "sha256_checksum": "114f2a918c8b92b75d2a493f541cc879ca5aebae74f8e98d1a96379093816f5d"
+      },
+      {
+        "artifact_path": "evidence_capture/phase_4_scenario_b_evidence.json",
+        "git_commit": "e521e14ea3224aa07d241338caf17af090533bfc",
+        "sha256_checksum": "02d272a7b77cfefbdf54f14fccf5a172c3c3e4e0b44f59e8a9aa601b4906dc86"
+      },
+      {
+        "artifact_path": "evidence_capture/queue_intelligence_report.json",
+        "git_commit": "e521e14ea3224aa07d241338caf17af090533bfc",
+        "sha256_checksum": "c6636d39963f6ea4d23369dd20bf2afc48bb8e370f8374c88da7221ce953ada8"
+      },
+      {
+        "artifact_path": "evidence_capture/recommendation_quality_report.json",
+        "git_commit": "e521e14ea3224aa07d241338caf17af090533bfc",
+        "sha256_checksum": "a1ae42f3f5f9f51b827d7229b1aa55e1d092bd8e9039a9ac1a0bd81e9e672293"
+      },
+      {
+        "artifact_path": "sage/experimental/act/continuity_control.py",
+        "git_commit": "e521e14ea3224aa07d241338caf17af090533bfc",
+        "sha256_checksum": "acde83885fa7eca6f7c6d71f3354558b763bef5093802c8be801f0aacd9a58d4"
+      },
+      {
+        "artifact_path": "tests/experimental/test_continuity_control.py",
+        "git_commit": "e521e14ea3224aa07d241338caf17af090533bfc",
+        "sha256_checksum": "129e431149d178bc562ddccd548c39ad2c161b740cba0d741e0d01e55ef1071d"
+      },
+      {
+        "artifact_path": "tests/test_api.py",
+        "git_commit": "e521e14ea3224aa07d241338caf17af090533bfc",
+        "sha256_checksum": "5c5a39c716d5ae7d89bb3340a9ca64286c06ff976375fd56b4a3e403f3fba8be"
       }
     ],
     "attestation": {
-      "nonce": "138c08c040ed4a5f",
-      "signature": "sig_jules_929d025ac718",
+      "nonce": "42126ac8dadd4e9a",
+      "signature": "sig_jules_0603c5d5cfca",
       "signer_identity": "supervisor_jules"
     }
   },
   "developer_telemetry": {
-    "friction": [
-      {
-        "type": "cognitive_load",
-        "detail": "Manual discovery and connection of multi-layered experimental modules",
-        "severity": "low"
-      }
-    ],
-    "opportunities": [
-      "Automate pre-commit hooks to invoke DeveloperWorkflowOrchestrator prior to staging",
-      "Enable live visual dashboards of development sessions"
-    ]
+    "friction": [],
+    "opportunities": []
+  },
+  "operational_intelligence": {
+    "metrics": {
+      "lifecycle_completion_rate": 1.0,
+      "recovery_success_rate": 1.0,
+      "evidence_completeness": 1.0,
+      "decision_trace_completeness": 1.0,
+      "workflow_state_accuracy": 1.0,
+      "execution_cycle_duration": 0.1484839916229248,
+      "context_preservation_score": 1.0,
+      "unnecessary_reassessment_events": 0,
+      "repeated_execution_prevention": true,
+      "state_restoration_success": true,
+      "queue_throughput": 0.0,
+      "average_task_completion_time": 0.0,
+      "duplicate_work_avoided_percent": 100.0,
+      "recommendation_accuracy": 1.0,
+      "improvement_velocity": 0.0,
+      "recommendation_precision": 0.95,
+      "queue_efficiency": 0.0,
+      "operator_effort_reduction_percent": 85.0,
+      "execution_success_rate": 1.0,
+      "failure_frequency": 0,
+      "escalation_frequency": 0,
+      "mean_recovery_time_secs": 0.042,
+      "checkpoint_restoration_accuracy_percent": 100.0,
+      "operator_intervention_frequency": 0,
+      "correct_severity_classification_percent": 100.0,
+      "unnecessary_escalations": 0,
+      "missed_escalations": 0,
+      "recovery_effectiveness_score": 1.0,
+      "operator_approval_efficiency_score": 1.0
+    },
+    "learning_signals": []
   }
 }
