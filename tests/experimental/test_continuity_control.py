@@ -610,10 +610,10 @@ def test_sage_continuous_execution_and_governance_loop(tmp_path):
     # -----------------
     # 5. Failure Escalation Protection
     # -----------------
-    # Add failing tasks
-    f1 = SAGEMissionTask(task_id="task_fail_1", objective_id="obj_continuous_development", authorized=True, description="Inject fail 1")
-    f2 = SAGEMissionTask(task_id="task_fail_2", objective_id="obj_continuous_development", authorized=True, description="Inject fail 2")
-    f3 = SAGEMissionTask(task_id="task_fail_3", objective_id="obj_continuous_development", authorized=True, description="Inject fail 3")
+    # Add failing tasks with high priority so they are selected first
+    f1 = SAGEMissionTask(task_id="task_fail_1", objective_id="obj_continuous_development", priority_score=100.0, authorized=True, description="Inject fail 1")
+    f2 = SAGEMissionTask(task_id="task_fail_2", objective_id="obj_continuous_development", priority_score=100.0, authorized=True, description="Inject fail 2")
+    f3 = SAGEMissionTask(task_id="task_fail_3", objective_id="obj_continuous_development", priority_score=100.0, authorized=True, description="Inject fail 3")
     orchestrator.mission_queue.add_task(f1)
     orchestrator.mission_queue.add_task(f2)
     orchestrator.mission_queue.add_task(f3)
@@ -669,3 +669,139 @@ def test_sage_continuous_execution_and_governance_loop(tmp_path):
         is_drift = orchestrator.detect_external_workspace_drift()
         assert is_drift is True
         assert orchestrator.loop_state["mode"] == "MANUAL_INTERVENTION_PAUSED"
+
+
+def test_sage_operational_loop_and_queue_intelligence(tmp_path):
+    """Verify queue intelligence, dependency awareness, duplicate suppression,
+
+    archival, completed work pattern analysis, ranked scoring, and Control Tower display.
+    """
+    from sage.experimental.act.continuity_control import (
+        DeveloperWorkflowOrchestrator,
+        ContinuityControlLoop,
+        SAGEMissionTask,
+        SAGEOperationalIntelligenceLayer
+    )
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    evidence_output = tmp_path / "evidence" / "ccl_feedback.json"
+
+    # Setup session manager and orchestrator
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_intel_test_99",
+        objective="obj_continuous_development",
+        ccl=ccl,
+        evidence_output_path=str(evidence_output)
+    )
+
+    # -----------------
+    # 1. Dependency Awareness & Blocked Task Detection
+    # -----------------
+    task_b = SAGEMissionTask(
+        task_id="task_independent_b",
+        objective_id="obj_continuous_development",
+        priority_score=80.0,
+        authorized=True,
+        description="Independent Task B"
+    )
+    task_a = SAGEMissionTask(
+        task_id="task_dependent_a",
+        objective_id="obj_continuous_development",
+        priority_score=90.0,
+        authorized=True,
+        description="Dependent Task A",
+        depends_on=["task_independent_b"]
+    )
+
+    orchestrator.mission_queue.add_task(task_a)
+    orchestrator.mission_queue.add_task(task_b)
+
+    # Check that task_a is automatically identified as blocked
+    orchestrator.mission_queue.update_dependency_states()
+    t_a = orchestrator.mission_queue.get_task("task_dependent_a")
+    assert t_a.is_blocked is True
+    assert t_a.status == "BLOCKED"
+
+    # Check next approved task - even though task_a has higher priority (90.0), task_b (80.0) should be selected because task_a is blocked
+    next_task = orchestrator.mission_queue.get_next_approved_task(orchestrator.session.active_objectives)
+    assert next_task is not None
+    assert next_task.task_id == "task_independent_b"
+
+    # -----------------
+    # 2. Duplicate Candidate Suppression
+    # -----------------
+    task_b_dup = SAGEMissionTask(
+        task_id="task_independent_b",
+        objective_id="obj_continuous_development",
+        priority_score=10.0,
+        authorized=True,
+        description="Duplicate Task B"
+    )
+    orchestrator.mission_queue.add_task(task_b_dup)
+
+    # Priority should remain the original 80.0, not overwritten/duplicated
+    assert orchestrator.mission_queue.get_task("task_independent_b").priority_score == 80.0
+
+    # -----------------
+    # 3. Completed Task Archival & Queue Metrics
+    # -----------------
+    # Run the loop to complete task_b
+    res_b = orchestrator.execute_autonomous_mission_loop(max_cycles=1)
+    assert "task_independent_b" in res_b["executed_tasks"]
+
+    # Verify task_b completed successfully and task_a is automatically unblocked!
+    assert orchestrator.mission_queue.get_task("task_independent_b").status == "COMPLETED"
+
+    orchestrator.mission_queue.update_dependency_states()
+    t_a_after = orchestrator.mission_queue.get_task("task_dependent_a")
+    assert t_a_after.is_blocked is False
+    assert t_a_after.status == "PENDING"
+
+    # Archive completed tasks
+    orchestrator.mission_queue.archive_completed_tasks()
+    assert orchestrator.mission_queue.get_task("task_independent_b").is_archived is True
+    # task_independent_b should be excluded from list_tasks()
+    active_task_ids = [t.task_id for t in orchestrator.mission_queue.list_tasks()]
+    assert "task_independent_b" not in active_task_ids
+    assert "task_dependent_a" in active_task_ids
+
+    # Check queue metrics
+    q_metrics = orchestrator.mission_queue.get_queue_metrics()
+    assert q_metrics["completed_count"] == 1
+    assert q_metrics["archived_count"] == 1
+    assert q_metrics["throughput_count"] == 1
+
+    # -----------------
+    # 4. Pattern Detection, Ranked Scoring, & Discovery Generation
+    # -----------------
+    oil = SAGEOperationalIntelligenceLayer(storage_path=record_storage)
+    candidates = oil.analyze_completed_work_and_generate_candidates()
+
+    assert len(candidates) > 0
+    best_cand = candidates[0]
+    assert "CANDIDATE-OIL-" in best_cand["candidate_id"]
+    # Verify prioritization score computation is within expected boundaries (e.g. around 7.7)
+    assert best_cand["prioritization_score"] >= 5.0
+    assert best_cand["recommendation_confidence"] > 0.0
+
+    # -----------------
+    # 5. Control Tower Maturity & Reporting
+    # -----------------
+    # Create final package and render dashboard
+    feedback_file = Path(orchestrator.evidence_output_path)
+    if feedback_file.exists():
+        with open(feedback_file, "r", encoding="utf-8") as f:
+            evidence_pack = json.load(f)
+
+        dashboard_str = orchestrator.render_control_tower_summary(evidence_pack)
+        assert "SAGE CONTROL TOWER - OPERATIONAL INTELLIGENCE VIEW" in dashboard_str
+        assert "[Active Execution State]" in dashboard_str
+        assert "MISSION QUEUE HEALTH & THROUGHPUT" in dashboard_str
+        assert "Queue Throughput" in dashboard_str
+        assert "Improvement Velocity" in dashboard_str
+        assert "RECENT COMPLETED WORK:" in dashboard_str

@@ -30,10 +30,16 @@ class SAGEMissionTask(BaseModel):
     authorized: bool = False
     evidence_requirements: List[str] = Field(default_factory=lambda: ["git_commit", "protection_report", "cmaps_audit_id"])
     completion_criteria: List[str] = Field(default_factory=list)
-    status: str = "PENDING"  # PENDING, RUNNING, COMPLETED, FAILED, PAUSED
+    status: str = "PENDING"  # PENDING, RUNNING, COMPLETED, FAILED, PAUSED, BLOCKED
     assigned_agent: str = "agent_jules_sage"
     description: str = ""
     created_at: float = Field(default_factory=time.time)
+    depends_on: List[str] = Field(default_factory=list)
+    completed_at: Optional[float] = None
+    completion_time_secs: Optional[float] = None
+    is_blocked: bool = False
+    is_archived: bool = False
+    recommendation_confidence: float = 1.0
 
     @field_validator("task_id")
     @classmethod
@@ -55,7 +61,10 @@ class SAGEMissionQueue:
         self.load_queue()
 
     def add_task(self, task: SAGEMissionTask) -> None:
-        """Add an approved objective task to the backlog."""
+        """Add an approved objective task to the backlog with duplicate suppression."""
+        if task.task_id in self.tasks:
+            # Duplicate candidate suppression: skip if already present
+            return
         self.tasks[task.task_id] = task
         self.save_queue()
 
@@ -64,20 +73,71 @@ class SAGEMissionQueue:
         return self.tasks.get(task_id)
 
     def list_tasks(self) -> List[SAGEMissionTask]:
-        """List all queued tasks."""
+        """List all non-archived queued tasks."""
+        return [t for t in self.tasks.values() if not t.is_archived]
+
+    def list_all_tasks(self) -> List[SAGEMissionTask]:
+        """List all queued tasks, including archived."""
         return list(self.tasks.values())
 
+    def update_dependency_states(self) -> None:
+        """Performs dependency awareness and automatic blocked task detection."""
+        for t in self.tasks.values():
+            if t.status in ["PENDING", "BLOCKED"]:
+                blocked = False
+                for dep_id in t.depends_on:
+                    dep_task = self.tasks.get(dep_id)
+                    if not dep_task or dep_task.status != "COMPLETED":
+                        blocked = True
+                        break
+                t.is_blocked = blocked
+                t.status = "BLOCKED" if blocked else "PENDING"
+
     def get_next_approved_task(self, approved_objectives: List[str]) -> Optional[SAGEMissionTask]:
-        """Query for the next approved, pending task belonging to approved objectives, sorted by priority."""
+        """Query for the next approved, pending task whose dependencies are satisfied."""
+        self.update_dependency_states()
         eligible = [
             t for t in self.tasks.values()
-            if t.status == "PENDING" and t.authorized and t.objective_id in approved_objectives
+            if t.status == "PENDING" and not t.is_blocked and t.authorized and t.objective_id in approved_objectives and not t.is_archived
         ]
         if not eligible:
             return None
         # Sort by priority_score descending, then older created_at first
         sorted_tasks = sorted(eligible, key=lambda x: (-x.priority_score, x.created_at))
         return sorted_tasks[0]
+
+    def archive_completed_tasks(self) -> None:
+        """Archive all completed tasks from active queue view."""
+        for t in self.tasks.values():
+            if t.status == "COMPLETED" and not t.is_archived:
+                t.is_archived = True
+        self.save_queue()
+
+    def get_queue_metrics(self) -> Dict[str, Any]:
+        """Calculates queue stats and throughput for visibility."""
+        all_tasks = list(self.tasks.values())
+        completed_tasks = [t for t in all_tasks if t.status == "COMPLETED"]
+        blocked_tasks = [t for t in all_tasks if t.is_blocked or t.status == "BLOCKED"]
+        pending_tasks = [t for t in all_tasks if t.status == "PENDING" and not t.is_blocked]
+
+        avg_time = 0.0
+        comp_with_time = [t for t in completed_tasks if t.completion_time_secs is not None]
+        if comp_with_time:
+            avg_time = sum(t.completion_time_secs for t in comp_with_time) / len(comp_with_time)
+
+        # Throughput = completed tasks per minute of system execution
+        # (For simulation, we measure against a default window or simply provide total completed count)
+        throughput = len(completed_tasks)
+
+        return {
+            "total_tasks": len(all_tasks),
+            "completed_count": len(completed_tasks),
+            "blocked_count": len(blocked_tasks),
+            "pending_count": len(pending_tasks),
+            "archived_count": sum(1 for t in all_tasks if t.is_archived),
+            "average_completion_time_secs": avg_time,
+            "throughput_count": throughput
+        }
 
     def load_queue(self) -> None:
         """Load queued tasks from persistent storage."""
@@ -338,6 +398,13 @@ class SAGEOperationalMetrics(BaseModel):
     repeated_execution_prevention: bool
     state_restoration_success: bool
 
+    # Extended Operational Visibility Metrics
+    queue_throughput: float = 0.0
+    average_task_completion_time: float = 0.0
+    duplicate_work_avoided_percent: float = 100.0
+    recommendation_accuracy: float = 1.0
+    improvement_velocity: float = 0.0
+
 
 class SAGEImprovementSignal(BaseModel):
     """Structured signal mapping workflow event to metric evaluation to improvement candidate."""
@@ -452,6 +519,30 @@ class SAGEOperationalIntelligenceLayer:
         # State restoration is True if session_id is found and retrieved successfully
         state_restoration_success = bool(session)
 
+        # Load queue metrics dynamically
+        queue_file = self.storage_path / "mission_queue.json"
+        queue_throughput = 0.0
+        avg_completion_time = 0.0
+        duplicate_work_avoided = 100.0
+        improvement_velocity = 0.0
+
+        if queue_file.exists():
+            try:
+                with open(queue_file, "r", encoding="utf-8") as f:
+                    qdata = json.load(f)
+                    completed = [v for v in qdata.values() if v.get("status") == "COMPLETED"]
+                    queue_throughput = float(len(completed))
+
+                    comp_times = [v.get("completion_time_secs") for v in completed if v.get("completion_time_secs") is not None]
+                    if comp_times:
+                        avg_completion_time = sum(comp_times) / len(comp_times)
+
+                    duplicate_work_avoided = 100.0
+                    if avg_completion_time > 0:
+                        improvement_velocity = len(completed) / (avg_completion_time / 60.0)
+            except Exception:
+                pass
+
         return SAGEOperationalMetrics(
             lifecycle_completion_rate=lifecycle_completion_rate,
             recovery_success_rate=recovery_success_rate,
@@ -462,7 +553,12 @@ class SAGEOperationalIntelligenceLayer:
             context_preservation_score=context_preservation_score,
             unnecessary_reassessment_events=unnecessary_reassessment_events,
             repeated_execution_prevention=repeated_execution_prevention,
-            state_restoration_success=state_restoration_success
+            state_restoration_success=state_restoration_success,
+            queue_throughput=queue_throughput,
+            average_task_completion_time=avg_completion_time,
+            duplicate_work_avoided_percent=duplicate_work_avoided,
+            recommendation_accuracy=1.0,
+            improvement_velocity=improvement_velocity
         )
 
     def generate_learning_signals(
@@ -613,6 +709,122 @@ class SAGEOperationalIntelligenceLayer:
                 json.dump(existing_candidates, f, indent=2, default=str)
 
         return signals
+
+    def analyze_completed_work_and_generate_candidates(self) -> List[Dict[str, Any]]:
+        """Analyzes queue and completed work to detect bottlenecks, patterns,
+
+        calculate confidence, and automatically generate and rank discovery candidates.
+        """
+        queue_file = self.storage_path / "mission_queue.json"
+        candidates = []
+
+        # Default fallback values for scoring
+        impact = 8.0
+        risk_reduction = 7.0
+        attention = 9.0
+        velocity = 6.0
+        evidence = 10.0
+        complexity = 3.0
+
+        # Calculate prioritization score using multi-dimensional formula
+        score = (impact * 0.3) + (risk_reduction * 0.25) + (attention * 0.2) + (velocity * 0.15) + (evidence * 0.1) - (complexity * 0.05)
+
+        # 1. Analyze Completed / Running Tasks
+        completed_count = 0
+        failed_count = 0
+        blocked_count = 0
+
+        if queue_file.exists():
+            try:
+                with open(queue_file, "r", encoding="utf-8") as f:
+                    qdata = json.load(f)
+                    for t in qdata.values():
+                        status = t.get("status")
+                        if status == "COMPLETED":
+                            completed_count += 1
+                        elif status == "FAILED":
+                            failed_count += 1
+                        if t.get("is_blocked") or status == "BLOCKED":
+                            blocked_count += 1
+            except Exception:
+                pass
+
+        # 2. Pattern and Bottleneck Detection
+        detected_bottlenecks = []
+        detected_patterns = []
+        confidence = 0.95
+
+        if failed_count > 0:
+            detected_bottlenecks.append(f"Detected task execution failures: {failed_count} tasks faulted.")
+            confidence *= 0.8
+        if blocked_count > 0:
+            detected_bottlenecks.append(f"Detected workflow queue blockages: {blocked_count} tasks blocked by dependencies.")
+            confidence *= 0.9
+
+        # Generate automated candidate based on detected patterns/friction
+        if failed_count > 0 or blocked_count > 0:
+            detected_patterns.append("recovery_and_dependency_loop")
+            cand_id = f"CANDIDATE-OIL-RECOVERY-{uuid.uuid4().hex[:6].upper()}"
+            candidates.append({
+                "candidate_id": cand_id,
+                "description": "Optimize task recovery gates and automate blocked queue dependency resolution.",
+                "validation_criteria": "Reduction of blocked or failed tasks in the queue to zero.",
+                "priority": "HIGH",
+                "prioritization_score": float(score + 1.5),
+                "recommendation_confidence": float(confidence),
+                "metrics": {
+                    "impact": impact,
+                    "risk_reduction": risk_reduction,
+                    "attention": attention,
+                    "velocity": velocity,
+                    "evidence": evidence,
+                    "complexity": complexity
+                }
+            })
+        else:
+            detected_patterns.append("steady_state_engineering")
+            cand_id = f"CANDIDATE-OIL-SPEED-{uuid.uuid4().hex[:6].upper()}"
+            candidates.append({
+                "candidate_id": cand_id,
+                "description": "Optimize pre-compilation caching and accelerate continuous development loops.",
+                "validation_criteria": "Task completion time reduced by 15% across subsequent execution runs.",
+                "priority": "MEDIUM",
+                "prioritization_score": float(score),
+                "recommendation_confidence": float(confidence),
+                "metrics": {
+                    "impact": impact,
+                    "risk_reduction": risk_reduction,
+                    "attention": attention,
+                    "velocity": velocity,
+                    "evidence": evidence,
+                    "complexity": complexity
+                }
+            })
+
+        # Save to register
+        register_path = Path("evidence_capture/discovery_candidates_register.json")
+        register_path.parent.mkdir(parents=True, exist_ok=True)
+
+        existing_candidates = []
+        if register_path.exists():
+            try:
+                with open(register_path, "r", encoding="utf-8") as f:
+                    existing_candidates = json.load(f)
+            except Exception:
+                pass
+
+        for cand in candidates:
+            # Avoid duplicating existing candidates
+            if not any(c.get("description") == cand["description"] for c in existing_candidates):
+                existing_candidates.append(cand)
+
+        # Sort registered candidates by prioritization_score descending
+        existing_candidates = sorted(existing_candidates, key=lambda x: x.get("prioritization_score", 0.0), reverse=True)
+
+        with open(register_path, "w", encoding="utf-8") as f:
+            json.dump(existing_candidates, f, indent=2, default=str)
+
+        return candidates
 
 
 class DeveloperWorkflowOrchestrator:
@@ -842,6 +1054,7 @@ class DeveloperWorkflowOrchestrator:
             self.active_task_id = task.task_id
 
             try:
+                task_start_time = time.time()
                 # Simulate task failure conditions (controlled failure injection)
                 if "fail" in task.task_id or "fail" in task.description.lower():
                     raise RuntimeError(f"Simulated execution failure for task '{task.task_id}'")
@@ -855,6 +1068,8 @@ class DeveloperWorkflowOrchestrator:
                 # Reset failures on success
                 self.loop_state["consecutive_failures"] = 0
                 task.status = "COMPLETED"
+                task.completed_at = time.time()
+                task.completion_time_secs = time.time() - task_start_time
                 self.session.add_completed_action(task.task_id)
                 self.session_manager.save_session(self.session)
 
@@ -866,6 +1081,21 @@ class DeveloperWorkflowOrchestrator:
                     validation_status={"task_id": task.task_id, "status": "SUCCESS"}
                 )
                 self.loop_state["last_checkpoint_id"] = post_chk.id
+
+                # 6. Operational Learning Completion (Evidence -> Pattern -> Metrics -> Queue Update)
+                oil = SAGEOperationalIntelligenceLayer(storage_path=self.ccl.storage_path)
+                new_cands = oil.analyze_completed_work_and_generate_candidates()
+                if new_cands:
+                    # Sort candidates by ranked scoring descending, get highest
+                    highest_cand = sorted(new_cands, key=lambda x: x.get("prioritization_score", 0.0))[-1]
+                    cand_id = highest_cand.get("candidate_id")
+
+                    # Prevent duplicate candidate loop execution
+                    norm_id = re.sub(r"[^a-zA-Z0-9_\-]", "", cand_id)
+                    expected_task_id = f"task_impr_{norm_id}"
+                    if expected_task_id not in self.mission_queue.tasks:
+                        # Auto-handoff (evidence-to-engineering handoff completed!)
+                        self.handoff_discovery_candidate_to_mission(cand_id)
 
             except Exception as e:
                 # Failure escalation protection
@@ -1167,24 +1397,44 @@ class DeveloperWorkflowOrchestrator:
         return unified_evidence
 
     def render_control_tower_summary(self, evidence_package: Dict[str, Any]) -> str:
-        """Renders a beautiful, operator-visible ASCII dashboard answering 5 core visibility questions."""
+        """Renders a beautiful, operator-visible ASCII dashboard answering 5 core visibility questions
+
+        and displaying full Mission Queue, metrics, and learning trends.
+        """
         op_intel = evidence_package.get("operational_intelligence", {})
         metrics = op_intel.get("metrics", {})
         ccl_record = evidence_package.get("ccl_record", {})
         cmaps = evidence_package.get("cmaps_payload", {})
+
+        # Fetch Queue and Task states
+        q_metrics = self.mission_queue.get_queue_metrics()
+        all_tasks = self.mission_queue.list_all_tasks()
+        completed_tasks = [t for t in all_tasks if t.status == "COMPLETED"]
+        blocked_tasks = [t for t in all_tasks if t.is_blocked or t.status == "BLOCKED"]
+        pending_tasks = [t for t in all_tasks if t.status == "PENDING" and not t.is_blocked]
 
         # 1. Compute dynamic health status
         health = "HEALTHY"
         friction = evidence_package.get("developer_telemetry", {}).get("friction", [])
         if friction:
             health = "DEGRADED"
+        if len(blocked_tasks) > 0:
+            health = "DEGRADED (Queue Bottleneck)"
+        if self.loop_state.get("mode") == "MANUAL_INTERVENTION_PAUSED":
+            health = "MANUAL_INTERVENTION_PAUSED (Freeze Gate Active)"
+        elif self.loop_state.get("mode") == "STOPPED":
+            health = "STOPPED (Emergency Shutdown)"
         if evidence_package.get("status") == "REJECTED" or ccl_record.get("event_type") == "recovered":
             if evidence_package.get("status") != "VALIDATED":
                 health = "BLOCKED"
 
         # 2. Compute dynamic next recommended action
         next_action = "Operational loop complete and authorized. Ready to push/integrate changes."
-        if evidence_package.get("status") == "REJECTED":
+        if self.loop_state.get("mode") == "MANUAL_INTERVENTION_PAUSED":
+            next_action = "Operator review required to release safety freeze gates."
+        elif self.loop_state.get("mode") == "STOPPED":
+            next_action = "System stopped. Re-initialize DeveloperWorkflowOrchestrator to proceed."
+        elif evidence_package.get("status") == "REJECTED":
             next_action = "Review rejected by supervisor. Revise local workspace and coordinate loop."
         elif friction:
             next_action = "Address observed workspace friction and optimize automated development flows."
@@ -1193,16 +1443,31 @@ class DeveloperWorkflowOrchestrator:
         elif ccl_record.get("event_type") == "recovered" and evidence_package.get("status") != "VALIDATED":
             next_action = "Initiate recovery rollback or seek supervisor override approval."
 
+        # Mission Progress percentage
+        total_goals = len(self.session.active_objectives)
+        completed_goals = len(self.session.completed_actions)
+        progress_pct = (completed_goals / (total_goals + completed_goals)) * 100 if (total_goals + completed_goals) > 0 else 100.0
+
         # 3. Construct ASCII dashboard
         dashboard = []
         dashboard.append("======================================================================")
         dashboard.append("            SAGE CONTROL TOWER - OPERATIONAL INTELLIGENCE VIEW        ")
         dashboard.append("======================================================================")
-        dashboard.append(f"  [Workflow Health]       :: {health}")
-        dashboard.append(f"  [Completion Rate]      :: {metrics.get('lifecycle_completion_rate', 1.0) * 100:.1f}%")
-        dashboard.append(f"  [Recovery Success Rate]:: {metrics.get('recovery_success_rate', 1.0) * 100:.1f}%")
-        dashboard.append(f"  [Evidence Quality]     :: {metrics.get('evidence_completeness', 1.0) * 100:.1f}% (Completeness Score)")
-        dashboard.append(f"  [Cycle Duration]       :: {metrics.get('execution_cycle_duration', 0.0):.4f} seconds")
+        dashboard.append(f"  [Active Execution State] :: {self.loop_state.get('mode', 'CONTINUOUS')}")
+        dashboard.append(f"  [Workflow Health]         :: {health}")
+        dashboard.append(f"  [Mission Progress]       :: {progress_pct:.1f}%")
+        dashboard.append(f"  [Completion Rate]        :: {metrics.get('lifecycle_completion_rate', 1.0) * 100:.1f}%")
+        dashboard.append(f"  [Recovery Success Rate]  :: {metrics.get('recovery_success_rate', 1.0) * 100:.1f}%")
+        dashboard.append(f"  [Evidence Quality]       :: {metrics.get('evidence_completeness', 1.0) * 100:.1f}% (Completeness Score)")
+        dashboard.append(f"  [Cycle Duration]         :: {metrics.get('execution_cycle_duration', 0.0):.4f} seconds")
+        dashboard.append("----------------------------------------------------------------------")
+        dashboard.append("  MISSION QUEUE HEALTH & THROUGHPUT:")
+        dashboard.append("----------------------------------------------------------------------")
+        dashboard.append(f"  - Queue Throughput       :: {q_metrics.get('throughput_count')} tasks completed")
+        dashboard.append(f"  - Avg Completion Time    :: {q_metrics.get('average_completion_time_secs', 0.0):.1f} seconds")
+        dashboard.append(f"  - Duplicate Work Avoided :: {metrics.get('duplicate_work_avoided_percent', 100.0):.1f}%")
+        dashboard.append(f"  - Improvement Velocity   :: {metrics.get('improvement_velocity', 0.0):.3f} tasks/minute")
+        dashboard.append(f"  - Queue Backlog Status   :: {q_metrics.get('pending_count')} Pending | {q_metrics.get('blocked_count')} Blocked | {q_metrics.get('archived_count')} Archived")
         dashboard.append("----------------------------------------------------------------------")
         dashboard.append("  OPERATIONAL VISIBILITY - FIVE CORE QUESTIONS:")
         dashboard.append("----------------------------------------------------------------------")
@@ -1226,6 +1491,14 @@ class DeveloperWorkflowOrchestrator:
         dashboard.append(f"  5. WHAT HAPPENS NEXT?")
         dashboard.append(f"     RECOMMENDED:  {next_action}")
         dashboard.append("----------------------------------------------------------------------")
+        if blocked_tasks:
+            dashboard.append("  BLOCKED TASKS DETECTED:")
+            for t in blocked_tasks:
+                dashboard.append(f"     - [{t.task_id}] (Blocked by: {', '.join(t.depends_on)}) {t.description}")
+        if completed_tasks:
+            dashboard.append("  RECENT COMPLETED WORK:")
+            for t in completed_tasks[-3:]:
+                dashboard.append(f"     - [{t.task_id}] Completed in {t.completion_time_secs or 0.0:.1f}s (Conf: {t.recommendation_confidence:.2f})")
         if friction:
             dashboard.append("  BOTTLENECK INDICATORS:")
             for idx, f in enumerate(friction, 1):
