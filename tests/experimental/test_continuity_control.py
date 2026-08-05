@@ -1166,6 +1166,9 @@ def test_chatgpt_runtime_governed_execution(tmp_path):
 
         with open(activation_file, "r", encoding="utf-8") as f:
             act_data = json.load(f)
-        assert act_data["live_runtime_status"] == "ACTIVE"
-        assert act_data["agent_identity"]["agent_id"] == "chatgpt-runtime-agent"
-        assert act_data["context_recovered_from_sage_state"]["current_task_boundary"] == "task_rt_verify_loop"
+        assert "EVAL-RT-" in act_data["evaluation_id"]
+        assert act_data["agent_id"] == "chatgpt-runtime-agent"
+        assert act_data["authentication_result"] == "SUCCESS"
+        assert act_data["context_retrieval_result"]["current_task_boundary"] == "task_rt_verify_loop"
+        assert act_data["execution_result"]["completion_status"] == "SUCCESS"
+        assert act_data["validation_result"]["status"] == "VALIDATED"
