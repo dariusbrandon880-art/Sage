@@ -1,8 +1,8 @@
 {
-  "timestamp": 1785961094.0528023,
+  "timestamp": 1785963572.8870976,
   "session_id": "session_endurance_test_99",
   "total_cycles_evaluated": 3,
-  "learning_compounding_rate_percent": 29.372811434952013,
+  "learning_compounding_rate_percent": 22.2489829618441,
   "patterns_detected": [
     "steady_state_engineering",
     "context_preservation"

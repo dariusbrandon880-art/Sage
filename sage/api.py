@@ -600,6 +600,14 @@ async def restore_continuity_snapshot(id: str):
     }
 
 
+# Dynamic SAGE experimental extension loading (One-Way Import compliant)
+import importlib
+try:
+    importlib.import_module("sage.experimental.act.continuity_control")
+except Exception:
+    pass
+
+
 if __name__ == "__main__":
     import uvicorn
 

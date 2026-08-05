@@ -1913,7 +1913,7 @@ class DeveloperWorkflowOrchestrator:
 
     def retrieve_external_agent_context(self, agent_id: str) -> Dict[str, Any]:
         """Provides secure, structural extraction of SAGE session state context for external AI collaborators."""
-        if agent_id not in ["agent_chatgpt", "agent_jules_sage"]:
+        if agent_id not in ["agent_chatgpt", "agent_jules_sage", "chatgpt-runtime-agent"]:
             raise PermissionError(f"SAGE AI Integration Bridge: Unauthorized agent access attempt for '{agent_id}'")
 
         return {
@@ -1923,7 +1923,8 @@ class DeveloperWorkflowOrchestrator:
             "pending_actions_count": len(self.session.pending_actions),
             "ownership_assignments": {
                 "TIER_1_COORDINATOR": "agent_chatgpt",
-                "SENIOR_SOFTWARE_ENGINEER": "agent_jules_sage"
+                "SENIOR_SOFTWARE_ENGINEER": "agent_jules_sage",
+                "external_reasoning_agent": "chatgpt-runtime-agent"
             },
             "protected_workspaces": [
                 "sage/runtime/",
@@ -1944,7 +1945,7 @@ class DeveloperWorkflowOrchestrator:
         google_account: Optional[str] = None
     ) -> Dict[str, Any]:
         """Validates agent permissions, updates session states, runs validations, and logs to Google Account."""
-        if agent_id not in ["agent_chatgpt", "agent_jules_sage"]:
+        if agent_id not in ["agent_chatgpt", "agent_jules_sage", "chatgpt-runtime-agent"]:
             raise PermissionError(f"SAGE AI Integration Bridge: Unauthorized agent submission for '{agent_id}'")
 
         action_taken = output_data.get("action_taken", "AI Collaborator executed SAGE action")
@@ -1974,12 +1975,13 @@ class DeveloperWorkflowOrchestrator:
 
     def request_agent_context_package(self, agent_id: str) -> Dict[str, Any]:
         """Dynamically retrieves agent role parameters, mission objectives, injecting preceding operational solutions."""
-        if agent_id not in ["agent_chatgpt", "agent_jules_sage"]:
+        if agent_id not in ["agent_chatgpt", "agent_jules_sage", "chatgpt-runtime-agent"]:
             raise PermissionError(f"SAGE Agent Operating Loop: Unauthorized access for '{agent_id}'")
 
         role_params = {
             "agent_chatgpt": {"role": "TIER_1_COORDINATOR", "governance_tier": "TIER_1"},
-            "agent_jules_sage": {"role": "SENIOR_SOFTWARE_ENGINEER", "governance_tier": "TIER_1"}
+            "agent_jules_sage": {"role": "SENIOR_SOFTWARE_ENGINEER", "governance_tier": "TIER_1"},
+            "chatgpt-runtime-agent": {"role": "external_reasoning_agent", "governance_tier": "TIER_1"}
         }[agent_id]
 
         context_package = {
@@ -2001,7 +2003,7 @@ class DeveloperWorkflowOrchestrator:
         result_package: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Routes agent responses through integrated pipeline of evidence validation, state update, and learning capture."""
-        if agent_id not in ["agent_chatgpt", "agent_jules_sage"]:
+        if agent_id not in ["agent_chatgpt", "agent_jules_sage", "chatgpt-runtime-agent"]:
             raise PermissionError(f"SAGE Agent Operating Loop: Unauthorized submission for '{agent_id}'")
 
         # Extract actions and reasoning
