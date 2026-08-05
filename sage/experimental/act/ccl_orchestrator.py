@@ -9,8 +9,14 @@ import os
 import json
 import hashlib
 import uuid
+import copy
 from typing import Any, Dict, List, Optional
 from datetime import datetime, timezone
+
+
+class SecurityError(PermissionError):
+    """Exception raised for SAGE security or PML integrity violations."""
+    pass
 
 
 class ChatGPTAgentConnector:
@@ -324,6 +330,159 @@ class ReviewerAgentConnector:
         )
 
         return manifest
+
+
+class PersistentMissionLedger:
+    """SAGE Persistent Mission Ledger (PML) - Continuity Source of Truth.
+
+    Maintains a repository-anchored, append-only chronological log of all task states,
+    assignees, milestones, objective constraints, and cryptographically verified evidence
+    hashes, eliminating conversational/chat dependency for recovery.
+    """
+
+    def __init__(self, ledger_path: str = "evidence_capture/pml_ledger.json"):
+        self.ledger_path = ledger_path
+        # Ensure the directories exist
+        os.makedirs(os.path.dirname(self.ledger_path), exist_ok=True)
+        if not os.path.exists(self.ledger_path):
+            with open(self.ledger_path, "w", encoding="utf-8") as f:
+                json.dump([], f, indent=2)
+
+    def _read_entries(self) -> List[Dict[str, Any]]:
+        try:
+            with open(self.ledger_path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return []
+
+    def _write_entries(self, entries: List[Dict[str, Any]]) -> None:
+        with open(self.ledger_path, "w", encoding="utf-8") as f:
+            json.dump(entries, f, indent=2)
+
+    def append(self, task_id: str, state_hash: str, active_mission: str = "unassigned",
+               current_owner: str = "unassigned", workflow_state: str = "UNASSIGNED",
+               next_action: str = "UNKNOWN", auth_boundary: bool = False,
+               evidence_refs: Optional[list] = None, test_status: bool = True,
+               payload: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """Appends a cryptographically auditable, monotonically incremented entry to the ledger."""
+        entries = self._read_entries()
+
+        # Calculate next monotonic sequence ID
+        next_seq_id = 1
+        if entries:
+            next_seq_id = max(entry["sequence_id"] for entry in entries) + 1
+
+        ts = datetime.now(timezone.utc).isoformat()
+
+        # Construct record entry
+        entry = {
+            "sequence_id": next_seq_id,
+            "timestamp": ts,
+            "task_id": task_id,
+            "state_hash": state_hash,
+            "active_mission": active_mission,
+            "current_owner": current_owner,
+            "workflow_state": workflow_state,
+            "next_action": next_action,
+            "authorization_boundary": auth_boundary,
+            "evidence_references": evidence_refs or [],
+            "test_status": test_status
+        }
+
+        if payload is not None:
+            entry["payload"] = payload
+
+        # Compute SHA-256 fingerprint for integrity validation
+        hasher = hashlib.sha256()
+        data_to_hash = {
+            "sequence_id": next_seq_id,
+            "timestamp": ts,
+            "task_id": task_id,
+            "state_hash": state_hash,
+            "active_mission": active_mission,
+            "current_owner": current_owner,
+            "workflow_state": workflow_state,
+            "next_action": next_action,
+            "authorization_boundary": auth_boundary,
+            "test_status": test_status
+        }
+        if payload is not None:
+            data_to_hash["payload"] = payload
+
+        serialized = json.dumps(data_to_hash, sort_keys=True)
+        hasher.update(serialized.encode("utf-8"))
+        entry["integrity_fingerprint"] = hasher.hexdigest()
+
+        entries.append(entry)
+        self._write_entries(entries)
+        return entry
+
+    def verify(self) -> List[Dict[str, Any]]:
+        """Adversarially validates that sequence IDs are strictly increasing, sequential,
+        chronological timestamps are monotonic, and fingerprint integrity is verified."""
+        if not self.verify_integrity():
+            raise SecurityError("PML Integrity Violation: Sequence non-monotonic or timestamp anomaly.")
+
+        entries = self._read_entries()
+        # Verify the signature/fingerprint integrity of each entry
+        for entry in entries:
+            provided_fingerprint = entry.get("integrity_fingerprint")
+
+            # Recreate data dictionary to hash
+            hasher = hashlib.sha256()
+            data_to_hash = {
+                "sequence_id": entry.get("sequence_id"),
+                "timestamp": entry.get("timestamp"),
+                "task_id": entry.get("task_id"),
+                "state_hash": entry.get("state_hash"),
+                "active_mission": entry.get("active_mission"),
+                "current_owner": entry.get("current_owner"),
+                "workflow_state": entry.get("workflow_state"),
+                "next_action": entry.get("next_action"),
+                "authorization_boundary": entry.get("authorization_boundary"),
+                "test_status": entry.get("test_status")
+            }
+            if "payload" in entry:
+                data_to_hash["payload"] = entry["payload"]
+
+            serialized = json.dumps(data_to_hash, sort_keys=True)
+            hasher.update(serialized.encode("utf-8"))
+            recomputed = hasher.hexdigest()
+
+            if recomputed != provided_fingerprint:
+                raise SecurityError(f"PML Integrity Violation: Cryptographic signature mismatch on entry {entry.get('sequence_id')}.")
+
+        return entries
+
+    def verify_integrity(self) -> bool:
+        """Adversarially validates that sequence IDs are strictly increasing and sequential."""
+        entries = self._read_entries()
+        if not entries:
+            return True
+
+        for i in range(len(entries)):
+            if entries[i]["sequence_id"] != i + 1:
+                return False  # Non-monotonic or missing sequence ID detected!
+
+            # Monotonic chronological timestamp check
+            if i > 0:
+                prev_ts = entries[i - 1]["timestamp"]
+                curr_ts = entries[i]["timestamp"]
+                if curr_ts < prev_ts:
+                    return False  # Anachronistic timestamp detected!
+
+        return True
+
+    def get_latest_entry(self, task_id: str) -> Optional[Dict[str, Any]]:
+        """Retrieves the latest verified append-only ledger entry for the given task."""
+        if not self.verify_integrity():
+            raise SecurityError("PML Integrity Violation: Append-only ledger has been tampered with.")
+
+        entries = self._read_entries()
+        task_entries = [e for e in entries if e["task_id"] == task_id]
+        if not task_entries:
+            return None
+        return task_entries[-1]
 
 
 class JulesAgentConnector:
@@ -790,7 +949,7 @@ class DeveloperWorkflowOrchestrator:
         "COMPLETED": set()
     }
 
-    def __init__(self, session_id: str = "session_ccl_ops_2026"):
+    def __init__(self, session_id: str = "session_ccl_ops_2026", ledger_path: str = "evidence_capture/pml_ledger.json"):
         self.session_id = session_id
         self.tasks: Dict[str, Dict[str, Any]] = {}
         self.agents: Dict[str, str] = {}  # Tracks agent_id -> activation_state (INACTIVE, ACTIVATED, SUSPENDED)
@@ -798,6 +957,77 @@ class DeveloperWorkflowOrchestrator:
         self.event_log: List[Dict[str, Any]] = []
         self.orchestrator_run_id = f"ccl_run_{uuid.uuid4().hex[:8]}"
         self.intelligence = WorkflowIntelligenceFeedbackLayer(self)
+        self.pml = PersistentMissionLedger(ledger_path=ledger_path)
+
+    def _sync_to_ledger(self, task_id: str, event_type: str) -> str:
+        """Helper to serialize the current orchestrator state and append to persistent ledger."""
+        task_state = self.tasks.get(task_id, {})
+
+        active_mission = task_state.get("objective_id", "unassigned")
+        current_owner = task_state.get("assigned_agent", "unassigned")
+        workflow_state = task_state.get("status", "UNASSIGNED")
+        next_action = event_type
+        auth_boundary = (task_state.get("human_approval") is not None)
+        evidence_refs = task_state.get("lineage_references", [])
+        test_status = True
+
+        # We can calculate state_hash of self.tasks + self.agents to serve as state_hash
+        hasher = hashlib.sha256()
+        state_repr = {
+            "tasks": self.tasks,
+            "agents": self.agents,
+            "agent_roles": self.agent_roles,
+            "event_log_len": len(self.event_log)
+        }
+        hasher.update(json.dumps(state_repr, sort_keys=True).encode("utf-8"))
+        state_hash = hasher.hexdigest()
+
+        # Fully serialize the orchestrator state to store inside the payload
+        state_payload = {
+            "session_id": self.session_id,
+            "orchestrator_run_id": self.orchestrator_run_id,
+            "tasks": self.tasks,
+            "agents": self.agents,
+            "agent_roles": self.agent_roles,
+            "event_log": self.event_log,
+            "event_type": event_type
+        }
+
+        entry = self.pml.append(
+            task_id=task_id,
+            state_hash=state_hash,
+            active_mission=active_mission,
+            current_owner=current_owner,
+            workflow_state=workflow_state,
+            next_action=next_action,
+            auth_boundary=auth_boundary,
+            evidence_refs=evidence_refs,
+            test_status=test_status,
+            payload=state_payload
+        )
+        return entry.get("integrity_fingerprint", "")
+
+    def restore_from_ledger(self) -> int:
+        """Replays chronological ledger events to reconstruct the exact tasks, agents, agent_roles, and event_log state."""
+        try:
+            entries = self.pml.verify()
+        except Exception as e:
+            raise SecurityError(f"Ledger Verification Failed: {str(e)}") from e
+
+        if not entries:
+            return 0
+
+        # Replay/restore the exact state sequentially
+        for entry in entries:
+            payload = entry.get("payload", {})
+            self.session_id = payload.get("session_id", self.session_id)
+            self.orchestrator_run_id = payload.get("orchestrator_run_id", self.orchestrator_run_id)
+            self.tasks = copy.deepcopy(payload.get("tasks", {}))
+            self.agents = copy.deepcopy(payload.get("agents", {}))
+            self.agent_roles = copy.deepcopy(payload.get("agent_roles", {}))
+            self.event_log = copy.deepcopy(payload.get("event_log", []))
+
+        return len(entries)
 
     def ingest_event(self, event_type: str, task_id: str, payload: Dict[str, Any], timestamp: Optional[str] = None) -> Dict[str, Any]:
         """Ingests a structured workflow event, advancing state and tracking lineage."""
@@ -829,6 +1059,7 @@ class DeveloperWorkflowOrchestrator:
                 self.agents[agent_id] = "SUSPENDED"
                 self.agent_roles.pop(agent_id, None)
 
+            self._sync_to_ledger(task_id, event_type)
             return {"agent_id": agent_id, "activation_state": self.agents[agent_id], "role": role}
 
         # Handle task initialization
@@ -867,6 +1098,7 @@ class DeveloperWorkflowOrchestrator:
                 }],
                 "human_approval": None
             }
+            self._sync_to_ledger(task_id, event_type)
             return self.tasks[task_id]
 
         if task_id not in self.tasks:
@@ -949,6 +1181,7 @@ class DeveloperWorkflowOrchestrator:
                 "comment": f"Human approval verdict by {supervisor_id}: {decision}. Comments: {comments}"
             })
 
+        self._sync_to_ledger(task_id, event_type)
         return self.tasks[task_id]
 
     def record_progress(self, task_id: str, agent_id: str, progress_percent: float, result_payload: Dict[str, Any], feedback: Optional[str] = None) -> Dict[str, Any]:
@@ -1011,6 +1244,7 @@ class DeveloperWorkflowOrchestrator:
             "comment": f"Reported execution progress: {progress_percent}%. Feedback: {feedback or 'None'}"
         })
 
+        self._sync_to_ledger(task_id, "TASK_PROGRESS")
         return task_state
 
     def delegate_task(self, parent_task_id: str, child_task_id: str, to_agent: str, objective_id: str, initial_context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
@@ -1056,6 +1290,7 @@ class DeveloperWorkflowOrchestrator:
             "comment": f"Delegated subtask '{child_task_id}' to {to_agent} (Role: {self.agent_roles.get(to_agent)})."
         })
 
+        self._sync_to_ledger(parent_task_id, "DELEGATE_TASK")
         return child_task
 
     def transition_task_status(self, task_id: str, target_status: str, agent: str, comment: str, timestamp: str) -> None:

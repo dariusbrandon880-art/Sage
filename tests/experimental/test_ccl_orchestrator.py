@@ -1856,3 +1856,91 @@ def test_value_extraction_and_compounding_advantage(tmp_path):
     assert "metrics baseline logs and SHA-256" in intel_view
     assert "What should happen next?" in intel_view
     assert "Execute priority candidate improvements" in intel_view
+
+
+def test_persistent_mission_ledger_continuity(tmp_path):
+    """Verifies that the Persistent Mission Ledger (PML) accurately records events,
+
+    reconstructs state chronological replay, and securely raises SecurityError when tampered.
+    """
+    from sage.experimental.act.ccl_orchestrator import DeveloperWorkflowOrchestrator, SecurityError
+
+    ledger_file = tmp_path / "test_pml_ledger.json"
+
+    # 1. Initialize orchestrator and perform some operations
+    orch1 = DeveloperWorkflowOrchestrator(session_id="session_test_pml", ledger_path=str(ledger_file))
+
+    # Ingest AGENT_ACTIVATION
+    orch1.ingest_event("AGENT_ACTIVATION", "system", {
+        "agent_id": "agent_test_coord",
+        "supervisor_id": "super_test",
+        "decision": "AUTHORIZED",
+        "role": "COORDINATOR"
+    })
+
+    # Ingest TASK_INIT
+    orch1.ingest_event("TASK_INIT", "task_pml_1", {
+        "objective_id": "obj_test_pml",
+        "assigned_agent": "agent_test_coord",
+        "initial_context": {"key": "val1"}
+    })
+
+    # Ingest STATE_TRANSITION to ACTIVE
+    orch1.ingest_event("STATE_TRANSITION", "task_pml_1", {
+        "target_status": "ACTIVE",
+        "agent_id": "agent_test_coord",
+        "comment": "Beginning work."
+    })
+
+    # Verify ledger was written and is valid
+    assert ledger_file.exists()
+    assert len(orch1.pml._read_entries()) == 3
+    assert orch1.pml.verify_integrity() is True
+
+    # Verify we can load state into a blank orchestrator via replay
+    orch2 = DeveloperWorkflowOrchestrator(session_id="session_test_pml", ledger_path=str(ledger_file))
+    assert len(orch2.tasks) == 0  # Starts empty
+
+    count = orch2.restore_from_ledger()
+    assert count == 3
+    assert "task_pml_1" in orch2.tasks
+    assert orch2.tasks["task_pml_1"]["context"]["key"] == "val1"
+    assert orch2.agents["agent_test_coord"] == "ACTIVATED"
+
+    # 2. Add an execution progress transaction and verify append/replay
+    orch1.record_progress(
+        task_id="task_pml_1",
+        agent_id="agent_test_coord",
+        progress_percent=50.0,
+        result_payload={"step": "phase1"}
+    )
+
+    orch3 = DeveloperWorkflowOrchestrator(session_id="session_test_pml", ledger_path=str(ledger_file))
+    orch3.restore_from_ledger()
+    assert orch3.tasks["task_pml_1"]["progress_percent"] == 50.0
+
+    # 3. Adversarial Attack: Tamper with the append-only ledger on disk
+    entries = orch1.pml._read_entries()
+    assert len(entries) == 4
+
+    # Scenario A: Modify a value inside the payload of a past entry without updating fingerprint
+    entries[1]["payload"]["tasks"]["task_pml_1"]["context"]["key"] = "TAMPERED_VAL"
+    orch1.pml._write_entries(entries)
+
+    # Restoration must detect the signature mismatch and raise SecurityError
+    orch4 = DeveloperWorkflowOrchestrator(session_id="session_test_pml", ledger_path=str(ledger_file))
+    with pytest.raises(SecurityError) as exc_info:
+        orch4.restore_from_ledger()
+    assert "Cryptographic signature mismatch" in str(exc_info.value)
+
+    # Scenario B: Tamper with sequence monotonicity
+    # Re-write clean entries but with scrambled sequence ID
+    orch1.pml.append("task_pml_1", "state_hash_example")  # creates entry with sequence_id 5
+    bad_entries = orch1.pml._read_entries()
+    bad_entries[-1]["sequence_id"] = 999  # Discontinuity
+    orch1.pml._write_entries(bad_entries)
+
+    orch5 = DeveloperWorkflowOrchestrator(session_id="session_test_pml", ledger_path=str(ledger_file))
+    with pytest.raises(SecurityError) as exc_info2:
+        orch5.restore_from_ledger()
+    assert "Sequence non-monotonic" in str(exc_info2.value)
