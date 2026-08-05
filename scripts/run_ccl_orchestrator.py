@@ -17,20 +17,20 @@ def main():
 
     macc_orch = SAGEOperationalOrchestrator(session_id="session_operational_validation")
 
-    print("[*] Running end-to-end Hardened Three-Role Operational Workflow simulation...")
-    report = macc_orch.execute_hardened_three_role_lifecycle(
+    print("[*] Running end-to-end Production Reliability & Failure Injection simulation...")
+    report = macc_orch.execute_production_reliability_simulation(
         task_objective="obj_continuous_development",
         milestones=[
-            "Formulate multi-agent operational boundaries",
-            "Coordinate secure custody handoffs",
-            "Audit state-window contextual checksums"
+            "Harden multi-agent persistence keys",
+            "Verify fault interception mechanics",
+            "Onboard future Gemini validation scouts"
         ]
     )
 
-    print("\n[+] Operational Hardened Three-Role Scenario Validation Run Succeeded!")
+    print("\n[+] Operational Production Reliability Scenario Run Succeeded!")
     print(f"    - Run ID: {report['orchestrator_run_id']}")
-    print(f"    - Claude Re-Review Contract: {report['claude_review_findings_final']['contract_id']}")
-    print(f"    - Decision Evidence Hash: {report['decision_evidence_hash']}")
+    print(f"    - Onboarded Future Contract ID: {report['future_agent_entry_contract']['agent_id']}")
+    print(f"    - Active Recovered Faults: {len(report['failure_recovery_logs'])}")
     print(f"    - Evidence logged to: {macc_orch.evidence_output_path}\n")
     print(report["control_tower_status"])
     print("==========================================================")

@@ -12,6 +12,7 @@ from sage.experimental.act.continuity_control import (
 from sage.experimental.act.ccl_orchestrator import (
     SAGEOperationalOrchestrator,
     OperationalStateWindow,
+    FutureAgentEntryContract,
 )
 
 
@@ -98,11 +99,45 @@ def test_hardened_three_role_lifecycle_execution():
     assert "OPERATOR_FINAL_DECISION_COMPLETED" in events
 
 
+def test_production_reliability_simulation_execution():
+    """Validate extended long-running simulation with controlled stale context and handoff failure injections."""
+    macc = SAGEOperationalOrchestrator(session_id="session_test_macc_reliability")
+
+    report = macc.execute_production_reliability_simulation(
+        task_objective="obj_continuous_development",
+        milestones=["Harden multi-agent persistence keys", "Verify fault interception mechanics"]
+    )
+
+    assert report["status"] == "VALIDATED"
+    assert "future_agent_entry_contract" in report
+    assert "failure_recovery_logs" in report
+    assert "claude_review_findings" in report
+
+    # Verify onboarding contract contract parameters
+    contract = report["future_agent_entry_contract"]
+    assert contract["agent_id"] == "agent_gemini_scout"
+    assert contract["role"] == "RESEARCHER"
+
+    # Assert recoveries are captured correctly
+    rec_logs = report["failure_recovery_logs"]
+    assert len(rec_logs) == 2
+    types = [l["type"] for l in rec_logs]
+    assert "STALE_CONTEXT_OBJECTIVE_DRIFT" in types
+    assert "FAILED_HANDOFF_INCONSISTENCY" in types
+    assert rec_logs[0]["status"] == "RECOVERED"
+    assert rec_logs[1]["status"] == "RECOVERED"
+
+    # Assert traces logged fault recovery resolution events
+    events = [t["event"] for t in report["execution_traces"]]
+    assert "FAILURE_INJECTION_STALE_CONTEXT_RESOLVED" in events
+    assert "FAILURE_INJECTION_FAILED_HANDOFF_RESOLVED" in events
+
+
 def test_control_tower_status_rendering():
     """Verify operator Control Tower ASCII console layout and parameters."""
     macc = SAGEOperationalOrchestrator(session_id="session_test_control_tower")
 
-    # Pre-populate review findings to test explicit visibility
+    # Pre-populate review findings and recovery logs to test explicit visibility
     macc.orchestrator.session.metadata["latest_review_findings"] = {
         "is_compliant": True,
         "observed_findings": ["All systems compliant."],
@@ -111,6 +146,13 @@ def test_control_tower_status_rendering():
     }
     macc.orchestrator.session.metadata["workflow_state"] = "WORKFLOW_COMPLETE"
     macc.orchestrator.session.metadata["active_blocker"] = "None"
+    macc.orchestrator.session.metadata["failure_recovery_logs"] = [
+        {"type": "STALE_CONTEXT", "status": "RECOVERED"}
+    ]
+    macc.orchestrator.session.metadata["future_agent_contract"] = {
+        "agent_id": "agent_gemini_scout",
+        "role": "RESEARCHER"
+    }
     macc.orchestrator.session_manager.save_session(macc.orchestrator.session)
 
     console_output = macc.render_control_tower_view()
@@ -119,6 +161,10 @@ def test_control_tower_status_rendering():
     assert "Active Operational Session" in console_output
     assert "Workflow State Transition:  WORKFLOW_COMPLETE" in console_output
     assert "Active Blocker / Friction:  None" in console_output
+    assert "SAGE Fault Injection & Recovery State Logs:" in console_output
+    assert "Active Recovered Faults:   1" in console_output
+    assert "Future Collaborator Contract Inheritance Model:" in console_output
+    assert "Onboarding Target Agent:   agent_gemini_scout" in console_output
     assert "Workflow Health Score" in console_output
     assert "Active Collaborator Responsibility Hierarchy" in console_output
     assert "Custody Transfer Handoff Lineage Trail" in console_output

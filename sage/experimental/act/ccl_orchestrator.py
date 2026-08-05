@@ -47,6 +47,18 @@ class ClaudeReviewFindings(BaseModel):
     timestamp: float = Field(default_factory=time.time)
 
 
+class FutureAgentEntryContract(BaseModel):
+    """Prepares structured contract inheritance rules for onboarding future operational agents."""
+
+    agent_id: str
+    role: str
+    context_package: Dict[str, Any] = Field(default_factory=dict)
+    scope_prefixes: List[str] = Field(default_factory=list)
+    evidence_rules: List[str] = Field(default_factory=list)
+    handoff_protocol: str = "SECURE_CUSTODY_LINEAGE"
+    timestamp: float = Field(default_factory=time.time)
+
+
 class ChatGPTAgentConnector:
     """Bridges ChatGPT's coordination role with SAGE multi-agent control loops."""
 
@@ -512,6 +524,194 @@ class SAGEOperationalOrchestrator:
 
         return validation_report
 
+    def execute_production_reliability_simulation(
+        self,
+        task_objective: str,
+        milestones: List[str]
+    ) -> Dict[str, Any]:
+        """Stress-tests SAGE operational workflow under long-running conditions with failure injections."""
+        execution_traces = []
+        failure_recovery_logs = []
+        self.orchestrator.session.metadata["workflow_state"] = "COORDINATION_ACTIVE"
+        self.orchestrator.session_manager.save_session(self.orchestrator.session)
+
+        # 1. Coordinate Step (ChatGPT)
+        execution_traces.append({"event": "CHATGPT_COORDINATE_START", "timestamp": time.time()})
+        chatgpt_res = self.chatgpt.formulate_coordination_directives(task_objective, milestones)
+        execution_traces.append({"event": "CHATGPT_COORDINATE_COMPLETED", "timestamp": time.time()})
+
+        # 2. Onboard and Prepare Future Agent Entry Contract (e.g. Gemini Validator Scout)
+        execution_traces.append({"event": "FUTURE_AGENT_ONBOARDING_PREPARATION", "timestamp": time.time()})
+        future_contract = FutureAgentEntryContract(
+            agent_id="agent_gemini_scout",
+            role="RESEARCHER",
+            context_package=self.assemble_context_package(self.chatgpt.agent_id),
+            scope_prefixes=["docs/", "sage/experimental/"],
+            evidence_rules=["CMAPS-v1.0", "SAGE-CCL-SHA256"]
+        )
+        self.orchestrator.session.metadata["future_agent_contract"] = future_contract.model_dump()
+        self.orchestrator.session_manager.save_session(self.orchestrator.session)
+
+        # 3. Controlled Failure Injection 1: Stale Context / Conflict State Update (Jules)
+        execution_traces.append({"event": "FAILURE_INJECTION_STALE_CONTEXT_START", "timestamp": time.time()})
+        self.orchestrator.initialize_agent_activation(
+            agent_id=self.jules.agent_id,
+            assigned_task_id="task_active_development",
+            authorized_scope=["sage/experimental/", "tests/experimental/", "evidence_capture/"]
+        )
+        self.orchestrator.authorize_agent_activation(
+            agent_id=self.jules.agent_id,
+            supervisor_id="supervisor_jules",
+            signature="sig_jules_reliability"
+        )
+
+        # Simulate conflicting or stale state update (objective drift)
+        update_stale = AgentProgressUpdate(
+            agent_id=self.jules.agent_id,
+            step_id="step_jules_stale_update",
+            action_taken="Attempting to override master config boundaries under invalid objective",
+            objective_alignment="obj_stale_nonexistent_boundary"
+        )
+        res_stale = self.orchestrator.record_agent_execution_step(update_stale)
+
+        if res_stale["status"] == "BLOCKED":
+            failure_recovery_logs.append({
+                "type": "STALE_CONTEXT_OBJECTIVE_DRIFT",
+                "detected": True,
+                "reason": res_stale["reason"],
+                "rollback_action": "PRESERVED_LAST_VALID_STATE",
+                "status": "RECOVERED"
+            })
+            # SAGE preserves previous valid state automatically, blocking invalid execution
+            execution_traces.append({
+                "event": "FAILURE_INJECTION_STALE_CONTEXT_RESOLVED",
+                "timestamp": time.time(),
+                "recovery_info": "SAGE programmatically intercepted objective drift, preserved valid coordination window."
+            })
+
+        # 4. Controlled Failure Injection 2: Interrupted Handoff
+        execution_traces.append({"event": "FAILURE_INJECTION_FAILED_HANDOFF_START", "timestamp": time.time()})
+
+        # Intentionally attempt handoff to a non-activated/unregistered agent ID
+        try:
+            self.orchestrator.execute_agent_handoff(
+                from_agent_id=self.jules.agent_id,
+                to_agent_id="agent_unregistered_unactivated"
+            )
+        except Exception as e:
+            failure_recovery_logs.append({
+                "type": "FAILED_HANDOFF_INCONSISTENCY",
+                "detected": True,
+                "reason": str(e),
+                "rollback_action": "RESTORED_CUSTODY_TO_SAGE_CCL",
+                "status": "RECOVERED"
+            })
+            # Log recovery to CCL ledger
+            handoff_fail_rec = self.orchestrator.ccl.intercept_event(
+                event_type="boundary_intercept",
+                action_taken="FAILED HANDOFF: Targeted agent unregistered",
+                decision_reasoning="Prevent custody transfer to unregistered identities. Preserve last known valid owner.",
+                session_id=self.orchestrator.session_id,
+                failure_context={"error": str(e)},
+                recovery_path="re-initialize_valid_handoff_sequence"
+            )
+            self.orchestrator.ccl.serialize_record(handoff_fail_rec)
+            execution_traces.append({
+                "event": "FAILURE_INJECTION_FAILED_HANDOFF_RESOLVED",
+                "timestamp": time.time(),
+                "recovery_info": "SAGE blocked failed handoff transition, preserving prior ownership custody."
+            })
+
+        # 5. Engineering Resumed & Scoped Review Complete Loop (Repeated Cycle Validation)
+        self.orchestrator.session.metadata["workflow_state"] = "ENGINEERING_BUILD"
+        self.orchestrator.session_manager.save_session(self.orchestrator.session)
+
+        # Recover from the BLOCKED activation state by re-initializing and re-authorizing Jules
+        self.orchestrator.initialize_agent_activation(
+            agent_id=self.jules.agent_id,
+            assigned_task_id="task_active_development",
+            authorized_scope=["sage/experimental/", "tests/experimental/", "evidence_capture/"]
+        )
+        self.orchestrator.authorize_agent_activation(
+            agent_id=self.jules.agent_id,
+            supervisor_id="supervisor_jules",
+            signature="sig_jules_recovery_resume"
+        )
+
+        update_valid = AgentProgressUpdate(
+            agent_id=self.jules.agent_id,
+            step_id="step_jules_valid_update",
+            action_taken="Implemented production-ready workflow validations and resilient evidence structures",
+            objective_alignment=task_objective,
+            modified_files=["sage/experimental/act/ccl_orchestrator.py"]
+        )
+        res_valid = self.orchestrator.record_agent_execution_step(update_valid)
+        self.orchestrator.complete_agent_activation(self.jules.agent_id)
+
+        # Handoff Jules -> Claude Scoped Review
+        self.orchestrator.initialize_agent_activation(
+            agent_id=self.claude.agent_id,
+            assigned_task_id="task_review_validation",
+            authorized_scope=["tests/experimental/", "evidence_capture/"]
+        )
+        self.orchestrator.execute_agent_handoff(
+            from_agent_id=self.jules.agent_id,
+            to_agent_id=self.claude.agent_id
+        )
+
+        state_window = OperationalStateWindow(**self.assemble_context_package(self.claude.agent_id))
+        contract = self.claude.compile_review_contract(state_window)
+        findings = self.claude.execute_review_validation(contract["contract_id"], state_window.model_dump())
+        self.orchestrator.complete_agent_activation(self.claude.agent_id)
+
+        # Human Supervisor Approval Decision
+        self.orchestrator.session.metadata["workflow_state"] = "OPERATOR_APPROVAL_PENDING"
+        self.orchestrator.session_manager.save_session(self.orchestrator.session)
+
+        latest_rec_id = None
+        for filepath in self.orchestrator.ccl.storage_path.glob("*.json"):
+            try:
+                with open(filepath, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    if data.get("event_type") == "state_transition" and "Governing Claude Review" in data.get("action_taken", ""):
+                        latest_rec_id = data.get("record_id")
+                        break
+            except Exception:
+                pass
+
+        if latest_rec_id:
+            self.orchestrator.ccl.human_approval(
+                record_id=latest_rec_id,
+                supervisor_id="supervisor_jules",
+                signature="sig_supervisor_reliability_approved",
+                decision="APPROVED"
+            )
+
+        self.orchestrator.session.metadata["workflow_state"] = "WORKFLOW_COMPLETE"
+        self.orchestrator.session.metadata["failure_recovery_logs"] = failure_recovery_logs
+        self.orchestrator.session_manager.save_session(self.orchestrator.session)
+
+        validation_report = {
+            "orchestrator_run_id": f"orch_run_macc_{uuid.uuid4().hex[:12]}",
+            "timestamp": time.time(),
+            "session_id": self.orchestrator.session_id,
+            "status": "VALIDATED",
+            "future_agent_entry_contract": future_contract.model_dump(),
+            "failure_recovery_logs": failure_recovery_logs,
+            "chatgpt_coordination": chatgpt_res,
+            "jules_execution": res_valid,
+            "claude_review_findings": findings.model_dump(),
+            "execution_traces": execution_traces,
+            "control_tower_status": self.render_control_tower_view()
+        }
+
+        # Save to evidence capture directory
+        self.evidence_output_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(self.evidence_output_path, "w", encoding="utf-8") as f:
+            json.dump(validation_report, f, indent=2, default=str)
+
+        return validation_report
+
     def execute_hardened_three_role_lifecycle(
         self,
         task_objective: str,
@@ -807,6 +1007,13 @@ class SAGEOperationalOrchestrator:
             "Traceable Evidence Ledger Status:",
             f"  Proposed Records:          {proposed_records}",
             f"  Validated Audit Records:   {validated_records}",
+            "----------------------------------------------------------",
+            "SAGE Fault Injection & Recovery State Logs:",
+            f"  Active Recovered Faults:   {len(self.orchestrator.session.metadata.get('failure_recovery_logs', []))}",
+            "----------------------------------------------------------",
+            "Future Collaborator Contract Inheritance Model:",
+            f"  Onboarding Target Agent:   {self.orchestrator.session.metadata.get('future_agent_contract', {}).get('agent_id', 'None (Awaiting Onboarding)')}",
+            f"  Onboarding Target Role:    {self.orchestrator.session.metadata.get('future_agent_contract', {}).get('role', 'None')}",
             "----------------------------------------------------------",
             "Governing Claude Auditor Validation Findings:",
             findings_info,
