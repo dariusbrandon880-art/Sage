@@ -1354,6 +1354,89 @@ class DeveloperWorkflowOrchestrator:
 
         return review_report
 
+    def execute_review_recovery_and_decision(
+        self,
+        task_id: str,
+        verdict: str,
+        operator_id: str,
+        signature: str,
+        comments: str = ""
+    ) -> Dict[str, Any]:
+        """Manages governed final review decisions (ACCEPTED, REJECTED, REVISION_REQUIRED), programmatically managing workflow recovery and state continuation."""
+        if task_id not in self.coordinated_tasks:
+            raise KeyError(f"Coordination Error: Task '{task_id}' is not registered.")
+
+        task = self.coordinated_tasks[task_id]
+        prior_status = task["status"]
+
+        allowed_verdicts = {"ACCEPTED", "REJECTED", "REVISION_REQUIRED"}
+        if verdict not in allowed_verdicts:
+            raise ValueError(f"Coordination Error: Unsupported decision verdict '{verdict}'.")
+
+        # 1. Actionable operator decision logic
+        if verdict == "ACCEPTED":
+            task["status"] = "VALIDATED"
+            # Add action output to completed actions, locking it down and preventing duplication
+            action_name = task["name"]
+            if action_name not in self.session.completed_actions:
+                self.session.completed_actions.append(action_name)
+            self.session_manager.save_session(self.session)
+        else:
+            # For REJECTED or REVISION_REQUIRED, transition task status back to ACTIVE for engineering revision
+            task["status"] = "ACTIVE"
+
+        # Record decision to task history
+        task["handoff_history"].append({
+            "operator_id": operator_id,
+            "verdict": verdict,
+            "signature": signature,
+            "action": f"GOVERNED_DECISION_{verdict}",
+            "timestamp": time.time()
+        })
+
+        # 2. Record CCL event trace
+        record = self.ccl.intercept_event(
+            event_type="governed_review_decision",
+            action_taken=f"Operator decision '{verdict}' on task '{task_id}'",
+            decision_reasoning=f"Final operator review governance step: {comments}",
+            evidence_payload={
+                "task_id": task_id,
+                "operator_id": operator_id,
+                "verdict": verdict,
+                "prior_status": prior_status,
+                "final_status": task["status"],
+                "signature": signature
+            },
+            session_id=self.session_id
+        )
+        self.ccl.serialize_record(record)
+
+        decision_report = {
+            "session_id": self.session_id,
+            "task_id": task_id,
+            "prior_status": prior_status,
+            "final_status": task["status"],
+            "verdict": verdict,
+            "operator_id": operator_id,
+            "comments": comments,
+            "evidence_lineage_chain": {
+                "event_id": f"event_{uuid.uuid4().hex[:12]}",
+                "state_change": f"Transitioned task '{task_id}' status to '{task['status']}'",
+                "agent_action": f"Operator '{operator_id}' applied verdict '{verdict}'",
+                "decision": f"Validated and resolved findings with signature: '{signature}'",
+                "evidence_ref": record.record_id
+            },
+            "timestamp": time.time()
+        }
+
+        # Persist report
+        output_path = Path("evidence_capture/review_validation_report.json")
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(output_path, "w", encoding="utf-8") as f:
+            json.dump(decision_report, f, indent=2, default=str)
+
+        return decision_report
+
     def render_control_tower_summary(self) -> str:
         """Generates an executive-level summary of active agent states, responsibilities, blockers, and recommendations, answering critical operator questions."""
         # 1. What happened?
@@ -1363,7 +1446,7 @@ class DeveloperWorkflowOrchestrator:
         # 2. Who owns it?
         owners = []
         for t_id, task in self.coordinated_tasks.items():
-            if task["status"] == "ACTIVE" and task["assigned_agent"]:
+            if task["status"] in {"ACTIVE", "REVIEWED"} and task["assigned_agent"]:
                 owners.append(f"{task['assigned_agent']} ({t_id})")
         who_owns_it = ", ".join(owners) if owners else "No active owners (idle)."
 
@@ -1371,18 +1454,45 @@ class DeveloperWorkflowOrchestrator:
         why = list(self.session.active_objectives)
         why_is_it_happening = ", ".join(why) if why else "Coordinating SAGE active development."
 
-        # 4. What evidence supports it?
+        # 4. Who reviewed it?
+        reviewers = []
+        for t_id, task in self.coordinated_tasks.items():
+            if task["status"] in {"REVIEWED", "VALIDATED"}:
+                # Find the reviewer in handoff history
+                rev_history = [h.get("reviewer_id") for h in task["handoff_history"] if h.get("reviewer_id")]
+                if rev_history:
+                    reviewers.append(f"{rev_history[0]} ({t_id})")
+        who_reviewed_it = ", ".join(reviewers) if reviewers else "None / Pending Validation"
+
+        # 5. Determine high-fidelity lifecycle status
+        lifecycle_status = "OPERATOR_DECISION_PENDING"
+        all_validated = True
+        has_tasks = len(self.coordinated_tasks) > 0
+        for t_id, task in self.coordinated_tasks.items():
+            if task["status"] != "VALIDATED":
+                all_validated = False
+
+            # Check for specific states
+            if task["status"] == "COMPLETED":
+                lifecycle_status = "ENGINEERING_COMPLETE"
+            elif task["status"] == "REVIEWED":
+                lifecycle_status = "REVIEW_PENDING"
+            elif task["status"] == "ACTIVE":
+                # Check if there is a revision in history
+                history_verdicts = [h.get("verdict") for h in task["handoff_history"] if h.get("verdict") in {"REJECTED", "REVISION_REQUIRED"}]
+                if history_verdicts:
+                    lifecycle_status = "REVISION_REQUIRED"
+                else:
+                    lifecycle_status = "OPERATOR_DECISION_PENDING"
+
+        if has_tasks and all_validated:
+            lifecycle_status = "LIFECYCLE_COMPLETE"
+
+        # 6. What evidence supports it?
         records = list(self.ccl.storage_path.glob("*.json"))
         what_evidence_supports_it = f"Found {len(records)} verified append-only CCL records."
 
-        # 5. Who reviewed it?
-        reviewers = []
-        for t_id, task in self.coordinated_tasks.items():
-            if task["status"] == "REVIEWED":
-                reviewers.append(task["assigned_agent"])
-        who_reviewed_it = ", ".join(reviewers) if reviewers else "None / Pending Authorization"
-
-        # 6. What happens next?
+        # 7. What happens next?
         pending = list(self.session.pending_actions)
         what_happens_next = pending[0] if pending else "Validate and finalize next execution checkpoint."
 
@@ -1394,8 +1504,9 @@ class DeveloperWorkflowOrchestrator:
             f" 2. WHO OWNS IT?        : {who_owns_it}",
             f" 3. WHY IS IT HAPPENING?: {why_is_it_happening}",
             f" 4. WHO REVIEWED IT?    : {who_reviewed_it}",
-            f" 5. WHAT EVIDENCE?     : {what_evidence_supports_it}",
-            f" 6. WHAT HAPPENS NEXT?  : {what_happens_next}",
+            f" 5. LIFECYCLE STATUS    : {lifecycle_status}",
+            f" 6. WHAT EVIDENCE?     : {what_evidence_supports_it}",
+            f" 7. WHAT HAPPENS NEXT?  : {what_happens_next}",
             "=================================================="
         ]
         return "\n".join(tower)

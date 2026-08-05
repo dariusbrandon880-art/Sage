@@ -1480,9 +1480,10 @@ def test_render_control_tower_summary_questions(tmp_path):
     assert "1. WHAT HAPPENED?     : completed_action_alpha" in summary
     assert "2. WHO OWNS IT?        : agent_jules_sage (task_t1)" in summary
     assert "3. WHY IS IT HAPPENING?: obj_tower_vis" in summary
-    assert "4. WHO REVIEWED IT?    : None / Pending Authorization" in summary
-    assert "5. WHAT EVIDENCE?" in summary
-    assert "6. WHAT HAPPENS NEXT?" in summary
+    assert "4. WHO REVIEWED IT?    : None / Pending Validation" in summary
+    assert "5. LIFECYCLE STATUS" in summary
+    assert "6. WHAT EVIDENCE?" in summary
+    assert "7. WHAT HAPPENS NEXT?" in summary
 
 
 def test_execute_coordinated_review_success(tmp_path):
@@ -1616,3 +1617,114 @@ def test_three_role_coordination_and_review_lineage(tmp_path):
     # Verify trace completeness
     assert report["engineering_summary"]["completed_milestones"] == ["intake_clarify_mission", "build_enforcement_layer"]
     assert report["findings_details"]["verdict"] == "APPROVED_ADVISORY"
+
+
+def test_execute_review_recovery_and_decision_accept(tmp_path):
+    """Verify that accepting review promotes task status to VALIDATED and appends to session completed actions."""
+    import uuid
+    from pathlib import Path
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id=f"session_verdict_accept_{uuid.uuid4().hex[:6]}",
+        objective="obj_verdict_accept",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    orchestrator.add_coordinated_task("task_audit_t", "Security Code Audit", "TIER_2_AUDITOR")
+    orchestrator.assign_agent_to_task("task_audit_t", "agent_scout_sage")
+    orchestrator.coordinated_tasks["task_audit_t"]["status"] = "REVIEWED"
+
+    # Operator ACCEPT verdict
+    report = orchestrator.execute_review_recovery_and_decision(
+        task_id="task_audit_t",
+        verdict="ACCEPTED",
+        operator_id="operator_darius",
+        signature="sig_darius_ok_1122"
+    )
+
+    assert report["final_status"] == "VALIDATED"
+    assert "Security Code Audit" in orchestrator.session.completed_actions
+    assert Path("evidence_capture/review_validation_report.json").exists()
+
+
+def test_execute_review_recovery_and_decision_reject(tmp_path):
+    """Verify that rejecting review returns task status to ACTIVE and logs recovery traces."""
+    import uuid
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id=f"session_verdict_reject_{uuid.uuid4().hex[:6]}",
+        objective="obj_verdict_reject",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    orchestrator.add_coordinated_task("task_audit_t", "Security Code Audit", "TIER_2_AUDITOR")
+    orchestrator.assign_agent_to_task("task_audit_t", "agent_scout_sage")
+    orchestrator.coordinated_tasks["task_audit_t"]["status"] = "REVIEWED"
+
+    # Operator REJECT verdict
+    report = orchestrator.execute_review_recovery_and_decision(
+        task_id="task_audit_t",
+        verdict="REJECTED",
+        operator_id="operator_darius",
+        signature="sig_darius_no_1122"
+    )
+
+    assert report["final_status"] == "ACTIVE"
+    assert "Security Code Audit" not in orchestrator.session.completed_actions
+
+
+def test_render_control_tower_summary_lifecycle_statuses(tmp_path):
+    """Verify that render_control_tower_summary dynamically tracks high-fidelity lifecycle status codes."""
+    import uuid
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_mgr = SessionStateManager(storage_path=str(tmp_path / "sessions"))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(tmp_path / "records"))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id=f"session_tower_statuses_{uuid.uuid4().hex[:6]}",
+        objective="obj_tower_status",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    orchestrator.add_coordinated_task("task_audit_t", "Security Code Audit", "TIER_2_AUDITOR")
+    orchestrator.assign_agent_to_task("task_audit_t", "agent_scout_sage")
+
+    # 1. REVIEW_PENDING status when reviewed
+    orchestrator.coordinated_tasks["task_audit_t"]["status"] = "REVIEWED"
+    summary_reviewed = orchestrator.render_control_tower_summary()
+    assert "5. LIFECYCLE STATUS    : REVIEW_PENDING" in summary_reviewed
+
+    # 2. REVISION_REQUIRED status after a reject/revision transition
+    orchestrator.execute_review_recovery_and_decision(
+        task_id="task_audit_t",
+        verdict="REVISION_REQUIRED",
+        operator_id="operator_darius",
+        signature="sig_darius_rev_1122"
+    )
+    summary_rev = orchestrator.render_control_tower_summary()
+    assert "5. LIFECYCLE STATUS    : REVISION_REQUIRED" in summary_rev
+
+    # 3. LIFECYCLE_COMPLETE status when all are validated
+    orchestrator.execute_review_recovery_and_decision(
+        task_id="task_audit_t",
+        verdict="ACCEPTED",
+        operator_id="operator_darius",
+        signature="sig_darius_ok_1122"
+    )
+    summary_complete = orchestrator.render_control_tower_summary()
+    assert "5. LIFECYCLE STATUS    : LIFECYCLE_COMPLETE" in summary_complete

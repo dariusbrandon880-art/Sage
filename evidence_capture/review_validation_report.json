@@ -1,38 +1,17 @@
 {
-  "session_id": "session_three_role_43808a",
-  "reviewer_id": "agent_scout_sage",
-  "task_id": "task_audit_01",
-  "status": "REVIEWED",
-  "findings_details": {
-    "verdict": "APPROVED_ADVISORY",
-    "comments": "Prerequisites met.",
-    "evidence_refs": [
-      "ref_control_py_hash"
-    ]
-  },
-  "engineering_summary": {
-    "session_id": "session_three_role_43808a",
-    "active_mission": [
-      "obj_three_role_lifecycle"
-    ],
-    "completed_milestones": [
-      "intake_clarify_mission",
-      "build_enforcement_layer"
-    ],
-    "task_id": "task_audit_01",
-    "task_name": "Security Code Audit",
-    "assigned_agent": "agent_scout_sage",
-    "decision_history": [],
-    "known_risks": [
-      "SAGE operational coordination flow is perfectly aligned and execution is highly stable."
-    ]
-  },
+  "session_id": "session_tower_statuses_1b4bf6",
+  "task_id": "task_audit_t",
+  "prior_status": "ACTIVE",
+  "final_status": "VALIDATED",
+  "verdict": "ACCEPTED",
+  "operator_id": "operator_darius",
+  "comments": "",
   "evidence_lineage_chain": {
-    "event_id": "event_09a0a7c20b7b",
-    "state_change": "Transitioned task to REVIEWED status",
-    "agent_action": "Audited and accepted engineering outcome: APPROVED_ADVISORY",
-    "decision": "Outcome is locked as advisory pending human supervisor final validation.",
-    "evidence_ref": "CCL-REC-20260805-1107dd0b-8bf8-47cd-81b9-0736474f017e"
+    "event_id": "event_ac151537e462",
+    "state_change": "Transitioned task 'task_audit_t' status to 'VALIDATED'",
+    "agent_action": "Operator 'operator_darius' applied verdict 'ACCEPTED'",
+    "decision": "Validated and resolved findings with signature: 'sig_darius_ok_1122'",
+    "evidence_ref": "CCL-REC-20260805-0ccfc906-7938-4a8c-bf3a-55ddb051af8f"
   },
-  "timestamp": 1785894565.4328423
+  "timestamp": 1785898875.1580577
 }
