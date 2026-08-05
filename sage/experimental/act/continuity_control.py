@@ -1155,7 +1155,8 @@ class DeveloperWorkflowOrchestrator:
         dashboard.append(f"     Agent:        {cmaps.get('agent_identity', {}).get('name')} ({cmaps.get('agent_identity', {}).get('role')})")
         approval_rec = ccl_record.get("evidence_payload", {}).get("human_approval_record", {})
         if approval_rec:
-            dashboard.append(f"     Supervisor:   {approval_rec.get('supervisor_id')} (Signed: {approval_rec.get('signature')[:12]}...)")
+            signature_val = (approval_rec.get('signature') or '')
+            dashboard.append(f"     Supervisor:   {approval_rec.get('supervisor_id')} (Signed: {signature_val[:12]}...)")
         else:
             dashboard.append("     Supervisor:   PENDING AUTHORIZATION")
         dashboard.append(f"  3. WHY IS IT HAPPENING?")

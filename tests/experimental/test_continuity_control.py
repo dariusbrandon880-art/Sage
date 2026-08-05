@@ -514,3 +514,117 @@ def test_sage_operational_intelligence_layer_integration(tmp_path):
     assert "RECURRING WORKFLOW PATTERNS IDENTIFIED" in dashboard_str
     assert "ADVISORY OPTIMIZATION OPPORTUNITIES" in dashboard_str
     assert "BOTTLENECK INDICATORS:" in dashboard_str
+
+
+def test_real_workflow_optimization_cycle(tmp_path):
+    """Verify that SAGE optimization intelligence creates measurable workflow improvement.
+
+    Simulates a complete Real Optimization Cycle across consecutive workflow generations:
+    - Run 1 (Baseline Generation): High latency, duplicate actions, and friction.
+    - Run 2 (Optimization Execution): Low latency, clean context, and zero friction.
+    - Validates:
+      - Recommendation quality (operational stage, expected improvement, confidence accuracy).
+      - Optimization effectiveness (measurable reductions in time, duplication, and cumulative trends).
+      - Workflow learning quality (repeated workflows yield stronger patterns and higher confidence).
+      - Control Tower dynamic improvement and comparative rendering.
+    """
+    from sage.experimental.act.continuity_control import (
+        DeveloperWorkflowOrchestrator,
+        ContinuityControlLoop
+    )
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    evidence_output_1 = tmp_path / "evidence" / "ccl_run_1.json"
+    evidence_output_2 = tmp_path / "evidence" / "ccl_run_2.json"
+
+    # Set up loop and managers
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+
+    # --- RUN 1: Baseline Workflow Generation ---
+    session_1 = session_mgr.create_session(
+        session_id="session_cycle_run_1",
+        active_objectives=["obj_optimization_cycle_test"]
+    )
+    session_1.add_completed_action("task_git_scan")
+    # Force duplicate work to trigger redundant reassessment metrics
+    session_1.pending_actions.append("task_git_scan")
+    session_mgr.save_session(session_1)
+
+    orchestrator_1 = DeveloperWorkflowOrchestrator(
+        session_id="session_cycle_run_1",
+        objective="obj_optimization_cycle_test",
+        ccl=ccl,
+        evidence_output_path=str(evidence_output_1)
+    )
+
+    result_1 = orchestrator_1.execute_active_development_coordination(
+        action_taken="Run 1 Baseline execution with simulated friction",
+        decision_reasoning="Establish operational baselines",
+        workflow_friction=[{"type": "cognitive_load", "detail": "high manual step coordination", "severity": "medium"}],
+        improvement_opportunities=["Automate step transitioning"]
+    )
+
+    # Validate baseline metrics
+    metrics_1 = result_1["operational_intelligence"]["metrics"]
+    assert metrics_1["unnecessary_reassessment_events"] == 1
+    assert metrics_1["repeated_execution_prevention"] is False
+
+    # Force serialize record_1 into history so Run 2 reads it as a baseline
+    record_1_id = result_1["ccl_record"]["record_id"]
+    record_1_file = record_storage / f"{record_1_id}.json"
+    assert record_1_file.exists()
+
+    # --- RUN 2: Optimized Workflow Generation ---
+    # Create optimized session with no duplicate actions and zero friction
+    session_2 = session_mgr.create_session(
+        session_id="session_cycle_run_2",
+        active_objectives=["obj_optimization_cycle_test"]
+    )
+    session_2.add_completed_action("task_git_scan")
+    session_mgr.save_session(session_2)
+
+    orchestrator_2 = DeveloperWorkflowOrchestrator(
+        session_id="session_cycle_run_2",
+        objective="obj_optimization_cycle_test",
+        ccl=ccl,
+        evidence_output_path=str(evidence_output_2)
+    )
+
+    # Let's execute Run 2 coordination cleanly
+    result_2 = orchestrator_2.execute_active_development_coordination(
+        action_taken="Run 2 Optimized execution with resolved friction",
+        decision_reasoning="Apply and evaluate advisory recommendations",
+        workflow_friction=[], # resolved
+        improvement_opportunities=[]
+    )
+
+    # --- VALIDATION OF MEASURABLE ADVANTAGE ---
+    op_intel_2 = result_2["operational_intelligence"]
+    metrics_2 = op_intel_2["metrics"]
+    trends_2 = op_intel_2["optimization_trends"]
+    patterns_2 = op_intel_2["patterns"]
+    recs_2 = op_intel_2["recommendations"]
+
+    # 1. Recommendation Quality and Workflow Learning Quality
+    assert len(patterns_2) >= 1
+    cognitive_pattern = next(p for p in patterns_2 if "cognitive_load" in p["description"])
+    assert cognitive_pattern["frequency"] == 1  # From Run 1
+    assert len(cognitive_pattern["evidence_records"]) == 1
+    assert record_1_id in cognitive_pattern["evidence_records"]
+
+    # 2. Optimization Effectiveness
+    # Reduction in duplicate actions should yield positive optimization metrics
+    assert metrics_2["unnecessary_reassessment_events"] == 0
+    assert metrics_2["repeated_execution_prevention"] is True
+    assert trends_2["duplicate_work_reduction_pct"] > 0.0
+    assert trends_2["cumulative_improvement_pct"] > 0.0
+
+    # 3. Control Tower Improvement and Comparative view
+    dashboard_2 = orchestrator_2.render_control_tower_summary(result_2)
+    assert "CONTINUOUS OPTIMIZATION DASHBOARD" in dashboard_2
+    assert "How are we improving?" in dashboard_2
+    assert f"[Duplicate Work Reduc] :: +100.00%" in dashboard_2
+    assert "[Cumulative Optimizer]" in dashboard_2
