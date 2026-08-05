@@ -66,6 +66,38 @@ def test_two_role_coordination_and_recovery_loop():
     assert "evidence_history" in inherited
 
 
+def test_hardened_three_role_lifecycle_execution():
+    """Validate repeated multi-agent lifecycle including rejections, revisions, re-reviews, and operator decision referencing."""
+    macc = SAGEOperationalOrchestrator(session_id="session_test_macc_hardened_loop")
+
+    report = macc.execute_hardened_three_role_lifecycle(
+        task_objective="obj_continuous_development",
+        milestones=["Formulate multi-agent operational boundaries", "Coordinate secure custody handoffs"]
+    )
+
+    assert report["status"] == "VALIDATED"
+    assert "chatgpt_coordination" in report
+    assert "jules_execution" in report
+    assert "claude_review_findings_first" in report
+    assert "claude_review_findings_final" in report
+    assert "decision_evidence_hash" in report
+
+    # Assert compliance statuses match expected loop transitions
+    findings_first = report["claude_review_findings_first"]
+    findings_final = report["claude_review_findings_final"]
+    assert findings_first["is_compliant"] is False
+    assert findings_final["is_compliant"] is True
+
+    # Verify execution traces for loop re-entry
+    events = [t["event"] for t in report["execution_traces"]]
+    assert "CLAUDE_FIRST_REVIEW_REJECTED" in events
+    assert "JULES_REVISION_START" in events
+    assert "JULES_REVISION_COMPLETED" in events
+    assert "CLAUDE_REREVIEW_START" in events
+    assert "CLAUDE_REREVIEW_COMPLETED" in events
+    assert "OPERATOR_FINAL_DECISION_COMPLETED" in events
+
+
 def test_control_tower_status_rendering():
     """Verify operator Control Tower ASCII console layout and parameters."""
     macc = SAGEOperationalOrchestrator(session_id="session_test_control_tower")
@@ -77,12 +109,16 @@ def test_control_tower_status_rendering():
         "recommendations": ["No actions required."],
         "verification_hash": "a" * 64
     }
+    macc.orchestrator.session.metadata["workflow_state"] = "WORKFLOW_COMPLETE"
+    macc.orchestrator.session.metadata["active_blocker"] = "None"
     macc.orchestrator.session_manager.save_session(macc.orchestrator.session)
 
     console_output = macc.render_control_tower_view()
 
     assert "SAGE CO-ORDINATION CONTROL TOWER CONSOLE" in console_output
     assert "Active Operational Session" in console_output
+    assert "Workflow State Transition:  WORKFLOW_COMPLETE" in console_output
+    assert "Active Blocker / Friction:  None" in console_output
     assert "Workflow Health Score" in console_output
     assert "Active Collaborator Responsibility Hierarchy" in console_output
     assert "Custody Transfer Handoff Lineage Trail" in console_output

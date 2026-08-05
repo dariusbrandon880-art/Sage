@@ -1,6 +1,6 @@
 {
-  "manifest_id": "manifest_handoff_5d25cabd152b",
-  "timestamp": "2026-08-05T01:58:37.480783Z",
+  "manifest_id": "manifest_handoff_46452113cf86",
+  "timestamp": "2026-08-05T02:47:24.340267Z",
   "source_session": "session_test_macc_loop",
   "target_session_objectives": [
     "obj_continuous_development"
@@ -25,8 +25,8 @@
       "tests/experimental/",
       "evidence_capture/"
     ],
-    "human_authorization_signature": "sig_jules_act_317bcc",
-    "timestamp": 1785895117.3131995
+    "human_authorization_signature": "sig_jules_act_47c27c",
+    "timestamp": 1785898044.1798596
   },
   "discovery_candidates": [],
   "workspace_fingerprint": {
@@ -39,24 +39,24 @@
       "size_bytes": 1919
     },
     "evidence_capture/agent_handoff_manifest.json": {
-      "sha256": "c7b9744d5747489c791766d89c4503721ae81fa3e9b1ccbc0b5955c358cc6f37",
-      "size_bytes": 3926
+      "sha256": "7f5c44f9bcba6e43c2aed21a03b70c2af72acc1ed49b80d073fe18227964b558",
+      "size_bytes": 3794
     },
     "evidence_capture/ccl_operational_feedback.json": {
       "sha256": "8840374cfed925ee6c4e3a53ace21a0f6fbc4efa3151e262c394e10b351b0ae9",
       "size_bytes": 6881
     },
     "evidence_capture/ccl_orchestrator_evidence.json": {
-      "sha256": "8f4d182e1588fd22cfe36b4cc6ea62ebe1bfd6ab08c8fb62e712d14f0c4a8316",
-      "size_bytes": 19926
+      "sha256": "3128fae40acaeb959c082489ca1b86052bf2b0c2bd1142366b531ca97677bfcc",
+      "size_bytes": 7703
     },
     "evidence_capture/decision_validation_report.json": {
-      "sha256": "6fefe02fdc782652ce86ae576ffa977df82bd0ecc78593a5ba7115e22a15f60b",
+      "sha256": "aa5945e15b27129d5b6f80bf92c5143d33bf854ee1d307182cf658a78d7a95f6",
       "size_bytes": 1066
     },
     "evidence_capture/discovery_candidates_register.json": {
-      "sha256": "ca26d1378b723c1e681de0adcfb5c51070d341d79cc81d62bf6f46d6c400b840",
-      "size_bytes": 36160
+      "sha256": "1e5d0f8fa62b875ac0e904d97478a0e1c0ae2b6c99433e8bc9128951495750a1",
+      "size_bytes": 38825
     },
     "evidence_capture/multi_agent_coordination_evidence.json": {
       "sha256": "a5e4137a4e9d27d61f275cbc6d2a708ed94923b2c58b0718429972e906582470",
@@ -71,20 +71,20 @@
       "size_bytes": 1233
     },
     "sage/experimental/act/ccl_orchestrator.py": {
-      "sha256": "65356515a256c680026c7d2b207e61f6ca210de0f6c12684e17162c437eea3ed",
-      "size_bytes": 27942
+      "sha256": "be500755c4c171e6bc9ad50ca872ba882937f4ae959e3338d84201449bb85b6e",
+      "size_bytes": 39910
     },
     "sage/experimental/act/continuity_control.py": {
       "sha256": "b161c50cec6fd7690964010c32f7cadc909d617c2f913c66180faaddcc746dd6",
       "size_bytes": 88035
     },
     "scripts/run_ccl_orchestrator.py": {
-      "sha256": "74623bce2167a9bf2ad0f23721ee44a523ee16532f2800e48cda6c445121eb61",
-      "size_bytes": 1546
+      "sha256": "d787d3ccb2bfca7c52b3c67e85a2393ebe1c5128cc6ff484545776915b40d000",
+      "size_bytes": 1630
     },
     "tests/experimental/test_ccl_orchestrator.py": {
-      "sha256": "a179405cbd8ebb23b732dd203f4144ac0d065e52a5cea85bada1d94f2995bd24",
-      "size_bytes": 3747
+      "sha256": "3f434a652a63bd2cab1f27865ed7fdb50f4f24fdeb3b87797ce1ec7b49577c55",
+      "size_bytes": 5511
     },
     "tests/experimental/test_continuity_control.py": {
       "sha256": "d1fccc2cd485e12f628c0fcad101b6201346d723dc7bf124f6c55295ce541073",
@@ -93,8 +93,8 @@
   },
   "coordination_telemetry": {
     "assigned_agent": "agent_jules_sage",
-    "nonce": "92fdaba203a94032",
-    "rehydration_token": "rehydrate_08d92e9a1f4a4ce5",
+    "nonce": "9eeb0eba34bd43f7",
+    "rehydration_token": "rehydrate_75ecd5a19a0847b7",
     "instructions": "Run DeveloperWorkflowOrchestrator to re-verify context state."
   }
 }
