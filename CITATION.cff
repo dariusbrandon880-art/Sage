@@ -1,0 +1,8 @@
+cff-version: 1.2.0
+message: "If you use SAGE in your research or project, please cite it as below."
+authors:
+  - name: "SAGE Development Team"
+title: "SAGE Autonomous Continuity Runtime (ACR)"
+version: 0.1.0
+date-released: 2026-08-05
+url: "https://github.com/dariusbrandon880-art/sage-runtime"
