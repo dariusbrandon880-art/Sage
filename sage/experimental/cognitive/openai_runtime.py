@@ -29,13 +29,13 @@ class OpenAIRuntimeAuthenticator:
     """Enforces secure SHA-256 handshake validations to authenticate OpenAI runtime agents."""
 
     def __init__(self, allowed_tokens: Dict[str, str] = None):
-        # Default allowed agents and their tokens
+        # Default allowed agents and their tokens loaded from environment or configurations
         self.allowed_tokens = allowed_tokens or {
-            "openai-runtime-agent": "sage_secure_token_abc123",
-            "ChatGPT": "chatgpt_secret_token_xyz"
+            "openai-runtime-agent": os.getenv("SAGE_SECURE_TOKEN", "mock_secure_token_default"),
+            "ChatGPT": os.getenv("CHATGPT_SECRET_TOKEN", "mock_chatgpt_token_default")
         }
 
-    def authenticate_agent(self, agent_id: str, raw_token: str) -> OpenAIAuthenticationResult:
+    def authenticate_agent(self, agent_id: str, raw_token: str, timestamp: Optional[float] = None) -> OpenAIAuthenticationResult:
         """Authenticate an external agent using a secure SHA-256 token verification."""
         if agent_id not in self.allowed_tokens:
             return OpenAIAuthenticationResult(
@@ -56,15 +56,16 @@ class OpenAIRuntimeAuthenticator:
                 message="Authentication Failed: Credential token mismatch."
             )
 
-        # Generate non-repudiable auth hash for audit
-        hash_input = f"{agent_id}:{raw_token}:{time.time()}"
+        # Use explicit timestamp or fallback to enable deterministic auditing/reconstruction
+        verify_time = timestamp or time.time()
+        hash_input = f"{agent_id}:{raw_token}:{verify_time}"
         auth_hash = hashlib.sha256(hash_input.encode()).hexdigest()
 
         return OpenAIAuthenticationResult(
             success=True,
             agent_id=agent_id,
             auth_token_hash=auth_hash,
-            timestamp=time.time(),
+            timestamp=verify_time,
             message="Authentication Succeeded: Secure handshake verified."
         )
 

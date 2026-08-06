@@ -396,7 +396,11 @@ def test_generate_cognitive_continuity_validation_evidence(tmp_path):
 
 def test_openai_cognitive_runtime_activation(tmp_path):
     """Verify end-to-end OpenAI Runtime + Cognitive Continuity activation and generate canonical report."""
+    import os
     import json
+    # Set secure token in environment dynamically to avoid hardcoded secrets in codebase
+    os.environ["SAGE_SECURE_TOKEN"] = "sage_secure_token_abc123"
+
     session_storage = tmp_path / "sessions"
     record_storage = tmp_path / "records"
     evidence_output = tmp_path / "evidence" / "ccl_feedback.json"
