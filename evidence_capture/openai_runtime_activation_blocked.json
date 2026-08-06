@@ -1,0 +1,26 @@
+{
+  "exact_missing_dependency": [
+    "OPENAI_API_KEY (valid production API key from OpenAI)",
+    "SAGE_AUTH_SECRET (secure authentication secret for SAGE adapter connection)"
+  ],
+  "verification_attempted": "Live SAGE OpenAI Runtime Activation startup via scripts/run_openai_runtime_activation.py and ChatGPTRuntimeAdapter",
+  "timestamp": 1786020547.0,
+  "environment_check_result": {
+    "OPENAI_API_KEY": "MISSING_FROM_ENVIRONMENT",
+    "SAGE_AUTH_SECRET": "MISSING_FROM_ENVIRONMENT",
+    "SAGE_AGENT_ID": "chatgpt-runtime-agent",
+    "SAGE_RUNTIME_ENDPOINT": "http://localhost:8000",
+    "status": "BLOCKED"
+  },
+  "attempted_registration": {
+    "agent_id": "chatgpt-runtime-agent",
+    "provider": "openai",
+    "runtime_type": "external_reasoning_agent",
+    "permissions": [
+      "retrieve_context",
+      "execute_task",
+      "submit_output"
+    ],
+    "audit_enabled": true
+  }
+}
