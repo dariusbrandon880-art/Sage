@@ -1,7 +1,7 @@
-"""SAGE Capability Improvement Measurement (CIM) Framework.
+"""SAGE Capability Improvement Measurement (CIM) and History-to-Learning Layer.
 
 Operates strictly within experimental/non-runtime boundaries to compare
-validated capability runs over time and determine improvement.
+validated capability runs over time and track historical progression.
 """
 
 import json
@@ -32,6 +32,47 @@ class CapabilityMeasurementRecord(BaseModel):
     metrics: dict[str, MetricValue] = Field(default_factory=dict)
     overall_classification: str = "INCOMPARABLE"  # e.g., IMPROVED, STABLE, REGRESSED, INCOMPARABLE
     provenance_details: dict[str, Any] = Field(default_factory=dict)
+
+
+class CapabilityImprovementHistory(BaseModel):
+    """Structured history of historical measurements for a specific capability."""
+    capability_id: str
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    history: list[CapabilityMeasurementRecord] = Field(default_factory=list)
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+    def add_measurement_run(self, record: CapabilityMeasurementRecord) -> None:
+        """Add a new measurement run to the capability history, keeping chronological order."""
+        if record.capability_id != self.capability_id:
+            raise ValueError(f"Cannot add run for capability {record.capability_id} to history of {self.capability_id}")
+        self.history.append(record)
+        # Sort history by timestamp to guarantee deterministic chronological ordering
+        self.history.sort(key=lambda r: r.timestamp)
+
+    def get_latest_validated_state(self) -> Optional[CapabilityMeasurementRecord]:
+        """Deterministically identifies and returns the latest validated state (IMPROVED or STABLE).
+
+        Regressed or incomparable runs are preserved in history but are not selected as the
+        retained current validated state.
+        """
+        for record in reversed(self.history):
+            if record.overall_classification in ["IMPROVED", "STABLE"]:
+                return record
+        return None
+
+    def get_history_summary(self) -> list[dict[str, Any]]:
+        """Compiles a list summarizing the historical progression of runs."""
+        return [
+            {
+                "run_id": run.run_id,
+                "timestamp": run.timestamp,
+                "classification": run.overall_classification,
+                "baseline_run_id": run.baseline_run_id,
+                "improved_metrics_count": run.provenance_details.get("metric_counts", {}).get("improved", 0),
+                "regressed_metrics_count": run.provenance_details.get("metric_counts", {}).get("regressed", 0)
+            }
+            for run in self.history
+        ]
 
 
 class CapabilityMeasurementEngine:
@@ -171,7 +212,7 @@ class CapabilityMeasurementEngine:
         return CapabilityMeasurementRecord(
             capability_id=capability_id,
             run_id=current_run_id,
-            timestamp=datetime.now(timezone.utc).isoformat(),
+            timestamp=current_data.get("timestamp") or datetime.now(timezone.utc).isoformat(),
             evidence_artifacts=evidence_artifacts,
             baseline_run_id=baseline_run_id,
             metrics=metrics_comparison,

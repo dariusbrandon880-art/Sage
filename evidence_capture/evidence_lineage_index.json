@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-08-07T22:51:36.439423+00:00",
-  "total_artifacts_indexed": 31,
+  "timestamp": "2026-08-07T23:33:32.269811+00:00",
+  "total_artifacts_indexed": 33,
   "artifacts": {
     "eval_phase4_scenario_b_001": {
       "artifact_id": "eval_phase4_scenario_b_001",
@@ -117,6 +117,20 @@
         "file_size_bytes": 1596
       }
     },
+    "governance_conformance_assessment": {
+      "artifact_id": "governance_conformance_assessment",
+      "file_path": "evidence_capture/governance_conformance_assessment.json",
+      "timestamp": "2026-08-07T23:32:08.278647+00:00",
+      "capabilities_validated": [],
+      "test_suites_referenced": [],
+      "validation_status": "VALIDATED",
+      "archive_promotion_status": "READY_FOR_PROMOTION",
+      "relationships": [],
+      "audit_hash": "ee85bf9bb39f9f40673aaf19af8c2c77319ce4d277dafccc68a9000a1c0bafb9",
+      "metadata": {
+        "file_size_bytes": 3010
+      }
+    },
     "rec_guard_31dea8154e49": {
       "artifact_id": "rec_guard_31dea8154e49",
       "file_path": "evidence_capture/context_guard_evidence.json",
@@ -158,7 +172,7 @@
     "eval_phase4_scenario_a_001": {
       "artifact_id": "eval_phase4_scenario_a_001",
       "file_path": "evidence_capture/phase_4_repeatability_run_1_scenario_a.json",
-      "timestamp": "2026-08-07T20:18:53.953708+00:00",
+      "timestamp": "2026-08-07T23:16:56.072949+00:00",
       "capabilities_validated": [
         "Phase 4 Repeatability & Determinism",
         "State Divergence Resolution (SDR-004)"
@@ -169,7 +183,7 @@
       "validation_status": "VALIDATED",
       "archive_promotion_status": "READY_FOR_PROMOTION",
       "relationships": [],
-      "audit_hash": "2334ffd8bfdef309155700bb6ae29782951b0c892de21537db8244d85f6669c1",
+      "audit_hash": "0201c9157324dd9ccff2ff63084e54bc10c3de5cd27e79cf51f2c5c94d7918d7",
       "metadata": {
         "file_size_bytes": 11039
       }
@@ -192,6 +206,20 @@
       "audit_hash": "94beca35a27321dbaaf70325581b19ed9159ff807f407a1fe26ef1dfa71eef3e",
       "metadata": {
         "file_size_bytes": 3983
+      }
+    },
+    "capability_improvement_history": {
+      "artifact_id": "capability_improvement_history",
+      "file_path": "evidence_capture/capability_improvement_history.json",
+      "timestamp": "2026-08-07T23:14:28.822929+00:00",
+      "capabilities_validated": [],
+      "test_suites_referenced": [],
+      "validation_status": "VALIDATED",
+      "archive_promotion_status": "READY_FOR_PROMOTION",
+      "relationships": [],
+      "audit_hash": "b7006a93c92fe3bef320cffbcc9c268065aaa3bdad6dd16a4f5693b6e26bebe8",
+      "metadata": {
+        "file_size_bytes": 8435
       }
     },
     "capability_improvement_measurement_report": {
@@ -230,7 +258,7 @@
     "phase_4_repeatability_summary": {
       "artifact_id": "phase_4_repeatability_summary",
       "file_path": "evidence_capture/phase_4_repeatability_summary.json",
-      "timestamp": "2026-08-07T20:18:54.000021+00:00",
+      "timestamp": "2026-08-07T23:16:56.114667+00:00",
       "capabilities_validated": [
         "Phase 4 Repeatability & Determinism",
         "State Divergence Resolution (SDR-004)"
@@ -241,7 +269,7 @@
       "validation_status": "VALIDATED",
       "archive_promotion_status": "READY_FOR_PROMOTION",
       "relationships": [],
-      "audit_hash": "7078dc392f5ad199bc64d8212093ea9fd054580e62c9302b23c056d37a3d59b7",
+      "audit_hash": "1a479385c4b1254d75e3f572d8f4f8e2264564af402b38dcfe48c75b9b366238",
       "metadata": {
         "file_size_bytes": 2041
       }

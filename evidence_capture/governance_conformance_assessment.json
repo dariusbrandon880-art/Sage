@@ -1,0 +1,60 @@
+{
+  "capability_id": "CAP-PHASE-4-EVAL",
+  "run_id": "run_phase4_eval_6d35a5df",
+  "timestamp": "2026-08-07T23:32:08.278647+00:00",
+  "overall_conformance": "INSUFFICIENT_EVIDENCE",
+  "requirements": {
+    "protected-boundary-preservation": {
+      "requirement_name": "protected-boundary-preservation",
+      "expected_invariant": "No unauthorized modifications to core namespaces (sage/core/, sage/runtime/, sage/acr/, sage/agents/).",
+      "observed_evidence": "Boundary integrity verified. Core untouched states: {'sage_runtime_untouched': True, 'sage_core_untouched': True, 'sage_acr_untouched': True, 'sage_agents_untouched': True}",
+      "assessment_status": "CONFORMANT",
+      "supporting_provenance": {
+        "boundary_integrity_verification": {
+          "sage_runtime_untouched": true,
+          "sage_core_untouched": true,
+          "sage_acr_untouched": true,
+          "sage_agents_untouched": true
+        }
+      }
+    },
+    "non-execution-requirements": {
+      "requirement_name": "non-execution-requirements",
+      "expected_invariant": "Live completions or activation runs must gracefully halt and not bypass model authentication.",
+      "observed_evidence": "No execution/authentication boundaries are tracked for this capability.",
+      "assessment_status": "NOT_APPLICABLE",
+      "supporting_provenance": {}
+    },
+    "evidence-provenance-integrity": {
+      "requirement_name": "evidence-provenance-integrity",
+      "expected_invariant": "Every validation run must provide cryptographic checksums/hashes or linked receipt lineages.",
+      "observed_evidence": "Cryptographic SHA-256 artifact hashes present: ['sage/experimental/act/contracts.py', 'sage/experimental/act/phase_4_eval.py']",
+      "assessment_status": "CONFORMANT",
+      "supporting_provenance": {
+        "artifact_hashes": {
+          "sage/experimental/act/contracts.py": "977a5ec08a7c842a943f009e20fd0204235728340ab6b9dc448b4b2e4b6f70b8",
+          "sage/experimental/act/phase_4_eval.py": "d028be877dae3b0f4fb94f4e79e71c57a93dffe2edeab77884a588cb0cedd739"
+        }
+      }
+    },
+    "authorization-separation": {
+      "requirement_name": "authorization-separation",
+      "expected_invariant": "The executor/agent ID must be distinct from the supervisor/signer identity (no self-approval).",
+      "observed_evidence": "Missing executor ID or supervisor signature required for separation check.",
+      "assessment_status": "INSUFFICIENT_EVIDENCE",
+      "supporting_provenance": {}
+    },
+    "archive-promotion-separation": {
+      "requirement_name": "archive-promotion-separation",
+      "expected_invariant": "Archive promotion status must require explicit supervisor signature/attestation.",
+      "observed_evidence": "No explicit supervisor authorization/attestation found in evidence record.",
+      "assessment_status": "INSUFFICIENT_EVIDENCE",
+      "supporting_provenance": {}
+    }
+  },
+  "metadata": {
+    "source_run_details": {
+      "run_id": "run_phase4_eval_6d35a5df"
+    }
+  }
+}

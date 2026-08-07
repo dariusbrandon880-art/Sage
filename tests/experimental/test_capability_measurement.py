@@ -1,4 +1,4 @@
-"""Unit tests for the SAGE Capability Improvement Measurement (CIM) framework."""
+"""Unit tests for the SAGE Capability Improvement Measurement (CIM) and History framework."""
 
 import json
 from pathlib import Path
@@ -6,6 +6,7 @@ import pytest
 from sage.experimental.act.capability_measurement import (
     CapabilityMeasurementEngine,
     CapabilityMeasurementRecord,
+    CapabilityImprovementHistory,
     MetricValue
 )
 
@@ -201,3 +202,101 @@ def test_cim_provenance_linkage(tmp_path):
     assert data["metrics"]["steps_reduced"]["classification"] == "IMPROVED"
     assert data["overall_classification"] == "IMPROVED"
     assert data["provenance_details"]["metric_counts"]["improved"] == 1
+
+
+def test_capability_improvement_history():
+    """Verify structured capability history tracking, deterministic ordering, and state preservation."""
+    cap_id = "CAP-INTELLIGENCE-RECOVERY"
+    history = CapabilityImprovementHistory(capability_id=cap_id)
+
+    engine = CapabilityMeasurementEngine()
+
+    # 1. First recorded run (no baseline)
+    run_1_data = {
+        "run_identifier": "run_history_1",
+        "timestamp": "2026-08-01T12:00:00Z",
+        "metrics": {
+            "efficiency": {
+                "steps_reduced": 5
+            }
+        }
+    }
+    rec_1 = engine.compare_runs(cap_id, current_data=run_1_data, baseline_data=None)
+    history.add_measurement_run(rec_1)
+
+    assert len(history.history) == 1
+    assert history.history[0].run_id == "run_history_1"
+    assert history.history[0].overall_classification == "INCOMPARABLE"
+    assert history.get_latest_validated_state() is None  # No valid baseline run yet
+
+    # 2. Subsequent comparison (improved)
+    run_2_data = {
+        "run_identifier": "run_history_2",
+        "timestamp": "2026-08-02T12:00:00Z",
+        "metrics": {
+            "efficiency": {
+                "steps_reduced": 8
+            }
+        }
+    }
+    rec_2 = engine.compare_runs(cap_id, current_data=run_2_data, baseline_data=run_1_data)
+    history.add_measurement_run(rec_2)
+
+    assert len(history.history) == 2
+    assert history.history[1].run_id == "run_history_2"
+    assert history.history[1].overall_classification == "IMPROVED"
+
+    # Deterministic latest validated state check
+    latest_validated = history.get_latest_validated_state()
+    assert latest_validated is not None
+    assert latest_validated.run_id == "run_history_2"
+
+    # 3. Third run (regressed)
+    run_3_data = {
+        "run_identifier": "run_history_3",
+        "timestamp": "2026-08-03T12:00:00Z",
+        "metrics": {
+            "efficiency": {
+                "steps_reduced": 6
+            }
+        }
+    }
+    rec_3 = engine.compare_runs(cap_id, current_data=run_3_data, baseline_data=run_2_data)
+    history.add_measurement_run(rec_3)
+
+    assert len(history.history) == 3
+    assert history.history[2].run_id == "run_history_3"
+    assert history.history[2].overall_classification == "REGRESSED"
+
+    # Regression preservation verification:
+    # History contains all 3 runs. The regressed run is preserved, but get_latest_validated_state
+    # deterministically retains run_history_2 as the best current validated state.
+    latest_validated_post_regression = history.get_latest_validated_state()
+    assert latest_validated_post_regression is not None
+    assert latest_validated_post_regression.run_id == "run_history_2"
+
+    # 4. Out-of-order execution (Verify deterministic sorting by timestamp)
+    run_4_data = {
+        "run_identifier": "run_history_4_early",
+        "timestamp": "2026-07-31T12:00:00Z",
+        "metrics": {
+            "efficiency": {
+                "steps_reduced": 4
+            }
+        }
+    }
+    rec_4 = engine.compare_runs(cap_id, current_data=run_4_data, baseline_data=None)
+    history.add_measurement_run(rec_4)
+
+    # First in list must be run_history_4_early because it has the earliest timestamp
+    assert history.history[0].run_id == "run_history_4_early"
+    assert history.history[1].run_id == "run_history_1"
+    assert history.history[2].run_id == "run_history_2"
+    assert history.history[3].run_id == "run_history_3"
+
+    # Compile Summary list verification
+    summary = history.get_history_summary()
+    assert len(summary) == 4
+    assert summary[0]["run_id"] == "run_history_4_early"
+    assert summary[3]["run_id"] == "run_history_3"
+    assert summary[3]["classification"] == "REGRESSED"
