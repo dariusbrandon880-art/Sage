@@ -12,6 +12,9 @@ import json
 import time
 import uuid
 
+# Resolve runtime import path for sage source tree
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 
 def run_openai_activation():
     print("================================================================")
