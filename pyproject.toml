@@ -1,3 +1,23 @@
+[tool.poetry]
+name = "sage-runtime"
+version = "0.1.0"
+description = "SAGE Autonomous Continuity Runtime Layer"
+authors = ["dariusbrandon880-art <dariusbrandon880@gmail.com>"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.139.2"
+uvicorn = "^0.51.0"
+pydantic = "^2.13.4"
+pydantic-settings = "^2.14.2"
+python-dotenv = "^1.2.2"
+typing-inspection = "^0.4.2"
+httpx = "^0.28.1"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^9.1.1"
+
 [build-system]
 requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
