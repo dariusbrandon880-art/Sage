@@ -11,6 +11,19 @@ import sys
 import json
 import time
 import uuid
+from pathlib import Path
+
+# Prepend project root to sys.path to allow imports when running directly (e.g. on Render)
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+# Diagnostic Logging
+print("--- SAGE STARTUP DIAGNOSTICS ---")
+print(f"Resolved project root: {PROJECT_ROOT}")
+print(f"sage exists: {(PROJECT_ROOT / 'sage').exists()}")
+print(f"sys.path: {sys.path}")
+print("--------------------------------\n")
 
 
 def run_openai_activation():
