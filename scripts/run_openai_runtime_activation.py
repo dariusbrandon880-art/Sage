@@ -12,8 +12,16 @@ import json
 import time
 import uuid
 
-# Resolve runtime import path for sage source tree
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import pathlib
+
+# Explicitly resolve the repository root containing the sage/ directory
+repo_root = pathlib.Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(repo_root))
+
+# Diagnostic checks before importing sage
+print(f"[DIAGNOSTIC] Resolved PROJECT_ROOT: {repo_root}")
+print(f"[DIAGNOSTIC] Does '<root>/sage' exist?: {(repo_root / 'sage').exists()}")
+print(f"[DIAGNOSTIC] Current sys.path: {sys.path}")
 
 
 def run_openai_activation():
