@@ -29,6 +29,7 @@ dependencies = [
     "python-dotenv>=1.0",
     "uvicorn",
     "fastapi",
+    "httpx",
 ]
 
 [project.optional-dependencies]
