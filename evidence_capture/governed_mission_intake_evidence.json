@@ -1,26 +1,18 @@
 {
   "evaluation_id": "EVAL-MSN-INTAKE-2026-A2B3C4",
   "mission_id": "msn-intake-abc123e456f789",
-  "name": "Governed Mission Intake to Progression Lifecycle",
+  "name": "Governed Mission Intake Validation Demonstration",
   "operator_id": "operator_jules_01",
   "autonomous_execution_triggered": false,
   "master_archive_modified_automatically": false,
   "intake_phase": {
     "raw_proposal": {
-      "name": "Audit System Linage",
+      "name": "Audit System Lineage",
       "description": "Trace cryptographic audit trails across session records",
       "objective": "Verify the integrity of SHA-256 fingerprint chains in PML",
       "operator_id": "operator_jules_01",
       "prerequisites": {
-        "value_appraisal_approved": true,
-        "preflight_checklist_passed": true,
-        "operator_signature_obtained": true,
-        "execution_log_recorded": true,
-        "validation_receipt_issued": true,
-        "evidence_hashes_verified": true,
-        "peer_signoff_completed": true,
-        "promotion_approval_granted": true,
-        "archival_success_confirmed": true
+        "value_appraisal_approved": true
       }
     },
     "validation_status": "ACCEPTED",
@@ -31,148 +23,25 @@
       "timestamp": 1786020547.0
     }
   },
-  "progression_phase": [
+  "rejection_audit_trail": [
     {
-      "step": 1,
-      "previous_state": "MISSION_PROPOSED",
-      "target_state": "VALUE_EVALUATED",
-      "prerequisite_required": "value_appraisal_approved",
-      "evidence_satisfied": true,
-      "decision_reason": "Transition to 'VALUE_EVALUATED' successfully authorized.",
-      "explainable_trace": {
-        "mission_id": "msn-intake-abc123e456f789",
-        "prerequisite_required": "value_appraisal_approved",
-        "decision": "ACCEPTED",
-        "evidence_state": "Prerequisite value_appraisal_approved is satisfied (True).",
-        "next_allowed_state": "VALUE_EVALUATED"
-      }
-    },
-    {
-      "step": 2,
-      "previous_state": "VALUE_EVALUATED",
-      "target_state": "PREFLIGHT_REQUIRED",
-      "prerequisite_required": "preflight_checklist_passed",
-      "evidence_satisfied": true,
-      "decision_reason": "Transition to 'PREFLIGHT_REQUIRED' successfully authorized.",
-      "explainable_trace": {
-        "mission_id": "msn-intake-abc123e456f789",
-        "prerequisite_required": "preflight_checklist_passed",
-        "decision": "ACCEPTED",
-        "evidence_state": "Prerequisite preflight_checklist_passed is satisfied (True).",
-        "next_allowed_state": "PREFLIGHT_REQUIRED"
-      }
-    },
-    {
-      "step": 3,
-      "previous_state": "PREFLIGHT_REQUIRED",
-      "target_state": "EXECUTION_AUTHORIZED",
-      "prerequisite_required": "operator_signature_obtained",
-      "evidence_satisfied": true,
-      "decision_reason": "Transition to 'EXECUTION_AUTHORIZED' successfully authorized.",
-      "explainable_trace": {
-        "mission_id": "msn-intake-abc123e456f789",
-        "prerequisite_required": "operator_signature_obtained",
-        "decision": "ACCEPTED",
-        "evidence_state": "Prerequisite operator_signature_obtained is satisfied (True).",
-        "next_allowed_state": "EXECUTION_AUTHORIZED"
-      }
-    },
-    {
-      "step": 4,
-      "previous_state": "EXECUTION_AUTHORIZED",
-      "target_state": "EXECUTION_COMPLETE",
-      "prerequisite_required": "execution_log_recorded",
-      "evidence_satisfied": true,
-      "decision_reason": "Transition to 'EXECUTION_COMPLETE' successfully authorized.",
-      "explainable_trace": {
-        "mission_id": "msn-intake-abc123e456f789",
-        "prerequisite_required": "execution_log_recorded",
-        "decision": "ACCEPTED",
-        "evidence_state": "Prerequisite execution_log_recorded is satisfied (True).",
-        "next_allowed_state": "EXECUTION_COMPLETE"
-      }
-    },
-    {
-      "step": 5,
-      "previous_state": "EXECUTION_COMPLETE",
-      "target_state": "VALIDATION_REQUIRED",
-      "prerequisite_required": "validation_receipt_issued",
-      "evidence_satisfied": true,
-      "decision_reason": "Transition to 'VALIDATION_REQUIRED' successfully authorized.",
-      "explainable_trace": {
-        "mission_id": "msn-intake-abc123e456f789",
-        "prerequisite_required": "validation_receipt_issued",
-        "decision": "ACCEPTED",
-        "evidence_state": "Prerequisite validation_receipt_issued is satisfied (True).",
-        "next_allowed_state": "VALIDATION_REQUIRED"
-      }
-    },
-    {
-      "step": 6,
-      "previous_state": "VALIDATION_REQUIRED",
-      "target_state": "EVIDENCE_REQUIRED",
-      "prerequisite_required": "evidence_hashes_verified",
-      "evidence_satisfied": true,
-      "decision_reason": "Transition to 'EVIDENCE_REQUIRED' successfully authorized.",
-      "explainable_trace": {
-        "mission_id": "msn-intake-abc123e456f789",
-        "prerequisite_required": "evidence_hashes_verified",
-        "decision": "ACCEPTED",
-        "evidence_state": "Prerequisite evidence_hashes_verified is satisfied (True).",
-        "next_allowed_state": "EVIDENCE_REQUIRED"
-      }
-    },
-    {
-      "step": 7,
-      "previous_state": "EVIDENCE_REQUIRED",
-      "target_state": "REVIEW_REQUIRED",
-      "prerequisite_required": "peer_signoff_completed",
-      "evidence_satisfied": true,
-      "decision_reason": "Transition to 'REVIEW_REQUIRED' successfully authorized.",
-      "explainable_trace": {
-        "mission_id": "msn-intake-abc123e456f789",
-        "prerequisite_required": "peer_signoff_completed",
-        "decision": "ACCEPTED",
-        "evidence_state": "Prerequisite peer_signoff_completed is satisfied (True).",
-        "next_allowed_state": "REVIEW_REQUIRED"
-      }
-    },
-    {
-      "step": 8,
-      "previous_state": "REVIEW_REQUIRED",
-      "target_state": "PROMOTION_READY",
-      "prerequisite_required": "promotion_approval_granted",
-      "evidence_satisfied": true,
-      "decision_reason": "Transition to 'PROMOTION_READY' successfully authorized.",
-      "explainable_trace": {
-        "mission_id": "msn-intake-abc123e456f789",
-        "prerequisite_required": "promotion_approval_granted",
-        "decision": "ACCEPTED",
-        "evidence_state": "Prerequisite promotion_approval_granted is satisfied (True).",
-        "next_allowed_state": "PROMOTION_READY"
-      }
-    },
-    {
-      "step": 9,
-      "previous_state": "PROMOTION_READY",
-      "target_state": "CLOSED",
-      "prerequisite_required": "archival_success_confirmed",
-      "evidence_satisfied": true,
-      "decision_reason": "Transition to 'CLOSED' successfully authorized.",
-      "explainable_trace": {
-        "mission_id": "msn-intake-abc123e456f789",
-        "prerequisite_required": "archival_success_confirmed",
-        "decision": "ACCEPTED",
-        "evidence_state": "Prerequisite archival_success_confirmed is satisfied (True).",
-        "next_allowed_state": "CLOSED"
-      }
+      "raw_proposal": {
+        "name": "   ",
+        "description": "Malformed blank proposal",
+        "objective": "Should fail validation",
+        "operator_id": "operator_jules_01"
+      },
+      "validation_status": "REJECTED",
+      "rejection_reason": "Rejection: Field 'name' cannot be empty or blank.",
+      "timestamp": 1786020549.0
     }
   ],
   "governance_compliance_check": {
-    "strict_sequential_order_enforced": true,
+    "initial_state_always_proposed": true,
+    "advances_beyond_proposed_by_itself": false,
     "provenance_preserved": true,
-    "no_bypass_allowed": true,
     "zero_self_authorization_status": "PASSED",
-    "non_execution_status": "PASSED"
+    "non_execution_status": "PASSED",
+    "existing_controller_integration": "SUCCESS (Intake handoff delegates strictly to existing Mission Progression Controller)"
   }
 }
