@@ -1,0 +1,321 @@
+{
+  "timestamp": "2026-08-07T20:15:49.091638+00:00",
+  "total_artifacts_indexed": 30,
+  "artifacts": {
+    "eval_phase4_scenario_b_001": {
+      "artifact_id": "eval_phase4_scenario_b_001",
+      "file_path": "evidence_capture/phase_4_repeatability_run_5_scenario_b.json",
+      "timestamp": "2026-08-02T11:00:11.834014+00:00",
+      "capabilities_validated": [
+        "Phase 4 Repeatability & Determinism",
+        "State Divergence Resolution (SDR-004)"
+      ],
+      "test_suites_referenced": [
+        "tests/experimental/test_phase_4_repeatability.py"
+      ],
+      "validation_status": "VALIDATED",
+      "archive_promotion_status": "READY_FOR_PROMOTION",
+      "relationships": [],
+      "audit_hash": "280bc07523e05d63f1337ec0d41c3219dd3a48c5990e9d2c0d91d986db34c4ff",
+      "metadata": {
+        "file_size_bytes": 11264
+      }
+    },
+    "openai_runtime_activation_blocked": {
+      "artifact_id": "openai_runtime_activation_blocked",
+      "file_path": "evidence_capture/openai_runtime_activation_blocked.json",
+      "timestamp": "2026-08-06T12:49:07+00:00",
+      "capabilities_validated": [
+        "SAGE Production OpenAI Runtime Activation",
+        "Live Connection Handshake Validator"
+      ],
+      "test_suites_referenced": [
+        "tests/experimental/test_run_openai_runtime_activation.py"
+      ],
+      "validation_status": "VALIDATED",
+      "archive_promotion_status": "READY_FOR_PROMOTION",
+      "relationships": [],
+      "audit_hash": "7883c0f31731230721a00ba1eac8220e09ba265d089e9d34ee1fe7da42265a38",
+      "metadata": {
+        "file_size_bytes": 895
+      }
+    },
+    "comp_phase_4_controlled_evaluation_2026_08_02": {
+      "artifact_id": "comp_phase_4_controlled_evaluation_2026_08_02",
+      "file_path": "evidence_capture/phase_4_repeatability_run_5.json",
+      "timestamp": "2026-08-02T11:00:11.837308+00:00",
+      "capabilities_validated": [
+        "Phase 4 Repeatability & Determinism",
+        "State Divergence Resolution (SDR-004)"
+      ],
+      "test_suites_referenced": [
+        "tests/experimental/test_phase_4_repeatability.py"
+      ],
+      "validation_status": "VALIDATED",
+      "archive_promotion_status": "READY_FOR_PROMOTION",
+      "relationships": [],
+      "audit_hash": "464a20dad3474a010e78f6bec9cd25f0d9d43725f566ca7c43602018f56c2b6b",
+      "metadata": {
+        "file_size_bytes": 32460
+      }
+    },
+    "sdr_agm_003_evidence_package": {
+      "artifact_id": "sdr_agm_003_evidence_package",
+      "file_path": "evidence_capture/sdr_agm_003_evidence_package.json",
+      "timestamp": "2026-08-01T09:19:36.280049+00:00",
+      "capabilities_validated": [
+        "SDR-AGM Simulation",
+        "Adversarial Stress Testing & Game-Theoretic Alignment"
+      ],
+      "test_suites_referenced": [
+        "tests/experimental/test_sdr_agm_003.py"
+      ],
+      "validation_status": "VALIDATED",
+      "archive_promotion_status": "READY_FOR_PROMOTION",
+      "relationships": [],
+      "audit_hash": "70de8cbfcf9a936f5bd1d5a9ec990b144a5bdbe4742bc54d0ab23a7747e109e0",
+      "metadata": {
+        "file_size_bytes": 8005
+      }
+    },
+    "cognitive_kernel_foundation_report": {
+      "artifact_id": "cognitive_kernel_foundation_report",
+      "file_path": "evidence_capture/cognitive_kernel_foundation_report.json",
+      "timestamp": "2026-08-05T13:26:40+00:00",
+      "capabilities_validated": [
+        "Phase 0 SAGE Cognitive Kernel Foundation",
+        "Prefrontal Cortex Simulator",
+        "Cognitive Safety Gate Checks"
+      ],
+      "test_suites_referenced": [
+        "tests/experimental/test_cognitive_kernel.py"
+      ],
+      "validation_status": "VALIDATED",
+      "archive_promotion_status": "PROMOTED",
+      "relationships": [],
+      "audit_hash": "bdf7a5f382869f10eaa49b36cfc2b77224487f5d532cc543d2848e2e023886ec",
+      "metadata": {
+        "file_size_bytes": 5129
+      }
+    },
+    "sdr_004_divergence_resolution_evidence": {
+      "artifact_id": "sdr_004_divergence_resolution_evidence",
+      "file_path": "evidence_capture/sdr_004_divergence_resolution_evidence.json",
+      "timestamp": "2026-08-03T09:12:14.540753+00:00",
+      "capabilities_validated": [
+        "State Divergence Resolution (SDR-004)",
+        "Conflict Detection & Alignment"
+      ],
+      "test_suites_referenced": [
+        "tests/experimental/test_sdr_004_divergence.py"
+      ],
+      "validation_status": "VALIDATED",
+      "archive_promotion_status": "READY_FOR_PROMOTION",
+      "relationships": [],
+      "audit_hash": "a6790c2a48cc414357cd0e47785ef20ac48659c7f1a036e997e4ad29f8347eae",
+      "metadata": {
+        "file_size_bytes": 1596
+      }
+    },
+    "rec_guard_31dea8154e49": {
+      "artifact_id": "rec_guard_31dea8154e49",
+      "file_path": "evidence_capture/context_guard_evidence.json",
+      "timestamp": "2026-08-03T11:17:23.582476+00:00",
+      "capabilities_validated": [
+        "SAGE Context Guard",
+        "Workspace Namespace Protection",
+        "Boundary Integrity Verification"
+      ],
+      "test_suites_referenced": [
+        "tests/experimental/test_context_guard.py"
+      ],
+      "validation_status": "PROTECTION_VIOLATION_DETECTED",
+      "archive_promotion_status": "READY_FOR_PROMOTION",
+      "relationships": [],
+      "audit_hash": "b1ba64cbaa4c5a5318eebf6a27dd0c38ce724427bdb5a59ad61829745fb69fb0",
+      "metadata": {
+        "file_size_bytes": 1516
+      }
+    },
+    "demo_launcher_evidence": {
+      "artifact_id": "demo_launcher_evidence",
+      "file_path": "evidence_capture/demo_launcher_evidence.json",
+      "timestamp": "2026-08-03T14:28:10.231623+00:00",
+      "capabilities_validated": [
+        "SAGE Demo Launcher & Scenario Replay"
+      ],
+      "test_suites_referenced": [
+        "tests/experimental/test_demo_launcher.py"
+      ],
+      "validation_status": "VALIDATED",
+      "archive_promotion_status": "READY_FOR_PROMOTION",
+      "relationships": [],
+      "audit_hash": "10ba125a634455d5f1eeb21ddaa92411e0f9285d8b6930deb4ebe98a7d6a9ebc",
+      "metadata": {
+        "file_size_bytes": 3873
+      }
+    },
+    "eval_phase4_scenario_a_001": {
+      "artifact_id": "eval_phase4_scenario_a_001",
+      "file_path": "evidence_capture/phase_4_repeatability_run_1_scenario_a.json",
+      "timestamp": "2026-08-07T16:23:03.472725+00:00",
+      "capabilities_validated": [
+        "Phase 4 Repeatability & Determinism",
+        "State Divergence Resolution (SDR-004)"
+      ],
+      "test_suites_referenced": [
+        "tests/experimental/test_phase_4_repeatability.py"
+      ],
+      "validation_status": "VALIDATED",
+      "archive_promotion_status": "READY_FOR_PROMOTION",
+      "relationships": [],
+      "audit_hash": "7e512a732e4cbf20d23fc23a22d33c972758ed223a6943186b752ab249ae269d",
+      "metadata": {
+        "file_size_bytes": 11039
+      }
+    },
+    "ccl_operational_feedback": {
+      "artifact_id": "ccl_operational_feedback",
+      "file_path": "evidence_capture/ccl_operational_feedback.json",
+      "timestamp": "2026-08-04T08:56:36.345229Z",
+      "capabilities_validated": [
+        "SAGE Continuity Control Loop (SAGE-CCL)",
+        "Developer Workflow Orchestrator",
+        "SAGE Operational Intelligence Layer (OIL)"
+      ],
+      "test_suites_referenced": [
+        "tests/experimental/test_continuity_control.py"
+      ],
+      "validation_status": "VALIDATED",
+      "archive_promotion_status": "READY_FOR_PROMOTION",
+      "relationships": [],
+      "audit_hash": "94beca35a27321dbaaf70325581b19ed9159ff807f407a1fe26ef1dfa71eef3e",
+      "metadata": {
+        "file_size_bytes": 3983
+      }
+    },
+    "EVAL-OPENAI-BLOCKED-49D52A": {
+      "artifact_id": "EVAL-OPENAI-BLOCKED-49D52A",
+      "file_path": "evidence_capture/openai_runtime_live_connection.json",
+      "timestamp": "2026-08-07T10:58:14.263974+00:00",
+      "capabilities_validated": [
+        "SAGE Production OpenAI Runtime Activation",
+        "Live Connection Handshake Validator"
+      ],
+      "test_suites_referenced": [
+        "tests/experimental/test_run_openai_runtime_activation.py"
+      ],
+      "validation_status": "BLOCKED",
+      "archive_promotion_status": "READY_FOR_PROMOTION",
+      "relationships": [],
+      "audit_hash": "db4ea6f7b4cd32659493ba79b040db8c954d45638a9c0311f05b7827f955458d",
+      "metadata": {
+        "file_size_bytes": 950
+      }
+    },
+    "phase_4_repeatability_summary": {
+      "artifact_id": "phase_4_repeatability_summary",
+      "file_path": "evidence_capture/phase_4_repeatability_summary.json",
+      "timestamp": "2026-08-07T16:23:03.504062+00:00",
+      "capabilities_validated": [
+        "Phase 4 Repeatability & Determinism",
+        "State Divergence Resolution (SDR-004)"
+      ],
+      "test_suites_referenced": [
+        "tests/experimental/test_phase_4_repeatability.py"
+      ],
+      "validation_status": "VALIDATED",
+      "archive_promotion_status": "READY_FOR_PROMOTION",
+      "relationships": [],
+      "audit_hash": "37740b9c0fe86682643efb229823c30be49f833b5e304157d16c3d1d33653229",
+      "metadata": {
+        "file_size_bytes": 2041
+      }
+    },
+    "discovery_candidates_register": {
+      "artifact_id": "discovery_candidates_register",
+      "file_path": "evidence_capture/discovery_candidates_register.json",
+      "timestamp": "2026-08-07T13:58:57.702093+00:00",
+      "capabilities_validated": [
+        "SAGE Operational Intelligence Layer (OIL)",
+        "Discovery Lane Optimization"
+      ],
+      "test_suites_referenced": [
+        "tests/experimental/test_continuity_control.py"
+      ],
+      "validation_status": "OPERATIONAL",
+      "archive_promotion_status": "READY_FOR_PROMOTION",
+      "relationships": [],
+      "audit_hash": "fbfe503f339c520bd621eae5656b495ffee1b5ec25109c95c38634e1d2c9b0c4",
+      "metadata": {
+        "file_size_bytes": 13339
+      }
+    }
+  },
+  "capability_map": {
+    "Phase 4 Repeatability & Determinism": [
+      "eval_phase4_scenario_b_001",
+      "comp_phase_4_controlled_evaluation_2026_08_02",
+      "eval_phase4_scenario_a_001",
+      "phase_4_repeatability_summary"
+    ],
+    "State Divergence Resolution (SDR-004)": [
+      "eval_phase4_scenario_b_001",
+      "comp_phase_4_controlled_evaluation_2026_08_02",
+      "sdr_004_divergence_resolution_evidence",
+      "eval_phase4_scenario_a_001",
+      "phase_4_repeatability_summary"
+    ],
+    "SAGE Production OpenAI Runtime Activation": [
+      "openai_runtime_activation_blocked",
+      "EVAL-OPENAI-BLOCKED-49D52A"
+    ],
+    "Live Connection Handshake Validator": [
+      "openai_runtime_activation_blocked",
+      "EVAL-OPENAI-BLOCKED-49D52A"
+    ],
+    "SDR-AGM Simulation": [
+      "sdr_agm_003_evidence_package"
+    ],
+    "Adversarial Stress Testing & Game-Theoretic Alignment": [
+      "sdr_agm_003_evidence_package"
+    ],
+    "Phase 0 SAGE Cognitive Kernel Foundation": [
+      "cognitive_kernel_foundation_report"
+    ],
+    "Prefrontal Cortex Simulator": [
+      "cognitive_kernel_foundation_report"
+    ],
+    "Cognitive Safety Gate Checks": [
+      "cognitive_kernel_foundation_report"
+    ],
+    "Conflict Detection & Alignment": [
+      "sdr_004_divergence_resolution_evidence"
+    ],
+    "SAGE Context Guard": [
+      "rec_guard_31dea8154e49"
+    ],
+    "Workspace Namespace Protection": [
+      "rec_guard_31dea8154e49"
+    ],
+    "Boundary Integrity Verification": [
+      "rec_guard_31dea8154e49"
+    ],
+    "SAGE Demo Launcher & Scenario Replay": [
+      "demo_launcher_evidence"
+    ],
+    "SAGE Continuity Control Loop (SAGE-CCL)": [
+      "ccl_operational_feedback"
+    ],
+    "Developer Workflow Orchestrator": [
+      "ccl_operational_feedback"
+    ],
+    "SAGE Operational Intelligence Layer (OIL)": [
+      "ccl_operational_feedback",
+      "discovery_candidates_register"
+    ],
+    "Discovery Lane Optimization": [
+      "discovery_candidates_register"
+    ]
+  }
+}
