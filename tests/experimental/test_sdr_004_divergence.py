@@ -274,3 +274,76 @@ def test_sdr_004_evidence_packaging(tmp_path):
 
     assert loaded_evidence["simulation_id"] == evidence_pack["simulation_id"]
     assert loaded_evidence["boundary_integrity_verification"]["sage_runtime_untouched"] is True
+
+
+def test_sdr_004_evidence_weighted_preference_resolution():
+    """Verify EVIDENCE_WEIGHTED_PREFERENCE resolves to the branch with higher evidence weight, falling back to chronological Early."""
+    sim = DivergentAgentStateSimulator("session_sdr004_07", ["obj_audit"])
+    sim.add_base_task("task_01", "obj_audit", "agent_coord_01")
+
+    time_early = (datetime.now(timezone.utc) - timedelta(hours=1)).isoformat()
+    time_late = datetime.now(timezone.utc).isoformat()
+
+    # Case 1: Branch B has higher evidence weight
+    branch_a_up_1 = [
+        {
+            "task_id": "task_conflict_wt",
+            "objective_id": "obj_audit",
+            "actor_id": "agent_analyst_01",
+            "timestamp": time_early,
+            "status": "completed",
+            "parent_task_id": "task_01",
+            "evidence_weight": 5
+        }
+    ]
+    branch_b_up_1 = [
+        {
+            "task_id": "task_conflict_wt",
+            "objective_id": "obj_audit",
+            "actor_id": "agent_exec_01",
+            "timestamp": time_late,
+            "status": "in_progress",
+            "parent_task_id": "task_01",
+            "evidence_weight": 10  # Higher evidence weight
+        }
+    ]
+
+    branches_1 = sim.generate_divergent_branches(branch_a_up_1, branch_b_up_1)
+    workflow = RecoveryResolutionWorkflow()
+
+    res_wt_1 = workflow.resolve_divergence(branches_1["branch_a"], branches_1["branch_b"], "EVIDENCE_WEIGHTED_PREFERENCE")
+    assert res_wt_1["status"] == "RESOLVED"
+    assert res_wt_1["strategy"] == "EVIDENCE_WEIGHTED_PREFERENCE"
+    resolved_tasks_1 = {t["task_id"]: t for t in res_wt_1["resolved_tasks"]}
+    assert resolved_tasks_1["task_conflict_wt"]["actor_id"] == "agent_exec_01"
+    assert resolved_tasks_1["task_conflict_wt"]["evidence_weight"] == 10
+
+    # Case 2: Equal evidence weights should fallback to chronological早期 early selection
+    branch_a_up_2 = [
+        {
+            "task_id": "task_conflict_wt",
+            "objective_id": "obj_audit",
+            "actor_id": "agent_analyst_01",
+            "timestamp": time_early,
+            "status": "completed",
+            "parent_task_id": "task_01",
+            "evidence_weight": 5
+        }
+    ]
+    branch_b_up_2 = [
+        {
+            "task_id": "task_conflict_wt",
+            "objective_id": "obj_audit",
+            "actor_id": "agent_exec_01",
+            "timestamp": time_late,
+            "status": "in_progress",
+            "parent_task_id": "task_01",
+            "evidence_weight": 5  # Equal weight
+        }
+    ]
+
+    branches_2 = sim.generate_divergent_branches(branch_a_up_2, branch_b_up_2)
+    res_wt_2 = workflow.resolve_divergence(branches_2["branch_a"], branches_2["branch_b"], "EVIDENCE_WEIGHTED_PREFERENCE")
+    resolved_tasks_2 = {t["task_id"]: t for t in res_wt_2["resolved_tasks"]}
+    assert resolved_tasks_2["task_conflict_wt"]["actor_id"] == "agent_analyst_01"  # Selected early timestamp
+    assert resolved_tasks_2["task_conflict_wt"]["timestamp"] == time_early

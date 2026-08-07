@@ -251,6 +251,16 @@ class RecoveryResolutionWorkflow:
                         tier_b = get_tier(t_b.get("actor_id", ""))
 
                         merged_tasks[t_id] = dict(t_a) if tier_a >= tier_b else dict(t_b)
+                    elif strategy == "EVIDENCE_WEIGHTED_PREFERENCE":
+                        weight_a = t_a.get("evidence_weight", 0)
+                        weight_b = t_b.get("evidence_weight", 0)
+                        if weight_a != weight_b:
+                            merged_tasks[t_id] = dict(t_a) if weight_a > weight_b else dict(t_b)
+                        else:
+                            # Fallback to chronological comparison
+                            time_a = datetime.fromisoformat(t_a["timestamp"])
+                            time_b = datetime.fromisoformat(t_b["timestamp"])
+                            merged_tasks[t_id] = dict(t_a) if time_a <= time_b else dict(t_b)
                     else:
                         raise ValueError(f"Unknown resolution strategy: {strategy}")
             elif t_id in tasks_a:
