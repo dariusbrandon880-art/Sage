@@ -158,3 +158,41 @@ class ContextTracker:
             "last_important_decisions": parent_state.important_decisions.copy(),
             "last_archive_references": parent_state.related_archive_references.copy(),
         }
+
+    def get_context_fabric(self, session_id: str | None = None) -> "SAGEContextFabric":
+        """Construct a unified Context Fabric for a session."""
+        ctx = self.get_current_context()
+        if not session_id and self.session_manager.sessions:
+            # Get the latest session
+            session_id = list(self.session_manager.sessions.keys())[-1]
+
+        sess = self.session_manager.retrieve_session(session_id) if session_id else None
+        if sess:
+            return SAGEContextFabric(
+                session_id=sess.session_id,
+                active_context=ctx,
+                active_objectives=sess.active_objectives,
+                completed_actions=sess.completed_actions,
+                pending_actions=sess.pending_actions,
+                important_decisions=sess.important_decisions,
+                related_archive_references=sess.related_archive_references,
+                metadata=sess.metadata,
+            )
+        else:
+            return SAGEContextFabric(
+                session_id=session_id,
+                active_context=ctx,
+            )
+
+
+class SAGEContextFabric(BaseModel):
+    """Unified Context Fabric binding live session state, active continuity context, and archived references."""
+
+    session_id: str | None = None
+    active_context: ContinuityContext
+    active_objectives: list[str] = Field(default_factory=list)
+    completed_actions: list[str] = Field(default_factory=list)
+    pending_actions: list[str] = Field(default_factory=list)
+    important_decisions: list[str] = Field(default_factory=list)
+    related_archive_references: list[str] = Field(default_factory=list)
+    metadata: dict[str, Any] = Field(default_factory=dict)

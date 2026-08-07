@@ -165,6 +165,34 @@ async def get_runtime_metrics():
     return get_metrics_collector().get_metrics()
 
 
+class RehydrateFrameRequest(BaseModel):
+    archive_id: str
+
+
+@app.get("/system-frame")
+async def get_system_frame(session_id: str | None = None):
+    """Retrieve the unified SAGE Context Fabric representation."""
+    try:
+        fabric = runtime.context_tracker.get_context_fabric(session_id)
+        return fabric.model_dump()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to retrieve system frame: {e!s}")
+
+
+@app.post("/system-frame/rehydrate")
+async def rehydrate_system_frame(req: RehydrateFrameRequest):
+    """Rehydrate active context fabric using an entry from the master archive."""
+    try:
+        success = runtime.rehydrate_fabric_from_archive(req.archive_id)
+        if not success:
+            raise HTTPException(status_code=404, detail=f"Archive entry '{req.archive_id}' not found or invalid.")
+        return {"status": "success", "message": f"Successfully rehydrated system frame from archive entry '{req.archive_id}'."}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Rehydration failed: {e!s}")
+
+
 @app.get("/export")
 async def export_state():
     return runtime.export_all()

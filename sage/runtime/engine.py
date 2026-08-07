@@ -498,6 +498,54 @@ class SageRuntime:
         except Exception:
             return False
 
+    def rehydrate_fabric_from_archive(self, archive_id: str) -> bool:
+        """Rehydrate active context fabric using an entry retrieved from the master archive boundary.
+
+        Args:
+            archive_id: ID of the archive entry representing the context fabric.
+
+        Returns:
+            True if rehydration was successful, False otherwise.
+        """
+        entry = self.archive.retrieve_entry(archive_id)
+        if not entry:
+            return False
+
+        content = entry.content or {}
+
+        if "session_state" in content or "active_context" in content or "current_objective" in content:
+            if "current_objective" in content:
+                self.current_state.current_objective = content["current_objective"]
+            if "active_task" in content:
+                self.current_state.active_task = content["active_task"]
+            self._save_state()
+
+            if "session_state" in content:
+                from sage.acr.session.session_state import SessionState
+                sess_data = content["session_state"]
+                if isinstance(sess_data, dict):
+                    sess = SessionState(**sess_data)
+                    self.session_manager.save_session(sess)
+                    self.acr.add_session_link(sess.session_id)
+
+            if "active_context" in content:
+                from sage.acr.session.context_tracker import ContinuityContext
+                ctx_data = content["active_context"]
+                if isinstance(ctx_data, dict):
+                    ctx = ContinuityContext(**ctx_data)
+                    self.context_tracker.save_context(ctx)
+
+            parent_sess = self.acr.get_parent_session()
+            if parent_sess:
+                self.context = ExecutionContext(
+                    session_id=parent_sess,
+                    turn_number=self.acr.get_session_depth() + 1,
+                    metadata={"objective": self.current_state.current_objective},
+                )
+            return True
+
+        return False
+
     def _load_state(self) -> None:
         """Load state.json from workspace."""
         if self.state_file.exists():
