@@ -826,3 +826,50 @@ def test_sage_managed_agent_operating_loop(tmp_path):
         candidates = json.load(f)
     assert len(candidates) >= 1
     assert any("CANDIDATE-OIL-" in c["candidate_id"] for c in candidates)
+
+
+def test_chatgpt_runtime_adapter_and_submission(tmp_path):
+    """Verify that ChatGPTRuntimeAdapter and enhanced submit_external_agent_output work perfectly together."""
+    import json
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ChatGPTRuntimeAdapter, ContinuityControlLoop, SAGEMissionTask
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    evidence_output = tmp_path / "evidence" / "ccl_adapter_feedback.json"
+
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_live_openai_test",
+        objective="obj_continuous_development",
+        ccl=ccl,
+        evidence_output_path=str(evidence_output)
+    )
+
+    # 1. Verify Adapter Handshake
+    adapter = ChatGPTRuntimeAdapter(orchestrator)
+    identity = adapter.authenticate_handshake("chatgpt-runtime-agent", "test_secret_key")
+    assert identity["status"] == "SUCCESS"
+    assert identity["agent_id"] == "chatgpt-runtime-agent"
+    assert identity["session_id"] == "session_live_openai_test"
+    assert "handshake_hash" in identity
+
+    # 2. Verify Flexible Output Submission
+    submit_payload = {
+        "action_taken": "Live OpenAI handshakes completed.",
+        "decision_reasoning": "Real SAGE production OpenAI execution validated successfully.",
+        "completed_action": "task_openai_runtime_activation"
+    }
+
+    validation_result = orchestrator.submit_external_agent_output(
+        agent_id="chatgpt-runtime-agent",
+        output_data=submit_payload,
+        google_account="operator_jules@gmail.com"
+    )
+
+    assert validation_result["status"] == "VALIDATED"
+    assert "cmaps_payload" in validation_result
+    assert validation_result["cmaps_payload"]["agent_identity"]["agent_id"] == "agent_chatgpt_runtime_agent"
+    assert validation_result["cmaps_payload"]["task_lineage"]["current_task_id"] == "task_openai_runtime_activation"
