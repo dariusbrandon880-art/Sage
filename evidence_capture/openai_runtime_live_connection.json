@@ -1,8 +1,8 @@
 {
-  "evaluation_id": "EVAL-OPENAI-BLOCKED-FDB0BA",
-  "timestamp": 1786037522.4472587,
+  "evaluation_id": "EVAL-OPENAI-BLOCKED-05F8F8",
+  "timestamp": 1786070154.2538004,
   "agent_id": "chatgpt-runtime-agent",
-  "session_id": "session_live_openai_f53bf9a7",
+  "session_id": "session_live_openai_3c3fd9ea",
   "authentication_result": "BLOCKED_MISSING_CREDENTIALS",
   "context_retrieval_result": {
     "status": "BLOCKED",
