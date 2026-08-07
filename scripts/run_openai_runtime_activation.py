@@ -170,10 +170,15 @@ def run_openai_activation():
             ]
         }
 
+        success_evidence_file = "evidence_capture/chatgpt_live_runtime_production_activation.json"
+        with open(success_evidence_file, "w", encoding="utf-8") as f:
+            json.dump(live_report, f, indent=2)
+
+        # Also write to standard file for compatibility
         with open(evidence_file, "w", encoding="utf-8") as f:
             json.dump(live_report, f, indent=2)
 
-        print(f"[+] Generated live activation report at {evidence_file}")
+        print(f"[+] Generated live activation report at {success_evidence_file} and {evidence_file}")
 
     except Exception as e:
         print(f"[!] Error during live execution path: {e}")

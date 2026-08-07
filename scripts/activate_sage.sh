@@ -34,6 +34,10 @@ fi
 
 echo -e "${GREEN}[✓] SAGE production readiness verified successfully.${RESET}"
 
+# 3.5 OpenAI Runtime Activation
+echo -e "[*] Running SAGE OpenAI Runtime Activation..."
+python3 scripts/run_openai_runtime_activation.py
+
 # 4. Prompt / Run server launch command
 echo -e "${GREEN}SAGE is ready for live activation!${RESET}"
 echo -e "Launch command: ${YELLOW}uvicorn sage.api:app --host ${HOST:-0.0.0.0} --port ${PORT:-8000}${RESET}"
