@@ -17,12 +17,34 @@ class SAGEChangeImpactAnalyzer:
     def analyze_impact(self, changed_capability_name: str) -> Dict[str, Any]:
         """Deterministically evaluates dependencies, evidence, and claims affected by a change.
 
-        Marks affected items as:
-        - REVALIDATION_REQUIRED: Direct or transitive dependent capabilities and their linked evidence.
-        - UNAFFECTED: No direct or transitive dependency relationship found.
-        - UNKNOWN_DEPENDENCY: Specified changed capability is missing/not present in the passport registry.
+        Allowed classifications ONLY:
+        - UNAFFECTED
+        - REVALIDATION_REQUIRED
+        - UNKNOWN_DEPENDENCY
         """
         if changed_capability_name not in self.passports:
+            # Build unknown dependency responses for all known passports plus the unknown target
+            assessments = {}
+            for name, p in self.passports.items():
+                assessments[name] = {
+                    "change_origin": changed_capability_name,
+                    "affected_capability": name,
+                    "supporting_evidence": p.evidence_path,
+                    "validation_test": p.validation_strategy,
+                    "measurement_verification_state": "PROPOSED_PASSPORT",
+                    "classification": "UNKNOWN_DEPENDENCY",
+                    "reason": f"Dependency on '{changed_capability_name}' is unestablished or missing."
+                }
+            assessments[changed_capability_name] = {
+                "change_origin": changed_capability_name,
+                "affected_capability": changed_capability_name,
+                "supporting_evidence": "",
+                "validation_test": "",
+                "measurement_verification_state": "PROPOSED_PASSPORT",
+                "classification": "UNKNOWN_DEPENDENCY",
+                "reason": f"Capability '{changed_capability_name}' is not registered in the passport registry."
+            }
+
             return {
                 "changed_capability": changed_capability_name,
                 "status": "UNKNOWN_DEPENDENCY",
@@ -30,7 +52,7 @@ class SAGEChangeImpactAnalyzer:
                 "impacted_capabilities_count": 0,
                 "revalidation_required_files_count": 0,
                 "revalidation_required_files": [],
-                "assessments": {}
+                "assessments": assessments
             }
 
         # Compute direct and transitive dependencies (BFS/DFS traversal of the dependency tree)
@@ -71,21 +93,24 @@ class SAGEChangeImpactAnalyzer:
         assessments: Dict[str, Dict[str, Any]] = {}
         for name, p in self.passports.items():
             if name == changed_capability_name:
-                assessments[name] = {
-                    "status": "CHANGED_ORIGIN",
-                    "reason": "This is the source of the capability changes."
-                }
+                classification = "REVALIDATION_REQUIRED"
+                reason = "This is the source of the capability changes."
             elif name in impacted_capabilities:
-                assessments[name] = {
-                    "status": "REVALIDATION_REQUIRED",
-                    "impact_tier": impacted_capabilities[name]["impact_tier"],
-                    "provenance": impacted_capabilities[name]["provenance"]
-                }
+                classification = "REVALIDATION_REQUIRED"
+                reason = impacted_capabilities[name]["provenance"]
             else:
-                assessments[name] = {
-                    "status": "UNAFFECTED",
-                    "reason": f"No direct or transitive dependency on '{changed_capability_name}' exists."
-                }
+                classification = "UNAFFECTED"
+                reason = f"No direct or transitive dependency on '{changed_capability_name}' exists."
+
+            assessments[name] = {
+                "change_origin": changed_capability_name,
+                "affected_capability": name,
+                "supporting_evidence": p.evidence_path,
+                "validation_test": p.validation_strategy,
+                "measurement_verification_state": "VERIFIED_PASSPORT" if p.lifecycle_state == "VALIDATED" else "PROPOSED_PASSPORT",
+                "classification": classification,
+                "reason": reason
+            }
 
         return {
             "changed_capability": changed_capability_name,

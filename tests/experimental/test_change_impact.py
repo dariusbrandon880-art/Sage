@@ -53,23 +53,31 @@ def test_change_impact_direct_and_transitive():
     ]
 
     assessments = report["assessments"]
-    # Direct
-    assert assessments["CAP-PML-RELIABILITY"]["status"] == "REVALIDATION_REQUIRED"
-    assert assessments["CAP-PML-RELIABILITY"]["impact_tier"] == "DIRECT"
-    assert "Directly depends on" in assessments["CAP-PML-RELIABILITY"]["provenance"]
 
-    # Transitive
-    assert assessments["CAP-CONTROL-TOWER"]["status"] == "REVALIDATION_REQUIRED"
-    assert assessments["CAP-CONTROL-TOWER"]["impact_tier"] == "TRANSITIVE"
-    assert "Transitively depends on" in assessments["CAP-CONTROL-TOWER"]["provenance"]
+    # Check 7-tier evaluation chain for CAP-PML-RELIABILITY (Direct)
+    assert assessments["CAP-PML-RELIABILITY"]["change_origin"] == "CAP-COGNITIVE-KERNEL"
+    assert assessments["CAP-PML-RELIABILITY"]["affected_capability"] == "CAP-PML-RELIABILITY"
+    assert assessments["CAP-PML-RELIABILITY"]["supporting_evidence"] == "evidence_capture/pml_reliability.json"
+    assert assessments["CAP-PML-RELIABILITY"]["validation_test"] == "pml_test"
+    assert assessments["CAP-PML-RELIABILITY"]["measurement_verification_state"] == "PROPOSED_PASSPORT"
+    assert assessments["CAP-PML-RELIABILITY"]["classification"] == "REVALIDATION_REQUIRED"
+    assert "Directly depends on" in assessments["CAP-PML-RELIABILITY"]["reason"]
+
+    # Check 7-tier evaluation chain for CAP-CONTROL-TOWER (Transitive)
+    assert assessments["CAP-CONTROL-TOWER"]["change_origin"] == "CAP-COGNITIVE-KERNEL"
+    assert assessments["CAP-CONTROL-TOWER"]["affected_capability"] == "CAP-CONTROL-TOWER"
+    assert assessments["CAP-CONTROL-TOWER"]["supporting_evidence"] == "evidence_capture/tower_health.json"
+    assert assessments["CAP-CONTROL-TOWER"]["validation_test"] == "tower_test"
+    assert assessments["CAP-CONTROL-TOWER"]["classification"] == "REVALIDATION_REQUIRED"
+    assert "Transitively depends on" in assessments["CAP-CONTROL-TOWER"]["reason"]
 
     # Unaffected
-    assert assessments["CAP-DEMO-LAUNCHER"]["status"] == "UNAFFECTED"
+    assert assessments["CAP-DEMO-LAUNCHER"]["classification"] == "UNAFFECTED"
 
     # 2. Unknown dependency analysis
     unknown_report = analyzer.analyze_impact("CAP-NONEXISTENT")
     assert unknown_report["status"] == "UNKNOWN_DEPENDENCY"
-    assert unknown_report["impacted_capabilities_count"] == 0
+    assert unknown_report["assessments"]["CAP-NONEXISTENT"]["classification"] == "UNKNOWN_DEPENDENCY"
 
     # Ensure input immutability and no status mutation of passports
     assert p_core.lifecycle_state == "PROPOSED"
