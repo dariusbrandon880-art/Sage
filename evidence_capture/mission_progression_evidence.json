@@ -1,0 +1,217 @@
+{
+  "compliance_pack_id": "comp_mission_progression_001",
+  "timestamp": "2026-08-08T16:49:32.543242+00:00",
+  "repository_head": "cad969ba0b2bfd2ce46fa1e1e2371b9bce5f2f82",
+  "final_outcome": "SUCCESS",
+  "mission": {
+    "mission_id": "mission_governed_progression_v1",
+    "objective": "Establish the first deterministic, governed Mission Progression cycle",
+    "priority_score": 85.0,
+    "assigned_agent": "agent_jules_sage",
+    "required_evidence": [
+      "git_commit",
+      "protection_report"
+    ]
+  },
+  "progression_sequence": [
+    "INTAKE",
+    "PRIORITIZED",
+    "PREFLIGHT_VALIDATED",
+    "HANDOFF_READY",
+    "HANDOFF_EMITTED",
+    "EXECUTION_RESULT_RECEIVED",
+    "EVIDENCE_VALIDATED",
+    "OUTCOME_CLASSIFIED"
+  ],
+  "transition_receipts": [
+    {
+      "receipt_id": "rec_prog_4c3b156b55e3",
+      "previous_state": null,
+      "next_state": "INTAKE",
+      "mission_id": "mission_governed_progression_v1",
+      "reason": "Mission successfully received and registered at Intake boundary.",
+      "validation_result": {
+        "status": "APPROVED",
+        "details": "All required intake fields verified."
+      },
+      "provenance_reference": "intake_boundary_v1",
+      "sequence_order": 1,
+      "timestamp": "2026-08-08T16:49:32.542446+00:00",
+      "signature": "mock_attestation_1773ba4365307db9e1b8ad908d14f983dbb2c4acb703eb4be90ee63f655bc991"
+    },
+    {
+      "receipt_id": "rec_prog_433ccf9e6df3",
+      "previous_state": "INTAKE",
+      "next_state": "PRIORITIZED",
+      "mission_id": "mission_governed_progression_v1",
+      "reason": "Priority score successfully evaluated and approved.",
+      "validation_result": {
+        "status": "APPROVED",
+        "priority_score": 85.0,
+        "priority_threshold": 50.0
+      },
+      "provenance_reference": "priority_gate_v1",
+      "sequence_order": 2,
+      "timestamp": "2026-08-08T16:49:32.542677+00:00",
+      "signature": "mock_attestation_388b11de156ca0cd6e6c766e5fbc46edfefa69c19592f58e76ae50c49d053eb7"
+    },
+    {
+      "receipt_id": "rec_prog_2b7bedbee3d2",
+      "previous_state": "PRIORITIZED",
+      "next_state": "PREFLIGHT_VALIDATED",
+      "mission_id": "mission_governed_progression_v1",
+      "reason": "PFC Gate Preflight check successfully executed and passed.",
+      "validation_result": {
+        "status": "APPROVED",
+        "reason": "Proposed next action aligns with active mission, passes constraint checks, respects completed milestones, and possesses required evidence.",
+        "confidence_recorded": 1.0,
+        "checks_performed": {
+          "mission_alignment": true,
+          "completed_work_protection": true,
+          "constraint_validation": true,
+          "evidence_requirement_detection": true
+        }
+      },
+      "provenance_reference": "pfc_preflight_gate_v1",
+      "sequence_order": 3,
+      "timestamp": "2026-08-08T16:49:32.542886+00:00",
+      "signature": "mock_attestation_57a5525add7f4b58e1ee07e649625a60f806570f633812308599eaf760d07a0a"
+    },
+    {
+      "receipt_id": "rec_prog_194aba90b58c",
+      "previous_state": "PREFLIGHT_VALIDATED",
+      "next_state": "HANDOFF_READY",
+      "mission_id": "mission_governed_progression_v1",
+      "reason": "Agent authority verified. Mission handoff is ready.",
+      "validation_result": {
+        "status": "APPROVED",
+        "assigned_agent": "agent_jules_sage",
+        "authority_level": "VERIFIED"
+      },
+      "provenance_reference": "agent_authorization_gate_v1",
+      "sequence_order": 4,
+      "timestamp": "2026-08-08T16:49:32.542961+00:00",
+      "signature": "mock_attestation_87d52cb458c578f6cad4afc5b39fbfadd661945d80135036e8bd03c5b910e2b3"
+    },
+    {
+      "receipt_id": "rec_prog_fd1fb8b9fced",
+      "previous_state": "HANDOFF_READY",
+      "next_state": "HANDOFF_EMITTED",
+      "mission_id": "mission_governed_progression_v1",
+      "reason": "MEC Handoff executed successfully.",
+      "validation_result": {
+        "status": "HANDOFF_EMITTED_SUCCESSFULLY",
+        "assigned_agent": "agent_jules_sage",
+        "delegated_at": "telemetry",
+        "zero_spawning_enforced": true
+      },
+      "provenance_reference": "mec_handoff_gate_v1",
+      "sequence_order": 5,
+      "timestamp": "2026-08-08T16:49:32.543033+00:00",
+      "signature": "mock_attestation_9ebf5b8348e8fb3484d830ca2bd5d1f10a06870c0257796e45479c1b9a090d5d"
+    },
+    {
+      "receipt_id": "rec_prog_1c79c402a41e",
+      "previous_state": "HANDOFF_EMITTED",
+      "next_state": "EXECUTION_RESULT_RECEIVED",
+      "mission_id": "mission_governed_progression_v1",
+      "reason": "Execution results received and validated.",
+      "validation_result": {
+        "status": "APPROVED",
+        "output_data_hash": "a58b44ded4671d3f9e1388331a1a874277dd170700dade9e65c15e0e4600ec17"
+      },
+      "provenance_reference": "execution_result_boundary_v1",
+      "sequence_order": 6,
+      "timestamp": "2026-08-08T16:49:32.543108+00:00",
+      "signature": "mock_attestation_70534b61d4a83de787f9f572286ad05de95f18d664519b9e33c6124983022fbc"
+    },
+    {
+      "receipt_id": "rec_prog_c6463bc3c898",
+      "previous_state": "EXECUTION_RESULT_RECEIVED",
+      "next_state": "EVIDENCE_VALIDATED",
+      "mission_id": "mission_governed_progression_v1",
+      "reason": "Evidence validation and Epistemic Causality checks passed.",
+      "validation_result": {
+        "status": "APPROVED",
+        "evidence_validation": "SUCCESS",
+        "causality_validation": "SKIPPED_NO_NODE_ID"
+      },
+      "provenance_reference": "evidence_validation_gate_v1",
+      "sequence_order": 7,
+      "timestamp": "2026-08-08T16:49:32.543181+00:00",
+      "signature": "mock_attestation_32bbab59bdf69d9a25710c278fc8ee061dca46f3375a41b16080b6cb5aad5fef"
+    },
+    {
+      "receipt_id": "rec_prog_b86b1aef3bc5",
+      "previous_state": "EVIDENCE_VALIDATED",
+      "next_state": "OUTCOME_CLASSIFIED",
+      "mission_id": "mission_governed_progression_v1",
+      "reason": "Mission successfully completed. Outcome classified as 'SUCCESS'.",
+      "validation_result": {
+        "status": "APPROVED",
+        "outcome_classification": "SUCCESS"
+      },
+      "provenance_reference": "outcome_classification_boundary_v1",
+      "sequence_order": 8,
+      "timestamp": "2026-08-08T16:49:32.543242+00:00",
+      "signature": "mock_attestation_e689748bc0ab13d8e43ebfca2efa0ef818ef6f68f267404974d48fbcf6e9b1f2"
+    }
+  ],
+  "validation_outcomes": {
+    "intake": {
+      "status": "APPROVED",
+      "details": "All required intake fields verified."
+    },
+    "priority": {
+      "status": "APPROVED",
+      "priority_score": 85.0,
+      "priority_threshold": 50.0
+    },
+    "preflight": {
+      "status": "APPROVED",
+      "reason": "Proposed next action aligns with active mission, passes constraint checks, respects completed milestones, and possesses required evidence.",
+      "confidence_recorded": 1.0,
+      "checks_performed": {
+        "mission_alignment": true,
+        "completed_work_protection": true,
+        "constraint_validation": true,
+        "evidence_requirement_detection": true
+      }
+    },
+    "handoff_ready": {
+      "status": "APPROVED",
+      "assigned_agent": "agent_jules_sage",
+      "authority_level": "VERIFIED"
+    },
+    "handoff_emitted": {
+      "status": "HANDOFF_EMITTED_SUCCESSFULLY",
+      "assigned_agent": "agent_jules_sage",
+      "delegated_at": "telemetry",
+      "zero_spawning_enforced": true
+    },
+    "execution_result": {
+      "status": "APPROVED",
+      "output_data_hash": "a58b44ded4671d3f9e1388331a1a874277dd170700dade9e65c15e0e4600ec17"
+    },
+    "evidence_validation": {
+      "status": "APPROVED",
+      "evidence_validation": "SUCCESS",
+      "causality_validation": "SKIPPED_NO_NODE_ID"
+    },
+    "outcome_classification": {
+      "status": "APPROVED",
+      "outcome_classification": "SUCCESS"
+    }
+  },
+  "test_evidence": {
+    "tests_passed": 18,
+    "suite": "tests/experimental/test_progression.py",
+    "result_status": "GREEN"
+  },
+  "provenance": {
+    "author": "Jules",
+    "system": "SAGE",
+    "session_lane": "NEW ADVANCEMENT",
+    "security_standard": "EAS-001"
+  }
+}
