@@ -28,7 +28,7 @@ class ChangeImpactReport(BaseModel):
     revalidation_required: bool = Field(..., description="True if at least one capability requires revalidation")
     provenance_chain: List[Dict[str, Any]] = Field(
         default_factory=list,
-        description="Change -> Affected Capability -> Supporting Evidence -> Test -> Classification -> Reason"
+        description="Change -> Capability -> Evidence -> Validation/Test -> Measurement/Verification State -> Classification -> Reason"
     )
 
 
@@ -39,16 +39,14 @@ class SAGEChangeImpactAnalyzer:
     """
 
     def __init__(self, registry_path: str = "evidence_capture/operational_capability_registry.json") -> None:
-        self.registry = SAGEOperationalCapabilityRegistry(storage_path=registry_path)
+        self.registry = SAGEOperationalCapabilityRegistry(registry_path)
 
     def analyze_changes(self, modified_files: List[str]) -> ChangeImpactReport:
         """Deterministically assess the impact of modified files on SAGE capabilities."""
-        import uuid
-        import time
+        import hashlib
 
         # Generate a deterministic evaluation ID based on file names
         seed = "".join(sorted(modified_files))
-        import hashlib
         eval_hash = hashlib.sha256(seed.encode("utf-8")).hexdigest()[:12].upper()
         evaluation_id = f"EVAL-IMPACT-{eval_hash}"
 
@@ -61,9 +59,6 @@ class SAGEChangeImpactAnalyzer:
             classification = "UNAFFECTED"
             reason = "No overlap with registered test references, evidence files, or namespace paths."
 
-            # Verify inputs immutability
-            # If the modified file matches any of the test references, it's REVALIDATION_REQUIRED
-            # If the modified file is in a protected path that is highly relevant to this capability, we check
             is_affected = False
             matched_test = None
             matched_evidence = None
@@ -75,7 +70,6 @@ class SAGEChangeImpactAnalyzer:
                     matched_test = file
                     break
                 # 2. Indirect match: modified file is in the same directory or has same name token
-                # E.g. modifying sage/experimental/cognitive/prefrontal_cortex.py affects CAP-COGNITIVE-KERNEL
                 if "cognitive" in file and cap.capability_id == "CAP-COGNITIVE-KERNEL":
                     is_affected = True
                     matched_test = "sage/experimental/cognitive/prefrontal_cortex.py"
@@ -104,13 +98,11 @@ class SAGEChangeImpactAnalyzer:
                 # Check for unknown dependencies.
                 # If a modified file is outside known paths, we must classify it as UNKNOWN_DEPENDENCY if it might affect this capability
                 # To be secure, we never assume an unknown dependency is safe!
-                # For example, if a generic/root helper file is modified (like sage/__init__.py or a non-core experimental file),
-                # we classify it as UNKNOWN_DEPENDENCY for affected capabilities.
+                # For example, if a generic/root helper file is modified, we classify it as UNKNOWN_DEPENDENCY.
                 unknown_match = False
                 for file in modified_files:
                     if file.startswith("sage/") and not file.startswith("sage/core/") and not file.startswith("sage/runtime/") and not file.startswith("sage/acr/"):
-                        # It is an experimental or shared helper outside known mapping
-                        if "mission" in file or "registry" in file:
+                        if "mission" in file or "registry" in file or "change" in file:
                             unknown_match = True
                             break
 
@@ -130,14 +122,14 @@ class SAGEChangeImpactAnalyzer:
             )
             impacted_capabilities.append(result)
 
-            # Record provenance chain
+            # Record provenance chain matching exact requested keys
             provenance_chain.append({
-                "change_input": modified_files,
-                "affected_capability": cap.capability_id,
-                "supporting_evidence": cap.evidence_references,
+                "change": modified_files,
+                "capability": cap.capability_id,
+                "evidence": cap.evidence_references,
                 "validation_test": cap.test_references,
                 "measurement_verification_state": cap.archive_promotion_status,
-                "impact_classification": classification,
+                "classification": classification,
                 "reason": reason
             })
 
