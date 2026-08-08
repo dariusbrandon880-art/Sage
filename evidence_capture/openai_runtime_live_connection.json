@@ -1,22 +1,21 @@
 {
-  "evaluation_id": "EVAL-OPENAI-PAUSED-274594",
-  "timestamp": 1786113724.4807093,
+  "evaluation_id": "EVAL-OPENAI-BLOCKED-49D52A",
+  "timestamp": 1786100294.263974,
   "agent_id": "chatgpt-runtime-agent",
-  "session_id": "session_live_openai_ab0d299e",
-  "authentication_result": "SUCCESS",
+  "session_id": "session_live_openai_8a451bc5",
+  "authentication_result": "BLOCKED_MISSING_CREDENTIALS",
   "context_retrieval_result": {
-    "status": "PAUSED",
-    "error": "External dependency failure: OpenAI API returned non-200 status code: 401 - {\n    \"error\": {\n        \"message\": \"Incorrect API key provided: test. You can find your API key at https://platform.openai.com/account/api-keys.\",\n        \"type\": \"invalid_request_error\",\n        \"param\": null,\n        \"code\": \"invalid_api_key\"\n    }\n}\n"
+    "status": "BLOCKED",
+    "error": "Handshake halted due to missing credentials"
   },
   "mission_id": "obj_continuous_development",
   "execution_result": {
     "task_id": "task_openai_runtime_activation",
     "executed": false,
-    "completion_status": "PAUSED_INSUFFICIENT_QUOTA",
-    "details": "OpenAI API returned non-200 status code: 401 - {\n    \"error\": {\n        \"message\": \"Incorrect API key provided: test. You can find your API key at https://platform.openai.com/account/api-keys.\",\n        \"type\": \"invalid_request_error\",\n        \"param\": null,\n        \"code\": \"invalid_api_key\"\n    }\n}\n"
+    "completion_status": "BLOCKED"
   },
   "validation_result": {
-    "status": "PAUSED",
+    "status": "BLOCKED",
     "is_compliant": false,
     "signer_identity": "supervisor_jules"
   },
@@ -27,5 +26,5 @@
   "artifact_references": [
     "evidence_capture/openai_runtime_live_connection.json"
   ],
-  "blocker_details": "OpenAI credits unavailable or limit hit: OpenAI API returned non-200 status code: 401 - {\n    \"error\": {\n        \"message\": \"Incorrect API key provided: test. You can find your API key at https://platform.openai.com/account/api-keys.\",\n        \"type\": \"invalid_request_error\",\n        \"param\": null,\n        \"code\": \"invalid_api_key\"\n    }\n}\n"
+  "blocker_details": "OPENAI_API_KEY is not set in the environment. | SAGE_AUTH_SECRET is not set in the environment."
 }

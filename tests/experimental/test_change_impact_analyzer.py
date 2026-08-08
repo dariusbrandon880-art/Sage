@@ -2,7 +2,7 @@
 
 import pytest
 from sage.experimental.act.capability_passport import CapabilityPassport
-from sage.experimental.act.change_impact import SAGEChangeImpactAnalyzer
+from sage.experimental.change_impact import SAGEChangeImpactAnalyzer
 
 
 def test_change_impact_direct_and_transitive():
