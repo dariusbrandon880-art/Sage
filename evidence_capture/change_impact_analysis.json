@@ -1,0 +1,107 @@
+{
+  "evaluation_id": "EVAL-IMPACT-2026-F98D2E",
+  "timestamp": 1786020547.0,
+  "modified_files_evaluated": [
+    "tests/test_continuity_persistence.py",
+    "sage/mission_control.py",
+    "docs/vision/AI_CIVILIZATION_OPERATING_SYSTEM_VISION.md"
+  ],
+  "impacted_capabilities": [
+    {
+      "capability_id": "CAP-STATE-PERSISTENCE",
+      "name": "State Persistence",
+      "classification": "REVALIDATION_REQUIRED",
+      "supporting_evidence": [
+        "evidence_capture/ccl_operational_feedback.json"
+      ],
+      "test_references": [
+        "tests/test_continuity_persistence.py"
+    ],
+      "reason": "Direct modification of supporting validation test suite: 'tests/test_continuity_persistence.py'."
+    },
+    {
+      "capability_id": "CAP-COGNITIVE-KERNEL",
+      "name": "Cognitive Kernel Foundation",
+      "classification": "UNKNOWN_DEPENDENCY",
+      "supporting_evidence": [
+        "evidence_capture/cognitive_kernel_foundation_report.json"
+      ],
+      "test_references": [
+        "tests/experimental/test_cognitive_kernel.py"
+      ],
+      "reason": "Changes to shared experimental helper files contain potential untracked dependencies."
+    },
+    {
+      "capability_id": "CAP-PML-RELIABILITY",
+      "name": "PML Operational Reliability",
+      "classification": "UNKNOWN_DEPENDENCY",
+      "supporting_evidence": [
+        "evidence_capture/ccl_orchestrator_evidence.json"
+      ],
+      "test_references": [
+        "tests/experimental/test_continuity_control.py"
+      ],
+      "reason": "Changes to shared experimental helper files contain potential untracked dependencies."
+    }
+  ],
+  "revalidation_required": true,
+  "provenance_chain": [
+    {
+      "change_input": [
+        "tests/test_continuity_persistence.py",
+        "sage/mission_control.py",
+        "docs/vision/AI_CIVILIZATION_OPERATING_SYSTEM_VISION.md"
+      ],
+      "affected_capability": "CAP-STATE-PERSISTENCE",
+      "supporting_evidence": [
+        "evidence_capture/ccl_operational_feedback.json"
+      ],
+      "validation_test": [
+        "tests/test_continuity_persistence.py"
+      ],
+      "measurement_verification_state": "READY",
+      "impact_classification": "REVALIDATION_REQUIRED",
+      "reason": "Direct modification of supporting validation test suite: 'tests/test_continuity_persistence.py'."
+    },
+    {
+      "change_input": [
+        "tests/test_continuity_persistence.py",
+        "sage/mission_control.py",
+        "docs/vision/AI_CIVILIZATION_OPERATING_SYSTEM_VISION.md"
+      ],
+      "affected_capability": "CAP-COGNITIVE-KERNEL",
+      "supporting_evidence": [
+        "evidence_capture/cognitive_kernel_foundation_report.json"
+      ],
+      "validation_test": [
+        "tests/experimental/test_cognitive_kernel.py"
+      ],
+      "measurement_verification_state": "READY",
+      "impact_classification": "UNKNOWN_DEPENDENCY",
+      "reason": "Changes to shared experimental helper files contain potential untracked dependencies."
+    },
+    {
+      "change_input": [
+        "tests/test_continuity_persistence.py",
+        "sage/mission_control.py",
+        "docs/vision/AI_CIVILIZATION_OPERATING_SYSTEM_VISION.md"
+      ],
+      "affected_capability": "CAP-PML-RELIABILITY",
+      "supporting_evidence": [
+        "evidence_capture/ccl_orchestrator_evidence.json"
+      ],
+      "validation_test": [
+        "tests/experimental/test_continuity_control.py"
+      ],
+      "measurement_verification_state": "READY",
+      "impact_classification": "UNKNOWN_DEPENDENCY",
+      "reason": "Changes to shared experimental helper files contain potential untracked dependencies."
+    }
+  ],
+  "governance_compliance_check": {
+    "read_only_enforced": true,
+    "no_status_mutation": true,
+    "no_archive_promotion": true,
+    "non_execution_status": "PASSED"
+  }
+}

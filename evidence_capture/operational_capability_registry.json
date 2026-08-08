@@ -1,0 +1,100 @@
+[
+  {
+    "capability_id": "CAP-STATE-PERSISTENCE",
+    "name": "State Persistence",
+    "description": "Continuous, atomic serialization of active objectives and task states.",
+    "implementation_status": "IMPLEMENTED",
+    "validation_status": "VALIDATED",
+    "evidence_references": [
+      "evidence_capture/ccl_operational_feedback.json"
+    ],
+    "test_references": [
+      "tests/test_continuity_persistence.py"
+    ],
+    "archive_promotion_status": "READY"
+  },
+  {
+    "capability_id": "CAP-CHECKPOINTING",
+    "name": "State Checkpointing",
+    "description": "On-demand, full database and state serialization checkpoints with rollback.",
+    "implementation_status": "IMPLEMENTED",
+    "validation_status": "VALIDATED",
+    "evidence_references": [
+      "evidence_capture/ccl_operational_feedback.json"
+    ],
+    "test_references": [
+      "tests/test_continuity_intelligence.py"
+    ],
+    "archive_promotion_status": "READY"
+  },
+  {
+    "capability_id": "CAP-HANDOFF-GENERATION",
+    "name": "Handoff Generation",
+    "description": "Exporting full system context and session lineage for handoff transitions.",
+    "implementation_status": "IMPLEMENTED",
+    "validation_status": "VALIDATED",
+    "evidence_references": [
+      "evidence_capture/ccl_operational_feedback.json"
+    ],
+    "test_references": [
+      "tests/test_new_systems.py"
+    ],
+    "archive_promotion_status": "READY"
+  },
+  {
+    "capability_id": "CAP-WORKSPACE-SNAPSHOTS",
+    "name": "Workspace Snapshots",
+    "description": "Granular snapshots stored under .sage/sage_state.json for fast reboot hydration.",
+    "implementation_status": "IMPLEMENTED",
+    "validation_status": "VALIDATED",
+    "evidence_references": [
+      "evidence_capture/ccl_operational_feedback.json"
+    ],
+    "test_references": [
+      "tests/test_continuity_intelligence.py"
+    ],
+    "archive_promotion_status": "READY"
+  },
+  {
+    "capability_id": "CAP-CONTINUITY-BRIDGE",
+    "name": "Continuity Bridge",
+    "description": "Single authoritative ingestion pipeline mapping raw interactions into state.",
+    "implementation_status": "IMPLEMENTED",
+    "validation_status": "VALIDATED",
+    "evidence_references": [
+      "evidence_capture/ccl_operational_feedback.json"
+    ],
+    "test_references": [
+      "tests/test_continuity_bridge.py"
+    ],
+    "archive_promotion_status": "READY"
+  },
+  {
+    "capability_id": "CAP-COGNITIVE-KERNEL",
+    "name": "Cognitive Kernel Foundation",
+    "description": "High-fidelity prefrontal cortex safety gates, agent constraints, and decision evaluations.",
+    "implementation_status": "IMPLEMENTED",
+    "validation_status": "VALIDATED",
+    "evidence_references": [
+      "evidence_capture/cognitive_kernel_foundation_report.json"
+    ],
+    "test_references": [
+      "tests/experimental/test_cognitive_kernel.py"
+    ],
+    "archive_promotion_status": "READY"
+  },
+  {
+    "capability_id": "CAP-PML-RELIABILITY",
+    "name": "PML Operational Reliability",
+    "description": "Cryptographic hash chains, sequence validation, and truncation/rollback tampering detection.",
+    "implementation_status": "IMPLEMENTED",
+    "validation_status": "VALIDATED",
+    "evidence_references": [
+      "evidence_capture/ccl_orchestrator_evidence.json"
+    ],
+    "test_references": [
+      "tests/experimental/test_continuity_control.py"
+    ],
+    "archive_promotion_status": "READY"
+  }
+]
