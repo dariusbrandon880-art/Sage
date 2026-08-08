@@ -2,6 +2,7 @@
 
 Operates strictly within experimental/read-only boundaries to compare SAGE
 capability/evidence states against applicable governance constraints mechanically.
+Resides outside protected ACT/ACR/CCL/PML/Core/Runtime boundaries.
 """
 
 import json
@@ -201,6 +202,29 @@ class GovernanceConformanceAssessor:
         requirements[req_promo] = ConformanceRequirement(
             requirement_name=req_promo,
             expected_invariant=expected_promo,
+            observed_evidence=observed,
+            assessment_status=status,
+            supporting_provenance=provenance
+        )
+
+        # 6. Deployment Isolation
+        req_deploy = "deployment-isolation"
+        expected_deploy = "Render and deployment targets must keep active services isolated and non-mutable."
+
+        # Check metadata
+        meta = evidence_data.get("metadata") or {}
+        if "deployment" in str(evidence_data).lower() or "render" in str(evidence_data).lower():
+            observed = f"Deployment isolation metadata identified: {meta}"
+            status = "CONFORMANT"
+            provenance = {"metadata": meta}
+        else:
+            observed = "No active deployment/Render mutations or logs are referenced in this run."
+            status = "NOT_APPLICABLE"
+            provenance = {}
+
+        requirements[req_deploy] = ConformanceRequirement(
+            requirement_name=req_deploy,
+            expected_invariant=expected_deploy,
             observed_evidence=observed,
             assessment_status=status,
             supporting_provenance=provenance

@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-08-07T23:33:32.269811+00:00",
+  "timestamp": "2026-08-08T00:00:31.206007+00:00",
   "total_artifacts_indexed": 33,
   "artifacts": {
     "eval_phase4_scenario_b_001": {
@@ -120,15 +120,15 @@
     "governance_conformance_assessment": {
       "artifact_id": "governance_conformance_assessment",
       "file_path": "evidence_capture/governance_conformance_assessment.json",
-      "timestamp": "2026-08-07T23:32:08.278647+00:00",
+      "timestamp": "2026-08-07T23:58:35.530523+00:00",
       "capabilities_validated": [],
       "test_suites_referenced": [],
       "validation_status": "VALIDATED",
       "archive_promotion_status": "READY_FOR_PROMOTION",
       "relationships": [],
-      "audit_hash": "ee85bf9bb39f9f40673aaf19af8c2c77319ce4d277dafccc68a9000a1c0bafb9",
+      "audit_hash": "d1a5aae4406d05efefe283ff6f309d8462f7067a31743855f016a984bdf58264",
       "metadata": {
-        "file_size_bytes": 3010
+        "file_size_bytes": 3393
       }
     },
     "rec_guard_31dea8154e49": {
@@ -172,7 +172,7 @@
     "eval_phase4_scenario_a_001": {
       "artifact_id": "eval_phase4_scenario_a_001",
       "file_path": "evidence_capture/phase_4_repeatability_run_1_scenario_a.json",
-      "timestamp": "2026-08-07T23:16:56.072949+00:00",
+      "timestamp": "2026-08-07T23:36:48.865470+00:00",
       "capabilities_validated": [
         "Phase 4 Repeatability & Determinism",
         "State Divergence Resolution (SDR-004)"
@@ -183,7 +183,7 @@
       "validation_status": "VALIDATED",
       "archive_promotion_status": "READY_FOR_PROMOTION",
       "relationships": [],
-      "audit_hash": "0201c9157324dd9ccff2ff63084e54bc10c3de5cd27e79cf51f2c5c94d7918d7",
+      "audit_hash": "7df04bd7368850478cfc05e7113dafee1025be4c72090621ccbe6337228e867d",
       "metadata": {
         "file_size_bytes": 11039
       }
@@ -258,7 +258,7 @@
     "phase_4_repeatability_summary": {
       "artifact_id": "phase_4_repeatability_summary",
       "file_path": "evidence_capture/phase_4_repeatability_summary.json",
-      "timestamp": "2026-08-07T23:16:56.114667+00:00",
+      "timestamp": "2026-08-07T23:36:48.893936+00:00",
       "capabilities_validated": [
         "Phase 4 Repeatability & Determinism",
         "State Divergence Resolution (SDR-004)"
@@ -269,7 +269,7 @@
       "validation_status": "VALIDATED",
       "archive_promotion_status": "READY_FOR_PROMOTION",
       "relationships": [],
-      "audit_hash": "1a479385c4b1254d75e3f572d8f4f8e2264564af402b38dcfe48c75b9b366238",
+      "audit_hash": "cadde31495811f401ec24fdab243942a9cabed73f9d91dd337d04d0bd25c58b3",
       "metadata": {
         "file_size_bytes": 2041
       }

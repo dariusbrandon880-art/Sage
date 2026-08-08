@@ -1,7 +1,7 @@
 {
   "capability_id": "CAP-PHASE-4-EVAL",
-  "run_id": "run_phase4_eval_6d35a5df",
-  "timestamp": "2026-08-07T23:32:08.278647+00:00",
+  "run_id": "run_phase4_eval_69bd4b55",
+  "timestamp": "2026-08-07T23:58:35.530523+00:00",
   "overall_conformance": "INSUFFICIENT_EVIDENCE",
   "requirements": {
     "protected-boundary-preservation": {
@@ -50,11 +50,18 @@
       "observed_evidence": "No explicit supervisor authorization/attestation found in evidence record.",
       "assessment_status": "INSUFFICIENT_EVIDENCE",
       "supporting_provenance": {}
+    },
+    "deployment-isolation": {
+      "requirement_name": "deployment-isolation",
+      "expected_invariant": "Render and deployment targets must keep active services isolated and non-mutable.",
+      "observed_evidence": "No active deployment/Render mutations or logs are referenced in this run.",
+      "assessment_status": "NOT_APPLICABLE",
+      "supporting_provenance": {}
     }
   },
   "metadata": {
     "source_run_details": {
-      "run_id": "run_phase4_eval_6d35a5df"
+      "run_id": "run_phase4_eval_69bd4b55"
     }
   }
 }

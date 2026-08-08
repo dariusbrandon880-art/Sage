@@ -2,7 +2,7 @@
 
 import json
 from pathlib import Path
-from sage.experimental.act.governance_conformance import (
+from sage.experimental.governance_conformance import (
     GovernanceConformanceAssessor,
     GovernanceConformanceAssessmentReport,
     ConformanceRequirement
