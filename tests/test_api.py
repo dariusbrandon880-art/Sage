@@ -5,17 +5,26 @@ import tempfile
 
 from fastapi.testclient import TestClient
 
-# Mock the runtime's workspace path so the tests don't pollute the real workspace
+from sage.api import app, runtime, validation
+
+# Save original workspace path to prevent state pollution
+original_workspace_path = runtime.workspace_path
 
 tmp_dir_obj = tempfile.TemporaryDirectory()
 tmpdir = tmp_dir_obj.name
-
-from sage.api import app, runtime, validation
 
 # Configure the global runtime to use the temporary directory
 runtime.__init__(workspace_path=tmpdir)
 runtime.start()
 validation.__init__(runtime.memory, runtime.archive)
+
+
+def teardown_module(module):
+    """Restore the original workspace path to prevent state pollution across other test modules."""
+    runtime.__init__(workspace_path=original_workspace_path)
+    runtime.start()
+    validation.__init__(runtime.memory, runtime.archive)
+    tmp_dir_obj.cleanup()
 
 
 def test_root_endpoint():
