@@ -85,15 +85,21 @@ def main():
     )
     audit_parser.add_argument(
         "--action",
-        choices=["summary", "diagnostics", "scan"],
+        choices=["summary", "diagnostics", "scan", "revalidate"],
         required=True,
         help="Audit action to perform",
     )
     audit_parser.add_argument(
-        "--mission-id", type=str, help="Mission ID for diagnostics action"
+        "--mission-id", type=str, help="Mission ID for diagnostics/revalidate action"
     )
     audit_parser.add_argument(
         "--archive-path", type=str, default="sage_data/archive", help="Path to SAGE Archive"
+    )
+    audit_parser.add_argument(
+        "--files", type=str, help="Comma/Space-separated list of modified files for revalidate action"
+    )
+    audit_parser.add_argument(
+        "--run-real-lint", action="store_true", help="Flag to run actual ruff check on target files"
     )
 
     args = parser.parse_args()
@@ -256,6 +262,25 @@ def main():
                 print(json.dumps(result, indent=2))
             elif args.action == "scan":
                 result = dashboard.handle_corrupted_archive_data()
+                print(json.dumps(result, indent=2))
+            elif args.action == "revalidate":
+                if not args.files:
+                    print("Error: --files is required for revalidate action.")
+                    sys.exit(1)
+                files_list = [f.strip() for f in args.files.replace(",", " ").split()]
+                if not files_list:
+                    print("Error: --files list is empty.")
+                    sys.exit(1)
+
+                bridge_module = importlib.import_module("sage.experimental.mission_control_bridge")
+                SAGEMissionExecutionBridge = bridge_module.SAGEMissionExecutionBridge
+
+                bridge = SAGEMissionExecutionBridge(archive_path=args.archive_path)
+                result = bridge.execute_revalidation_workload(
+                    mission_id=args.mission_id or "cli_reval_mission",
+                    target_files=files_list,
+                    run_real_lint=args.run_real_lint
+                )
                 print(json.dumps(result, indent=2))
         except Exception as e:
             print(f"Error: Audit execution failed: {e!s}")

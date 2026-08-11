@@ -73,3 +73,33 @@ def test_cli_audit_diagnostics_missing(tmp_path, capsys):
 
     captured = capsys.readouterr()
     assert "Error: No archived trace found for mission" in captured.out
+
+
+def test_cli_audit_revalidate(tmp_path, capsys):
+    """Verify SAGE CLI 'audit' action 'revalidate' successfully runs the entire pipeline and promotes the trace."""
+    archive_dir = tmp_path / "archive"
+    archive_dir.mkdir()
+
+    test_args = [
+        "sage/cli.py",
+        "audit",
+        "--action", "revalidate",
+        "--mission-id", "cli_test_mission",
+        "--files", "tests/test_continuity_persistence.py",
+        "--archive-path", str(archive_dir)
+    ]
+
+    with patch.object(sys, "argv", test_args):
+        main()
+
+    captured = capsys.readouterr()
+    stdout_json = json.loads(captured.out)
+
+    assert stdout_json["mission_id"] == "cli_test_mission"
+    assert stdout_json["overall_success"] is True
+    assert stdout_json["final_state"] == "CLOSED"
+    assert stdout_json["archived_entry_id"] == "ARCHIVE-REVAL-cli_test_mission"
+
+    # Verify the trace JSON file is successfully created in SAGE Archive
+    archive_file = archive_dir / "ARCHIVE-REVAL-cli_test_mission.json"
+    assert archive_file.exists()
