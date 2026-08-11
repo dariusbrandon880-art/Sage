@@ -170,6 +170,39 @@ def main():
     elif args.command == "verify":
         try:
             result = runtime.verify_integrity()
+
+            # Inline verification of SAGE Workload Receipt Chain inside sage/cli.py to respect One-Way Import and Frozen namespaces
+            import os
+            import importlib
+            evidence_path = "evidence_capture/workspace_revalidation_evidence.json"
+            if os.path.exists(evidence_path):
+                try:
+                    bridge_mod = importlib.import_module("sage.experimental.mission_control_bridge")
+                    SAGEWorkloadReceiptChain = getattr(bridge_mod, "SAGEWorkloadReceiptChain")
+                    is_chain_valid = SAGEWorkloadReceiptChain.verify_chain_integrity(evidence_path)
+
+                    # Update result dict to expose receipt chain status to operator!
+                    result["receipt_chain_integrity"] = "VALID" if is_chain_valid else "INVALID"
+
+                    # If invalid, append an issue to result["issues"]!
+                    if not is_chain_valid:
+                        if "issues" not in result:
+                            result["issues"] = []
+                        result["issues"].append("SAGE Workload Receipt Chain Integrity Violation: Cryptographic signature mismatch or sequence loop detected!")
+                        result["is_valid"] = False
+                    else:
+                        try:
+                            with open(evidence_path, "r", encoding="utf-8") as f:
+                                evidence_data = json.load(f)
+                                result["receipt_count"] = len(evidence_data.get("cryptographic_receipt_chain", []))
+                        except Exception:
+                            pass
+                except Exception as ex:
+                    if "issues" not in result:
+                        result["issues"] = []
+                    result["issues"].append(f"Receipt chain verification failed: {ex}")
+                    result["is_valid"] = False
+
             print(json.dumps(result, indent=2))
             if not result.get("is_valid", False):
                 sys.exit(1)

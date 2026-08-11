@@ -21,7 +21,7 @@
   "execution_result": {
     "status": "COMPLETED",
     "output_log_summary": "STDOUT:\nAll checks passed!\n\nSTDERR:\n",
-    "duration_ms": 1417.5503489996117
+    "duration_ms": 1376.5666780000174
   },
   "progression_state": {
     "terminal_state": "CLOSED",
@@ -39,7 +39,7 @@
     ]
   },
   "metrics": {
-    "elapsed_time_ms": 1418.5080589995778,
+    "elapsed_time_ms": 1378.0497119987558,
     "capabilities_updated_count": 1,
     "prediction_vs_observed_impact": {
       "predicted_revalidation_needed": true,
@@ -52,18 +52,18 @@
     {
       "sequence_number": 1,
       "task_id": "task_1_genesis",
-      "timestamp": 1786470606.2766714,
-      "payload_hash": "c72df9fba5940eaa0c057ef7d4a5fd2bfde919ba0a1e9de935e3f89d0aa6f564",
+      "timestamp": 1786472986.1324852,
+      "payload_hash": "e5bc5e408efcaa36c4a49368ce89438758933b6643af8a04783e63fbadcca8e3",
       "preceding_hash": "GENESIS_ROOT",
-      "signature_hash": "4ef3b1706983b17fa5426348f37ca56b735754e94a15777139a80bf28de887e5"
+      "signature_hash": "50bb17119c4452ba1f1b3615b67ab2be04948ebd09680dea44dec32367755e7d"
     },
     {
       "sequence_number": 2,
       "task_id": "task_2_continuation",
-      "timestamp": 1786470607.6998703,
-      "payload_hash": "f622aee05a3674380a232e77e48725304756b993f3f8118d08d73ec33ecde016",
-      "preceding_hash": "4ef3b1706983b17fa5426348f37ca56b735754e94a15777139a80bf28de887e5",
-      "signature_hash": "0e1561f26357dbe014e8c4b2ed5cd02c1ac2990d16841c67f6e5a81ab8794c65"
+      "timestamp": 1786472987.5161362,
+      "payload_hash": "5e3fd923f5ac2533c763bb2f14b4800bff0b000543ce0c9af3b79c95ce482cfd",
+      "preceding_hash": "50bb17119c4452ba1f1b3615b67ab2be04948ebd09680dea44dec32367755e7d",
+      "signature_hash": "b1e8b532a49fcdc831b4a387238ec2eaa41059e08ba4ee9975172d0218618066"
     }
   ]
 }
