@@ -232,3 +232,144 @@ def test_execute_governed_cycle_with_cognitive_blocked(temp_registry, tmp_path):
     assert "cognitive_safety_block" in report
     assert report["cognitive_safety_block"]["outcome"] == "BLOCK"
     assert "authorized agents list" in report["cognitive_safety_block"]["reason"]
+
+
+def test_recover_from_cognitive_block_success(temp_registry, tmp_path):
+    """Verify that a blocked workload successfully recovers with a corrected cognitive state."""
+    from sage.experimental.cognitive.state_schema import (
+        CognitiveState, CognitiveAgentIdentity, CognitiveActiveMission,
+        CognitiveOperatorConstraints, CognitiveConfidenceState, CognitiveNextAction
+    )
+
+    evidence_file = tmp_path / "workspace_revalidation_evidence.json"
+    bridge = SAGEMissionExecutionBridge(
+        registry_path=str(temp_registry),
+        evidence_path=str(evidence_file)
+    )
+
+    # 1. Create a blocked report representation
+    blocked_report = {
+        "task_id": "task_blocked_original",
+        "mission_id": "mission_original_id",
+        "changed_files": ["tests/test_continuity_persistence.py"],
+        "impact_evaluation": {
+            "evaluation_id": "EVAL-1234",
+            "revalidation_required": True,
+            "affected_capabilities": ["CAP-STATE-PERSISTENCE"]
+        }
+    }
+
+    # 2. Corrected safe cognitive state
+    safe_state = CognitiveState(
+        agent_identity=CognitiveAgentIdentity(
+            agent_id="agent_jules_sage",
+            name="Jules SAGE",
+            role="TIER_1_COORDINATOR",
+            authority_level="TIER_1_COORDINATOR",
+            governance_tier="TRUSTED"
+        ),
+        active_mission=CognitiveActiveMission(
+            mission_id="msn_reval_test",
+            objective="revalidate persistence",
+            status="RUNNING"
+        ),
+        operator_constraints=CognitiveOperatorConstraints(
+            authorized_agents=["agent_jules_sage"]
+        ),
+        confidence_state=CognitiveConfidenceState(
+            overall_confidence=0.9,
+            last_updated=1700000000.0
+        ),
+        next_action=CognitiveNextAction(
+            action_id="action_reval",
+            description="revalidate persistence",
+            assigned_agent="agent_jules_sage"
+        )
+    )
+
+    # Run the recovery
+    recovery_report = bridge.recover_from_cognitive_block(
+        blocked_report=blocked_report,
+        remediation_state=safe_state,
+        task_id="task_recovery_success_test"
+    )
+
+    assert recovery_report["recovery_status"] == "SUCCESS_RECOVERED"
+    assert recovery_report["progression_state"]["terminal_state"] == "CLOSED"
+    assert recovery_report["metrics"]["archived_entries_count"] == 1
+    assert "archive_entry_promoted_id" in recovery_report
+
+    # Verify permanent Archive entry was promoted on disk
+    archive_id = recovery_report["archive_entry_promoted_id"]
+    from sage.archive.core import Archive
+    archive = Archive()
+    retrieved = archive.retrieve_entry(archive_id)
+    assert retrieved is not None
+    assert retrieved.id == archive_id
+    assert retrieved.title == "Cognitive Safety-Gated Revalidation Recovery - task_recovery_success_test"
+
+
+def test_recover_from_cognitive_block_rejection(temp_registry, tmp_path):
+    """Verify that a blocked workload attempt with still-blocked state triggers terminal rejection."""
+    from sage.experimental.cognitive.state_schema import (
+        CognitiveState, CognitiveAgentIdentity, CognitiveActiveMission,
+        CognitiveOperatorConstraints, CognitiveConfidenceState, CognitiveNextAction
+    )
+
+    evidence_file = tmp_path / "workspace_revalidation_evidence.json"
+    bridge = SAGEMissionExecutionBridge(
+        registry_path=str(temp_registry),
+        evidence_path=str(evidence_file)
+    )
+
+    blocked_report = {
+        "task_id": "task_blocked_original",
+        "mission_id": "mission_original_id",
+        "changed_files": ["tests/test_continuity_persistence.py"],
+        "impact_evaluation": {
+            "evaluation_id": "EVAL-1234",
+            "revalidation_required": True,
+            "affected_capabilities": ["CAP-STATE-PERSISTENCE"]
+        }
+    }
+
+    # Cognitive state with low confidence still triggering block (REQUEST_CLARIFICATION)
+    still_blocked_state = CognitiveState(
+        agent_identity=CognitiveAgentIdentity(
+            agent_id="agent_jules_sage",
+            name="Jules SAGE",
+            role="TIER_1_COORDINATOR",
+            authority_level="TIER_1_COORDINATOR",
+            governance_tier="TRUSTED"
+        ),
+        active_mission=CognitiveActiveMission(
+            mission_id="msn_reval_test",
+            objective="revalidate persistence",
+            status="RUNNING"
+        ),
+        operator_constraints=CognitiveOperatorConstraints(
+            authorized_agents=["agent_jules_sage"]
+        ),
+        confidence_state=CognitiveConfidenceState(
+            overall_confidence=0.3,
+            last_updated=1700000000.0
+        ),
+        next_action=CognitiveNextAction(
+            action_id="action_reval",
+            description="revalidate persistence",
+            assigned_agent="agent_jules_sage"
+        )
+    )
+
+    # Run recovery
+    recovery_report = bridge.recover_from_cognitive_block(
+        blocked_report=blocked_report,
+        remediation_state=still_blocked_state,
+        task_id="task_recovery_rejection_test"
+    )
+
+    assert recovery_report["recovery_status"] == "TERMINAL_REJECTION"
+    assert recovery_report["progression_state"]["terminal_state"] == "PREFLIGHT_REQUIRED"
+    assert recovery_report["metrics"]["archived_entries_count"] == 0
+    assert "rejection_reason" in recovery_report
+    assert "Confidence level is too low" in recovery_report["rejection_reason"]
