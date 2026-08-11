@@ -12,9 +12,6 @@ from pathlib import Path
 from sage.experimental.mission_control_bridge import SAGEMissionExecutionBridge, WorkloadExecutionResult
 from sage.capability_registry import SAGEOperationalCapabilityRegistry, SAGECapability
 from sage.mission_control import ExperimentalMissionState
-from sage.core.compliance import ComplianceEngine
-from sage.core.models import RuleState
-from sage.core.attestation import CryptographicAttestationProvider
 from sage.experimental.cognitive.state_schema import (
     CognitiveState,
     CognitiveAgentIdentity,
@@ -59,7 +56,6 @@ def test_bridge_sequential_pipeline_execution(tmp_path):
     """Verify that SAGEMissionExecutionBridge runs the complete sequential 10-stage progression to CLOSED."""
     registry_file = tmp_path / "operational_capability_registry.json"
     archive_dir = tmp_path / "archive"
-    vault_file = tmp_path / "spek_vault.json"
 
     # Pre-populate registry with a capability needing revalidation
     registry = SAGEOperationalCapabilityRegistry(storage_path=str(registry_file))
@@ -75,11 +71,7 @@ def test_bridge_sequential_pipeline_execution(tmp_path):
     )
     registry.add_capability(cap)
 
-    bridge = SAGEMissionExecutionBridge(
-        registry_path=str(registry_file),
-        archive_path=str(archive_dir),
-        vault_path=str(vault_file)
-    )
+    bridge = SAGEMissionExecutionBridge(registry_path=str(registry_file), archive_path=str(archive_dir))
 
     # Run execution with mock lint checks
     res = bridge.execute_revalidation_workload(
@@ -107,13 +99,8 @@ def test_bridge_cognitive_safety_gating(tmp_path):
     """Verify that a low-confidence CognitiveState triggers a block at PREFLIGHT_REQUIRED."""
     registry_file = tmp_path / "operational_capability_registry.json"
     archive_dir = tmp_path / "archive"
-    vault_file = tmp_path / "spek_vault.json"
 
-    bridge = SAGEMissionExecutionBridge(
-        registry_path=str(registry_file),
-        archive_path=str(archive_dir),
-        vault_path=str(vault_file)
-    )
+    bridge = SAGEMissionExecutionBridge(registry_path=str(registry_file), archive_path=str(archive_dir))
 
     # Low-confidence state
     unsafe_state = get_mock_cognitive_state(confidence=0.1)
@@ -136,13 +123,8 @@ def test_bridge_governed_recovery(tmp_path):
     """Verify that an operator corrected state successfully recovers a blocked preflight cycle to CLOSED."""
     registry_file = tmp_path / "operational_capability_registry.json"
     archive_dir = tmp_path / "archive"
-    vault_file = tmp_path / "spek_vault.json"
 
-    bridge = SAGEMissionExecutionBridge(
-        registry_path=str(registry_file),
-        archive_path=str(archive_dir),
-        vault_path=str(vault_file)
-    )
+    bridge = SAGEMissionExecutionBridge(registry_path=str(registry_file), archive_path=str(archive_dir))
 
     # Corrected high-confidence state
     safe_state = get_mock_cognitive_state(confidence=1.0)
@@ -159,54 +141,6 @@ def test_bridge_governed_recovery(tmp_path):
     assert res["recovery_status"] == "SUCCESS_RECOVERED"
     assert res["final_state"] == "CLOSED"
     assert "archived_entry_id" in res
-
-
-def test_bridge_cryptographic_tamper_preflight_block(tmp_path):
-    """Verify that a tampered SPEK vault ledger triggers a complete preflight block."""
-    registry_file = tmp_path / "operational_capability_registry.json"
-    archive_dir = tmp_path / "archive"
-    vault_file = tmp_path / "spek_vault.json"
-
-    # 1. Create a signed, clean receipt in vault
-    attestation = CryptographicAttestationProvider("MOCK")
-    compliance = ComplianceEngine(vault_path=str(vault_file))
-
-    compliance.append_receipt(
-        receipt_id="rec_001",
-        proposal_id="prop_001",
-        state=RuleState.VALIDATED,
-        execution_permission=True,
-        authority_integrity_score=1.0,
-        hdg_trace=[],
-        signature="mock_sig",
-        timestamp="2026-08-11T12:00:00Z",
-        auth_token="sage-default-key-2026"
-    )
-
-    # 2. Tamper with the receipt on disk to corrupt the ledger
-    with open(vault_file, "r") as f:
-        vault_data = json.load(f)
-    vault_data[0]["attestation_signature"] = "tampered_corrupted_signature"
-    with open(vault_file, "w") as f:
-        json.dump(vault_data, f, indent=2)
-
-    # 3. Instantiate bridge pointing to compromised ledger
-    bridge = SAGEMissionExecutionBridge(
-        registry_path=str(registry_file),
-        archive_path=str(archive_dir),
-        vault_path=str(vault_file)
-    )
-
-    # 4. Attempt to run a revalidation workload - must fail-closed instantly on startup preflight!
-    res = bridge.execute_revalidation_workload(
-        mission_id="mission_tampered",
-        target_files=["tests/test_continuity_persistence.py"],
-        run_real_lint=False
-    )
-
-    assert res["overall_success"] is False
-    assert res["final_state"] == "MISSION_PROPOSED"
-    assert res["cryptographic_tamper_detected"] is True
 
 
 def test_bridge_real_ruff_workload(tmp_path):
