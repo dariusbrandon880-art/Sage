@@ -1,0 +1,58 @@
+{
+  "state_metadata": {
+    "HEAD": "3e3071c039939360e439c983c28348d6abf6c03a",
+    "branch": "jules-3785647598493361933-6abb9769",
+    "working_tree": "CLEAN (excluding report and verification tests)",
+    "index": "CLEAN (excluding report and verification tests)",
+    "changed_paths": [
+      "evidence_capture/phase_5_differential_report.md",
+      "tests/experimental/test_checkpoint_differential.py"
+    ]
+  },
+  "pr_112_classification": "ASSESSMENT CHECKPOINT — NOT CAPABILITY PROMOTION",
+  "locked_phase_5_results": {
+    "causal_recovery_convergence": "STRONGER EXISTING CAPABILITY",
+    "experimental_hypothesis_loop": "STRONGER EXISTING CAPABILITY",
+    "self_verifying_governed_mission_lifecycle": "EXISTING COMPOSED CAPABILITY",
+    "capability_fitness_selection": "GOVERNANCE GAP / MISSING PRIMITIVE",
+    "promotion_loop": "NO EMERGENT EFFECT",
+    "rehydration_adaptability": "STRONGER EXISTING CAPABILITY / NO EMERGENT EFFECT",
+    "ring_b_pfc_gated_mission_progression": "EXISTING COMPOSED CAPABILITY",
+    "checkpoint_composition": "STRONGER EXISTING CAPABILITY / NO EMERGENT EFFECT"
+  },
+  "falsified_candidates": [
+    "autonomous_checkpoint_continuation_as_emergence"
+  ],
+  "current_frontier": "FRONTIER 1 (WORKLOAD RESULT -> ARTIFACT) & FRONTIER 2 (EXECUTION FAILURE -> RECOVERY)",
+  "strongest_lawful_candidate": "None. Existing composition only strengthens existing capabilities under same governance.",
+  "exact_governance_boundary": {
+    "protected_namespaces": [
+      "sage/core/",
+      "sage/runtime/",
+      "sage/acr/",
+      "sage/experimental/act/"
+    ],
+    "unauthorized_modules": [
+      "Patch Applicator",
+      "autonomous_promotion",
+      "new_mutation_contracts"
+    ]
+  },
+  "evidence_locations": {
+    "checkpoint_report": "evidence_capture/phase_5_differential_report.md",
+    "continuation_record": "evidence_capture/phase_5_continuation_record.json"
+  },
+  "phase_4_integrity": "TEMPORARY EXPERIMENTAL TOUCH — FINAL STATE IDENTICAL TO HEAD",
+  "test_verification": {
+    "focused_tests": [
+      "tests/experimental/test_checkpoint_differential.py"
+    ],
+    "related_tests": [
+      "tests/experimental/test_continuity_control.py"
+    ],
+    "full_suite_count": 311,
+    "reproducibility": "100% reproducible green baseline"
+  },
+  "forward_decision": "NO EMERGENT EFFECT — CONTINUE SEARCH",
+  "exact_next_execution_surface": "FRONTIER 1 — REAL WORKLOAD RESULT -> EXISTING RESULT CONSUMER"
+}
