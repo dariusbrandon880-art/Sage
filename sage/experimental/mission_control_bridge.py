@@ -1,8 +1,9 @@
 """SAGE Governed Mission Execution Bridge & Workspace Revalidator.
 
 Composes SAGEChangeImpactAnalyzer, SAGEOperationalCapabilityRegistry,
-SAGEMissionProgressionController, and the durable Master Archive into a unified,
-sequential, and fully governed execution, revalidation, and archiving pipeline.
+SAGEMissionProgressionController, PrefrontalCortexSimulator, and the durable
+Master Archive into a unified, sequential, and fully governed execution,
+revalidation, cognitive safety gating, and archiving pipeline.
 """
 
 import subprocess
@@ -16,6 +17,8 @@ from sage.capability_registry import SAGEOperationalCapabilityRegistry, SAGECapa
 from sage.mission_control import SAGEMissionProgressionController, ExperimentalMissionState, MissionTransitionResult
 from sage.archive.core import Archive
 from sage.models import ArchiveEntry, KnowledgeState, ArchiveIntelligence, KnowledgeLineage, ValidationRecord, ConfidenceTracker
+from sage.experimental.cognitive.state_schema import CognitiveState
+from sage.experimental.cognitive.prefrontal_cortex import PrefrontalCortexSimulator
 
 
 class WorkloadExecutionResult(BaseModel):
@@ -28,7 +31,7 @@ class WorkloadExecutionResult(BaseModel):
 
 
 class SAGEMissionExecutionBridge:
-    """Orchestrates and drives sequential revalidation tasks, capability updates, and Archive promotion."""
+    """Orchestrates and drives sequential revalidation tasks, cognitive safety gating, and Archive promotion."""
 
     def __init__(
         self,
@@ -45,15 +48,13 @@ class SAGEMissionExecutionBridge:
         self,
         mission_id: str,
         target_files: List[str],
-        run_real_lint: bool = True
+        run_real_lint: bool = True,
+        cognitive_state: Optional[CognitiveState] = None
     ) -> Dict[str, Any]:
         """Runs the entire sequential governed pipeline from proposal to closed.
 
-        Runs ruff check, evaluates change impacts, revalidates capabilities in the registry,
-        transitions the mission through all 10 stages under strict prerequisite checks,
-        and durably promotes the trace to the permanent SAGE Archive.
+        Enforces cognitive safety gating via PrefrontalCortexSimulator before execution.
         """
-        # Validate inputs are not mutated
         target_files_copy = list(target_files)
 
         # 1. Initialize ExperimentalMissionState
@@ -81,6 +82,22 @@ class SAGEMissionExecutionBridge:
         # Stage 2: Evaluated -> Preflight Required
         transition_to("PREFLIGHT_REQUIRED", "preflight_checklist_passed")
 
+        # --- Cognitive Safety Gating Boundary ---
+        if cognitive_state is not None:
+            pfc = PrefrontalCortexSimulator()
+            pfc_report = pfc.evaluate_decision(cognitive_state)
+
+            if pfc_report.outcome != "PROCEED":
+                # Safety Gate Triggered! Halt transitions at PREFLIGHT_REQUIRED
+                return {
+                    "mission_id": mission_id,
+                    "overall_success": False,
+                    "final_state": "PREFLIGHT_REQUIRED",
+                    "cognitive_block": True,
+                    "pfc_report": pfc_report.model_dump(),
+                    "transition_trace": transition_trace
+                }
+
         # Stage 3: Preflight -> Execution Authorized
         transition_to("EXECUTION_AUTHORIZED", "operator_signature_obtained")
 
@@ -89,7 +106,6 @@ class SAGEMissionExecutionBridge:
         overall_success = True
 
         for file in target_files_copy:
-            # Bounded command validation: run `ruff check` on python files if requested and exists
             if run_real_lint and file.endswith(".py") and os.path.exists(file):
                 cmd = ["ruff", "check", file]
                 try:
@@ -118,7 +134,6 @@ class SAGEMissionExecutionBridge:
                         command_run=" ".join(cmd)
                     )
             else:
-                # Mock execution for non-python / missing / sandboxed files
                 exists = os.path.exists(file)
                 workload_res = WorkloadExecutionResult(
                     success=exists,
@@ -136,16 +151,14 @@ class SAGEMissionExecutionBridge:
         transition_to("EXECUTION_COMPLETE", "execution_log_recorded")
 
         # --- Change Impact Evaluation & Revalidation ---
-        # Run ChangeImpactAnalyzer
         impact_report = self.analyzer.analyze_changes(target_files_copy)
 
         # Stage 5: Execution Complete -> Validation Required
         transition_to("VALIDATION_REQUIRED", "validation_receipt_issued")
 
-        # Update registry: revalidate all REVALIDATION_REQUIRED capabilities to VALIDATED
+        # Update registry
         revalidated_caps: List[str] = []
         if overall_success:
-            # Load fresh from registry file
             self.registry.load()
             for cap_res in impact_report.impacted_capabilities:
                 if cap_res.classification == "REVALIDATION_REQUIRED":
@@ -209,3 +222,41 @@ class SAGEMissionExecutionBridge:
             output_dict["archived_entry_id"] = archive_entry.id
 
         return output_dict
+
+    def recover_from_cognitive_block(
+        self,
+        mission_id: str,
+        target_files: List[str],
+        corrected_cognitive_state: CognitiveState,
+        run_real_lint: bool = True
+    ) -> Dict[str, Any]:
+        """Provides a governed recovery path for a blocked preflight cycle using a corrected state.
+
+        If the corrected state evaluates successfully to PROCEED, recovers the revalidation workload
+        execution, updates capabilities, promotes to Master Archive, and drives to CLOSED.
+        """
+        print(f"[*] SAGE Governed Recovery triggered for blocked mission '{mission_id}'...")
+
+        # Evaluate corrected state
+        pfc = PrefrontalCortexSimulator()
+        pfc_report = pfc.evaluate_decision(corrected_cognitive_state)
+
+        if pfc_report.outcome != "PROCEED":
+            return {
+                "mission_id": mission_id,
+                "overall_success": False,
+                "recovery_status": "RECOVERY_REJECTED",
+                "final_state": "PREFLIGHT_REQUIRED",
+                "pfc_report": pfc_report.model_dump()
+            }
+
+        # Recovery accepted! Run the pipeline with the corrected state to drive to CLOSED
+        result = self.execute_revalidation_workload(
+            mission_id=mission_id,
+            target_files=target_files,
+            run_real_lint=run_real_lint,
+            cognitive_state=corrected_cognitive_state
+        )
+
+        result["recovery_status"] = "SUCCESS_RECOVERED"
+        return result

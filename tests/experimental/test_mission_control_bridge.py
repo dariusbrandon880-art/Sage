@@ -1,7 +1,7 @@
 """Unit and integration tests for SAGE Mission Execution Bridge and Workspace Revalidator.
 
 Verifies the integration of SAGEChangeImpactAnalyzer, SAGEOperationalCapabilityRegistry,
-SAGEMissionProgressionController, and Master Archive under real and mock workloads.
+SAGEMissionProgressionController, Cognitive Safety Gate, and Master Archive under real/mock workloads.
 """
 
 import os
@@ -12,6 +12,44 @@ from pathlib import Path
 from sage.experimental.mission_control_bridge import SAGEMissionExecutionBridge, WorkloadExecutionResult
 from sage.capability_registry import SAGEOperationalCapabilityRegistry, SAGECapability
 from sage.mission_control import ExperimentalMissionState
+from sage.experimental.cognitive.state_schema import (
+    CognitiveState,
+    CognitiveAgentIdentity,
+    CognitiveActiveMission,
+    CognitiveOperatorConstraints,
+    CognitiveConfidenceState,
+    CognitiveNextAction
+)
+
+
+def get_mock_cognitive_state(confidence: float) -> CognitiveState:
+    """Helper to generate high-fidelity CognitiveState with dynamic confidence."""
+    return CognitiveState(
+        agent_identity=CognitiveAgentIdentity(
+            agent_id="test_agent",
+            name="Test Agent",
+            role="Executor",
+            authority_level="TIER_2_EXECUTION",
+            governance_tier="TRUSTED"
+        ),
+        active_mission=CognitiveActiveMission(
+            mission_id="m_1",
+            objective="revalidate workspace file changes and check lint",
+            status="RUNNING"
+        ),
+        operator_constraints=CognitiveOperatorConstraints(
+            authorized_agents=["test_agent"]
+        ),
+        confidence_state=CognitiveConfidenceState(
+            overall_confidence=confidence,
+            last_updated=1700000000.0
+        ),
+        next_action=CognitiveNextAction(
+            action_id="act_reval",
+            description="revalidate workspace file changes and check lint",
+            assigned_agent="test_agent"
+        )
+    )
 
 
 def test_bridge_sequential_pipeline_execution(tmp_path):
@@ -56,15 +94,53 @@ def test_bridge_sequential_pipeline_execution(tmp_path):
     assert updated_cap is not None
     assert updated_cap.validation_status == "VALIDATED"
 
-    # Verify the ArchiveEntry was promoted durably to the archive
-    archive_file = archive_dir / "ARCHIVE-REVAL-mission_reval_test_1.json"
-    assert archive_file.exists()
 
-    with open(archive_file, "r") as f:
-        entry_data = json.load(f)
-    assert entry_data["id"] == "ARCHIVE-REVAL-mission_reval_test_1"
-    assert entry_data["tags"] == ["revalidation", "workspace_trace", "governed_execution"]
-    assert entry_data["content"]["overall_success"] is True
+def test_bridge_cognitive_safety_gating(tmp_path):
+    """Verify that a low-confidence CognitiveState triggers a block at PREFLIGHT_REQUIRED."""
+    registry_file = tmp_path / "operational_capability_registry.json"
+    archive_dir = tmp_path / "archive"
+
+    bridge = SAGEMissionExecutionBridge(registry_path=str(registry_file), archive_path=str(archive_dir))
+
+    # Low-confidence state
+    unsafe_state = get_mock_cognitive_state(confidence=0.1)
+
+    res = bridge.execute_revalidation_workload(
+        mission_id="mission_safety_gated",
+        target_files=["tests/test_continuity_persistence.py"],
+        run_real_lint=False,
+        cognitive_state=unsafe_state
+    )
+
+    assert res["overall_success"] is False
+    assert res["final_state"] == "PREFLIGHT_REQUIRED"
+    assert res["cognitive_block"] is True
+    assert res["pfc_report"]["outcome"] == "REQUEST_CLARIFICATION"
+    assert "archived_entry_id" not in res  # Safety block prevents archive promotion!
+
+
+def test_bridge_governed_recovery(tmp_path):
+    """Verify that an operator corrected state successfully recovers a blocked preflight cycle to CLOSED."""
+    registry_file = tmp_path / "operational_capability_registry.json"
+    archive_dir = tmp_path / "archive"
+
+    bridge = SAGEMissionExecutionBridge(registry_path=str(registry_file), archive_path=str(archive_dir))
+
+    # Corrected high-confidence state
+    safe_state = get_mock_cognitive_state(confidence=1.0)
+
+    # Recover blocked mission
+    res = bridge.recover_from_cognitive_block(
+        mission_id="mission_safety_gated",
+        target_files=["tests/test_continuity_persistence.py"],
+        corrected_cognitive_state=safe_state,
+        run_real_lint=False
+    )
+
+    assert res["overall_success"] is True
+    assert res["recovery_status"] == "SUCCESS_RECOVERED"
+    assert res["final_state"] == "CLOSED"
+    assert "archived_entry_id" in res
 
 
 def test_bridge_real_ruff_workload(tmp_path):

@@ -1,0 +1,47 @@
+{
+  "mission_id": "mission_safety_gated_pfc",
+  "overall_success": false,
+  "final_state": "PREFLIGHT_REQUIRED",
+  "cognitive_block": true,
+  "pfc_report": {
+    "outcome": "REQUEST_CLARIFICATION",
+    "reason": "Confidence level is too low (0.1) to proceed without operator review.",
+    "confidence_recorded": 0.1,
+    "checks_performed": {
+      "mission_alignment": true,
+      "completed_work_protection": true,
+      "constraint_validation": true,
+      "evidence_requirement_detection": true
+    }
+  },
+  "transition_trace": [
+    {
+      "success": true,
+      "transitioned": true,
+      "previous_state": "MISSION_PROPOSED",
+      "target_state": "VALUE_EVALUATED",
+      "decision_reason": "Transition to 'VALUE_EVALUATED' successfully authorized.",
+      "explainable_trace": {
+        "mission_id": "mission_safety_gated_pfc",
+        "prerequisite_required": "value_appraisal_approved",
+        "decision": "ACCEPTED",
+        "evidence_state": "Prerequisite value_appraisal_approved is satisfied (True).",
+        "next_allowed_state": "VALUE_EVALUATED"
+      }
+    },
+    {
+      "success": true,
+      "transitioned": true,
+      "previous_state": "VALUE_EVALUATED",
+      "target_state": "PREFLIGHT_REQUIRED",
+      "decision_reason": "Transition to 'PREFLIGHT_REQUIRED' successfully authorized.",
+      "explainable_trace": {
+        "mission_id": "mission_safety_gated_pfc",
+        "prerequisite_required": "preflight_checklist_passed",
+        "decision": "ACCEPTED",
+        "evidence_state": "Prerequisite preflight_checklist_passed is satisfied (True).",
+        "next_allowed_state": "PREFLIGHT_REQUIRED"
+      }
+    }
+  ]
+}
