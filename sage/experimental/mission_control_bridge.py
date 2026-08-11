@@ -1,9 +1,10 @@
 """SAGE Governed Mission Execution Bridge & Workspace Revalidator.
 
 Composes SAGEChangeImpactAnalyzer, SAGEOperationalCapabilityRegistry,
-SAGEMissionProgressionController, PrefrontalCortexSimulator, and the durable
-Master Archive into a unified, sequential, and fully governed execution,
-revalidation, cognitive safety gating, and archiving pipeline.
+SAGEMissionProgressionController, PrefrontalCortexSimulator, ComplianceEngine,
+and the durable Master Archive into a unified, sequential, and fully governed
+execution, revalidation, cognitive safety gating, cryptographic preflight,
+and archiving pipeline.
 """
 
 import subprocess
@@ -19,6 +20,8 @@ from sage.archive.core import Archive
 from sage.models import ArchiveEntry, KnowledgeState, ArchiveIntelligence, KnowledgeLineage, ValidationRecord, ConfidenceTracker
 from sage.experimental.cognitive.state_schema import CognitiveState
 from sage.experimental.cognitive.prefrontal_cortex import PrefrontalCortexSimulator
+from sage.core.compliance import ComplianceEngine
+from sage.core.attestation import CryptographicAttestationProvider
 
 
 class WorkloadExecutionResult(BaseModel):
@@ -31,18 +34,23 @@ class WorkloadExecutionResult(BaseModel):
 
 
 class SAGEMissionExecutionBridge:
-    """Orchestrates and drives sequential revalidation tasks, cognitive safety gating, and Archive promotion."""
+    """Orchestrates and drives sequential revalidation tasks, safety gating, and Archive promotion."""
 
     def __init__(
         self,
         registry_path: str = "evidence_capture/operational_capability_registry.json",
-        archive_path: str = "sage_data/archive"
+        archive_path: str = "sage_data/archive",
+        vault_path: Optional[str] = None
     ) -> None:
         self.registry_path = registry_path
         self.registry = SAGEOperationalCapabilityRegistry(registry_path)
         self.analyzer = SAGEChangeImpactAnalyzer(registry_path)
         self.controller = SAGEMissionProgressionController()
         self.archive = Archive(archive_path)
+
+        # Core SPEK cryptographic preflight engine
+        self.attestation_provider = CryptographicAttestationProvider("MOCK")
+        self.compliance_engine = ComplianceEngine(vault_path=vault_path)
 
     def execute_revalidation_workload(
         self,
@@ -53,8 +61,18 @@ class SAGEMissionExecutionBridge:
     ) -> Dict[str, Any]:
         """Runs the entire sequential governed pipeline from proposal to closed.
 
-        Enforces cognitive safety gating via PrefrontalCortexSimulator before execution.
+        Enforces cognitive safety gating and cryptographic ledger integrity preflight checks.
         """
+        # Cryptographic preflight guard: verify SPEK vault integrity before continuing
+        if not self.compliance_engine.verify_vault_integrity(self.attestation_provider):
+            return {
+                "mission_id": mission_id,
+                "overall_success": False,
+                "final_state": "MISSION_PROPOSED",
+                "cryptographic_tamper_detected": True,
+                "transition_trace": []
+            }
+
         target_files_copy = list(target_files)
 
         # 1. Initialize ExperimentalMissionState
@@ -88,7 +106,6 @@ class SAGEMissionExecutionBridge:
             pfc_report = pfc.evaluate_decision(cognitive_state)
 
             if pfc_report.outcome != "PROCEED":
-                # Safety Gate Triggered! Halt transitions at PREFLIGHT_REQUIRED
                 return {
                     "mission_id": mission_id,
                     "overall_success": False,
@@ -236,6 +253,16 @@ class SAGEMissionExecutionBridge:
         execution, updates capabilities, promotes to Master Archive, and drives to CLOSED.
         """
         print(f"[*] SAGE Governed Recovery triggered for blocked mission '{mission_id}'...")
+
+        # Preflight cryptographic guard check
+        if not self.compliance_engine.verify_vault_integrity(self.attestation_provider):
+            return {
+                "mission_id": mission_id,
+                "overall_success": False,
+                "recovery_status": "RECOVERY_REJECTED",
+                "final_state": "MISSION_PROPOSED",
+                "cryptographic_tamper_detected": True
+            }
 
         # Evaluate corrected state
         pfc = PrefrontalCortexSimulator()

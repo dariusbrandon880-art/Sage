@@ -1,0 +1,7 @@
+{
+  "mission_id": "mission_cryptographic_preflight_fail",
+  "overall_success": false,
+  "final_state": "MISSION_PROPOSED",
+  "cryptographic_tamper_detected": true,
+  "transition_trace": []
+}
