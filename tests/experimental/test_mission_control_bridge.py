@@ -127,3 +127,108 @@ def test_execute_governed_cycle_sequential_transitions(temp_registry, tmp_path):
         stored_report = json.load(f)
     assert stored_report["task_id"] == "task_reval_cycle_test"
     assert stored_report["git_head_commit"] != ""
+
+
+def test_execute_governed_cycle_with_cognitive_proceed(temp_registry, tmp_path):
+    """Verify that a cognitive state permitting PROCEED allows normal loop completion."""
+    from sage.experimental.cognitive.state_schema import (
+        CognitiveState, CognitiveAgentIdentity, CognitiveActiveMission,
+        CognitiveOperatorConstraints, CognitiveConfidenceState, CognitiveNextAction
+    )
+
+    evidence_file = tmp_path / "workspace_revalidation_evidence.json"
+    bridge = SAGEMissionExecutionBridge(
+        registry_path=str(temp_registry),
+        evidence_path=str(evidence_file)
+    )
+
+    cog_state = CognitiveState(
+        agent_identity=CognitiveAgentIdentity(
+            agent_id="agent_jules_sage",
+            name="Jules SAGE",
+            role="TIER_1_COORDINATOR",
+            authority_level="TIER_1_COORDINATOR",
+            governance_tier="TRUSTED"
+        ),
+        active_mission=CognitiveActiveMission(
+            mission_id="msn_reval_test",
+            objective="revalidate persistence and continuity",
+            status="RUNNING"
+        ),
+        operator_constraints=CognitiveOperatorConstraints(
+            authorized_agents=["agent_jules_sage"]
+        ),
+        confidence_state=CognitiveConfidenceState(
+            overall_confidence=0.9,
+            last_updated=1700000000.0
+        ),
+        next_action=CognitiveNextAction(
+            action_id="action_reval",
+            description="revalidate persistence",
+            assigned_agent="agent_jules_sage"
+        )
+    )
+
+    report = bridge.execute_governed_cycle(
+        changed_files=["tests/test_continuity_persistence.py"],
+        task_id="task_cognitive_proceed_test",
+        cognitive_state=cog_state
+    )
+
+    assert report["progression_state"]["terminal_state"] == "CLOSED"
+    assert "cognitive_safety_block" not in report
+
+
+def test_execute_governed_cycle_with_cognitive_blocked(temp_registry, tmp_path):
+    """Verify that a cognitive state triggering BLOCK halts progression and fail-closes."""
+    from sage.experimental.cognitive.state_schema import (
+        CognitiveState, CognitiveAgentIdentity, CognitiveActiveMission,
+        CognitiveOperatorConstraints, CognitiveConfidenceState, CognitiveNextAction
+    )
+
+    evidence_file = tmp_path / "workspace_revalidation_evidence.json"
+    bridge = SAGEMissionExecutionBridge(
+        registry_path=str(temp_registry),
+        evidence_path=str(evidence_file)
+    )
+
+    # Use unauthorized agent identity to trigger cognitive block
+    cog_state = CognitiveState(
+        agent_identity=CognitiveAgentIdentity(
+            agent_id="agent_unauthorized_jules",
+            name="Unauthorized Jules",
+            role="VISITOR",
+            authority_level="UNAUTHORIZED",
+            governance_tier="UNTRUSTED"
+        ),
+        active_mission=CognitiveActiveMission(
+            mission_id="msn_reval_test",
+            objective="revalidate persistence",
+            status="RUNNING"
+        ),
+        operator_constraints=CognitiveOperatorConstraints(
+            authorized_agents=["agent_jules_sage"]
+        ),
+        confidence_state=CognitiveConfidenceState(
+            overall_confidence=0.9,
+            last_updated=1700000000.0
+        ),
+        next_action=CognitiveNextAction(
+            action_id="action_reval",
+            description="revalidate persistence",
+            assigned_agent="agent_unauthorized_jules"
+        )
+    )
+
+    report = bridge.execute_governed_cycle(
+        changed_files=["tests/test_continuity_persistence.py"],
+        task_id="task_cognitive_blocked_test",
+        cognitive_state=cog_state
+    )
+
+    # State must be halted at PREFLIGHT_REQUIRED, workload never executed, status BLOCKED
+    assert report["progression_state"]["terminal_state"] == "PREFLIGHT_REQUIRED"
+    assert report["execution_result"]["status"] == "BLOCKED"
+    assert "cognitive_safety_block" in report
+    assert report["cognitive_safety_block"]["outcome"] == "BLOCK"
+    assert "authorized agents list" in report["cognitive_safety_block"]["reason"]

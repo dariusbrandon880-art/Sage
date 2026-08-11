@@ -9,11 +9,12 @@ import os
 import subprocess
 import time
 import json
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field
 
 from sage.change_impact import SAGEChangeImpactAnalyzer
 from sage.mission_control import SAGEMissionProgressionController, ExperimentalMissionState
+from sage.experimental.cognitive.state_schema import CognitiveState
 from sage.capability_registry import SAGEOperationalCapabilityRegistry
 
 
@@ -108,7 +109,12 @@ class SAGEMissionExecutionBridge:
                 metrics={"duration_ms": elapsed, "files_checked": len(target_files)}
             )
 
-    def execute_governed_cycle(self, changed_files: List[str], task_id: str = "task_governed_revalidation") -> Dict[str, Any]:
+    def execute_governed_cycle(
+        self,
+        changed_files: List[str],
+        task_id: str = "task_governed_revalidation",
+        cognitive_state: Optional[CognitiveState] = None
+    ) -> Dict[str, Any]:
         """Orchestrate the entire revalidation loop from workspace change to CLOSED terminal state."""
         start_time = time.perf_counter()
 
@@ -140,6 +146,62 @@ class SAGEMissionExecutionBridge:
         # Value -> Preflight Required
         mission_state.prerequisites["preflight_checklist_passed"] = True
         self.controller.evaluate_transition(mission_state, "PREFLIGHT_REQUIRED")
+
+        # Cognitive Safety Preflight Gate check
+        if cognitive_state is not None:
+            from sage.experimental.cognitive.prefrontal_cortex import PrefrontalCortexSimulator, DecisionGateOutcome
+            pfc_simulator = PrefrontalCortexSimulator()
+            pfc_report = pfc_simulator.evaluate_decision(cognitive_state)
+
+            if pfc_report.outcome in [DecisionGateOutcome.BLOCK, DecisionGateOutcome.REQUEST_CLARIFICATION]:
+                # Halt progression immediately - fail closed!
+                elapsed_ms = (time.perf_counter() - start_time) * 1000.0
+                evidence_report = {
+                    "task_id": task_id,
+                    "mission_id": mission_state.mission_id,
+                    "git_head_commit": self._get_git_head_commit(),
+                    "changed_files": changed_files,
+                    "impact_evaluation": {
+                        "evaluation_id": impact_report.evaluation_id,
+                        "revalidation_required": impact_report.revalidation_required,
+                        "affected_capabilities": affected_cap_ids
+                    },
+                    "selected_workload": {
+                        "workload_type": "None — Cognitive Blocked",
+                        "target_files": []
+                    },
+                    "execution_result": {
+                        "status": "BLOCKED",
+                        "output_log_summary": f"Cognitive safety gate blocked execution: {pfc_report.reason}",
+                        "duration_ms": 0.0
+                    },
+                    "progression_state": {
+                        "terminal_state": mission_state.current_state,  # Remains PREFLIGHT_REQUIRED, did not transition to CLOSED
+                        "transition_history": [
+                            "MISSION_PROPOSED", "VALUE_EVALUATED", "PREFLIGHT_REQUIRED"
+                        ]
+                    },
+                    "metrics": {
+                        "elapsed_time_ms": elapsed_ms,
+                        "capabilities_updated_count": 0,
+                        "prediction_vs_observed_impact": {
+                            "predicted_revalidation_needed": impact_report.revalidation_required,
+                            "observed_capabilities_revalidated": []
+                        }
+                    },
+                    "cognitive_safety_block": {
+                        "outcome": pfc_report.outcome.value,
+                        "reason": pfc_report.reason,
+                        "confidence_recorded": pfc_report.confidence_recorded,
+                        "checks_performed": pfc_report.checks_performed
+                    }
+                }
+                # Persist block evidence
+                os.makedirs(os.path.dirname(self.evidence_path), exist_ok=True)
+                with open(self.evidence_path, "w", encoding="utf-8") as f:
+                    json.dump(evidence_report, f, indent=2)
+
+                return evidence_report
 
         # Preflight -> Execution Authorized
         mission_state.prerequisites["operator_signature_obtained"] = True
