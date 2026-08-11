@@ -177,6 +177,9 @@ def test_execute_governed_cycle_with_cognitive_proceed(temp_registry, tmp_path):
 
     assert report["progression_state"]["terminal_state"] == "CLOSED"
     assert "cognitive_safety_block" not in report
+    assert "operator_visible_dashboard" in report
+    assert "SAGE CONTROL TOWER" in report["operator_visible_dashboard"]
+    assert "Workflow Health]       :: HEALTHY" in report["operator_visible_dashboard"]
 
 
 def test_execute_governed_cycle_with_cognitive_blocked(temp_registry, tmp_path):
@@ -232,6 +235,9 @@ def test_execute_governed_cycle_with_cognitive_blocked(temp_registry, tmp_path):
     assert "cognitive_safety_block" in report
     assert report["cognitive_safety_block"]["outcome"] == "BLOCK"
     assert "authorized agents list" in report["cognitive_safety_block"]["reason"]
+    assert "operator_visible_dashboard" in report
+    assert "SAGE CONTROL TOWER" in report["operator_visible_dashboard"]
+    assert "Workflow Health]       :: BLOCKED" in report["operator_visible_dashboard"]
 
 
 def test_recover_from_cognitive_block_success(temp_registry, tmp_path):
@@ -298,6 +304,10 @@ def test_recover_from_cognitive_block_success(temp_registry, tmp_path):
     assert recovery_report["progression_state"]["terminal_state"] == "CLOSED"
     assert recovery_report["metrics"]["archived_entries_count"] == 1
     assert "archive_entry_promoted_id" in recovery_report
+    assert "operator_visible_dashboard" in recovery_report
+    assert "SAGE CONTROL TOWER" in recovery_report["operator_visible_dashboard"]
+    assert "Workflow Health]       :: HEALTHY" in recovery_report["operator_visible_dashboard"]
+    assert "Recovery Status]       :: SUCCESS_RECOVERED" in recovery_report["operator_visible_dashboard"]
 
     # Verify permanent Archive entry was promoted on disk
     archive_id = recovery_report["archive_entry_promoted_id"]
@@ -373,3 +383,7 @@ def test_recover_from_cognitive_block_rejection(temp_registry, tmp_path):
     assert recovery_report["metrics"]["archived_entries_count"] == 0
     assert "rejection_reason" in recovery_report
     assert "Confidence level is too low" in recovery_report["rejection_reason"]
+    assert "operator_visible_dashboard" in recovery_report
+    assert "SAGE CONTROL TOWER" in recovery_report["operator_visible_dashboard"]
+    assert "Workflow Health]       :: BLOCKED" in recovery_report["operator_visible_dashboard"]
+    assert "Recovery Status]       :: TERMINAL_REJECTION" in recovery_report["operator_visible_dashboard"]

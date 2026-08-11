@@ -201,6 +201,9 @@ class SAGEMissionExecutionBridge:
                 with open(self.evidence_path, "w", encoding="utf-8") as f:
                     json.dump(evidence_report, f, indent=2)
 
+                # Output beautifully formatted operator visibility Control Tower
+                self.render_recovery_control_tower(evidence_report)
+
                 return evidence_report
 
         # Preflight -> Execution Authorized
@@ -289,6 +292,9 @@ class SAGEMissionExecutionBridge:
         with open(self.evidence_path, "w", encoding="utf-8") as f:
             json.dump(evidence_report, f, indent=2)
 
+        # Output beautifully formatted operator visibility Control Tower
+        self.render_recovery_control_tower(evidence_report)
+
         return evidence_report
 
     def recover_from_cognitive_block(
@@ -344,6 +350,9 @@ class SAGEMissionExecutionBridge:
             os.makedirs(os.path.dirname(self.evidence_path), exist_ok=True)
             with open(self.evidence_path, "w", encoding="utf-8") as f:
                 json.dump(recovery_report, f, indent=2)
+
+            # Output beautifully formatted operator visibility Control Tower
+            self.render_recovery_control_tower(recovery_report)
 
             return recovery_report
 
@@ -452,7 +461,92 @@ class SAGEMissionExecutionBridge:
         with open(self.evidence_path, "w", encoding="utf-8") as f:
             json.dump(recovery_report, f, indent=2)
 
+        # Output beautifully formatted operator visibility Control Tower
+        self.render_recovery_control_tower(recovery_report)
+
         return recovery_report
+
+    def render_recovery_control_tower(self, report: Dict[str, Any]) -> str:
+        """Renders an operator-visible SAGE Control Tower operational intelligence view.
+
+        Answers the 5 core visibility questions standard across all SAGE dashboards.
+        """
+        # Distinguish whether report is execution or recovery
+        is_recovery = "recovery_status" in report
+
+        if is_recovery:
+            rec_status = report["recovery_status"]
+            if rec_status == "SUCCESS_RECOVERED":
+                health = "HEALTHY"
+                terminal_state = report["progression_state"]["terminal_state"]
+                archive_id = report["archive_entry_promoted_id"]
+                duration_ms = report["metrics"]["recovery_latency_ms"]
+                next_action = "Recovery complete and SAGE ArchiveEntry promoted. Safe to proceed."
+                outcome = f"Recovery Succeeded. Archive promoted: {archive_id}"
+            else:  # TERMINAL_REJECTION
+                health = "BLOCKED"
+                terminal_state = report["progression_state"]["terminal_state"]
+                archive_id = "REJECTED"
+                duration_ms = report["metrics"]["recovery_latency_ms"]
+                next_action = "Terminal rejection enforced. Seek manual supervisor override."
+                outcome = f"Terminal Rejection: {report['rejection_reason']}"
+            task_id = report["task_id"]
+            blocked_task_id = report["blocked_task_id"]
+        else:
+            status = report["execution_result"]["status"]
+            blocked_task_id = "N/A"
+            task_id = report["task_id"]
+            if status == "BLOCKED":
+                health = "BLOCKED"
+                rec_status = "PREFLIGHT_BLOCKED"
+                terminal_state = report["progression_state"]["terminal_state"]
+                archive_id = "PENDING — BLOCKED"
+                duration_ms = report["metrics"]["elapsed_time_ms"]
+                next_action = "Cognitive safety gate blocked execution. Provide operator remediation state to recover."
+                outcome = f"Blocked: {report['cognitive_safety_block']['reason']}"
+            else:
+                health = "HEALTHY"
+                rec_status = "NONE — DIRECT_PASS"
+                terminal_state = report["progression_state"]["terminal_state"]
+                archive_id = "N/A"
+                duration_ms = report["execution_result"]["duration_ms"]
+                next_action = "Operational loop complete and authorized. Ready to push/integrate changes."
+                outcome = f"Safe Direct Execution: {report['execution_result']['status']}"
+
+        # Build ASCII control tower dashboard
+        dashboard = []
+        dashboard.append("======================================================================")
+        dashboard.append("            SAGE CONTROL TOWER - RECOVERY GOVERNANCE VIEW             ")
+        dashboard.append("======================================================================")
+        dashboard.append(f"  [Workflow Health]       :: {health}")
+        dashboard.append(f"  [Recovery Status]       :: {rec_status}")
+        dashboard.append(f"  [Terminal State]        :: {terminal_state}")
+        dashboard.append(f"  [Archive Entry ID]      :: {archive_id}")
+        dashboard.append(f"  [Execution Duration]    :: {duration_ms:.2f} ms")
+        dashboard.append("----------------------------------------------------------------------")
+        dashboard.append("  OPERATIONAL VISIBILITY - FIVE CORE QUESTIONS:")
+        dashboard.append("----------------------------------------------------------------------")
+        dashboard.append("  1. WHAT HAPPENED?")
+        dashboard.append(f"     Task ID:             {task_id} (Orig Blocked: {blocked_task_id})")
+        dashboard.append(f"     Outcome:             {outcome}")
+        dashboard.append("  2. WHO OWNS IT?")
+        dashboard.append("     Executor Agent:      agent_jules_sage (Role: TIER_1_COORDINATOR)")
+        dashboard.append("  3. WHY IS IT HAPPENING?")
+        dashboard.append("     Governance Intent:   Revalidate workspace capabilities post-preflight block.")
+        dashboard.append("  4. WHAT EVIDENCE SUPPORTS IT?")
+        dashboard.append(f"     Changed Files:       {report['changed_files']}")
+        dashboard.append(f"     Commit Hash:         {report['git_head_commit'][:10]}")
+        dashboard.append(f"     SAGE Archive Entry:  {archive_id}")
+        dashboard.append("  5. WHAT HAPPENS NEXT?")
+        dashboard.append(f"     RECOMMENDED ACTION:  {next_action}")
+        dashboard.append("======================================================================")
+
+        summary_str = "\n".join(dashboard)
+        print("\n" + summary_str + "\n")
+
+        # Inject standard operator_visible_dashboard inside report for easy inspection
+        report["operator_visible_dashboard"] = summary_str
+        return summary_str
 
     def _get_git_head_commit(self) -> str:
         """Helper to retrieve the current git HEAD commit hash."""
