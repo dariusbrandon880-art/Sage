@@ -1,0 +1,359 @@
+{
+  "git_head_hash": "868d3e33502664be99dd81381e093d0cf341e13c",
+  "changed_artifacts": [
+    "tests/test_continuity_bridge.py"
+  ],
+  "predicted_impact": {
+    "evaluation_id": "EVAL-IMPACT-1F780B1254CE",
+    "modified_files": [
+      "tests/test_continuity_bridge.py"
+    ],
+    "impacted_capabilities": [
+      {
+        "capability_id": "CAP-STATE-PERSISTENCE",
+        "name": "State Persistence",
+        "classification": "UNAFFECTED",
+        "supporting_evidence": [
+          "evidence_capture/ccl_operational_feedback.json"
+        ],
+        "test_references": [
+          "tests/test_continuity_persistence.py"
+        ],
+        "reason": "No overlap with registered test references, evidence files, or namespace paths."
+      },
+      {
+        "capability_id": "CAP-CHECKPOINTING",
+        "name": "State Checkpointing",
+        "classification": "UNAFFECTED",
+        "supporting_evidence": [
+          "evidence_capture/ccl_operational_feedback.json"
+        ],
+        "test_references": [
+          "tests/test_continuity_intelligence.py"
+        ],
+        "reason": "No overlap with registered test references, evidence files, or namespace paths."
+      },
+      {
+        "capability_id": "CAP-HANDOFF-GENERATION",
+        "name": "Handoff Generation",
+        "classification": "UNAFFECTED",
+        "supporting_evidence": [
+          "evidence_capture/ccl_operational_feedback.json"
+        ],
+        "test_references": [
+          "tests/test_new_systems.py"
+        ],
+        "reason": "No overlap with registered test references, evidence files, or namespace paths."
+      },
+      {
+        "capability_id": "CAP-WORKSPACE-SNAPSHOTS",
+        "name": "Workspace Snapshots",
+        "classification": "UNAFFECTED",
+        "supporting_evidence": [
+          "evidence_capture/ccl_operational_feedback.json"
+        ],
+        "test_references": [
+          "tests/test_continuity_intelligence.py"
+        ],
+        "reason": "No overlap with registered test references, evidence files, or namespace paths."
+      },
+      {
+        "capability_id": "CAP-CONTINUITY-BRIDGE",
+        "name": "Continuity Bridge",
+        "classification": "REVALIDATION_REQUIRED",
+        "supporting_evidence": [
+          "evidence_capture/ccl_operational_feedback.json"
+        ],
+        "test_references": [
+          "tests/test_continuity_bridge.py"
+        ],
+        "reason": "Direct modification of supporting validation test suite: 'tests/test_continuity_bridge.py'."
+      },
+      {
+        "capability_id": "CAP-COGNITIVE-KERNEL",
+        "name": "Cognitive Kernel Foundation",
+        "classification": "UNAFFECTED",
+        "supporting_evidence": [
+          "evidence_capture/cognitive_kernel_foundation_report.json"
+        ],
+        "test_references": [
+          "tests/experimental/test_cognitive_kernel.py"
+        ],
+        "reason": "No overlap with registered test references, evidence files, or namespace paths."
+      },
+      {
+        "capability_id": "CAP-PML-RELIABILITY",
+        "name": "PML Operational Reliability",
+        "classification": "UNAFFECTED",
+        "supporting_evidence": [
+          "evidence_capture/ccl_orchestrator_evidence.json"
+        ],
+        "test_references": [
+          "tests/experimental/test_continuity_control.py"
+        ],
+        "reason": "No overlap with registered test references, evidence files, or namespace paths."
+      }
+    ],
+    "revalidation_required": true,
+    "provenance_chain": [
+      {
+        "change": [
+          "tests/test_continuity_bridge.py"
+        ],
+        "capability": "CAP-STATE-PERSISTENCE",
+        "evidence": [
+          "evidence_capture/ccl_operational_feedback.json"
+        ],
+        "validation_test": [
+          "tests/test_continuity_persistence.py"
+        ],
+        "measurement_verification_state": "READY",
+        "classification": "UNAFFECTED",
+        "reason": "No overlap with registered test references, evidence files, or namespace paths."
+      },
+      {
+        "change": [
+          "tests/test_continuity_bridge.py"
+        ],
+        "capability": "CAP-CHECKPOINTING",
+        "evidence": [
+          "evidence_capture/ccl_operational_feedback.json"
+        ],
+        "validation_test": [
+          "tests/test_continuity_intelligence.py"
+        ],
+        "measurement_verification_state": "READY",
+        "classification": "UNAFFECTED",
+        "reason": "No overlap with registered test references, evidence files, or namespace paths."
+      },
+      {
+        "change": [
+          "tests/test_continuity_bridge.py"
+        ],
+        "capability": "CAP-HANDOFF-GENERATION",
+        "evidence": [
+          "evidence_capture/ccl_operational_feedback.json"
+        ],
+        "validation_test": [
+          "tests/test_new_systems.py"
+        ],
+        "measurement_verification_state": "READY",
+        "classification": "UNAFFECTED",
+        "reason": "No overlap with registered test references, evidence files, or namespace paths."
+      },
+      {
+        "change": [
+          "tests/test_continuity_bridge.py"
+        ],
+        "capability": "CAP-WORKSPACE-SNAPSHOTS",
+        "evidence": [
+          "evidence_capture/ccl_operational_feedback.json"
+        ],
+        "validation_test": [
+          "tests/test_continuity_intelligence.py"
+        ],
+        "measurement_verification_state": "READY",
+        "classification": "UNAFFECTED",
+        "reason": "No overlap with registered test references, evidence files, or namespace paths."
+      },
+      {
+        "change": [
+          "tests/test_continuity_bridge.py"
+        ],
+        "capability": "CAP-CONTINUITY-BRIDGE",
+        "evidence": [
+          "evidence_capture/ccl_operational_feedback.json"
+        ],
+        "validation_test": [
+          "tests/test_continuity_bridge.py"
+        ],
+        "measurement_verification_state": "READY",
+        "classification": "REVALIDATION_REQUIRED",
+        "reason": "Direct modification of supporting validation test suite: 'tests/test_continuity_bridge.py'."
+      },
+      {
+        "change": [
+          "tests/test_continuity_bridge.py"
+        ],
+        "capability": "CAP-COGNITIVE-KERNEL",
+        "evidence": [
+          "evidence_capture/cognitive_kernel_foundation_report.json"
+        ],
+        "validation_test": [
+          "tests/experimental/test_cognitive_kernel.py"
+        ],
+        "measurement_verification_state": "READY",
+        "classification": "UNAFFECTED",
+        "reason": "No overlap with registered test references, evidence files, or namespace paths."
+      },
+      {
+        "change": [
+          "tests/test_continuity_bridge.py"
+        ],
+        "capability": "CAP-PML-RELIABILITY",
+        "evidence": [
+          "evidence_capture/ccl_orchestrator_evidence.json"
+        ],
+        "validation_test": [
+          "tests/experimental/test_continuity_control.py"
+        ],
+        "measurement_verification_state": "READY",
+        "classification": "UNAFFECTED",
+        "reason": "No overlap with registered test references, evidence files, or namespace paths."
+      }
+    ]
+  },
+  "selected_workloads": [
+    {
+      "capability_id": "CAP-CONTINUITY-BRIDGE",
+      "name": "Continuity Bridge",
+      "lint_result": {
+        "command": [
+          "ruff",
+          "check",
+          "tests/test_continuity_bridge.py"
+        ],
+        "success": true,
+        "returncode": 0,
+        "stdout": "All checks passed!\n",
+        "stderr": "",
+        "execution_time_seconds": 0.012613296508789062
+      },
+      "test_result": {
+        "command": [
+          "poetry",
+          "run",
+          "pytest",
+          "-q",
+          "tests/test_continuity_bridge.py"
+        ],
+        "success": true,
+        "returncode": 0,
+        "stdout": "============================= test session starts ==============================\nplatform linux -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0\nrootdir: /app\nconfigfile: pyproject.toml\nplugins: anyio-4.14.2\ncollected 7 items\n\ntests/test_continuity_bridge.py .......                                  [100%]\n\n============================== 7 passed in 2.45s ===============================\n",
+        "stderr": "",
+        "execution_time_seconds": 4.055081844329834
+      },
+      "status_updated_to": "VALIDATED"
+    }
+  ],
+  "actual_results": {
+    "success": true,
+    "revalidated_capabilities_count": 1
+  },
+  "state_progression": {
+    "mission_id": "msn-pipeline-revalidation-01",
+    "terminal_state": "CLOSED",
+    "transitions": [
+      {
+        "target_state": "VALUE_EVALUATED",
+        "success": true,
+        "transitioned": true,
+        "previous_state": "MISSION_PROPOSED",
+        "reason": "Transition to 'VALUE_EVALUATED' successfully authorized."
+      },
+      {
+        "target_state": "PREFLIGHT_REQUIRED",
+        "success": true,
+        "transitioned": true,
+        "previous_state": "VALUE_EVALUATED",
+        "reason": "Transition to 'PREFLIGHT_REQUIRED' successfully authorized."
+      },
+      {
+        "target_state": "EXECUTION_AUTHORIZED",
+        "success": true,
+        "transitioned": true,
+        "previous_state": "PREFLIGHT_REQUIRED",
+        "reason": "Transition to 'EXECUTION_AUTHORIZED' successfully authorized."
+      },
+      {
+        "target_state": "EXECUTION_COMPLETE",
+        "success": true,
+        "transitioned": true,
+        "previous_state": "EXECUTION_AUTHORIZED",
+        "reason": "Transition to 'EXECUTION_COMPLETE' successfully authorized."
+      },
+      {
+        "target_state": "VALIDATION_REQUIRED",
+        "success": true,
+        "transitioned": true,
+        "previous_state": "EXECUTION_COMPLETE",
+        "reason": "Transition to 'VALIDATION_REQUIRED' successfully authorized."
+      },
+      {
+        "target_state": "EVIDENCE_REQUIRED",
+        "success": true,
+        "transitioned": true,
+        "previous_state": "VALIDATION_REQUIRED",
+        "reason": "Transition to 'EVIDENCE_REQUIRED' successfully authorized."
+      },
+      {
+        "target_state": "REVIEW_REQUIRED",
+        "success": true,
+        "transitioned": true,
+        "previous_state": "EVIDENCE_REQUIRED",
+        "reason": "Transition to 'REVIEW_REQUIRED' successfully authorized."
+      },
+      {
+        "target_state": "PROMOTION_READY",
+        "success": true,
+        "transitioned": true,
+        "previous_state": "REVIEW_REQUIRED",
+        "reason": "Transition to 'PROMOTION_READY' successfully authorized."
+      },
+      {
+        "target_state": "CLOSED",
+        "success": true,
+        "transitioned": true,
+        "previous_state": "PROMOTION_READY",
+        "reason": "Transition to 'CLOSED' successfully authorized."
+      }
+    ]
+  },
+  "predicted_vs_observed": {
+    "predicted_revalidation_required": true,
+    "predicted_impacts": [
+      {
+        "capability_id": "CAP-STATE-PERSISTENCE",
+        "classification": "UNAFFECTED"
+      },
+      {
+        "capability_id": "CAP-CHECKPOINTING",
+        "classification": "UNAFFECTED"
+      },
+      {
+        "capability_id": "CAP-HANDOFF-GENERATION",
+        "classification": "UNAFFECTED"
+      },
+      {
+        "capability_id": "CAP-WORKSPACE-SNAPSHOTS",
+        "classification": "UNAFFECTED"
+      },
+      {
+        "capability_id": "CAP-CONTINUITY-BRIDGE",
+        "classification": "REVALIDATION_REQUIRED"
+      },
+      {
+        "capability_id": "CAP-COGNITIVE-KERNEL",
+        "classification": "UNAFFECTED"
+      },
+      {
+        "capability_id": "CAP-PML-RELIABILITY",
+        "classification": "UNAFFECTED"
+      }
+    ],
+    "observed_impacts": [
+      {
+        "capability_id": "CAP-CONTINUITY-BRIDGE",
+        "lint_passed": true,
+        "test_passed": true,
+        "revalidated": true
+      }
+    ],
+    "delta_capability_validation_state": "Registry updated and re-validated cleanly"
+  },
+  "telemetry": {
+    "execution_time": "2026-08-11 13:52:59",
+    "duration_seconds": 4.073460340499878,
+    "evidence_receipt_id": "RECEIPT-LINEAGE-095D429EB83B"
+  }
+}

@@ -411,3 +411,6 @@ def test_live_continuity_path_e2e(temp_workspace):
     snapshot_id = result["snapshot_id"]
     snapshots_list = runtime.list_workspace_snapshots()
     assert any(s["id"] == snapshot_id for s in snapshots_list)
+
+
+# Harmless comment to trigger SAGEChangeImpactAnalyzer revalidation pipeline.
