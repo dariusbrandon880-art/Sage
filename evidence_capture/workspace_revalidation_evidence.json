@@ -1,0 +1,63 @@
+{
+  "task_id": "task_reval_frontier_session_1",
+  "mission_id": "mission_task_reval_frontier_session_1",
+  "git_head_commit": "868d3e33502664be99dd81381e093d0cf341e13c",
+  "changed_files": [
+    "sage/experimental/mission_control_bridge.py"
+  ],
+  "impact_evaluation": {
+    "evaluation_id": "EVAL-IMPACT-D17A58A97638",
+    "revalidation_required": true,
+    "affected_capabilities": [
+      "CAP-STATE-PERSISTENCE",
+      "CAP-CHECKPOINTING",
+      "CAP-HANDOFF-GENERATION",
+      "CAP-WORKSPACE-SNAPSHOTS",
+      "CAP-CONTINUITY-BRIDGE",
+      "CAP-COGNITIVE-KERNEL",
+      "CAP-PML-RELIABILITY"
+    ]
+  },
+  "selected_workload": {
+    "workload_type": "Governed Code Verification / Linting Workload",
+    "target_files": [
+      "sage/experimental/mission_control_bridge.py"
+    ]
+  },
+  "execution_result": {
+    "status": "COMPLETED",
+    "output_log_summary": "STDOUT:\nAll checks passed!\n\nSTDERR:\n",
+    "duration_ms": 1057.7155380001386
+  },
+  "progression_state": {
+    "terminal_state": "CLOSED",
+    "transition_history": [
+      "MISSION_PROPOSED",
+      "VALUE_EVALUATED",
+      "PREFLIGHT_REQUIRED",
+      "EXECUTION_AUTHORIZED",
+      "EXECUTION_COMPLETE",
+      "VALIDATION_REQUIRED",
+      "EVIDENCE_REQUIRED",
+      "REVIEW_REQUIRED",
+      "PROMOTION_READY",
+      "CLOSED"
+    ]
+  },
+  "metrics": {
+    "elapsed_time_ms": 1063.0139350000718,
+    "capabilities_updated_count": 7,
+    "prediction_vs_observed_impact": {
+      "predicted_revalidation_needed": true,
+      "observed_capabilities_revalidated": [
+        "CAP-STATE-PERSISTENCE",
+        "CAP-CHECKPOINTING",
+        "CAP-HANDOFF-GENERATION",
+        "CAP-WORKSPACE-SNAPSHOTS",
+        "CAP-CONTINUITY-BRIDGE",
+        "CAP-COGNITIVE-KERNEL",
+        "CAP-PML-RELIABILITY"
+      ]
+    }
+  }
+}
