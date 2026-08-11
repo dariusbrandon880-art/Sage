@@ -1,33 +1,27 @@
 {
-  "task_id": "task_reval_frontier_session_1",
-  "mission_id": "mission_task_reval_frontier_session_1",
+  "task_id": "task_2_continuation",
+  "mission_id": "mission_task_2_continuation",
   "git_head_commit": "868d3e33502664be99dd81381e093d0cf341e13c",
   "changed_files": [
-    "sage/experimental/mission_control_bridge.py"
+    "tests/test_continuity_bridge.py"
   ],
   "impact_evaluation": {
-    "evaluation_id": "EVAL-IMPACT-D17A58A97638",
+    "evaluation_id": "EVAL-IMPACT-1F780B1254CE",
     "revalidation_required": true,
     "affected_capabilities": [
-      "CAP-STATE-PERSISTENCE",
-      "CAP-CHECKPOINTING",
-      "CAP-HANDOFF-GENERATION",
-      "CAP-WORKSPACE-SNAPSHOTS",
-      "CAP-CONTINUITY-BRIDGE",
-      "CAP-COGNITIVE-KERNEL",
-      "CAP-PML-RELIABILITY"
+      "CAP-CONTINUITY-BRIDGE"
     ]
   },
   "selected_workload": {
     "workload_type": "Governed Code Verification / Linting Workload",
     "target_files": [
-      "sage/experimental/mission_control_bridge.py"
+      "tests/test_continuity_bridge.py"
     ]
   },
   "execution_result": {
     "status": "COMPLETED",
     "output_log_summary": "STDOUT:\nAll checks passed!\n\nSTDERR:\n",
-    "duration_ms": 1057.7155380001386
+    "duration_ms": 1417.5503489996117
   },
   "progression_state": {
     "terminal_state": "CLOSED",
@@ -45,19 +39,31 @@
     ]
   },
   "metrics": {
-    "elapsed_time_ms": 1063.0139350000718,
-    "capabilities_updated_count": 7,
+    "elapsed_time_ms": 1418.5080589995778,
+    "capabilities_updated_count": 1,
     "prediction_vs_observed_impact": {
       "predicted_revalidation_needed": true,
       "observed_capabilities_revalidated": [
-        "CAP-STATE-PERSISTENCE",
-        "CAP-CHECKPOINTING",
-        "CAP-HANDOFF-GENERATION",
-        "CAP-WORKSPACE-SNAPSHOTS",
-        "CAP-CONTINUITY-BRIDGE",
-        "CAP-COGNITIVE-KERNEL",
-        "CAP-PML-RELIABILITY"
+        "CAP-CONTINUITY-BRIDGE"
       ]
     }
-  }
+  },
+  "cryptographic_receipt_chain": [
+    {
+      "sequence_number": 1,
+      "task_id": "task_1_genesis",
+      "timestamp": 1786470606.2766714,
+      "payload_hash": "c72df9fba5940eaa0c057ef7d4a5fd2bfde919ba0a1e9de935e3f89d0aa6f564",
+      "preceding_hash": "GENESIS_ROOT",
+      "signature_hash": "4ef3b1706983b17fa5426348f37ca56b735754e94a15777139a80bf28de887e5"
+    },
+    {
+      "sequence_number": 2,
+      "task_id": "task_2_continuation",
+      "timestamp": 1786470607.6998703,
+      "payload_hash": "f622aee05a3674380a232e77e48725304756b993f3f8118d08d73ec33ecde016",
+      "preceding_hash": "4ef3b1706983b17fa5426348f37ca56b735754e94a15777139a80bf28de887e5",
+      "signature_hash": "0e1561f26357dbe014e8c4b2ed5cd02c1ac2990d16841c67f6e5a81ab8794c65"
+    }
+  ]
 }

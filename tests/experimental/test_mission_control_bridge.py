@@ -387,3 +387,50 @@ def test_recover_from_cognitive_block_rejection(temp_registry, tmp_path):
     assert "SAGE CONTROL TOWER" in recovery_report["operator_visible_dashboard"]
     assert "Workflow Health]       :: BLOCKED" in recovery_report["operator_visible_dashboard"]
     assert "Recovery Status]       :: TERMINAL_REJECTION" in recovery_report["operator_visible_dashboard"]
+
+
+def test_cryptographic_receipt_chain_integrity(tmp_path):
+    """Verify genesis receipt creation, chronological linkages, and tamper-detection failures in the chain."""
+    from sage.experimental.mission_control_bridge import SAGEWorkloadReceiptChain
+
+    chain_file = tmp_path / "workspace_revalidation_evidence.json"
+
+    # 1. Empty chain verifies successfully
+    assert SAGEWorkloadReceiptChain.verify_chain_integrity(str(chain_file)) is True
+
+    # 2. Add genesis receipt
+    payload1 = {"action": "safe_compile_check", "status": "COMPLETED"}
+    receipt1 = SAGEWorkloadReceiptChain.add_receipt("task_1_genesis", payload1, str(chain_file))
+
+    assert receipt1.sequence_number == 1
+    assert receipt1.task_id == "task_1_genesis"
+    assert receipt1.preceding_hash == "GENESIS_ROOT"
+    assert receipt1.signature_hash != ""
+
+    # Verify single-receipt chain integrity passes
+    assert SAGEWorkloadReceiptChain.verify_chain_integrity(str(chain_file)) is True
+
+    # 3. Add subsequent linked receipt
+    payload2 = {"action": "revalidate_persistence", "status": "COMPLETED"}
+    receipt2 = SAGEWorkloadReceiptChain.add_receipt("task_2_continuation", payload2, str(chain_file))
+
+    assert receipt2.sequence_number == 2
+    assert receipt2.task_id == "task_2_continuation"
+    assert receipt2.preceding_hash == receipt1.signature_hash
+    assert receipt2.signature_hash != ""
+
+    # Verify double-receipt chain integrity passes
+    assert SAGEWorkloadReceiptChain.verify_chain_integrity(str(chain_file)) is True
+
+    # 4. Modify/Tamper with a receipt in the chain on disk
+    with open(chain_file, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    # Tamper with the genesis receipt's payload hash
+    data["cryptographic_receipt_chain"][0]["payload_hash"] = "TAMPERED_HASH_VAL"
+
+    with open(chain_file, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2)
+
+    # Verify that chain integrity verification now fails instantly!
+    assert SAGEWorkloadReceiptChain.verify_chain_integrity(str(chain_file)) is False

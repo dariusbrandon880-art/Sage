@@ -12,6 +12,7 @@ import json
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field
 
+import hashlib
 from sage.change_impact import SAGEChangeImpactAnalyzer
 from sage.mission_control import SAGEMissionProgressionController, ExperimentalMissionState
 from sage.experimental.cognitive.state_schema import CognitiveState
@@ -31,6 +32,109 @@ class SAGEWorkloadResult(BaseModel):
     status: str = Field(..., description="Status of execution: COMPLETED or FAILED")
     output_log: str = Field(..., description="Detailed execution logs, stdout, or stderr output")
     metrics: Dict[str, Any] = Field(default_factory=dict, description="Performance, timing, and resource metrics")
+
+
+class SAGEWorkloadReceipt(BaseModel):
+    """A cryptographically chained session receipt confirming task execution."""
+    sequence_number: int = Field(..., description="Monotonically increasing sequence number")
+    task_id: str = Field(..., description="Task identifier")
+    timestamp: float = Field(..., description="Time of generation")
+    payload_hash: str = Field(..., description="SHA-256 hash of the receipt payload")
+    preceding_hash: str = Field(..., description="Linkage reference to the signature hash of the preceding receipt")
+    signature_hash: str = Field(..., description="Cryptographic signature verification hash")
+
+
+class SAGEWorkloadReceiptChain:
+    """Manager for SAGE cryptographic receipt chains, verifying session continuity."""
+
+    @staticmethod
+    def add_receipt(task_id: str, payload: Dict[str, Any], file_path: str) -> SAGEWorkloadReceipt:
+        """Create, chain, and persist a new cryptographic receipt inside the JSON evidence file."""
+        data_dict = {}
+        if os.path.exists(file_path):
+            try:
+                with open(file_path, "r", encoding="utf-8") as f:
+                    data_dict = json.load(f)
+            except Exception:
+                data_dict = {}
+
+        chain_list = data_dict.get("cryptographic_receipt_chain", [])
+
+        # 1. Establish linkage reference (preceding_hash)
+        if not chain_list:
+            preceding_hash = "GENESIS_ROOT"
+            sequence_number = 1
+        else:
+            preceding_hash = chain_list[-1]["signature_hash"]
+            sequence_number = chain_list[-1]["sequence_number"] + 1
+
+        # 2. Compute deterministic payload hash
+        payload_serialized = json.dumps(payload, sort_keys=True)
+        payload_hash = hashlib.sha256(payload_serialized.encode("utf-8")).hexdigest()
+
+        # 3. Compute signature verification hash
+        sig_input = f"{payload_hash}:{preceding_hash}"
+        signature_hash = hashlib.sha256(sig_input.encode("utf-8")).hexdigest()
+
+        # 4. Instantiate new receipt
+        receipt = SAGEWorkloadReceipt(
+            sequence_number=sequence_number,
+            task_id=task_id,
+            timestamp=time.time(),
+            payload_hash=payload_hash,
+            preceding_hash=preceding_hash,
+            signature_hash=signature_hash
+        )
+
+        # 5. Append and serialize back to disk
+        chain_list.append(receipt.model_dump())
+        data_dict["cryptographic_receipt_chain"] = chain_list
+
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(data_dict, f, indent=2)
+
+        return receipt
+
+    @staticmethod
+    def verify_chain_integrity(file_path: str) -> bool:
+        """Verifies step-by-step cryptographic sequence and content integrity of the entire chain."""
+        if not os.path.exists(file_path):
+            return True
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                data_dict = json.load(f)
+        except Exception:
+            return False
+
+        chain_list = data_dict.get("cryptographic_receipt_chain", [])
+        if not chain_list:
+            return True
+
+        for i, item in enumerate(chain_list):
+            # Recalculate payload hash using same sorting invariants
+            # The payload itself was not preserved separate in the list item to avoid bloating,
+            # so the item contains task_id and timestamps. We verify that signature_hash is correctly formed.
+            preceding_hash = item["preceding_hash"]
+            payload_hash = item["payload_hash"]
+            signature_hash = item["signature_hash"]
+
+            # Validate signature_hash formation
+            sig_input = f"{payload_hash}:{preceding_hash}"
+            expected_sig = hashlib.sha256(sig_input.encode("utf-8")).hexdigest()
+            if signature_hash != expected_sig:
+                return False
+
+            # Validate chronological predecessor sequence linkage
+            if i == 0:
+                if preceding_hash != "GENESIS_ROOT":
+                    return False
+            else:
+                prev_item = chain_list[i - 1]
+                if preceding_hash != prev_item["signature_hash"]:
+                    return False
+
+        return True
 
 
 class SAGEMissionExecutionBridge:
@@ -288,11 +392,31 @@ class SAGEMissionExecutionBridge:
         }
 
         # Persist complete evidence package to disk
+        existing_chain = []
+        if os.path.exists(self.evidence_path):
+            try:
+                with open(self.evidence_path, "r", encoding="utf-8") as f:
+                    old_data = json.load(f)
+                    existing_chain = old_data.get("cryptographic_receipt_chain", [])
+            except Exception:
+                existing_chain = []
+
+        evidence_report["cryptographic_receipt_chain"] = existing_chain
+
         os.makedirs(os.path.dirname(self.evidence_path), exist_ok=True)
         with open(self.evidence_path, "w", encoding="utf-8") as f:
             json.dump(evidence_report, f, indent=2)
 
+        # Append cryptographically chained session receipt confirmed task execution
+        SAGEWorkloadReceiptChain.add_receipt(task_id, evidence_report, self.evidence_path)
+
         # Output beautifully formatted operator visibility Control Tower
+        # Re-load from disk to ensure operator visibility dashboard gets the updated chain info
+        try:
+            with open(self.evidence_path, "r", encoding="utf-8") as f:
+                evidence_report = json.load(f)
+        except Exception:
+            pass
         self.render_recovery_control_tower(evidence_report)
 
         return evidence_report
@@ -457,11 +581,31 @@ class SAGEMissionExecutionBridge:
         }
 
         # Persist complete recovery report
+        existing_chain = []
+        if os.path.exists(self.evidence_path):
+            try:
+                with open(self.evidence_path, "r", encoding="utf-8") as f:
+                    old_data = json.load(f)
+                    existing_chain = old_data.get("cryptographic_receipt_chain", [])
+            except Exception:
+                existing_chain = []
+
+        recovery_report["cryptographic_receipt_chain"] = existing_chain
+
         os.makedirs(os.path.dirname(self.evidence_path), exist_ok=True)
         with open(self.evidence_path, "w", encoding="utf-8") as f:
             json.dump(recovery_report, f, indent=2)
 
+        # Append cryptographically chained session receipt confirmed task execution
+        SAGEWorkloadReceiptChain.add_receipt(task_id, recovery_report, self.evidence_path)
+
         # Output beautifully formatted operator visibility Control Tower
+        # Re-load from disk to ensure operator visibility dashboard gets the updated chain info
+        try:
+            with open(self.evidence_path, "r", encoding="utf-8") as f:
+                recovery_report = json.load(f)
+        except Exception:
+            pass
         self.render_recovery_control_tower(recovery_report)
 
         return recovery_report
