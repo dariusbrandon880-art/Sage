@@ -79,6 +79,23 @@ def main():
     # metrics subcommand
     subparsers.add_parser("metrics", help="Show collected runtime telemetry metrics")
 
+    # audit subcommand
+    audit_parser = subparsers.add_parser(
+        "audit", help="ACT-PROD cross-model audit dashboard operator interface"
+    )
+    audit_parser.add_argument(
+        "--action",
+        choices=["summary", "diagnostics", "scan"],
+        required=True,
+        help="Audit action to perform",
+    )
+    audit_parser.add_argument(
+        "--mission-id", type=str, help="Mission ID for diagnostics action"
+    )
+    audit_parser.add_argument(
+        "--archive-path", type=str, default="sage_data/archive", help="Path to SAGE Archive"
+    )
+
     args = parser.parse_args()
 
     # Initialize runtime
@@ -215,6 +232,33 @@ def main():
             print(json.dumps(result, indent=2))
         except Exception as e:
             print(f"Error: Metrics gathering failed: {e!s}")
+            sys.exit(1)
+
+    elif args.command == "audit":
+        try:
+            import importlib
+            dashboard_module = importlib.import_module("sage.experimental.act.act_prod_dashboard")
+            SAGEActProdDashboard = dashboard_module.SAGEActProdDashboard
+
+            dashboard = SAGEActProdDashboard(archive_path=args.archive_path)
+
+            if args.action == "summary":
+                result = dashboard.retrieve_operator_summary()
+                print(json.dumps(result, indent=2))
+            elif args.action == "diagnostics":
+                if not args.mission_id:
+                    print("Error: --mission-id is required for diagnostics action.")
+                    sys.exit(1)
+                result = dashboard.retrieve_mission_diagnostics(args.mission_id)
+                if result is None:
+                    print(f"Error: No archived trace found for mission '{args.mission_id}'")
+                    sys.exit(1)
+                print(json.dumps(result, indent=2))
+            elif args.action == "scan":
+                result = dashboard.handle_corrupted_archive_data()
+                print(json.dumps(result, indent=2))
+        except Exception as e:
+            print(f"Error: Audit execution failed: {e!s}")
             sys.exit(1)
 
     else:
