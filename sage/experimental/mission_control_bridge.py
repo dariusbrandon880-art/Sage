@@ -1,8 +1,8 @@
 """SAGE Governed Mission Execution Bridge & Workspace Revalidator.
 
 Composes SAGEChangeImpactAnalyzer, SAGEOperationalCapabilityRegistry,
-and SAGEMissionProgressionController into a unified, sequential, and fully
-governed execution and revalidation pipeline.
+SAGEMissionProgressionController, and the durable Master Archive into a unified,
+sequential, and fully governed execution, revalidation, and archiving pipeline.
 """
 
 import subprocess
@@ -14,6 +14,8 @@ from pydantic import BaseModel, Field
 from sage.change_impact import SAGEChangeImpactAnalyzer
 from sage.capability_registry import SAGEOperationalCapabilityRegistry, SAGECapability
 from sage.mission_control import SAGEMissionProgressionController, ExperimentalMissionState, MissionTransitionResult
+from sage.archive.core import Archive
+from sage.models import ArchiveEntry, KnowledgeState, ArchiveIntelligence, KnowledgeLineage, ValidationRecord, ConfidenceTracker
 
 
 class WorkloadExecutionResult(BaseModel):
@@ -26,13 +28,18 @@ class WorkloadExecutionResult(BaseModel):
 
 
 class SAGEMissionExecutionBridge:
-    """Orchestrates and drives sequential revalidation tasks and capability updates."""
+    """Orchestrates and drives sequential revalidation tasks, capability updates, and Archive promotion."""
 
-    def __init__(self, registry_path: str = "evidence_capture/operational_capability_registry.json") -> None:
+    def __init__(
+        self,
+        registry_path: str = "evidence_capture/operational_capability_registry.json",
+        archive_path: str = "sage_data/archive"
+    ) -> None:
         self.registry_path = registry_path
         self.registry = SAGEOperationalCapabilityRegistry(registry_path)
         self.analyzer = SAGEChangeImpactAnalyzer(registry_path)
         self.controller = SAGEMissionProgressionController()
+        self.archive = Archive(archive_path)
 
     def execute_revalidation_workload(
         self,
@@ -43,7 +50,8 @@ class SAGEMissionExecutionBridge:
         """Runs the entire sequential governed pipeline from proposal to closed.
 
         Runs ruff check, evaluates change impacts, revalidates capabilities in the registry,
-        and transitions the mission through all 10 stages under strict prerequisite checks.
+        transitions the mission through all 10 stages under strict prerequisite checks,
+        and durably promotes the trace to the permanent SAGE Archive.
         """
         # Validate inputs are not mutated
         target_files_copy = list(target_files)
@@ -159,7 +167,7 @@ class SAGEMissionExecutionBridge:
         # Stage 9: Promotion Ready -> Closed
         transition_to("CLOSED", "archival_success_confirmed")
 
-        return {
+        output_dict = {
             "mission_id": mission_id,
             "overall_success": overall_success,
             "final_state": mission_state.current_state,
@@ -168,3 +176,36 @@ class SAGEMissionExecutionBridge:
             "revalidated_capabilities": revalidated_caps,
             "transition_trace": transition_trace
         }
+
+        # --- Durable Promotion of Results to SAGE Master Archive ---
+        if overall_success:
+            val_rec = ValidationRecord(
+                validated_by="SAGEMissionExecutionBridge",
+                rules_applied=["workspace_revalidation_check", "change_impact_mapping"],
+                success=True
+            )
+            lineage = KnowledgeLineage(
+                source=f"bridge_mission_{mission_id}",
+                validation_record=val_rec,
+                metadata={
+                    "revalidated_capabilities": revalidated_caps,
+                    "target_files": target_files_copy
+                }
+            )
+            confidence = ConfidenceTracker(
+                confidence_level=1.0,
+                validation_status="archived",
+                evidence_references=[self.registry_path]
+            )
+            archive_entry = ArchiveEntry(
+                id=f"ARCHIVE-REVAL-{mission_id}",
+                title=f"Workspace Revalidation Trace: {mission_id}",
+                tags=["revalidation", "workspace_trace", "governed_execution"],
+                knowledge_state=KnowledgeState.ARCHIVED,
+                content=output_dict,
+                intelligence=ArchiveIntelligence(lineage=lineage, confidence=confidence)
+            )
+            self.archive.promote_to_archive(archive_entry)
+            output_dict["archived_entry_id"] = archive_entry.id
+
+        return output_dict
