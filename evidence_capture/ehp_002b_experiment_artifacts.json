@@ -1,0 +1,116 @@
+{
+  "metadata": {
+    "experiment_id": "EHP-002B-EHP-002C-SANDBOX",
+    "trial_count": 100,
+    "worlds": [
+      "R1",
+      "R2",
+      "R3",
+      "R4",
+      "R5",
+      "R6",
+      "R7_1",
+      "R7_2"
+    ],
+    "seed": 42,
+    "timestamp_utc": "2026-08-11T03:30:00Z"
+  },
+  "ehp_002b_metrics": {
+    "M0": {
+      "unsafe_actions": 0.0,
+      "unnecessary_freezes": 1.0,
+      "safe_continuations": 1.0,
+      "probes_executed": 0.0,
+      "successful_discriminations": 0.0,
+      "info_gain": 0.0,
+      "comp_cost": 1.0,
+      "irreversible_errors": 0
+    },
+    "M1": {
+      "unsafe_actions": 0.5,
+      "unnecessary_freezes": 0.0,
+      "safe_continuations": 0.5,
+      "probes_executed": 0.0,
+      "successful_discriminations": 0.0,
+      "info_gain": 0.0,
+      "comp_cost": 1.0,
+      "irreversible_errors": 400
+    },
+    "M2": {
+      "unsafe_actions": 0.0,
+      "unnecessary_freezes": 1.0,
+      "safe_continuations": 1.0,
+      "probes_executed": 0.0,
+      "successful_discriminations": 0.0,
+      "info_gain": 0.0,
+      "comp_cost": 2.0,
+      "irreversible_errors": 0
+    },
+    "M3": {
+      "unsafe_actions": 0.0,
+      "unnecessary_freezes": 1.0,
+      "safe_continuations": 1.0,
+      "probes_executed": 0.0,
+      "successful_discriminations": 0.0,
+      "info_gain": 0.0,
+      "comp_cost": 3.0,
+      "irreversible_errors": 0
+    },
+    "M4": {
+      "unsafe_actions": 0.0,
+      "unnecessary_freezes": 1.0,
+      "safe_continuations": 1.0,
+      "probes_executed": 0.0,
+      "successful_discriminations": 0.0,
+      "info_gain": 0.0,
+      "comp_cost": 4.0,
+      "irreversible_errors": 0
+    },
+    "M5": {
+      "unsafe_actions": 0.375,
+      "unnecessary_freezes": 0.0,
+      "safe_continuations": 0.625,
+      "probes_executed": 1.0,
+      "successful_discriminations": 0.25,
+      "info_gain": 0.75,
+      "comp_cost": 5.5,
+      "irreversible_errors": 300
+    },
+    "M6": {
+      "unsafe_actions": 0.0,
+      "unnecessary_freezes": 0.0,
+      "safe_continuations": 1.0,
+      "probes_executed": 0.375,
+      "successful_discriminations": 0.25,
+      "info_gain": 0.75,
+      "comp_cost": 7.5,
+      "irreversible_errors": 0
+    }
+  },
+  "ehp_002c_metrics": {
+    "M0": {
+      "wrong_action_rate": 0.5,
+      "response_divergence": 2.0,
+      "clarification_rate": 0.0,
+      "comp_cost": 2.0
+    },
+    "M1": {
+      "wrong_action_rate": 0.5,
+      "response_divergence": 2.0,
+      "clarification_rate": 0.0,
+      "comp_cost": 2.0
+    },
+    "M5": {
+      "wrong_action_rate": 0.0,
+      "response_divergence": 0.0,
+      "clarification_rate": 0.0,
+      "comp_cost": 2.0
+    },
+    "M7": {
+      "wrong_action_rate": 0.0,
+      "response_divergence": 0.0,
+      "clarification_rate": 0.0,
+      "comp_cost": 6.0
+    }
+  }
+}
