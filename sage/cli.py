@@ -194,7 +194,18 @@ def main():
                         try:
                             with open(evidence_path, "r", encoding="utf-8") as f:
                                 evidence_data = json.load(f)
-                                result["receipt_count"] = len(evidence_data.get("cryptographic_receipt_chain", []))
+                                chain_list = evidence_data.get("cryptographic_receipt_chain", [])
+                                result["receipt_count"] = len(chain_list)
+
+                                # Extract simplified receipt headers for operator visibility
+                                receipt_lineage = []
+                                for rc in chain_list:
+                                    receipt_lineage.append({
+                                        "seq": rc.get("sequence_number"),
+                                        "task_id": rc.get("task_id"),
+                                        "signature": f"{rc.get('signature_hash')[:10]}..." if rc.get('signature_hash') else "N/A"
+                                    })
+                                result["receipt_chain_lineage"] = receipt_lineage
                         except Exception:
                             pass
                 except Exception as ex:

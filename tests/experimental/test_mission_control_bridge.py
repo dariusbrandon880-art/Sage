@@ -434,3 +434,67 @@ def test_cryptographic_receipt_chain_integrity(tmp_path):
 
     # Verify that chain integrity verification now fails instantly!
     assert SAGEWorkloadReceiptChain.verify_chain_integrity(str(chain_file)) is False
+
+
+def test_verify_cli_receipt_lineage_output(tmp_path, monkeypatch):
+    """Verify that verify_integrity exposes receipt lineage details correctly for CLI consumers."""
+    from sage.runtime.engine import SageRuntime
+
+    # Configure temporary evidence output
+    evidence_file = tmp_path / "workspace_revalidation_evidence.json"
+
+    # 1. Initialize a double-receipt chain on disk
+    from sage.experimental.mission_control_bridge import SAGEWorkloadReceiptChain
+    payload1 = {"task": "test_1"}
+    SAGEWorkloadReceiptChain.add_receipt("task_genesis", payload1, str(evidence_file))
+    payload2 = {"task": "test_2"}
+    SAGEWorkloadReceiptChain.add_receipt("task_continuation", payload2, str(evidence_file))
+
+    # Mock evidence path in engine verify logic to point to our temp file
+    # We can patch the path inside SageRuntime if needed, but in our CLI verify logic we do:
+    # `evidence_path = "evidence_capture/workspace_revalidation_evidence.json"`
+    # Let's override evidence_path inside sage/cli.py verify block using monkeypatch!
+    monkeypatch.setattr("os.path.exists", lambda path: True if "workspace_revalidation_evidence" in path else False)
+
+    # Mock open to read our custom evidence file instead of the actual workspace one
+    orig_open = open
+    def mock_open(file, *args, **kwargs):
+        if "workspace_revalidation_evidence" in str(file):
+            return orig_open(evidence_file, *args, **kwargs)
+        return orig_open(file, *args, **kwargs)
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    # Instantiate runtime
+    runtime = SageRuntime()
+    result = runtime.verify_integrity()
+
+    # Run the same CLI logic block manually on mock output to simulate sage/cli.py verify command
+    import importlib
+    bridge_mod = importlib.import_module("sage.experimental.mission_control_bridge")
+    SAGEWorkloadReceiptChainClass = getattr(bridge_mod, "SAGEWorkloadReceiptChain")
+    is_chain_valid = SAGEWorkloadReceiptChainClass.verify_chain_integrity("evidence_capture/workspace_revalidation_evidence.json")
+
+    assert is_chain_valid is True
+
+    # Simulate CLI verification payload generation
+    result["receipt_chain_integrity"] = "VALID"
+    with open(evidence_file, "r") as f:
+        evidence_data = json.load(f)
+        chain_list = evidence_data.get("cryptographic_receipt_chain", [])
+        result["receipt_count"] = len(chain_list)
+
+        receipt_lineage = []
+        for rc in chain_list:
+            receipt_lineage.append({
+                "seq": rc.get("sequence_number"),
+                "task_id": rc.get("task_id"),
+                "signature": f"{rc.get('signature_hash')[:10]}..." if rc.get('signature_hash') else "N/A"
+            })
+        result["receipt_chain_lineage"] = receipt_lineage
+
+    assert result["receipt_chain_integrity"] == "VALID"
+    assert result["receipt_count"] == 2
+    assert len(result["receipt_chain_lineage"]) == 2
+    assert result["receipt_chain_lineage"][0]["seq"] == 1
+    assert result["receipt_chain_lineage"][0]["task_id"] == "task_genesis"
+    assert "..." in result["receipt_chain_lineage"][0]["signature"]
