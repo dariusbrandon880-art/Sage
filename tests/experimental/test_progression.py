@@ -5,6 +5,7 @@ import pytest
 import os
 import hashlib
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 from sage.experimental.progression import (
     MissionProgressionController,
@@ -472,3 +473,152 @@ def test_18_protected_boundary_exclusion():
                 with open(item, "r", encoding="utf-8") as f:
                     content = f.read()
                     assert "tests." not in content
+
+
+@patch("sage.experimental.cognitive.prefrontal_cortex.subprocess.run")
+def test_19_protected_path_rejection(mock_run, valid_mission_input):
+    """Test 19: Confirm that modifying files in protected paths blocks preflight state transition."""
+    controller = MissionProgressionController()
+    controller.intake_mission(valid_mission_input)
+    controller.prioritize()
+
+    # Simulate git status returning a modified file in sage/core
+    mock_res = MagicMock()
+    mock_res.stdout = "M sage/core/engine.py"
+    mock_res.returncode = 0
+    mock_run.return_value = mock_res
+
+    state = CognitiveState(
+        agent_identity=CognitiveAgentIdentity(
+            agent_id="agent_jules_sage",
+            name="Jules",
+            role="Senior Software Engineer",
+            authority_level="TIER_1_COORDINATOR",
+            governance_tier="TIER_1_COORDINATOR",
+        ),
+        active_mission=CognitiveActiveMission(
+            mission_id="mission_test_01",
+            objective="Verify progression",
+            status="RUNNING"
+        ),
+        operator_constraints=CognitiveOperatorConstraints(
+            authorized_agents=["agent_jules_sage"]
+        ),
+        confidence_state=CognitiveConfidenceState(
+            overall_confidence=1.0,
+            last_updated=0.0
+        ),
+        next_action=CognitiveNextAction(
+            action_id="task_test",
+            description="Verify progression",
+            assigned_agent="agent_jules_sage"
+        )
+    )
+
+    with pytest.raises(ValueError, match="Protected path violation"):
+        controller.validate_preflight(cognitive_state=state)
+
+    assert controller.current_state == MissionProgressionState.PRIORITIZED
+
+
+@patch("sage.experimental.cognitive.prefrontal_cortex.subprocess.run")
+def test_20_scope_drift_rejection(mock_run, valid_mission_input):
+    """Test 20: Confirm that modifying files outside permitted paths blocks preflight transition."""
+    controller = MissionProgressionController()
+    controller.intake_mission(valid_mission_input)
+    controller.prioritize()
+
+    # Simulate git status returning a modified file outside permitted paths
+    mock_res = MagicMock()
+    mock_res.stdout = "M other_dir/file.py"
+    mock_res.returncode = 0
+    mock_run.return_value = mock_res
+
+    state = CognitiveState(
+        agent_identity=CognitiveAgentIdentity(
+            agent_id="agent_jules_sage",
+            name="Jules",
+            role="Senior Software Engineer",
+            authority_level="TIER_1_COORDINATOR",
+            governance_tier="TIER_1_COORDINATOR",
+        ),
+        active_mission=CognitiveActiveMission(
+            mission_id="mission_test_01",
+            objective="Verify progression",
+            status="RUNNING"
+        ),
+        operator_constraints=CognitiveOperatorConstraints(
+            authorized_agents=["agent_jules_sage"],
+            permitted_paths=["sage/experimental/"] # Permitted is experimental
+        ),
+        confidence_state=CognitiveConfidenceState(
+            overall_confidence=1.0,
+            last_updated=0.0
+        ),
+        next_action=CognitiveNextAction(
+            action_id="task_test",
+            description="Verify progression",
+            assigned_agent="agent_jules_sage"
+        )
+    )
+
+    with pytest.raises(ValueError, match="Scope drift violation"):
+        controller.validate_preflight(cognitive_state=state)
+
+    assert controller.current_state == MissionProgressionState.PRIORITIZED
+
+
+@patch("sage.experimental.cognitive.prefrontal_cortex.subprocess.run")
+def test_21_ancestry_violation_rejection(mock_run, valid_mission_input):
+    """Test 21: Confirm that un-rebased branch blocks preflight transition."""
+    controller = MissionProgressionController()
+    controller.intake_mission(valid_mission_input)
+    controller.prioritize()
+
+    # Mock subprocess.run responses
+    # First call: git status
+    # Second call: git rev-parse origin/main
+    # Third call: git merge-base --is-ancestor
+    mock_res_status = MagicMock()
+    mock_res_status.stdout = "M scripts/sync_to_drive.py"
+    mock_res_status.returncode = 0
+
+    mock_res_rev = MagicMock()
+    mock_res_rev.returncode = 0
+
+    mock_res_ancestor = MagicMock()
+    mock_res_ancestor.returncode = 1 # Not an ancestor!
+
+    mock_run.side_effect = [mock_res_status, mock_res_rev, mock_res_ancestor]
+
+    state = CognitiveState(
+        agent_identity=CognitiveAgentIdentity(
+            agent_id="agent_jules_sage",
+            name="Jules",
+            role="Senior Software Engineer",
+            authority_level="TIER_1_COORDINATOR",
+            governance_tier="TIER_1_COORDINATOR",
+        ),
+        active_mission=CognitiveActiveMission(
+            mission_id="mission_test_01",
+            objective="Verify progression",
+            status="RUNNING"
+        ),
+        operator_constraints=CognitiveOperatorConstraints(
+            authorized_agents=["agent_jules_sage"]
+        ),
+        confidence_state=CognitiveConfidenceState(
+            overall_confidence=1.0,
+            last_updated=0.0
+        ),
+        next_action=CognitiveNextAction(
+            action_id="task_test",
+            description="Verify progression",
+            assigned_agent="agent_jules_sage"
+        )
+    )
+
+    with pytest.raises(ValueError, match="Ancestry violation"):
+        controller.validate_preflight(cognitive_state=state)
+
+    assert controller.current_state == MissionProgressionState.PRIORITIZED
