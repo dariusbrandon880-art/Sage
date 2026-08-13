@@ -40,6 +40,17 @@ def test_check_repository_state_dirty(monkeypatch):
     assert check_repository_state() is True
 
 
+def test_check_repository_state_invalid_git(monkeypatch):
+    """Test repository state returns False when not inside a git repository."""
+    mock_run = MagicMock()
+    mock_run.side_effect = [
+        MagicMock(returncode=128, stdout=""),
+    ]
+    monkeypatch.setattr("scripts.jules_preflight.run_command", mock_run)
+
+    assert check_repository_state() is False
+
+
 def test_check_historical_evidence_clean(monkeypatch):
     """Test historical check returns True when no phase_4 or phase_5 files are modified."""
     mock_run = MagicMock()
@@ -126,11 +137,41 @@ def test_check_scope_drift_ci_only_pass(monkeypatch):
     assert check_scope_drift(active_scope="ci-only") is True
 
 
-def test_check_scope_drift_ci_only_fail(monkeypatch):
-    """Test ci-only scope fails if python files are edited."""
+def test_check_scope_drift_ci_only_app_fail(monkeypatch):
+    """Test ci-only scope fails if application files are edited (Requirement 1)."""
     mock_run = MagicMock()
     mock_run.returncode = 0
     mock_run.stdout = ".github/workflows/main.yml\nsage/api.py\n"
+    monkeypatch.setattr("scripts.jules_preflight.run_command", lambda cmd, **kwargs: mock_run)
+
+    assert check_scope_drift(active_scope="ci-only") is False
+
+
+def test_check_scope_drift_ci_only_test_fail(monkeypatch):
+    """Test ci-only scope fails if test files are edited (Requirement 2)."""
+    mock_run = MagicMock()
+    mock_run.returncode = 0
+    mock_run.stdout = ".github/workflows/main.yml\ntests/test_spek.py\n"
+    monkeypatch.setattr("scripts.jules_preflight.run_command", lambda cmd, **kwargs: mock_run)
+
+    assert check_scope_drift(active_scope="ci-only") is False
+
+
+def test_check_scope_drift_ci_only_doc_fail(monkeypatch):
+    """Test ci-only scope fails if documentation files are edited (Requirement 3)."""
+    mock_run = MagicMock()
+    mock_run.returncode = 0
+    mock_run.stdout = ".github/workflows/main.yml\ndocs/master/SESSION_STATE.md\n"
+    monkeypatch.setattr("scripts.jules_preflight.run_command", lambda cmd, **kwargs: mock_run)
+
+    assert check_scope_drift(active_scope="ci-only") is False
+
+
+def test_check_scope_drift_ci_only_evidence_fail(monkeypatch):
+    """Test ci-only scope fails if evidence capture files are edited (Requirement 4)."""
+    mock_run = MagicMock()
+    mock_run.returncode = 0
+    mock_run.stdout = ".github/workflows/main.yml\nevidence_capture/ccl_operational_feedback.json\n"
     monkeypatch.setattr("scripts.jules_preflight.run_command", lambda cmd, **kwargs: mock_run)
 
     assert check_scope_drift(active_scope="ci-only") is False
