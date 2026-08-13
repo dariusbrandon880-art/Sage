@@ -1,7 +1,7 @@
 """SAGE Sports-Probability Research - Bounded Feature Hypothesis OOS Evaluation & Replay.
 
-Demonstrates SAGE-RF-PROOF-002 specification:
-1. Instantiates a valid historical dataset of 30 matches (NBA baseline).
+Demonstrates SAGE-RF-PROOF-002 and SAGE-RF-PROOF-003 specifications:
+1. Instantiates a valid historical dataset of 35 matches (NBA baseline).
 2. Locks OOS observations via deterministic partitioning (Locked OOS contract).
 3. Evaluates POSITIVE path (Rest Signal) on locked OOS set, verifying H1.
 4. Evaluates NEGATIVE path (Sentiment Signal) on locked OOS set, falsifying H1.
@@ -29,11 +29,9 @@ def run_scientific_feature_evaluation_demo():
 
     rows: List[EvaluationRow] = []
     for i in range(35):
-        # Base prices: -110 / -110 standard (decimal 1.909 / 1.909)
         prices = {"home": 1.90909, "away": 1.90909}
         winner = "home" if i % 2 == 0 else "away"
 
-        # Highly predictive feature (matches outcome perfectly)
         pos_feature = {
             "home": 0.85 if winner == "home" else 0.15,
             "away": 0.15 if winner == "home" else 0.85
@@ -89,7 +87,6 @@ def run_scientific_feature_evaluation_demo():
 
     # 3. NEGATIVE PATH: Wrong sentiment signal
     print("\n[Step 4] Evaluating non-predictive/wrong feature (Sentiment Signal)...")
-    # Build wrong feature values (totally opposing predictions)
     neg_rows: List[EvaluationRow] = []
     for i in range(35):
         winner = "home" if i % 2 == 0 else "away"
@@ -126,7 +123,7 @@ def run_scientific_feature_evaluation_demo():
         dataset_identity=dataset_identity,
         feature_identity="rest_compression_adjusted_probability",
         rows=rows,
-        min_samples_required=50,  # Far higher than OOS count of 11!
+        min_samples_required=50,
         oos_split=0.3
     )
     print(f"  Decision: {insufficient_res.statistical_decision}")
@@ -143,7 +140,7 @@ def run_scientific_feature_evaluation_demo():
             rows=rows,
             min_samples_required=5,
             oos_split=0.3,
-            simulate_leakage=True  # Force leakage detection
+            simulate_leakage=True
         )
         print("  [✗] Error: Replay succeeded on a leaked dataset! (Safety violation)")
         return False
@@ -154,7 +151,7 @@ def run_scientific_feature_evaluation_demo():
     # Serialize complete demonstration evidence lineage
     print("\n[Step 7] Serializing absolute scientific OOS evidence package to disk...")
     evidence_payload = {
-        "current_frontier": "SAGE-RF-PROOF-002 OOS Scientific Validation Hardening Substrate",
+        "current_frontier": "SAGE-RF-PROOF-003 Controlled Hypothesis Replication",
         "dataset_metadata": {
             "identity": dataset_identity,
             "total_samples": len(rows),

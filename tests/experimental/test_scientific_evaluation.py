@@ -51,14 +51,12 @@ def test_deterministic_partitioning():
     assert len(train1) == 7
     assert len(oos1) == 3
 
-    # Assert exact deterministic match
     assert [r.market_identity for r in train1] == [r.market_identity for r in train2]
     assert [r.market_identity for r in oos1] == [r.market_identity for r in oos2]
 
 
 def test_oos_insufficient_sample():
     """Verify that insufficient samples in the locked OOS set return INSUFFICIENT_EVIDENCE."""
-    # 10 rows with 10% OOS split yields exactly 1 OOS sample, which is < min_samples_required=5
     rows = []
     for i in range(10):
         rows.append(
@@ -86,7 +84,6 @@ def test_oos_insufficient_sample():
 
 def test_leakage_detection_look_ahead():
     """Verify that perfect correlation (look-ahead outcome leakage) is detected and rejected."""
-    # Create 10 rows where candidate feature predicts exactly 1.0 for the winner (perfect look-ahead outcome leak!)
     rows = []
     for i in range(10):
         outcome = "h" if i % 2 == 0 else "a"
@@ -183,7 +180,6 @@ def test_decision_determinism():
 
 def test_unsupported_feature_negative_path():
     """Verify that a candidate with no predictive value correctly fails to reject H0 (NOT SUPPORTED)."""
-    # Create 15 rows where the feature predicts opposite outcomes on locked OOS set
     rows = []
     for i in range(15):
         rows.append(
@@ -212,7 +208,6 @@ def test_unsupported_feature_negative_path():
 
 def test_supported_feature_positive_path():
     """Verify that a genuine predictive feature successfully rejects H0 and returns SUPPORTED."""
-    # Create 20 rows where the feature is predictive
     rows = []
     for i in range(20):
         outcome = "h" if i % 2 == 0 else "a"
