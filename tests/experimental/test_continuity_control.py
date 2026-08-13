@@ -905,7 +905,7 @@ def test_developer_workflow_orchestrator_workspace_revalidation_success(tmp_path
 
     # 2. Add an authorized engineering task with metadata target files
     dummy_py = tmp_path / "dummy_valid_code.py"
-    dummy_py.write_text("def valid_func():\n    return True\n")
+    dummy_py.write_text("def test_valid_func():\n    assert True\n")
 
     # Pre-populate capability registry
     registry = SAGEOperationalCapabilityRegistry(storage_path=str(registry_file))
@@ -1076,3 +1076,56 @@ def test_developer_workflow_orchestrator_workspace_revalidation_failure(tmp_path
     lint_fail = cmaps["failure_events"][0]
     assert lint_fail["error_type"] == "LINTER_VIOLATION"
     assert "dummy_invalid_code.py" in lint_fail["message"]
+
+
+def test_developer_workflow_orchestrator_preflight_fail_closed(tmp_path):
+    """Verify that DeveloperWorkflowOrchestrator fails closed cleanly when preflight check fails.
+
+    Ensures that SAGEPreflightChecker blocks the loop, pauses execution, and records in CCL.
+    """
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop, SAGEMissionTask
+    from sage.acr.session.session_state import SessionStateManager
+    from scripts.jules_preflight import SAGEPreflightChecker
+    import unittest.mock as mock
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    evidence_output = tmp_path / "evidence" / "ccl_preflight_fail.json"
+
+    # 1. Initialize custom managers and loop
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+
+    # Initialize orchestrator
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_preflight_fail_test",
+        objective="obj_continuous_development",
+        ccl=ccl,
+        evidence_output_path=str(evidence_output)
+    )
+
+    # 2. Add an authorized task
+    task = SAGEMissionTask(
+        task_id="task_preflight_test_1",
+        objective_id="obj_continuous_development",
+        priority_score=90.0,
+        lane="engineering",
+        authorized=True,
+        description="Test preflight failure"
+    )
+    orchestrator.mission_queue.add_task(task)
+
+    # 3. Mock SAGEPreflightChecker to simulate failure
+    with mock.patch.object(SAGEPreflightChecker, "run_all_checks") as mock_checks:
+        mock_checks.return_value = (False, ["Mocked branch ancestry violation"])
+
+        # Run autonomous loop and verify it raises RuntimeError
+        with pytest.raises(RuntimeError, match="Preflight gate check failed"):
+            orchestrator.execute_autonomous_mission_loop(max_cycles=1)
+
+    # 4. Assert loop was paused
+    assert orchestrator.loop_state["mode"] == "MANUAL_INTERVENTION_PAUSED"
+
+    # Verify task remains PENDING (or not COMPLETED) because it failed closed before execution!
+    updated_task = orchestrator.mission_queue.get_task("task_preflight_test_1")
+    assert updated_task.status == "PENDING"

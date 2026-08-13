@@ -824,6 +824,23 @@ class DeveloperWorkflowOrchestrator:
             if self.detect_external_workspace_drift():
                 break
 
+            # Run SAGE Preflight failure-memory checks
+            from scripts.jules_preflight import SAGEPreflightChecker
+            preflight = SAGEPreflightChecker()
+            preflight_success, preflight_reports = preflight.run_all_checks()
+            if not preflight_success:
+                self.loop_state["mode"] = "MANUAL_INTERVENTION_PAUSED"
+                self.save_loop_state()
+                self.ccl.intercept_event(
+                    event_type="recovered",
+                    action_taken="Preflight gate check failed",
+                    decision_reasoning="Executable development gate blocked task execution due to historical failure-memory violation.",
+                    failure_context={"error": "preflight_gate_failed", "reports": preflight_reports},
+                    recovery_path="hold_for_manual_operator_remediation",
+                    session_id=self.session_id
+                )
+                raise RuntimeError(f"Preflight gate check failed: {preflight_reports}")
+
             # 2. Select Next Task (SAGE never selects random work)
             task = self.mission_queue.get_next_approved_task(self.session.active_objectives)
             if not task:
