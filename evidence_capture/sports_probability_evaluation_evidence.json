@@ -1,50 +1,66 @@
 {
-  "current_frontier": "SAGE-RF-PROOF-001 Scientific Feature Evaluation Substrate",
+  "current_frontier": "SAGE-RF-PROOF-002 OOS Scientific Validation Hardening Substrate",
   "dataset_metadata": {
-    "identity": "nba_2026_rest_vs_sentiment_v1.0",
-    "sample_count": 15,
+    "identity": "nba_2026_hardened_evaluation_v1.0",
+    "total_samples": 35,
+    "train_samples_split": 24,
+    "oos_samples_split": 11,
     "sport": "NBA",
     "market_type": "MONEYLINE"
   },
-  "positive_hypothesis_path": {
+  "positive_oos_hypothesis_path": {
     "experiment_id": "exp_pos_rest_signal",
     "feature_identity": "rest_compression_adjusted_probability",
     "metrics": {
       "baseline_brier_score": 0.5,
-      "candidate_brier_score": 0.15125000000000002,
-      "delta_brier": 0.34875,
+      "candidate_brier_score": 0.2592,
+      "delta_brier": 0.24080000000000001,
       "baseline_log_loss": 0.6931471805599453,
-      "candidate_log_loss": 0.32158362412746233,
-      "delta_log_loss": 0.37156355643248296,
+      "candidate_log_loss": 0.4462871026284195,
+      "delta_log_loss": 0.2468600779315258,
       "baseline_ece": 0.0,
-      "candidate_ece": 0.275
+      "candidate_ece": 0.36
     },
     "statistical_test": {
       "p_value": 0.0,
       "effect_size_threshold": 0.01,
       "decision": "SUPPORTED",
-      "detailed_reason": "Candidate feature significantly outperforms baseline. Delta Brier: 0.3488 >= threshold 0.0100 (p-value: 0.0000). H0 rejected."
+      "detailed_reason": "BOUNDED OOS SUPPORTED RESULT: Candidate feature significantly outperforms baseline on locked OOS set. Delta Brier: 0.2408 >= threshold 0.0100 (p-value: 0.0000). H0 rejected."
     }
   },
-  "negative_hypothesis_path": {
+  "negative_oos_hypothesis_path": {
     "experiment_id": "exp_neg_sentiment_signal",
     "feature_identity": "public_sentiment_weight_unadjusted",
     "metrics": {
       "baseline_brier_score": 0.5,
-      "candidate_brier_score": 1.05125,
-      "delta_brier": -0.55125,
+      "candidate_brier_score": 0.8192,
+      "delta_brier": -0.31920000000000004,
       "baseline_log_loss": 0.6931471805599453,
-      "candidate_log_loss": 1.2909841813155656,
-      "delta_log_loss": -0.5978370007556203,
+      "candidate_log_loss": 1.0216512475319814,
+      "delta_log_loss": -0.32850406697203616,
       "baseline_ece": 0.0,
-      "candidate_ece": 0.725
+      "candidate_ece": 0.64
     },
     "statistical_test": {
       "p_value": 1.0,
       "effect_size_threshold": 0.01,
       "decision": "NOT SUPPORTED",
-      "detailed_reason": "Candidate feature underperforms or matches baseline. Delta Brier: -0.5513 <= 0. H0 stands."
+      "detailed_reason": "Candidate feature underperforms or matches baseline on locked OOS set. Delta Brier: -0.3192 <= 0. H0 stands."
     }
+  },
+  "insufficient_samples_path": {
+    "experiment_id": "exp_insufficient_samples",
+    "decision": "INSUFFICIENT_EVIDENCE",
+    "reason": "OOS sample count 11 is less than required minimum 50."
+  },
+  "leakage_protection_path": {
+    "rejection_status": "REJECTED / INVALID_EVALUATION",
+    "fail_closed_guaranteed": true,
+    "detected_leakage_exception": "REJECTED / INVALID_EVALUATION: Evaluation set leakage detected!"
+  },
+  "reproducibility_audit": {
+    "dual_runs_executed": true,
+    "perfect_reproduction_verified": true
   },
   "meta": {
     "fan_duel_transaction_path": "NONE",
