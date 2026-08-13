@@ -873,3 +873,206 @@ def test_chatgpt_runtime_adapter_and_submission(tmp_path):
     assert "cmaps_payload" in validation_result
     assert validation_result["cmaps_payload"]["agent_identity"]["agent_id"] == "agent_chatgpt_runtime_agent"
     assert validation_result["cmaps_payload"]["task_lineage"]["current_task_id"] == "task_openai_runtime_activation"
+
+
+def test_developer_workflow_orchestrator_workspace_revalidation_success(tmp_path):
+    """Verify that DeveloperWorkflowOrchestrator successfully processes a workspace revalidation engineering task.
+
+    Ensures that SAGEMissionExecutionBridge executes, updates capabilities in the registry,
+    promotes the trace to the Master Archive, and records a successful SAGE-CCL state transition.
+    """
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop, SAGEMissionTask
+    from sage.acr.session.session_state import SessionStateManager
+    from sage.capability_registry import SAGEOperationalCapabilityRegistry, SAGECapability
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    evidence_output = tmp_path / "evidence" / "ccl_reval_success.json"
+    registry_file = tmp_path / "operational_capability_registry.json"
+    archive_dir = tmp_path / "archive"
+
+    # 1. Initialize custom managers and loop
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+
+    # Initialize orchestrator
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_reval_success_test",
+        objective="obj_continuous_development",
+        ccl=ccl,
+        evidence_output_path=str(evidence_output)
+    )
+
+    # 2. Add an authorized engineering task with metadata target files
+    dummy_py = tmp_path / "dummy_valid_code.py"
+    dummy_py.write_text("def valid_func():\n    return True\n")
+
+    # Pre-populate capability registry
+    registry = SAGEOperationalCapabilityRegistry(storage_path=str(registry_file))
+    cap = SAGECapability(
+        capability_id="CAP-STATE-PERSISTENCE",
+        name="State Persistence",
+        description="Continuous atomic serialization of task states.",
+        implementation_status="IMPLEMENTED",
+        validation_status="UNVERIFIED",
+        evidence_references=[],
+        test_references=[str(dummy_py)],
+        archive_promotion_status="READY"
+    )
+    registry.add_capability(cap)
+
+    task = SAGEMissionTask(
+        task_id="task_reval_success_1",
+        objective_id="obj_continuous_development",
+        priority_score=90.0,
+        lane="engineering",
+        authorized=True,
+        metadata={"target_files": [str(dummy_py)]},
+        description="Validate clean workspace"
+    )
+    orchestrator.mission_queue.add_task(task)
+
+    # Mock the registry and archive paths for SAGEMissionExecutionBridge inside execute_active_development_coordination
+    import unittest.mock as mock
+    from sage.experimental.mission_control_bridge import SAGEMissionExecutionBridge
+
+    original_init = SAGEMissionExecutionBridge.__init__
+
+    def mocked_bridge_init(self_bridge, *args, **kwargs):
+        original_init(self_bridge, registry_path=str(registry_file))
+        from sage.archive.core import Archive
+        self_bridge.archive = Archive(str(archive_dir))
+
+    with mock.patch.object(SAGEMissionExecutionBridge, "__init__", mocked_bridge_init):
+        # Run autonomous loop
+        res = orchestrator.execute_autonomous_mission_loop(max_cycles=1)
+
+    # 3. Assertions
+    assert res["status"] == "CONTINUOUS"
+    assert "task_reval_success_1" in res["executed_tasks"]
+
+    # Verify task completed
+    t_reval = orchestrator.mission_queue.get_task("task_reval_success_1")
+    assert t_reval.status == "COMPLETED"
+
+    # Verify capability registry was updated to VALIDATED
+    registry.load()
+    updated_cap = registry.get_capability("CAP-STATE-PERSISTENCE")
+    assert updated_cap is not None
+    assert updated_cap.validation_status == "VALIDATED"
+
+    # Verify SAGE-CCL record was saved and promoted
+    assert evidence_output.exists()
+    with open(evidence_output, "r", encoding="utf-8") as f:
+        evidence_data = json.load(f)
+
+    assert evidence_data["status"] == "VALIDATED"
+    ccl_rec = evidence_data["ccl_record"]
+    assert "revalidated_capabilities" in ccl_rec["evidence_payload"]
+    assert "CAP-STATE-PERSISTENCE" in ccl_rec["evidence_payload"]["revalidated_capabilities"]
+    assert "Successfully revalidated workspace capabilities" in ccl_rec["action_taken"]
+
+
+def test_developer_workflow_orchestrator_workspace_revalidation_failure(tmp_path):
+    """Verify that DeveloperWorkflowOrchestrator handles a workspace revalidation failure correctly.
+
+    Ensures that when linter check fails, the orchestrator logs LINTER_VIOLATION in the failures,
+    creates a recovery checkpoint, pauses the loop, and updates the task status to FAILED.
+    """
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop, SAGEMissionTask
+    from sage.acr.session.session_state import SessionStateManager
+    from sage.capability_registry import SAGEOperationalCapabilityRegistry, SAGECapability
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    evidence_output = tmp_path / "evidence" / "ccl_reval_failure.json"
+    registry_file = tmp_path / "operational_capability_registry.json"
+    archive_dir = tmp_path / "archive"
+
+    # 1. Initialize custom managers and loop
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+
+    # Initialize orchestrator
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_reval_failure_test",
+        objective="obj_continuous_development",
+        ccl=ccl,
+        evidence_output_path=str(evidence_output)
+    )
+
+    # 2. Add an authorized engineering task with a Python file containing a deliberate syntax error
+    dummy_py = tmp_path / "dummy_invalid_code.py"
+    dummy_py.write_text("def invalid_func(:\n    return False\n")
+
+    # Pre-populate capability registry
+    registry = SAGEOperationalCapabilityRegistry(storage_path=str(registry_file))
+    cap = SAGECapability(
+        capability_id="CAP-STATE-PERSISTENCE",
+        name="State Persistence",
+        description="Continuous atomic serialization of task states.",
+        implementation_status="IMPLEMENTED",
+        validation_status="UNVERIFIED",
+        evidence_references=[],
+        test_references=[str(dummy_py)],
+        archive_promotion_status="READY"
+    )
+    registry.add_capability(cap)
+
+    task = SAGEMissionTask(
+        task_id="task_reval_err_1",  # No 'fail' in ID!
+        objective_id="obj_continuous_development",
+        priority_score=90.0,
+        lane="engineering",
+        authorized=True,
+        metadata={"target_files": [str(dummy_py)]},
+        description="Validate dirty workspace"  # No 'fail' in description!
+    )
+    orchestrator.mission_queue.add_task(task)
+
+    # Mock the paths for SAGEMissionExecutionBridge
+    import unittest.mock as mock
+    from sage.experimental.mission_control_bridge import SAGEMissionExecutionBridge
+
+    original_init_fail = SAGEMissionExecutionBridge.__init__
+
+    def mocked_bridge_init(self_bridge, *args, **kwargs):
+        original_init_fail(self_bridge, registry_path=str(registry_file))
+        from sage.archive.core import Archive
+        self_bridge.archive = Archive(str(archive_dir))
+
+    with mock.patch.object(SAGEMissionExecutionBridge, "__init__", mocked_bridge_init):
+        # Run autonomous loop
+        res = orchestrator.execute_autonomous_mission_loop(max_cycles=1)
+
+    # 3. Assertions
+    # Loop should continue or transition state based on failure. Since max_consecutive_failures is 3 and we ran 1 cycle:
+    assert res["status"] == "CONTINUOUS"
+    assert res["consecutive_failures"] == 1
+
+    # Verify task failed
+    t_reval = orchestrator.mission_queue.get_task("task_reval_err_1")
+    assert t_reval.status == "FAILED"
+
+    # Verify capability validation_status was NOT updated to VALIDATED
+    registry.load()
+    updated_cap = registry.get_capability("CAP-STATE-PERSISTENCE")
+    assert updated_cap is not None
+    assert updated_cap.validation_status == "UNVERIFIED"
+
+    # Verify SAGE-CCL record was saved as REJECTED with linter violation failures
+    assert evidence_output.exists()
+    with open(evidence_output, "r", encoding="utf-8") as f:
+        evidence_data = json.load(f)
+
+    assert evidence_data["status"] == "REJECTED"
+    ccl_rec = evidence_data["ccl_record"]
+    assert ccl_rec["lifecycle_state"] == "REJECTED"
+    assert "Workspace revalidation failed" in ccl_rec["action_taken"]
+
+    # Check failure list contains linter violation
+    cmaps = evidence_data["cmaps_payload"]
+    assert len(cmaps["failure_events"]) == 1
+    lint_fail = cmaps["failure_events"][0]
+    assert lint_fail["error_type"] == "LINTER_VIOLATION"
+    assert "dummy_invalid_code.py" in lint_fail["message"]

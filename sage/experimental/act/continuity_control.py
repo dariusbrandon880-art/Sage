@@ -34,6 +34,7 @@ class SAGEMissionTask(BaseModel):
     assigned_agent: str = "agent_jules_sage"
     description: str = ""
     created_at: float = Field(default_factory=time.time)
+    metadata: Dict[str, Any] = Field(default_factory=dict)
 
     @field_validator("task_id")
     @classmethod
@@ -850,6 +851,7 @@ class DeveloperWorkflowOrchestrator:
                 result_evidence = self.execute_active_development_coordination(
                     action_taken=f"Executed task {task.task_id}: {task.description}",
                     decision_reasoning=f"Automatic execution of queued authorized development task",
+                    task=task,
                 )
 
                 # Reset failures on success
@@ -958,6 +960,7 @@ class DeveloperWorkflowOrchestrator:
         workflow_friction: Optional[List[Dict[str, Any]]] = None,
         improvement_opportunities: Optional[List[str]] = None,
         supervisor_override: Optional[Dict[str, Any]] = None,
+        task: Optional[SAGEMissionTask] = None,
     ) -> Dict[str, Any]:
         """Orchestrates workspace scanning, protection evaluation, lineage/CMAPS validation, and human sign-off."""
         start_time = time.time()
@@ -974,6 +977,29 @@ class DeveloperWorkflowOrchestrator:
         # 2. Protected Namespace Audit
         detector = ProtectedChangeDetector()
         protection_report = detector.audit_changes({"modified_files": modified_files})
+
+        # Workspace Revalidation Bridge integration
+        reval_failed = False
+        reval_error_msg = ""
+        reval_caps = []
+        if task and task.lane == "engineering" and task.metadata and "target_files" in task.metadata:
+            from sage.experimental.mission_control_bridge import SAGEMissionExecutionBridge
+            bridge = SAGEMissionExecutionBridge()
+            reval_res = bridge.execute_revalidation_workload(
+                mission_id=task.task_id,
+                target_files=task.metadata["target_files"],
+                run_real_lint=True
+            )
+            reval_caps = reval_res.get("revalidated_capabilities", [])
+            if not reval_res.get("overall_success", False):
+                reval_failed = True
+                failed_exec = next((e for e in reval_res.get("execution_results", []) if not e.get("success")), None)
+                reval_error_msg = failed_exec.get("stderr") or failed_exec.get("stdout") or "Workspace revalidation linter checks failed" if failed_exec else "Workspace revalidation linter checks failed"
+                action_taken = f"Workspace revalidation failed for files: {task.metadata['target_files']}"
+                decision_reasoning = f"Linter checks failed during governed workspace revalidation: {reval_error_msg}"
+            else:
+                action_taken = f"Successfully revalidated workspace capabilities for files: {task.metadata['target_files']}"
+                decision_reasoning = f"Governed workspace revalidation executed cleanly; capability status updated and promoted to Master Archive"
 
         # 3. Dynamic Evidence/Commit Mapping
         try:
@@ -1017,6 +1043,21 @@ class DeveloperWorkflowOrchestrator:
                     "message": violation["reason"],
                     "severity": violation["severity"]
                 })
+            checkpoints.append({
+                "checkpoint_id": f"chk_{uuid.uuid4().hex[:12]}",
+                "timestamp": utc_now,
+                "rehydration_token": f"token_{uuid.uuid4().hex[:16]}",
+                "requires_human_approval": True
+            })
+
+        if reval_failed:
+            failures.append({
+                "failure_id": f"fail_lint_{uuid.uuid4().hex[:12]}",
+                "timestamp": utc_now,
+                "error_type": "LINTER_VIOLATION",
+                "message": reval_error_msg,
+                "severity": "high"
+            })
             checkpoints.append({
                 "checkpoint_id": f"chk_{uuid.uuid4().hex[:12]}",
                 "timestamp": utc_now,
@@ -1083,7 +1124,8 @@ class DeveloperWorkflowOrchestrator:
             evidence_payload={
                 "git_commit": git_commit,
                 "protection_report": protection_report,
-                "cmaps_audit_id": cmaps_payload["audit_id"]
+                "cmaps_audit_id": cmaps_payload["audit_id"],
+                "revalidated_capabilities": reval_caps
             },
             failure_context=failures[0] if failures else None,
             recovery_path="interactive_supervisor_approval" if failures else None,
@@ -1101,13 +1143,17 @@ class DeveloperWorkflowOrchestrator:
 
         # 6. Apply Human Review and Promotion
         decision = "APPROVED"
+        if reval_failed:
+            decision = "REJECTED"
         supervisor_id = "supervisor_jules"
         comments = "Operational active-development coordinate loop completed cleanly."
+        if reval_failed:
+            comments = "Operational active-development coordinate loop failed due to linter violation."
         signature = f"sig_jules_{uuid.uuid4().hex[:12]}"
 
         if supervisor_override:
-            decision = supervisor_override.get("decision", "APPROVED")
-            supervisor_id = supervisor_override.get("supervisor_id", "supervisor_jules")
+            decision = supervisor_override.get("decision", decision)
+            supervisor_id = supervisor_override.get("supervisor_id", supervisor_id)
             comments = supervisor_override.get("comments", comments)
             signature = supervisor_override.get("signature", signature)
 
@@ -1164,6 +1210,9 @@ class DeveloperWorkflowOrchestrator:
 
         # Render Control Tower summary to operator
         self.render_control_tower_summary(unified_evidence)
+
+        if reval_failed:
+            raise RuntimeError(f"Workspace revalidation linter checks failed: {reval_error_msg}")
 
         return unified_evidence
 
