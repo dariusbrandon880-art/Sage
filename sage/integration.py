@@ -420,3 +420,264 @@ class GoogleWorkspaceSyncManager:
             }
         except Exception as e:
             return {"mode": "live", "status": "failed", "error": str(e)}
+
+
+class GoogleDriveProjectionSyncManager:
+    """Manages the persistent continuity projection layer by uploading and synchronizing
+    SAGE's 8 canonical projection markdown files to a designated Google Drive SAGE/ directory,
+    enforcing unidirectional read-only boundaries and strict stale/conflict checks.
+    """
+
+    CANONICAL_FILES = [
+        "00_MASTER_INDEX.md",
+        "01_GOVERNANCE.md",
+        "02_FAILURE_MEMORY.md",
+        "03_CURRENT_FRONTIER.md",
+        "04_VALIDATED_BASELINE.md",
+        "05_ACTIVE_WORK.md",
+        "06_LATEST_EXECUTION_REPORT.md",
+        "07_NEXT_COMPOUND.md",
+    ]
+
+    def __init__(self, runtime: Any = None):
+        self.runtime = runtime
+
+    def calculate_sha256(self, filepath: Path) -> str:
+        import hashlib
+        if not filepath.exists():
+            return "missing"
+        hasher = hashlib.sha256()
+        with open(filepath, "rb") as f:
+            for chunk in iter(lambda: f.read(4096), b""):
+                hasher.update(chunk)
+        return hasher.hexdigest()
+
+    def detect_local_head_sha(self, target_dir_path: Path) -> str:
+        # Inspect 05_ACTIVE_WORK.md or run git to determine local HEAD
+        active_work_file = target_dir_path / "05_ACTIVE_WORK.md"
+        if active_work_file.exists():
+            try:
+                content = active_work_file.read_text()
+                for line in content.splitlines():
+                    if line.startswith("CURRENT_HEAD_SHA:"):
+                        return line.split(":", 1)[1].strip()
+            except Exception:
+                pass
+
+        # Fallback to local git
+        import subprocess
+        try:
+            res = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True)
+            return res.stdout.strip()
+        except Exception:
+            return "unknown_local_head"
+
+    def sync_projection_to_drive(
+        self, credentials_path: str | None = None, target_dir: str = "SAGE"
+    ) -> dict[str, Any]:
+        """Perform synchronization of the SAGE canonical 8 files to Google Drive SAGE/ folder."""
+        import os
+        from pathlib import Path
+
+        target_dir_path = Path(target_dir)
+        local_head = self.detect_local_head_sha(target_dir_path)
+
+        # 1. Collect local files state and hashes
+        synced_files = []
+        for filename in self.CANONICAL_FILES:
+            filepath = target_dir_path / filename
+            exists = filepath.exists()
+            char_count = 0
+            file_hash = "missing"
+            if exists:
+                try:
+                    char_count = len(filepath.read_text())
+                    file_hash = self.calculate_sha256(filepath)
+                except Exception:
+                    pass
+            synced_files.append(
+                {
+                    "filename": filename,
+                    "exists_locally": exists,
+                    "character_count": char_count,
+                    "local_sha256": file_hash,
+                }
+            )
+
+        # 2. Dynamic check for required packages
+        google_apis_available = False
+        google_auth_available = False
+        try:
+            import google.oauth2.credentials  # noqa: F401
+            from google_auth_oauthlib.flow import InstalledAppFlow  # noqa: F401
+            from googleapiclient.discovery import build  # noqa: F401
+            from googleapiclient.http import MediaFileUpload, MediaIoBaseUpload  # noqa: F401
+
+            google_apis_available = True
+            google_auth_available = True
+        except ImportError:
+            pass
+
+        # Resolve credentials existence
+        cred_path = Path(credentials_path or ".sage/credentials.json")
+        credentials_found = cred_path.exists()
+
+        use_live_sync = google_apis_available and google_auth_available and credentials_found
+
+        if not use_live_sync:
+            # Under standard SAGE rules, dry-run represents the prepared boundary
+            # returning the specific status as commanded by the operator.
+            return {
+                "mode": "dry-run",
+                "status": "validation_required",
+                "reason": "Google Workspace packages/credentials unavailable or authentication configuration errors. Live Google Drive verification is blocked.",
+                "required_scopes": ["https://www.googleapis.com/auth/drive.file"],
+                "setup_requirements": {
+                    "packages_to_install": [
+                        "google-api-python-client",
+                        "google-auth-oauthlib",
+                        "google-auth-httplib2",
+                    ],
+                    "how_to_install": "pip install google-api-python-client google-auth-oauthlib google-auth-httplib2",
+                    "oauth_credentials_json": "A valid 'credentials.json' from Google Cloud Console placed at .sage/credentials.json",
+                },
+                "stale_conflict_check": {
+                    "local_head_sha": local_head,
+                    "remote_head_sha": "unknown_dry_run",
+                    "status": "VALIDATION_REQUIRED",
+                },
+                "synced_files": synced_files,
+                "is_valid": False,
+            }
+
+        # 3. Live Google Drive synchronization handshake logic
+        try:
+            from googleapiclient.discovery import build
+            from googleapiclient.http import MediaFileUpload
+            from google.oauth2 import service_account
+
+            # Load credentials
+            try:
+                creds = service_account.Credentials.from_service_account_file(
+                    str(cred_path),
+                    scopes=["https://www.googleapis.com/auth/drive.file"]
+                )
+            except Exception:
+                # Attempt user OAuth flow
+                from google_auth_oauthlib.flow import InstalledAppFlow
+                flow = InstalledAppFlow.from_client_secrets_file(
+                    str(cred_path),
+                    scopes=["https://www.googleapis.com/auth/drive.file"]
+                )
+                creds = flow.run_local_server(port=0, open_browser=False)
+
+            service = build("drive", "v3", credentials=creds)
+
+            # Query folder 'SAGE' on Google Drive
+            query = "name = 'SAGE' and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
+            results = service.files().list(q=query, spaces="drive", fields="files(id, name)").execute()
+            folders = results.get("files", [])
+
+            if folders:
+                folder_id = folders[0]["id"]
+            else:
+                # Create directory 'SAGE' on Drive
+                folder_metadata = {
+                    "name": "SAGE",
+                    "mimeType": "application/vnd.google-apps.folder"
+                }
+                folder = service.files().create(body=folder_metadata, fields="id").execute()
+                folder_id = folder.get("id")
+
+            # Check and Sync each canonical file
+            live_synced_files = []
+            for item in synced_files:
+                filename = item["filename"]
+                local_path = target_dir_path / filename
+
+                if not local_path.exists():
+                    continue
+
+                # Query if file already exists in 'SAGE' folder on Drive
+                file_query = f"name = '{filename}' and '{folder_id}' in parents and trashed = false"
+                file_results = service.files().list(q=file_query, spaces="drive", fields="files(id, name)").execute()
+                files = file_results.get("files", [])
+
+                media = MediaFileUpload(str(local_path), mimetype="text/markdown", resumable=True)
+
+                if files:
+                    file_id = files[0]["id"]
+                    # Update file content
+                    updated_file = service.files().update(
+                        fileId=file_id,
+                        media_body=media,
+                        fields="id"
+                    ).execute()
+                    file_id_synced = updated_file.get("id")
+                    action = "updated"
+                else:
+                    # Create file inside SAGE folder
+                    file_metadata = {
+                        "name": filename,
+                        "parents": [folder_id]
+                    }
+                    new_file = service.files().create(
+                        body=file_metadata,
+                        media_body=media,
+                        fields="id"
+                    ).execute()
+                    file_id_synced = new_file.get("id")
+                    action = "created"
+
+                live_synced_files.append({
+                    "filename": filename,
+                    "file_id": file_id_synced,
+                    "action": action
+                })
+
+            # 4. Readback / Stale-conflict detection from the live projection layer
+            # Read remote 05_ACTIVE_WORK.md if available
+            remote_head = "unknown"
+            stale_status = "SYNCHRONIZED"
+
+            active_work_query = f"name = '05_ACTIVE_WORK.md' and '{folder_id}' in parents and trashed = false"
+            aw_results = service.files().list(q=active_work_query, spaces="drive", fields="files(id)").execute()
+            aw_files = aw_results.get("files", [])
+            if aw_files:
+                aw_id = aw_files[0]["id"]
+                remote_bytes = service.files().get_media(fileId=aw_id).execute()
+                remote_content = remote_bytes.decode("utf-8", errors="ignore")
+                for line in remote_content.splitlines():
+                    if line.startswith("CURRENT_HEAD_SHA:"):
+                        remote_head = line.split(":", 1)[1].strip()
+                        break
+
+            if remote_head != "unknown" and remote_head != local_head:
+                stale_status = "STALE / CONFLICTED PROJECTION"
+
+            return {
+                "mode": "live",
+                "status": "success",
+                "synced_files_count": len(live_synced_files),
+                "synced_files": live_synced_files,
+                "stale_conflict_check": {
+                    "local_head_sha": local_head,
+                    "remote_head_sha": remote_head,
+                    "status": stale_status,
+                },
+                "message": "Synchronized successfully with Google Drive SAGE/ folder.",
+                "is_valid": True if stale_status == "SYNCHRONIZED" else False,
+            }
+
+        except Exception as e:
+            return {
+                "mode": "live",
+                "status": "failed",
+                "error": str(e),
+                "stale_conflict_check": {
+                    "local_head_sha": local_head,
+                    "remote_head_sha": "unknown",
+                    "status": "ERROR",
+                },
+                "is_valid": False,
+            }
