@@ -41,7 +41,7 @@ def test_bridge_sequential_pipeline_execution(tmp_path):
         workspace_path=str(tmp_path)
     )
 
-    # Run execution with mock lint checks
+    # Run execution with mock linter checks
     res = bridge.execute_revalidation_workload(
         mission_id="mission_reval_test_1",
         target_files=["tests/test_continuity_persistence.py"],
@@ -212,6 +212,8 @@ def test_bridge_failed_bond_transition_rejection(tmp_path):
     assert res["overall_success"] is False
     assert res["receipt_id"] == "N/A"
     assert res["evidence_location"] == "N/A"
+    # Downstream State Effect: the state machine halts at VALIDATION_REQUIRED and does NOT proceed to CLOSED
+    assert res["final_state"] == "VALIDATION_REQUIRED"
 
     # Also assert calling with fail_on_bond_error raised exception
     with pytest.raises(BondValidationError) as exc_info:
@@ -254,6 +256,8 @@ def test_bridge_failed_bond_transition_unauthorized(tmp_path):
     assert res["rollback_state"] is not None
     assert res["rollback_state"]["current_project_state"] == "S0"
     assert res["overall_success"] is False
+    # Downstream State Effect: the state machine halts at VALIDATION_REQUIRED and does NOT proceed to CLOSED
+    assert res["final_state"] == "VALIDATION_REQUIRED"
 
     # Verify exception is raised if requested
     with pytest.raises(BondValidationError) as exc_info:

@@ -298,17 +298,21 @@ class SAGEMissionExecutionBridge:
                         self.registry.add_capability(cap)
                         revalidated_caps.append(cap.capability_id)
 
-        # Stage 6: Validation Required -> Evidence Required
-        transition_to("EVIDENCE_REQUIRED", "evidence_hashes_verified")
+        # Governed Next-State Decision:
+        # If the validation transition is accepted (PASS), proceed with stages 6 to 9.
+        # Otherwise, halt state machine progression at VALIDATION_REQUIRED.
+        if bond_validation_status == "PASS":
+            # Stage 6: Validation Required -> Evidence Required
+            transition_to("EVIDENCE_REQUIRED", "evidence_hashes_verified")
 
-        # Stage 7: Evidence Required -> Review Required
-        transition_to("REVIEW_REQUIRED", "peer_signoff_completed")
+            # Stage 7: Evidence Required -> Review Required
+            transition_to("REVIEW_REQUIRED", "peer_signoff_completed")
 
-        # Stage 8: Review Required -> Promotion Ready
-        transition_to("PROMOTION_READY", "promotion_approval_granted")
+            # Stage 8: Review Required -> Promotion Ready
+            transition_to("PROMOTION_READY", "promotion_approval_granted")
 
-        # Stage 9: Promotion Ready -> Closed
-        transition_to("CLOSED", "archival_success_confirmed")
+            # Stage 9: Promotion Ready -> Closed
+            transition_to("CLOSED", "archival_success_confirmed")
 
         output_dict = {
             "mission_id": mission_id,
