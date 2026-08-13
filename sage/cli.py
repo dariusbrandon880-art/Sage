@@ -79,6 +79,15 @@ def main():
     # metrics subcommand
     subparsers.add_parser("metrics", help="Show collected runtime telemetry metrics")
 
+    # audit subcommand
+    audit_parser = subparsers.add_parser("audit", help="Run ACT-PROD operator trace audits and visibility dashboard")
+    audit_parser.add_argument(
+        "--action",
+        choices=["summary", "diagnostics", "scan"],
+        required=True,
+        help="Audit action to perform",
+    )
+
     args = parser.parse_args()
 
     # Initialize runtime
@@ -215,6 +224,21 @@ def main():
             print(json.dumps(result, indent=2))
         except Exception as e:
             print(f"Error: Metrics gathering failed: {e!s}")
+            sys.exit(1)
+
+    elif args.command == "audit":
+        try:
+            import importlib
+            dashboard_module = importlib.import_module("sage.experimental.act.act_prod_dashboard")
+            dashboard = dashboard_module.SAGEActProdDashboard()
+            if args.action == "summary":
+                print(dashboard.render_summary())
+            elif args.action == "diagnostics":
+                print(dashboard.render_diagnostics())
+            elif args.action == "scan":
+                print(dashboard.render_validation_scan())
+        except Exception as e:
+            print(f"Error: Audit execution failed: {e!s}")
             sys.exit(1)
 
     else:
