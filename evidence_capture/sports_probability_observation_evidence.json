@@ -1,0 +1,25 @@
+{
+  "current_frontier": "SAGE-RF-DATA-001 Immutable Market Observation Ledger & SAGE-RF-DEVIG-001 Market Baseline",
+  "validated_baseline": {
+    "canonicalization_verified": true,
+    "duplicate_suppression_verified": true,
+    "reconstruction_proven": true
+  },
+  "demonstrated_slice": {
+    "initial_home_price": 1.83,
+    "updated_home_price": 1.75,
+    "away_price": 2.0,
+    "calculated_overround": 1.0714285714285714,
+    "reconstructed_fair_home_p": 0.5370197193611104,
+    "reconstructed_fair_away_p": 0.4629802806388896
+  },
+  "reproducible_failure_path": {
+    "tampered_price": 9.99,
+    "replay_aborted": true,
+    "error_message": "STALE/CONFLICTED PROJECTION: Cryptographic integrity failure for sequence 1. Hash mismatch."
+  },
+  "meta": {
+    "fan_duel_transaction_path": "NONE",
+    "self_authorized_real_money_promotion": "PROHIBITED"
+  }
+}
