@@ -1,0 +1,121 @@
+{
+  "experiment_name": "RCE-001 Reality Correspondence Experiment",
+  "num_trials": 100,
+  "m5_metrics": {
+    "catastrophes": 59,
+    "safe_pivots": 0,
+    "successful_goals": 41,
+    "total_utility": -5490
+  },
+  "m6_metrics": {
+    "catastrophes": 0,
+    "safe_pivots": 59,
+    "successful_goals": 41,
+    "total_utility": 369
+  },
+  "survives": true,
+  "catastrophe_prevention_rate_m6_percent": 100.0,
+  "utility_reduction_m5_average": -54.9,
+  "utility_gain_m6_average": 3.69,
+  "epistemic_reduction_analysis": {
+    "decision_rule_reduction": "Reduces to Value of Information (VOI) over active sensing",
+    "non_reducible_core": "Autonomous generation/inference of the hidden state distinction space when Var[U] exceeds threshold."
+  },
+  "traces": [
+    {
+      "trial": 0,
+      "true_world": "theta_1",
+      "initial_prior": {
+        "theta_1": 0.5,
+        "theta_2": 0.5
+      },
+      "expected_utility_terminal": -45.0,
+      "variance_terminal": 3025.0,
+      "insufficiency_detected": true,
+      "first_action": "a_probe",
+      "first_action_utility": -1,
+      "observation": "o_alpha",
+      "posterior": {
+        "theta_1": 1.0,
+        "theta_2": 0.0
+      },
+      "final_action": "a_terminal"
+    },
+    {
+      "trial": 1,
+      "true_world": "theta_2",
+      "initial_prior": {
+        "theta_1": 0.5,
+        "theta_2": 0.5
+      },
+      "expected_utility_terminal": -45.0,
+      "variance_terminal": 3025.0,
+      "insufficiency_detected": true,
+      "first_action": "a_probe",
+      "first_action_utility": -1,
+      "observation": "o_beta",
+      "posterior": {
+        "theta_1": 0.0,
+        "theta_2": 1.0
+      },
+      "final_action": "a_safe"
+    },
+    {
+      "trial": 2,
+      "true_world": "theta_2",
+      "initial_prior": {
+        "theta_1": 0.5,
+        "theta_2": 0.5
+      },
+      "expected_utility_terminal": -45.0,
+      "variance_terminal": 3025.0,
+      "insufficiency_detected": true,
+      "first_action": "a_probe",
+      "first_action_utility": -1,
+      "observation": "o_beta",
+      "posterior": {
+        "theta_1": 0.0,
+        "theta_2": 1.0
+      },
+      "final_action": "a_safe"
+    },
+    {
+      "trial": 3,
+      "true_world": "theta_2",
+      "initial_prior": {
+        "theta_1": 0.5,
+        "theta_2": 0.5
+      },
+      "expected_utility_terminal": -45.0,
+      "variance_terminal": 3025.0,
+      "insufficiency_detected": true,
+      "first_action": "a_probe",
+      "first_action_utility": -1,
+      "observation": "o_beta",
+      "posterior": {
+        "theta_1": 0.0,
+        "theta_2": 1.0
+      },
+      "final_action": "a_safe"
+    },
+    {
+      "trial": 4,
+      "true_world": "theta_1",
+      "initial_prior": {
+        "theta_1": 0.5,
+        "theta_2": 0.5
+      },
+      "expected_utility_terminal": -45.0,
+      "variance_terminal": 3025.0,
+      "insufficiency_detected": true,
+      "first_action": "a_probe",
+      "first_action_utility": -1,
+      "observation": "o_alpha",
+      "posterior": {
+        "theta_1": 1.0,
+        "theta_2": 0.0
+      },
+      "final_action": "a_terminal"
+    }
+  ]
+}
