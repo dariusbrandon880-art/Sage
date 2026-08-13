@@ -498,3 +498,198 @@ def test_verify_cli_receipt_lineage_output(tmp_path, monkeypatch):
     assert result["receipt_chain_lineage"][0]["seq"] == 1
     assert result["receipt_chain_lineage"][0]["task_id"] == "task_genesis"
     assert "..." in result["receipt_chain_lineage"][0]["signature"]
+
+
+def test_cli_archive_subcommands(tmp_path, monkeypatch):
+    """Verify that SAGE CLI archive subcommand successfully queries, searches, and gets entries."""
+    from sage.archive.core import Archive
+    from sage.models import ArchiveEntry, KnowledgeState
+
+    # 1. Setup isolated mock archive
+    archive_dir = tmp_path / "archive"
+    archive = Archive(storage_path=str(archive_dir))
+
+    entry = ArchiveEntry(
+        id="archive_rec_123",
+        title="Mock Revalidation Recovery Trace",
+        tags=["recovery", "revalidation"],
+        knowledge_state=KnowledgeState.ARCHIVED,
+        content={"task": "test_1"}
+    )
+    archive.promote_to_archive(entry)
+
+    # Mock Archive instantiation in SAGE CLI to use our isolated mock storage path
+    original_init = Archive.__init__
+    monkeypatch.setattr("sage.archive.core.Archive.__init__", lambda self, storage_path=None: original_init(self, storage_path=str(archive_dir)))
+
+    # Mock print to capture CLI outputs
+    printed_outputs = []
+    monkeypatch.setattr("builtins.print", lambda msg: printed_outputs.append(msg))
+
+    # Import CLI and run list subcommand
+    import sage.cli as cli
+    from unittest.mock import MagicMock
+
+    # Run list
+    mock_args_list = MagicMock()
+    mock_args_list.command = "archive"
+    mock_args_list.action = "list"
+    monkeypatch.setattr("argparse.ArgumentParser.parse_args", lambda self: mock_args_list)
+
+    # Run main CLI method
+    cli.main()
+    assert len(printed_outputs) == 1
+    list_res = json.loads(printed_outputs[0])
+    assert len(list_res) == 1
+    assert list_res[0]["id"] == "archive_rec_123"
+    assert list_res[0]["title"] == "Mock Revalidation Recovery Trace"
+    assert "recovery" in list_res[0]["tags"]
+
+    # Clear print outputs
+    printed_outputs.clear()
+
+    # Run search
+    mock_args_search = MagicMock()
+    mock_args_search.command = "archive"
+    mock_args_search.action = "search"
+    mock_args_search.tag = "recovery"
+    monkeypatch.setattr("argparse.ArgumentParser.parse_args", lambda self: mock_args_search)
+
+    cli.main()
+    assert len(printed_outputs) == 1
+    search_res = json.loads(printed_outputs[0])
+    assert len(search_res) == 1
+    assert search_res[0]["id"] == "archive_rec_123"
+
+    # Clear print outputs
+    printed_outputs.clear()
+
+    # Run get
+    mock_args_get = MagicMock()
+    mock_args_get.command = "archive"
+    mock_args_get.action = "get"
+    mock_args_get.id = "archive_rec_123"
+    monkeypatch.setattr("argparse.ArgumentParser.parse_args", lambda self: mock_args_get)
+
+    cli.main()
+    assert len(printed_outputs) == 1
+    get_res = json.loads(printed_outputs[0])
+    assert get_res["id"] == "archive_rec_123"
+    assert get_res["title"] == "Mock Revalidation Recovery Trace"
+    assert get_res["content"]["task"] == "test_1"
+
+
+def test_structured_remediation_reasoning(temp_registry, tmp_path):
+    """Verify structured block analysis and recommendations are correctly generated and non-executing."""
+    import time
+    from sage.experimental.cognitive.state_schema import (
+        CognitiveState, CognitiveAgentIdentity, CognitiveActiveMission,
+        CognitiveOperatorConstraints, CognitiveConfidenceState, CognitiveNextAction
+    )
+    from sage.experimental.mission_control_bridge import SAGEMissionExecutionBridge
+
+    evidence_file = tmp_path / "evidence.json"
+    bridge = SAGEMissionExecutionBridge(registry_path=temp_registry, evidence_path=str(evidence_file))
+
+    # 1. Setup a Low Confidence State (overall_confidence = 0.35)
+    blocked_state = CognitiveState(
+        agent_identity=CognitiveAgentIdentity(
+            agent_id="agent_jules_sage",
+            name="Jules SAGE",
+            role="TIER_1_COORDINATOR",
+            authority_level="TIER_1_COORDINATOR",
+            governance_tier="TRUSTED"
+        ),
+        active_mission=CognitiveActiveMission(
+            mission_id="msn_reval",
+            objective="revalidate persistence",
+            status="RUNNING"
+        ),
+        operator_constraints=CognitiveOperatorConstraints(
+            authorized_agents=["agent_jules_sage"]
+        ),
+        confidence_state=CognitiveConfidenceState(
+            overall_confidence=0.35,  # Trigger block
+            last_updated=time.time()
+        ),
+        next_action=CognitiveNextAction(
+            action_id="action_reval",
+            description="revalidate persistence",
+            assigned_agent="agent_jules_sage"
+        )
+    )
+
+    # 2. Run execution cycle to trigger preflight block and get structured report
+    report = bridge.execute_governed_cycle(
+        changed_files=["tests/test_continuity_persistence.py"],
+        task_id="task_low_confidence_block",
+        cognitive_state=blocked_state
+    )
+
+    # Assert basic block state
+    assert report["execution_result"]["status"] == "BLOCKED"
+    assert report["progression_state"]["terminal_state"] == "PREFLIGHT_REQUIRED"
+    assert "structured_remediation_analysis" in report
+
+    # Verify structured remediation analysis contents
+    analysis = report["structured_remediation_analysis"]
+    assert analysis["block_analysis_type"] == "PREFLIGHT_REDUNDANCY_OR_SAFETY_GATE"
+    assert "confidence_gate_evaluation" in analysis["failed_checks"]
+    assert len(analysis["remediation_recommendations"]) == 1
+
+    # Verify recommendation formatting and constraints
+    rec = analysis["remediation_recommendations"][0]
+    assert rec["remediation_id"] == "REC-CONF-01"
+    assert rec["type"] == "ELEVATE_CONFIDENCE"
+    assert rec["status"] == "OPERATOR REVIEW REQUIRED"
+    assert "overall_confidence to >= 0.50" in rec["operator_action_required"]
+
+    # Verify Control Tower ASCII rendering contains structured blocks
+    dashboard_str = report["operator_visible_dashboard"]
+    assert "[STRUCTURED BLOCK ANALYSIS]" in dashboard_str
+    assert "[BOUNDED REMEDIATION RECOMMENDATIONS]" in dashboard_str
+    assert "Block Type:             PREFLIGHT_REDUNDANCY_OR_SAFETY_GATE" in dashboard_str
+    assert "REC-CONF-01" in dashboard_str
+
+    # 3. Setup a semantic mismatch state to verify multiple failure paths
+    mismatch_state = CognitiveState(
+        agent_identity=CognitiveAgentIdentity(
+            agent_id="agent_jules_sage",
+            name="Jules SAGE",
+            role="TIER_1_COORDINATOR",
+            authority_level="TIER_1_COORDINATOR",
+            governance_tier="TRUSTED"
+        ),
+        active_mission=CognitiveActiveMission(
+            mission_id="msn_reval",
+            objective="revalidate persistence",  # Keywords: revalidate, persistence
+            status="RUNNING"
+        ),
+        operator_constraints=CognitiveOperatorConstraints(
+            authorized_agents=["agent_jules_sage"]
+        ),
+        confidence_state=CognitiveConfidenceState(
+            overall_confidence=0.95,  # High confidence
+            last_updated=time.time()
+        ),
+        next_action=CognitiveNextAction(
+            action_id="action_mismatch",
+            description="destroy completely unrelated modules",  # Zero overlapping keywords
+            assigned_agent="agent_jules_sage"
+        )
+    )
+
+    report_mismatch = bridge.execute_governed_cycle(
+        changed_files=["tests/test_continuity_persistence.py"],
+        task_id="task_mismatch_block",
+        cognitive_state=mismatch_state
+    )
+
+    # Assert block details
+    assert report_mismatch["execution_result"]["status"] == "BLOCKED"
+    analysis_mismatch = report_mismatch["structured_remediation_analysis"]
+    assert "mission_semantic_alignment" in analysis_mismatch["failed_checks"]
+
+    rec_mismatch = [r for r in analysis_mismatch["remediation_recommendations"] if r["type"] == "ALIGN_MISSION_SEMANTICS"][0]
+    assert rec_mismatch["remediation_id"] == "REC-MSN-03"
+    assert "share semantic keywords" in rec_mismatch["operator_action_required"]

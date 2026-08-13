@@ -213,6 +213,174 @@ class SAGEMissionExecutionBridge:
                 metrics={"duration_ms": elapsed, "files_checked": len(target_files)}
             )
 
+    def analyze_cognitive_block(
+        self,
+        pfc_report: Any,
+        cognitive_state: CognitiveState
+    ) -> Dict[str, Any]:
+        """Generates structured block analysis and bounded remediation recommendations from actual failed checks.
+
+        Provides informational, non-executing, non-authorizing remediation suggestions.
+        """
+        checks_evaluated = pfc_report.checks_performed
+        reason = pfc_report.reason
+        confidence = pfc_report.confidence_recorded
+
+        failed_checks = []
+        recommendations = []
+
+        # 1. Action Existence
+        if not cognitive_state.next_action:
+            failed_checks.append("proposed_action_existence")
+            recommendations.append({
+                "remediation_id": "REC-ACT-01",
+                "type": "PROPOSE_NEXT_ACTION",
+                "title": "Propose valid NextAction in active cognitive state",
+                "description": "The active cognitive state contains no next proposed action.",
+                "operator_action_required": "Provide a non-empty next_action configuration in the cognitive state.",
+                "status": "OPERATOR REVIEW REQUIRED"
+            })
+        else:
+            next_action = cognitive_state.next_action
+            if not next_action.action_id or not next_action.description.strip():
+                failed_checks.append("action_context_validity")
+                recommendations.append({
+                    "remediation_id": "REC-ACT-02",
+                    "type": "SPECIFY_ACTION_CONTEXT",
+                    "title": "Specify non-empty next action description and ID",
+                    "description": "Proposed next action lacks crucial context (action_id or description is empty).",
+                    "operator_action_required": "Provide a non-empty action_id and description for the next action.",
+                    "status": "OPERATOR REVIEW REQUIRED"
+                })
+
+        # 2. Agent Authorization & Constraints
+        authorized_agents = cognitive_state.operator_constraints.authorized_agents
+        if authorized_agents and cognitive_state.agent_identity.agent_id not in authorized_agents:
+            failed_checks.append("agent_authorization")
+            recommendations.append({
+                "remediation_id": "REC-AUTH-01",
+                "type": "AUTHORIZE_AGENT",
+                "title": "Authorize agent in operator constraints",
+                "description": f"Agent '{cognitive_state.agent_identity.agent_id}' is not authorized to execute tasks.",
+                "operator_action_required": f"Add '{cognitive_state.agent_identity.agent_id}' to the authorized_agents list in operator_constraints.",
+                "status": "OPERATOR REVIEW REQUIRED"
+            })
+
+        if cognitive_state.agent_identity.authority_level == "UNAUTHORIZED" or cognitive_state.agent_identity.governance_tier == "UNTRUSTED":
+            failed_checks.append("agent_authority_validation")
+            recommendations.append({
+                "remediation_id": "REC-AUTH-02",
+                "type": "ELEVATE_AGENT_AUTHORITY",
+                "title": "Elevate agent authority level or governance tier",
+                "description": f"Agent '{cognitive_state.agent_identity.name}' has UNAUTHORIZED authority level or UNTRUSTED governance tier.",
+                "operator_action_required": "Set agent authority_level to TIER_1_COORDINATOR and governance_tier to TRUSTED in the cognitive state.",
+                "status": "OPERATOR REVIEW REQUIRED"
+            })
+
+        # 3. Completed Work Protection
+        if cognitive_state.next_action:
+            completed_milestone_ids = {m.milestone_id for m in cognitive_state.completed_milestones}
+            if cognitive_state.next_action.action_id in completed_milestone_ids:
+                failed_checks.append("completed_work_protection")
+                recommendations.append({
+                    "remediation_id": "REC-PROT-01",
+                    "type": "PROTECT_COMPLETED_WORK",
+                    "title": "Propose new milestone task instead of reopening",
+                    "description": f"Proposed next action reopen/modify blocked completed milestone '{cognitive_state.next_action.action_id}'.",
+                    "operator_action_required": "Change next_action.action_id to a new, uncompleted milestone task.",
+                    "status": "OPERATOR REVIEW REQUIRED"
+                })
+
+        # 4. Mission Alignment
+        mission = cognitive_state.active_mission
+        if mission.status == "COMPLETED":
+            failed_checks.append("mission_completion_protection")
+            recommendations.append({
+                "remediation_id": "REC-MSN-01",
+                "type": "NEW_MISSION_PROPOSAL",
+                "title": "Propose a new active mission",
+                "description": "Active mission is already completed. Cannot propose new actions on completed missions.",
+                "operator_action_required": "Initialize a new active mission in the proposed cognitive state.",
+                "status": "OPERATOR REVIEW REQUIRED"
+            })
+        elif not mission.objective.strip():
+            failed_checks.append("mission_objective_presence")
+            recommendations.append({
+                "remediation_id": "REC-MSN-02",
+                "type": "DEFINE_MISSION_OBJECTIVE",
+                "title": "Define active mission objective clearly",
+                "description": "Active mission objective is undefined or empty, blocking semantic alignment checks.",
+                "operator_action_required": "Provide a descriptive non-empty active_mission objective.",
+                "status": "OPERATOR REVIEW REQUIRED"
+            })
+        elif cognitive_state.next_action:
+            objective_words = set(w.lower() for w in mission.objective.split())
+            action_words = set(w.lower() for w in cognitive_state.next_action.description.split())
+            overlap = objective_words.intersection(action_words)
+            if not overlap and len(objective_words) > 1 and len(action_words) > 1:
+                failed_checks.append("mission_semantic_alignment")
+                recommendations.append({
+                    "remediation_id": "REC-MSN-03",
+                    "type": "ALIGN_MISSION_SEMANTICS",
+                    "title": "Align proposed action with mission objective",
+                    "description": f"Proposed action '{cognitive_state.next_action.action_id}' does not semantically align with active mission objective.",
+                    "operator_action_required": "Align description of next_action to share semantic keywords with active_mission objective.",
+                    "status": "OPERATOR REVIEW REQUIRED"
+                })
+
+        # 5. Evidence & Confidence gates
+        if confidence < 0.5:
+            failed_checks.append("confidence_gate_evaluation")
+            recommendations.append({
+                "remediation_id": "REC-CONF-01",
+                "type": "ELEVATE_CONFIDENCE",
+                "title": "Raise overall confidence state via operator confirmation",
+                "description": f"Overall confidence level is too low ({confidence}) to proceed without operator review.",
+                "operator_action_required": "Operator must review current context and set confidence_state.overall_confidence to >= 0.50 and re-run.",
+                "status": "OPERATOR REVIEW REQUIRED"
+            })
+
+        if cognitive_state.next_action and cognitive_state.next_action.required_evidence:
+            fact_evidence_refs = set()
+            for fact in cognitive_state.validated_facts:
+                fact_evidence_refs.update(fact.evidence_references)
+
+            missing_evidence = [req for req in cognitive_state.next_action.required_evidence if req not in fact_evidence_refs]
+            if missing_evidence:
+                failed_checks.append("evidence_requirement_detection")
+                recommendations.append({
+                    "remediation_id": "REC-EVID-01",
+                    "type": "PROVIDE_REQUIRED_EVIDENCE",
+                    "title": "Provide missing required evidence references",
+                    "description": f"Proposed action requires evidence references {missing_evidence} which are missing from validated facts.",
+                    "operator_action_required": f"Inject a CognitiveValidatedFact with evidence references satisfying {missing_evidence}.",
+                    "status": "OPERATOR REVIEW REQUIRED"
+                })
+
+        # De-duplicate failed_checks
+        failed_checks = list(dict.fromkeys(failed_checks))
+        if not failed_checks:
+            failed_checks.append("unknown_or_unclassified_block")
+            recommendations.append({
+                "remediation_id": "REC-UNK-01",
+                "type": "GENERAL_OPERATOR_REVIEW",
+                "title": "General operator review and manual confirmation",
+                "description": f"Unclassified or generic block: {reason}",
+                "operator_action_required": "Review full cognitive state, confirm safety, raise overall confidence level, and re-run.",
+                "status": "OPERATOR REVIEW REQUIRED"
+            })
+
+        return {
+            "block_analysis_type": "PREFLIGHT_REDUNDANCY_OR_SAFETY_GATE",
+            "outcome": pfc_report.outcome.value,
+            "block_reason": reason,
+            "confidence": confidence,
+            "failed_checks": failed_checks,
+            "remediation_recommendations": recommendations,
+            "operator_decision_gating": "OPERATOR REVIEW REQUIRED",
+            "revalidation_path": "NEW PREFLIGHT / SAFETY EVALUATION"
+        }
+
     def execute_governed_cycle(
         self,
         changed_files: List[str],
@@ -260,6 +428,10 @@ class SAGEMissionExecutionBridge:
             if pfc_report.outcome in [DecisionGateOutcome.BLOCK, DecisionGateOutcome.REQUEST_CLARIFICATION]:
                 # Halt progression immediately - fail closed!
                 elapsed_ms = (time.perf_counter() - start_time) * 1000.0
+
+                # Generate structured remediation analysis!
+                structured_analysis = self.analyze_cognitive_block(pfc_report, cognitive_state)
+
                 evidence_report = {
                     "task_id": task_id,
                     "mission_id": mission_state.mission_id,
@@ -298,7 +470,8 @@ class SAGEMissionExecutionBridge:
                         "reason": pfc_report.reason,
                         "confidence_recorded": pfc_report.confidence_recorded,
                         "checks_performed": pfc_report.checks_performed
-                    }
+                    },
+                    "structured_remediation_analysis": structured_analysis
                 }
                 # Persist block evidence
                 os.makedirs(os.path.dirname(self.evidence_path), exist_ok=True)
@@ -452,6 +625,10 @@ class SAGEMissionExecutionBridge:
         if pfc_report.outcome in [DecisionGateOutcome.BLOCK, DecisionGateOutcome.REQUEST_CLARIFICATION]:
             # TERMINAL REJECTION: Remediation is unsafe, fail closed!
             elapsed_ms = (time.perf_counter() - start_time) * 1000.0
+
+            # Generate structured remediation analysis for the failed recovery attempt!
+            structured_analysis = self.analyze_cognitive_block(pfc_report, remediation_state)
+
             recovery_report = {
                 "task_id": task_id,
                 "blocked_task_id": orig_task_id,
@@ -468,7 +645,14 @@ class SAGEMissionExecutionBridge:
                 "metrics": {
                     "recovery_latency_ms": elapsed_ms,
                     "archived_entries_count": 0
-                }
+                },
+                "cognitive_safety_block": {
+                    "outcome": pfc_report.outcome.value,
+                    "reason": pfc_report.reason,
+                    "confidence_recorded": pfc_report.confidence_recorded,
+                    "checks_performed": pfc_report.checks_performed
+                },
+                "structured_remediation_analysis": structured_analysis
             }
             # Persist terminal rejection report to evidence output
             os.makedirs(os.path.dirname(self.evidence_path), exist_ok=True)
@@ -618,6 +802,9 @@ class SAGEMissionExecutionBridge:
         # Distinguish whether report is execution or recovery
         is_recovery = "recovery_status" in report
 
+        # Check if structured remediation analysis is present
+        remediation_analysis = report.get("structured_remediation_analysis")
+
         if is_recovery:
             rec_status = report["recovery_status"]
             if rec_status == "SUCCESS_RECOVERED":
@@ -681,6 +868,28 @@ class SAGEMissionExecutionBridge:
         dashboard.append(f"     Changed Files:       {report['changed_files']}")
         dashboard.append(f"     Commit Hash:         {report['git_head_commit'][:10]}")
         dashboard.append(f"     SAGE Archive Entry:  {archive_id}")
+
+        if remediation_analysis:
+            dashboard.append("----------------------------------------------------------------------")
+            dashboard.append("  [STRUCTURED BLOCK ANALYSIS]")
+            dashboard.append("----------------------------------------------------------------------")
+            dashboard.append(f"  Block Type:             {remediation_analysis['block_analysis_type']}")
+            dashboard.append(f"  PFC Decision Outcome:   {remediation_analysis['outcome']}")
+            dashboard.append(f"  Confidence Score:       {remediation_analysis['confidence']}")
+            dashboard.append(f"  Failed Checks:          {', '.join(remediation_analysis['failed_checks'])}")
+            dashboard.append(f"  Operator Decision Gate: {remediation_analysis['operator_decision_gating']}")
+            dashboard.append(f"  Revalidation Path:      {remediation_analysis['revalidation_path']}")
+            dashboard.append("----------------------------------------------------------------------")
+            dashboard.append("  [BOUNDED REMEDIATION RECOMMENDATIONS]")
+            dashboard.append("----------------------------------------------------------------------")
+            for rec in remediation_analysis["remediation_recommendations"]:
+                dashboard.append(f"  Recommendation ID:      {rec['remediation_id']} ({rec['type']})")
+                dashboard.append(f"  Title:                  {rec['title']}")
+                dashboard.append(f"  Description:            {rec['description']}")
+                dashboard.append(f"  Operator Action Req:    {rec['operator_action_required']}")
+                dashboard.append(f"  Status:                 {rec['status']}")
+                dashboard.append("  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ")
+
         dashboard.append("  5. WHAT HAPPENS NEXT?")
         dashboard.append(f"     RECOMMENDED ACTION:  {next_action}")
         dashboard.append("======================================================================")

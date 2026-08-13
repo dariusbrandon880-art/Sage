@@ -3,7 +3,7 @@
   "current_git_head": "868d3e33502664be99dd81381e093d0cf341e13c",
   "reproducibility": {
     "session_1_reproduced": true,
-    "replication_duration_ms": 952.6565460000711
+    "replication_duration_ms": 947.7315539988922
   },
   "variations_executed": [
     {
@@ -23,7 +23,7 @@
         "unnecessary_revalidation_count": 0,
         "correctly_avoided_work_count": 7
       },
-      "timing_ms": 893.8070530002733,
+      "timing_ms": 931.4301779995731,
       "execution_status": "COMPLETED"
     },
     {
@@ -47,7 +47,7 @@
         "unnecessary_revalidation_count": 0,
         "correctly_avoided_work_count": 6
       },
-      "timing_ms": 1179.4429190003939,
+      "timing_ms": 944.4707699985884,
       "execution_status": "COMPLETED"
     },
     {
@@ -74,7 +74,7 @@
         "unnecessary_revalidation_count": 0,
         "correctly_avoided_work_count": 5
       },
-      "timing_ms": 882.6663069999086,
+      "timing_ms": 957.9077560010774,
       "execution_status": "FAILED"
     },
     {
@@ -110,7 +110,7 @@
         "unnecessary_revalidation_count": 0,
         "correctly_avoided_work_count": 0
       },
-      "timing_ms": 881.5825470001073,
+      "timing_ms": 949.419668999326,
       "execution_status": "FAILED"
     }
   ],
@@ -123,12 +123,12 @@
     "total_false_negatives": 0,
     "unnecessary_revalidations_run": 0,
     "correctly_avoided_work_count": 18,
-    "total_execution_time_ms": 3837.498826000683
+    "total_execution_time_ms": 3783.2283729985647
   },
   "effort_reduction_metrics": {
     "manual_baseline_minutes": 120.0,
-    "observed_minutes": 0.06395831376667806,
-    "effort_reduction_percentage": 99.94670140519443
+    "observed_minutes": 0.06305380621664275,
+    "effort_reduction_percentage": 99.94745516148613
   },
   "governance_status": {
     "protected_boundaries_intact": true,

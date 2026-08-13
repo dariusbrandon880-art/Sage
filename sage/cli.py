@@ -79,6 +79,17 @@ def main():
     # metrics subcommand
     subparsers.add_parser("metrics", help="Show collected runtime telemetry metrics")
 
+    # archive subcommand
+    archive_parser = subparsers.add_parser("archive", help="Query and audit SAGE Master Archive entries")
+    archive_parser.add_argument(
+        "--action",
+        choices=["list", "search", "get"],
+        required=True,
+        help="Archive action to perform",
+    )
+    archive_parser.add_argument("--tag", type=str, help="Tag to search for")
+    archive_parser.add_argument("--id", type=str, help="Entry ID to retrieve")
+
     args = parser.parse_args()
 
     # Initialize runtime
@@ -259,6 +270,53 @@ def main():
             print(json.dumps(result, indent=2))
         except Exception as e:
             print(f"Error: Metrics gathering failed: {e!s}")
+            sys.exit(1)
+
+    elif args.command == "archive":
+        try:
+            from sage.archive.core import Archive
+            archive = Archive()
+
+            if args.action == "list":
+                entries = archive.list_all()
+                result = [
+                    {
+                        "id": entry.id,
+                        "title": entry.title,
+                        "tags": entry.tags,
+                        "created_at": entry.created_at.isoformat() if entry.created_at else None
+                    }
+                    for entry in entries
+                ]
+                print(json.dumps(result, indent=2))
+
+            elif args.action == "search":
+                if not args.tag:
+                    print("Error: --tag is required for archive search.")
+                    sys.exit(1)
+                entries = archive.search_by_tag(args.tag)
+                result = [
+                    {
+                        "id": entry.id,
+                        "title": entry.title,
+                        "tags": entry.tags
+                    }
+                    for entry in entries
+                ]
+                print(json.dumps(result, indent=2))
+
+            elif args.action == "get":
+                if not args.id:
+                    print("Error: --id is required for archive get.")
+                    sys.exit(1)
+                entry = archive.retrieve_entry(args.id)
+                if entry:
+                    print(json.dumps(entry.model_dump(), indent=2, default=str))
+                else:
+                    print(f"Error: Archive entry '{args.id}' not found.")
+                    sys.exit(1)
+        except Exception as e:
+            print(f"Error: Archive operation failed: {e!s}")
             sys.exit(1)
 
     else:

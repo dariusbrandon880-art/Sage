@@ -5,8 +5,8 @@
   "recovery_result": {
     "remediation_status": "SUCCESS_RECOVERED",
     "terminal_state": "CLOSED",
-    "archive_entry_id": "archive_recovery_b1485aae",
-    "duration_ms": 1121.843988999899
+    "archive_entry_id": "archive_recovery_2280b43b",
+    "duration_ms": 922.3519609986397
   },
   "terminal_rejection_result": {
     "remediation_status": "TERMINAL_REJECTION",
@@ -17,7 +17,7 @@
     "recovery_success_rate": 1.0,
     "rejections_enforced": 1,
     "archived_entries_count": 1,
-    "revalidation_duration_ms": 1111.3953280000715
+    "revalidation_duration_ms": 915.2636999970127
   },
   "governance_status": {
     "protected_boundaries_preserved": true,

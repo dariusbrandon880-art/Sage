@@ -6,7 +6,7 @@
     "task_id": "task_safe_gated_run",
     "terminal_state": "CLOSED",
     "execution_status": "COMPLETED",
-    "duration_ms": 1014.7417670000323
+    "duration_ms": 941.2553559996013
   },
   "blocked_path_result": {
     "task_id": "task_blocked_gated_run",
@@ -14,11 +14,11 @@
     "execution_status": "BLOCKED",
     "block_outcome": "REQUEST_CLARIFICATION",
     "block_reason": "Confidence level is too low (0.35) to proceed without operator review.",
-    "duration_ms": 3.613033999954496
+    "duration_ms": 4.0895910024119075
   },
   "metrics": {
     "safety_preservation_rate": 1.0,
-    "cognitive_decision_latency_overhead_ms": 1011.1287330000778,
+    "cognitive_decision_latency_overhead_ms": 937.1657649971894,
     "avoided_unsafe_actions": 1
   },
   "governance_status": {
