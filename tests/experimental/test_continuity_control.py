@@ -936,13 +936,10 @@ def test_developer_workflow_orchestrator_workspace_revalidation_success(tmp_path
     import unittest.mock as mock
     from sage.experimental.mission_control_bridge import SAGEMissionExecutionBridge
 
-    def mocked_bridge_init(self_bridge, registry_path=None, archive_path=None):
-        self_bridge.registry_path = str(registry_file)
-        self_bridge.registry = SAGEOperationalCapabilityRegistry(str(registry_file))
-        from sage.change_impact import SAGEChangeImpactAnalyzer
-        self_bridge.analyzer = SAGEChangeImpactAnalyzer(str(registry_file))
-        from sage.mission_control import SAGEMissionProgressionController
-        self_bridge.controller = SAGEMissionProgressionController()
+    original_init = SAGEMissionExecutionBridge.__init__
+
+    def mocked_bridge_init(self_bridge, *args, **kwargs):
+        original_init(self_bridge, registry_path=str(registry_file))
         from sage.archive.core import Archive
         self_bridge.archive = Archive(str(archive_dir))
 
@@ -1037,13 +1034,10 @@ def test_developer_workflow_orchestrator_workspace_revalidation_failure(tmp_path
     import unittest.mock as mock
     from sage.experimental.mission_control_bridge import SAGEMissionExecutionBridge
 
-    def mocked_bridge_init(self_bridge, registry_path=None, archive_path=None):
-        self_bridge.registry_path = str(registry_file)
-        self_bridge.registry = SAGEOperationalCapabilityRegistry(str(registry_file))
-        from sage.change_impact import SAGEChangeImpactAnalyzer
-        self_bridge.analyzer = SAGEChangeImpactAnalyzer(str(registry_file))
-        from sage.mission_control import SAGEMissionProgressionController
-        self_bridge.controller = SAGEMissionProgressionController()
+    original_init_fail = SAGEMissionExecutionBridge.__init__
+
+    def mocked_bridge_init(self_bridge, *args, **kwargs):
+        original_init_fail(self_bridge, registry_path=str(registry_file))
         from sage.archive.core import Archive
         self_bridge.archive = Archive(str(archive_dir))
 
