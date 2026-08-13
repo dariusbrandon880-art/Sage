@@ -32,7 +32,7 @@ def run_observation_ledger_demo():
         event_identity="nba_game_2026_08_12",
         market_type="moneyline",
         selection="home",
-        observed_price=1.83,  # American odds roughly -120
+        observed_price=1.83,
         timestamp="2026-08-12T20:00:00Z"
     )
     print(f"  -> Ingested: Seq={obs1.sequence_id}, Price={obs1.observed_price}, Hash={obs1.payload_hash[:16]}...")
@@ -43,7 +43,7 @@ def run_observation_ledger_demo():
         event_identity="nba_game_2026_08_12",
         market_type="moneyline",
         selection="away",
-        observed_price=2.00,  # American odds roughly +100
+        observed_price=2.00,
         timestamp="2026-08-12T20:00:00Z"
     )
     print(f"  -> Ingested: Seq={obs2.sequence_id}, Price={obs2.observed_price}, Hash={obs2.payload_hash[:16]}...")
@@ -70,7 +70,7 @@ def run_observation_ledger_demo():
         event_identity="nba_game_2026_08_12",
         market_type="moneyline",
         selection="home",
-        observed_price=1.75,  # Home became more favored (-133)
+        observed_price=1.75,
         timestamp="2026-08-12T20:05:00Z"
     )
     print(f"  -> Ingested Update: Seq={obs3.sequence_id}, Price={obs3.observed_price}, Hash={obs3.payload_hash[:16]}...")
@@ -101,7 +101,7 @@ def run_observation_ledger_demo():
 
     # Tamper with the first line's price
     data = json.loads(lines[0])
-    data["observed_price"] = 9.99  # Tampered!
+    data["observed_price"] = 9.99
     lines[0] = json.dumps(data) + "\n"
 
     with open(storage_path, "w", encoding="utf-8") as f:

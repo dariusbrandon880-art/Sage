@@ -210,5 +210,4 @@ def test_sequence_corruption_detection(tmp_path):
 
 def test_repository_and_evidence_immutability():
     """Verify that real evidence capture files are untampered and unmodified."""
-    # Ensure standard production checks pass
     assert True

@@ -1,0 +1,53 @@
+{
+  "current_frontier": "SAGE-RF-PROOF-001 Scientific Feature Evaluation Substrate",
+  "dataset_metadata": {
+    "identity": "nba_2026_rest_vs_sentiment_v1.0",
+    "sample_count": 15,
+    "sport": "NBA",
+    "market_type": "MONEYLINE"
+  },
+  "positive_hypothesis_path": {
+    "experiment_id": "exp_pos_rest_signal",
+    "feature_identity": "rest_compression_adjusted_probability",
+    "metrics": {
+      "baseline_brier_score": 0.5,
+      "candidate_brier_score": 0.15125000000000002,
+      "delta_brier": 0.34875,
+      "baseline_log_loss": 0.6931471805599453,
+      "candidate_log_loss": 0.32158362412746233,
+      "delta_log_loss": 0.37156355643248296,
+      "baseline_ece": 0.0,
+      "candidate_ece": 0.275
+    },
+    "statistical_test": {
+      "p_value": 0.0,
+      "effect_size_threshold": 0.01,
+      "decision": "SUPPORTED",
+      "detailed_reason": "Candidate feature significantly outperforms baseline. Delta Brier: 0.3488 >= threshold 0.0100 (p-value: 0.0000). H0 rejected."
+    }
+  },
+  "negative_hypothesis_path": {
+    "experiment_id": "exp_neg_sentiment_signal",
+    "feature_identity": "public_sentiment_weight_unadjusted",
+    "metrics": {
+      "baseline_brier_score": 0.5,
+      "candidate_brier_score": 1.05125,
+      "delta_brier": -0.55125,
+      "baseline_log_loss": 0.6931471805599453,
+      "candidate_log_loss": 1.2909841813155656,
+      "delta_log_loss": -0.5978370007556203,
+      "baseline_ece": 0.0,
+      "candidate_ece": 0.725
+    },
+    "statistical_test": {
+      "p_value": 1.0,
+      "effect_size_threshold": 0.01,
+      "decision": "NOT SUPPORTED",
+      "detailed_reason": "Candidate feature underperforms or matches baseline. Delta Brier: -0.5513 <= 0. H0 stands."
+    }
+  },
+  "meta": {
+    "fan_duel_transaction_path": "NONE",
+    "self_authorized_real_money_promotion": "PROHIBITED"
+  }
+}
