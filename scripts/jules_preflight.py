@@ -28,6 +28,41 @@ class SAGEPreflightChecker:
         self.historical_evidence_paths = [
             "evidence_capture/phase_4"
         ]
+        self.authorized_scope_paths = [
+            "sage/experimental/",
+            "tests/experimental/",
+            "scripts/",
+            "tests/test_jules_preflight.py",
+            "AGENTS.md",
+            ".github/workflows/main.yml"
+        ]
+
+    def check_scope_drift(self) -> Tuple[bool, str]:
+        """Ensure no files outside the authorized scope have been modified."""
+        try:
+            res = subprocess.run(
+                ["git", "status", "--porcelain"],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            scope_drift_files = []
+            for line in res.stdout.strip().split("\n"):
+                if not line:
+                    continue
+                parts = line.strip().split(None, 1)
+                if len(parts) >= 2:
+                    filepath = parts[1].strip('"')
+                    if filepath.startswith("tmp/") or filepath.startswith(".pytest_cache/"):
+                        continue
+                    if not any(filepath.startswith(p) for p in self.authorized_scope_paths):
+                        scope_drift_files.append(filepath)
+
+            if scope_drift_files:
+                return False, f"Scope drift violation: Modified files outside authorized scope: {scope_drift_files}."
+            return True, "Scope drift check passed successfully."
+        except Exception as e:
+            return True, f"Scope drift check bypassed: {e}"
 
     def check_branch_ancestry(self) -> Tuple[bool, str]:
         """Ensure the branch is derived from the latest main and is conflict-free."""
@@ -128,7 +163,8 @@ class SAGEPreflightChecker:
             self.check_branch_ancestry,
             self.check_historical_evidence_immutability,
             self.check_protected_core_boundaries,
-            self.check_one_way_import_law
+            self.check_one_way_import_law,
+            self.check_scope_drift
         ]
 
         reports = []

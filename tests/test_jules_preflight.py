@@ -105,3 +105,23 @@ def test_branch_ancestry_violation(mock_run, preflight_checker):
     passed, msg = preflight_checker.check_branch_ancestry()
     assert passed is False
     assert "Branch ancestry violation" in msg
+
+
+@patch("subprocess.run")
+def test_scope_drift_clean(mock_run, preflight_checker):
+    """Verify that scope drift check passes if modified files are inside authorized scope."""
+    mock_run.return_value = MagicMock(returncode=0, stdout=" M sage/experimental/act/continuity_control.py\n M .github/workflows/main.yml\n")
+
+    passed, msg = preflight_checker.check_scope_drift()
+    assert passed is True
+    assert "Scope drift check passed successfully" in msg
+
+
+@patch("subprocess.run")
+def test_scope_drift_violation(mock_run, preflight_checker):
+    """Verify that scope drift check fails if any modified file is outside authorized scope."""
+    mock_run.return_value = MagicMock(returncode=0, stdout=" M .sage/config/runtime.json\n")
+
+    passed, msg = preflight_checker.check_scope_drift()
+    assert passed is False
+    assert "Scope drift violation" in msg
