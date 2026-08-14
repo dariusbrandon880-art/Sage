@@ -97,6 +97,7 @@ def run_openai_activation():
 
         print(f"[+] Saved blocker evidence to {evidence_file}")
         sys.exit(0)
+        return
 
     # If valid credentials are available, execute the real OpenAI API request path
     print("\n[+] SAGE Production Environment Validated successfully!")
@@ -205,6 +206,16 @@ def run_openai_activation():
         if "insufficient_quota" in str(e).lower() or "quota" in str(e).lower() or "429" in str(e):
             is_quota_error = True
 
+        is_auth_error = False
+        if "res" in locals():
+            if res.status_code in (401, 403) or "invalid_api_key" in res.text or "Incorrect API key" in res.text:
+                is_auth_error = True
+                error_details = f"OpenAI API returned status code {res.status_code}: {res.text}"
+        if "401" in str(e) or "403" in str(e) or ("invalid" in str(e).lower() and "key" in str(e).lower()):
+            is_auth_error = True
+            if not error_details:
+                error_details = str(e)
+
         if is_quota_error:
             print("\n[!] OpenAI Quota Exhaustion or credit limitation detected.")
             print("[*] Treating as a recoverable external dependency failure. SAGE startup: PASS.")
@@ -252,6 +263,48 @@ def run_openai_activation():
                 json.dump(paused_report, f, indent=2)
 
             print(f"[+] Generated paused activation evidence at {evidence_file} and {production_activation_file}")
+            sys.exit(0)
+
+        elif is_auth_error or "http" in str(e).lower() or "connection" in str(e).lower():
+            print("\n[!] External OpenAI Execution Blocked: Invalid Credentials or API Connection Error.")
+            print(f"[*] Details: {error_details}")
+
+            blocked_report = {
+                "evaluation_id": f"EVAL-OPENAI-BLOCKED-{uuid.uuid4().hex[:6].upper()}",
+                "timestamp": time.time(),
+                "agent_id": agent_id,
+                "session_id": session_id,
+                "authentication_result": "BLOCKED_INVALID_CREDENTIALS",
+                "context_retrieval_result": {
+                    "status": "BLOCKED",
+                    "error": error_details
+                },
+                "mission_id": orchestrator.objective if 'orchestrator' in locals() else "obj_continuous_development",
+                "execution_result": {
+                    "task_id": "task_openai_runtime_activation",
+                    "executed": False,
+                    "completion_status": "BLOCKED",
+                    "details": error_details
+                },
+                "validation_result": {
+                    "status": "BLOCKED",
+                    "is_compliant": False,
+                    "signer_identity": "supervisor_jules"
+                },
+                "ledger_update_result": {
+                    "audit_id": None,
+                    "synced_to_pml": False
+                },
+                "artifact_references": [
+                    evidence_file
+                ],
+                "blocker_details": f"External OpenAI execution: BLOCKED — {error_details}"
+            }
+
+            with open(evidence_file, "w", encoding="utf-8") as f:
+                json.dump(blocked_report, f, indent=2)
+
+            print(f"[+] Generated blocked activation evidence at {evidence_file}")
             sys.exit(0)
 
         print(f"[!] Error during live execution path: {e}")

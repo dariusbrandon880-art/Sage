@@ -183,3 +183,40 @@ def test_activation_success(redirect_evidence_files, monkeypatch):
     assert report["execution_result"]["completion_status"] == "SUCCESS"
     assert report["execution_result"]["model_response"] == "SAGE Validation verified successful."
     assert report["validation_result"]["status"] == "VALIDATED"
+
+
+def test_activation_invalid_credentials_401(redirect_evidence_files, monkeypatch):
+    """Verify that HTTP 401 invalid API key error is caught and logged as blocked evidence with exit code 0."""
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-invalid-key-for-testing")
+    monkeypatch.setenv("SAGE_AUTH_SECRET", "fake-auth-secret")
+
+    # Mock httpx.post to return a 401 Unauthorized response
+    class MockResponse:
+        status_code = 401
+        text = '{"error": {"message": "Incorrect API key provided", "type": "invalid_request_error", "code": "invalid_api_key"}}'
+        def json(self):
+            return json.loads(self.text)
+
+    import httpx
+    monkeypatch.setattr(httpx, "post", lambda *args, **kwargs: MockResponse())
+
+    # Mock ChatGPTRuntimeAdapter
+    from sage.experimental.act.continuity_control import ChatGPTRuntimeAdapter
+    monkeypatch.setattr(ChatGPTRuntimeAdapter, "authenticate_handshake", lambda *args, **kwargs: {"status": "SUCCESS"})
+
+    exit_codes = []
+    monkeypatch.setattr(sys, "exit", lambda code: exit_codes.append(code))
+
+    run_openai_activation()
+
+    assert 0 in exit_codes
+    evidence_file = redirect_evidence_files / "openai_runtime_live_connection.json"
+
+    assert evidence_file.exists()
+
+    with open(evidence_file, "r", encoding="utf-8") as f:
+        report = json.load(f)
+
+    assert report["authentication_result"] == "BLOCKED_INVALID_CREDENTIALS"
+    assert report["execution_result"]["completion_status"] == "BLOCKED"
+    assert "401" in report["blocker_details"] or "invalid_api_key" in report["blocker_details"]
