@@ -796,7 +796,7 @@ class DeveloperWorkflowOrchestrator:
             priority_score=priority_score,
             lane="optimization" if "optimization" in description.lower() or "optimize" in description.lower() else "engineering",
             authorized=True,
-            metadata={"target_files": ["sage/experimental/act/continuity_control.py"]},
+            metadata={},
             completion_criteria=[f"Implement recommendations for {candidate_id}", "Verify performance improvements"],
             description=description
         )
