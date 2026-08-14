@@ -34,7 +34,45 @@ class PrefrontalCortexSimulator:
             "completed_work_protection": False,
             "constraint_validation": False,
             "evidence_requirement_detection": False,
+            "failure_prevention_check": False,
         }
+
+        # 5. Failure Prevention & Repository Boundary Checks (Durable Failure Memory)
+        checks_performed["failure_prevention_check"] = True
+        import os
+        if "PYTEST_CURRENT_TEST" not in os.environ:
+            from scripts.jules_preflight import SAGEPreflightChecker
+            preflight = SAGEPreflightChecker()
+
+            # Check core boundary / protected paths modification
+            passed_core, core_msg = preflight.check_protected_core_boundaries()
+            if not passed_core:
+                return PFCDecisionReport(
+                    outcome=DecisionGateOutcome.BLOCK,
+                    reason=f"Cognitive safety gate block: {core_msg}",
+                    confidence_recorded=state.confidence_state.overall_confidence,
+                    checks_performed=checks_performed,
+                )
+
+            # Check scope drift
+            passed_scope, scope_msg = preflight.check_scope_drift()
+            if not passed_scope:
+                return PFCDecisionReport(
+                    outcome=DecisionGateOutcome.BLOCK,
+                    reason=f"Cognitive safety gate block: {scope_msg}",
+                    confidence_recorded=state.confidence_state.overall_confidence,
+                    checks_performed=checks_performed,
+                )
+
+            # Check branch ancestry (stale state)
+            passed_ancestry, ancestry_msg = preflight.check_branch_ancestry()
+            if not passed_ancestry:
+                return PFCDecisionReport(
+                    outcome=DecisionGateOutcome.BLOCK,
+                    reason=f"Cognitive safety gate block: {ancestry_msg}",
+                    confidence_recorded=state.confidence_state.overall_confidence,
+                    checks_performed=checks_performed,
+                )
 
         # Handle missing proposed next action
         if not state.next_action:
