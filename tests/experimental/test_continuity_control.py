@@ -364,6 +364,69 @@ def test_developer_workflow_orchestrator_scan_git(tmp_path):
     assert len(workspace["modified_files"]) > 0
 
 
+def test_sage_precommit_hook_governance(tmp_path):
+    """Verify that scripts/sage_precommit_hook.py returns True for valid attestation chain and False for corrupted attestation chain or protected path violations."""
+    from scripts.sage_precommit_hook import run_precommit_governance_check
+    from sage.acr.attestation import AttestationProvider
+    from sage.acr.eas_receipts import EASReceiptChain, EASReceipt
+
+    # 1. Clean run without eas vault or protected changes
+    assert run_precommit_governance_check(eas_vault_path=tmp_path / "non_existent.json") is True
+
+    # 2. Valid EAS vault
+    vault_file = tmp_path / "eas_receipts.json"
+    attestation = AttestationProvider(provider_type="TPM", key_seed="sage_attestation_seed_2026")
+    chain = EASReceiptChain(storage_path=vault_file, attestation=attestation)
+    chain.generate_receipt("task_test_01", "promote_validated", {"audit": "audit_1"}, ["RULE_1"])
+
+    assert run_precommit_governance_check(eas_vault_path=vault_file) is True
+
+    # 3. Corrupted EAS vault -> fails closed
+    corrupted_receipts = [r.model_dump() for r in chain.receipts]
+    corrupted_receipts[0]["attestation_signature"] = "tpm_attestation_invalid_corrupted_signature"
+    with open(vault_file, "w", encoding="utf-8") as f:
+        json.dump(corrupted_receipts, f)
+
+    assert run_precommit_governance_check(eas_vault_path=vault_file) is False
+
+
+def test_compute_metrics_handles_array_json_files(tmp_path):
+    """Verify compute_metrics gracefully skips non-record JSON files (such as arrays)."""
+    from sage.experimental.act.continuity_control import SAGEOperationalIntelligenceLayer, ContinuityControlRecord, SAGEOperationalMetrics
+    from sage.acr.session.session_state import SessionState
+
+    storage = tmp_path / "records"
+    storage.mkdir(parents=True, exist_ok=True)
+
+    # 1. Write an array JSON file (like discovery_candidates_register.json) in storage_path
+    array_file = storage / "discovery_candidates_register.json"
+    with open(array_file, "w", encoding="utf-8") as f:
+        json.dump([{"candidate_id": "CAND-01", "description": "test candidate"}], f)
+
+    # 2. Write a valid ContinuityControlRecord in storage_path
+    rec_file = storage / "CCL-REC-20260815-test.json"
+    valid_record = ContinuityControlRecord(
+        record_id="CCL-REC-20260815-test",
+        session_id="session_test",
+        event_type="state_transition",
+        timestamp=1000.0,
+        action_taken="Test action",
+        decision_reasoning="Test reasoning",
+        lifecycle_state="VALIDATED"
+    )
+    with open(rec_file, "w", encoding="utf-8") as f:
+        json.dump(valid_record.model_dump(), f)
+
+    session = SessionState(session_id="session_test", active_objectives=["obj_test"])
+    cmaps_payload = {"decision_events": []}
+
+    oil = SAGEOperationalIntelligenceLayer(storage_path=storage)
+    # Must compute metrics without raising AttributeError on array_file
+    metrics = oil.compute_metrics(record=valid_record, cmaps_payload=cmaps_payload, duration=0.1, session=session)
+    assert isinstance(metrics, SAGEOperationalMetrics)
+    assert metrics.lifecycle_completion_rate == 1.0
+
+
 def test_sage_operational_intelligence_layer_integration(tmp_path):
     """Verify the end-to-end SAGE Operational Intelligence Layer (SAGE-OIL) capability.
 

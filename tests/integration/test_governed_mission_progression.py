@@ -352,6 +352,58 @@ def test_receipt_sequencing_and_determinism():
     assert str1 == str2
 
 
+def test_enqueue_authorized_mission_state_governance(tmp_path):
+    """Verify enqueue_authorized_mission_state handles authorized and unauthorized mission states correctly."""
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_enqueue_gov_test",
+        objective="obj_continuous_development",
+        ccl=ccl
+    )
+
+    # 1. Authorized state -> produces SAGEMissionTask & enqueues into mission queue
+    authorized_state = ExperimentalMissionState(
+        mission_id="msn-auth-enqueue-01",
+        name="Authorized Enqueue Test",
+        current_state="EXECUTION_AUTHORIZED",
+        prerequisites={"operator_signature_obtained": True},
+        metadata={"priority_score": 92.0}
+    )
+    task = orchestrator.enqueue_authorized_mission_state(authorized_state)
+    assert task.authorized is True
+    assert task.task_id == "task_msn-auth-enqueue-01"
+    retrieved = orchestrator.mission_queue.get_task(task.task_id)
+    assert retrieved is not None
+    assert retrieved.task_id == task.task_id
+
+    # 2. Unauthorized current_state -> raises PermissionError and does not enqueue
+    unauthorized_state = ExperimentalMissionState(
+        mission_id="msn-unauth-enqueue-02",
+        name="Unauthorized State Test",
+        current_state="PREFLIGHT_REQUIRED",
+        prerequisites={"operator_signature_obtained": True}
+    )
+    with pytest.raises(PermissionError) as exc_info:
+        orchestrator.enqueue_authorized_mission_state(unauthorized_state)
+    assert "expected 'EXECUTION_AUTHORIZED'" in str(exc_info.value)
+    assert orchestrator.mission_queue.get_task("task_msn-unauth-enqueue-02") is None
+
+    # 3. Missing operator signature -> raises PermissionError and does not enqueue
+    missing_signature_state = ExperimentalMissionState(
+        mission_id="msn-nosig-enqueue-03",
+        name="Missing Operator Signature Test",
+        current_state="EXECUTION_AUTHORIZED",
+        prerequisites={}
+    )
+    with pytest.raises(PermissionError) as exc_info_sig:
+        orchestrator.enqueue_authorized_mission_state(missing_signature_state)
+    assert "operator_signature_obtained" in str(exc_info_sig.value)
+    assert orchestrator.mission_queue.get_task("task_msn-nosig-enqueue-03") is None
+
+
 def test_inputs_and_capability_registry_immutability(tmp_path):
     """Verify that inputs to analyzers and registry records are immutable (read-only checks)."""
     from sage.change_impact import SAGEChangeImpactAnalyzer

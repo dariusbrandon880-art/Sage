@@ -18,6 +18,7 @@ from pydantic import BaseModel, Field, field_validator
 
 from sage.acr.session.session_state import SessionStateManager, SessionState
 from sage.acr.session.checkpoint import CheckpointManager
+from sage.mission_control import ExperimentalMissionState
 
 
 class SAGEMissionTask(BaseModel):
@@ -374,9 +375,10 @@ class SAGEOperationalIntelligenceLayer:
             try:
                 with open(filepath, "r", encoding="utf-8") as f:
                     data = json.load(f)
-                    all_records.append(data)
-                    if data.get("lifecycle_state") == "VALIDATED":
-                        validated_count += 1
+                    if isinstance(data, dict) and "record_id" in data:
+                        all_records.append(data)
+                        if data.get("lifecycle_state") == "VALIDATED":
+                            validated_count += 1
             except Exception:
                 pass
 
@@ -667,6 +669,46 @@ class DeveloperWorkflowOrchestrator:
         """Saves continuous execution loop state to disk."""
         with open(self.loop_state_file, "w", encoding="utf-8") as f:
             json.dump(self.loop_state, f, indent=2, default=str)
+
+    def enqueue_authorized_mission_state(
+        self,
+        mission_state: ExperimentalMissionState
+    ) -> SAGEMissionTask:
+        """Enqueue an authorized mission state into the SAGE mission queue.
+
+        Fails closed with PermissionError if the mission state is not EXECUTION_AUTHORIZED
+        or if the operator_signature_obtained prerequisite is not satisfied.
+        """
+        if mission_state.current_state != "EXECUTION_AUTHORIZED":
+            raise PermissionError(
+                f"Cannot enqueue mission state '{mission_state.mission_id}': "
+                f"State is '{mission_state.current_state}', expected 'EXECUTION_AUTHORIZED'."
+            )
+
+        if not mission_state.prerequisites.get("operator_signature_obtained", False):
+            raise PermissionError(
+                f"Cannot enqueue mission state '{mission_state.mission_id}': "
+                "Missing required prerequisite 'operator_signature_obtained'."
+            )
+
+        task_id = mission_state.metadata.get("task_id", f"task_{mission_state.mission_id}")
+        objective_id = mission_state.metadata.get("objective_id", self.objective)
+        priority_score = float(mission_state.metadata.get("priority_score", 90.0))
+        lane = mission_state.metadata.get("lane", "engineering")
+        description = mission_state.name or "Governed Mission Execution"
+
+        task = SAGEMissionTask(
+            task_id=task_id,
+            objective_id=objective_id,
+            priority_score=priority_score,
+            lane=lane,
+            authorized=True,
+            description=description,
+            target_files=mission_state.metadata.get("target_files", [])
+        )
+
+        self.mission_queue.add_task(task)
+        return task
 
     def pause_mission_execution_loop(self) -> None:
         """Pauses execution loop and logs human-in-the-loop intervention."""

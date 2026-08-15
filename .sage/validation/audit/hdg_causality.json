@@ -1,1 +1,1 @@
-[]
+[{"node_id": "decision_coordinate_dev_loop", "description": "Predecessor Stage 1 governed execution decision", "parent_ids": [], "evidence_refs": ["sage_data/flight_execution_proof/evidence_output.json"], "validation_score": 0.98, "contradictions": [], "is_promoted": false, "metadata": {}}]
