@@ -17,6 +17,7 @@ class AIQueryRequest(BaseModel):
     session_id: str | None = None
     include_validated_memory: bool = True
     include_knowledge_state: bool = True
+    response_override: str | None = None
 
 
 class AIQueryResponse(BaseModel):
@@ -88,7 +89,7 @@ class ChatGPTClient(BaseAIClient):
         reasoning = f"ChatGPT analyzed prompt: '{request.prompt}' and retrieved {len(referenced_ids)} relevant engineering artifacts."
         self.reasoning_history.append(reasoning)
 
-        response_text = (
+        response_text = request.response_override or (
             f"Response from ChatGPT for prompt: '{request.prompt}'.\n"
             f"Successfully synchronized with SAGE session '{session_id}'.\n"
             f"Context analyzed: {len(context['matched_memories'])} active memories, {len(context['matched_archives'])} master archives."
@@ -143,7 +144,7 @@ class GeminiJulesClient(BaseAIClient):
         reasoning = f"Gemini/Jules established high-fidelity alignment with SAGE knowledge graph for session '{session_id}'."
         self.reasoning_history.append(reasoning)
 
-        response_text = (
+        response_text = request.response_override or (
             f"Deep continuation response from Gemini/Jules.\n"
             f"Continuity state retrieved successfully. Running with SAGE runtime alignment.\n"
             f"Referenced SAGE keys: {referenced_ids}"

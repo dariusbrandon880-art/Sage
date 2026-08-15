@@ -411,3 +411,19 @@ def test_live_continuity_path_e2e(temp_workspace):
     snapshot_id = result["snapshot_id"]
     snapshots_list = runtime.list_workspace_snapshots()
     assert any(s["id"] == snapshot_id for s in snapshots_list)
+
+
+def test_ai_query_response_override(temp_workspace):
+    """Test AIQueryRequest response_override functionality across ChatGPT and Gemini clients."""
+    runtime = SageRuntime(str(temp_workspace))
+    chatgpt = ChatGPTClient(runtime)
+    gemini = GeminiJulesClient(runtime)
+
+    override_text = "Custom live model inference response payload"
+    req = AIQueryRequest(prompt="Test prompt", response_override=override_text)
+
+    chatgpt_res = chatgpt.execute_query(req)
+    assert chatgpt_res.response_text == override_text
+
+    gemini_res = gemini.execute_query(req)
+    assert gemini_res.response_text == override_text
