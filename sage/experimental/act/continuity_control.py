@@ -813,6 +813,11 @@ class DeveloperWorkflowOrchestrator:
     def enqueue_authorized_mission_state(self, mission_state: Any) -> SAGEMissionTask:
         """Enqueues an authorized mission state into the mission queue.
 
+        Identity Boundary:
+        - SAGE (Strategic Architecture for Governed Evolution) is the historical foundation.
+        - SAGI (Strategic Architecture for Governed Intelligence) represents the forward-facing
+          identity layer as SAGE capabilities evolve toward real operational execution.
+
         Requirements:
         1. Accept only 'EXECUTION_AUTHORIZED' mission states.
         2. Reject unauthorized states fail-closed.

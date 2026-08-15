@@ -379,7 +379,12 @@ def test_inputs_and_capability_registry_immutability(tmp_path):
 
 
 def test_enqueue_authorized_mission_state_success(tmp_path):
-    """Verify that an EXECUTION_AUTHORIZED mission state successfully enqueues a valid SAGEMissionTask."""
+    """Verify that an EXECUTION_AUTHORIZED mission state successfully enqueues a valid SAGEMissionTask.
+
+    Note on Identity Boundary:
+    - SAGE (Strategic Architecture for Governed Evolution) = Historical foundation.
+    - SAGI (Strategic Architecture for Governed Intelligence) = Forward identity/evolution as SAGE moves toward real execution.
+    """
     session_storage = tmp_path / "sessions"
     record_storage = tmp_path / "records"
     session_mgr = SessionStateManager(storage_path=str(session_storage))
