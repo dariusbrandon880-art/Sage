@@ -74,6 +74,44 @@ class SAGEMissionProgressionController:
     def __init__(self) -> None:
         pass
 
+    def validate_mec_handoff(self, handoff_data: Dict[str, Any]) -> bool:
+        """Validate Multi-user Engineering Continuity (MEC) handoff payload structure."""
+        if not isinstance(handoff_data, dict):
+            raise ValueError("MEC handoff payload must be a dictionary.")
+        required = ["author_id", "branch_name", "write_lock_token", "target_session_id"]
+        for field in required:
+            if field not in handoff_data:
+                raise ValueError(f"MEC handoff payload missing required field: '{field}'")
+            val = handoff_data[field]
+            if not isinstance(val, str) or not val.strip():
+                raise ValueError(f"MEC handoff field '{field}' must be a non-empty string.")
+        return True
+
+    def verify_evidence_integrity(
+        self,
+        mission_state: ExperimentalMissionState,
+        expected_hashes: Dict[str, str]
+    ) -> bool:
+        """Verify the cryptographic integrity of files referenced by the mission."""
+        import hashlib
+        from pathlib import Path
+
+        for filepath_str, expected_hash in expected_hashes.items():
+            path = Path(filepath_str)
+            if not path.exists():
+                raise ValueError(f"Evidence file missing: '{filepath_str}'")
+
+            try:
+                with open(path, "rb") as f:
+                    content = f.read()
+                actual_hash = hashlib.sha256(content).hexdigest()
+                if actual_hash != expected_hash:
+                    raise ValueError(f"Cryptographic hash mismatch for evidence file: '{filepath_str}'")
+            except Exception as e:
+                raise ValueError(f"Evidence integrity check failed for '{filepath_str}': {e!s}")
+
+        return True
+
     def evaluate_transition(
         self,
         mission_state: ExperimentalMissionState,
@@ -163,6 +201,36 @@ class SAGEMissionProgressionController:
                 target_state=target_state,
                 decision_reason=f"Blocked: Missing prerequisite '{required_prereq}' for transition to '{target_state}'."
             )
+
+        # Causality Auditor Integration (HDG v2 Epistemic Causality Engine)
+        if "hdg_node_id" in mission_state.metadata:
+            try:
+                from sage.core.hdg import HDGEngine
+                hdg_path = mission_state.metadata.get("hdg_storage_path", ".sage/validation/audit/hdg_causality.json")
+                engine = HDGEngine(storage_path=hdg_path)
+
+                node_id = mission_state.metadata["hdg_node_id"]
+                # 1. Validate node exists and graph is integral (implicitly run during load & get_node)
+                _ = engine.get_node(node_id)
+                # 2. Check ancestral path for contradictions or cycles
+                contradictions = engine.check_contradictions(node_id)
+                if contradictions:
+                    return MissionTransitionResult(
+                        success=False,
+                        transitioned=False,
+                        previous_state=current_state,
+                        target_state=target_state,
+                        decision_reason=f"Causality Violation: Contradictions detected in ancestor path for node '{node_id}': {contradictions}"
+                    )
+            except Exception as e:
+                # Failure-closed behavior: any exception halts the transition
+                return MissionTransitionResult(
+                    success=False,
+                    transitioned=False,
+                    previous_state=current_state,
+                    target_state=target_state,
+                    decision_reason=f"Causality Auditor Exception (Failed Closed): {e!s}"
+                )
 
         # Proposal Non-Execution Law: Ensure the controller performs no execution itself
         # Zero Self-Authorization Law: Controller never grants itself or changes any authorization automatically
