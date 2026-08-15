@@ -12,6 +12,7 @@ from sage.runtime import (
     generate_system_status_report,
     get_metrics_collector,
     get_sage_identity,
+    has_capability,
 )
 
 
@@ -227,3 +228,10 @@ class TestRuntimeIntelligence:
         discovered = discover_capabilities(runtime)
         assert len(discovered) > 0
         assert "state_persistence" in discovered
+
+    def test_has_capability_helper(self):
+        """Test has_capability function returns correct boolean status for capabilities."""
+        runtime = SageRuntime()
+        assert has_capability("state_persistence", runtime) is True
+        assert has_capability("non_existent_capability", runtime) is False
+        assert has_capability("", runtime) is False

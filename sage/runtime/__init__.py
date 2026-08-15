@@ -7,7 +7,11 @@ sage.api to avoid circular imports during initialization.
 
 from typing import Any
 
-from sage.runtime.capability_report import discover_capabilities, generate_capability_report
+from sage.runtime.capability_report import (
+    discover_capabilities,
+    generate_capability_report,
+    has_capability,
+)
 from sage.runtime.diagnostics import (
     InitializationManager,
     generate_diagnostic_report,
@@ -38,6 +42,7 @@ __all__ = [
     "check_health",
     "discover_capabilities",
     "generate_capability_report",
+    "has_capability",
     "generate_diagnostic_report",
     "generate_system_status_report",
     "get_metrics_collector",

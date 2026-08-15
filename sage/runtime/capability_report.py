@@ -33,6 +33,21 @@ def discover_capabilities(runtime: Any | None = None) -> list[str]:
     return discovered
 
 
+def has_capability(capability_name: str, runtime: Any | None = None) -> bool:
+    """Check if a specific capability is discovered and active or enabled.
+
+    Args:
+        capability_name: Name of the capability to check.
+        runtime: Active SAGE runtime instance to inspect.
+
+    Returns:
+        True if the capability is discovered and active/enabled, False otherwise.
+    """
+    if not capability_name:
+        return False
+    return capability_name in discover_capabilities(runtime)
+
+
 def generate_capability_report(runtime: Any | None = None) -> dict[str, Any]:
     """Assess and return the dynamic availability of SAGE platform capabilities.
 
