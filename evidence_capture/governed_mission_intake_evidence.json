@@ -1,0 +1,47 @@
+{
+  "evaluation_id": "EVAL-MSN-INTAKE-2026-A2B3C4",
+  "mission_id": "msn-intake-abc123e456f789",
+  "name": "Governed Mission Intake Validation Demonstration",
+  "operator_id": "operator_jules_01",
+  "autonomous_execution_triggered": false,
+  "master_archive_modified_automatically": false,
+  "intake_phase": {
+    "raw_proposal": {
+      "name": "Audit System Lineage",
+      "description": "Trace cryptographic audit trails across session records",
+      "objective": "Verify the integrity of SHA-256 fingerprint chains in PML",
+      "operator_id": "operator_jules_01",
+      "prerequisites": {
+        "value_appraisal_approved": true
+      }
+    },
+    "validation_status": "ACCEPTED",
+    "assigned_state": "MISSION_PROPOSED",
+    "deterministic_id": "msn-intake-abc123e456f789",
+    "provenance_preserved": {
+      "operator_id": "operator_jules_01",
+      "timestamp": 1786020547.0
+    }
+  },
+  "rejection_audit_trail": [
+    {
+      "raw_proposal": {
+        "name": "   ",
+        "description": "Malformed blank proposal",
+        "objective": "Should fail validation",
+        "operator_id": "operator_jules_01"
+      },
+      "validation_status": "REJECTED",
+      "rejection_reason": "Rejection: Field 'name' cannot be empty or blank.",
+      "timestamp": 1786020549.0
+    }
+  ],
+  "governance_compliance_check": {
+    "initial_state_always_proposed": true,
+    "advances_beyond_proposed_by_itself": false,
+    "provenance_preserved": true,
+    "zero_self_authorization_status": "PASSED",
+    "non_execution_status": "PASSED",
+    "existing_controller_integration": "SUCCESS (Intake handoff delegates strictly to existing Mission Progression Controller)"
+  }
+}
