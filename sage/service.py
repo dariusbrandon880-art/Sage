@@ -42,7 +42,8 @@ class LifecycleManager:
     def __init__(self):
         self.started_at: datetime | None = None
         self.status: str = "STOPPED"
-        self.api_keys: list[str] = os.getenv("SAGE_API_KEYS", "sage-default-key-2026").split(",")
+        keys_str = os.getenv("SAGE_API_KEYS", "sage-default-key-2026")
+        self.api_keys: list[str] = [k.strip() for k in keys_str.split(",") if k.strip()]
 
     def startup(self) -> dict[str, Any]:
         """Start up the SAGE continuity platform services."""
@@ -98,7 +99,7 @@ class LifecycleManager:
         # Support dynamic live API key updates from OS environment
         keys_str = os.getenv("SAGE_API_KEYS", "")
         if keys_str:
-            keys = keys_str.split(",")
+            keys = [k.strip() for k in keys_str.split(",") if k.strip()]
         else:
             keys = self.api_keys
         return api_key in keys

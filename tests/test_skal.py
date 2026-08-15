@@ -226,7 +226,10 @@ def test_skal_api_intake_integration():
     """Test API integration for the /tools/skal/intake endpoint."""
     from sage.api import app, runtime, validation
 
-    with tempfile.TemporaryDirectory() as tmpdir:
+    original_workspace_path = runtime.workspace_path
+    tmp_dir_obj = tempfile.TemporaryDirectory()
+    tmpdir = tmp_dir_obj.name
+    try:
         # Override the global API runtime
         runtime.__init__(workspace_path=tmpdir)
         runtime.start()
@@ -274,3 +277,8 @@ def test_skal_api_intake_integration():
             response = client.post("/tools/skal/intake", json=bad_type_payload)
             assert response.status_code == 400
             assert "Unsupported SAGE-SKAL payload type" in response.json()["detail"]
+    finally:
+        runtime.__init__(workspace_path=original_workspace_path)
+        runtime.start()
+        validation.__init__(runtime.memory, runtime.archive)
+        tmp_dir_obj.cleanup()

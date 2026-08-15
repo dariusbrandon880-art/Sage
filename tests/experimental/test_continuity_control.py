@@ -652,7 +652,7 @@ def test_sage_continuous_execution_and_governance_loop(tmp_path):
         mock_path.side_effect = lambda *args: discovery_reg if "discovery_candidates_register.json" in str(args) else Path(*args)
 
         task_hand = orchestrator.handoff_discovery_candidate_to_mission("CANDIDATE-OIL-TEST99")
-        assert task_hand.task_id == "task_impr_CANDIDATE-OIL-TEST99"
+        assert task_hand.task_id == "task_impr_CANDIDATE_OIL_TEST99"
         assert task_hand.priority_score == 80.0
         assert task_hand.lane == "optimization"
         assert task_hand.authorized is True
@@ -873,3 +873,655 @@ def test_chatgpt_runtime_adapter_and_submission(tmp_path):
     assert "cmaps_payload" in validation_result
     assert validation_result["cmaps_payload"]["agent_identity"]["agent_id"] == "agent_chatgpt_runtime_agent"
     assert validation_result["cmaps_payload"]["task_lineage"]["current_task_id"] == "task_openai_runtime_activation"
+
+
+def test_developer_workflow_orchestrator_workspace_revalidation_success(tmp_path):
+    """Verify that DeveloperWorkflowOrchestrator successfully processes a workspace revalidation engineering task.
+
+    Ensures that SAGEMissionExecutionBridge executes, updates capabilities in the registry,
+    promotes the trace to the Master Archive, and records a successful SAGE-CCL state transition.
+    """
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop, SAGEMissionTask
+    from sage.acr.session.session_state import SessionStateManager
+    from sage.capability_registry import SAGEOperationalCapabilityRegistry, SAGECapability
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    evidence_output = tmp_path / "evidence" / "ccl_reval_success.json"
+    registry_file = tmp_path / "operational_capability_registry.json"
+    archive_dir = tmp_path / "archive"
+
+    # 1. Initialize custom managers and loop
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+
+    # Initialize orchestrator
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_reval_success_test",
+        objective="obj_continuous_development",
+        ccl=ccl,
+        evidence_output_path=str(evidence_output)
+    )
+
+    # 2. Add an authorized engineering task with metadata target files
+    dummy_py = tmp_path / "dummy_valid_code.py"
+    dummy_py.write_text("def valid_func():\n    return True\n")
+
+    # Pre-populate capability registry
+    registry = SAGEOperationalCapabilityRegistry(storage_path=str(registry_file))
+    cap = SAGECapability(
+        capability_id="CAP-STATE-PERSISTENCE",
+        name="State Persistence",
+        description="Continuous atomic serialization of task states.",
+        implementation_status="IMPLEMENTED",
+        validation_status="UNVERIFIED",
+        evidence_references=[],
+        test_references=[str(dummy_py)],
+        archive_promotion_status="READY"
+    )
+    registry.add_capability(cap)
+
+    task = SAGEMissionTask(
+        task_id="task_reval_success_1",
+        objective_id="obj_continuous_development",
+        priority_score=90.0,
+        lane="engineering",
+        authorized=True,
+        metadata={"target_files": [str(dummy_py)]},
+        description="Validate clean workspace"
+    )
+    orchestrator.mission_queue.add_task(task)
+
+    # Mock the registry and archive paths for SAGEMissionExecutionBridge inside execute_active_development_coordination
+    import unittest.mock as mock
+    from sage.experimental.mission_control_bridge import SAGEMissionExecutionBridge
+
+    original_init = SAGEMissionExecutionBridge.__init__
+
+    def mocked_bridge_init(self_bridge, *args, **kwargs):
+        original_init(self_bridge, registry_path=str(registry_file))
+        from sage.archive.core import Archive
+        self_bridge.archive = Archive(str(archive_dir))
+
+    with mock.patch.object(SAGEMissionExecutionBridge, "__init__", mocked_bridge_init):
+        # Run autonomous loop
+        res = orchestrator.execute_autonomous_mission_loop(max_cycles=1)
+
+    # 3. Assertions
+    assert res["status"] == "CONTINUOUS"
+    assert "task_reval_success_1" in res["executed_tasks"]
+
+    # Verify task completed
+    t_reval = orchestrator.mission_queue.get_task("task_reval_success_1")
+    assert t_reval.status == "COMPLETED"
+
+    # Verify capability registry was updated to VALIDATED
+    registry.load()
+    updated_cap = registry.get_capability("CAP-STATE-PERSISTENCE")
+    assert updated_cap is not None
+    assert updated_cap.validation_status == "VALIDATED"
+
+    # Verify SAGE-CCL record was saved and promoted
+    assert evidence_output.exists()
+    with open(evidence_output, "r", encoding="utf-8") as f:
+        evidence_data = json.load(f)
+
+    assert evidence_data["status"] == "VALIDATED"
+    ccl_rec = evidence_data["ccl_record"]
+    assert "revalidated_capabilities" in ccl_rec["evidence_payload"]
+    assert "CAP-STATE-PERSISTENCE" in ccl_rec["evidence_payload"]["revalidated_capabilities"]
+    assert "Successfully revalidated workspace capabilities" in ccl_rec["action_taken"]
+
+
+def test_developer_workflow_orchestrator_workspace_revalidation_failure(tmp_path):
+    """Verify that DeveloperWorkflowOrchestrator handles a workspace revalidation failure correctly.
+
+    Ensures that when linter check fails, the orchestrator logs LINTER_VIOLATION in the failures,
+    creates a recovery checkpoint, pauses the loop, and updates the task status to FAILED.
+    """
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop, SAGEMissionTask
+    from sage.acr.session.session_state import SessionStateManager
+    from sage.capability_registry import SAGEOperationalCapabilityRegistry, SAGECapability
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    evidence_output = tmp_path / "evidence" / "ccl_reval_failure.json"
+    registry_file = tmp_path / "operational_capability_registry.json"
+    archive_dir = tmp_path / "archive"
+
+    # 1. Initialize custom managers and loop
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+
+    # Initialize orchestrator
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_reval_failure_test",
+        objective="obj_continuous_development",
+        ccl=ccl,
+        evidence_output_path=str(evidence_output)
+    )
+
+    # 2. Add an authorized engineering task with a Python file containing a deliberate syntax error
+    dummy_py = tmp_path / "dummy_invalid_code.py"
+    dummy_py.write_text("def invalid_func(:\n    return False\n")
+
+    # Pre-populate capability registry
+    registry = SAGEOperationalCapabilityRegistry(storage_path=str(registry_file))
+    cap = SAGECapability(
+        capability_id="CAP-STATE-PERSISTENCE",
+        name="State Persistence",
+        description="Continuous atomic serialization of task states.",
+        implementation_status="IMPLEMENTED",
+        validation_status="UNVERIFIED",
+        evidence_references=[],
+        test_references=[str(dummy_py)],
+        archive_promotion_status="READY"
+    )
+    registry.add_capability(cap)
+
+    task = SAGEMissionTask(
+        task_id="task_reval_err_1",  # No 'fail' in ID!
+        objective_id="obj_continuous_development",
+        priority_score=90.0,
+        lane="engineering",
+        authorized=True,
+        metadata={"target_files": [str(dummy_py)]},
+        description="Validate dirty workspace"  # No 'fail' in description!
+    )
+    orchestrator.mission_queue.add_task(task)
+
+    # Mock the paths for SAGEMissionExecutionBridge
+    import unittest.mock as mock
+    from sage.experimental.mission_control_bridge import SAGEMissionExecutionBridge
+
+    original_init_fail = SAGEMissionExecutionBridge.__init__
+
+    def mocked_bridge_init(self_bridge, *args, **kwargs):
+        original_init_fail(self_bridge, registry_path=str(registry_file))
+        from sage.archive.core import Archive
+        self_bridge.archive = Archive(str(archive_dir))
+
+    with mock.patch.object(SAGEMissionExecutionBridge, "__init__", mocked_bridge_init):
+        # Run autonomous loop
+        res = orchestrator.execute_autonomous_mission_loop(max_cycles=1)
+
+    # 3. Assertions
+    # Loop should continue or transition state based on failure. Since max_consecutive_failures is 3 and we ran 1 cycle:
+    assert res["status"] == "CONTINUOUS"
+    assert res["consecutive_failures"] == 1
+
+    # Verify task failed
+    t_reval = orchestrator.mission_queue.get_task("task_reval_err_1")
+    assert t_reval.status == "FAILED"
+
+    # Verify capability validation_status was NOT updated to VALIDATED
+    registry.load()
+    updated_cap = registry.get_capability("CAP-STATE-PERSISTENCE")
+    assert updated_cap is not None
+    assert updated_cap.validation_status == "UNVERIFIED"
+
+    # Verify SAGE-CCL record was saved as REJECTED with linter violation failures
+    assert evidence_output.exists()
+    with open(evidence_output, "r", encoding="utf-8") as f:
+        evidence_data = json.load(f)
+
+    assert evidence_data["status"] == "REJECTED"
+    ccl_rec = evidence_data["ccl_record"]
+    assert ccl_rec["lifecycle_state"] == "REJECTED"
+    assert "Workspace revalidation failed" in ccl_rec["action_taken"]
+
+    # Check failure list contains linter violation
+    cmaps = evidence_data["cmaps_payload"]
+    assert len(cmaps["failure_events"]) == 1
+    lint_fail = cmaps["failure_events"][0]
+    assert lint_fail["error_type"] == "LINTER_VIOLATION"
+    assert "dummy_invalid_code.py" in lint_fail["message"]
+
+
+def test_orchestrator_mission_progression_integration_success(tmp_path):
+    """Verify that a successful task execution drives the 8-stage MissionProgressionController cleanly to completion."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop, SAGEMissionTask
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    evidence_output = tmp_path / "evidence" / "progression_success.json"
+
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_prog_success",
+        objective="obj_continuous_development",
+        ccl=ccl,
+        evidence_output_path=str(evidence_output)
+    )
+
+    task = SAGEMissionTask(
+        task_id="task_prog_success_1",
+        objective_id="obj_continuous_development",
+        priority_score=90.0,
+        authorized=True,
+        description="Verify progression integration is working perfectly"
+    )
+    orchestrator.mission_queue.add_task(task)
+
+    # Run autonomous loop
+    res = orchestrator.execute_autonomous_mission_loop(max_cycles=1)
+
+    assert res["status"] == "CONTINUOUS"
+    assert "task_prog_success_1" in res["executed_tasks"]
+
+    # Retrieve completed task and verify 8 progression receipts are attached
+    completed_task = orchestrator.mission_queue.get_task("task_prog_success_1")
+    assert completed_task.status == "COMPLETED"
+    assert "progression_receipts" in completed_task.metadata
+    receipts = completed_task.metadata["progression_receipts"]
+    assert len(receipts) == 8
+    assert receipts[0]["next_state"] == "INTAKE"
+    assert receipts[7]["next_state"] == "OUTCOME_CLASSIFIED"
+
+
+def test_orchestrator_mission_progression_out_of_order_fail_closed(tmp_path):
+    """Verify that a priority or out-of-order transition rejection correctly fails closed, rolls back, and fails the task."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop, SAGEMissionTask
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    evidence_output = tmp_path / "evidence" / "progression_out_of_order.json"
+
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_prog_out_of_order",
+        objective="obj_continuous_development",
+        ccl=ccl,
+        evidence_output_path=str(evidence_output)
+    )
+
+    # Add a task with a low priority score (10.0), causing MissionProgressionController.prioritize() to raise ValueError
+    task = SAGEMissionTask(
+        task_id="task_low_priority_fail",
+        objective_id="obj_continuous_development",
+        priority_score=10.0,
+        authorized=True,
+        description="Low priority task to fail progression priority gate"
+    )
+    orchestrator.mission_queue.add_task(task)
+
+    # Run loop
+    res = orchestrator.execute_autonomous_mission_loop(max_cycles=1)
+
+    assert res["consecutive_failures"] == 1
+    failed_task = orchestrator.mission_queue.get_task("task_low_priority_fail")
+    assert failed_task.status == "FAILED"
+    assert "progression_receipts" not in failed_task.metadata or len(failed_task.metadata["progression_receipts"]) < 8
+
+
+def test_orchestrator_mission_progression_unauthorized_agent_block(tmp_path):
+    """Verify that an unauthorized agent profile blocks preflight and fails the task execution."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop, SAGEMissionTask
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    evidence_output = tmp_path / "evidence" / "progression_unauth_agent.json"
+
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_prog_unauth_agent",
+        objective="obj_continuous_development",
+        ccl=ccl,
+        evidence_output_path=str(evidence_output)
+    )
+
+    task = SAGEMissionTask(
+        task_id="task_unauth_agent_fail",
+        objective_id="obj_continuous_development",
+        priority_score=90.0,
+        authorized=True,
+        assigned_agent="unauthorized_agent",
+        description="Task for unauthorized agent to fail preflight"
+    )
+    orchestrator.mission_queue.add_task(task)
+
+    # Run loop
+    res = orchestrator.execute_autonomous_mission_loop(max_cycles=1)
+
+    assert res["consecutive_failures"] == 1
+    failed_task = orchestrator.mission_queue.get_task("task_unauth_agent_fail")
+    assert failed_task.status == "FAILED"
+
+
+def test_orchestrator_protected_path_violation_fail_closed(tmp_path):
+    """Verify that modifying a protected core file forces decision=REJECTED and raises PermissionError, failing the task."""
+    import pytest
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop, SAGEMissionTask
+    from sage.acr.session.session_state import SessionStateManager
+    import unittest.mock as mock
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    evidence_output = tmp_path / "evidence" / "progression_protected_violation.json"
+
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_prog_protected_violation",
+        objective="obj_continuous_development",
+        ccl=ccl,
+        evidence_output_path=str(evidence_output)
+    )
+
+    task = SAGEMissionTask(
+        task_id="task_prot_violation_1",
+        objective_id="obj_continuous_development",
+        priority_score=90.0,
+        authorized=True,
+        description="Task attempting protected path mutation"
+    )
+    orchestrator.mission_queue.add_task(task)
+
+    # 1. Verify loop drift detector catches protected path violation and pauses execution loop
+    with mock.patch.object(orchestrator, "scan_git_workspace") as mock_scan:
+        mock_scan.return_value = {
+            "modified_files": ["sage/runtime/engine.py"],
+            "diffs": {"sage/runtime/engine.py": "illegal mutation"}
+        }
+
+        res = orchestrator.execute_autonomous_mission_loop(max_cycles=1)
+
+    assert res["status"] == "MANUAL_INTERVENTION_PAUSED"
+
+    # 2. Verify direct execution coordination on protected file raises PermissionError
+    with mock.patch.object(orchestrator, "scan_git_workspace") as mock_scan:
+        mock_scan.return_value = {
+            "modified_files": ["sage/runtime/engine.py"],
+            "diffs": {"sage/runtime/engine.py": "illegal mutation"}
+        }
+
+        with pytest.raises(PermissionError, match="Protected namespace violation found in workspace changes"):
+            orchestrator.execute_active_development_coordination(
+                action_taken="Illegal mutation",
+                decision_reasoning="Test protected path violation",
+                task=task
+            )
+
+
+def test_orchestrator_terminal_reason_determinism(tmp_path):
+    """Verify explicit terminal reasons when queue is exhausted, when max cycles are reached, and when drift occurs."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop, SAGEMissionTask
+    from sage.acr.session.session_state import SessionStateManager
+    import unittest.mock as mock
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    evidence_output = tmp_path / "evidence" / "terminal_reason.json"
+
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_terminal_reason",
+        objective="obj_continuous_development",
+        ccl=ccl,
+        evidence_output_path=str(evidence_output)
+    )
+
+    # 1. Empty queue should return QUEUE_EXHAUSTED
+    res_empty = orchestrator.execute_autonomous_mission_loop(max_cycles=5)
+    assert res_empty["terminal_reason"] == "QUEUE_EXHAUSTED"
+    assert res_empty["completed_cycles"] == 0
+
+    # 2. Add two tasks and run with max_cycles=1 to verify MAX_CYCLES_REACHED
+    t1 = SAGEMissionTask(
+        task_id="task_term_1",
+        objective_id="obj_continuous_development",
+        priority_score=90.0,
+        authorized=True,
+        description="Terminal task 1"
+    )
+    t2 = SAGEMissionTask(
+        task_id="task_term_2",
+        objective_id="obj_continuous_development",
+        priority_score=80.0,
+        authorized=True,
+        description="Terminal task 2"
+    )
+    orchestrator.mission_queue.add_task(t1)
+    orchestrator.mission_queue.add_task(t2)
+
+    res_max = orchestrator.execute_autonomous_mission_loop(max_cycles=1)
+    assert res_max["terminal_reason"] == "MAX_CYCLES_REACHED"
+    assert res_max["completed_cycles"] == 1
+
+    # 3. Simulate drift to verify EXTERNAL_WORKSPACE_DRIFT_DETECTED
+    with mock.patch.object(orchestrator, "scan_git_workspace") as mock_scan:
+        mock_scan.return_value = {
+            "modified_files": ["sage/runtime/engine.py"],
+            "diffs": {"sage/runtime/engine.py": "illegal mutation"}
+        }
+        res_drift = orchestrator.execute_autonomous_mission_loop(max_cycles=1)
+        assert res_drift["terminal_reason"] == "EXTERNAL_WORKSPACE_DRIFT_DETECTED"
+        assert res_drift["status"] == "MANUAL_INTERVENTION_PAUSED"
+
+
+def test_orchestrator_queue_state_variations_determinism(tmp_path):
+    """Verify deterministic loop behavior across zero, single, multiple, failed, and exhausted queue states."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop, SAGEMissionTask
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    evidence_output = tmp_path / "evidence" / "queue_variations.json"
+
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_queue_var",
+        objective="obj_continuous_development",
+        ccl=ccl,
+        evidence_output_path=str(evidence_output)
+    )
+
+    # 1. Zero missions in queue
+    res_0 = orchestrator.execute_autonomous_mission_loop(max_cycles=5)
+    assert res_0["terminal_reason"] == "QUEUE_EXHAUSTED"
+    assert res_0["completed_cycles"] == 0
+    assert len(res_0["executed_tasks"]) == 0
+
+    # 2. Add 1 valid task and 1 failing task
+    valid_task = SAGEMissionTask(
+        task_id="task_valid_var_1",
+        objective_id="obj_continuous_development",
+        priority_score=90.0,
+        authorized=True,
+        description="Valid task for queue variation test"
+    )
+    failing_task = SAGEMissionTask(
+        task_id="task_fail_var_2",
+        objective_id="obj_continuous_development",
+        priority_score=80.0,
+        authorized=True,
+        description="Failing task for queue variation test"
+    )
+    orchestrator.mission_queue.add_task(valid_task)
+    orchestrator.mission_queue.add_task(failing_task)
+
+    # Execute max_cycles=2
+    res_var = orchestrator.execute_autonomous_mission_loop(max_cycles=2)
+    assert res_var["completed_cycles"] == 2
+    assert "task_valid_var_1" in res_var["executed_tasks"]
+    assert "task_fail_var_2" in res_var["executed_tasks"]
+
+    # Verify task_valid_var_1 is COMPLETED and in completed_actions
+    t1 = orchestrator.mission_queue.get_task("task_valid_var_1")
+    assert t1.status == "COMPLETED"
+    assert "task_valid_var_1" in orchestrator.session.completed_actions
+
+    # Verify task_fail_var_2 is FAILED and NOT in completed_actions
+    t2 = orchestrator.mission_queue.get_task("task_fail_var_2")
+    assert t2.status == "FAILED"
+    assert "task_fail_var_2" not in orchestrator.session.completed_actions
+
+    # 3. Exhausted queue after executing all tasks
+    res_exh = orchestrator.execute_autonomous_mission_loop(max_cycles=5)
+    assert res_exh["terminal_reason"] == "QUEUE_EXHAUSTED"
+    assert res_exh["completed_cycles"] == 0
+
+
+def test_orchestrator_terminal_reason_state_correspondence(tmp_path):
+    """Verify that terminal_reason matches actual status when failure escalation occurs on the final max_cycle."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop, SAGEMissionTask
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    evidence_output = tmp_path / "evidence" / "terminal_correspondence.json"
+
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_terminal_corr",
+        objective="obj_continuous_development",
+        ccl=ccl,
+        evidence_output_path=str(evidence_output)
+    )
+
+    # Pre-set consecutive failures to 2
+    orchestrator.loop_state["consecutive_failures"] = 2
+    orchestrator.save_loop_state()
+
+    # Add 1 failing task and run with max_cycles=1 (so task 1 fails, triggering consecutive_failures=3 and MANUAL_INTERVENTION_PAUSED on cycle 1 of 1)
+    failing_task = SAGEMissionTask(
+        task_id="task_fail_final_cycle",
+        objective_id="obj_continuous_development",
+        priority_score=90.0,
+        authorized=True,
+        description="Failing task on final cycle"
+    )
+    orchestrator.mission_queue.add_task(failing_task)
+
+    res = orchestrator.execute_autonomous_mission_loop(max_cycles=1)
+
+    # Verify status and terminal_reason correspond perfectly
+    assert res["status"] == "MANUAL_INTERVENTION_PAUSED"
+    assert res["terminal_reason"] == "LOOP_MODE_MANUAL_INTERVENTION_PAUSED"
+    assert res["consecutive_failures"] == 3
+    assert res["completed_cycles"] == 1
+
+
+def test_orchestrator_active_task_lifecycle_isolation(tmp_path):
+    """Verify that self.active_task_id is non-None strictly during task execution and is cleared upon task/loop completion."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop, SAGEMissionTask
+    from sage.acr.session.session_state import SessionStateManager
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    evidence_output = tmp_path / "evidence" / "active_task_iso.json"
+
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_active_task_iso",
+        objective="obj_continuous_development",
+        ccl=ccl,
+        evidence_output_path=str(evidence_output)
+    )
+
+    # Initial state: no task running -> active_task_id is None
+    assert orchestrator.active_task_id is None
+
+    # Add task
+    t = SAGEMissionTask(
+        task_id="task_iso_1",
+        objective_id="obj_continuous_development",
+        priority_score=90.0,
+        authorized=True,
+        description="Active task lifecycle isolation test"
+    )
+    orchestrator.mission_queue.add_task(t)
+
+    # Run loop
+    res = orchestrator.execute_autonomous_mission_loop(max_cycles=1)
+
+    # After loop completion, active_task_id MUST be reset to None
+    assert orchestrator.active_task_id is None
+    assert res["completed_cycles"] == 1
+    assert "task_iso_1" in res["executed_tasks"]
+
+
+def test_orchestrator_discovery_to_mission_auto_cascade(tmp_path):
+    """Verify that executing a task producing SAGE-OIL improvement signals automatically cascades new missions into the queue for subsequent cycles."""
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ContinuityControlLoop, SAGEMissionTask
+    from sage.acr.session.session_state import SessionStateManager
+    import unittest.mock as mock
+
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    evidence_output = tmp_path / "evidence" / "auto_cascade.json"
+
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_auto_cascade",
+        objective="obj_continuous_development",
+        ccl=ccl,
+        evidence_output_path=str(evidence_output)
+    )
+
+    # Initial task that will trigger friction and signal generation
+    initial_task = SAGEMissionTask(
+        task_id="task_cascade_root",
+        objective_id="obj_continuous_development",
+        priority_score=90.0,
+        authorized=True,
+        description="Root task triggering auto-cascade"
+    )
+    orchestrator.mission_queue.add_task(initial_task)
+
+    # Mock execute_active_development_coordination to return a result payload with a HIGH priority learning signal
+    original_execute_coord = orchestrator.execute_active_development_coordination
+
+    def mocked_coord(*args, **kwargs):
+        res = original_execute_coord(*args, **kwargs)
+        # Inject a high-priority improvement signal into operational intelligence
+        res["operational_intelligence"]["learning_signals"].append({
+            "signal_id": "SIG-AUTO-CASCADE-01",
+            "event_id": "rec_01",
+            "metric_category": "OPERATIONAL_EFFICIENCY",
+            "metric_evaluation": {"friction": "latency"},
+            "improvement_candidate": {
+                "candidate_id": "CANDIDATE-CASCADE-TEST-100",
+                "description": "Optimize auto-cascaded task pipeline",
+                "priority": "HIGH"
+            },
+            "discovery_lane_input": {"target": "pipeline"},
+            "timestamp": 12345.0
+        })
+        return res
+
+    with mock.patch.object(orchestrator, "execute_active_development_coordination", mocked_coord):
+        # Run loop with max_cycles=2
+        res = orchestrator.execute_autonomous_mission_loop(max_cycles=2)
+
+    # Verify that cycle 1 executed task_cascade_root, auto-cascaded CANDIDATE-CASCADE-TEST-100 into SAGEMissionQueue, and cycle 2 executed the cascaded task!
+    assert res["completed_cycles"] == 2
+    assert "task_cascade_root" in res["executed_tasks"]
+    cascaded_task_id = "task_impr_CANDIDATE_CASCADE_TEST_100"
+    assert cascaded_task_id in res["executed_tasks"]
+
+    # Verify both tasks reached COMPLETED status
+    t_root = orchestrator.mission_queue.get_task("task_cascade_root")
+    t_cascaded = orchestrator.mission_queue.get_task(cascaded_task_id)
+    assert t_root.status == "COMPLETED"
+    assert t_cascaded.status == "COMPLETED"

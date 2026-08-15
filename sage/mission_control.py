@@ -74,6 +74,7 @@ class SAGEMissionProgressionController:
     def __init__(self) -> None:
         pass
 
+
     def validate_mec_handoff(self, handoff_data: Dict[str, Any]) -> bool:
         """Validate Multi-user Engineering Continuity (MEC) handoff payload structure."""
         if not isinstance(handoff_data, dict):
@@ -111,6 +112,7 @@ class SAGEMissionProgressionController:
                 raise ValueError(f"Evidence integrity check failed for '{filepath_str}': {e!s}")
 
         return True
+
 
     def evaluate_transition(
         self,
@@ -202,6 +204,7 @@ class SAGEMissionProgressionController:
                 decision_reason=f"Blocked: Missing prerequisite '{required_prereq}' for transition to '{target_state}'."
             )
 
+
         # Causality Auditor Integration (HDG v2 Epistemic Causality Engine)
         if "hdg_node_id" in mission_state.metadata:
             try:
@@ -231,6 +234,7 @@ class SAGEMissionProgressionController:
                     target_state=target_state,
                     decision_reason=f"Causality Auditor Exception (Failed Closed): {e!s}"
                 )
+
 
         # Proposal Non-Execution Law: Ensure the controller performs no execution itself
         # Zero Self-Authorization Law: Controller never grants itself or changes any authorization automatically
