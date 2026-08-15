@@ -376,3 +376,69 @@ def test_inputs_and_capability_registry_immutability(tmp_path):
 
     # Ensure registry file is untouched/not mutated on disk
     assert registry_file.stat().st_mtime == initial_mtime
+
+
+def test_enqueue_authorized_mission_state_success(tmp_path):
+    """Verify that an EXECUTION_AUTHORIZED mission state successfully enqueues a valid SAGEMissionTask."""
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_enqueue_success",
+        objective="obj_continuous_development",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    state = ExperimentalMissionState(
+        mission_id="msn_authorized_01",
+        name="Authorized Mission Test",
+        current_state="EXECUTION_AUTHORIZED",
+        prerequisites={"operator_signature_obtained": True},
+        metadata={
+            "objective_id": "obj_continuous_development",
+            "priority_score": 90.0,
+            "description": "Verified authorized handoff task",
+            "assigned_agent": "agent_jules_sage"
+        }
+    )
+
+    task = orchestrator.enqueue_authorized_mission_state(state)
+
+    assert task is not None
+    assert task.authorized is True
+    assert task.priority_score == 90.0
+    assert task.assigned_agent == "agent_jules_sage"
+    assert task.status == "PENDING"
+
+    # Verify task was added to orchestrator mission queue
+    queued_task = orchestrator.mission_queue.get_task(task.task_id)
+    assert queued_task is not None
+    assert queued_task.task_id == task.task_id
+
+
+def test_enqueue_unauthorized_mission_state_rejection(tmp_path):
+    """Verify that a non-EXECUTION_AUTHORIZED mission state fails closed and raises ValueError."""
+    session_storage = tmp_path / "sessions"
+    record_storage = tmp_path / "records"
+    session_mgr = SessionStateManager(storage_path=str(session_storage))
+    ccl = ContinuityControlLoop(session_manager=session_mgr, storage_path=str(record_storage))
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_enqueue_rejection",
+        objective="obj_continuous_development",
+        ccl=ccl,
+        evidence_output_path=str(tmp_path / "evidence.json")
+    )
+
+    unauthorized_state = ExperimentalMissionState(
+        mission_id="msn_unauthorized_01",
+        name="Unauthorized Mission Test",
+        current_state="MISSION_PROPOSED"
+    )
+
+    with pytest.raises(ValueError, match="Governed Execution Handoff Violation: Cannot enqueue mission state with status 'MISSION_PROPOSED'"):
+        orchestrator.enqueue_authorized_mission_state(unauthorized_state)
+
+    # Queue remains empty
+    assert len(orchestrator.mission_queue.list_tasks()) == 0

@@ -810,6 +810,64 @@ class DeveloperWorkflowOrchestrator:
         )
         return task
 
+    def enqueue_authorized_mission_state(self, mission_state: Any) -> SAGEMissionTask:
+        """Enqueues an authorized mission state into the mission queue.
+
+        Requirements:
+        1. Accept only 'EXECUTION_AUTHORIZED' mission states.
+        2. Reject unauthorized states fail-closed.
+        3. Convert existing mission state fields into existing SAGEMissionTask schema.
+        4. Preserve existing authorization fields.
+        5. Enqueue through the existing SAGEMissionQueue.
+        """
+        current_state = getattr(mission_state, "current_state", None)
+        if isinstance(mission_state, dict):
+            current_state = mission_state.get("current_state")
+
+        if current_state != "EXECUTION_AUTHORIZED":
+            raise ValueError(
+                f"Governed Execution Handoff Violation: Cannot enqueue mission state with status '{current_state}'. "
+                "Only 'EXECUTION_AUTHORIZED' mission states are permitted."
+            )
+
+        if isinstance(mission_state, dict):
+            mission_id = mission_state.get("mission_id") or mission_state.get("name") or f"msn_{uuid.uuid4().hex[:8]}"
+            objective_id = mission_state.get("objective") or mission_state.get("objective_id") or (list(self.session.active_objectives)[0] if self.session.active_objectives else "obj_continuous_development")
+            priority_score = float(mission_state.get("priority_score", 80.0))
+            description = mission_state.get("description") or mission_state.get("name") or "Authorized governed mission execution task"
+            assigned_agent = mission_state.get("assigned_agent", "agent_jules_sage")
+        else:
+            mission_id = getattr(mission_state, "mission_id", None) or getattr(mission_state, "name", None) or f"msn_{uuid.uuid4().hex[:8]}"
+            metadata = getattr(mission_state, "metadata", {}) or {}
+            objective_id = metadata.get("objective") or metadata.get("objective_id") or getattr(mission_state, "objective", None) or (list(self.session.active_objectives)[0] if self.session.active_objectives else "obj_continuous_development")
+            priority_score = float(metadata.get("priority_score", getattr(mission_state, "priority_score", 80.0)))
+            description = metadata.get("description") or getattr(mission_state, "name", "Authorized governed mission execution task")
+            assigned_agent = metadata.get("assigned_agent") or getattr(mission_state, "assigned_agent", "agent_jules_sage")
+
+        normalized_id = re.sub(r"[^a-zA-Z0-9_]", "_", str(mission_id))
+        task_id = f"task_{normalized_id}" if not normalized_id.startswith("task_") else normalized_id
+
+        task = SAGEMissionTask(
+            task_id=task_id,
+            objective_id=objective_id,
+            priority_score=priority_score,
+            assigned_agent=assigned_agent,
+            authorized=True,
+            lane="engineering",
+            description=description,
+        )
+
+        self.mission_queue.add_task(task)
+
+        self.ccl.intercept_event(
+            event_type="handoff",
+            action_taken=f"Handoff authorized mission {mission_id} to execution task {task_id}",
+            decision_reasoning="Programmatically enqueue EXECUTION_AUTHORIZED mission state to orchestrator backlog",
+            session_id=self.session_id,
+        )
+
+        return task
+
     def execute_autonomous_mission_loop(self, max_cycles: int = 5) -> Dict[str, Any]:
         """Runs the controlled continuous execution loop, processing approved and authorized queue backlog tasks."""
         completed_cycles = 0
