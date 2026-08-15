@@ -39,6 +39,14 @@ def test_service_lifecycle_and_diagnostics():
     assert mgr.authorize("sage-default-key-2026") is True
     assert mgr.authorize("invalid-key") is False
 
+    # Whitespace trimming and empty-entry filtering verification
+    import pytest
+    with pytest.MonkeyPatch.context() as m:
+        m.setenv("SAGE_API_KEYS", " key1 , key2 , ")
+        assert mgr.authorize("key1") is True
+        assert mgr.authorize("key2") is True
+        assert mgr.authorize("invalid-key") is False
+
     # Shutdown
     shutdown_res = mgr.shutdown()
     assert shutdown_res["status"] == "STOPPED"
