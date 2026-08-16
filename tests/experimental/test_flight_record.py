@@ -251,17 +251,18 @@ def test_missing_evidence_unverified_handling(temp_flight_manager: SAGEFlightRec
 
 def test_fresh_session_cross_session_reconstruction():
     """PHASE 9 ACCEPTANCE TEST: Fresh manager session reconstructs persisted flight history from disk without conversation state."""
+    ref_time = datetime.fromisoformat("2026-08-16T12:30:00Z")
     manager1 = SAGEFlightRecordManager(
         flight_ledger_path="evidence_capture/flight_records_ledger.json"
     )
-    records1 = manager1.get_48h_flight_report()
+    records1 = manager1.get_48h_flight_report(reference_time=ref_time)
     assert len(records1) >= 2
 
     # Instantiate fresh manager representing new session
     manager2 = SAGEFlightRecordManager(
         flight_ledger_path="evidence_capture/flight_records_ledger.json"
     )
-    records2 = manager2.get_48h_flight_report()
+    records2 = manager2.get_48h_flight_report(reference_time=ref_time)
 
     assert len(records1) == len(records2)
     assert records2[0]["record_id"] == "rec_flight_01_pr129"
