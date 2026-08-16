@@ -3,70 +3,67 @@
     "flight_type": "REAL-WORLD SPORTS OBSERVATION FLIGHT",
     "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
     "cycle_id": "cycle_real_mlb_20260816",
-    "execution_timestamp_utc": "2026-08-15T17:09:59+00:00",
+    "execution_timestamp_utc": "2026-08-16T15:04:23.789784+00:00",
     "governance": "PROTECTED SPORTS/RCE RESEARCH LANE ONLY"
   },
   "flight_record": {
-    "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-    "prediction_id": "pred_real_mlb_824239",
-    "cycle_id": "cycle_real_mlb_20260816",
-    "event_observation": {
-      "event_id": "mlb_game_824239",
-      "sport": "baseball",
-      "league": "mlb",
-      "home_team": "Detroit Tigers",
-      "away_team": "Chicago White Sox",
-      "event_start_time_utc": "2026-08-15T17:10:00Z",
-      "observation_timestamp_utc": "2026-08-16T12:54:59.339708+00:00",
-      "source_name": "Official MLB Stats API (statsapi.mlb.com)",
-      "source_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1",
-      "market_name": "Moneyline (Public Market)",
-      "observed_odds": {
-        "status": "ODDS_UNAVAILABLE",
-        "note": "Public schedule feed does not expose market betting lines"
-      },
-      "event_status": "Final"
-    },
     "locked_prediction": {
-      "selected_prediction": "Detroit Tigers Moneyline",
+      "prediction_id": "pred_real_mlb_822940",
+      "cycle_id": "cycle_real_mlb_20260816",
+      "event_observation": {
+        "event_id": "mlb_game_822940",
+        "sport": "baseball",
+        "league": "mlb",
+        "home_team": "Tampa Bay Rays",
+        "away_team": "Baltimore Orioles",
+        "event_start_time_utc": "2026-08-16T16:15:00Z",
+        "observation_timestamp_utc": "2026-08-16T15:04:23.789784+00:00",
+        "source_name": "Official MLB Stats API (statsapi.mlb.com)",
+        "source_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1",
+        "market_name": "Moneyline (Public Market)",
+        "observed_odds": {
+          "status": "ODDS_UNAVAILABLE",
+          "note": "Public schedule feed does not expose market betting lines"
+        },
+        "event_status": "Preview"
+      },
+      "selected_prediction": "Tampa Bay Rays Moneyline",
       "odds_at_lock": "ODDS_UNAVAILABLE",
       "implied_probability": 0.5,
       "model_predicted_probability": 0.55,
-      "lock_timestamp_utc": "2026-08-15T17:09:59+00:00",
-      "model_state_rationale": "Model baseline rating favorability for home team (Detroit Tigers) under live public observation.",
+      "lock_timestamp_utc": "2026-08-16T15:04:23.789784+00:00",
+      "model_state_rationale": "Model baseline rating favorability for home team (Tampa Bay Rays) under live public observation.",
       "is_parlay": false,
       "parlay_legs": [],
-      "sha256_receipt_hash": "f074427800949c477786c3afe91e504736231870d1f9f3230fe7746fcfaaf82a"
+      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+      "sha256_receipt_hash": "0427d110fb948b391823fb2df7c73ac8a0ae0d67bfef4a68bc9c5266d834a071"
     },
-    "outcome_verification": {
-      "outcome_id": "outcome_real_mlb_824239",
-      "prediction_id": "pred_real_mlb_824239",
-      "verification_timestamp_utc": "2026-08-16T12:54:59.339980+00:00",
+    "outcome_record": {
+      "outcome_id": "out_pred_real_mlb_822940",
+      "prediction_id": "pred_real_mlb_822940",
+      "prediction_hash": "0427d110fb948b391823fb2df7c73ac8a0ae0d67bfef4a68bc9c5266d834a071",
+      "verification_timestamp_utc": "2026-08-16T15:04:23.790049+00:00",
       "verification_source_name": "Official MLB Stats API (statsapi.mlb.com)",
       "verification_source_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1",
-      "actual_home_score": 3,
-      "actual_away_score": 4,
-      "actual_result_text": "Chicago White Sox defeated Detroit Tigers 4-3",
-      "outcome_status": "LOSS",
-      "outcome_receipt_hash": "6f9375e599b6f45b7325591b39703aaa1fb3b24eabe181575c209433354588d6"
+      "actual_home_score": 0,
+      "actual_away_score": 0,
+      "actual_result_text": "Detailed State: Pre-Game. Outcome pending game completion.",
+      "outcome_status": "PENDING",
+      "classification": "REAL-WORLD OUTCOME",
+      "outcome_receipt_hash": "146f7f827599a5da31d0d7dfab6c63558288c7addbeb8c130f0bfc55a210bb28"
     },
-    "failure_learning": {
-      "failure_classification": "REAL_WORLD_PREDICTION_ERROR",
-      "predicted_selection": "Detroit Tigers Moneyline",
-      "actual_result": "Chicago White Sox defeated Detroit Tigers 4-3",
-      "model_assumption_broken": "Model predicted probability exceeded actual empirical realization under market noise.",
-      "lesson_recorded": "Incorporate market odds variance and opponent recent momentum into probability calibration model."
-    }
+    "score_record": null,
+    "learning_record": null
   },
   "ledger_summary": {
     "total_records": 1,
-    "resolved_outcomes": 1,
-    "pending_outcomes": 0,
+    "resolved_outcomes": 0,
+    "unresolved_outcomes": 1,
     "wins": 0,
-    "losses": 1,
+    "losses": 0,
     "pushes": 0,
     "win_rate": 0.0,
-    "brier_score": 0.30250000000000005,
+    "brier_score": null,
     "classification_breakdown": {
       "REAL-WORLD OBSERVATION": 1,
       "SYNTHETIC RCE-001": 0,

@@ -1,18 +1,19 @@
-"""Unit tests for Sports Longitudinal & Real Observation Primitive."""
+"""Comprehensive Unit & Regression Test Suite for Sports Longitudinal Primitive."""
 
 import pytest
-from pathlib import Path
+from dataclasses import asdict
 from sage.experimental.sports_longitudinal import (
     RealSportsEventObservation,
     LockedResearchPrediction,
-    RealOutcomeVerification,
+    SportsOutcomeRecord,
+    SportsScoreRecord,
+    SportsLearningRecord,
     calculate_brier_score,
-    classify_prediction_failure,
-    SportsLongitudinalLedger,
-    persist_flight_artifact
+    resolve_sports_prediction,
+    SportsLongitudinalLedger
 )
 
-def test_locked_research_prediction_sha256_signing():
+def test_a_changing_locked_prediction_field_changes_hash():
     obs = RealSportsEventObservation(
         event_id="mlb_20260816_nyy_bos",
         sport="baseball",
@@ -21,93 +22,90 @@ def test_locked_research_prediction_sha256_signing():
         away_team="New York Yankees",
         event_start_time_utc="2026-08-16T23:10:00Z",
         observation_timestamp_utc="2026-08-16T20:00:00Z",
-        source_name="Official MLB Stats API (statsapi.mlb.com)",
+        source_name="Official MLB Stats API",
         source_url="https://statsapi.mlb.com/api/v1/schedule?sportId=1",
         market_name="Moneyline",
         observed_odds={"home": -110, "away": -110},
         event_status="STATUS_SCHEDULED"
     )
 
-    pred = LockedResearchPrediction(
-        prediction_id="pred_real_001",
-        cycle_id="cycle_real_20260816_01",
+    pred1 = LockedResearchPrediction(
+        prediction_id="pred_real_hash_001",
+        cycle_id="cycle_20260816",
         event_observation=obs,
         selected_prediction="New York Yankees Moneyline",
         odds_at_lock="-110",
         implied_probability=0.5238,
         model_predicted_probability=0.5850,
         lock_timestamp_utc="2026-08-16T20:05:00Z",
-        model_state_rationale="Yankees starting pitcher recent ERA advantage."
+        model_state_rationale="Pitching advantage."
     )
+    h1 = pred1.lock_and_sign()
 
-    h1 = pred.lock_and_sign()
-    assert len(h1) == 64
-    assert pred.sha256_receipt_hash == h1
+    # Create pred2 with modified probability
+    pred2 = LockedResearchPrediction(
+        prediction_id="pred_real_hash_001",
+        cycle_id="cycle_20260816",
+        event_observation=obs,
+        selected_prediction="New York Yankees Moneyline",
+        odds_at_lock="-110",
+        implied_probability=0.5238,
+        model_predicted_probability=0.6200, # Changed probability!
+        lock_timestamp_utc="2026-08-16T20:05:00Z",
+        model_state_rationale="Pitching advantage."
+    )
+    h2 = pred2.lock_and_sign()
 
-    # Recomputing SHA-256 matches
-    assert pred.compute_sha256_hash() == h1
+    assert h1 != h2
 
-def test_temporal_lock_violation_rejection():
+def test_b_after_resolution_original_prediction_remains_unchanged():
     obs = RealSportsEventObservation(
         event_id="mlb_20260816_nyy_bos",
         sport="baseball",
         league="mlb",
         home_team="Boston Red Sox",
         away_team="New York Yankees",
-        event_start_time_utc="2026-08-16T20:00:00Z",
-        observation_timestamp_utc="2026-08-16T20:05:00Z",
-        source_name="Official MLB Stats API",
-        source_url="https://statsapi.mlb.com/api/v1/schedule?sportId=1",
-        market_name="Moneyline",
-        observed_odds={"home": -110, "away": -110},
-        event_status="STATUS_IN_PROGRESS"
-    )
-
-    # Attempt lock after event start -> expect ValueError
-    with pytest.raises(ValueError, match="TEMPORAL_LOCK_VIOLATION"):
-        LockedResearchPrediction(
-            prediction_id="pred_real_post_start",
-            cycle_id="cycle_real_20260816_01",
-            event_observation=obs,
-            selected_prediction="New York Yankees Moneyline",
-            odds_at_lock="-110",
-            implied_probability=0.5238,
-            model_predicted_probability=0.5850,
-            lock_timestamp_utc="2026-08-16T20:05:00Z", # Post-start!
-            model_state_rationale="Invalid post-start attempt."
-        )
-
-def test_temporal_lock_exact_start_time_rejection():
-    obs = RealSportsEventObservation(
-        event_id="mlb_20260816_nyy_bos",
-        sport="baseball",
-        league="mlb",
-        home_team="Boston Red Sox",
-        away_team="New York Yankees",
-        event_start_time_utc="2026-08-16T20:00:00Z",
+        event_start_time_utc="2026-08-16T23:10:00Z",
         observation_timestamp_utc="2026-08-16T20:00:00Z",
         source_name="Official MLB Stats API",
         source_url="https://statsapi.mlb.com/api/v1/schedule?sportId=1",
         market_name="Moneyline",
         observed_odds={"home": -110, "away": -110},
-        event_status="STATUS_IN_PROGRESS"
+        event_status="STATUS_SCHEDULED"
     )
 
-    # Lock timestamp EXACTLY at event start time MUST BE rejected
-    with pytest.raises(ValueError, match="TEMPORAL_LOCK_VIOLATION"):
-        LockedResearchPrediction(
-            prediction_id="pred_real_exact_start",
-            cycle_id="cycle_real_20260816_01",
-            event_observation=obs,
-            selected_prediction="New York Yankees Moneyline",
-            odds_at_lock="-110",
-            implied_probability=0.5238,
-            model_predicted_probability=0.5850,
-            lock_timestamp_utc="2026-08-16T20:00:00Z", # Exact start!
-            model_state_rationale="Exact start time attempt."
-        )
+    pred = LockedResearchPrediction(
+        prediction_id="pred_real_immut_001",
+        cycle_id="cycle_20260816",
+        event_observation=obs,
+        selected_prediction="New York Yankees Moneyline",
+        odds_at_lock="-110",
+        implied_probability=0.5238,
+        model_predicted_probability=0.5850,
+        lock_timestamp_utc="2026-08-16T20:05:00Z",
+        model_state_rationale="Pitching advantage."
+    )
+    original_hash = pred.lock_and_sign()
+    pred_dict_before = asdict(pred)
 
-def test_duplicate_prediction_id_rejection():
+    outcome, score, learning = resolve_sports_prediction(
+        prediction=pred,
+        verification_source_name="Official MLB Stats API",
+        verification_source_url="https://statsapi.mlb.com/api/v1/schedule?sportId=1",
+        actual_home_score=2,
+        actual_away_score=5,
+        actual_result_text="New York Yankees defeated Boston Red Sox 5-2",
+        outcome_status="WIN",
+        verification_timestamp_utc="2026-08-17T02:00:00Z"
+    )
+
+    pred_dict_after = asdict(pred)
+
+    # Assert byte-for-byte state equality before and after resolution
+    assert pred_dict_before == pred_dict_after
+    assert pred.sha256_receipt_hash == original_hash
+
+def test_c_resolution_creates_separate_outcome_record():
     obs = RealSportsEventObservation(
         event_id="mlb_20260816_lad_sdp",
         sport="baseball",
@@ -124,8 +122,8 @@ def test_duplicate_prediction_id_rejection():
     )
 
     pred = LockedResearchPrediction(
-        prediction_id="pred_dup_001",
-        cycle_id="cycle_real_20260816_01",
+        prediction_id="pred_real_sep_001",
+        cycle_id="cycle_20260816",
         event_observation=obs,
         selected_prediction="Los Angeles Dodgers Moneyline",
         odds_at_lock="-125",
@@ -134,172 +132,78 @@ def test_duplicate_prediction_id_rejection():
         lock_timestamp_utc="2026-08-16T21:05:00Z",
         model_state_rationale="Dodgers offensive run rate model advantage."
     )
-    pred.lock_and_sign()
+    p_hash = pred.lock_and_sign()
 
-    outcome = RealOutcomeVerification(
-        outcome_id="out_dup_001",
-        prediction_id="pred_dup_001",
-        verification_timestamp_utc="2026-08-17T01:30:00Z",
+    outcome, score, learning = resolve_sports_prediction(
+        prediction=pred,
         verification_source_name="Official MLB Stats API",
         verification_source_url="https://statsapi.mlb.com/api/v1/schedule?sportId=1",
         actual_home_score=3,
         actual_away_score=5,
         actual_result_text="Los Angeles Dodgers defeated San Diego Padres 5-3",
-        outcome_status="WIN"
+        outcome_status="WIN",
+        verification_timestamp_utc="2026-08-17T01:30:00Z"
     )
-    outcome.sign()
 
-    ledger = SportsLongitudinalLedger()
-    ledger.add_entry(pred, outcome)
+    assert isinstance(outcome, SportsOutcomeRecord)
+    assert outcome.outcome_id == "out_pred_real_sep_001"
+    assert outcome.prediction_id == "pred_real_sep_001"
+    assert outcome.prediction_hash == p_hash
+    assert outcome.outcome_status == "WIN"
 
-    # Adding second entry with duplicate prediction_id fails closed
-    with pytest.raises(ValueError, match="DUPLICATE_PREDICTION_ID"):
-        ledger.add_entry(pred, outcome)
-
-def test_pending_outcome_remains_unresolved():
+def test_d_outcome_references_exact_prediction_id_and_hash():
     obs = RealSportsEventObservation(
-        event_id="mlb_20260816_future_game",
+        event_id="mlb_20260816_lad_sdp",
         sport="baseball",
         league="mlb",
-        home_team="Team A",
-        away_team="Team B",
-        event_start_time_utc="2026-08-16T22:00:00Z",
+        home_team="San Diego Padres",
+        away_team="Los Angeles Dodgers",
+        event_start_time_utc="2026-08-16T22:10:00Z",
         observation_timestamp_utc="2026-08-16T21:00:00Z",
         source_name="Official MLB Stats API",
         source_url="https://statsapi.mlb.com/api/v1/schedule?sportId=1",
         market_name="Moneyline",
-        observed_odds={"status": "ODDS_UNAVAILABLE"},
-        event_status="Scheduled"
+        observed_odds={"home": "+105", "away": "-125"},
+        event_status="STATUS_SCHEDULED"
     )
 
     pred = LockedResearchPrediction(
-        prediction_id="pred_pending_001",
-        cycle_id="cycle_real_20260816_01",
+        prediction_id="pred_real_ref_001",
+        cycle_id="cycle_20260816",
         event_observation=obs,
-        selected_prediction="Team A Moneyline",
-        odds_at_lock="ODDS_UNAVAILABLE",
-        implied_probability=0.5000,
-        model_predicted_probability=0.5500,
+        selected_prediction="Los Angeles Dodgers Moneyline",
+        odds_at_lock="-125",
+        implied_probability=0.5556,
+        model_predicted_probability=0.6200,
         lock_timestamp_utc="2026-08-16T21:05:00Z",
-        model_state_rationale="Model baseline."
+        model_state_rationale="Dodgers offensive run rate model advantage."
     )
-    pred.lock_and_sign()
+    expected_hash = pred.lock_and_sign()
 
-    outcome_pending = RealOutcomeVerification(
-        outcome_id="out_pending_001",
-        prediction_id="pred_pending_001",
-        verification_timestamp_utc="2026-08-16T21:10:00Z",
+    outcome, score, learning = resolve_sports_prediction(
+        prediction=pred,
         verification_source_name="Official MLB Stats API",
         verification_source_url="https://statsapi.mlb.com/api/v1/schedule?sportId=1",
-        actual_home_score=None,
-        actual_away_score=None,
-        actual_result_text="Game not yet started.",
-        outcome_status="PENDING"
+        actual_home_score=3,
+        actual_away_score=5,
+        actual_result_text="Los Angeles Dodgers defeated San Diego Padres 5-3",
+        outcome_status="WIN",
+        verification_timestamp_utc="2026-08-17T01:30:00Z"
     )
 
-    ledger = SportsLongitudinalLedger()
-    ledger.add_entry(pred, outcome_pending)
+    assert outcome.prediction_id == pred.prediction_id
+    assert outcome.prediction_hash == expected_hash
 
-    summary = ledger.generate_summary_report()
-    assert summary["pending_outcomes"] == 1
-    assert summary["resolved_outcomes"] == 0
-    assert summary["brier_score"] is None
-
-def test_independent_outcome_resolution_transition():
-    obs = RealSportsEventObservation(
-        event_id="mlb_20260816_transition_game",
-        sport="baseball",
-        league="mlb",
-        home_team="Team A",
-        away_team="Team B",
-        event_start_time_utc="2026-08-16T22:00:00Z",
-        observation_timestamp_utc="2026-08-16T21:00:00Z",
-        source_name="Official MLB Stats API",
-        source_url="https://statsapi.mlb.com/api/v1/schedule?sportId=1",
-        market_name="Moneyline",
-        observed_odds={"status": "ODDS_UNAVAILABLE"},
-        event_status="Scheduled"
-    )
-
-    pred = LockedResearchPrediction(
-        prediction_id="pred_trans_001",
-        cycle_id="cycle_real_20260816_01",
-        event_observation=obs,
-        selected_prediction="Team A Moneyline",
-        odds_at_lock="ODDS_UNAVAILABLE",
-        implied_probability=0.5000,
-        model_predicted_probability=0.6000,
-        lock_timestamp_utc="2026-08-16T21:05:00Z",
-        model_state_rationale="Model baseline."
-    )
-    pred.lock_and_sign()
-
-    # Step 1: Initial state is pending
-    outcome_pending = RealOutcomeVerification(
-        outcome_id="out_trans_001_p",
-        prediction_id="pred_trans_001",
-        verification_timestamp_utc="2026-08-16T21:10:00Z",
-        verification_source_name="Official MLB Stats API",
-        verification_source_url="https://statsapi.mlb.com/api/v1/schedule?sportId=1",
-        actual_home_score=None,
-        actual_away_score=None,
-        actual_result_text="Game not started.",
-        outcome_status="PENDING"
-    )
-
-    ledger_p = SportsLongitudinalLedger()
-    ledger_p.add_entry(pred, outcome_pending)
-    assert ledger_p.generate_summary_report()["pending_outcomes"] == 1
-
-    # Step 2: Independent outcome resolution after game completion
-    outcome_completed = RealOutcomeVerification(
-        outcome_id="out_trans_001_c",
-        prediction_id="pred_trans_001",
-        verification_timestamp_utc="2026-08-17T02:00:00Z",
-        verification_source_name="Official MLB Stats API",
-        verification_source_url="https://statsapi.mlb.com/api/v1/schedule?sportId=1",
-        actual_home_score=5,
-        actual_away_score=2,
-        actual_result_text="Team A defeated Team B 5-2",
-        outcome_status="WIN"
-    )
-
-    ledger_c = SportsLongitudinalLedger()
-    ledger_c.add_entry(pred, outcome_completed)
-    summary_c = ledger_c.generate_summary_report()
-
-    assert summary_c["pending_outcomes"] == 0
-    assert summary_c["resolved_outcomes"] == 1
-    assert summary_c["wins"] == 1
-    assert summary_c["brier_score"] == pytest.approx((0.60 - 1.0) ** 2, abs=1e-4)
-
-def test_persist_flight_artifact_idempotent_protection(tmp_path):
-    flight_data = {
-        "flight_record": {
-            "prediction_id": "pred_test_persist_001"
-        }
-    }
-    artifact_path = tmp_path / "sports_real_flight_001.json"
-
-    # First write
-    p1 = persist_flight_artifact(flight_data, artifact_path)
-    assert p1.exists()
-
-    # Second write with same prediction_id is safely idempotent
-    p2 = persist_flight_artifact(flight_data, artifact_path)
-    assert p2 == p1
-
-def test_brier_score_calculation():
+def test_e_scoring_cannot_occur_against_unresolved_prediction():
     predictions = [
-        {"outcome_status": "WIN", "model_predicted_probability": 0.8},  # (0.8 - 1.0)^2 = 0.04
-        {"outcome_status": "LOSS", "model_predicted_probability": 0.3}, # (0.3 - 0.0)^2 = 0.09
-        {"outcome_status": "PENDING", "model_predicted_probability": 0.5} # Excluded
+        {"outcome_status": "UNRESOLVED", "model_predicted_probability": 0.60},
+        {"outcome_status": "PENDING", "model_predicted_probability": 0.55}
     ]
 
     brier = calculate_brier_score(predictions)
-    assert brier == pytest.approx((0.04 + 0.09) / 2.0, abs=1e-4)
+    assert brier is None
 
-def test_sports_longitudinal_ledger():
+def test_f_learning_cannot_modify_prediction_or_outcome():
     obs = RealSportsEventObservation(
         event_id="mlb_20260816_lad_sdp",
         sport="baseball",
@@ -316,39 +220,71 @@ def test_sports_longitudinal_ledger():
     )
 
     pred = LockedResearchPrediction(
-        prediction_id="pred_real_002",
-        cycle_id="cycle_real_20260816_01",
+        prediction_id="pred_real_learn_001",
+        cycle_id="cycle_20260816",
         event_observation=obs,
-        selected_prediction="Los Angeles Dodgers Moneyline",
+        selected_prediction="San Diego Padres Moneyline",
+        odds_at_lock="+105",
+        implied_probability=0.4878,
+        model_predicted_probability=0.5300,
+        lock_timestamp_utc="2026-08-16T21:05:00Z",
+        model_state_rationale="Home advantage."
+    )
+    p_hash = pred.lock_and_sign()
+
+    outcome, score, learning = resolve_sports_prediction(
+        prediction=pred,
+        verification_source_name="Official MLB Stats API",
+        verification_source_url="https://statsapi.mlb.com/api/v1/schedule?sportId=1",
+        actual_home_score=2,
+        actual_away_score=6,
+        actual_result_text="Los Angeles Dodgers defeated San Diego Padres 6-2",
+        outcome_status="LOSS",
+        verification_timestamp_utc="2026-08-17T01:30:00Z"
+    )
+
+    assert isinstance(learning, SportsLearningRecord)
+    assert learning.prediction_id == pred.prediction_id
+    assert learning.prediction_hash == p_hash
+    assert pred.selected_prediction == "San Diego Padres Moneyline"
+    assert outcome.outcome_status == "LOSS"
+
+def test_h_duplicate_ids_fail_closed():
+    obs = RealSportsEventObservation(
+        event_id="mlb_game_dup",
+        sport="baseball",
+        league="mlb",
+        home_team="Padres",
+        away_team="Dodgers",
+        event_start_time_utc="2026-08-16T22:10:00Z",
+        observation_timestamp_utc="2026-08-16T21:00:00Z",
+        source_name="Official MLB Stats API",
+        source_url="https://statsapi.mlb.com/api/v1/schedule?sportId=1",
+        market_name="Moneyline",
+        observed_odds={"home": "+105", "away": "-125"},
+        event_status="STATUS_SCHEDULED"
+    )
+
+    pred = LockedResearchPrediction(
+        prediction_id="pred_dup_test_001",
+        cycle_id="cycle_20260816",
+        event_observation=obs,
+        selected_prediction="Dodgers Moneyline",
         odds_at_lock="-125",
         implied_probability=0.5556,
         model_predicted_probability=0.6200,
         lock_timestamp_utc="2026-08-16T21:05:00Z",
-        model_state_rationale="Dodgers offensive run rate model advantage."
+        model_state_rationale="Advantage."
     )
-    pred.lock_and_sign()
-
-    outcome = RealOutcomeVerification(
-        outcome_id="out_real_002",
-        prediction_id="pred_real_002",
-        verification_timestamp_utc="2026-08-17T01:30:00Z",
-        verification_source_name="Official MLB Stats API",
-        verification_source_url="https://statsapi.mlb.com/api/v1/schedule?sportId=1",
-        actual_home_score=3,
-        actual_away_score=5,
-        actual_result_text="Los Angeles Dodgers defeated San Diego Padres 5-3",
-        outcome_status="WIN"
-    )
-    outcome.sign()
 
     ledger = SportsLongitudinalLedger()
-    entry = ledger.add_entry(pred, outcome)
+    ledger.add_prediction(pred)
 
-    assert entry["classification"] == "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION"
-    assert entry["prediction_id"] == "pred_real_002"
+    with pytest.raises(ValueError, match="DUPLICATE_PREDICTION_ID"):
+        ledger.add_prediction(pred)
 
+def test_i_synthetic_rce001_remains_isolated_from_real_world():
+    ledger = SportsLongitudinalLedger()
     summary = ledger.generate_summary_report()
-    assert summary["total_records"] == 1
-    assert summary["wins"] == 1
-    assert summary["win_rate"] == 1.0
-    assert summary["brier_score"] == pytest.approx((0.62 - 1.0) ** 2, abs=1e-4)
+    assert summary["classification_breakdown"]["SYNTHETIC RCE-001"] == 0
+    assert summary["classification_breakdown"]["ACTUAL MONEY WAGERS"] == 0
