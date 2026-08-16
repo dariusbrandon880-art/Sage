@@ -9,7 +9,7 @@ import hashlib
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional, Set, Tuple
 
 
 class SportsRCEResearchEngine:
@@ -22,8 +22,9 @@ class SportsRCEResearchEngine:
         self.capture_dir = capture_dir or Path("evidence_capture")
         self.capture_dir.mkdir(parents=True, exist_ok=True)
 
-    def fetch_upcoming_event(self, date_str: str = "2026-08-17") -> Dict[str, Any]:
+    def fetch_upcoming_event(self, date_str: str = "2026-08-17", exclude_event_ids: Optional[Set[str]] = None) -> Dict[str, Any]:
         """Fetch real event schedule for target date from public API source."""
+        exclude = exclude_event_ids or set()
         url = f"{self.SOURCE_URL}?d={date_str}&s=Soccer"
         req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 SAGE/1.0 Research"})
         with urllib.request.urlopen(req, timeout=10) as resp:
@@ -33,13 +34,37 @@ class SportsRCEResearchEngine:
         if not events:
             raise ValueError(f"No events returned from {url}")
 
-        # Select first upcoming (Not Started / NS) event
+        # Select first upcoming event not in exclude set
         for ev in events:
+            raw_id = str(ev.get("idEvent") or "")
+            if raw_id in exclude or f"event_tsdb_{raw_id}" in exclude or f"pred_rce_{raw_id}" in exclude:
+                continue
             if ev.get("strStatus") in ("NS", "Not Started", "Scheduled", "1"):
                 return ev
 
-        # Fallback to first event if all status strings are raw
-        return events[0]
+        # Fallback to first non-excluded event
+        for ev in events:
+            raw_id = str(ev.get("idEvent") or "")
+            if raw_id not in exclude and f"event_tsdb_{raw_id}" not in exclude and f"pred_rce_{raw_id}" not in exclude:
+                return ev
+
+        raise ValueError(f"No unexcluded events available for date {date_str} from {url}")
+
+    @staticmethod
+    def compute_prediction_hash(record: Dict[str, Any]) -> str:
+        """Computes SHA-256 hash over canonical JSON representation of record (excluding prediction_hash)."""
+        payload = {k: v for k, v in record.items() if k != "prediction_hash"}
+        record_bytes = json.dumps(payload, sort_keys=True, default=str).encode("utf-8")
+        return hashlib.sha256(record_bytes).hexdigest()
+
+    @staticmethod
+    def verify_prediction_hash(record: Dict[str, Any]) -> bool:
+        """Verifies that the record's stored hash matches independent canonical SHA-256 recomputation."""
+        stored_hash = record.get("prediction_hash")
+        if not stored_hash:
+            return False
+        computed = SportsRCEResearchEngine.compute_prediction_hash(record)
+        return stored_hash == computed
 
     def create_pre_game_prediction(
         self,
@@ -49,18 +74,27 @@ class SportsRCEResearchEngine:
         reasoning: str,
     ) -> Dict[str, Any]:
         """Constructs and temporally locks a research-only prediction before event start."""
+        if not event_raw or not isinstance(event_raw, dict):
+            raise ValueError("Invalid event data: event_raw must be a non-empty dictionary")
+        if not event_raw.get("idEvent"):
+            raise ValueError("Invalid event data: missing 'idEvent'")
+        if not event_raw.get("strEvent"):
+            raise ValueError("Invalid event data: missing 'strEvent'")
+        str_ts = event_raw.get("strTimestamp")
+        if not str_ts:
+            raise ValueError("Invalid event data: missing 'strTimestamp'")
+
         obs_dt = datetime.now(timezone.utc)
         obs_timestamp = obs_dt.isoformat()
 
         # Parse event start time (ISO format)
-        str_ts = event_raw.get("strTimestamp") or "2026-08-17T17:45:00"
         if not str_ts.endswith("Z") and "+" not in str_ts:
             str_ts += "Z"
 
         try:
             event_start_dt = datetime.fromisoformat(str_ts.replace("Z", "+00:00"))
-        except ValueError:
-            event_start_dt = datetime.fromisoformat("2026-08-17T17:45:00+00:00")
+        except ValueError as exc:
+            raise ValueError(f"Invalid timestamp format '{str_ts}': {exc}") from exc
 
         event_start_iso = event_start_dt.isoformat()
 
