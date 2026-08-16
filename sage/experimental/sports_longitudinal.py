@@ -22,6 +22,54 @@ class ObservationConfidenceLevel(str, Enum):
     OBS_4_FINALITY_VERIFIED = "OBS-4 FINALITY VERIFIED"
     OBS_5_RESOLUTION_VERIFIED = "OBS-5 RESOLUTION VERIFIED"
 
+class ObservationAgreementState(str, Enum):
+    OBS_MATCHED = "OBS_MATCHED"
+    OBS_MINOR_VARIANCE = "OBS_MINOR_VARIANCE"
+    OBS_CONFLICT = "OBS_CONFLICT"
+    OBS_UNAVAILABLE = "OBS_UNAVAILABLE"
+    OBS_PENDING = "OBS_PENDING"
+
+@dataclass
+class SourceObservation:
+    provider: str
+    event_id: str
+    retrieval_timestamp_utc: str
+    raw_payload_hash: str
+    observed_status: str
+    home_score: Optional[int]
+    away_score: Optional[int]
+    is_final: bool
+
+@dataclass
+class ObservationArbitrationReceipt:
+    arbitration_id: str
+    prediction_id: str
+    external_event_id: str
+    timestamp_utc: str
+    agreement_state: str
+    observations: List[Dict[str, Any]]
+    resolution_allowed: bool
+    rationale: str
+    sha256_hash: str = ""
+
+    def __post_init__(self):
+        if not self.sha256_hash:
+            self.sha256_hash = self.compute_sha256()
+
+    def compute_sha256(self) -> str:
+        payload = {
+            "arbitration_id": self.arbitration_id,
+            "prediction_id": self.prediction_id,
+            "external_event_id": self.external_event_id,
+            "timestamp_utc": self.timestamp_utc,
+            "agreement_state": self.agreement_state,
+            "observations": self.observations,
+            "resolution_allowed": self.resolution_allowed,
+            "rationale": self.rationale
+        }
+        serialized = json.dumps(payload, sort_keys=True, default=str)
+        return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
 @dataclass
 class ReconciliationQualityTelemetry:
     telemetry_id: str
@@ -327,6 +375,7 @@ class SportsLongitudinalLedger:
         self.scores: List[SportsScoreRecord] = []
         self.learnings: List[SportsLearningRecord] = []
         self.quality_telemetry: List[ReconciliationQualityTelemetry] = []
+        self.arbitration_history: List[ObservationArbitrationReceipt] = []
         self._prediction_ids: set[str] = set()
 
         if self.storage_path and self.storage_path.exists():
@@ -342,7 +391,8 @@ class SportsLongitudinalLedger:
             "outcomes": [asdict(o) for o in self.outcomes],
             "scores": [asdict(s) for s in self.scores],
             "learnings": [asdict(l) for l in self.learnings],
-            "quality_telemetry": [asdict(q) for q in self.quality_telemetry]
+            "quality_telemetry": [asdict(q) for q in self.quality_telemetry],
+            "arbitration_history": [asdict(a) for a in self.arbitration_history]
         }
         target_path.parent.mkdir(parents=True, exist_ok=True)
         with open(target_path, "w", encoding="utf-8") as f:
@@ -362,6 +412,7 @@ class SportsLongitudinalLedger:
         self.scores.clear()
         self.learnings.clear()
         self.quality_telemetry.clear()
+        self.arbitration_history.clear()
         self._prediction_ids.clear()
 
         for raw_p in data.get("predictions", []):
@@ -386,6 +437,15 @@ class SportsLongitudinalLedger:
         for raw_q in data.get("quality_telemetry", []):
             telemetry = ReconciliationQualityTelemetry(**raw_q)
             self.quality_telemetry.append(telemetry)
+
+        for raw_a in data.get("arbitration_history", []):
+            receipt = ObservationArbitrationReceipt(**raw_a)
+            self.arbitration_history.append(receipt)
+
+    def add_arbitration_receipt(self, receipt: ObservationArbitrationReceipt):
+        self.arbitration_history.append(receipt)
+        if self.storage_path:
+            self.save()
 
     def add_quality_telemetry(self, telemetry: ReconciliationQualityTelemetry):
         self.quality_telemetry.append(telemetry)
@@ -737,3 +797,104 @@ class SportsOutcomeReconciler:
             remaining_pending_count=remaining_pending,
             summary_report=summary
         )
+
+
+class SportsObservationArbitrator:
+    """Multi-source observation arbitration layer enforcing consensus before outcome resolution."""
+
+    def __init__(self, ledger: SportsLongitudinalLedger):
+        self.ledger = ledger
+
+    def arbitrate_observations(
+        self,
+        prediction_id: str,
+        observations: List[SourceObservation],
+        reference_time_utc: Optional[str] = None
+    ) -> ObservationArbitrationReceipt:
+        now_ts = reference_time_utc or datetime.now(timezone.utc).isoformat()
+        pred = next((p for p in self.ledger.predictions if p.prediction_id == prediction_id), None)
+        if not pred:
+            raise KeyError(f"PREDICTION_NOT_FOUND: Prediction ID '{prediction_id}' not found in ledger.")
+
+        ext_event_id = pred.event_observation.event_id
+        obs_dicts = [asdict(obs) for obs in observations]
+
+        if not observations:
+            receipt = ObservationArbitrationReceipt(
+                arbitration_id=f"arb_{prediction_id}_{datetime.now(timezone.utc).strftime('%H%M%S')}",
+                prediction_id=prediction_id,
+                external_event_id=ext_event_id,
+                timestamp_utc=now_ts,
+                agreement_state=ObservationAgreementState.OBS_UNAVAILABLE.value,
+                observations=[],
+                resolution_allowed=False,
+                rationale="Zero provider observations available."
+            )
+            self.ledger.add_arbitration_receipt(receipt)
+            return receipt
+
+        # Evaluate multi-source consensus
+        finalities = {obs.is_final for obs in observations}
+        home_scores = {obs.home_score for obs in observations if obs.home_score is not None}
+        away_scores = {obs.away_score for obs in observations if obs.away_score is not None}
+
+        if len(finalities) > 1 or len(home_scores) > 1 or len(away_scores) > 1:
+            state = ObservationAgreementState.OBS_CONFLICT.value
+            res_allowed = False
+            rationale = "CONFLICT_DETECTED: Disagreement observed across provider status or score payloads. Resolution blocked."
+        elif True in finalities and len(home_scores) == 1 and len(away_scores) == 1:
+            state = ObservationAgreementState.OBS_MATCHED.value
+            res_allowed = True
+            rationale = "CONSENSUS_MATCHED: Multi-source agreement verified for game finality and score."
+        else:
+            state = ObservationAgreementState.OBS_PENDING.value
+            res_allowed = False
+            rationale = "GAME_IN_PROGRESS_OR_PREVIEW: All providers observe game as non-final."
+
+        receipt = ObservationArbitrationReceipt(
+            arbitration_id=f"arb_{prediction_id}_{datetime.now(timezone.utc).strftime('%H%M%S')}",
+            prediction_id=prediction_id,
+            external_event_id=ext_event_id,
+            timestamp_utc=now_ts,
+            agreement_state=state,
+            observations=obs_dicts,
+            resolution_allowed=res_allowed,
+            rationale=rationale
+        )
+        self.ledger.add_arbitration_receipt(receipt)
+
+        # Execute resolution if allowed and matched
+        if res_allowed and state == ObservationAgreementState.OBS_MATCHED:
+            h_score = list(home_scores)[0]
+            a_score = list(away_scores)[0]
+            event = pred.event_observation
+
+            selection = pred.selected_prediction.lower()
+            outcome_status = "UNRESOLVED"
+            if "moneyline" in selection:
+                if event.home_team.lower() in selection:
+                    outcome_status = "WIN" if h_score > a_score else ("LOSS" if a_score > h_score else "PUSH")
+                elif event.away_team.lower() in selection:
+                    outcome_status = "WIN" if a_score > h_score else ("LOSS" if h_score > a_score else "PUSH")
+
+            if outcome_status in ["WIN", "LOSS", "PUSH"]:
+                outcome, score, learning = resolve_sports_prediction(
+                    prediction=pred,
+                    verification_source_name=f"Arbitrated ({len(observations)} sources)",
+                    verification_source_url=event.source_url,
+                    actual_home_score=h_score,
+                    actual_away_score=a_score,
+                    actual_result_text=f"Arbitrated Result: {event.home_team} {h_score}, {event.away_team} {a_score}",
+                    outcome_status=outcome_status,
+                    verification_timestamp_utc=now_ts
+                )
+                try:
+                    self.ledger.add_outcome(outcome)
+                    if score:
+                        self.ledger.add_score(score)
+                    if learning:
+                        self.ledger.add_learning(learning)
+                except ValueError:
+                    pass
+
+        return receipt

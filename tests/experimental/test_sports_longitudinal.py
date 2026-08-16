@@ -12,7 +12,10 @@ from sage.experimental.sports_longitudinal import (
     resolve_sports_prediction,
     SportsLongitudinalLedger,
     SportsOutcomeReconciler,
-    ReconciliationRunReceipt
+    ReconciliationRunReceipt,
+    SourceObservation,
+    ObservationArbitrationReceipt,
+    SportsObservationArbitrator
 )
 
 def test_a_changing_locked_prediction_field_changes_hash():
@@ -576,3 +579,60 @@ def test_n_observation_confidence_and_quality_telemetry_lifecycle(tmp_path):
     reloaded_ledger = SportsLongitudinalLedger(storage_path=ledger_file)
     assert len(reloaded_ledger.quality_telemetry) == 3
     assert reloaded_ledger.quality_telemetry[2].sha256_telemetry_hash == t3.sha256_telemetry_hash
+
+def test_o_multi_source_observation_arbitration_lifecycle(tmp_path):
+    ledger_file = tmp_path / "arbitration_ledger.json"
+    ledger = SportsLongitudinalLedger(storage_path=ledger_file)
+
+    obs = RealSportsEventObservation(
+        event_id="mlb_arbitrate_001", sport="baseball", league="mlb", home_team="NYY", away_team="BOS",
+        event_start_time_utc="2026-08-16T23:00:00Z", observation_timestamp_utc="2026-08-16T20:00:00Z",
+        source_name="Official MLB Stats API", source_url="https://statsapi.mlb.com/api/v1/schedule?sportId=1",
+        market_name="Moneyline", observed_odds={"home": -110}, event_status="PREVIEW"
+    )
+
+    pred = LockedResearchPrediction(
+        prediction_id="pred_arb_001", cycle_id="c1", event_observation=obs,
+        selected_prediction="NYY Moneyline", odds_at_lock="-110", implied_probability=0.524,
+        model_predicted_probability=0.580, lock_timestamp_utc="2026-08-16T20:05:00Z",
+        model_state_rationale="Arbitration test prediction"
+    )
+
+    ledger.add_prediction(pred)
+    arbitrator = SportsObservationArbitrator(ledger)
+
+    # 1. Zero observations -> OBS_UNAVAILABLE
+    arb1 = arbitrator.arbitrate_observations("pred_arb_001", [])
+    assert arb1.agreement_state == "OBS_UNAVAILABLE"
+    assert arb1.resolution_allowed is False
+
+    # 2. Conflicting provider observations -> OBS_CONFLICT (leaves prediction pending)
+    obs_mlb_conflict = SourceObservation(
+        provider="MLB Stats API", event_id="mlb_arbitrate_001", retrieval_timestamp_utc="2026-08-17T02:00:00Z",
+        raw_payload_hash="hash_mlb_1", observed_status="Final", home_score=5, away_score=3, is_final=True
+    )
+    obs_espn_conflict = SourceObservation(
+        provider="ESPN API", event_id="mlb_arbitrate_001", retrieval_timestamp_utc="2026-08-17T02:00:00Z",
+        raw_payload_hash="hash_espn_1", observed_status="Final", home_score=4, away_score=3, is_final=True # Disagrees on home score!
+    )
+
+    arb2 = arbitrator.arbitrate_observations("pred_arb_001", [obs_mlb_conflict, obs_espn_conflict])
+    assert arb2.agreement_state == "OBS_CONFLICT"
+    assert arb2.resolution_allowed is False
+    assert len(ledger.get_pending_predictions()) == 1 # Leaves prediction pending!
+
+    # 3. Consensus matched observations -> OBS_MATCHED (allows resolution)
+    obs_espn_matched = SourceObservation(
+        provider="ESPN API", event_id="mlb_arbitrate_001", retrieval_timestamp_utc="2026-08-17T02:05:00Z",
+        raw_payload_hash="hash_espn_2", observed_status="Final", home_score=5, away_score=3, is_final=True
+    )
+
+    arb3 = arbitrator.arbitrate_observations("pred_arb_001", [obs_mlb_conflict, obs_espn_matched])
+    assert arb3.agreement_state == "OBS_MATCHED"
+    assert arb3.resolution_allowed is True
+    assert len(ledger.get_pending_predictions()) == 0 # Resolved!
+
+    # 4. Verify arbitration history persists across process restarts
+    reloaded_ledger = SportsLongitudinalLedger(storage_path=ledger_file)
+    assert len(reloaded_ledger.arbitration_history) == 3
+    assert reloaded_ledger.arbitration_history[2].sha256_hash == arb3.sha256_hash

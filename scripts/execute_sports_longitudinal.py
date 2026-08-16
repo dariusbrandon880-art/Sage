@@ -25,6 +25,8 @@ from sage.experimental.sports_longitudinal import (
     resolve_sports_prediction,
     SportsLongitudinalLedger,
     SportsOutcomeReconciler,
+    SourceObservation,
+    SportsObservationArbitrator,
     persist_flight_artifact,
     asdict
 )
@@ -323,6 +325,29 @@ def main():
     print(f"[+] Observation Quality Telemetry Recorded ({len(fresh_ledger.quality_telemetry)} items):")
     for q in fresh_ledger.quality_telemetry[-3:]:
         print(f"    - ID: {q.prediction_id} | Confidence: {q.observation_confidence} | Latency: {q.response_latency_ms}ms")
+
+    # 9. Execute Multi-Source Observation Arbitration Demonstration
+    arbitrator = SportsObservationArbitrator(fresh_ledger)
+    obs_source1 = SourceObservation(
+        provider="MLB Stats API", event_id=f"mlb_game_{game_id}", retrieval_timestamp_utc=verif_ts,
+        raw_payload_hash="sha256_mlb_payload", observed_status=event_status,
+        home_score=home_score, away_score=away_score, is_final=(event_status == "Final")
+    )
+    obs_source2 = SourceObservation(
+        provider="TheSportsDB", event_id=f"tsdb_game_{game_id}", retrieval_timestamp_utc=verif_ts,
+        raw_payload_hash="sha256_tsdb_payload", observed_status=event_status,
+        home_score=home_score, away_score=away_score, is_final=(event_status == "Final")
+    )
+
+    arb_receipt = arbitrator.arbitrate_observations(
+        prediction_id=locked_pred.prediction_id,
+        observations=[obs_source1, obs_source2]
+    )
+    print(f"[+] Multi-Source Arbitration Pass Complete:")
+    print(f"    Receipt ID:             {arb_receipt.arbitration_id}")
+    print(f"    Agreement State:        {arb_receipt.agreement_state}")
+    print(f"    Resolution Allowed:     {arb_receipt.resolution_allowed}")
+    print(f"    Rationale:              {arb_receipt.rationale}")
 
     summary_report = fresh_ledger.generate_summary_report()
 
