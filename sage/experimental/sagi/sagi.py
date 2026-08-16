@@ -51,12 +51,22 @@ class SAGICandidateGenerator:
         self.random = random.Random(seed)
         self.failure_memory: List[Dict[str, Any]] = []
 
-    def record_failure(self, proposal: CandidateProposal, failure_reason: str) -> None:
-        """Record a failed candidate proposal in failure memory."""
+    def record_failure(
+        self,
+        proposal: Optional[CandidateProposal] = None,
+        failure_reason: str = "FAILED_EXECUTION",
+        proposal_hash: Optional[str] = None,
+        mutation_delta: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        """Record a failed candidate proposal or learning signal in failure memory."""
+        pid = proposal.proposal_id if proposal else f"fail_{len(self.failure_memory)+1}"
+        phash = proposal.proposal_hash if proposal else (proposal_hash or f"hash_fail_{len(self.failure_memory)+1}")
+        delta = proposal.mutation_delta if proposal else (mutation_delta or {})
+
         record = {
-            "proposal_id": proposal.proposal_id,
-            "proposal_hash": proposal.proposal_hash,
-            "mutation_delta": proposal.mutation_delta,
+            "proposal_id": pid,
+            "proposal_hash": phash,
+            "mutation_delta": delta,
             "failure_reason": failure_reason,
             "timestamp": time.time()
         }

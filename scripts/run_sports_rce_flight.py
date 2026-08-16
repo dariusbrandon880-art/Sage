@@ -14,16 +14,9 @@ def main():
 
     engine = SportsRCEResearchEngine()
 
-    flight_num = sys.argv[1] if len(sys.argv) > 1 else "2"
-    filename = f"sports_real_flight_00{flight_num}.json"
-
-    exclude = set()
-    if flight_num == "2":
-        exclude.add("2398016")
-
-    print(f"\n1. Querying Real Public API Source (TheSportsDB) for Flight {flight_num}...")
+    print("\n1. Querying Real Public API Source (TheSportsDB)...")
     try:
-        event = engine.fetch_upcoming_event(date_str="2026-08-17", exclude_event_ids=exclude)
+        event = engine.fetch_upcoming_event(date_str="2026-08-17")
         print(f"   [RETRIEVED] Event ID: {event.get('idEvent')}")
         print(f"   [EVENT] {event.get('strEvent')} ({event.get('strLeague')})")
         print(f"   [SCHEDULED START] {event.get('strTimestamp')}")
@@ -32,8 +25,8 @@ def main():
         sys.exit(1)
 
     print("\n2. Generating Research-Only Prediction & Temporal Lock...")
-    selection = event.get("strHomeTeam")
-    predicted_prob = 0.545 if flight_num == "2" else 0.585
+    selection = event.get("strHomeTeam", "Estudiantes de Río Cuarto")
+    predicted_prob = 0.585
     reasoning = "Home team structural momentum advantage in Argentinian Primera Division fixture."
 
     try:
@@ -51,7 +44,7 @@ def main():
         sys.exit(1)
 
     print("\n3. Persisting Immutable Artifact...")
-    artifact_path = engine.persist_prediction_artifact(record, filename=filename)
+    artifact_path = engine.persist_prediction_artifact(record)
     print(f"   [PERSISTED] {artifact_path.resolve()}")
 
     print("\n" + "=" * 60)

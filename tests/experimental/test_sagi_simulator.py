@@ -334,6 +334,50 @@ def test_sagi_provenance_survives_cross_session_restart():
     assert node_b.timestamp == node_a.timestamp
 
 
+def test_sagi_provenance_survives_true_fresh_process_restart(tmp_path):
+    """Verify true fresh-process reconstruction across distinct Python interpreter invocations."""
+    import sys
+    import subprocess
+    import json
+
+    file_path = tmp_path / "sagi_node_persisted.json"
+
+    # PROCESS A: Ingest search receipt, create node, write to disk, terminate
+    script_a = f"""
+import json
+from sage.experimental.sagi.search_loop import SAGISearchLoop
+from sage.experimental.sagi.research_graph import SAGIResearchGraph
+
+search_loop = SAGISearchLoop()
+rcpt = search_loop.run_search_cycle(cycle_id="proc_a_cycle", candidates_per_cycle=2)
+graph = SAGIResearchGraph(graph_id="graph_proc_a")
+node = graph.ingest_search_receipt(rcpt)
+
+with open(r'{file_path}', 'w') as f:
+    json.dump(node.model_dump(), f)
+"""
+    res_a = subprocess.run([sys.executable, "-c", script_a], capture_output=True, text=True)
+    assert res_a.returncode == 0, f"Process A failed: {res_a.stderr}"
+
+    # PROCESS B: Distinct Python process context reads file from disk and verifies integrity
+    script_b = f"""
+import json
+from sage.experimental.sagi.research_graph import SAGIResearchNode
+
+with open(r'{file_path}', 'r') as f:
+    data = json.load(f)
+
+node_b = SAGIResearchNode(**data)
+assert node_b.cycle_id == "proc_a_cycle"
+assert node_b.guardian_result == "APPROVED"
+assert len(node_b.node_sha256) == 64
+assert len(node_b.identity_anchor) == 64
+assert node_b.compute_sha256() == node_b.node_sha256
+"""
+    res_b = subprocess.run([sys.executable, "-c", script_b], capture_output=True, text=True)
+    assert res_b.returncode == 0, f"Process B failed: {res_b.stderr}"
+
+
 def test_sagi_unverified_memory_cannot_bypass_governance():
     """Verify rejected/unverified research nodes cannot masquerade as approved knowledge."""
     search_loop = SAGISearchLoop()

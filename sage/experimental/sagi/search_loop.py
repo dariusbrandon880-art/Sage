@@ -73,6 +73,40 @@ class SAGISearchLoop:
         self.max_depth = max_depth
         self.search_history: List[SAGISearchLoopReceipt] = []
 
+    def ingest_learning_signal(self, learning_signal: Any) -> Dict[str, Any]:
+        """Ingest a SAGICognitiveLearningSignal into search loop candidate memory and failure registry."""
+        if not hasattr(learning_signal, "signal_type") or not hasattr(learning_signal, "identity_anchor"):
+            raise ValueError("Invalid learning signal: missing required attributes.")
+
+        # Identity anchor verification
+        expected_anchor = self.controller.state.identity_anchor.initial_sha256
+        if learning_signal.identity_anchor != expected_anchor:
+            raise ValueError(
+                f"SAGI Learning Ingestion Identity Violation: Anchor '{learning_signal.identity_anchor[:12]}' "
+                f"does not match expected loop anchor '{expected_anchor[:12]}'."
+            )
+
+        if learning_signal.signal_type == "FAILURE_MEMORY":
+            mutation_delta = learning_signal.learning_payload.get("rejected_mutation", {})
+            self.controller.generator.record_failure(
+                proposal_hash=learning_signal.signal_sha256,
+                mutation_delta=mutation_delta,
+                failure_reason=learning_signal.interpretation.get("failure_classification", "CLOSED_LOOP_FAILURE"),
+            )
+            return {
+                "status": "FAILURE_MEMORY_INGESTED",
+                "failure_memory_size": len(self.controller.generator.failure_memory),
+            }
+        elif learning_signal.signal_type == "SUCCESS_MEMORY":
+            # Success memory registers bounded telemetry context, not generalized execution authority
+            return {
+                "status": "SUCCESS_MEMORY_INGESTED",
+                "confidence": learning_signal.confidence,
+                "originating_receipt_id": learning_signal.originating_receipt_id,
+            }
+        else:
+            raise ValueError(f"Unknown learning signal type '{learning_signal.signal_type}'.")
+
     def run_search_cycle(
         self,
         cycle_id: str,
