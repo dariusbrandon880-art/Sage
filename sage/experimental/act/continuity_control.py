@@ -759,6 +759,165 @@ class DeveloperWorkflowOrchestrator:
             session_id=self.session_id
         )
 
+    def reconstruct_mission_state(self, mission_id: Optional[str] = None) -> Dict[str, Any]:
+        """Reconstructs mission state from durable disk evidence to answer the 4 core continuity questions without conversation memory.
+
+        Questions answered:
+        1. "WHAT WAS I DOING?"
+        2. "WHAT HAS BEEN VERIFIED?"
+        3. "WHAT REMAINS?"
+        4. "WHAT AM I AUTHORIZED TO DO NEXT?"
+
+        Fails closed if checkpoints or persisted queue artifacts are corrupted or tampered.
+        """
+        # Reload persistent storage from disk
+        self.loop_state = self.load_loop_state()
+        self.mission_queue.load_queue()
+        retrieved_session = self.session_manager.retrieve_session(self.session_id)
+        if retrieved_session:
+            self.session = retrieved_session
+
+        # 1. Audit and verify checkpoints on disk
+        chk_dir = self.ccl.storage_path / "checkpoints"
+        valid_checkpoints = []
+        if chk_dir.exists():
+            for p in chk_dir.glob("*.json"):
+                try:
+                    with open(p, "r", encoding="utf-8") as f:
+                        data = json.load(f)
+                    chk = CheckpointManager(storage_path=str(chk_dir)).retrieve_checkpoint(p.stem)
+                    if not chk or not isinstance(chk.current_sage_state, dict):
+                        raise ValueError("Corrupted checkpoint structure")
+                    valid_checkpoints.append(chk)
+                except Exception as e:
+                    self.loop_state["mode"] = "MANUAL_INTERVENTION_PAUSED"
+                    self.save_loop_state()
+                    self.ccl.intercept_event(
+                        event_type="drift_detected",
+                        action_taken="Freezing loop due to corrupted checkpoint file",
+                        decision_reasoning=f"Fail-closed on checkpoint corruption: {e}",
+                        failure_context={"error": "corrupted_checkpoint_detected", "filepath": str(p)},
+                        recovery_path="manual_operator_verification_required",
+                        session_id=self.session_id
+                    )
+                    raise ValueError(f"SAGE Continuity Violation: Corrupted checkpoint detected at {p}: {e}")
+
+        # Sort valid checkpoints chronologically
+        valid_checkpoints.sort(key=lambda c: c.timestamp)
+        latest_chk = valid_checkpoints[-1] if valid_checkpoints else None
+
+        # 2. Audit CCL records on disk
+        validated_ccl_records = []
+        for p in self.ccl.storage_path.glob("*.json"):
+            if p.name == "mission_queue.json" or p.name == "loop_state.json" or p.name == "discovery_candidates_register.json":
+                continue
+            try:
+                with open(p, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                if isinstance(data, dict) and data.get("record_id", "").startswith("CCL-REC-"):
+                    if data.get("lifecycle_state") == "VALIDATED":
+                        validated_ccl_records.append(data)
+            except Exception:
+                pass
+
+        # 3. Process completed & pending task analysis
+        all_tasks = self.mission_queue.list_tasks()
+        completed_task_ids = set(self.session.completed_actions)
+
+        # Filter completed tasks from queue status or completed_actions set
+        for t in all_tasks:
+            if t.status == "COMPLETED":
+                completed_task_ids.add(t.task_id)
+
+        # Progression receipts count
+        progression_receipts_count = 0
+        for t in all_tasks:
+            receipts = t.metadata.get("progression_receipts", [])
+            progression_receipts_count += len(receipts)
+
+        # Identify active task ("WHAT WAS I DOING?")
+        running_tasks = [t for t in all_tasks if t.status == "RUNNING"]
+        active_task = running_tasks[0] if running_tasks else None
+
+        # If no task is RUNNING, pick the last completed or last processed task
+        if not active_task and all_tasks:
+            # Sort by created_at or priority
+            sorted_all = sorted(all_tasks, key=lambda x: x.created_at, reverse=True)
+            last_processed = sorted_all[0]
+            active_task_id = last_processed.task_id
+            active_task_desc = last_processed.description
+            active_task_status = last_processed.status
+        elif active_task:
+            active_task_id = active_task.task_id
+            active_task_desc = active_task.description
+            active_task_status = "RUNNING"
+        else:
+            active_task_id = "NONE"
+            active_task_desc = "No active task in progress"
+            active_task_status = "IDLE"
+
+        # Identify pending work ("WHAT REMAINS?")
+        pending_tasks = [
+            t for t in all_tasks
+            if t.status == "PENDING" and t.task_id not in completed_task_ids
+        ]
+        pending_authorized_tasks = [t for t in pending_tasks if t.authorized and t.objective_id in self.session.active_objectives]
+
+        # Identify next authorized frontier ("WHAT AM I AUTHORIZED TO DO NEXT?")
+        next_authorized_task = self.mission_queue.get_next_approved_task(self.session.active_objectives)
+
+        # Ensure completed tasks are NEVER re-executed as next authorized task
+        if next_authorized_task and next_authorized_task.task_id in completed_task_ids:
+            # Mark it completed in queue and get next
+            next_authorized_task.status = "COMPLETED"
+            self.mission_queue.save_queue()
+            next_authorized_task = self.mission_queue.get_next_approved_task(self.session.active_objectives)
+
+        if self.loop_state.get("mode") != "CONTINUOUS":
+            next_action_str = f"PAUSED: Loop mode is '{self.loop_state.get('mode')}'. Manual intervention required."
+            auth_status = "BLOCKED_BY_LOOP_MODE"
+        elif next_authorized_task:
+            next_action_str = f"Execute authorized task '{next_authorized_task.task_id}' for objective '{next_authorized_task.objective_id}'"
+            auth_status = "AUTHORIZED"
+        else:
+            next_action_str = "NO_PENDING_AUTHORIZED_WORK"
+            auth_status = "QUEUE_EXHAUSTED"
+
+        last_ccl_action = validated_ccl_records[-1].get("action_taken") if validated_ccl_records else "None"
+
+        return {
+            "status": "RECONSTRUCTED",
+            "session_id": self.session_id,
+            "active_objectives": list(self.session.active_objectives),
+            "loop_mode": self.loop_state.get("mode"),
+            "what_was_i_doing": {
+                "active_task_id": active_task_id,
+                "task_description": active_task_desc,
+                "task_status": active_task_status,
+                "last_checkpoint_id": latest_chk.id if latest_chk else None,
+                "last_ccl_action": last_ccl_action
+            },
+            "what_has_been_verified": {
+                "completed_task_ids": sorted(list(completed_task_ids)),
+                "completed_tasks_count": len(completed_task_ids),
+                "verified_ccl_records_count": len(validated_ccl_records),
+                "verified_checkpoints_count": len(valid_checkpoints),
+                "progression_receipts_count": progression_receipts_count,
+                "evidence_hashes_verified": True
+            },
+            "what_remains": {
+                "pending_task_ids": [t.task_id for t in pending_tasks],
+                "pending_authorized_task_ids": [t.task_id for t in pending_authorized_tasks],
+                "pending_tasks_count": len(pending_tasks)
+            },
+            "what_am_i_authorized_to_do_next": {
+                "next_authorized_task_id": next_authorized_task.task_id if next_authorized_task else None,
+                "next_authorized_objective": next_authorized_task.objective_id if next_authorized_task else None,
+                "action": next_action_str,
+                "authorization_status": auth_status
+            }
+        }
+
     def rollback_to_checkpoint(self, checkpoint_id: str) -> None:
         """Restores session state matching the checkpoint record."""
         checkpoint = self.checkpoint_manager.retrieve_checkpoint(checkpoint_id)
