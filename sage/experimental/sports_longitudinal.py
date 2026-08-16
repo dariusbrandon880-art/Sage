@@ -8,8 +8,17 @@ Protected Sports/RCE Research Lane Governance.
 from dataclasses import dataclass, field, asdict
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timezone
+from pathlib import Path
 import json
 import hashlib
+
+def parse_iso_utc(ts_str: str) -> datetime:
+    """Parses ISO 8601 timestamp string to UTC datetime."""
+    clean_str = ts_str.replace("Z", "+00:00")
+    dt = datetime.fromisoformat(clean_str)
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
 
 @dataclass
 class RealSportsEventObservation:
@@ -26,6 +35,10 @@ class RealSportsEventObservation:
     observed_odds: Dict[str, Any]
     event_status: str
 
+    def __post_init__(self):
+        if not self.observed_odds:
+            self.observed_odds = {"status": "ODDS_UNAVAILABLE"}
+
 @dataclass
 class LockedResearchPrediction:
     prediction_id: str
@@ -40,6 +53,13 @@ class LockedResearchPrediction:
     is_parlay: bool = False
     parlay_legs: List[Dict[str, Any]] = field(default_factory=list)
     sha256_receipt_hash: str = ""
+
+    def __post_init__(self):
+        # Enforce Temporal Lock invariant: lock_timestamp_utc MUST BE strictly less than event_start_time_utc
+        lock_dt = parse_iso_utc(self.lock_timestamp_utc)
+        start_dt = parse_iso_utc(self.event_observation.event_start_time_utc)
+        if lock_dt >= start_dt:
+            raise ValueError(f"TEMPORAL_LOCK_VIOLATION: Lock timestamp {self.lock_timestamp_utc} is at or after event start time {self.event_observation.event_start_time_utc}.")
 
     def compute_sha256_hash(self) -> str:
         payload = {
@@ -123,8 +143,12 @@ def classify_prediction_failure(predicted: str, actual_result: str, outcome_stat
 class SportsLongitudinalLedger:
     def __init__(self):
         self.records: List[Dict[str, Any]] = []
+        self._prediction_ids: set[str] = set()
 
     def add_entry(self, locked_pred: LockedResearchPrediction, outcome: RealOutcomeVerification) -> Dict[str, Any]:
+        if locked_pred.prediction_id in self._prediction_ids:
+            raise ValueError(f"DUPLICATE_PREDICTION_ID: Prediction ID '{locked_pred.prediction_id}' already exists in longitudinal ledger.")
+
         entry = {
             "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
             "prediction_id": locked_pred.prediction_id,
@@ -145,6 +169,7 @@ class SportsLongitudinalLedger:
             "failure_learning": classify_prediction_failure(locked_pred.selected_prediction, outcome.actual_result_text, outcome.outcome_status)
         }
         self.records.append(entry)
+        self._prediction_ids.add(locked_pred.prediction_id)
         return entry
 
     def generate_summary_report(self) -> Dict[str, Any]:
@@ -178,3 +203,25 @@ class SportsLongitudinalLedger:
                 "ACTUAL MONEY WAGERS": 0
             }
         }
+
+def persist_flight_artifact(flight_artifact: Dict[str, Any], output_path: Path) -> Path:
+    """Persists flight artifact securely without overwriting existing historical records.
+
+    If output_path exists, checks if prediction_id is already present. If present, raises FileExistsError.
+    """
+    if output_path.exists():
+        with open(output_path, "r", encoding="utf-8") as f:
+            try:
+                existing_data = json.load(f)
+                existing_pred_id = existing_data.get("flight_record", {}).get("prediction_id")
+                new_pred_id = flight_artifact.get("flight_record", {}).get("prediction_id")
+                if existing_pred_id and existing_pred_id == new_pred_id:
+                    # Flight already exists with same prediction ID
+                    return output_path
+            except Exception:
+                pass
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(flight_artifact, f, indent=2)
+    return output_path

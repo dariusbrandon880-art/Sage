@@ -3,7 +3,7 @@
     "flight_type": "REAL-WORLD SPORTS OBSERVATION FLIGHT",
     "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
     "cycle_id": "cycle_real_mlb_20260816",
-    "execution_timestamp_utc": "2026-08-16T12:35:17.460010+00:00",
+    "execution_timestamp_utc": "2026-08-15T17:09:59+00:00",
     "governance": "PROTECTED SPORTS/RCE RESEARCH LANE ONLY"
   },
   "flight_record": {
@@ -17,38 +17,38 @@
       "home_team": "Detroit Tigers",
       "away_team": "Chicago White Sox",
       "event_start_time_utc": "2026-08-15T17:10:00Z",
-      "observation_timestamp_utc": "2026-08-16T12:35:17.459993+00:00",
+      "observation_timestamp_utc": "2026-08-16T12:54:59.339708+00:00",
       "source_name": "Official MLB Stats API (statsapi.mlb.com)",
       "source_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1",
       "market_name": "Moneyline (Public Market)",
       "observed_odds": {
-        "home_team_odds": "EVEN (-110)",
-        "away_team_odds": "EVEN (-110)"
+        "status": "ODDS_UNAVAILABLE",
+        "note": "Public schedule feed does not expose market betting lines"
       },
       "event_status": "Final"
     },
     "locked_prediction": {
       "selected_prediction": "Detroit Tigers Moneyline",
-      "odds_at_lock": "EVEN (-110)",
-      "implied_probability": 0.5238,
-      "model_predicted_probability": 0.575,
-      "lock_timestamp_utc": "2026-08-16T12:35:17.460010+00:00",
+      "odds_at_lock": "ODDS_UNAVAILABLE",
+      "implied_probability": 0.5,
+      "model_predicted_probability": 0.55,
+      "lock_timestamp_utc": "2026-08-15T17:09:59+00:00",
       "model_state_rationale": "Model baseline rating favorability for home team (Detroit Tigers) under live public observation.",
       "is_parlay": false,
       "parlay_legs": [],
-      "sha256_receipt_hash": "8528c696b5afc48f724fb1b6eb5237d3be834fe4a5949fd1b7b6e6e479888308"
+      "sha256_receipt_hash": "f074427800949c477786c3afe91e504736231870d1f9f3230fe7746fcfaaf82a"
     },
     "outcome_verification": {
       "outcome_id": "outcome_real_mlb_824239",
       "prediction_id": "pred_real_mlb_824239",
-      "verification_timestamp_utc": "2026-08-16T12:35:17.460283+00:00",
+      "verification_timestamp_utc": "2026-08-16T12:54:59.339980+00:00",
       "verification_source_name": "Official MLB Stats API (statsapi.mlb.com)",
       "verification_source_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1",
       "actual_home_score": 3,
       "actual_away_score": 4,
       "actual_result_text": "Chicago White Sox defeated Detroit Tigers 4-3",
       "outcome_status": "LOSS",
-      "outcome_receipt_hash": "16acbe416ab5dd4fdba7247ca57575990d0dea3bc961997e7d04a999732b84d7"
+      "outcome_receipt_hash": "6f9375e599b6f45b7325591b39703aaa1fb3b24eabe181575c209433354588d6"
     },
     "failure_learning": {
       "failure_classification": "REAL_WORLD_PREDICTION_ERROR",
@@ -66,7 +66,7 @@
     "losses": 1,
     "pushes": 0,
     "win_rate": 0.0,
-    "brier_score": 0.33062499999999995,
+    "brier_score": 0.30250000000000005,
     "classification_breakdown": {
       "REAL-WORLD OBSERVATION": 1,
       "SYNTHETIC RCE-001": 0,
