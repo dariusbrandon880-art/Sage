@@ -1,0 +1,73 @@
+{
+  "metadata": {
+    "flight_type": "REAL-WORLD SPORTS OBSERVATION FLIGHT",
+    "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+    "cycle_id": "cycle_real_mlb_20260816",
+    "execution_timestamp_utc": "2026-08-16T19:48:19.683585+00:00",
+    "governance": "PROTECTED SPORTS/RCE RESEARCH LANE ONLY"
+  },
+  "flight_record": {
+    "locked_prediction": {
+      "prediction_id": "pred_real_mlb_823182",
+      "cycle_id": "cycle_real_mlb_20260816",
+      "event_observation": {
+        "event_id": "mlb_game_823182",
+        "sport": "baseball",
+        "league": "mlb",
+        "home_team": "San Francisco Giants",
+        "away_team": "Colorado Rockies",
+        "event_start_time_utc": "2026-08-16T20:05:00Z",
+        "observation_timestamp_utc": "2026-08-16T19:48:19.683585+00:00",
+        "source_name": "Official MLB Stats API (statsapi.mlb.com)",
+        "source_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1",
+        "market_name": "Moneyline (Public Market)",
+        "observed_odds": {
+          "status": "ODDS_UNAVAILABLE",
+          "note": "Public schedule feed does not expose market betting lines"
+        },
+        "event_status": "Live"
+      },
+      "selected_prediction": "San Francisco Giants Moneyline",
+      "odds_at_lock": "ODDS_UNAVAILABLE",
+      "implied_probability": 0.5,
+      "model_predicted_probability": 0.55,
+      "lock_timestamp_utc": "2026-08-16T19:48:19.683585+00:00",
+      "model_state_rationale": "Model baseline rating favorability for home team (San Francisco Giants) under live public observation.",
+      "is_parlay": false,
+      "parlay_legs": [],
+      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+      "sha256_receipt_hash": "5911629c679a850cc6a7872012f3133c3922f5106cde21cd79e9dcbe0040da27"
+    },
+    "outcome_record": {
+      "outcome_id": "out_pred_real_mlb_823182",
+      "prediction_id": "pred_real_mlb_823182",
+      "prediction_hash": "5911629c679a850cc6a7872012f3133c3922f5106cde21cd79e9dcbe0040da27",
+      "verification_timestamp_utc": "2026-08-16T19:48:19.683918+00:00",
+      "verification_source_name": "Official MLB Stats API (statsapi.mlb.com)",
+      "verification_source_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1",
+      "actual_home_score": 0,
+      "actual_away_score": 0,
+      "actual_result_text": "Detailed State: Warmup. Outcome pending game completion.",
+      "outcome_status": "PENDING",
+      "classification": "REAL-WORLD OUTCOME",
+      "outcome_receipt_hash": "11f90ce69dfc1d5cc9b0ca544c24718771f0a74bf4e25d4ce3236b66d3359e9a"
+    },
+    "score_record": null,
+    "learning_record": null
+  },
+  "ledger_summary": {
+    "total_records": 4,
+    "resolved_outcomes": 3,
+    "unresolved_outcomes": 1,
+    "wins": 3,
+    "losses": 0,
+    "pushes": 0,
+    "win_rate": 1.0,
+    "brier_score": 0.22900966666666667,
+    "classification_breakdown": {
+      "REAL-WORLD OBSERVATION": 4,
+      "SYNTHETIC RCE-001": 0,
+      "ACTUAL MONEY WAGERS": 0
+    }
+  }
+}
