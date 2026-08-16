@@ -8,9 +8,57 @@ Protected Sports/RCE Research Lane Governance.
 from dataclasses import dataclass, field, asdict
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timezone
+from enum import Enum
 from pathlib import Path
 import json
 import hashlib
+import time
+
+class ObservationConfidenceLevel(str, Enum):
+    OBS_0_UNKNOWN = "OBS-0 UNKNOWN"
+    OBS_1_RECEIVED = "OBS-1 RECEIVED"
+    OBS_2_IDENTIFIED = "OBS-2 IDENTIFIED"
+    OBS_3_STATUS_VERIFIED = "OBS-3 STATUS VERIFIED"
+    OBS_4_FINALITY_VERIFIED = "OBS-4 FINALITY VERIFIED"
+    OBS_5_RESOLUTION_VERIFIED = "OBS-5 RESOLUTION VERIFIED"
+
+@dataclass
+class ReconciliationQualityTelemetry:
+    telemetry_id: str
+    prediction_id: str
+    provider_used: str
+    query_timestamp_utc: str
+    external_event_id: str
+    response_latency_ms: float
+    response_validity: bool
+    observation_confidence: str
+    finality_transition_observed: str
+    resolution_delay_seconds: Optional[float]
+    reconciliation_attempts: int
+    failure_category: Optional[str] = None
+    sha256_telemetry_hash: str = ""
+
+    def __post_init__(self):
+        if not self.sha256_telemetry_hash:
+            self.sha256_telemetry_hash = self.compute_sha256()
+
+    def compute_sha256(self) -> str:
+        payload = {
+            "telemetry_id": self.telemetry_id,
+            "prediction_id": self.prediction_id,
+            "provider_used": self.provider_used,
+            "query_timestamp_utc": self.query_timestamp_utc,
+            "external_event_id": self.external_event_id,
+            "response_latency_ms": self.response_latency_ms,
+            "response_validity": self.response_validity,
+            "observation_confidence": self.observation_confidence,
+            "finality_transition_observed": self.finality_transition_observed,
+            "resolution_delay_seconds": self.resolution_delay_seconds,
+            "reconciliation_attempts": self.reconciliation_attempts,
+            "failure_category": self.failure_category or ""
+        }
+        serialized = json.dumps(payload, sort_keys=True, default=str)
+        return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
 def parse_iso_utc(ts_str: str) -> datetime:
     """Parses ISO 8601 timestamp string to UTC datetime."""
@@ -278,6 +326,7 @@ class SportsLongitudinalLedger:
         self.outcomes: List[SportsOutcomeRecord] = []
         self.scores: List[SportsScoreRecord] = []
         self.learnings: List[SportsLearningRecord] = []
+        self.quality_telemetry: List[ReconciliationQualityTelemetry] = []
         self._prediction_ids: set[str] = set()
 
         if self.storage_path and self.storage_path.exists():
@@ -292,7 +341,8 @@ class SportsLongitudinalLedger:
             "predictions": [asdict(p) for p in self.predictions],
             "outcomes": [asdict(o) for o in self.outcomes],
             "scores": [asdict(s) for s in self.scores],
-            "learnings": [asdict(l) for l in self.learnings]
+            "learnings": [asdict(l) for l in self.learnings],
+            "quality_telemetry": [asdict(q) for q in self.quality_telemetry]
         }
         target_path.parent.mkdir(parents=True, exist_ok=True)
         with open(target_path, "w", encoding="utf-8") as f:
@@ -311,6 +361,7 @@ class SportsLongitudinalLedger:
         self.outcomes.clear()
         self.scores.clear()
         self.learnings.clear()
+        self.quality_telemetry.clear()
         self._prediction_ids.clear()
 
         for raw_p in data.get("predictions", []):
@@ -331,6 +382,18 @@ class SportsLongitudinalLedger:
         for raw_l in data.get("learnings", []):
             learning = SportsLearningRecord(**raw_l)
             self.learnings.append(learning)
+
+        for raw_q in data.get("quality_telemetry", []):
+            telemetry = ReconciliationQualityTelemetry(**raw_q)
+            self.quality_telemetry.append(telemetry)
+
+    def add_quality_telemetry(self, telemetry: ReconciliationQualityTelemetry):
+        self.quality_telemetry.append(telemetry)
+        if self.storage_path:
+            self.save()
+
+    def get_reconciliation_attempts_count(self, prediction_id: str) -> int:
+        return sum(1 for q in self.quality_telemetry if q.prediction_id == prediction_id)
 
     def add_prediction(self, pred: LockedResearchPrediction) -> LockedResearchPrediction:
         if pred.prediction_id in self._prediction_ids:
@@ -545,21 +608,46 @@ class SportsOutcomeReconciler:
                 continue
 
             event = pred.event_observation
-            # Check outcome via custom fetcher or default live provider
-            game_result = None
-            if custom_fetcher:
-                try:
-                    game_result = custom_fetcher(event)
-                except Exception:
-                    continue
+            attempts = self.ledger.get_reconciliation_attempts_count(pred.prediction_id) + 1
+            t_start = time.perf_counter()
 
-            if game_result and game_result.get("is_final"):
+            game_result = None
+            response_validity = False
+            failure_category = None
+            confidence = ObservationConfidenceLevel.OBS_0_UNKNOWN.value
+            finality_transition = "NONE"
+
+            try:
+                if custom_fetcher:
+                    game_result = custom_fetcher(event)
+                if game_result and isinstance(game_result, dict):
+                    response_validity = True
+                    confidence = ObservationConfidenceLevel.OBS_1_RECEIVED.value
+                    if game_result.get("event_id") or event.event_id:
+                        confidence = ObservationConfidenceLevel.OBS_2_IDENTIFIED.value
+                    if "is_final" in game_result or "abstractGameState" in game_result:
+                        confidence = ObservationConfidenceLevel.OBS_3_STATUS_VERIFIED.value
+                else:
+                    failure_category = "MALFORMED_RESPONSE"
+            except Exception as e:
+                response_validity = False
+                failure_category = f"PROVIDER_ERROR_{e.__class__.__name__}"
+
+            t_end = time.perf_counter()
+            latency_ms = round((t_end - t_start) * 1000, 2)
+
+            resolved_now = False
+            res_delay_sec = None
+
+            if response_validity and game_result and game_result.get("is_final"):
+                confidence = ObservationConfidenceLevel.OBS_4_FINALITY_VERIFIED.value
+                finality_transition = f"{event.event_status}->FINAL"
+
                 home_score = game_result.get("home_score")
                 away_score = game_result.get("away_score")
                 result_text = game_result.get("result_text", "Game Completed")
 
                 outcome_status = "UNRESOLVED"
-                # Evaluate selected prediction against outcome
                 selection = pred.selected_prediction.lower()
                 if "moneyline" in selection:
                     if event.home_team.lower() in selection:
@@ -589,9 +677,35 @@ class SportsOutcomeReconciler:
                         if learning:
                             self.ledger.add_learning(learning)
                         resolved_single += 1
+                        resolved_now = True
+                        confidence = ObservationConfidenceLevel.OBS_5_RESOLUTION_VERIFIED.value
+
+                        try:
+                            start_dt = parse_iso_utc(event.event_start_time_utc)
+                            verif_dt = parse_iso_utc(now_ts)
+                            res_delay_sec = round((verif_dt - start_dt).total_seconds(), 2)
+                        except Exception:
+                            res_delay_sec = 0.0
                     except ValueError:
                         # Fail-closed / skip duplicate
                         pass
+
+            # Create and append Quality Telemetry
+            telemetry = ReconciliationQualityTelemetry(
+                telemetry_id=f"qual_{pred.prediction_id}_{attempts}",
+                prediction_id=pred.prediction_id,
+                provider_used=event.source_name,
+                query_timestamp_utc=now_ts,
+                external_event_id=event.event_id,
+                response_latency_ms=latency_ms,
+                response_validity=response_validity,
+                observation_confidence=confidence,
+                finality_transition_observed=finality_transition,
+                resolution_delay_seconds=res_delay_sec,
+                reconciliation_attempts=attempts,
+                failure_category=failure_category
+            )
+            self.ledger.add_quality_telemetry(telemetry)
 
         # 2. Process parlay pending predictions whose legs may now be resolved
         for pred in pending_preds:

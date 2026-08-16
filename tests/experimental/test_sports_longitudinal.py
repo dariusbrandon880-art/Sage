@@ -523,3 +523,56 @@ def test_m_sports_outcome_reconciler_lifecycle_and_idempotency(tmp_path):
     assert receipt3.polled_count == 0
     assert receipt3.resolved_single_count == 0
     assert receipt3.remaining_pending_count == 0
+
+def test_n_observation_confidence_and_quality_telemetry_lifecycle(tmp_path):
+    ledger_file = tmp_path / "telemetry_ledger.json"
+    ledger = SportsLongitudinalLedger(storage_path=ledger_file)
+
+    obs = RealSportsEventObservation(
+        event_id="mlb_telemetry_001", sport="baseball", league="mlb", home_team="LAD", away_team="SF",
+        event_start_time_utc="2026-08-16T23:00:00Z", observation_timestamp_utc="2026-08-16T20:00:00Z",
+        source_name="Official MLB Stats API", source_url="https://statsapi.mlb.com/api/v1/schedule?sportId=1",
+        market_name="Moneyline", observed_odds={"home": -130}, event_status="PREVIEW"
+    )
+
+    pred = LockedResearchPrediction(
+        prediction_id="pred_telem_001", cycle_id="c1", event_observation=obs,
+        selected_prediction="LAD Moneyline", odds_at_lock="-130", implied_probability=0.565,
+        model_predicted_probability=0.630, lock_timestamp_utc="2026-08-16T20:05:00Z",
+        model_state_rationale="Home favorite for telemetry test"
+    )
+
+    ledger.add_prediction(pred)
+    reconciler = SportsOutcomeReconciler(ledger)
+
+    # 1. Provider error poll (e.g. exception during fetch)
+    def failing_fetcher(e):
+        raise TimeoutError("Connection timed out")
+
+    reconciler.poll_and_reconcile(custom_fetcher=failing_fetcher)
+    assert len(ledger.quality_telemetry) == 1
+    t1 = ledger.quality_telemetry[0]
+    assert t1.response_validity is False
+    assert "PROVIDER_ERROR_TimeoutError" in t1.failure_category
+    assert t1.observation_confidence == "OBS-0 UNKNOWN"
+
+    # 2. Non-final poll -> OBS-3 STATUS VERIFIED
+    reconciler.poll_and_reconcile(custom_fetcher=lambda e: {"is_final": False, "abstractGameState": "Live"})
+    assert len(ledger.quality_telemetry) == 2
+    t2 = ledger.quality_telemetry[1]
+    assert t2.response_validity is True
+    assert t2.observation_confidence == "OBS-3 STATUS VERIFIED"
+    assert t2.reconciliation_attempts == 2
+
+    # 3. Final poll -> OBS-5 RESOLUTION VERIFIED
+    reconciler.poll_and_reconcile(custom_fetcher=lambda e: {"is_final": True, "home_score": 4, "away_score": 1, "result_text": "LAD win 4-1"})
+    assert len(ledger.quality_telemetry) == 3
+    t3 = ledger.quality_telemetry[2]
+    assert t3.response_validity is True
+    assert t3.observation_confidence == "OBS-5 RESOLUTION VERIFIED"
+    assert t3.reconciliation_attempts == 3
+
+    # 4. Verify restart loads quality telemetry correctly
+    reloaded_ledger = SportsLongitudinalLedger(storage_path=ledger_file)
+    assert len(reloaded_ledger.quality_telemetry) == 3
+    assert reloaded_ledger.quality_telemetry[2].sha256_telemetry_hash == t3.sha256_telemetry_hash

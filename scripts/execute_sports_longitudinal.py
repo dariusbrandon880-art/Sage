@@ -320,6 +320,10 @@ def main():
     print(f"    Resolved Parlay Count:  {recon_receipt.resolved_parlay_count}")
     print(f"    Remaining Pending:      {recon_receipt.remaining_pending_count}")
 
+    print(f"[+] Observation Quality Telemetry Recorded ({len(fresh_ledger.quality_telemetry)} items):")
+    for q in fresh_ledger.quality_telemetry[-3:]:
+        print(f"    - ID: {q.prediction_id} | Confidence: {q.observation_confidence} | Latency: {q.response_latency_ms}ms")
+
     summary_report = fresh_ledger.generate_summary_report()
 
     flight_artifact = {
