@@ -290,3 +290,92 @@ def test_sagi_research_graph_checksum_and_receipt_determinism():
 
     assert len(hash1) == 64
     assert hash1 == hash2
+
+
+# --- SAGI MEMORY TRUST & PROVENANCE ADVERSARIAL TESTS ---
+
+
+def test_sagi_memory_poisoning_untrusted_node_rejection():
+    """Adversarial Test: Untrusted nodes with forged or mismatched identity anchors are rejected."""
+    valid_anchor = "c" * 64
+    graph = SAGIResearchGraph(graph_id="trusted_graph", expected_identity_anchor=valid_anchor)
+
+    forged_node = SAGIResearchNode(
+        node_id="poison_node_01",
+        cycle_id="cycle_poison",
+        identity_anchor="f" * 64,  # Forged/Mismatched anchor
+        candidate_signature="poison_sig",
+        guardian_result="APPROVED",
+    )
+
+    with pytest.raises(ValueError, match="SAGI Identity Boundary Violation"):
+        graph.add_node(forged_node)
+
+
+def test_sagi_provenance_survives_cross_session_restart():
+    """Verify provenance fields, hashes, and verification status survive serialization and restart."""
+    search_loop = SAGISearchLoop()
+    rcpt = search_loop.run_search_cycle(cycle_id="session_a_cycle", candidates_per_cycle=2)
+
+    graph_a = SAGIResearchGraph(graph_id="session_a_graph")
+    node_a = graph_a.ingest_search_receipt(rcpt)
+
+    # Serialize node to dict/json (simulating disk persistence)
+    node_serialized = node_a.model_dump()
+
+    # Session B: Reconstruct node in fresh process context
+    node_b = SAGIResearchNode(**node_serialized)
+
+    assert node_b.node_id == node_a.node_id
+    assert node_b.cycle_id == node_a.cycle_id
+    assert node_b.identity_anchor == node_a.identity_anchor
+    assert node_b.guardian_result == node_a.guardian_result
+    assert node_b.node_sha256 == node_a.node_sha256
+    assert node_b.timestamp == node_a.timestamp
+
+
+def test_sagi_unverified_memory_cannot_bypass_governance():
+    """Verify rejected/unverified research nodes cannot masquerade as approved knowledge."""
+    search_loop = SAGISearchLoop()
+    failed_rcpt = search_loop.run_search_cycle(
+        cycle_id="failed_cycle",
+        candidates_per_cycle=3,
+        bypass_guardian_attempt=True,  # Forced rejection
+    )
+
+    graph = SAGIResearchGraph(graph_id="gov_test_graph")
+    node = graph.ingest_search_receipt(failed_rcpt)
+
+    assert node.guardian_result == "REJECTED"
+    assert node.failure_state is not None
+
+    # Querying approved nodes MUST exclude rejected nodes
+    approved = graph.query_nodes(guardian_result="APPROVED")
+    assert len(approved) == 0
+
+    # The rejected node exists only as a recorded failure pattern
+    failures = graph.query_nodes(has_failures_only=True)
+    assert len(failures) == 1
+    assert failures[0].node_id == node.node_id
+
+
+def test_sagi_fact_vs_derived_knowledge_distinction():
+    """Verify raw search observations and derived evolution receipts produce distinct, deterministic graph checksums."""
+    search_loop = SAGISearchLoop()
+    search_rcpt = search_loop.run_search_cycle("cycle_fact_01")
+
+    controller = SAGIEvolutionController()
+    evo_rcpt = controller.execute_evolution_cycle()
+
+    graph = SAGIResearchGraph(graph_id="knowledge_graph")
+
+    # Phase 1: Ingest raw search observation
+    node_obs = graph.ingest_search_receipt(search_rcpt)
+    checksum_obs = graph.compute_graph_sha256()
+
+    # Phase 2: Ingest derived evolution receipt
+    node_evo = graph.ingest_evolution_receipt(evo_rcpt, identity_anchor=search_rcpt.identity_anchor)
+    checksum_evo = graph.compute_graph_sha256()
+
+    assert checksum_obs != checksum_evo
+    assert node_obs.candidate_signature != node_evo.candidate_signature
