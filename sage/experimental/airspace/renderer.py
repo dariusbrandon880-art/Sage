@@ -1,7 +1,8 @@
 """Mobile-First Conversation Renderer for SAGE Airspace.
 
-Formats AirspaceState, Missions, Sorties, Intel, Qualifications, and Unified
-Operating Picture for compact, high-density display on mobile conversation interfaces.
+Formats AirspaceState, Missions, Sorties, Intel, Qualifications, Unified
+Operating Picture, and Operational Readiness Assessments for compact,
+high-density display on mobile conversation interfaces.
 """
 
 from typing import Optional, Dict, Any, List
@@ -13,11 +14,12 @@ from sage.experimental.airspace.models import (
     IntelTelemetry,
     QualificationEvent,
 )
+from sage.experimental.airspace.readiness import OperationalReadinessAssessment
 from sage.experimental.airspace.unified_operating_picture import UnifiedOperatingPicture
 
 
 class AirspaceRenderer:
-    """Renders SAGE Airspace operating picture and cards for conversation interfaces."""
+    """Renders SAGE Airspace operating picture, cards, and readiness assessments."""
 
     @staticmethod
     def render_progress_bar(current: int, total: int = 7, width: int = 10) -> str:
@@ -100,6 +102,36 @@ class AirspaceRenderer:
         lines.append("4. WHAT IS AUTHORIZED NEXT?")
         lines.append(f"  Clearance      : {q.what_is_authorized_next.get('airspace_next_clearance')}")
         lines.append(f"  Authorized Role: {q.what_is_authorized_next.get('authorized_station')}")
+        lines.append("━" * 42)
+        return "\n".join(lines)
+
+    @classmethod
+    def render_readiness_assessment(cls, assessment: OperationalReadinessAssessment) -> str:
+        """Renders mobile-first Operational Readiness Assessment card."""
+        lines = []
+        lines.append("SAGE OPERATIONAL READINESS ASSESSMENT")
+        lines.append("━" * 42)
+        lines.append(f"READINESS STATUS : {assessment.readiness_status.value}")
+        lines.append(f"REASON           : {assessment.evaluation_reason}")
+        lines.append("─" * 42)
+        lines.append("ACTIVE:")
+        for k, v in assessment.active.items():
+            lines.append(f"  ▪ {k:<18}: {v}")
+        lines.append("─" * 42)
+        lines.append("VERIFIED:")
+        for k, v in assessment.verified.items():
+            lines.append(f"  ▪ {k:<18}: {v}")
+        lines.append("─" * 42)
+        lines.append("BLOCKED / ISSUES:")
+        if assessment.blocked:
+            for k, v in assessment.blocked.items():
+                lines.append(f"  ▪ {k:<18}: {v}")
+        else:
+            lines.append("  ▪ NONE (Zero blockers)")
+        lines.append("─" * 42)
+        lines.append("AUTHORIZED NEXT:")
+        for k, v in assessment.authorized_next.items():
+            lines.append(f"  ▪ {k:<18}: {v}")
         lines.append("━" * 42)
         return "\n".join(lines)
 
