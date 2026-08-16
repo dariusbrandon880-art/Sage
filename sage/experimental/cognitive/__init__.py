@@ -16,6 +16,13 @@ from sage.experimental.cognitive.prefrontal_cortex import (
     PFCDecisionReport,
     PrefrontalCortexSimulator,
 )
+from sage.experimental.cognitive.research_knowledge_bridge import (
+    SAGIResearchKnowledgeBridge,
+    ResearchKnowledgeIntegrationReceipt,
+)
+from sage.experimental.cognitive.persistence import (
+    CognitivePersistenceManager,
+)
 
 __all__ = [
     "CognitiveAgentIdentity",
@@ -30,4 +37,7 @@ __all__ = [
     "DecisionGateOutcome",
     "PFCDecisionReport",
     "PrefrontalCortexSimulator",
+    "SAGIResearchKnowledgeBridge",
+    "ResearchKnowledgeIntegrationReceipt",
+    "CognitivePersistenceManager",
 ]
