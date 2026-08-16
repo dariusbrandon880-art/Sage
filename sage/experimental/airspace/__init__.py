@@ -18,6 +18,11 @@ from .models import (
     GameProgression,
     AirspaceState,
 )
+from .unified_operating_picture import (
+    UnifiedOperatingPicture,
+    UnifiedOperatingPictureResolver,
+    CoreOperationalAnswers,
+)
 
 __all__ = [
     "StationID",
@@ -36,4 +41,7 @@ __all__ = [
     "XPEvent",
     "GameProgression",
     "AirspaceState",
+    "UnifiedOperatingPicture",
+    "UnifiedOperatingPictureResolver",
+    "CoreOperationalAnswers",
 ]

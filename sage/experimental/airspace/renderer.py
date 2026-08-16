@@ -1,7 +1,7 @@
 """Mobile-First Conversation Renderer for SAGE Airspace.
 
-Formats AirspaceState, Missions, Sorties, Intel, and Qualifications for compact,
-high-density display in conversational interfaces on iPhone/iPad.
+Formats AirspaceState, Missions, Sorties, Intel, Qualifications, and Unified
+Operating Picture for compact, high-density display on mobile conversation interfaces.
 """
 
 from typing import Optional, Dict, Any, List
@@ -13,6 +13,7 @@ from sage.experimental.airspace.models import (
     IntelTelemetry,
     QualificationEvent,
 )
+from sage.experimental.airspace.unified_operating_picture import UnifiedOperatingPicture
 
 
 class AirspaceRenderer:
@@ -68,6 +69,38 @@ class AirspaceRenderer:
         lines.append(f"🔓 Next Clearance : {state.next_clearance[:32]}")
         lines.append("━" * 42)
 
+        return "\n".join(lines)
+
+    @classmethod
+    def render_unified_operating_picture(cls, uop: UnifiedOperatingPicture) -> str:
+        """Renders cross-system unified operating picture answering the 4 core operational questions."""
+        q = uop.core_questions
+        lines = []
+        lines.append("SAGE CROSS-SYSTEM OPERATING PICTURE")
+        lines.append("━" * 42)
+        lines.append(f"ALIGNMENT STATUS : {uop.alignment_status}")
+        lines.append("─" * 42)
+        lines.append("1. WHAT IS ACTIVE?")
+        lines.append(f"  ACT Session    : {q.what_is_active.get('act_session', 'N/A')}")
+        lines.append(f"  Airspace Mission: {q.what_is_active.get('airspace_mission', 'NONE')}")
+        lines.append(f"  Active Sorties : {', '.join(q.what_is_active.get('active_sorties', [])) or 'NONE'}")
+        lines.append(f"  Sports Predictions: {q.what_is_active.get('sports_unresolved_predictions', 0)} unresolved")
+        lines.append("─" * 42)
+        lines.append("2. WHAT WAS VERIFIED?")
+        lines.append(f"  ACT Completed  : {len(q.what_was_verified.get('act_completed_tasks', []))} tasks")
+        lines.append(f"  Airspace Sorties: {len(q.what_was_verified.get('airspace_completed_sorties', []))} verified/closed")
+        if q.what_was_verified.get("recent_evidence_refs"):
+            lines.append(f"  Latest Evidence: {q.what_was_verified.get('recent_evidence_refs')[-1][:28]}")
+        lines.append("─" * 42)
+        lines.append("3. WHAT REMAINS?")
+        lines.append(f"  ACT Pending    : {len(q.what_remains.get('act_pending_tasks', []))} tasks")
+        if q.what_remains.get("current_frontiers"):
+            lines.append(f"  Frontier       : {q.what_remains.get('current_frontiers')[-1][:28]}")
+        lines.append("─" * 42)
+        lines.append("4. WHAT IS AUTHORIZED NEXT?")
+        lines.append(f"  Clearance      : {q.what_is_authorized_next.get('airspace_next_clearance')}")
+        lines.append(f"  Authorized Role: {q.what_is_authorized_next.get('authorized_station')}")
+        lines.append("━" * 42)
         return "\n".join(lines)
 
     @classmethod
