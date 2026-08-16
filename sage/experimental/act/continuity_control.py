@@ -126,7 +126,7 @@ class ContinuityControlRecord(BaseModel):
     @classmethod
     def validate_session_id(cls, v: str) -> str:
         """Enforce strict session_id formatting."""
-        if not re.match(r"^(SES|session)_[a-zA-Z0-9_\-]+$", v):
+        if not re.match(r"^(SES|session|ws_session|gh_session)_[a-zA-Z0-9_\-]+$", v):
             raise ValueError(f"SAGE-CCL Violation: Invalid session_id format: '{v}'")
         return v
 
@@ -250,7 +250,7 @@ class ContinuityControlLoop:
         # 1. Structural Checks
         if not record.record_id.startswith("CCL-REC-"):
             return False
-        if not (record.session_id.startswith("session_") or record.session_id.startswith("SES_")):
+        if not (record.session_id.startswith("session_") or record.session_id.startswith("SES_") or record.session_id.startswith("ws_session_") or record.session_id.startswith("gh_session_")):
             return False
 
         # 2. Chronological Monotonicity Check
