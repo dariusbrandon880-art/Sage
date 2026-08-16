@@ -1,0 +1,72 @@
+[
+  {
+    "record_id": "rec_flight_01_pr129",
+    "timestamp": "2026-08-16T00:23:59Z",
+    "mission_id": "msn_sagi_digital_twin_p1_p3",
+    "operator_or_agent": "Jules",
+    "session_id": "ses_jules_3799913574136352353",
+    "task_description": "Integrate SAGI Phase 1-3 Digital Twin, Research Graph, Governed Search Loop, and Prefrontal Cortex dynamic capability preflight",
+    "action_type": "MERGE_RECONCILIATION",
+    "files_touched": [
+      "sage/experimental/sagi/state.py",
+      "sage/experimental/sagi/sagi.py",
+      "sage/experimental/sagi/verifier.py",
+      "sage/experimental/sagi/controller.py",
+      "sage/experimental/sagi/search_loop.py",
+      "sage/experimental/sagi/research_graph.py",
+      "sage/experimental/cognitive/prefrontal_cortex.py",
+      "sage/runtime/capability_report.py"
+    ],
+    "commit_sha": "7a85324b4c0d6ec46b7e9a5dc5a141fabab01d7a",
+    "pr_number": 129,
+    "test_results": {
+      "passed": 449,
+      "failed": 0
+    },
+    "receipt_ids": [
+      "rcpt_pr129_merge_7a85324b"
+    ],
+    "artifact_paths": [
+      "evidence_capture/operational_capability_registry.json"
+    ],
+    "result_status": "APPROVED",
+    "capability_classification": "PROVEN",
+    "learning_notes": "SAGI Phase 1-3 provides knowledge organization only with zero ungoverned learning or runtime execution leakage.",
+    "blockers": null,
+    "next_authorized_boundary": "SAGE 48-Hour Flight Readiness Audit",
+    "record_sha256": "648df9c0cf154c22a7ab84e8f78541ebfbf936973f284acc0fdf39e5485337f5"
+  },
+  {
+    "record_id": "rec_flight_02_flight_record_sys",
+    "timestamp": "2026-08-16T12:00:00Z",
+    "mission_id": "msn_continuous_flight_record_system",
+    "operator_or_agent": "Jules",
+    "session_id": "ses_jules_9147017414603829168",
+    "task_description": "Implement SAGE Continuous Flight Record & Reporting System in sage/experimental/flight_record.py with 48h/24h query views and acceptance tests",
+    "action_type": "IMPLEMENTATION",
+    "files_touched": [
+      "sage/experimental/flight_record.py",
+      "tests/experimental/test_flight_record.py"
+    ],
+    "commit_sha": "7a85324b4c0d6ec46b7e9a5dc5a141fabab01d7a",
+    "pr_number": 130,
+    "test_results": {
+      "passed": 456,
+      "failed": 0
+    },
+    "receipt_ids": [
+      "rcpt_flight_record_456_passed"
+    ],
+    "artifact_paths": [
+      "sage/experimental/flight_record.py",
+      "tests/experimental/test_flight_record.py",
+      "evidence_capture/flight_records_ledger.json"
+    ],
+    "result_status": "APPROVED",
+    "capability_classification": "EXPERIMENTAL",
+    "learning_notes": "Durable flight record system provides append-only persistence and cross-session reconstruction without conversational state.",
+    "blockers": null,
+    "next_authorized_boundary": "Close actual 48-hour flight report gap via durable ledger ingestion",
+    "record_sha256": "856dae81f1f6501914a624c6086cf007e81b37ef947d6570343ffd549559f24e"
+  }
+]
