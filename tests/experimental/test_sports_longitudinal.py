@@ -10,7 +10,9 @@ from sage.experimental.sports_longitudinal import (
     SportsLearningRecord,
     calculate_brier_score,
     resolve_sports_prediction,
-    SportsLongitudinalLedger
+    SportsLongitudinalLedger,
+    SportsOutcomeReconciler,
+    ReconciliationRunReceipt
 )
 
 def test_a_changing_locked_prediction_field_changes_hash():
@@ -479,3 +481,45 @@ def test_l_duplicate_resolution_and_orphan_scoring_fail_closed():
     )
     with pytest.raises(ValueError, match="LEARNING_WITHOUT_SCORE_FAIL"):
         ledger.add_learning(orphan_learning)
+
+def test_m_sports_outcome_reconciler_lifecycle_and_idempotency(tmp_path):
+    ledger_file = tmp_path / "reconciler_ledger.json"
+    ledger = SportsLongitudinalLedger(storage_path=ledger_file)
+
+    obs = RealSportsEventObservation(
+        event_id="mlb_reconcile_001", sport="baseball", league="mlb", home_team="NYY", away_team="BOS",
+        event_start_time_utc="2026-08-16T23:00:00Z", observation_timestamp_utc="2026-08-16T20:00:00Z",
+        source_name="Official MLB Stats API", source_url="https://statsapi.mlb.com/api/v1/schedule?sportId=1",
+        market_name="Moneyline", observed_odds={"home": -110}, event_status="SCHEDULED"
+    )
+
+    pred = LockedResearchPrediction(
+        prediction_id="pred_recon_001", cycle_id="c1", event_observation=obs,
+        selected_prediction="NYY Moneyline", odds_at_lock="-110", implied_probability=0.524,
+        model_predicted_probability=0.580, lock_timestamp_utc="2026-08-16T20:05:00Z",
+        model_state_rationale="Single game for reconciler"
+    )
+
+    ledger.add_prediction(pred)
+    assert len(ledger.get_pending_predictions()) == 1
+
+    reconciler = SportsOutcomeReconciler(ledger)
+
+    # 1. Poll when game is still live/preview -> remains pending
+    receipt1 = reconciler.poll_and_reconcile(custom_fetcher=lambda e: {"is_final": False})
+    assert isinstance(receipt1, ReconciliationRunReceipt)
+    assert receipt1.polled_count == 1
+    assert receipt1.resolved_single_count == 0
+    assert receipt1.remaining_pending_count == 1
+
+    # 2. Poll when game is final -> resolved WIN
+    receipt2 = reconciler.poll_and_reconcile(custom_fetcher=lambda e: {"is_final": True, "home_score": 6, "away_score": 3, "result_text": "NYY 6, BOS 3"})
+    assert receipt2.polled_count == 1
+    assert receipt2.resolved_single_count == 1
+    assert receipt2.remaining_pending_count == 0
+
+    # 3. Idempotent re-run -> zero pending, zero resolved
+    receipt3 = reconciler.poll_and_reconcile(custom_fetcher=lambda e: {"is_final": True, "home_score": 6, "away_score": 3})
+    assert receipt3.polled_count == 0
+    assert receipt3.resolved_single_count == 0
+    assert receipt3.remaining_pending_count == 0

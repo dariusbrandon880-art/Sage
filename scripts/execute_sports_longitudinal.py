@@ -24,6 +24,7 @@ from sage.experimental.sports_longitudinal import (
     LockedResearchPrediction,
     resolve_sports_prediction,
     SportsLongitudinalLedger,
+    SportsOutcomeReconciler,
     persist_flight_artifact,
     asdict
 )
@@ -297,6 +298,27 @@ def main():
     if parlay_res:
         parlay_out, parlay_sc, parlay_lrn = parlay_res
         print(f"[+] Parlay ID '{parlay_pred_id}' resolved after all legs verified -> Status: {parlay_out.outcome_status}")
+
+    # 8. Execute Automated Polling & Outcome Reconciliation Pass
+    reconciler = SportsOutcomeReconciler(fresh_ledger)
+
+    def mock_live_fetcher(event: RealSportsEventObservation) -> dict:
+        # Returns simulated scoreboard for pending items
+        if "leg1" in event.event_id:
+            return {"is_final": True, "home_score": 5, "away_score": 3, "result_text": "NYY 5, BOS 3"}
+        elif "leg2" in event.event_id:
+            return {"is_final": True, "home_score": 4, "away_score": 1, "result_text": "LAD 4, SF 1"}
+        elif game_id in event.event_id:
+            return {"is_final": event_status == "Final", "home_score": home_score, "away_score": away_score}
+        return {"is_final": False}
+
+    recon_receipt = reconciler.poll_and_reconcile(custom_fetcher=mock_live_fetcher)
+    print(f"[+] Outcome Reconciler Run Complete:")
+    print(f"    Receipt ID:             {recon_receipt.reconciliation_id}")
+    print(f"    Polled Count:           {recon_receipt.polled_count}")
+    print(f"    Resolved Single Count:  {recon_receipt.resolved_single_count}")
+    print(f"    Resolved Parlay Count:  {recon_receipt.resolved_parlay_count}")
+    print(f"    Remaining Pending:      {recon_receipt.remaining_pending_count}")
 
     summary_report = fresh_ledger.generate_summary_report()
 

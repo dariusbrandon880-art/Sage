@@ -491,3 +491,135 @@ def persist_flight_artifact(flight_artifact: Dict[str, Any], output_path: Path) 
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(flight_artifact, f, indent=2)
     return output_path
+
+
+@dataclass
+class ReconciliationRunReceipt:
+    reconciliation_id: str
+    timestamp_utc: str
+    polled_count: int
+    resolved_single_count: int
+    resolved_parlay_count: int
+    remaining_pending_count: int
+    summary_report: Dict[str, Any]
+    sha256_receipt_hash: str = ""
+
+    def __post_init__(self):
+        if not self.sha256_receipt_hash:
+            self.sha256_receipt_hash = self.compute_sha256()
+
+    def compute_sha256(self) -> str:
+        payload = {
+            "reconciliation_id": self.reconciliation_id,
+            "timestamp_utc": self.timestamp_utc,
+            "polled_count": self.polled_count,
+            "resolved_single_count": self.resolved_single_count,
+            "resolved_parlay_count": self.resolved_parlay_count,
+            "remaining_pending_count": self.remaining_pending_count,
+            "summary_report": self.summary_report
+        }
+        serialized = json.dumps(payload, sort_keys=True, default=str)
+        return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+
+class SportsOutcomeReconciler:
+    """Automated, idempotent outcome polling and reconciliation engine for SportsLongitudinalLedger."""
+
+    def __init__(self, ledger: SportsLongitudinalLedger):
+        self.ledger = ledger
+
+    def poll_and_reconcile(
+        self,
+        custom_fetcher: Optional[Any] = None,
+        reference_time_utc: Optional[str] = None
+    ) -> ReconciliationRunReceipt:
+        now_ts = reference_time_utc or datetime.now(timezone.utc).isoformat()
+        pending_preds = self.ledger.get_pending_predictions()
+        polled_count = len(pending_preds)
+        resolved_single = 0
+        resolved_parlay = 0
+
+        # 1. Process non-parlay pending predictions first
+        for pred in pending_preds:
+            if pred.is_parlay:
+                continue
+
+            event = pred.event_observation
+            # Check outcome via custom fetcher or default live provider
+            game_result = None
+            if custom_fetcher:
+                try:
+                    game_result = custom_fetcher(event)
+                except Exception:
+                    continue
+
+            if game_result and game_result.get("is_final"):
+                home_score = game_result.get("home_score")
+                away_score = game_result.get("away_score")
+                result_text = game_result.get("result_text", "Game Completed")
+
+                outcome_status = "UNRESOLVED"
+                # Evaluate selected prediction against outcome
+                selection = pred.selected_prediction.lower()
+                if "moneyline" in selection:
+                    if event.home_team.lower() in selection:
+                        if home_score is not None and away_score is not None:
+                            outcome_status = "WIN" if home_score > away_score else ("LOSS" if away_score > home_score else "PUSH")
+                    elif event.away_team.lower() in selection:
+                        if home_score is not None and away_score is not None:
+                            outcome_status = "WIN" if away_score > home_score else ("LOSS" if home_score > away_score else "PUSH")
+                elif game_result.get("outcome_status"):
+                    outcome_status = game_result.get("outcome_status")
+
+                if outcome_status in ["WIN", "LOSS", "PUSH"]:
+                    outcome, score, learning = resolve_sports_prediction(
+                        prediction=pred,
+                        verification_source_name=event.source_name,
+                        verification_source_url=event.source_url,
+                        actual_home_score=home_score,
+                        actual_away_score=away_score,
+                        actual_result_text=result_text,
+                        outcome_status=outcome_status,
+                        verification_timestamp_utc=now_ts
+                    )
+                    try:
+                        self.ledger.add_outcome(outcome)
+                        if score:
+                            self.ledger.add_score(score)
+                        if learning:
+                            self.ledger.add_learning(learning)
+                        resolved_single += 1
+                    except ValueError:
+                        # Fail-closed / skip duplicate
+                        pass
+
+        # 2. Process parlay pending predictions whose legs may now be resolved
+        for pred in pending_preds:
+            if not pred.is_parlay:
+                continue
+
+            try:
+                parlay_res = self.ledger.resolve_parlay_if_legs_complete(
+                    parlay_prediction_id=pred.prediction_id,
+                    verification_source_name="SAGE Parlay Reconciler",
+                    verification_source_url=pred.event_observation.source_url,
+                    verification_timestamp_utc=now_ts
+                )
+                if parlay_res:
+                    resolved_parlay += 1
+            except (KeyError, ValueError):
+                pass
+
+        remaining_pending = len(self.ledger.get_pending_predictions())
+        summary = self.ledger.generate_summary_report()
+
+        receipt_id = f"recon_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}"
+        return ReconciliationRunReceipt(
+            reconciliation_id=receipt_id,
+            timestamp_utc=now_ts,
+            polled_count=polled_count,
+            resolved_single_count=resolved_single,
+            resolved_parlay_count=resolved_parlay,
+            remaining_pending_count=remaining_pending,
+            summary_report=summary
+        )
