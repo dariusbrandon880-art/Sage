@@ -68,5 +68,57 @@
     "blockers": null,
     "next_authorized_boundary": "Close actual 48-hour flight report gap via durable ledger ingestion",
     "record_sha256": "856dae81f1f6501914a624c6086cf007e81b37ef947d6570343ffd549559f24e"
+  },
+  {
+    "record_id": "rec_flight_cycle_b7541f96c265",
+    "timestamp": "2026-08-17T11:17:18.149090+00:00",
+    "mission_id": "M-001",
+    "operator_or_agent": "agent_jules_sage",
+    "session_id": "cycle_b7541f96c265",
+    "task_description": "Test mission",
+    "action_type": "ENGINEERING_WORKFLOW_CYCLE",
+    "files_touched": [
+      "sage/experimental/workflow_control.py"
+    ],
+    "commit_sha": null,
+    "pr_number": null,
+    "test_results": {},
+    "receipt_ids": [
+      "rec_prog_4702583f57cc",
+      "rcpt_flight_cycle_b7541f96c265"
+    ],
+    "artifact_paths": [],
+    "result_status": "SUCCESS",
+    "capability_classification": "CONTROLLED_SELF_APPLICATION",
+    "learning_notes": null,
+    "blockers": null,
+    "next_authorized_boundary": null,
+    "record_sha256": "e1980c618378c1f0028f222ae9a4ce1428c9883d2872f9fa794bad3e1a461dbe"
+  },
+  {
+    "record_id": "rec_flight_cycle_8e4c4221e198",
+    "timestamp": "2026-08-17T11:21:58.690420+00:00",
+    "mission_id": "M-CYC-1",
+    "operator_or_agent": "agent_jules_sage",
+    "session_id": "cycle_8e4c4221e198",
+    "task_description": "Execute first cycle",
+    "action_type": "ENGINEERING_WORKFLOW_CYCLE",
+    "files_touched": [
+      "sage/experimental/workflow_control.py"
+    ],
+    "commit_sha": null,
+    "pr_number": null,
+    "test_results": {},
+    "receipt_ids": [
+      "rec_prog_d399e8246f97",
+      "rcpt_flight_cycle_8e4c4221e198"
+    ],
+    "artifact_paths": [],
+    "result_status": "SUCCESS",
+    "capability_classification": "CONTROLLED_SELF_APPLICATION",
+    "learning_notes": null,
+    "blockers": null,
+    "next_authorized_boundary": null,
+    "record_sha256": "5582d733b58d81badc74f05a88a5aff69e1cd3b523fdb1d74d95a2856236c746"
   }
 ]

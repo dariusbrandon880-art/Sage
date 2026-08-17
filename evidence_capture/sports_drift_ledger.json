@@ -271,5 +271,18 @@
     ],
     "checked_at": "2026-08-17T10:32:17.066165+00:00",
     "integrity_hash": "dabee5f8bf3e6a6502c719ebda4144cf2068cce2c5c13abe9dd1542786134c9c"
+  },
+  {
+    "drift_record_id": "drift_e9083a7efc79",
+    "observation_id": "pred_rce_999005",
+    "initial_snapshot_id": "snap_a6cf5aa5e3e1",
+    "later_snapshot_id": "snap_a6cf5aa5e3e1",
+    "drift_classification": "DRIFT_NONE",
+    "meaningful_semantic_change": false,
+    "drift_details": [
+      "Identical payload hash. No evidence drift detected."
+    ],
+    "checked_at": "2026-08-17T11:21:58.548631+00:00",
+    "integrity_hash": "872e58470e85280121d0b3b7f1565c0b3c0d3b0e8b0af0f2418f460d127ddd5c"
   }
 ]
