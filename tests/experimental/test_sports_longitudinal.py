@@ -13,9 +13,13 @@ from sage.experimental.sports_longitudinal import (
     SportsLongitudinalLedger,
     SportsOutcomeReconciler,
     ReconciliationRunReceipt,
+    ReconciliationQualityTelemetry,
     SourceObservation,
     ObservationArbitrationReceipt,
-    SportsObservationArbitrator
+    SportsObservationArbitrator,
+    ObservationReliabilityGrade,
+    ProviderReliabilityRecord,
+    ObservationReliabilityLedger
 )
 
 def test_a_changing_locked_prediction_field_changes_hash():
@@ -636,3 +640,144 @@ def test_o_multi_source_observation_arbitration_lifecycle(tmp_path):
     reloaded_ledger = SportsLongitudinalLedger(storage_path=ledger_file)
     assert len(reloaded_ledger.arbitration_history) == 3
     assert reloaded_ledger.arbitration_history[2].sha256_hash == arb3.sha256_hash
+
+def test_provider_reliability_lifecycle(tmp_path):
+    ledger_file = tmp_path / "reliability_ledger.json"
+    ledger = SportsLongitudinalLedger(storage_path=ledger_file)
+    rel_ledger = ObservationReliabilityLedger(ledger)
+
+    receipt = ObservationArbitrationReceipt(
+        arbitration_id="arb_life_1", prediction_id="pred_1", external_event_id="e1",
+        timestamp_utc="2026-08-17T00:00:00Z", agreement_state="OBS_MATCHED",
+        observations=[{"provider": "Provider_Alpha"}, {"provider": "Provider_Beta"}],
+        resolution_allowed=True, rationale="Consensus matched"
+    )
+
+    records = rel_ledger.ingest_arbitration_receipt(receipt)
+    assert "Provider_Alpha" in records
+    assert "Provider_Beta" in records
+    assert records["Provider_Alpha"].event_observations_attempted == 1
+    assert records["Provider_Alpha"].successful_observations == 1
+
+def test_duplicate_observation_not_double_counted(tmp_path):
+    ledger_file = tmp_path / "dup_rel_ledger.json"
+    ledger = SportsLongitudinalLedger(storage_path=ledger_file)
+    rel_ledger = ObservationReliabilityLedger(ledger)
+
+    receipt = ObservationArbitrationReceipt(
+        arbitration_id="arb_dup_receipt", prediction_id="pred_1", external_event_id="e1",
+        timestamp_utc="2026-08-17T00:00:00Z", agreement_state="OBS_MATCHED",
+        observations=[{"provider": "Provider_Alpha"}],
+        resolution_allowed=True, rationale="Consensus matched"
+    )
+
+    rel_ledger.ingest_arbitration_receipt(receipt)
+    count1 = ledger.provider_reliability["Provider_Alpha"].event_observations_attempted
+
+    # Re-ingest same receipt
+    rel_ledger.ingest_arbitration_receipt(receipt)
+    count2 = ledger.provider_reliability["Provider_Alpha"].event_observations_attempted
+
+    assert count1 == 1
+    assert count2 == 1 # Duplicate skip enforced!
+
+def test_conflict_updates_reliability(tmp_path):
+    ledger = SportsLongitudinalLedger()
+    rel_ledger = ObservationReliabilityLedger(ledger)
+
+    receipt = ObservationArbitrationReceipt(
+        arbitration_id="arb_conflict_1", prediction_id="pred_1", external_event_id="e1",
+        timestamp_utc="2026-08-17T00:00:00Z", agreement_state="OBS_CONFLICT",
+        observations=[{"provider": "Provider_Bad"}],
+        resolution_allowed=False, rationale="Conflict"
+    )
+
+    rel_ledger.ingest_arbitration_receipt(receipt)
+    rec = ledger.provider_reliability["Provider_Bad"]
+    assert rec.conflicts_generated == 1
+    assert rec.finality_accuracy == 0.0
+
+def test_provider_failure_updates_reliability(tmp_path):
+    ledger = SportsLongitudinalLedger()
+    rel_ledger = ObservationReliabilityLedger(ledger)
+
+    telemetry = ReconciliationQualityTelemetry(
+        telemetry_id="qual_fail_1", prediction_id="pred_1", provider_used="Provider_Failing",
+        query_timestamp_utc="2026-08-17T00:00:00Z", external_event_id="e1",
+        response_latency_ms=5000.0, response_validity=False, observation_confidence="OBS-0 UNKNOWN",
+        finality_transition_observed="NONE", resolution_delay_seconds=None,
+        reconciliation_attempts=1, failure_category="PROVIDER_TIMEOUT"
+    )
+
+    rec = rel_ledger.ingest_quality_telemetry(telemetry, receipt_id="receipt_recon_1")
+    assert rec.failed_observations == 1
+    assert rec.successful_observations == 0
+    assert rec.availability_rate == 0.0
+
+def test_restart_preserves_reliability_history(tmp_path):
+    ledger_file = tmp_path / "restart_rel_ledger.json"
+    ledger = SportsLongitudinalLedger(storage_path=ledger_file)
+    rel_ledger = ObservationReliabilityLedger(ledger)
+
+    receipt = ObservationArbitrationReceipt(
+        arbitration_id="arb_restart_1", prediction_id="pred_1", external_event_id="e1",
+        timestamp_utc="2026-08-17T00:00:00Z", agreement_state="OBS_MATCHED",
+        observations=[{"provider": "Provider_Stable"}],
+        resolution_allowed=True, rationale="Consensus matched"
+    )
+    rel_ledger.ingest_arbitration_receipt(receipt)
+
+    # Simulate restart
+    reloaded_ledger = SportsLongitudinalLedger(storage_path=ledger_file)
+    assert "Provider_Stable" in reloaded_ledger.provider_reliability
+    assert reloaded_ledger.provider_reliability["Provider_Stable"].event_observations_attempted == 1
+
+def test_unknown_provider_defaults_safe():
+    ledger = SportsLongitudinalLedger()
+    rel_ledger = ObservationReliabilityLedger(ledger)
+    grade = rel_ledger.get_provider_grade("NonExistentProvider")
+    assert grade == ObservationReliabilityGrade.RELIABILITY_UNKNOWN.value
+
+def test_reliability_requires_receipt():
+    ledger = SportsLongitudinalLedger()
+    rel_ledger = ObservationReliabilityLedger(ledger)
+
+    with pytest.raises(ValueError, match="RECEIPT_REQUIRED_FOR_RELIABILITY_UPDATE"):
+        rel_ledger.ingest_arbitration_receipt(None)
+
+    with pytest.raises(ValueError, match="RECEIPT_REQUIRED_FOR_RELIABILITY_UPDATE"):
+        telemetry = ReconciliationQualityTelemetry(
+            telemetry_id="q1", prediction_id="p1", provider_used="P", query_timestamp_utc="ts",
+            external_event_id="e1", response_latency_ms=10.0, response_validity=True,
+            observation_confidence="OBS-1", finality_transition_observed="NONE",
+            resolution_delay_seconds=None, reconciliation_attempts=1
+        )
+        rel_ledger.ingest_quality_telemetry(telemetry, receipt_id="")
+
+def test_reliability_does_not_modify_predictions():
+    obs = RealSportsEventObservation(
+        event_id="mlb_iso_test", sport="baseball", league="mlb", home_team="NYY", away_team="BOS",
+        event_start_time_utc="2026-08-16T23:00:00Z", observation_timestamp_utc="2026-08-16T20:00:00Z",
+        source_name="MLB", source_url="http", market_name="Moneyline", observed_odds={}, event_status="PREVIEW"
+    )
+    pred = LockedResearchPrediction(
+        prediction_id="pred_iso_001", cycle_id="c1", event_observation=obs,
+        selected_prediction="NYY Moneyline", odds_at_lock="-110", implied_probability=0.524,
+        model_predicted_probability=0.580, lock_timestamp_utc="2026-08-16T20:05:00Z",
+        model_state_rationale="Isolation test"
+    )
+    p_hash_before = pred.lock_and_sign()
+
+    ledger = SportsLongitudinalLedger()
+    ledger.add_prediction(pred)
+    rel_ledger = ObservationReliabilityLedger(ledger)
+
+    receipt = ObservationArbitrationReceipt(
+        arbitration_id="arb_iso_1", prediction_id="pred_iso_001", external_event_id="mlb_iso_test",
+        timestamp_utc="2026-08-17T00:00:00Z", agreement_state="OBS_MATCHED",
+        observations=[{"provider": "MLB"}], resolution_allowed=True, rationale="Matched"
+    )
+    rel_ledger.ingest_arbitration_receipt(receipt)
+
+    assert pred.sha256_receipt_hash == p_hash_before
+    assert pred.compute_sha256_hash() == p_hash_before

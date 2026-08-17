@@ -29,6 +29,65 @@ class ObservationAgreementState(str, Enum):
     OBS_UNAVAILABLE = "OBS_UNAVAILABLE"
     OBS_PENDING = "OBS_PENDING"
 
+class ObservationReliabilityGrade(str, Enum):
+    RELIABILITY_UNKNOWN = "RELIABILITY_UNKNOWN"
+    RELIABILITY_LOW = "RELIABILITY_LOW"
+    RELIABILITY_MODERATE = "RELIABILITY_MODERATE"
+    RELIABILITY_HIGH = "RELIABILITY_HIGH"
+    RELIABILITY_VERIFIED = "RELIABILITY_VERIFIED"
+
+@dataclass
+class ProviderReliabilityRecord:
+    provider: str
+    event_observations_attempted: int = 0
+    successful_observations: int = 0
+    failed_observations: int = 0
+    conflicts_generated: int = 0
+    finality_accuracy: float = 1.0
+    average_resolution_delay_seconds: float = 0.0
+    duplicate_rate: float = 0.0
+    stale_observation_rate: float = 0.0
+    availability_rate: float = 1.0
+    last_observed_timestamp_utc: str = ""
+    reliability_grade: str = ObservationReliabilityGrade.RELIABILITY_UNKNOWN.value
+    sha256_hash: str = ""
+
+    def __post_init__(self):
+        self.update_grade()
+        if not self.sha256_hash:
+            self.sha256_hash = self.compute_sha256()
+
+    def update_grade(self) -> str:
+        if self.event_observations_attempted == 0:
+            self.reliability_grade = ObservationReliabilityGrade.RELIABILITY_UNKNOWN.value
+        elif self.availability_rate < 0.80 or self.finality_accuracy < 0.80 or self.conflicts_generated >= 5:
+            self.reliability_grade = ObservationReliabilityGrade.RELIABILITY_LOW.value
+        elif self.availability_rate < 0.92 or self.finality_accuracy < 0.92:
+            self.reliability_grade = ObservationReliabilityGrade.RELIABILITY_MODERATE.value
+        elif self.availability_rate >= 0.98 and self.finality_accuracy >= 0.98 and self.conflicts_generated == 0 and self.event_observations_attempted >= 3:
+            self.reliability_grade = ObservationReliabilityGrade.RELIABILITY_VERIFIED.value
+        else:
+            self.reliability_grade = ObservationReliabilityGrade.RELIABILITY_HIGH.value
+        return self.reliability_grade
+
+    def compute_sha256(self) -> str:
+        payload = {
+            "provider": self.provider,
+            "event_observations_attempted": self.event_observations_attempted,
+            "successful_observations": self.successful_observations,
+            "failed_observations": self.failed_observations,
+            "conflicts_generated": self.conflicts_generated,
+            "finality_accuracy": self.finality_accuracy,
+            "average_resolution_delay_seconds": self.average_resolution_delay_seconds,
+            "duplicate_rate": self.duplicate_rate,
+            "stale_observation_rate": self.stale_observation_rate,
+            "availability_rate": self.availability_rate,
+            "last_observed_timestamp_utc": self.last_observed_timestamp_utc,
+            "reliability_grade": self.reliability_grade
+        }
+        serialized = json.dumps(payload, sort_keys=True, default=str)
+        return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
 @dataclass
 class SourceObservation:
     provider: str
@@ -376,6 +435,8 @@ class SportsLongitudinalLedger:
         self.learnings: List[SportsLearningRecord] = []
         self.quality_telemetry: List[ReconciliationQualityTelemetry] = []
         self.arbitration_history: List[ObservationArbitrationReceipt] = []
+        self.provider_reliability: Dict[str, ProviderReliabilityRecord] = {}
+        self.processed_receipt_ids: set[str] = set()
         self._prediction_ids: set[str] = set()
 
         if self.storage_path and self.storage_path.exists():
@@ -392,7 +453,9 @@ class SportsLongitudinalLedger:
             "scores": [asdict(s) for s in self.scores],
             "learnings": [asdict(l) for l in self.learnings],
             "quality_telemetry": [asdict(q) for q in self.quality_telemetry],
-            "arbitration_history": [asdict(a) for a in self.arbitration_history]
+            "arbitration_history": [asdict(a) for a in self.arbitration_history],
+            "provider_reliability": {k: asdict(v) for k, v in self.provider_reliability.items()},
+            "processed_receipt_ids": list(self.processed_receipt_ids)
         }
         target_path.parent.mkdir(parents=True, exist_ok=True)
         with open(target_path, "w", encoding="utf-8") as f:
@@ -413,6 +476,8 @@ class SportsLongitudinalLedger:
         self.learnings.clear()
         self.quality_telemetry.clear()
         self.arbitration_history.clear()
+        self.provider_reliability.clear()
+        self.processed_receipt_ids.clear()
         self._prediction_ids.clear()
 
         for raw_p in data.get("predictions", []):
@@ -441,6 +506,12 @@ class SportsLongitudinalLedger:
         for raw_a in data.get("arbitration_history", []):
             receipt = ObservationArbitrationReceipt(**raw_a)
             self.arbitration_history.append(receipt)
+
+        for p_name, raw_r in data.get("provider_reliability", {}).items():
+            record = ProviderReliabilityRecord(**raw_r)
+            self.provider_reliability[p_name] = record
+
+        self.processed_receipt_ids = set(data.get("processed_receipt_ids", []))
 
     def add_arbitration_receipt(self, receipt: ObservationArbitrationReceipt):
         self.arbitration_history.append(receipt)
@@ -898,3 +969,80 @@ class SportsObservationArbitrator:
                     pass
 
         return receipt
+
+
+class ObservationReliabilityLedger:
+    """Measurement layer tracking historical reliability, conflict rate, and availability per sports observation provider."""
+
+    def __init__(self, ledger: SportsLongitudinalLedger):
+        self.ledger = ledger
+
+    def ingest_arbitration_receipt(self, receipt: ObservationArbitrationReceipt) -> Dict[str, ProviderReliabilityRecord]:
+        if not receipt or not receipt.arbitration_id:
+            raise ValueError("RECEIPT_REQUIRED_FOR_RELIABILITY_UPDATE: Cannot update provider reliability without a valid arbitration receipt.")
+
+        if receipt.arbitration_id in self.ledger.processed_receipt_ids:
+            # Idempotent skip: receipt already processed
+            return self.ledger.provider_reliability
+
+        for obs in receipt.observations:
+            provider_name = obs.get("provider", "UNKNOWN_PROVIDER")
+            rec = self.ledger.provider_reliability.get(provider_name)
+            if not rec:
+                rec = ProviderReliabilityRecord(provider=provider_name)
+                self.ledger.provider_reliability[provider_name] = rec
+
+            rec.event_observations_attempted += 1
+            rec.successful_observations += 1
+            if receipt.agreement_state == ObservationAgreementState.OBS_CONFLICT.value:
+                rec.conflicts_generated += 1
+
+            rec.last_observed_timestamp_utc = receipt.timestamp_utc
+            rec.availability_rate = round(rec.successful_observations / rec.event_observations_attempted, 4)
+            if rec.event_observations_attempted > 0:
+                rec.finality_accuracy = round((rec.event_observations_attempted - rec.conflicts_generated) / rec.event_observations_attempted, 4)
+            rec.update_grade()
+            rec.sha256_hash = rec.compute_sha256()
+
+        self.ledger.processed_receipt_ids.add(receipt.arbitration_id)
+        if self.ledger.storage_path:
+            self.ledger.save()
+
+        return self.ledger.provider_reliability
+
+    def ingest_quality_telemetry(self, telemetry: ReconciliationQualityTelemetry, receipt_id: str) -> ProviderReliabilityRecord:
+        if not receipt_id:
+            raise ValueError("RECEIPT_REQUIRED_FOR_RELIABILITY_UPDATE: Telemetry update requires a valid reconciliation receipt ID.")
+
+        unique_key = f"{receipt_id}_{telemetry.telemetry_id}"
+        if unique_key in self.ledger.processed_receipt_ids:
+            return self.ledger.provider_reliability.get(telemetry.provider_used, ProviderReliabilityRecord(provider=telemetry.provider_used))
+
+        provider_name = telemetry.provider_used
+        rec = self.ledger.provider_reliability.get(provider_name)
+        if not rec:
+            rec = ProviderReliabilityRecord(provider=provider_name)
+            self.ledger.provider_reliability[provider_name] = rec
+
+        rec.event_observations_attempted += 1
+        if telemetry.response_validity:
+            rec.successful_observations += 1
+        else:
+            rec.failed_observations += 1
+
+        rec.last_observed_timestamp_utc = telemetry.query_timestamp_utc
+        rec.availability_rate = round(rec.successful_observations / rec.event_observations_attempted, 4)
+        rec.update_grade()
+        rec.sha256_hash = rec.compute_sha256()
+
+        self.ledger.processed_receipt_ids.add(unique_key)
+        if self.ledger.storage_path:
+            self.ledger.save()
+
+        return rec
+
+    def get_provider_grade(self, provider_name: str) -> str:
+        rec = self.ledger.provider_reliability.get(provider_name)
+        if not rec:
+            return ObservationReliabilityGrade.RELIABILITY_UNKNOWN.value
+        return rec.reliability_grade

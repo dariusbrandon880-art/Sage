@@ -27,6 +27,7 @@ from sage.experimental.sports_longitudinal import (
     SportsOutcomeReconciler,
     SourceObservation,
     SportsObservationArbitrator,
+    ObservationReliabilityLedger,
     persist_flight_artifact,
     asdict
 )
@@ -348,6 +349,17 @@ def main():
     print(f"    Agreement State:        {arb_receipt.agreement_state}")
     print(f"    Resolution Allowed:     {arb_receipt.resolution_allowed}")
     print(f"    Rationale:              {arb_receipt.rationale}")
+
+    # 10. Execute Observation Reliability Measurement Pass (RCE-002.3)
+    rel_ledger = ObservationReliabilityLedger(fresh_ledger)
+    rel_ledger.ingest_arbitration_receipt(arb_receipt)
+
+    print(f"[+] Provider Reliability Grades (RCE-002.3 Measurement Layer):")
+    for provider_name in ["MLB Stats API", "TheSportsDB"]:
+        grade = rel_ledger.get_provider_grade(provider_name)
+        rec = fresh_ledger.provider_reliability.get(provider_name)
+        attempts = rec.event_observations_attempted if rec else 0
+        print(f"    - Provider: {provider_name:<20} | Grade: {grade:<20} | Attempts: {attempts}")
 
     summary_report = fresh_ledger.generate_summary_report()
 

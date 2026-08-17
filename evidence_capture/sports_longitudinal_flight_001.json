@@ -2,22 +2,22 @@
   "metadata": {
     "flight_type": "REAL-WORLD SPORTS OBSERVATION FLIGHT",
     "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-    "cycle_id": "cycle_real_mlb_20260816",
-    "execution_timestamp_utc": "2026-08-16T20:37:41.329120+00:00",
+    "cycle_id": "cycle_real_mlb_20260817",
+    "execution_timestamp_utc": "2026-08-16T16:05:00+00:00",
     "governance": "PROTECTED SPORTS/RCE RESEARCH LANE ONLY"
   },
   "flight_record": {
     "locked_prediction": {
-      "prediction_id": "pred_real_mlb_824156",
-      "cycle_id": "cycle_real_mlb_20260816",
+      "prediction_id": "pred_real_mlb_822940",
+      "cycle_id": "cycle_real_mlb_20260817",
       "event_observation": {
-        "event_id": "mlb_game_824156",
+        "event_id": "mlb_game_822940",
         "sport": "baseball",
         "league": "mlb",
-        "home_team": "Houston Astros",
-        "away_team": "Seattle Mariners",
-        "event_start_time_utc": "2026-08-16T23:20:00Z",
-        "observation_timestamp_utc": "2026-08-16T20:37:41.329120+00:00",
+        "home_team": "Tampa Bay Rays",
+        "away_team": "Baltimore Orioles",
+        "event_start_time_utc": "2026-08-16T16:15:00Z",
+        "observation_timestamp_utc": "2026-08-17T03:36:10.173273+00:00",
         "source_name": "Official MLB Stats API (statsapi.mlb.com)",
         "source_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1",
         "market_name": "Moneyline (Public Market)",
@@ -25,47 +25,70 @@
           "status": "ODDS_UNAVAILABLE",
           "note": "Public schedule feed does not expose market betting lines"
         },
-        "event_status": "Preview"
+        "event_status": "Final"
       },
-      "selected_prediction": "Houston Astros Moneyline",
+      "selected_prediction": "Tampa Bay Rays Moneyline",
       "odds_at_lock": "ODDS_UNAVAILABLE",
       "implied_probability": 0.5,
       "model_predicted_probability": 0.55,
-      "lock_timestamp_utc": "2026-08-16T20:37:41.329120+00:00",
-      "model_state_rationale": "Model baseline rating favorability for home team (Houston Astros) under live public observation.",
+      "lock_timestamp_utc": "2026-08-16T16:05:00+00:00",
+      "model_state_rationale": "Model baseline rating favorability for home team (Tampa Bay Rays) under live public observation.",
       "is_parlay": false,
       "parlay_legs": [],
       "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "a6e98a30652a0fbf7e5856074e997953a6783e657bee1f9670536b15d198bfd1"
+      "sha256_receipt_hash": "2b4af1084b0eb1e747ff0c44b3f72ed80125ad0646fb970cf52dba5a4c7cc60c"
     },
     "outcome_record": {
-      "outcome_id": "out_pred_real_mlb_824156",
-      "prediction_id": "pred_real_mlb_824156",
-      "prediction_hash": "a6e98a30652a0fbf7e5856074e997953a6783e657bee1f9670536b15d198bfd1",
-      "verification_timestamp_utc": "2026-08-16T20:37:41.329940+00:00",
+      "outcome_id": "out_pred_real_mlb_822940",
+      "prediction_id": "pred_real_mlb_822940",
+      "prediction_hash": "2b4af1084b0eb1e747ff0c44b3f72ed80125ad0646fb970cf52dba5a4c7cc60c",
+      "verification_timestamp_utc": "2026-08-17T03:36:10.173891+00:00",
       "verification_source_name": "Official MLB Stats API (statsapi.mlb.com)",
       "verification_source_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1",
-      "actual_home_score": null,
-      "actual_away_score": null,
-      "actual_result_text": "Detailed State: Pre-Game. Outcome pending game completion.",
-      "outcome_status": "PENDING",
+      "actual_home_score": 2,
+      "actual_away_score": 10,
+      "actual_result_text": "Baltimore Orioles defeated Tampa Bay Rays 10-2",
+      "outcome_status": "LOSS",
       "classification": "REAL-WORLD OUTCOME",
-      "outcome_receipt_hash": "c1bba4e72c52cc8e9f1be6dd044cf4cd29bd19a0e75bebede5182c36003c3c7d"
+      "outcome_receipt_hash": "90b98a76c499c5e1f9f90fbc526e26ff3c3a1ab10decaa4d124342b78a653682"
     },
-    "score_record": null,
-    "learning_record": null
+    "score_record": {
+      "score_id": "score_pred_real_mlb_822940",
+      "prediction_id": "pred_real_mlb_822940",
+      "prediction_hash": "2b4af1084b0eb1e747ff0c44b3f72ed80125ad0646fb970cf52dba5a4c7cc60c",
+      "outcome_id": "out_pred_real_mlb_822940",
+      "score_timestamp_utc": "2026-08-17T03:36:10.173891+00:00",
+      "model_predicted_probability": 0.55,
+      "outcome_status": "LOSS",
+      "brier_score_contribution": 0.30250000000000005,
+      "classification": "REAL-WORLD SCORING",
+      "score_receipt_hash": "d80a078f2ee028254487dadd04f982b5166864cf8ff9f37a20edb071487df660"
+    },
+    "learning_record": {
+      "learning_id": "learn_pred_real_mlb_822940",
+      "prediction_id": "pred_real_mlb_822940",
+      "prediction_hash": "2b4af1084b0eb1e747ff0c44b3f72ed80125ad0646fb970cf52dba5a4c7cc60c",
+      "outcome_id": "out_pred_real_mlb_822940",
+      "score_id": "score_pred_real_mlb_822940",
+      "learning_timestamp_utc": "2026-08-17T03:36:10.173891+00:00",
+      "failure_classification": "REAL_WORLD_PREDICTION_ERROR",
+      "model_assumption_broken": "Model predicted probability exceeded actual empirical realization under market noise.",
+      "lesson_recorded": "Incorporate market odds variance and opponent recent momentum into probability calibration model.",
+      "classification": "REAL-WORLD LEARNING",
+      "learning_receipt_hash": "5313a7983b9a8598accab8486e97cd8676e35e6418871b547bae556d795a52a2"
+    }
   },
   "ledger_summary": {
-    "total_records": 8,
-    "resolved_outcomes": 6,
+    "total_records": 12,
+    "resolved_outcomes": 10,
     "unresolved_outcomes": 2,
-    "wins": 6,
-    "losses": 0,
+    "wins": 9,
+    "losses": 1,
     "pushes": 0,
-    "win_rate": 1.0,
-    "brier_score": 0.22900966666666667,
+    "win_rate": 0.9,
+    "brier_score": 0.23635869999999998,
     "classification_breakdown": {
-      "REAL-WORLD OBSERVATION": 8,
+      "REAL-WORLD OBSERVATION": 12,
       "SYNTHETIC RCE-001": 0,
       "ACTUAL MONEY WAGERS": 0
     }
