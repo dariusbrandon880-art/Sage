@@ -479,3 +479,133 @@ def test_l_duplicate_resolution_and_orphan_scoring_fail_closed():
     )
     with pytest.raises(ValueError, match="LEARNING_WITHOUT_SCORE_FAIL"):
         ledger.add_learning(orphan_learning)
+
+
+# =====================================================================
+# RCE-002.4: TESTS FOR PROVENANCE, TEMPORAL CONSISTENCY & REPLAY
+# =====================================================================
+
+from sage.experimental.sports_longitudinal import (
+    ObservationProvenance,
+    TemporalConsistencyValidator,
+    ReplayableObservationStream,
+)
+
+
+def test_m_observation_provenance_hashing_and_signing():
+    prov = ObservationProvenance(
+        source_id="src_mlb_official",
+        source_name="MLB Stats API",
+        source_url="https://statsapi.mlb.com/api/v1/schedule",
+        source_timestamp_utc="2026-08-16T18:00:00Z",
+        raw_payload_hash="a1b2c3d4e5f678901234567890abcdef1234567890abcdef1234567890abcdef",
+        ingest_timestamp_utc="2026-08-16T18:00:05Z",
+    )
+    prov_hash = prov.sign()
+    assert prov_hash is not None
+    assert len(prov_hash) == 64
+    assert prov.provenance_hash == prov_hash
+    assert prov.compute_sha256_hash() == prov_hash
+
+
+def test_n_temporal_consistency_pre_game_and_monotonicity_validation():
+    # Valid pre-game observation
+    assert TemporalConsistencyValidator.validate_pre_game_observation(
+        observation_timestamp_utc="2026-08-16T18:00:00Z",
+        event_start_time_utc="2026-08-16T20:00:00Z",
+    )
+
+    # Post-game observation fails closed
+    with pytest.raises(ValueError, match="TEMPORAL_CONSISTENCY_VIOLATION"):
+        TemporalConsistencyValidator.validate_pre_game_observation(
+            observation_timestamp_utc="2026-08-16T20:05:00Z",
+            event_start_time_utc="2026-08-16T20:00:00Z",
+        )
+
+    # Monotonic sequence valid
+    assert TemporalConsistencyValidator.validate_monotonic_sequence([
+        "2026-08-16T18:00:00Z",
+        "2026-08-16T18:30:00Z",
+        "2026-08-16T19:00:00Z",
+    ])
+
+    # Monotonic sequence invalid (out of order timestamp)
+    with pytest.raises(ValueError, match="TEMPORAL_MONOTONICITY_VIOLATION"):
+        TemporalConsistencyValidator.validate_monotonic_sequence([
+            "2026-08-16T18:00:00Z",
+            "2026-08-16T17:59:00Z",
+        ])
+
+
+def test_o_replayable_observation_stream_append_verify_replay():
+    stream = ReplayableObservationStream()
+
+    prov1 = ObservationProvenance(
+        source_id="src_001",
+        source_name="TheSportsDB",
+        source_url="https://www.thesportsdb.com/api/v1/json/3/eventsday.php",
+        source_timestamp_utc="2026-08-16T18:00:00Z",
+        raw_payload_hash="hash_raw_001",
+        ingest_timestamp_utc="2026-08-16T18:00:02Z",
+    )
+
+    ev1 = stream.append_event(
+        event_id="ev_001",
+        observation_id="obs_001",
+        observation_timestamp_utc="2026-08-16T18:00:00Z",
+        event_start_time_utc="2026-08-16T21:00:00Z",
+        provenance=prov1,
+        payload={"team_home": "NYY", "team_away": "BOS", "odds": "-110"},
+    )
+
+    prov2 = ObservationProvenance(
+        source_id="src_001",
+        source_name="TheSportsDB",
+        source_url="https://www.thesportsdb.com/api/v1/json/3/eventsday.php",
+        source_timestamp_utc="2026-08-16T18:30:00Z",
+        raw_payload_hash="hash_raw_002",
+        ingest_timestamp_utc="2026-08-16T18:30:02Z",
+    )
+
+    ev2 = stream.append_event(
+        event_id="ev_001",
+        observation_id="obs_002",
+        observation_timestamp_utc="2026-08-16T18:30:00Z",
+        event_start_time_utc="2026-08-16T21:00:00Z",
+        provenance=prov2,
+        payload={"team_home": "NYY", "team_away": "BOS", "odds": "-115"},
+    )
+
+    assert stream.verify_integrity() is True
+    replayed = stream.replay()
+    assert len(replayed) == 2
+    assert replayed[0]["observation_id"] == "obs_001"
+    assert replayed[1]["observation_id"] == "obs_002"
+    assert replayed[0]["verified_hash"] == ev1.event_hash
+    assert replayed[1]["verified_hash"] == ev2.event_hash
+
+
+def test_p_replayable_stream_detects_tampering():
+    stream = ReplayableObservationStream()
+    prov = ObservationProvenance(
+        source_id="src_001",
+        source_name="TheSportsDB",
+        source_url="http://example.com",
+        source_timestamp_utc="2026-08-16T18:00:00Z",
+        raw_payload_hash="raw_hash",
+        ingest_timestamp_utc="2026-08-16T18:00:01Z",
+    )
+    stream.append_event(
+        event_id="ev_001",
+        observation_id="obs_001",
+        observation_timestamp_utc="2026-08-16T18:00:00Z",
+        event_start_time_utc="2026-08-16T21:00:00Z",
+        provenance=prov,
+        payload={"key": "original_val"},
+    )
+
+    # Tamper with event payload in stream
+    stream.stream[0].payload["key"] = "tampered_val"
+
+    with pytest.raises(ValueError, match="STREAM_EVENT_HASH_TAMPERED"):
+        stream.verify_integrity()
