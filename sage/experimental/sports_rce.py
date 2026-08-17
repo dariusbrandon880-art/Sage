@@ -1,7 +1,8 @@
-"""SAGE Sports/RCE — Pre-Game Observation, Temporal Locking & Evidence Drift Monitor Substrate.
+"""SAGE Sports/RCE — Pre-Game Observation, Temporal Locking, Evidence Drift & RCE-003.1 Temporal Research Snapshot Substrate.
 
 Provides immutable pre-game observation, temporal lock validation (lock_timestamp < event_start),
-SHA-256 receipt generation, persistence, and RCE-002.4 Observation Evidence Drift Monitoring.
+SHA-256 receipt generation, persistence, RCE-002.4 Evidence Drift Monitoring, and
+RCE-003.1 Point-in-Time Temporal Research Snapshot Reconstruction with Leakage Receipts.
 """
 
 from enum import Enum
@@ -263,6 +264,213 @@ class ObservationDriftMonitor:
         ledger.append(record.model_dump())
         self._save_ledger(ledger)
         return record
+
+
+# ---------------------------------------------------------
+# RCE-003.1 Point-in-Time Temporal Research Snapshot Models
+# ---------------------------------------------------------
+
+class ResearchIntegrityStatus(str, Enum):
+    """Classification of temporal research snapshot integrity."""
+    RESEARCH_TIME_CLEAN = "RESEARCH_TIME_CLEAN"
+    POST_TIMESTAMP_INFORMATION_DETECTED = "POST_TIMESTAMP_INFORMATION_DETECTED"
+    AMBIGUOUS_AVAILABILITY = "AMBIGUOUS_AVAILABILITY"
+    INTEGRITY_FAILURE = "INTEGRITY_FAILURE"
+
+
+class HistoricalResearchSnapshot(BaseModel):
+    """Point-in-time as-of research snapshot representing exact available information state at research_timestamp."""
+    snapshot_id: str
+    research_timestamp: str
+    event_identities: List[str] = Field(default_factory=list)
+    included_observation_references: List[str] = Field(default_factory=list)
+    excluded_post_timestamp_references: List[str] = Field(default_factory=list)
+    effective_observation_state: Dict[str, Any] = Field(default_factory=dict)
+    source_conflict_references: List[str] = Field(default_factory=list)
+    snapshot_hash: str = ""
+    creation_reference: str = "RCE-003.1 Historical Research Reconstruction Engine"
+    integrity_hash: str = ""
+
+    def __init__(self, **data: Any):
+        super().__init__(**data)
+        if not self.snapshot_hash:
+            self.snapshot_hash = self.compute_snapshot_hash()
+        if not self.integrity_hash:
+            self.integrity_hash = self.compute_integrity_hash()
+
+    def compute_snapshot_hash(self) -> str:
+        serialized = json.dumps({
+            "research_timestamp": self.research_timestamp,
+            "event_identities": sorted(self.event_identities),
+            "included_observation_references": sorted(self.included_observation_references),
+            "excluded_post_timestamp_references": sorted(self.excluded_post_timestamp_references),
+            "effective_observation_state": self.effective_observation_state,
+            "source_conflict_references": sorted(self.source_conflict_references),
+        }, sort_keys=True, default=str)
+        return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+    def compute_integrity_hash(self) -> str:
+        serialized = json.dumps({
+            "snapshot_id": self.snapshot_id,
+            "snapshot_hash": self.snapshot_hash,
+            "creation_reference": self.creation_reference,
+        }, sort_keys=True, default=str)
+        return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+
+class ResearchIntegrityReceipt(BaseModel):
+    """Integrity receipt certifying whether post-timestamp leakage entered a historical research snapshot."""
+    receipt_id: str
+    snapshot_id: str
+    research_timestamp: str
+    observed_reference_set: List[str] = Field(default_factory=list)
+    post_timestamp_reference_set: List[str] = Field(default_factory=list)
+    excluded_count: int = 0
+    integrity_status: ResearchIntegrityStatus = ResearchIntegrityStatus.RESEARCH_TIME_CLEAN
+    reason: str = ""
+    snapshot_hash: str = ""
+    integrity_hash: str = ""
+
+    def __init__(self, **data: Any):
+        super().__init__(**data)
+        if not self.integrity_hash:
+            self.integrity_hash = self.compute_sha256()
+
+    def compute_sha256(self) -> str:
+        serialized = json.dumps({
+            "receipt_id": self.receipt_id,
+            "snapshot_id": self.snapshot_id,
+            "research_timestamp": self.research_timestamp,
+            "observed_reference_set": sorted(self.observed_reference_set),
+            "post_timestamp_reference_set": sorted(self.post_timestamp_reference_set),
+            "excluded_count": self.excluded_count,
+            "integrity_status": self.integrity_status.value,
+            "reason": self.reason,
+            "snapshot_hash": self.snapshot_hash,
+        }, sort_keys=True, default=str)
+        return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+
+class HistoricalResearchReconstructionEngine:
+    """Reconstructs point-in-time as-of research snapshots and emits research integrity receipts."""
+
+    @staticmethod
+    def _parse_iso(ts_str: str) -> datetime:
+        if not ts_str or not isinstance(ts_str, str):
+            raise ValueError("Invalid timestamp: timestamp must be a non-empty string.")
+        norm = ts_str.strip()
+        if not norm.endswith("Z") and "+" not in norm:
+            norm += "Z"
+        return datetime.fromisoformat(norm.replace("Z", "+00:00"))
+
+    def reconstruct_as_of_snapshot(
+        self,
+        research_timestamp: str,
+        snapshots: List[ObservationEvidenceSnapshot],
+        provider_conflicts: Optional[List[Dict[str, Any]]] = None,
+        force_leakage_detection: bool = False,
+    ) -> Tuple[HistoricalResearchSnapshot, ResearchIntegrityReceipt]:
+        """Reconstructs the exact information state available at research_timestamp T and evaluates leakage."""
+        try:
+            target_dt = self._parse_iso(research_timestamp)
+        except Exception as e:
+            raise ValueError(f"Ambiguous research timestamp format '{research_timestamp}': {e}") from e
+
+        included_refs = []
+        excluded_refs = []
+        event_ids = set()
+        conflicts_refs = []
+
+        # Provider/Event latest observation map as of T
+        provider_event_map: Dict[Tuple[str, str], ObservationEvidenceSnapshot] = {}
+
+        for snap in snapshots:
+            if not snap.retrieval_timestamp or not snap.observed_timestamp:
+                raise ValueError(f"Ambiguous timestamp in snapshot '{snap.snapshot_id}': retrieval or observation timestamp missing.")
+
+            try:
+                retrieval_dt = self._parse_iso(snap.retrieval_timestamp)
+                observed_dt = self._parse_iso(snap.observed_timestamp)
+            except Exception as e:
+                raise ValueError(f"Ambiguous timestamp in snapshot '{snap.snapshot_id}': {e}") from e
+
+            event_ids.add(snap.external_event_id)
+
+            # AS-OF RULE: Include only if retrieval_timestamp <= T AND observed_timestamp <= T
+            if retrieval_dt <= target_dt and observed_dt <= target_dt:
+                included_refs.append(snap.snapshot_id)
+                key = (snap.provider, snap.external_event_id)
+                if key not in provider_event_map:
+                    provider_event_map[key] = snap
+                else:
+                    # Select latest valid observation as of T
+                    existing_dt = self._parse_iso(provider_event_map[key].retrieval_timestamp)
+                    if retrieval_dt > existing_dt:
+                        provider_event_map[key] = snap
+                    elif retrieval_dt == existing_dt and snap.snapshot_id < provider_event_map[key].snapshot_id:
+                        # Deterministic string tie-breaker for identical retrieval timestamps
+                        provider_event_map[key] = snap
+            else:
+                excluded_refs.append(snap.snapshot_id)
+
+        # Build effective observation state (preserving provider distinctions)
+        effective_state = {}
+        for (provider, ev_id), snap in sorted(provider_event_map.items(), key=lambda x: (x[0][0], x[0][1])):
+            state_key = f"{provider}:{ev_id}"
+            effective_state[state_key] = {
+                "snapshot_id": snap.snapshot_id,
+                "observation_id": snap.observation_id,
+                "provider": provider,
+                "external_event_id": ev_id,
+                "retrieval_timestamp": snap.retrieval_timestamp,
+                "observed_timestamp": snap.observed_timestamp,
+                "status": snap.status,
+                "scores": snap.scores,
+                "payload_hash": snap.payload_hash,
+            }
+
+        # Track provider conflicts
+        if provider_conflicts:
+            for conf in provider_conflicts:
+                conflicts_refs.append(conf.get("conflict_id", "conf_unknown"))
+
+        # Snapshot ID
+        snap_hash_input = f"{research_timestamp}:{sorted(included_refs)}:{sorted(excluded_refs)}"
+        snap_id = f"res_snap_{hashlib.sha256(snap_hash_input.encode('utf-8')).hexdigest()[:12]}"
+
+        snapshot = HistoricalResearchSnapshot(
+            snapshot_id=snap_id,
+            research_timestamp=research_timestamp,
+            event_identities=sorted(list(event_ids)),
+            included_observation_references=sorted(included_refs),
+            excluded_post_timestamp_references=sorted(excluded_refs),
+            effective_observation_state=effective_state,
+            source_conflict_references=sorted(conflicts_refs),
+        )
+
+        # Evaluate Integrity Status
+        if len(excluded_refs) > 0 or force_leakage_detection:
+            status = ResearchIntegrityStatus.POST_TIMESTAMP_INFORMATION_DETECTED
+            reason = f"Post-timestamp information detected: {len(excluded_refs)} observations excluded as post-T."
+        else:
+            status = ResearchIntegrityStatus.RESEARCH_TIME_CLEAN
+            reason = f"Reconstructed cleanly as-of {research_timestamp}. {len(included_refs)} observations included, 0 post-T excluded."
+
+        receipt_id = f"rcpt_leak_{hashlib.sha256(f'{snap_id}:{status.value}'.encode('utf-8')).hexdigest()[:12]}"
+
+        receipt = ResearchIntegrityReceipt(
+            receipt_id=receipt_id,
+            snapshot_id=snapshot.snapshot_id,
+            research_timestamp=research_timestamp,
+            observed_reference_set=snapshot.included_observation_references,
+            post_timestamp_reference_set=snapshot.excluded_post_timestamp_references,
+            excluded_count=len(excluded_refs),
+            integrity_status=status,
+            reason=reason,
+            snapshot_hash=snapshot.snapshot_hash,
+        )
+
+        return snapshot, receipt
 
 
 # ---------------------------------------------------------

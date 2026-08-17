@@ -1,4 +1,4 @@
-"""Unit tests for SAGE Sports/RCE Real-World Observation, Temporal Locking & RCE-002.4 Evidence Drift Monitor."""
+"""Unit tests for SAGE Sports/RCE Real-World Observation, Temporal Locking, Evidence Drift & RCE-003.1 Temporal Research Snapshot Engine."""
 
 import json
 import pytest
@@ -10,6 +10,10 @@ from sage.experimental.sports_rce import (
     ObservationDriftClassification,
     ObservationDriftRecord,
     ObservationDriftMonitor,
+    ResearchIntegrityStatus,
+    HistoricalResearchSnapshot,
+    ResearchIntegrityReceipt,
+    HistoricalResearchReconstructionEngine,
 )
 from sage.experimental.airspace.sports_adapter import SportsRCEAirspaceAdapter
 
@@ -25,7 +29,7 @@ def temp_drift_ledger(tmp_path):
 
 
 # ---------------------------------------------------------
-# Existing Substrate Tests
+# Existing Substrate & RCE-002.4 Tests
 # ---------------------------------------------------------
 
 def test_sports_rce_pre_game_temporal_lock_valid(temp_capture_dir):
@@ -159,10 +163,6 @@ def test_sports_rce_flight_001_and_002_coexistence_and_preservation():
     assert SportsRCEResearchEngine.verify_prediction_hash(f2) is True
 
 
-# ---------------------------------------------------------
-# RCE-002.4 Evidence Drift Monitor Tests
-# ---------------------------------------------------------
-
 def test_observation_snapshot_identity(temp_drift_ledger):
     monitor = ObservationDriftMonitor(storage_path=temp_drift_ledger)
     raw = {"idEvent": "2398018", "strEvent": "Lanus vs Independiente", "strStatus": "NS"}
@@ -185,26 +185,8 @@ def test_identical_observation_is_stable(temp_drift_ledger):
     monitor = ObservationDriftMonitor(storage_path=temp_drift_ledger)
     raw = {"idEvent": "2398018", "strEvent": "Lanus vs Independiente", "strStatus": "NS"}
 
-    snap1 = monitor.create_snapshot(
-        observation_id="pred_rce_2398018",
-        provider="TheSportsDB",
-        external_event_id="2398018",
-        observed_timestamp="2026-08-17T12:00:00Z",
-        retrieval_timestamp="2026-08-17T12:00:00Z",
-        raw_payload=raw,
-        source_observation_reference="obs_ref_001",
-        evidence_reference="ev_001",
-    )
-    snap2 = monitor.create_snapshot(
-        observation_id="pred_rce_2398018",
-        provider="TheSportsDB",
-        external_event_id="2398018",
-        observed_timestamp="2026-08-17T12:00:00Z",
-        retrieval_timestamp="2026-08-17T12:05:00Z",
-        raw_payload=raw,
-        source_observation_reference="obs_ref_001",
-        evidence_reference="ev_001",
-    )
+    snap1 = monitor.create_snapshot("pred_rce_2398018", "TheSportsDB", "2398018", "2026-08-17T12:00:00Z", "2026-08-17T12:00:00Z", raw, "obs_ref_001", "ev_001")
+    snap2 = monitor.create_snapshot("pred_rce_2398018", "TheSportsDB", "2398018", "2026-08-17T12:00:00Z", "2026-08-17T12:05:00Z", raw, "obs_ref_001", "ev_001")
 
     drift = monitor.compare_snapshots(snap1, snap2)
     assert drift.drift_classification == ObservationDriftClassification.DRIFT_NONE
@@ -287,7 +269,7 @@ def test_duplicate_drift_not_double_counted(temp_drift_ledger):
 
     assert drift1.drift_record_id == drift2.drift_record_id
     records = monitor._load_ledger()
-    assert len(records) == 1  # De-duplicated!
+    assert len(records) == 1
 
 
 def test_restart_reconstructs_drift_history(temp_drift_ledger):
@@ -300,7 +282,6 @@ def test_restart_reconstructs_drift_history(temp_drift_ledger):
 
     monitor1.compare_snapshots(snap1, snap2)
 
-    # Re-instantiate monitor simulating process restart
     monitor2 = ObservationDriftMonitor(storage_path=temp_drift_ledger)
     history = monitor2._load_ledger()
 
@@ -314,7 +295,6 @@ def test_original_observation_remains_immutable():
     with open(flight_001_path, "r", encoding="utf-8") as f:
         f1_before = json.load(f)
 
-    # Perform drift monitor operation
     monitor = ObservationDriftMonitor()
     snap = monitor.create_snapshot("pred_rce_2398016", "TheSportsDB", "2398016", "2026-08-17T12:00:00Z", "2026-08-17T12:00:00Z", f1_before, "obs1", "ev1")
     _drift = monitor.compare_snapshots(snap, snap)
@@ -337,7 +317,6 @@ def test_prediction_identity_unchanged():
     pred = engine.create_pre_game_prediction(raw_event, "Team Identity A", 0.55, "Identity test")
     pid_before = pred["prediction_id"]
 
-    # Run drift check
     monitor = ObservationDriftMonitor()
     snap = monitor.create_snapshot(pid_before, "TheSportsDB", "999005", "2026-08-17T12:00:00Z", "2026-08-17T12:00:00Z", raw_event, "obs1", "ev1")
     _drift = monitor.compare_snapshots(snap, snap)
@@ -346,7 +325,6 @@ def test_prediction_identity_unchanged():
 
 
 def test_score_gate_unchanged():
-    # Verify drift monitor does NOT alter Brier score / calibration gates
     monitor = ObservationDriftMonitor()
     raw = {"idEvent": "2398018", "strEvent": "Lanus vs Independiente", "strStatus": "FT"}
     snap = monitor.create_snapshot("pred_rce_2398018", "TheSportsDB", "2398018", "2026-08-17T12:00:00Z", "2026-08-17T12:00:00Z", raw, "obs1", "ev1")
@@ -355,7 +333,6 @@ def test_score_gate_unchanged():
 
 
 def test_learning_gate_unchanged():
-    # Verify drift monitor does NOT grant execution permissions or modify cognitive learning gates
     monitor = ObservationDriftMonitor()
     raw = {"idEvent": "2398018", "strEvent": "Lanus vs Independiente", "strStatus": "FT"}
     snap = monitor.create_snapshot("pred_rce_2398018", "TheSportsDB", "2398018", "2026-08-17T12:00:00Z", "2026-08-17T12:00:00Z", raw, "obs1", "ev1")
@@ -385,3 +362,222 @@ def test_cross_system_projection_is_read_only(temp_drift_ledger):
 
     assert "evidence_drift_status" in summary
     assert summary["evidence_drift_status"] == "OBSERVATION_STABLE"
+
+
+# ---------------------------------------------------------
+# RCE-003.1 Point-in-Time Research Snapshot Tests
+# ---------------------------------------------------------
+
+def test_research_snapshot_creation(temp_drift_ledger):
+    monitor = ObservationDriftMonitor(storage_path=temp_drift_ledger)
+    engine = HistoricalResearchReconstructionEngine()
+
+    raw1 = {"idEvent": "2398018", "strEvent": "Lanus vs Independiente", "strStatus": "NS"}
+    snap1 = monitor.create_snapshot("pred_rce_2398018", "TheSportsDB", "2398018", "2026-08-17T12:00:00Z", "2026-08-17T12:00:00Z", raw1, "obs1", "ev1")
+
+    snapshot, receipt = engine.reconstruct_as_of_snapshot("2026-08-17T12:30:00Z", [snap1])
+
+    assert snapshot.snapshot_id.startswith("res_snap_")
+    assert snapshot.research_timestamp == "2026-08-17T12:30:00Z"
+    assert snap1.snapshot_id in snapshot.included_observation_references
+    assert len(snapshot.excluded_post_timestamp_references) == 0
+    assert receipt.integrity_status == ResearchIntegrityStatus.RESEARCH_TIME_CLEAN
+
+
+def test_as_of_observation_selection(temp_drift_ledger):
+    monitor = ObservationDriftMonitor(storage_path=temp_drift_ledger)
+    engine = HistoricalResearchReconstructionEngine()
+
+    raw1 = {"idEvent": "2398018", "strEvent": "Lanus vs Independiente", "strStatus": "NS"}
+    raw2 = {"idEvent": "2398018", "strEvent": "Lanus vs Independiente", "strStatus": "FT", "intHomeScore": 1, "intAwayScore": 0}
+
+    snap1 = monitor.create_snapshot("pred_rce_2398018", "TheSportsDB", "2398018", "2026-08-17T12:00:00Z", "2026-08-17T12:00:00Z", raw1, "obs1", "ev1")
+    snap2 = monitor.create_snapshot("pred_rce_2398018", "TheSportsDB", "2398018", "2026-08-17T15:00:00Z", "2026-08-17T15:00:00Z", raw2, "obs1", "ev1")
+
+    # As of T = 13:00, only snap1 is available
+    snapshot, receipt = engine.reconstruct_as_of_snapshot("2026-08-17T13:00:00Z", [snap1, snap2])
+
+    assert snap1.snapshot_id in snapshot.included_observation_references
+    assert snap2.snapshot_id in snapshot.excluded_post_timestamp_references
+    assert snapshot.effective_observation_state["TheSportsDB:2398018"]["status"] == "NS"
+    assert receipt.excluded_count == 1
+
+
+def test_late_observation_excluded(temp_drift_ledger):
+    monitor = ObservationDriftMonitor(storage_path=temp_drift_ledger)
+    engine = HistoricalResearchReconstructionEngine()
+
+    raw = {"idEvent": "2398018", "strEvent": "Lanus vs Independiente", "strStatus": "FT"}
+    # Event occurred at 12:00 but retrieval timestamp was late at 16:00
+    snap_late = monitor.create_snapshot("pred_rce_2398018", "TheSportsDB", "2398018", "2026-08-17T12:00:00Z", "2026-08-17T16:00:00Z", raw, "obs1", "ev1")
+
+    # Research timestamp T = 14:00 (before late retrieval at 16:00)
+    snapshot, receipt = engine.reconstruct_as_of_snapshot("2026-08-17T14:00:00Z", [snap_late])
+
+    assert snap_late.snapshot_id in snapshot.excluded_post_timestamp_references
+    assert len(snapshot.included_observation_references) == 0
+    assert receipt.integrity_status == ResearchIntegrityStatus.POST_TIMESTAMP_INFORMATION_DETECTED
+
+
+def test_post_timestamp_information_detected(temp_drift_ledger):
+    monitor = ObservationDriftMonitor(storage_path=temp_drift_ledger)
+    engine = HistoricalResearchReconstructionEngine()
+
+    raw = {"idEvent": "2398018", "strEvent": "Lanus vs Independiente", "strStatus": "FT"}
+    snap_post = monitor.create_snapshot("pred_rce_2398018", "TheSportsDB", "2398018", "2026-08-17T18:00:00Z", "2026-08-17T18:00:00Z", raw, "obs1", "ev1")
+
+    snapshot, receipt = engine.reconstruct_as_of_snapshot("2026-08-17T12:00:00Z", [snap_post])
+
+    assert receipt.integrity_status == ResearchIntegrityStatus.POST_TIMESTAMP_INFORMATION_DETECTED
+    assert receipt.excluded_count == 1
+
+
+def test_correction_respects_availability_time(temp_drift_ledger):
+    monitor = ObservationDriftMonitor(storage_path=temp_drift_ledger)
+    engine = HistoricalResearchReconstructionEngine()
+
+    raw_orig = {"idEvent": "2398018", "strEvent": "Lanus vs Independiente", "strStatus": "FT", "intHomeScore": 1, "intAwayScore": 1}
+    raw_corr = {"idEvent": "2398018", "strEvent": "Lanus vs Independiente", "strStatus": "FT", "intHomeScore": 2, "intAwayScore": 1}
+
+    snap_orig = monitor.create_snapshot("pred_rce_2398018", "TheSportsDB", "2398018", "2026-08-17T15:00:00Z", "2026-08-17T15:00:00Z", raw_orig, "obs1", "ev1")
+    snap_corr = monitor.create_snapshot("pred_rce_2398018", "TheSportsDB", "2398018", "2026-08-17T15:00:00Z", "2026-08-17T17:00:00Z", raw_corr, "obs1", "ev1")
+
+    # At T = 16:00, correction at 17:00 is excluded, original score 1-1 remains effective
+    snap_t16, _ = engine.reconstruct_as_of_snapshot("2026-08-17T16:00:00Z", [snap_orig, snap_corr])
+    assert snap_t16.effective_observation_state["TheSportsDB:2398018"]["scores"] == {"home": 1.0, "away": 1.0}
+
+    # At T = 18:00, correction at 17:00 is included and score 2-1 becomes effective
+    snap_t18, _ = engine.reconstruct_as_of_snapshot("2026-08-17T18:00:00Z", [snap_orig, snap_corr])
+    assert snap_t18.effective_observation_state["TheSportsDB:2398018"]["scores"] == {"home": 2.0, "away": 1.0}
+
+
+def test_provider_conflict_preserved(temp_drift_ledger):
+    monitor = ObservationDriftMonitor(storage_path=temp_drift_ledger)
+    engine = HistoricalResearchReconstructionEngine()
+
+    raw1 = {"idEvent": "2398018", "strEvent": "Lanus vs Independiente", "strStatus": "FT", "intHomeScore": 1}
+    raw2 = {"idEvent": "2398018", "strEvent": "Lanus vs Independiente", "strStatus": "FT", "intHomeScore": 2}
+
+    snap_p1 = monitor.create_snapshot("pred_rce_2398018", "TheSportsDB", "2398018", "2026-08-17T12:00:00Z", "2026-08-17T12:00:00Z", raw1, "obs1", "ev1")
+    snap_p2 = monitor.create_snapshot("pred_rce_2398018", "SportsDataIO", "2398018", "2026-08-17T12:00:00Z", "2026-08-17T12:00:00Z", raw2, "obs1", "ev1")
+
+    conflicts = [{"conflict_id": "conf_p1_p2", "event_id": "2398018"}]
+    snapshot, _ = engine.reconstruct_as_of_snapshot("2026-08-17T13:00:00Z", [snap_p1, snap_p2], provider_conflicts=conflicts)
+
+    # Both provider observations preserved in effective state!
+    assert "TheSportsDB:2398018" in snapshot.effective_observation_state
+    assert "SportsDataIO:2398018" in snapshot.effective_observation_state
+    assert "conf_p1_p2" in snapshot.source_conflict_references
+
+
+def test_missing_availability_fails_closed():
+    engine = HistoricalResearchReconstructionEngine()
+    snap_invalid = ObservationEvidenceSnapshot(
+        snapshot_id="snap_bad_1",
+        observation_id="pred_bad",
+        provider="TheSportsDB",
+        external_event_id="2398018",
+        observed_timestamp="",  # Missing!
+        retrieval_timestamp="2026-08-17T12:00:00Z",
+        payload_hash="hash_1",
+        source_observation_reference="obs_1",
+        evidence_reference="ev_1",
+    )
+
+    with pytest.raises(ValueError, match="Ambiguous timestamp"):
+        engine.reconstruct_as_of_snapshot("2026-08-17T12:00:00Z", [snap_invalid])
+
+
+def test_ambiguous_timestamp_fails_closed():
+    engine = HistoricalResearchReconstructionEngine()
+    with pytest.raises(ValueError, match="Ambiguous research timestamp"):
+        engine.reconstruct_as_of_snapshot("INVALID_DATE_STRING", [])
+
+
+def test_snapshot_hash_deterministic(temp_drift_ledger):
+    monitor = ObservationDriftMonitor(storage_path=temp_drift_ledger)
+    engine = HistoricalResearchReconstructionEngine()
+
+    raw = {"idEvent": "2398018", "strEvent": "Lanus vs Independiente", "strStatus": "NS"}
+    snap = monitor.create_snapshot("pred_rce_2398018", "TheSportsDB", "2398018", "2026-08-17T12:00:00Z", "2026-08-17T12:00:00Z", raw, "obs1", "ev1")
+
+    s1, _ = engine.reconstruct_as_of_snapshot("2026-08-17T13:00:00Z", [snap])
+    s2, _ = engine.reconstruct_as_of_snapshot("2026-08-17T13:00:00Z", [snap])
+
+    assert s1.snapshot_hash == s2.snapshot_hash
+    assert s1.integrity_hash == s2.integrity_hash
+
+
+def test_repeated_snapshot_is_identical(temp_drift_ledger):
+    monitor = ObservationDriftMonitor(storage_path=temp_drift_ledger)
+    engine = HistoricalResearchReconstructionEngine()
+
+    raw = {"idEvent": "2398018", "strEvent": "Lanus vs Independiente", "strStatus": "FT"}
+    snap = monitor.create_snapshot("pred_rce_2398018", "TheSportsDB", "2398018", "2026-08-17T12:00:00Z", "2026-08-17T12:00:00Z", raw, "obs1", "ev1")
+
+    s1, r1 = engine.reconstruct_as_of_snapshot("2026-08-17T13:00:00Z", [snap])
+    s2, r2 = engine.reconstruct_as_of_snapshot("2026-08-17T13:00:00Z", [snap])
+
+    assert s1.snapshot_id == s2.snapshot_id
+    assert r1.receipt_id == r2.receipt_id
+    assert r1.integrity_hash == r2.integrity_hash
+
+
+def test_restart_reconstructs_identical_snapshot(temp_drift_ledger):
+    monitor = ObservationDriftMonitor(storage_path=temp_drift_ledger)
+    raw = {"idEvent": "2398018", "strEvent": "Lanus vs Independiente", "strStatus": "FT"}
+    snap = monitor.create_snapshot("pred_rce_2398018", "TheSportsDB", "2398018", "2026-08-17T12:00:00Z", "2026-08-17T12:00:00Z", raw, "obs1", "ev1")
+
+    engine1 = HistoricalResearchReconstructionEngine()
+    s1, r1 = engine1.reconstruct_as_of_snapshot("2026-08-17T13:00:00Z", [snap])
+
+    # Re-instantiate engine simulating fresh process restart
+    engine2 = HistoricalResearchReconstructionEngine()
+    s2, r2 = engine2.reconstruct_as_of_snapshot("2026-08-17T13:00:00Z", [snap])
+
+    assert s1.snapshot_hash == s2.snapshot_hash
+    assert r1.integrity_hash == r2.integrity_hash
+
+
+def test_observation_history_immutable(temp_drift_ledger):
+    monitor = ObservationDriftMonitor(storage_path=temp_drift_ledger)
+    engine = HistoricalResearchReconstructionEngine()
+
+    raw = {"idEvent": "2398018", "strEvent": "Lanus vs Independiente", "strStatus": "FT"}
+    snap = monitor.create_snapshot("pred_rce_2398018", "TheSportsDB", "2398018", "2026-08-17T12:00:00Z", "2026-08-17T12:00:00Z", raw, "obs1", "ev1")
+    snap_before = snap.model_dump()
+
+    _s, _r = engine.reconstruct_as_of_snapshot("2026-08-17T13:00:00Z", [snap])
+
+    assert snap.model_dump() == snap_before
+
+
+def test_outcome_gate_unchanged(temp_drift_ledger):
+    monitor = ObservationDriftMonitor(storage_path=temp_drift_ledger)
+    engine = HistoricalResearchReconstructionEngine()
+
+    raw = {"idEvent": "2398018", "strEvent": "Lanus vs Independiente", "strStatus": "FT"}
+    snap = monitor.create_snapshot("pred_rce_2398018", "TheSportsDB", "2398018", "2026-08-17T12:00:00Z", "2026-08-17T12:00:00Z", raw, "obs1", "ev1")
+
+    _s, receipt = engine.reconstruct_as_of_snapshot("2026-08-17T13:00:00Z", [snap])
+
+    assert not hasattr(receipt, "outcome_override")
+    assert not hasattr(receipt, "automated_outcome")
+
+
+def test_leakage_receipt_is_replayable(temp_drift_ledger):
+    monitor = ObservationDriftMonitor(storage_path=temp_drift_ledger)
+    engine = HistoricalResearchReconstructionEngine()
+
+    raw1 = {"idEvent": "2398018", "strEvent": "Lanus vs Independiente", "strStatus": "NS"}
+    raw2 = {"idEvent": "2398018", "strEvent": "Lanus vs Independiente", "strStatus": "FT"}
+
+    snap1 = monitor.create_snapshot("pred_rce_2398018", "TheSportsDB", "2398018", "2026-08-17T12:00:00Z", "2026-08-17T12:00:00Z", raw1, "obs1", "ev1")
+    snap2 = monitor.create_snapshot("pred_rce_2398018", "TheSportsDB", "2398018", "2026-08-17T16:00:00Z", "2026-08-17T16:00:00Z", raw2, "obs1", "ev1")
+
+    _s1, r1 = engine.reconstruct_as_of_snapshot("2026-08-17T14:00:00Z", [snap1, snap2])
+    _s2, r2 = engine.reconstruct_as_of_snapshot("2026-08-17T14:00:00Z", [snap1, snap2])
+
+    assert r1.receipt_id == r2.receipt_id
+    assert r1.integrity_status == ResearchIntegrityStatus.POST_TIMESTAMP_INFORMATION_DETECTED
+    assert r1.excluded_count == 1
