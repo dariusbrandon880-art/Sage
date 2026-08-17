@@ -1,8 +1,8 @@
 """Mobile-First Conversation Renderer for SAGE Airspace.
 
 Formats AirspaceState, Missions, Sorties, Intel, Qualifications, Unified
-Operating Picture, Operational Readiness Assessments, and Governed Decision
-Packages for compact, high-density display on mobile conversation interfaces.
+Operating Picture, Operational Readiness Assessments, Governed Decision Packages,
+and Decision Lifecycle Records for compact, high-density display on mobile conversation interfaces.
 """
 
 from typing import Optional, Dict, Any, List
@@ -15,12 +15,13 @@ from sage.experimental.airspace.models import (
     QualificationEvent,
 )
 from sage.experimental.airspace.decision_boundary import OperationalDecisionBoundary
+from sage.experimental.airspace.decision_lifecycle import DecisionLifecycleRecord
 from sage.experimental.airspace.readiness import OperationalReadinessAssessment
 from sage.experimental.airspace.unified_operating_picture import UnifiedOperatingPicture
 
 
 class AirspaceRenderer:
-    """Renders SAGE Airspace operating picture, cards, readiness, and decision packages."""
+    """Renders SAGE Airspace operating picture, cards, readiness, decisions, and lifecycle records."""
 
     @staticmethod
     def render_progress_bar(current: int, total: int = 7, width: int = 10) -> str:
@@ -159,6 +160,30 @@ class AirspaceRenderer:
                 lines.append(f"  ✓ {ev[:34]}")
         else:
             lines.append("  ▪ None attached")
+        lines.append("━" * 42)
+        return "\n".join(lines)
+
+    @classmethod
+    def render_decision_lifecycle(cls, record: DecisionLifecycleRecord) -> str:
+        """Renders mobile-first Decision Lifecycle Observation card."""
+        lines = []
+        lines.append("SAGE DECISION LIFECYCLE OBSERVATION")
+        lines.append("━" * 42)
+        lines.append(f"LIFECYCLE ID     : {record.decision_id}")
+        lines.append(f"VALIDITY STATE   : {record.validity_state.value}")
+        lines.append(f"REVIEW REQUIRED  : {record.review_required}")
+        lines.append("─" * 42)
+        lines.append(f"SOURCE DECISION  : {record.source_decision_reference}")
+        lines.append(f"CREATED AT       : {record.created_timestamp[:19]}")
+        lines.append("─" * 42)
+        lines.append("INVALIDATION REASONS:")
+        if record.invalidation_reasons:
+            for r in record.invalidation_reasons:
+                lines.append(f"  ⚠ {r[:36]}")
+        else:
+            lines.append("  ✓ None (Decision remains valid)")
+        lines.append("─" * 42)
+        lines.append(f"INTEGRITY HASH   : {record.integrity_hash[:16]}...")
         lines.append("━" * 42)
         return "\n".join(lines)
 

@@ -33,6 +33,11 @@ from .decision_boundary import (
     OperationalDecisionBoundary,
     OperationalDecisionBoundaryEvaluator,
 )
+from .decision_lifecycle import (
+    DecisionValidityState,
+    DecisionLifecycleRecord,
+    DecisionLifecycleObserver,
+)
 
 __all__ = [
     "StationID",
@@ -60,4 +65,7 @@ __all__ = [
     "DecisionRecommendation",
     "OperationalDecisionBoundary",
     "OperationalDecisionBoundaryEvaluator",
+    "DecisionValidityState",
+    "DecisionLifecycleRecord",
+    "DecisionLifecycleObserver",
 ]
