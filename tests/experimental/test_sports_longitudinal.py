@@ -19,7 +19,10 @@ from sage.experimental.sports_longitudinal import (
     SportsObservationArbitrator,
     ObservationReliabilityGrade,
     ProviderReliabilityRecord,
-    ObservationReliabilityLedger
+    ObservationReliabilityLedger,
+    ObservationTemporalClassification,
+    ObservationTemporalRecord,
+    ObservationTemporalLedger
 )
 
 def test_a_changing_locked_prediction_field_changes_hash():
@@ -781,3 +784,166 @@ def test_reliability_does_not_modify_predictions():
 
     assert pred.sha256_receipt_hash == p_hash_before
     assert pred.compute_sha256_hash() == p_hash_before
+
+def test_temporal_observation_lifecycle(tmp_path):
+    ledger = SportsLongitudinalLedger(storage_path=tmp_path / "temp_ledger.json")
+    temp_ledger = ObservationTemporalLedger(ledger)
+
+    obs = SourceObservation(
+        provider="MLB Stats API", event_id="mlb_001", retrieval_timestamp_utc="2026-08-16T20:00:00Z",
+        raw_payload_hash="payload_v1", observed_status="Preview", home_score=0, away_score=0, is_final=False
+    )
+
+    record = temp_ledger.record_temporal_observation(obs)
+    assert record.temporal_classification == "TEMPORAL_CURRENT"
+    assert record.transition_detected is False
+    assert len(ledger.temporal_observations) == 1
+
+def test_duplicate_observation_detection(tmp_path):
+    ledger = SportsLongitudinalLedger(storage_path=tmp_path / "temp_ledger.json")
+    temp_ledger = ObservationTemporalLedger(ledger)
+
+    obs = SourceObservation(
+        provider="MLB Stats API", event_id="mlb_001", retrieval_timestamp_utc="2026-08-16T20:00:00Z",
+        raw_payload_hash="payload_same", observed_status="Preview", home_score=0, away_score=0, is_final=False
+    )
+
+    r1 = temp_ledger.record_temporal_observation(obs)
+    r2 = temp_ledger.record_temporal_observation(obs)
+
+    assert r1.temporal_classification == "TEMPORAL_CURRENT"
+    assert r2.temporal_classification == "TEMPORAL_DUPLICATE"
+
+def test_status_transition_detection(tmp_path):
+    ledger = SportsLongitudinalLedger()
+    temp_ledger = ObservationTemporalLedger(ledger)
+
+    obs1 = SourceObservation(provider="MLB", event_id="mlb_001", retrieval_timestamp_utc="ts1", raw_payload_hash="h1", observed_status="Preview", home_score=0, away_score=0, is_final=False)
+    obs2 = SourceObservation(provider="MLB", event_id="mlb_001", retrieval_timestamp_utc="ts2", raw_payload_hash="h2", observed_status="In Progress", home_score=2, away_score=1, is_final=False)
+    obs3 = SourceObservation(provider="MLB", event_id="mlb_001", retrieval_timestamp_utc="ts3", raw_payload_hash="h3", observed_status="Final", home_score=5, away_score=2, is_final=True)
+
+    r1 = temp_ledger.record_temporal_observation(obs1)
+    r2 = temp_ledger.record_temporal_observation(obs2)
+    r3 = temp_ledger.record_temporal_observation(obs3)
+
+    assert r2.transition_detected is True
+    assert r2.temporal_classification == "TEMPORAL_CURRENT"
+    assert r3.transition_detected is True
+    assert r3.temporal_classification == "TEMPORAL_FINAL"
+
+def test_late_observation_detection(tmp_path):
+    ledger = SportsLongitudinalLedger()
+    temp_ledger = ObservationTemporalLedger(ledger)
+
+    obs = SourceObservation(
+        provider="MLB", event_id="mlb_001", retrieval_timestamp_utc="2026-08-16T22:00:00Z",
+        raw_payload_hash="late_payload", observed_status="Final", home_score=3, away_score=1, is_final=True
+    )
+    rec = temp_ledger.record_temporal_observation(obs)
+    assert rec.finality_state is True
+
+def test_correction_preservation(tmp_path):
+    ledger = SportsLongitudinalLedger()
+    temp_ledger = ObservationTemporalLedger(ledger)
+
+    obs_final_v1 = SourceObservation(provider="MLB", event_id="mlb_001", retrieval_timestamp_utc="ts1", raw_payload_hash="final_v1", observed_status="Final", home_score=5, away_score=2, is_final=True)
+    obs_final_v2 = SourceObservation(provider="MLB", event_id="mlb_001", retrieval_timestamp_utc="ts2", raw_payload_hash="final_v2_stat_corr", observed_status="Final", home_score=6, away_score=2, is_final=True)
+
+    r1 = temp_ledger.record_temporal_observation(obs_final_v1)
+    r2 = temp_ledger.record_temporal_observation(obs_final_v2)
+
+    assert r1.temporal_classification == "TEMPORAL_FINAL"
+    assert r2.temporal_classification == "TEMPORAL_CORRECTED"
+    assert r2.correction_detected is True
+    assert r2.prior_observation_reference == r1.temporal_id
+
+def test_finality_conflict_detection(tmp_path):
+    ledger = SportsLongitudinalLedger()
+    temp_ledger = ObservationTemporalLedger(ledger)
+
+    obs_final = SourceObservation(provider="MLB", event_id="mlb_001", retrieval_timestamp_utc="ts1", raw_payload_hash="final_hash", observed_status="Final", home_score=5, away_score=2, is_final=True)
+    obs_conflict = SourceObservation(provider="MLB", event_id="mlb_001", retrieval_timestamp_utc="ts2", raw_payload_hash="conflict_hash", observed_status="Live", home_score=5, away_score=2, is_final=False)
+
+    r1 = temp_ledger.record_temporal_observation(obs_final)
+    r2 = temp_ledger.record_temporal_observation(obs_conflict)
+
+    assert r2.temporal_classification == "TEMPORAL_CONFLICTED"
+
+def test_unknown_event_identity_fails_closed():
+    ledger = SportsLongitudinalLedger()
+    temp_ledger = ObservationTemporalLedger(ledger)
+
+    obs_bad = SourceObservation(provider="", event_id="", retrieval_timestamp_utc="ts", raw_payload_hash="h", observed_status="S", home_score=0, away_score=0, is_final=False)
+    with pytest.raises(ValueError, match="UNKNOWN_EVENT_IDENTITY"):
+        temp_ledger.record_temporal_observation(obs_bad)
+
+def test_restart_reconstructs_temporal_history(tmp_path):
+    ledger_file = tmp_path / "temporal_restart_ledger.json"
+    ledger = SportsLongitudinalLedger(storage_path=ledger_file)
+    temp_ledger = ObservationTemporalLedger(ledger)
+
+    obs = SourceObservation(provider="MLB", event_id="mlb_restart", retrieval_timestamp_utc="ts1", raw_payload_hash="h1", observed_status="Preview", home_score=0, away_score=0, is_final=False)
+    temp_ledger.record_temporal_observation(obs)
+
+    # Re-instantiate ledger
+    reloaded_ledger = SportsLongitudinalLedger(storage_path=ledger_file)
+    assert len(reloaded_ledger.temporal_observations) == 1
+    assert reloaded_ledger.temporal_observations[0].external_event_id == "mlb_restart"
+
+def test_temporal_ledger_preserves_prediction_identity(tmp_path):
+    obs = RealSportsEventObservation(
+        event_id="mlb_pred_iso", sport="baseball", league="mlb", home_team="NYY", away_team="BOS",
+        event_start_time_utc="2026-08-16T23:00:00Z", observation_timestamp_utc="2026-08-16T20:00:00Z",
+        source_name="MLB", source_url="http", market_name="Moneyline", observed_odds={}, event_status="PREVIEW"
+    )
+    pred = LockedResearchPrediction(
+        prediction_id="pred_temp_iso_001", cycle_id="c1", event_observation=obs,
+        selected_prediction="NYY Moneyline", odds_at_lock="-110", implied_probability=0.524,
+        model_predicted_probability=0.580, lock_timestamp_utc="2026-08-16T20:05:00Z",
+        model_state_rationale="Temporal isolation test"
+    )
+    p_hash_before = pred.lock_and_sign()
+
+    ledger = SportsLongitudinalLedger()
+    ledger.add_prediction(pred)
+    temp_ledger = ObservationTemporalLedger(ledger)
+
+    source_obs = SourceObservation(provider="MLB", event_id="mlb_pred_iso", retrieval_timestamp_utc="ts", raw_payload_hash="h", observed_status="Final", home_score=5, away_score=2, is_final=True)
+    temp_ledger.record_temporal_observation(source_obs)
+
+    assert pred.sha256_receipt_hash == p_hash_before
+    assert pred.compute_sha256_hash() == p_hash_before
+
+def test_temporal_history_cannot_bypass_outcome_gate():
+    ledger = SportsLongitudinalLedger()
+    temp_ledger = ObservationTemporalLedger(ledger)
+
+    obs = SourceObservation(provider="MLB", event_id="e1", retrieval_timestamp_utc="ts", raw_payload_hash="h", observed_status="Final", home_score=5, away_score=2, is_final=True)
+    temp_ledger.record_temporal_observation(obs)
+
+    # Verify recording a temporal observation did NOT automatically create an outcome record
+    assert len(ledger.outcomes) == 0
+
+def test_reliability_consumes_temporal_receipts(tmp_path):
+    ledger = SportsLongitudinalLedger()
+    rel_ledger = ObservationReliabilityLedger(ledger)
+
+    receipt = ObservationArbitrationReceipt(
+        arbitration_id="arb_temp_1", prediction_id="p1", external_event_id="e1",
+        timestamp_utc="ts", agreement_state="OBS_MATCHED",
+        observations=[{"provider": "MLB"}], resolution_allowed=True, rationale="Matched"
+    )
+    rel_ledger.ingest_arbitration_receipt(receipt)
+    assert ledger.provider_reliability["MLB"].event_observations_attempted == 1
+
+def test_repeated_polling_is_idempotent(tmp_path):
+    ledger = SportsLongitudinalLedger(storage_path=tmp_path / "idempotent_ledger.json")
+    temp_ledger = ObservationTemporalLedger(ledger)
+
+    obs = SourceObservation(provider="MLB", event_id="e_idem", retrieval_timestamp_utc="ts1", raw_payload_hash="payload_fixed", observed_status="Final", home_score=4, away_score=2, is_final=True)
+
+    temp_ledger.record_temporal_observation(obs)
+    temp_ledger.record_temporal_observation(obs)
+
+    assert len(ledger.temporal_observations) == 2
+    assert ledger.temporal_observations[1].temporal_classification == "TEMPORAL_DUPLICATE"

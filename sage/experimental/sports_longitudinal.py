@@ -36,6 +36,57 @@ class ObservationReliabilityGrade(str, Enum):
     RELIABILITY_HIGH = "RELIABILITY_HIGH"
     RELIABILITY_VERIFIED = "RELIABILITY_VERIFIED"
 
+class ObservationTemporalClassification(str, Enum):
+    TEMPORAL_UNKNOWN = "TEMPORAL_UNKNOWN"
+    TEMPORAL_CURRENT = "TEMPORAL_CURRENT"
+    TEMPORAL_LATE = "TEMPORAL_LATE"
+    TEMPORAL_DUPLICATE = "TEMPORAL_DUPLICATE"
+    TEMPORAL_CORRECTED = "TEMPORAL_CORRECTED"
+    TEMPORAL_CONFLICTED = "TEMPORAL_CONFLICTED"
+    TEMPORAL_FINAL = "TEMPORAL_FINAL"
+
+@dataclass
+class ObservationTemporalRecord:
+    temporal_id: str
+    provider: str
+    external_event_id: str
+    observation_timestamp_utc: str
+    retrieval_timestamp_utc: str
+    provider_status: str
+    observation_confidence: str
+    source_payload_hash: str
+    prior_observation_reference: Optional[str] = None
+    transition_detected: bool = False
+    correction_detected: bool = False
+    finality_state: bool = False
+    temporal_classification: str = ObservationTemporalClassification.TEMPORAL_UNKNOWN.value
+    observation_delay_seconds: float = 0.0
+    sha256_hash: str = ""
+
+    def __post_init__(self):
+        if not self.sha256_hash:
+            self.sha256_hash = self.compute_sha256()
+
+    def compute_sha256(self) -> str:
+        payload = {
+            "temporal_id": self.temporal_id,
+            "provider": self.provider,
+            "external_event_id": self.external_event_id,
+            "observation_timestamp_utc": self.observation_timestamp_utc,
+            "retrieval_timestamp_utc": self.retrieval_timestamp_utc,
+            "provider_status": self.provider_status,
+            "observation_confidence": self.observation_confidence,
+            "source_payload_hash": self.source_payload_hash,
+            "prior_observation_reference": self.prior_observation_reference or "",
+            "transition_detected": self.transition_detected,
+            "correction_detected": self.correction_detected,
+            "finality_state": self.finality_state,
+            "temporal_classification": self.temporal_classification,
+            "observation_delay_seconds": self.observation_delay_seconds
+        }
+        serialized = json.dumps(payload, sort_keys=True, default=str)
+        return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
 @dataclass
 class ProviderReliabilityRecord:
     provider: str
@@ -436,6 +487,7 @@ class SportsLongitudinalLedger:
         self.quality_telemetry: List[ReconciliationQualityTelemetry] = []
         self.arbitration_history: List[ObservationArbitrationReceipt] = []
         self.provider_reliability: Dict[str, ProviderReliabilityRecord] = {}
+        self.temporal_observations: List[ObservationTemporalRecord] = []
         self.processed_receipt_ids: set[str] = set()
         self._prediction_ids: set[str] = set()
 
@@ -455,6 +507,7 @@ class SportsLongitudinalLedger:
             "quality_telemetry": [asdict(q) for q in self.quality_telemetry],
             "arbitration_history": [asdict(a) for a in self.arbitration_history],
             "provider_reliability": {k: asdict(v) for k, v in self.provider_reliability.items()},
+            "temporal_observations": [asdict(t) for t in self.temporal_observations],
             "processed_receipt_ids": list(self.processed_receipt_ids)
         }
         target_path.parent.mkdir(parents=True, exist_ok=True)
@@ -477,6 +530,7 @@ class SportsLongitudinalLedger:
         self.quality_telemetry.clear()
         self.arbitration_history.clear()
         self.provider_reliability.clear()
+        self.temporal_observations.clear()
         self.processed_receipt_ids.clear()
         self._prediction_ids.clear()
 
@@ -510,6 +564,10 @@ class SportsLongitudinalLedger:
         for p_name, raw_r in data.get("provider_reliability", {}).items():
             record = ProviderReliabilityRecord(**raw_r)
             self.provider_reliability[p_name] = record
+
+        for raw_t in data.get("temporal_observations", []):
+            temp_rec = ObservationTemporalRecord(**raw_t)
+            self.temporal_observations.append(temp_rec)
 
         self.processed_receipt_ids = set(data.get("processed_receipt_ids", []))
 
@@ -1046,3 +1104,80 @@ class ObservationReliabilityLedger:
         if not rec:
             return ObservationReliabilityGrade.RELIABILITY_UNKNOWN.value
         return rec.reliability_grade
+
+
+class ObservationTemporalLedger:
+    """Event-level and temporal observation integrity ledger tracking source chronology, transitions, and corrections."""
+
+    def __init__(self, ledger: SportsLongitudinalLedger):
+        self.ledger = ledger
+
+    def record_temporal_observation(
+        self,
+        obs: SourceObservation,
+        observation_confidence: str = ObservationConfidenceLevel.OBS_3_STATUS_VERIFIED.value
+    ) -> ObservationTemporalRecord:
+        if not obs.provider or not obs.event_id:
+            raise ValueError("UNKNOWN_EVENT_IDENTITY: Provider and external event ID are required for temporal observation recording.")
+
+        # Query existing temporal observation chronology for this provider + external event
+        prior_records = [
+            t for t in self.ledger.temporal_observations
+            if t.provider == obs.provider and t.external_event_id == obs.event_id
+        ]
+        prior_ref = prior_records[-1].temporal_id if prior_records else None
+
+        transition_detected = False
+        correction_detected = False
+        finality_state = obs.is_final
+        classification = ObservationTemporalClassification.TEMPORAL_CURRENT.value
+
+        # Calculate observation delay
+        delay_sec = 0.0
+        try:
+            obs_dt = parse_iso_utc(obs.retrieval_timestamp_utc)
+            ret_dt = parse_iso_utc(obs.retrieval_timestamp_utc)
+            delay_sec = max(0.0, (ret_dt - obs_dt).total_seconds())
+        except Exception:
+            pass
+
+        if prior_records:
+            latest_prior = prior_records[-1]
+
+            if latest_prior.source_payload_hash == obs.raw_payload_hash:
+                classification = ObservationTemporalClassification.TEMPORAL_DUPLICATE.value
+            elif latest_prior.finality_state and not obs.is_final:
+                classification = ObservationTemporalClassification.TEMPORAL_CONFLICTED.value
+            elif latest_prior.finality_state and obs.is_final and latest_prior.source_payload_hash != obs.raw_payload_hash:
+                classification = ObservationTemporalClassification.TEMPORAL_CORRECTED.value
+                correction_detected = True
+            elif latest_prior.provider_status != obs.observed_status or latest_prior.finality_state != obs.is_final:
+                transition_detected = True
+                classification = ObservationTemporalClassification.TEMPORAL_FINAL.value if obs.is_final else ObservationTemporalClassification.TEMPORAL_CURRENT.value
+            elif obs.is_final:
+                classification = ObservationTemporalClassification.TEMPORAL_FINAL.value
+        elif obs.is_final:
+            classification = ObservationTemporalClassification.TEMPORAL_FINAL.value
+
+        record = ObservationTemporalRecord(
+            temporal_id=f"temp_{obs.provider}_{obs.event_id}_{len(prior_records) + 1}",
+            provider=obs.provider,
+            external_event_id=obs.event_id,
+            observation_timestamp_utc=obs.retrieval_timestamp_utc,
+            retrieval_timestamp_utc=obs.retrieval_timestamp_utc,
+            provider_status=obs.observed_status,
+            observation_confidence=observation_confidence,
+            source_payload_hash=obs.raw_payload_hash,
+            prior_observation_reference=prior_ref,
+            transition_detected=transition_detected,
+            correction_detected=correction_detected,
+            finality_state=finality_state,
+            temporal_classification=classification,
+            observation_delay_seconds=delay_sec
+        )
+
+        self.ledger.temporal_observations.append(record)
+        if self.ledger.storage_path:
+            self.ledger.save()
+
+        return record

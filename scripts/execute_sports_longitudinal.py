@@ -28,6 +28,7 @@ from sage.experimental.sports_longitudinal import (
     SourceObservation,
     SportsObservationArbitrator,
     ObservationReliabilityLedger,
+    ObservationTemporalLedger,
     persist_flight_artifact,
     asdict
 )
@@ -360,6 +361,15 @@ def main():
         rec = fresh_ledger.provider_reliability.get(provider_name)
         attempts = rec.event_observations_attempted if rec else 0
         print(f"    - Provider: {provider_name:<20} | Grade: {grade:<20} | Attempts: {attempts}")
+
+    # 11. Execute Temporal Observation Integrity Measurement Pass (RCE-002.4)
+    temp_ledger = ObservationTemporalLedger(fresh_ledger)
+    temp_rec1 = temp_ledger.record_temporal_observation(obs_source1)
+    temp_rec2 = temp_ledger.record_temporal_observation(obs_source2)
+
+    print(f"[+] Temporal Observation Integrity Records (RCE-002.4 Event-Level Layer):")
+    for t_rec in [temp_rec1, temp_rec2]:
+        print(f"    - ID: {t_rec.temporal_id} | Class: {t_rec.temporal_classification} | Transition: {t_rec.transition_detected}")
 
     summary_report = fresh_ledger.generate_summary_report()
 
