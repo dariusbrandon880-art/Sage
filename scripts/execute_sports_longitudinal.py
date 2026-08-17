@@ -31,6 +31,7 @@ from sage.experimental.sports_longitudinal import (
     ObservationTemporalLedger,
     SportsObservationEventType,
     SportsObservationEventStream,
+    HistoricalInformationIntegrityAnalyzer,
     persist_flight_artifact,
     asdict
 )
@@ -392,6 +393,20 @@ def main():
     print(f"    - Total Stream Events: {reconstructed_state['total_events']}")
     print(f"    - Providers Seen:     {reconstructed_state['providers_observed']}")
     print(f"    - Is Finalized:       {reconstructed_state['is_finalized']}")
+
+    # 13. Execute Historical Information Integrity & Availability Analysis Pass (RCE-003.0)
+    integrity_analyzer = HistoricalInformationIntegrityAnalyzer(fresh_ledger)
+    availability_snapshot = integrity_analyzer.analyze_availability_at_timestamp(
+        research_timestamp_utc=obs_ts,
+        external_event_id=f"mlb_game_{game_id}"
+    )
+    print(f"[+] Historical Information Integrity Snapshot (RCE-003.0 Research Availability Layer):")
+    print(f"    - Snapshot ID:        {availability_snapshot.snapshot_id}")
+    print(f"    - Research Timestamp: {availability_snapshot.research_timestamp_utc}")
+    print(f"    - Analyzed Events:    {availability_snapshot.total_observations_analyzed}")
+    print(f"    - Leakage Detected:   {availability_snapshot.leakage_detected}")
+    print(f"    - Available Count:    {len(availability_snapshot.available_observations)}")
+    print(f"    - Excluded Count:     {len(availability_snapshot.excluded_observations)}")
 
     summary_report = fresh_ledger.generate_summary_report()
 

@@ -54,6 +54,42 @@ class SportsObservationEventType(str, Enum):
     OBS_CORRECTED = "OBS_CORRECTED"
     OBS_RECONCILED = "OBS_RECONCILED"
 
+class ObservationAvailabilityClassification(str, Enum):
+    AVAILABLE = "AVAILABLE"
+    AVAILABLE_AFTER_RESEARCH_TIME = "AVAILABLE_AFTER_RESEARCH_TIME"
+    LATE_OBSERVATION = "LATE_OBSERVATION"
+    CORRECTION_NOT_AVAILABLE_AT_T = "CORRECTION_NOT_AVAILABLE_AT_T"
+    POST_TIMESTAMP_LEAKAGE = "POST_TIMESTAMP_LEAKAGE"
+    FAIL_CLOSED_AMBIGUOUS_TIMING = "FAIL_CLOSED_AMBIGUOUS_TIMING"
+
+@dataclass
+class ObservationAvailabilitySnapshot:
+    snapshot_id: str
+    research_timestamp_utc: str
+    total_observations_analyzed: int
+    available_observations: List[Dict[str, Any]]
+    excluded_observations: List[Dict[str, Any]]
+    leakage_detected: bool
+    classification_breakdown: Dict[str, int]
+    sha256_hash: str = ""
+
+    def __post_init__(self):
+        if not self.sha256_hash:
+            self.sha256_hash = self.compute_sha256()
+
+    def compute_sha256(self) -> str:
+        payload = {
+            "snapshot_id": self.snapshot_id,
+            "research_timestamp_utc": self.research_timestamp_utc,
+            "total_observations_analyzed": self.total_observations_analyzed,
+            "available_observations": self.available_observations,
+            "excluded_observations": self.excluded_observations,
+            "leakage_detected": self.leakage_detected,
+            "classification_breakdown": self.classification_breakdown
+        }
+        serialized = json.dumps(payload, sort_keys=True, default=str)
+        return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
 @dataclass
 class SportsObservationEvent:
     event_stream_id: str
@@ -1327,3 +1363,117 @@ class SportsObservationEventStream:
             "corrections_count": corrections_count,
             "event_chronology": chronology
         }
+
+
+class HistoricalInformationIntegrityAnalyzer:
+    """Read-only scientific integrity analyzer enforcing historical information availability boundaries (RCE-003.0)."""
+
+    def __init__(self, ledger: SportsLongitudinalLedger):
+        self.ledger = ledger
+
+    def analyze_availability_at_timestamp(
+        self,
+        research_timestamp_utc: str,
+        external_event_id: Optional[str] = None
+    ) -> ObservationAvailabilitySnapshot:
+        if not research_timestamp_utc:
+            raise ValueError("RESEARCH_TIMESTAMP_REQUIRED: Historical availability analysis requires an explicit research timestamp T.")
+
+        try:
+            target_t = parse_iso_utc(research_timestamp_utc)
+        except Exception:
+            raise ValueError(f"FAIL_CLOSED_AMBIGUOUS_TIMING: Invalid ISO 8601 research timestamp '{research_timestamp_utc}'.")
+
+        stream = SportsObservationEventStream(self.ledger)
+        all_events = self.ledger.observation_event_stream
+        if external_event_id:
+            all_events = [e for e in all_events if e.external_event_id == external_event_id]
+
+        all_temporal = self.ledger.temporal_observations
+        if external_event_id:
+            all_temporal = [t for t in all_temporal if t.external_event_id == external_event_id]
+
+        available = []
+        excluded = []
+        leakage_detected = False
+        breakdown = {
+            ObservationAvailabilityClassification.AVAILABLE.value: 0,
+            ObservationAvailabilityClassification.AVAILABLE_AFTER_RESEARCH_TIME.value: 0,
+            ObservationAvailabilityClassification.LATE_OBSERVATION.value: 0,
+            ObservationAvailabilityClassification.CORRECTION_NOT_AVAILABLE_AT_T.value: 0,
+            ObservationAvailabilityClassification.POST_TIMESTAMP_LEAKAGE.value: 0,
+            ObservationAvailabilityClassification.FAIL_CLOSED_AMBIGUOUS_TIMING.value: 0,
+        }
+
+        # Analyze stream events
+        for evt in all_events:
+            ts_str = evt.timestamp_utc
+            if not ts_str:
+                classification = ObservationAvailabilityClassification.FAIL_CLOSED_AMBIGUOUS_TIMING.value
+                excluded.append({"event_stream_id": evt.event_stream_id, "classification": classification, "reason": "Missing timestamp"})
+                breakdown[classification] += 1
+                continue
+
+            try:
+                ingest_dt = parse_iso_utc(ts_str)
+            except Exception:
+                classification = ObservationAvailabilityClassification.FAIL_CLOSED_AMBIGUOUS_TIMING.value
+                excluded.append({"event_stream_id": evt.event_stream_id, "classification": classification, "reason": "Unparseable timestamp"})
+                breakdown[classification] += 1
+                continue
+
+            if ingest_dt <= target_t:
+                classification = ObservationAvailabilityClassification.AVAILABLE.value
+                available.append({"event_stream_id": evt.event_stream_id, "event_type": evt.event_type, "timestamp_utc": ts_str, "classification": classification})
+                breakdown[classification] += 1
+            else:
+                leakage_detected = True
+                classification = ObservationAvailabilityClassification.POST_TIMESTAMP_LEAKAGE.value
+                excluded.append({"event_stream_id": evt.event_stream_id, "event_type": evt.event_type, "timestamp_utc": ts_str, "classification": classification})
+                breakdown[classification] += 1
+
+        # Analyze temporal observation records
+        for temp in all_temporal:
+            ret_str = temp.retrieval_timestamp_utc
+            obs_str = temp.observation_timestamp_utc
+
+            if not ret_str:
+                classification = ObservationAvailabilityClassification.FAIL_CLOSED_AMBIGUOUS_TIMING.value
+                excluded.append({"temporal_id": temp.temporal_id, "classification": classification, "reason": "Missing retrieval timestamp"})
+                breakdown[classification] += 1
+                continue
+
+            try:
+                ret_dt = parse_iso_utc(ret_str)
+            except Exception:
+                classification = ObservationAvailabilityClassification.FAIL_CLOSED_AMBIGUOUS_TIMING.value
+                excluded.append({"temporal_id": temp.temporal_id, "classification": classification, "reason": "Unparseable retrieval timestamp"})
+                breakdown[classification] += 1
+                continue
+
+            if ret_dt <= target_t:
+                classification = ObservationAvailabilityClassification.AVAILABLE.value
+                available.append({"temporal_id": temp.temporal_id, "provider": temp.provider, "retrieval_timestamp_utc": ret_str, "classification": classification})
+                breakdown[classification] += 1
+            else:
+                leakage_detected = True
+                if temp.correction_detected:
+                    classification = ObservationAvailabilityClassification.CORRECTION_NOT_AVAILABLE_AT_T.value
+                else:
+                    classification = ObservationAvailabilityClassification.LATE_OBSERVATION.value if obs_str and parse_iso_utc(obs_str) <= target_t else ObservationAvailabilityClassification.AVAILABLE_AFTER_RESEARCH_TIME.value
+
+                excluded.append({"temporal_id": temp.temporal_id, "provider": temp.provider, "retrieval_timestamp_utc": ret_str, "classification": classification})
+                breakdown[classification] += 1
+
+        total_analyzed = len(available) + len(excluded)
+        snap_id = f"snap_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}"
+
+        return ObservationAvailabilitySnapshot(
+            snapshot_id=snap_id,
+            research_timestamp_utc=research_timestamp_utc,
+            total_observations_analyzed=total_analyzed,
+            available_observations=available,
+            excluded_observations=excluded,
+            leakage_detected=leakage_detected,
+            classification_breakdown=breakdown
+        )

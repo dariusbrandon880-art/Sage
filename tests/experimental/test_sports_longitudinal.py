@@ -25,7 +25,10 @@ from sage.experimental.sports_longitudinal import (
     ObservationTemporalLedger,
     SportsObservationEventType,
     SportsObservationEvent,
-    SportsObservationEventStream
+    SportsObservationEventStream,
+    ObservationAvailabilityClassification,
+    ObservationAvailabilitySnapshot,
+    HistoricalInformationIntegrityAnalyzer
 )
 
 def test_a_changing_locked_prediction_field_changes_hash():
@@ -1039,4 +1042,78 @@ def test_event_stream_isolation_from_predictions(tmp_path):
 
     # Verify prediction hash remains byte-for-byte identical and no outcome was created automatically
     assert pred.sha256_receipt_hash == p_hash_before
+    assert len(ledger.outcomes) == 0
+
+def test_p_historical_availability_snapshot_creation_and_hash():
+    snap = ObservationAvailabilitySnapshot(
+        snapshot_id="snap_test_001",
+        research_timestamp_utc="2026-08-16T20:00:00Z",
+        total_observations_analyzed=5,
+        available_observations=[{"event_stream_id": "e1"}],
+        excluded_observations=[{"event_stream_id": "e2"}],
+        leakage_detected=True,
+        classification_breakdown={"AVAILABLE": 1, "POST_TIMESTAMP_LEAKAGE": 1}
+    )
+    assert snap.sha256_hash != ""
+    assert snap.sha256_hash == snap.compute_sha256()
+
+def test_q_historical_information_availability_analysis_at_timestamp(tmp_path):
+    ledger = SportsLongitudinalLedger(storage_path=tmp_path / "integrity_ledger.json")
+    stream = SportsObservationEventStream(ledger)
+
+    # Event 1: Pre-research time T (2026-08-16T19:00:00Z)
+    stream.append_event(
+        event_type=SportsObservationEventType.OBS_RECEIVED.value, provider="MLB",
+        external_event_id="mlb_hist_001", payload_hash="h1", details={"status": "Preview"},
+        timestamp_utc="2026-08-16T19:00:00Z"
+    )
+
+    # Event 2: Post-research time T (2026-08-16T21:00:00Z) -> Future info leakage
+    stream.append_event(
+        event_type=SportsObservationEventType.OBS_FINALIZED.value, provider="MLB",
+        external_event_id="mlb_hist_001", payload_hash="h2", details={"status": "Final", "is_final": True},
+        timestamp_utc="2026-08-16T21:00:00Z"
+    )
+
+    analyzer = HistoricalInformationIntegrityAnalyzer(ledger)
+    research_t = "2026-08-16T20:00:00Z" # Research timestamp T
+
+    snapshot = analyzer.analyze_availability_at_timestamp(research_timestamp_utc=research_t)
+
+    assert snapshot.total_observations_analyzed == 2
+    assert snapshot.leakage_detected is True
+    assert len(snapshot.available_observations) == 1
+    assert len(snapshot.excluded_observations) == 1
+    assert snapshot.excluded_observations[0]["classification"] == "POST_TIMESTAMP_LEAKAGE"
+
+def test_r_historical_analysis_unparseable_timestamp_fails_closed():
+    ledger = SportsLongitudinalLedger()
+    analyzer = HistoricalInformationIntegrityAnalyzer(ledger)
+
+    with pytest.raises(ValueError, match="FAIL_CLOSED_AMBIGUOUS_TIMING"):
+        analyzer.analyze_availability_at_timestamp(research_timestamp_utc="INVALID_TIMESTAMP")
+
+def test_s_historical_analyzer_read_only_isolation():
+    obs = RealSportsEventObservation(
+        event_id="mlb_readonly_test", sport="baseball", league="mlb", home_team="NYY", away_team="BOS",
+        event_start_time_utc="2026-08-16T23:00:00Z", observation_timestamp_utc="2026-08-16T20:00:00Z",
+        source_name="MLB", source_url="http", market_name="Moneyline", observed_odds={}, event_status="PREVIEW"
+    )
+    pred = LockedResearchPrediction(
+        prediction_id="pred_ro_001", cycle_id="c1", event_observation=obs,
+        selected_prediction="NYY Moneyline", odds_at_lock="-110", implied_probability=0.524,
+        model_predicted_probability=0.580, lock_timestamp_utc="2026-08-16T20:05:00Z",
+        model_state_rationale="Read-only test"
+    )
+    p_hash_before = pred.lock_and_sign()
+
+    ledger = SportsLongitudinalLedger()
+    ledger.add_prediction(pred)
+
+    analyzer = HistoricalInformationIntegrityAnalyzer(ledger)
+    snapshot = analyzer.analyze_availability_at_timestamp("2026-08-16T20:00:00Z")
+
+    # Assert read-only analyzer did not mutate predictions or outcomes
+    assert pred.sha256_receipt_hash == p_hash_before
+    assert len(ledger.predictions) == 1
     assert len(ledger.outcomes) == 0
