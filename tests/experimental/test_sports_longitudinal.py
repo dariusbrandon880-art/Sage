@@ -22,7 +22,10 @@ from sage.experimental.sports_longitudinal import (
     ObservationReliabilityLedger,
     ObservationTemporalClassification,
     ObservationTemporalRecord,
-    ObservationTemporalLedger
+    ObservationTemporalLedger,
+    SportsObservationEventType,
+    SportsObservationEvent,
+    SportsObservationEventStream
 )
 
 def test_a_changing_locked_prediction_field_changes_hash():
@@ -947,3 +950,93 @@ def test_repeated_polling_is_idempotent(tmp_path):
 
     assert len(ledger.temporal_observations) == 2
     assert ledger.temporal_observations[1].temporal_classification == "TEMPORAL_DUPLICATE"
+
+def test_observation_event_stream_lifecycle(tmp_path):
+    ledger = SportsLongitudinalLedger(storage_path=tmp_path / "stream_ledger.json")
+    stream = SportsObservationEventStream(ledger)
+
+    e1 = stream.append_event(
+        event_type=SportsObservationEventType.OBS_RECEIVED.value, provider="MLB Stats API",
+        external_event_id="mlb_stream_001", payload_hash="hash_v1", details={"status": "Preview"}
+    )
+    assert e1.sequence_number == 1
+    assert e1.sha256_hash != ""
+    assert len(ledger.observation_event_stream) == 1
+
+def test_deterministic_replay_state_reconstruction(tmp_path):
+    ledger = SportsLongitudinalLedger(storage_path=tmp_path / "replay_ledger.json")
+    stream = SportsObservationEventStream(ledger)
+
+    stream.append_event(SportsObservationEventType.OBS_RECEIVED.value, "MLB", "mlb_001", "h1", {"status": "Preview", "home_score": 0, "away_score": 0})
+    stream.append_event(SportsObservationEventType.OBS_STATUS_CHANGED.value, "MLB", "mlb_001", "h2", {"status": "Live", "home_score": 2, "away_score": 1})
+    stream.append_event(SportsObservationEventType.OBS_FINALIZED.value, "MLB", "mlb_001", "h3", {"status": "Final", "home_score": 5, "away_score": 2, "is_final": True})
+
+    # Simulate fresh process replay from stream history
+    reloaded_ledger = SportsLongitudinalLedger(storage_path=tmp_path / "replay_ledger.json")
+    reloaded_stream = SportsObservationEventStream(reloaded_ledger)
+
+    state = reloaded_stream.reconstruct_event_state("mlb_001")
+    assert state["external_event_id"] == "mlb_001"
+    assert state["total_events"] == 3
+    assert state["providers_observed"] == ["MLB"]
+    assert state["is_finalized"] is True
+    assert state["latest_scores_by_provider"]["MLB"] == {"home_score": 5, "away_score": 2}
+
+def test_event_sequence_ordering_and_integrity(tmp_path):
+    ledger = SportsLongitudinalLedger()
+    stream = SportsObservationEventStream(ledger)
+
+    e1 = stream.append_event(SportsObservationEventType.OBS_RECEIVED.value, "P1", "e1", "h1", {})
+    e2 = stream.append_event(SportsObservationEventType.OBS_STATUS_CHANGED.value, "P1", "e1", "h2", {})
+
+    assert e1.sequence_number == 1
+    assert e2.sequence_number == 2
+    assert e1.compute_sha256() == e1.sha256_hash
+    assert e2.compute_sha256() == e2.sha256_hash
+
+def test_duplicate_and_out_of_order_event_handling(tmp_path):
+    ledger = SportsLongitudinalLedger()
+    stream = SportsObservationEventStream(ledger)
+
+    # Append events
+    stream.append_event(SportsObservationEventType.OBS_RECEIVED.value, "MLB", "e_order", "h1", {"status": "Preview"}, timestamp_utc="2026-08-16T20:00:00Z")
+    stream.append_event(SportsObservationEventType.OBS_RECEIVED.value, "MLB", "e_order", "h1", {"status": "Preview"}, timestamp_utc="2026-08-16T20:01:00Z")
+
+    state = stream.reconstruct_event_state("e_order")
+    assert state["total_events"] == 2
+
+def test_restart_reconstructs_event_stream(tmp_path):
+    ledger_file = tmp_path / "restart_stream.json"
+    ledger = SportsLongitudinalLedger(storage_path=ledger_file)
+    stream = SportsObservationEventStream(ledger)
+
+    stream.append_event(SportsObservationEventType.OBS_RECEIVED.value, "MLB", "e_restart", "h1", {"status": "Preview"})
+
+    # Fresh process restart
+    reloaded_ledger = SportsLongitudinalLedger(storage_path=ledger_file)
+    assert len(reloaded_ledger.observation_event_stream) == 1
+    assert reloaded_ledger.observation_event_stream[0].external_event_id == "e_restart"
+
+def test_event_stream_isolation_from_predictions(tmp_path):
+    obs = RealSportsEventObservation(
+        event_id="mlb_stream_iso", sport="baseball", league="mlb", home_team="NYY", away_team="BOS",
+        event_start_time_utc="2026-08-16T23:00:00Z", observation_timestamp_utc="2026-08-16T20:00:00Z",
+        source_name="MLB", source_url="http", market_name="Moneyline", observed_odds={}, event_status="PREVIEW"
+    )
+    pred = LockedResearchPrediction(
+        prediction_id="pred_stream_iso_001", cycle_id="c1", event_observation=obs,
+        selected_prediction="NYY Moneyline", odds_at_lock="-110", implied_probability=0.524,
+        model_predicted_probability=0.580, lock_timestamp_utc="2026-08-16T20:05:00Z",
+        model_state_rationale="Stream isolation test"
+    )
+    p_hash_before = pred.lock_and_sign()
+
+    ledger = SportsLongitudinalLedger()
+    ledger.add_prediction(pred)
+    stream = SportsObservationEventStream(ledger)
+
+    stream.append_event(SportsObservationEventType.OBS_FINALIZED.value, "MLB", "mlb_stream_iso", "h_final", {"status": "Final", "is_final": True})
+
+    # Verify prediction hash remains byte-for-byte identical and no outcome was created automatically
+    assert pred.sha256_receipt_hash == p_hash_before
+    assert len(ledger.outcomes) == 0

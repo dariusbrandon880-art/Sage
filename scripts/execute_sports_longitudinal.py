@@ -29,6 +29,8 @@ from sage.experimental.sports_longitudinal import (
     SportsObservationArbitrator,
     ObservationReliabilityLedger,
     ObservationTemporalLedger,
+    SportsObservationEventType,
+    SportsObservationEventStream,
     persist_flight_artifact,
     asdict
 )
@@ -370,6 +372,26 @@ def main():
     print(f"[+] Temporal Observation Integrity Records (RCE-002.4 Event-Level Layer):")
     for t_rec in [temp_rec1, temp_rec2]:
         print(f"    - ID: {t_rec.temporal_id} | Class: {t_rec.temporal_classification} | Transition: {t_rec.transition_detected}")
+
+    # 12. Execute Observation Event Stream & Replay Reconstruction Demonstration (RCE-002.5)
+    event_stream = SportsObservationEventStream(fresh_ledger)
+    event_stream.append_event(
+        event_type=SportsObservationEventType.OBS_RECEIVED.value,
+        provider="MLB Stats API", external_event_id=f"mlb_game_{game_id}",
+        payload_hash="sha256_mlb_raw", details={"status": event_status, "home_score": home_score, "away_score": away_score}
+    )
+    event_stream.append_event(
+        event_type=SportsObservationEventType.OBS_ARBITRATED.value,
+        provider="SAGE Arbitrator", external_event_id=f"mlb_game_{game_id}",
+        payload_hash="sha256_arb_res", details={"agreement_state": arb_receipt.agreement_state, "is_final": (event_status == "Final")}
+    )
+
+    reconstructed_state = event_stream.reconstruct_event_state(f"mlb_game_{game_id}")
+    print(f"[+] Observation Event Stream Replay Reconstruction (RCE-002.5 Event Stream Layer):")
+    print(f"    - External Event ID:  {reconstructed_state['external_event_id']}")
+    print(f"    - Total Stream Events: {reconstructed_state['total_events']}")
+    print(f"    - Providers Seen:     {reconstructed_state['providers_observed']}")
+    print(f"    - Is Finalized:       {reconstructed_state['is_finalized']}")
 
     summary_report = fresh_ledger.generate_summary_report()
 

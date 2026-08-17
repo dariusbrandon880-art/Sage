@@ -45,6 +45,45 @@ class ObservationTemporalClassification(str, Enum):
     TEMPORAL_CONFLICTED = "TEMPORAL_CONFLICTED"
     TEMPORAL_FINAL = "TEMPORAL_FINAL"
 
+class SportsObservationEventType(str, Enum):
+    OBS_RECEIVED = "OBS_RECEIVED"
+    OBS_STATUS_CHANGED = "OBS_STATUS_CHANGED"
+    OBS_CONFLICT_DETECTED = "OBS_CONFLICT_DETECTED"
+    OBS_ARBITRATED = "OBS_ARBITRATED"
+    OBS_FINALIZED = "OBS_FINALIZED"
+    OBS_CORRECTED = "OBS_CORRECTED"
+    OBS_RECONCILED = "OBS_RECONCILED"
+
+@dataclass
+class SportsObservationEvent:
+    event_stream_id: str
+    sequence_number: int
+    event_type: str
+    provider: str
+    external_event_id: str
+    timestamp_utc: str
+    payload_hash: str
+    details: Dict[str, Any] = field(default_factory=dict)
+    sha256_hash: str = ""
+
+    def __post_init__(self):
+        if not self.sha256_hash:
+            self.sha256_hash = self.compute_sha256()
+
+    def compute_sha256(self) -> str:
+        payload = {
+            "event_stream_id": self.event_stream_id,
+            "sequence_number": self.sequence_number,
+            "event_type": self.event_type,
+            "provider": self.provider,
+            "external_event_id": self.external_event_id,
+            "timestamp_utc": self.timestamp_utc,
+            "payload_hash": self.payload_hash,
+            "details": self.details
+        }
+        serialized = json.dumps(payload, sort_keys=True, default=str)
+        return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
 @dataclass
 class ObservationTemporalRecord:
     temporal_id: str
@@ -488,6 +527,7 @@ class SportsLongitudinalLedger:
         self.arbitration_history: List[ObservationArbitrationReceipt] = []
         self.provider_reliability: Dict[str, ProviderReliabilityRecord] = {}
         self.temporal_observations: List[ObservationTemporalRecord] = []
+        self.observation_event_stream: List[SportsObservationEvent] = []
         self.processed_receipt_ids: set[str] = set()
         self._prediction_ids: set[str] = set()
 
@@ -508,6 +548,7 @@ class SportsLongitudinalLedger:
             "arbitration_history": [asdict(a) for a in self.arbitration_history],
             "provider_reliability": {k: asdict(v) for k, v in self.provider_reliability.items()},
             "temporal_observations": [asdict(t) for t in self.temporal_observations],
+            "observation_event_stream": [asdict(e) for e in self.observation_event_stream],
             "processed_receipt_ids": list(self.processed_receipt_ids)
         }
         target_path.parent.mkdir(parents=True, exist_ok=True)
@@ -531,6 +572,7 @@ class SportsLongitudinalLedger:
         self.arbitration_history.clear()
         self.provider_reliability.clear()
         self.temporal_observations.clear()
+        self.observation_event_stream.clear()
         self.processed_receipt_ids.clear()
         self._prediction_ids.clear()
 
@@ -568,6 +610,10 @@ class SportsLongitudinalLedger:
         for raw_t in data.get("temporal_observations", []):
             temp_rec = ObservationTemporalRecord(**raw_t)
             self.temporal_observations.append(temp_rec)
+
+        for raw_e in data.get("observation_event_stream", []):
+            event_rec = SportsObservationEvent(**raw_e)
+            self.observation_event_stream.append(event_rec)
 
         self.processed_receipt_ids = set(data.get("processed_receipt_ids", []))
 
@@ -1181,3 +1227,103 @@ class ObservationTemporalLedger:
             self.ledger.save()
 
         return record
+
+
+class SportsObservationEventStream:
+    """Append-only, deterministic observation event stream and projection replay engine."""
+
+    def __init__(self, ledger: SportsLongitudinalLedger):
+        self.ledger = ledger
+
+    def append_event(
+        self,
+        event_type: str,
+        provider: str,
+        external_event_id: str,
+        payload_hash: str,
+        details: Dict[str, Any],
+        timestamp_utc: Optional[str] = None
+    ) -> SportsObservationEvent:
+        if not provider or not external_event_id:
+            raise ValueError("EVENT_STREAM_IDENTITY_FAIL: Provider and external event ID are required for event stream append.")
+
+        now_ts = timestamp_utc or datetime.now(timezone.utc).isoformat()
+        prior_events = [
+            e for e in self.ledger.observation_event_stream
+            if e.provider == provider and e.external_event_id == external_event_id
+        ]
+        seq_num = len(prior_events) + 1
+        stream_id = f"stream_{provider}_{external_event_id}_{seq_num}"
+
+        event = SportsObservationEvent(
+            event_stream_id=stream_id,
+            sequence_number=seq_num,
+            event_type=event_type,
+            provider=provider,
+            external_event_id=external_event_id,
+            timestamp_utc=now_ts,
+            payload_hash=payload_hash,
+            details=details
+        )
+
+        self.ledger.observation_event_stream.append(event)
+        if self.ledger.storage_path:
+            self.ledger.save()
+
+        return event
+
+    def reconstruct_event_state(self, external_event_id: str) -> Dict[str, Any]:
+        """Deterministically replays all stream events for an external_event_id to project current state."""
+        events = [
+            e for e in self.ledger.observation_event_stream
+            if e.external_event_id == external_event_id
+        ]
+        events_sorted = sorted(events, key=lambda x: (x.sequence_number, x.timestamp_utc))
+
+        providers_observed = set()
+        latest_status_by_provider: Dict[str, str] = {}
+        latest_scores_by_provider: Dict[str, Dict[str, Any]] = {}
+        is_finalized = False
+        conflicts_detected = 0
+        corrections_count = 0
+        chronology = []
+
+        for e in events_sorted:
+            providers_observed.add(e.provider)
+            latest_status_by_provider[e.provider] = e.details.get("status", "UNKNOWN")
+
+            if "home_score" in e.details or "away_score" in e.details:
+                latest_scores_by_provider[e.provider] = {
+                    "home_score": e.details.get("home_score"),
+                    "away_score": e.details.get("away_score")
+                }
+
+            if e.event_type == SportsObservationEventType.OBS_FINALIZED.value or e.details.get("is_final") is True:
+                is_finalized = True
+
+            if e.event_type == SportsObservationEventType.OBS_CONFLICT_DETECTED.value:
+                conflicts_detected += 1
+
+            if e.event_type == SportsObservationEventType.OBS_CORRECTED.value:
+                corrections_count += 1
+
+            chronology.append({
+                "sequence_number": e.sequence_number,
+                "event_type": e.event_type,
+                "provider": e.provider,
+                "timestamp_utc": e.timestamp_utc,
+                "payload_hash": e.payload_hash,
+                "sha256_hash": e.sha256_hash
+            })
+
+        return {
+            "external_event_id": external_event_id,
+            "total_events": len(events_sorted),
+            "providers_observed": sorted(list(providers_observed)),
+            "latest_status_by_provider": latest_status_by_provider,
+            "latest_scores_by_provider": latest_scores_by_provider,
+            "is_finalized": is_finalized,
+            "conflicts_detected": conflicts_detected,
+            "corrections_count": corrections_count,
+            "event_chronology": chronology
+        }
