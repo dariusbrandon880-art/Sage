@@ -28,7 +28,9 @@ from sage.experimental.sports_longitudinal import (
     SportsObservationEventStream,
     ObservationAvailabilityClassification,
     ObservationAvailabilitySnapshot,
-    HistoricalInformationIntegrityAnalyzer
+    HistoricalInformationIntegrityAnalyzer,
+    HistoricalResearchSnapshot,
+    ResearchIntegrityReceipt
 )
 
 def test_a_changing_locked_prediction_field_changes_hash():
@@ -1117,3 +1119,235 @@ def test_s_historical_analyzer_read_only_isolation():
     assert pred.sha256_receipt_hash == p_hash_before
     assert len(ledger.predictions) == 1
     assert len(ledger.outcomes) == 0
+
+def test_research_snapshot_creation(tmp_path):
+    ledger = SportsLongitudinalLedger(storage_path=tmp_path / "snap_create_ledger.json")
+    stream = SportsObservationEventStream(ledger)
+
+    stream.append_event(
+        event_type=SportsObservationEventType.OBS_RECEIVED.value, provider="MLB",
+        external_event_id="mlb_001", payload_hash="h1", details={"status": "Preview"},
+        timestamp_utc="2026-08-16T19:00:00Z"
+    )
+
+    analyzer = HistoricalInformationIntegrityAnalyzer(ledger)
+    snapshot, receipt = analyzer.create_research_snapshot(
+        research_timestamp_utc="2026-08-16T20:00:00Z",
+        external_event_id="mlb_001"
+    )
+
+    assert isinstance(snapshot, HistoricalResearchSnapshot)
+    assert isinstance(receipt, ResearchIntegrityReceipt)
+    assert len(snapshot.included_observation_references) == 1
+    assert receipt.integrity_status == "RESEARCH_TIME_CLEAN"
+
+def test_as_of_observation_selection(tmp_path):
+    ledger = SportsLongitudinalLedger(storage_path=tmp_path / "as_of_ledger.json")
+    stream = SportsObservationEventStream(ledger)
+
+    stream.append_event("OBS_RECEIVED", "MLB", "e1", "h1", {"status": "Preview"}, timestamp_utc="2026-08-16T18:00:00Z")
+    stream.append_event("OBS_STATUS_CHANGED", "MLB", "e1", "h2", {"status": "In Progress", "home_score": 2}, timestamp_utc="2026-08-16T19:30:00Z")
+    stream.append_event("OBS_FINALIZED", "MLB", "e1", "h3", {"status": "Final", "home_score": 5}, timestamp_utc="2026-08-16T22:00:00Z")
+
+    analyzer = HistoricalInformationIntegrityAnalyzer(ledger)
+    snapshot, receipt = analyzer.create_research_snapshot(research_timestamp_utc="2026-08-16T20:00:00Z")
+
+    p_data = snapshot.effective_observation_state["providers_state"]["MLB::e1"]
+    assert p_data["status"] == "In Progress"
+    assert p_data["home_score"] == 2
+    assert receipt.excluded_count == 1
+
+def test_late_observation_excluded(tmp_path):
+    ledger = SportsLongitudinalLedger(storage_path=tmp_path / "late_ledger.json")
+    temp_ledger = ObservationTemporalLedger(ledger)
+
+    # Event occurred at 19:00, but retrieved/observable at 21:00
+    temp_obs = SourceObservation(
+        provider="MLB", event_id="e_late", retrieval_timestamp_utc="2026-08-16T21:00:00Z",
+        raw_payload_hash="h_late", observed_status="Final", home_score=4, away_score=2, is_final=True
+    )
+    temp_ledger.record_temporal_observation(temp_obs)
+
+    analyzer = HistoricalInformationIntegrityAnalyzer(ledger)
+    snapshot, receipt = analyzer.create_research_snapshot(research_timestamp_utc="2026-08-16T20:00:00Z")
+
+    assert len(snapshot.included_observation_references) == 0
+    assert len(snapshot.excluded_post_timestamp_references) == 1
+    assert receipt.integrity_status == "POST_TIMESTAMP_INFORMATION_DETECTED"
+
+def test_post_timestamp_information_detected(tmp_path):
+    ledger = SportsLongitudinalLedger()
+    stream = SportsObservationEventStream(ledger)
+
+    stream.append_event("OBS_RECEIVED", "MLB", "e1", "h1", {"status": "Preview"}, timestamp_utc="2026-08-16T19:00:00Z")
+    stream.append_event("OBS_FINALIZED", "MLB", "e1", "h2", {"status": "Final"}, timestamp_utc="2026-08-16T21:00:00Z")
+
+    analyzer = HistoricalInformationIntegrityAnalyzer(ledger)
+    snapshot, receipt = analyzer.create_research_snapshot("2026-08-16T20:00:00Z")
+
+    assert receipt.integrity_status == "POST_TIMESTAMP_INFORMATION_DETECTED"
+    assert receipt.excluded_count == 1
+
+def test_correction_respects_availability_time(tmp_path):
+    ledger = SportsLongitudinalLedger()
+    temp_ledger = ObservationTemporalLedger(ledger)
+
+    # Original available at 19:00, correction available at 21:00
+    temp1 = SourceObservation("MLB", "e1", "2026-08-16T19:00:00Z", "h_orig", "Final", 5, 3, True)
+    temp2 = SourceObservation("MLB", "e1", "2026-08-16T21:00:00Z", "h_corr", "Final", 6, 3, True)
+
+    temp_ledger.record_temporal_observation(temp1)
+    temp_ledger.record_temporal_observation(temp2)
+
+    analyzer = HistoricalInformationIntegrityAnalyzer(ledger)
+
+    # Research at T = 20:00 (before correction)
+    snap_t1, rcpt_t1 = analyzer.create_research_snapshot("2026-08-16T20:00:00Z")
+    assert snap_t1.effective_observation_state["providers_state"]["MLB::e1"]["payload_hash"] == "h_orig"
+    assert rcpt_t1.excluded_count == 1
+
+    # Research at T = 22:00 (after correction)
+    snap_t2, rcpt_t2 = analyzer.create_research_snapshot("2026-08-16T22:00:00Z")
+    assert snap_t2.effective_observation_state["providers_state"]["MLB::e1"]["payload_hash"] == "h_corr"
+    assert rcpt_t2.excluded_count == 0
+
+def test_provider_conflict_preserved(tmp_path):
+    ledger = SportsLongitudinalLedger()
+    stream = SportsObservationEventStream(ledger)
+
+    stream.append_event("OBS_RECEIVED", "MLB", "e1", "h_mlb", {"status": "Final", "home_score": 5}, timestamp_utc="2026-08-16T19:00:00Z")
+    stream.append_event("OBS_RECEIVED", "ESPN", "e1", "h_espn", {"status": "Final", "home_score": 4}, timestamp_utc="2026-08-16T19:00:00Z")
+
+    analyzer = HistoricalInformationIntegrityAnalyzer(ledger)
+    snapshot, receipt = analyzer.create_research_snapshot("2026-08-16T20:00:00Z")
+
+    p_state = snapshot.effective_observation_state["providers_state"]
+    assert "MLB::e1" in p_state
+    assert "ESPN::e1" in p_state
+    assert p_state["MLB::e1"]["home_score"] == 5
+    assert p_state["ESPN::e1"]["home_score"] == 4
+    assert len(snapshot.source_conflict_references) > 0
+
+def test_missing_availability_fails_closed():
+    ledger = SportsLongitudinalLedger()
+    analyzer = HistoricalInformationIntegrityAnalyzer(ledger)
+
+    with pytest.raises(ValueError, match="RESEARCH_TIMESTAMP_REQUIRED"):
+        analyzer.create_research_snapshot(research_timestamp_utc="")
+
+def test_ambiguous_timestamp_fails_closed():
+    ledger = SportsLongitudinalLedger()
+    analyzer = HistoricalInformationIntegrityAnalyzer(ledger)
+
+    with pytest.raises(ValueError, match="FAIL_CLOSED_AMBIGUOUS_TIMING"):
+        analyzer.create_research_snapshot(research_timestamp_utc="INVALID_DATE_STRING")
+
+def test_snapshot_hash_deterministic():
+    snap1 = HistoricalResearchSnapshot(
+        snapshot_id="s1", research_timestamp_utc="2026-08-16T20:00:00Z",
+        event_identities=["e1"], included_observation_references=["r1"],
+        excluded_post_timestamp_references=[], effective_observation_state={"k": "v"},
+        source_conflict_references=[]
+    )
+
+    snap2 = HistoricalResearchSnapshot(
+        snapshot_id="s1", research_timestamp_utc="2026-08-16T20:00:00Z",
+        event_identities=["e1"], included_observation_references=["r1"],
+        excluded_post_timestamp_references=[], effective_observation_state={"k": "v"},
+        source_conflict_references=[]
+    )
+
+    assert snap1.snapshot_hash == snap2.snapshot_hash
+    assert snap1.integrity_hash == snap2.integrity_hash
+
+def test_repeated_snapshot_is_identical():
+    ledger = SportsLongitudinalLedger()
+    stream = SportsObservationEventStream(ledger)
+    stream.append_event("OBS_RECEIVED", "MLB", "e1", "h1", {"status": "Preview"}, timestamp_utc="2026-08-16T19:00:00Z")
+
+    analyzer = HistoricalInformationIntegrityAnalyzer(ledger)
+    s1, r1 = analyzer.create_research_snapshot("2026-08-16T20:00:00Z")
+    s2, r2 = analyzer.create_research_snapshot("2026-08-16T20:00:00Z")
+
+    assert s1.snapshot_hash == s2.snapshot_hash
+    assert r1.integrity_hash == r2.integrity_hash
+
+def test_restart_reconstructs_identical_snapshot(tmp_path):
+    ledger_file = tmp_path / "restart_snap_ledger.json"
+    ledger = SportsLongitudinalLedger(storage_path=ledger_file)
+    stream = SportsObservationEventStream(ledger)
+
+    stream.append_event("OBS_RECEIVED", "MLB", "e1", "h1", {"status": "Preview"}, timestamp_utc="2026-08-16T19:00:00Z")
+    stream.append_event("OBS_FINALIZED", "MLB", "e1", "h2", {"status": "Final"}, timestamp_utc="2026-08-16T21:00:00Z")
+
+    analyzer1 = HistoricalInformationIntegrityAnalyzer(ledger)
+    s1, r1 = analyzer1.create_research_snapshot("2026-08-16T20:00:00Z")
+
+    # Restart process by re-loading ledger from file
+    reloaded_ledger = SportsLongitudinalLedger(storage_path=ledger_file)
+    analyzer2 = HistoricalInformationIntegrityAnalyzer(reloaded_ledger)
+    s2, r2 = analyzer2.create_research_snapshot("2026-08-16T20:00:00Z")
+
+    assert s1.snapshot_hash == s2.snapshot_hash
+    assert r1.integrity_hash == r2.integrity_hash
+
+def test_observation_history_immutable(tmp_path):
+    ledger = SportsLongitudinalLedger()
+    stream = SportsObservationEventStream(ledger)
+    evt = stream.append_event("OBS_RECEIVED", "MLB", "e1", "h1", {"status": "Preview"}, timestamp_utc="2026-08-16T19:00:00Z")
+    evt_hash_before = evt.sha256_hash
+
+    analyzer = HistoricalInformationIntegrityAnalyzer(ledger)
+    analyzer.create_research_snapshot("2026-08-16T20:00:00Z")
+
+    assert evt.sha256_hash == evt_hash_before
+    assert len(ledger.observation_event_stream) == 1
+
+def test_prediction_identity_unchanged(tmp_path):
+    obs = RealSportsEventObservation("e1", "baseball", "mlb", "Home", "Away", "2026-08-16T23:00:00Z", "2026-08-16T20:00:00Z", "MLB", "http", "ML", {}, "PREVIEW")
+    pred = LockedResearchPrediction("p1", "c1", obs, "Home ML", "-110", 0.524, 0.580, "2026-08-16T20:05:00Z", "Advantage")
+    p_hash_before = pred.lock_and_sign()
+
+    ledger = SportsLongitudinalLedger()
+    ledger.add_prediction(pred)
+
+    analyzer = HistoricalInformationIntegrityAnalyzer(ledger)
+    analyzer.create_research_snapshot("2026-08-16T20:00:00Z")
+
+    assert pred.sha256_receipt_hash == p_hash_before
+
+def test_outcome_gate_unchanged():
+    ledger = SportsLongitudinalLedger()
+    stream = SportsObservationEventStream(ledger)
+    stream.append_event("OBS_FINALIZED", "MLB", "e1", "h1", {"status": "Final", "is_final": True}, timestamp_utc="2026-08-16T19:00:00Z")
+
+    analyzer = HistoricalInformationIntegrityAnalyzer(ledger)
+    analyzer.create_research_snapshot("2026-08-16T20:00:00Z")
+
+    # Creating snapshot must NOT trigger automatic outcome creation
+    assert len(ledger.outcomes) == 0
+
+def test_score_gate_unchanged():
+    ledger = SportsLongitudinalLedger()
+    analyzer = HistoricalInformationIntegrityAnalyzer(ledger)
+    analyzer.create_research_snapshot("2026-08-16T20:00:00Z")
+
+    assert len(ledger.scores) == 0
+
+def test_learning_gate_unchanged():
+    ledger = SportsLongitudinalLedger()
+    analyzer = HistoricalInformationIntegrityAnalyzer(ledger)
+    analyzer.create_research_snapshot("2026-08-16T20:00:00Z")
+
+    assert len(ledger.learnings) == 0
+
+def test_leakage_receipt_is_replayable():
+    rcpt = ResearchIntegrityReceipt(
+        receipt_id="r1", snapshot_id="s1", research_timestamp_utc="2026-08-16T20:00:00Z",
+        observed_reference_set=["ref1"], post_timestamp_reference_set=["ref2"],
+        excluded_count=1, integrity_status="POST_TIMESTAMP_INFORMATION_DETECTED",
+        reason="Excluded 1 reference", snapshot_hash="snap_hash_123"
+    )
+
+    assert rcpt.integrity_hash == rcpt.compute_integrity_hash()
+    assert rcpt.integrity_hash != ""

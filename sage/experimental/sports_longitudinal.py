@@ -91,6 +91,81 @@ class ObservationAvailabilitySnapshot:
         return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
 @dataclass
+class HistoricalResearchSnapshot:
+    snapshot_id: str
+    research_timestamp_utc: str
+    event_identities: List[str]
+    included_observation_references: List[str]
+    excluded_post_timestamp_references: List[str]
+    effective_observation_state: Dict[str, Any]
+    source_conflict_references: List[str]
+    snapshot_hash: str = ""
+    creation_reference: str = ""
+    integrity_hash: str = ""
+
+    def __post_init__(self):
+        if not self.snapshot_hash:
+            self.snapshot_hash = self.compute_snapshot_hash()
+        if not self.creation_reference:
+            self.creation_reference = f"created_at_{self.research_timestamp_utc}"
+        if not self.integrity_hash:
+            self.integrity_hash = self.compute_integrity_hash()
+
+    def compute_snapshot_hash(self) -> str:
+        payload = {
+            "snapshot_id": self.snapshot_id,
+            "research_timestamp_utc": self.research_timestamp_utc,
+            "event_identities": sorted(self.event_identities),
+            "included_observation_references": sorted(self.included_observation_references),
+            "excluded_post_timestamp_references": sorted(self.excluded_post_timestamp_references),
+            "effective_observation_state": self.effective_observation_state,
+            "source_conflict_references": sorted(self.source_conflict_references)
+        }
+        serialized = json.dumps(payload, sort_keys=True, default=str)
+        return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+    def compute_integrity_hash(self) -> str:
+        payload = {
+            "snapshot_hash": self.snapshot_hash,
+            "creation_reference": self.creation_reference,
+            "research_timestamp_utc": self.research_timestamp_utc
+        }
+        serialized = json.dumps(payload, sort_keys=True, default=str)
+        return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+@dataclass
+class ResearchIntegrityReceipt:
+    receipt_id: str
+    snapshot_id: str
+    research_timestamp_utc: str
+    observed_reference_set: List[str]
+    post_timestamp_reference_set: List[str]
+    excluded_count: int
+    integrity_status: str  # RESEARCH_TIME_CLEAN, POST_TIMESTAMP_INFORMATION_DETECTED, AMBIGUOUS_AVAILABILITY, INTEGRITY_FAILURE
+    reason: str
+    snapshot_hash: str
+    integrity_hash: str = ""
+
+    def __post_init__(self):
+        if not self.integrity_hash:
+            self.integrity_hash = self.compute_integrity_hash()
+
+    def compute_integrity_hash(self) -> str:
+        payload = {
+            "receipt_id": self.receipt_id,
+            "snapshot_id": self.snapshot_id,
+            "research_timestamp_utc": self.research_timestamp_utc,
+            "observed_reference_set": sorted(self.observed_reference_set),
+            "post_timestamp_reference_set": sorted(self.post_timestamp_reference_set),
+            "excluded_count": self.excluded_count,
+            "integrity_status": self.integrity_status,
+            "reason": self.reason,
+            "snapshot_hash": self.snapshot_hash
+        }
+        serialized = json.dumps(payload, sort_keys=True, default=str)
+        return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+@dataclass
 class SportsObservationEvent:
     event_stream_id: str
     sequence_number: int
@@ -1477,3 +1552,177 @@ class HistoricalInformationIntegrityAnalyzer:
             leakage_detected=leakage_detected,
             classification_breakdown=breakdown
         )
+
+    def create_research_snapshot(
+        self,
+        research_timestamp_utc: str,
+        external_event_id: Optional[str] = None
+    ) -> tuple[HistoricalResearchSnapshot, ResearchIntegrityReceipt]:
+        """Reconstructs point-in-time observable state at research timestamp T and generates leakage receipt (RCE-003.1)."""
+        if not research_timestamp_utc:
+            raise ValueError("RESEARCH_TIMESTAMP_REQUIRED: Historical research snapshot requires an explicit research timestamp T.")
+
+        try:
+            target_t = parse_iso_utc(research_timestamp_utc)
+        except Exception:
+            raise ValueError(f"FAIL_CLOSED_AMBIGUOUS_TIMING: Invalid ISO 8601 research timestamp '{research_timestamp_utc}'.")
+
+        # Gather observation event stream items
+        all_events = self.ledger.observation_event_stream
+        if external_event_id:
+            all_events = [e for e in all_events if e.external_event_id == external_event_id]
+
+        # Gather temporal observation records
+        all_temporal = self.ledger.temporal_observations
+        if external_event_id:
+            all_temporal = [t for t in all_temporal if t.external_event_id == external_event_id]
+
+        included_refs = []
+        excluded_refs = []
+        event_ids_set = set()
+        provider_events_as_of_t: Dict[str, Dict[str, Any]] = {}
+        conflict_refs = []
+        leakage_detected = False
+
+        # Sort all observation events deterministically by timestamp, then stream ID
+        sorted_events = sorted(
+            all_events,
+            key=lambda x: (x.timestamp_utc or "", x.event_stream_id)
+        )
+
+        for evt in sorted_events:
+            ts_str = evt.timestamp_utc
+            if not ts_str:
+                raise ValueError("FAIL_CLOSED_AMBIGUOUS_TIMING: Missing timestamp on event stream item.")
+
+            try:
+                ingest_dt = parse_iso_utc(ts_str)
+            except Exception:
+                raise ValueError(f"FAIL_CLOSED_AMBIGUOUS_TIMING: Unparseable timestamp '{ts_str}' on event stream item.")
+
+            ref_id = evt.event_stream_id
+            event_ids_set.add(evt.external_event_id)
+
+            if ingest_dt <= target_t:
+                included_refs.append(ref_id)
+                key = f"{evt.provider}::{evt.external_event_id}"
+                # Latest event as of T overwrites earlier events for that provider/event
+                provider_events_as_of_t[key] = {
+                    "provider": evt.provider,
+                    "external_event_id": evt.external_event_id,
+                    "status": evt.details.get("status", "UNKNOWN"),
+                    "home_score": evt.details.get("home_score"),
+                    "away_score": evt.details.get("away_score"),
+                    "is_final": evt.details.get("is_final") or (evt.event_type == SportsObservationEventType.OBS_FINALIZED.value),
+                    "payload_hash": evt.payload_hash,
+                    "as_of_timestamp_utc": ts_str,
+                    "last_ref_id": ref_id
+                }
+            else:
+                excluded_refs.append(ref_id)
+                leakage_detected = True
+
+        # Process temporal observation records
+        sorted_temporal = sorted(
+            all_temporal,
+            key=lambda x: (x.retrieval_timestamp_utc or "", x.temporal_id)
+        )
+
+        for temp in sorted_temporal:
+            ret_str = temp.retrieval_timestamp_utc
+            if not ret_str:
+                raise ValueError("FAIL_CLOSED_AMBIGUOUS_TIMING: Missing retrieval timestamp on temporal record.")
+
+            try:
+                ret_dt = parse_iso_utc(ret_str)
+            except Exception:
+                raise ValueError(f"FAIL_CLOSED_AMBIGUOUS_TIMING: Unparseable retrieval timestamp '{ret_str}' on temporal record.")
+
+            ref_id = temp.temporal_id
+            event_ids_set.add(temp.external_event_id)
+
+            if ret_dt <= target_t:
+                included_refs.append(ref_id)
+                key = f"{temp.provider}::{temp.external_event_id}"
+                # If no stream event exists or temporal observation is newer, update provider event state as of T
+                existing = provider_events_as_of_t.get(key)
+                if not existing or parse_iso_utc(ret_str) >= parse_iso_utc(existing["as_of_timestamp_utc"]):
+                    provider_events_as_of_t[key] = {
+                        "provider": temp.provider,
+                        "external_event_id": temp.external_event_id,
+                        "status": temp.provider_status,
+                        "home_score": None if not existing else existing.get("home_score"),
+                        "away_score": None if not existing else existing.get("away_score"),
+                        "is_final": temp.finality_state,
+                        "payload_hash": temp.source_payload_hash,
+                        "as_of_timestamp_utc": ret_str,
+                        "last_ref_id": ref_id
+                    }
+                if temp.temporal_classification == ObservationTemporalClassification.TEMPORAL_CONFLICTED.value:
+                    conflict_refs.append(ref_id)
+            else:
+                excluded_refs.append(ref_id)
+                leakage_detected = True
+
+        # Evaluate multi-provider consensus / conflict as of T
+        providers_state: Dict[str, Dict[str, Any]] = {}
+        event_status_map: Dict[str, List[Dict[str, Any]]] = {}
+
+        for key, p_data in sorted(provider_events_as_of_t.items()):
+            ext_id = p_data["external_event_id"]
+            providers_state[key] = p_data
+            event_status_map.setdefault(ext_id, []).append(p_data)
+
+        # Check for provider conflicts as of T
+        for ext_id, p_list in event_status_map.items():
+            if len(p_list) > 1:
+                statuses = {p["status"] for p in p_list}
+                finalities = {p["is_final"] for p in p_list}
+                home_scores = {p["home_score"] for p in p_list if p.get("home_score") is not None}
+                away_scores = {p["away_score"] for p in p_list if p.get("away_score") is not None}
+                if len(statuses) > 1 or len(finalities) > 1 or len(home_scores) > 1 or len(away_scores) > 1:
+                    conflict_refs.append(f"conflict_as_of_{ext_id}")
+
+        effective_state = {
+            "research_timestamp_utc": research_timestamp_utc,
+            "external_events_covered": sorted(list(event_ids_set)),
+            "providers_state": providers_state,
+            "provider_count": len(providers_state)
+        }
+
+        # Deterministic snapshot ID based on research timestamp and external event ID
+        event_suffix = f"_{external_event_id}" if external_event_id else ""
+        ts_slug = research_timestamp_utc.replace(":", "").replace("-", "").replace("+", "_").replace(".", "_")
+        snapshot_id = f"snap_research_{ts_slug}{event_suffix}"
+
+        snapshot = HistoricalResearchSnapshot(
+            snapshot_id=snapshot_id,
+            research_timestamp_utc=research_timestamp_utc,
+            event_identities=sorted(list(event_ids_set)),
+            included_observation_references=sorted(included_refs),
+            excluded_post_timestamp_references=sorted(excluded_refs),
+            effective_observation_state=effective_state,
+            source_conflict_references=sorted(list(set(conflict_refs)))
+        )
+
+        receipt_id = f"rcpt_leakage_{ts_slug}{event_suffix}"
+        if leakage_detected:
+            integrity_status = "POST_TIMESTAMP_INFORMATION_DETECTED"
+            reason = f"Excluded {len(excluded_refs)} observation references with availability timestamp > T ({research_timestamp_utc})."
+        else:
+            integrity_status = "RESEARCH_TIME_CLEAN"
+            reason = f"All {len(included_refs)} analyzed observation references were available at or before T ({research_timestamp_utc})."
+
+        receipt = ResearchIntegrityReceipt(
+            receipt_id=receipt_id,
+            snapshot_id=snapshot.snapshot_id,
+            research_timestamp_utc=research_timestamp_utc,
+            observed_reference_set=snapshot.included_observation_references,
+            post_timestamp_reference_set=snapshot.excluded_post_timestamp_references,
+            excluded_count=len(excluded_refs),
+            integrity_status=integrity_status,
+            reason=reason,
+            snapshot_hash=snapshot.snapshot_hash
+        )
+
+        return snapshot, receipt

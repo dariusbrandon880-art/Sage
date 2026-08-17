@@ -32,6 +32,8 @@ from sage.experimental.sports_longitudinal import (
     SportsObservationEventType,
     SportsObservationEventStream,
     HistoricalInformationIntegrityAnalyzer,
+    HistoricalResearchSnapshot,
+    ResearchIntegrityReceipt,
     persist_flight_artifact,
     asdict
 )
@@ -407,6 +409,23 @@ def main():
     print(f"    - Leakage Detected:   {availability_snapshot.leakage_detected}")
     print(f"    - Available Count:    {len(availability_snapshot.available_observations)}")
     print(f"    - Excluded Count:     {len(availability_snapshot.excluded_observations)}")
+
+    # 14. Execute Point-in-Time Historical Research Snapshot & Leakage Receipt Pass (RCE-003.1)
+    research_snapshot, leakage_receipt = integrity_analyzer.create_research_snapshot(
+        research_timestamp_utc=obs_ts,
+        external_event_id=f"mlb_game_{game_id}"
+    )
+    print(f"[+] Point-in-Time Historical Research Snapshot (RCE-003.1 Research Snapshot Layer):")
+    print(f"    - Snapshot ID:        {research_snapshot.snapshot_id}")
+    print(f"    - Research Timestamp: {research_snapshot.research_timestamp_utc}")
+    print(f"    - Included References: {len(research_snapshot.included_observation_references)}")
+    print(f"    - Excluded References: {len(research_snapshot.excluded_post_timestamp_references)}")
+    print(f"    - Snapshot Hash:      {research_snapshot.snapshot_hash}")
+    print(f"[+] Research Integrity / Leakage Receipt (RCE-003.1 Integrity Layer):")
+    print(f"    - Receipt ID:          {leakage_receipt.receipt_id}")
+    print(f"    - Integrity Status:    {leakage_receipt.integrity_status}")
+    print(f"    - Reason:              {leakage_receipt.reason}")
+    print(f"    - Integrity Hash:      {leakage_receipt.integrity_hash}")
 
     summary_report = fresh_ledger.generate_summary_report()
 
