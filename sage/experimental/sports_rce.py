@@ -9,7 +9,7 @@ import hashlib
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, Any, Optional, Set, Tuple
+from typing import Dict, Any, Optional, Set, Tuple, List
 
 
 class SportsRCEResearchEngine:
@@ -161,3 +161,208 @@ class SportsRCEResearchEngine:
             json.dump(record, f, indent=2, default=str)
 
         return file_path
+
+
+# =====================================================================
+# RCE-003.1: TEMPORAL RESEARCH SNAPSHOT & LEAKAGE RECEIPT ENGINE
+# =====================================================================
+
+from dataclasses import dataclass, field, asdict
+from sage.experimental.sports_longitudinal import parse_iso_utc
+
+
+@dataclass
+class HistoricalResearchSnapshot:
+    snapshot_id: str
+    research_timestamp: str
+    included_observations: List[Dict[str, Any]]
+    excluded_post_t_observations: List[Dict[str, Any]]
+    provider_states: Dict[str, Any]
+    conflicts: List[Dict[str, Any]]
+    snapshot_hash: str = ""
+
+    def compute_sha256_hash(self) -> str:
+        payload = {
+            "snapshot_id": self.snapshot_id,
+            "research_timestamp": self.research_timestamp,
+            "included_observations": self.included_observations,
+            "excluded_post_t_observations": self.excluded_post_t_observations,
+            "provider_states": self.provider_states,
+            "conflicts": self.conflicts,
+        }
+        serialized = json.dumps(payload, sort_keys=True, default=str)
+        return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+    def sign(self) -> str:
+        self.snapshot_hash = self.compute_sha256_hash()
+        return self.snapshot_hash
+
+
+@dataclass
+class ResearchIntegrityReceipt:
+    receipt_id: str
+    snapshot_id: str
+    research_timestamp: str
+    included_reference_set: List[str]
+    post_timestamp_reference_set: List[str]
+    excluded_count: int
+    integrity_status: str  # RESEARCH_TIME_CLEAN, POST_TIMESTAMP_INFORMATION_DETECTED, AMBIGUOUS_AVAILABILITY, INTEGRITY_FAILURE
+    reason: str
+    snapshot_hash: str
+    integrity_hash: str = ""
+
+    def compute_sha256_hash(self) -> str:
+        payload = {
+            "receipt_id": self.receipt_id,
+            "snapshot_id": self.snapshot_id,
+            "research_timestamp": self.research_timestamp,
+            "included_reference_set": self.included_reference_set,
+            "post_timestamp_reference_set": self.post_timestamp_reference_set,
+            "excluded_count": self.excluded_count,
+            "integrity_status": self.integrity_status,
+            "reason": self.reason,
+            "snapshot_hash": self.snapshot_hash,
+        }
+        serialized = json.dumps(payload, sort_keys=True, default=str)
+        return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+    def sign(self) -> str:
+        self.integrity_hash = self.compute_sha256_hash()
+        return self.integrity_hash
+
+
+class HistoricalResearchReconstructionEngine:
+    """Reconstructs point-in-time research snapshots at timestamp T (t <= T) and emits leakage receipts."""
+
+    @staticmethod
+    def reconstruct_snapshot(
+        observations: List[Dict[str, Any]],
+        research_timestamp: str,
+    ) -> Tuple[HistoricalResearchSnapshot, ResearchIntegrityReceipt]:
+        """Filters observations as-of research_timestamp T, selecting latest state per provider/event."""
+        if not research_timestamp:
+            raise ValueError("FAIL_CLOSED: research_timestamp cannot be empty")
+
+        try:
+            target_dt = parse_iso_utc(research_timestamp)
+        except Exception as exc:
+            raise ValueError(f"FAIL_CLOSED_AMBIGUOUS_TIMING: Invalid research timestamp '{research_timestamp}': {exc}") from exc
+
+        included_raw = []
+        excluded_post_t = []
+
+        # Validate timestamps and classify
+        for idx, obs in enumerate(observations):
+            avail_ts = obs.get("availability_timestamp") or obs.get("observation_timestamp") or obs.get("source_timestamp")
+            if not avail_ts:
+                raise ValueError(f"FAIL_CLOSED_MISSING_TIMESTAMP at index {idx}: Observation missing availability/observation timestamp.")
+
+            try:
+                avail_dt = parse_iso_utc(avail_ts)
+            except Exception as exc:
+                raise ValueError(f"FAIL_CLOSED_AMBIGUOUS_TIMING at index {idx}: Unparseable timestamp '{avail_ts}': {exc}") from exc
+
+            if avail_dt <= target_dt:
+                included_raw.append((avail_dt, obs))
+            else:
+                excluded_post_t.append((avail_dt, obs))
+
+        # Group included observations by (provider, event_id) and select latest available
+        provider_event_groups: Dict[Tuple[str, str], List[Tuple[datetime, Dict[str, Any]]]] = {}
+        for avail_dt, obs in included_raw:
+            provider = str(obs.get("provider") or obs.get("source") or "default_provider")
+            event_id = str(obs.get("event_id") or obs.get("idEvent") or "unknown_event")
+            key = (provider, event_id)
+            if key not in provider_event_groups:
+                provider_event_groups[key] = []
+            provider_event_groups[key].append((avail_dt, obs))
+
+        selected_observations = []
+        provider_states: Dict[str, Dict[str, Any]] = {}
+
+        # Deterministic sorting for selected latest observation per provider/event
+        for (provider, event_id), group in sorted(provider_event_groups.items(), key=lambda k: (k[0][0], k[0][1])):
+            # Sort group by avail_dt ascending, then obs_id/hash string ascending for deterministic tie-break
+            sorted_group = sorted(
+                group,
+                key=lambda x: (
+                    x[0],
+                    str(x[1].get("observation_id") or x[1].get("prediction_id") or x[1].get("receipt_id") or "")
+                )
+            )
+            latest_obs = sorted_group[-1][1]
+            selected_observations.append(latest_obs)
+
+            if provider not in provider_states:
+                provider_states[provider] = {}
+            provider_states[provider][event_id] = latest_obs
+
+        # Detect provider conflicts for same event
+        conflicts = []
+        event_providers: Dict[str, List[Tuple[str, Dict[str, Any]]]] = {}
+        for provider, events in provider_states.items():
+            for event_id, obs in events.items():
+                if event_id not in event_providers:
+                    event_providers[event_id] = []
+                event_providers[event_id].append((provider, obs))
+
+        for event_id, p_list in event_providers.items():
+            if len(p_list) > 1:
+                # Compare odds/selection across providers
+                values = [str(o.get("observed_odds") or o.get("selection") or o.get("odds_at_lock")) for _, o in p_list]
+                if len(set(values)) > 1:
+                    conflicts.append({
+                        "event_id": event_id,
+                        "conflict_type": "PROVIDER_VARIANCE",
+                        "providers": {p: o for p, o in p_list}
+                    })
+
+        # Sort lists deterministically
+        selected_observations.sort(key=lambda x: str(x.get("observation_id") or x.get("prediction_id") or x.get("event_id") or ""))
+        excluded_obs_list = [obs for _, obs in excluded_post_t]
+        excluded_obs_list.sort(key=lambda x: str(x.get("observation_id") or x.get("prediction_id") or x.get("event_id") or ""))
+
+        snapshot_id = f"snap_rce_{hashlib.sha256((research_timestamp + str(len(selected_observations))).encode('utf-8')).hexdigest()[:12]}"
+
+        snapshot = HistoricalResearchSnapshot(
+            snapshot_id=snapshot_id,
+            research_timestamp=research_timestamp,
+            included_observations=selected_observations,
+            excluded_post_t_observations=excluded_obs_list,
+            provider_states=provider_states,
+            conflicts=conflicts,
+        )
+        snapshot.sign()
+
+        included_refs = [
+            str(o.get("observation_id") or o.get("prediction_id") or o.get("receipt_id") or o.get("event_id"))
+            for o in selected_observations
+        ]
+        post_refs = [
+            str(o.get("observation_id") or o.get("prediction_id") or o.get("receipt_id") or o.get("event_id"))
+            for o in excluded_obs_list
+        ]
+
+        if excluded_obs_list:
+            integrity_status = "POST_TIMESTAMP_INFORMATION_DETECTED"
+            reason = f"Excluded {len(excluded_obs_list)} observation(s) with availability timestamp > {research_timestamp}."
+        else:
+            integrity_status = "RESEARCH_TIME_CLEAN"
+            reason = f"All {len(selected_observations)} observations available on or before research timestamp {research_timestamp}."
+
+        receipt_id = f"rcpt_leak_{hashlib.sha256((snapshot_id + integrity_status).encode('utf-8')).hexdigest()[:12]}"
+
+        receipt = ResearchIntegrityReceipt(
+            receipt_id=receipt_id,
+            snapshot_id=snapshot_id,
+            research_timestamp=research_timestamp,
+            included_reference_set=included_refs,
+            post_timestamp_reference_set=post_refs,
+            excluded_count=len(excluded_obs_list),
+            integrity_status=integrity_status,
+            reason=reason,
+            snapshot_hash=snapshot.snapshot_hash,
+        )
+        receipt.sign()
+
+        return snapshot, receipt
