@@ -1,16 +1,273 @@
-"""SAGE Sports/RCE — Minimal Real-World Pre-Game Observation & Temporal Locking Substrate.
+"""SAGE Sports/RCE — Pre-Game Observation, Temporal Locking & Evidence Drift Monitor Substrate.
 
 Provides immutable pre-game observation, temporal lock validation (lock_timestamp < event_start),
-SHA-256 receipt generation, and persistence without synthetic substitutions or real-money wagering.
+SHA-256 receipt generation, persistence, and RCE-002.4 Observation Evidence Drift Monitoring.
 """
 
+from enum import Enum
 import json
 import hashlib
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, Any, Optional, Set, Tuple
+from typing import Dict, Any, List, Optional, Set, Tuple
+from pydantic import BaseModel, Field, field_validator
 
+
+# ---------------------------------------------------------
+# RCE-002.4 Observation Evidence Drift Models
+# ---------------------------------------------------------
+
+class ObservationDriftClassification(str, Enum):
+    """Classification of evidence drift between initial observation and later provider state."""
+    DRIFT_UNKNOWN = "DRIFT_UNKNOWN"
+    DRIFT_NONE = "DRIFT_NONE"
+    DRIFT_METADATA_ONLY = "DRIFT_METADATA_ONLY"
+    DRIFT_STATUS_CHANGE = "DRIFT_STATUS_CHANGE"
+    DRIFT_FINALITY_CHANGE = "DRIFT_FINALITY_CHANGE"
+    DRIFT_STAT_CORRECTION = "DRIFT_STAT_CORRECTION"
+    DRIFT_CONFLICT = "DRIFT_CONFLICT"
+    DRIFT_UNAVAILABLE = "DRIFT_UNAVAILABLE"
+
+
+class ObservationEvidenceSnapshot(BaseModel):
+    """Immutable snapshot of evidence supporting a sports observation at a specific retrieval time."""
+    snapshot_id: str
+    observation_id: str
+    provider: str
+    external_event_id: str
+    observed_timestamp: str
+    retrieval_timestamp: str
+    payload_hash: str
+    source_observation_reference: str
+    arbitration_receipt_reference: Optional[str] = None
+    reconciliation_receipt_reference: Optional[str] = None
+    evidence_reference: str
+    status: str = "NS"
+    scores: Dict[str, Any] = Field(default_factory=dict)
+    event_start: Optional[str] = None
+    raw_payload_summary: Dict[str, Any] = Field(default_factory=dict)
+
+    @field_validator("snapshot_id", "observation_id")
+    @classmethod
+    def validate_non_empty_ids(cls, v: str) -> str:
+        if not v or v.strip() == "":
+            raise ValueError("Snapshot identity fields cannot be empty.")
+        return v
+
+
+class ObservationDriftRecord(BaseModel):
+    """Record capturing the comparison between initial and later evidence snapshots."""
+    drift_record_id: str
+    observation_id: str
+    initial_snapshot_id: str
+    later_snapshot_id: Optional[str] = None
+    drift_classification: ObservationDriftClassification
+    meaningful_semantic_change: bool
+    drift_details: List[str] = Field(default_factory=list)
+    checked_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    integrity_hash: str = ""
+
+    def __init__(self, **data: Any):
+        super().__init__(**data)
+        if not self.integrity_hash:
+            self.integrity_hash = self.compute_sha256()
+
+    def compute_sha256(self) -> str:
+        serialized = json.dumps({
+            "drift_record_id": self.drift_record_id,
+            "observation_id": self.observation_id,
+            "initial_snapshot_id": self.initial_snapshot_id,
+            "later_snapshot_id": self.later_snapshot_id or "",
+            "drift_classification": self.drift_classification.value,
+            "meaningful_semantic_change": self.meaningful_semantic_change,
+            "drift_details": sorted(self.drift_details),
+        }, sort_keys=True, separators=(",", ":"))
+        return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+
+class ObservationDriftMonitor:
+    """Monitors and classifies evidence drift between initial observation snapshots and later provider states."""
+
+    def __init__(self, storage_path: Optional[Path] = None):
+        self.storage_path = Path(storage_path or "evidence_capture/sports_drift_ledger.json")
+
+    def _load_ledger(self) -> List[Dict[str, Any]]:
+        if not self.storage_path.exists():
+            return []
+        try:
+            with open(self.storage_path, "r", encoding="utf-8") as f:
+                content = f.read().strip()
+                if not content:
+                    return []
+                return json.loads(content)
+        except Exception:
+            return []
+
+    def _save_ledger(self, records: List[Dict[str, Any]]) -> None:
+        self.storage_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(self.storage_path, "w", encoding="utf-8") as f:
+            json.dump(records, f, indent=2)
+
+    def create_snapshot(
+        self,
+        observation_id: str,
+        provider: str,
+        external_event_id: str,
+        observed_timestamp: str,
+        retrieval_timestamp: str,
+        raw_payload: Dict[str, Any],
+        source_observation_reference: str,
+        evidence_reference: str,
+        arbitration_receipt_reference: Optional[str] = None,
+        reconciliation_receipt_reference: Optional[str] = None,
+    ) -> ObservationEvidenceSnapshot:
+        """Constructs an immutable evidence snapshot with canonical SHA-256 payload hash."""
+        payload_bytes = json.dumps(raw_payload, sort_keys=True, default=str).encode("utf-8")
+        payload_hash = hashlib.sha256(payload_bytes).hexdigest()
+
+        snapshot_id = f"snap_{hashlib.sha256(f'{observation_id}:{provider}:{retrieval_timestamp}:{payload_hash}'.encode('utf-8')).hexdigest()[:12]}"
+
+        # Extract status and score details safely
+        status = str(raw_payload.get("strStatus") or raw_payload.get("status") or "NS")
+        home_score = raw_payload.get("intHomeScore") or raw_payload.get("home_score")
+        away_score = raw_payload.get("intAwayScore") or raw_payload.get("away_score")
+
+        scores = {}
+        if home_score is not None and away_score is not None:
+            try:
+                scores = {"home": float(home_score), "away": float(away_score)}
+            except Exception:
+                pass
+
+        event_start = raw_payload.get("strTimestamp") or raw_payload.get("event_start")
+
+        return ObservationEvidenceSnapshot(
+            snapshot_id=snapshot_id,
+            observation_id=observation_id,
+            provider=provider,
+            external_event_id=external_event_id,
+            observed_timestamp=observed_timestamp,
+            retrieval_timestamp=retrieval_timestamp,
+            payload_hash=payload_hash,
+            source_observation_reference=source_observation_reference,
+            arbitration_receipt_reference=arbitration_receipt_reference,
+            reconciliation_receipt_reference=reconciliation_receipt_reference,
+            evidence_reference=evidence_reference,
+            status=status,
+            scores=scores,
+            event_start=event_start,
+            raw_payload_summary={
+                "event": raw_payload.get("strEvent"),
+                "status": status,
+                "scores": scores,
+            },
+        )
+
+    def compare_snapshots(
+        self,
+        initial_snapshot: ObservationEvidenceSnapshot,
+        later_snapshot: Optional[ObservationEvidenceSnapshot],
+        provider_conflict: bool = False,
+    ) -> ObservationDriftRecord:
+        """Compares initial snapshot against later snapshot to classify evidence drift.
+
+        Guarantees de-duplication: duplicate comparison check does not double count identical drift.
+        """
+        if not initial_snapshot or not initial_snapshot.observation_id:
+            raise ValueError("Missing provenance: initial_snapshot is required and must contain observation_id.")
+
+        ledger = self._load_ledger()
+
+        # Handle unavailable source
+        if later_snapshot is None:
+            drift_rec_id = f"drift_{hashlib.sha256(f'{initial_snapshot.snapshot_id}:UNAVAILABLE'.encode('utf-8')).hexdigest()[:12]}"
+            # De-duplication check
+            for existing in ledger:
+                if existing.get("drift_record_id") == drift_rec_id:
+                    return ObservationDriftRecord(**existing)
+
+            record = ObservationDriftRecord(
+                drift_record_id=drift_rec_id,
+                observation_id=initial_snapshot.observation_id,
+                initial_snapshot_id=initial_snapshot.snapshot_id,
+                later_snapshot_id=None,
+                drift_classification=ObservationDriftClassification.DRIFT_UNAVAILABLE,
+                meaningful_semantic_change=True,
+                drift_details=["Later provider retrieval unavailable or source unreachable."],
+            )
+            ledger.append(record.model_dump())
+            self._save_ledger(ledger)
+            return record
+
+        drift_rec_id = f"drift_{hashlib.sha256(f'{initial_snapshot.snapshot_id}:{later_snapshot.snapshot_id}:{provider_conflict}'.encode('utf-8')).hexdigest()[:12]}"
+
+        # De-duplication check
+        for existing in ledger:
+            if existing.get("drift_record_id") == drift_rec_id:
+                return ObservationDriftRecord(**existing)
+
+        drift_details = []
+        classification = ObservationDriftClassification.DRIFT_NONE
+        meaningful_change = False
+
+        # 1. Provider Conflict check
+        if provider_conflict or initial_snapshot.provider != later_snapshot.provider:
+            classification = ObservationDriftClassification.DRIFT_CONFLICT
+            meaningful_change = True
+            drift_details.append(f"Provider conflict detected: initial ({initial_snapshot.provider}) vs later ({later_snapshot.provider})")
+
+        # 2. Payload Hash Check
+        elif initial_snapshot.payload_hash == later_snapshot.payload_hash:
+            classification = ObservationDriftClassification.DRIFT_NONE
+            meaningful_change = False
+            drift_details.append("Identical payload hash. No evidence drift detected.")
+
+        # 3. Status & Finality Drift Check
+        else:
+            initial_status = initial_snapshot.status.upper()
+            later_status = later_snapshot.status.upper()
+
+            if initial_status != later_status:
+                if later_status in ("FT", "MATCH FINISHED", "FINISHED", "2", "3"):
+                    classification = ObservationDriftClassification.DRIFT_FINALITY_CHANGE
+                    meaningful_change = True
+                    drift_details.append(f"Finality state change: status transitioned from '{initial_snapshot.status}' to '{later_snapshot.status}'")
+                else:
+                    classification = ObservationDriftClassification.DRIFT_STATUS_CHANGE
+                    meaningful_change = True
+                    drift_details.append(f"Event status change: status transitioned from '{initial_snapshot.status}' to '{later_snapshot.status}'")
+
+            # 4. Stat / Score Correction Check
+            elif initial_snapshot.scores != later_snapshot.scores:
+                classification = ObservationDriftClassification.DRIFT_STAT_CORRECTION
+                meaningful_change = True
+                drift_details.append(f"Stat correction detected: scores changed from {initial_snapshot.scores} to {later_snapshot.scores}")
+
+            # 5. Non-Material Metadata Change Check
+            else:
+                classification = ObservationDriftClassification.DRIFT_METADATA_ONLY
+                meaningful_change = False
+                drift_details.append(f"Non-material metadata change: payload hash changed from {initial_snapshot.payload_hash[:8]} to {later_snapshot.payload_hash[:8]} without semantic status/score drift")
+
+        record = ObservationDriftRecord(
+            drift_record_id=drift_rec_id,
+            observation_id=initial_snapshot.observation_id,
+            initial_snapshot_id=initial_snapshot.snapshot_id,
+            later_snapshot_id=later_snapshot.snapshot_id,
+            drift_classification=classification,
+            meaningful_semantic_change=meaningful_change,
+            drift_details=drift_details,
+        )
+
+        ledger.append(record.model_dump())
+        self._save_ledger(ledger)
+        return record
+
+
+# ---------------------------------------------------------
+# SportsRCEResearchEngine (Existing Substrate)
+# ---------------------------------------------------------
 
 class SportsRCEResearchEngine:
     """Minimal research-only engine for real-world sports event pre-game observation and locking."""
