@@ -245,5 +245,31 @@
     ],
     "checked_at": "2026-08-17T09:23:58.251098+00:00",
     "integrity_hash": "d776c4ed4ee7b7ea95a68961fd19c0e4dc16f39fab38211a5a834ea2da854ba4"
+  },
+  {
+    "drift_record_id": "drift_a381d3c30e5f",
+    "observation_id": "pred_rce_999005",
+    "initial_snapshot_id": "snap_150437e0c36f",
+    "later_snapshot_id": "snap_150437e0c36f",
+    "drift_classification": "DRIFT_NONE",
+    "meaningful_semantic_change": false,
+    "drift_details": [
+      "Identical payload hash. No evidence drift detected."
+    ],
+    "checked_at": "2026-08-17T10:25:06.742103+00:00",
+    "integrity_hash": "d665179b2f1aab7e9a7c8847f2ab0d97c2680aecfecc3e1b2a7509a7ce95b6fd"
+  },
+  {
+    "drift_record_id": "drift_44dfe4ff8cfa",
+    "observation_id": "pred_rce_999005",
+    "initial_snapshot_id": "snap_a22eae54b706",
+    "later_snapshot_id": "snap_a22eae54b706",
+    "drift_classification": "DRIFT_NONE",
+    "meaningful_semantic_change": false,
+    "drift_details": [
+      "Identical payload hash. No evidence drift detected."
+    ],
+    "checked_at": "2026-08-17T10:32:17.066165+00:00",
+    "integrity_hash": "dabee5f8bf3e6a6502c719ebda4144cf2068cce2c5c13abe9dd1542786134c9c"
   }
 ]
