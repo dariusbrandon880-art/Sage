@@ -491,3 +491,177 @@ def persist_flight_artifact(flight_artifact: Dict[str, Any], output_path: Path) 
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(flight_artifact, f, indent=2)
     return output_path
+
+
+# =====================================================================
+# RCE-002.4: OBSERVATION PROVENANCE, TEMPORAL CONSISTENCY & STREAM REPLAY
+# =====================================================================
+
+@dataclass
+class ObservationProvenance:
+    source_id: str
+    source_name: str
+    source_url: str
+    source_timestamp_utc: str
+    raw_payload_hash: str
+    ingest_timestamp_utc: str
+    provenance_hash: str = ""
+
+    def compute_sha256_hash(self) -> str:
+        payload = {
+            "source_id": self.source_id,
+            "source_name": self.source_name,
+            "source_url": self.source_url,
+            "source_timestamp_utc": self.source_timestamp_utc,
+            "raw_payload_hash": self.raw_payload_hash,
+            "ingest_timestamp_utc": self.ingest_timestamp_utc,
+        }
+        serialized = json.dumps(payload, sort_keys=True, default=str)
+        return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+    def sign(self) -> str:
+        self.provenance_hash = self.compute_sha256_hash()
+        return self.provenance_hash
+
+
+class TemporalConsistencyValidator:
+    """Validates temporal monotonicity, lock boundary compliance, and prevents backdated/post-event leakage."""
+
+    @staticmethod
+    def validate_pre_game_observation(observation_timestamp_utc: str, event_start_time_utc: str) -> bool:
+        obs_dt = parse_iso_utc(observation_timestamp_utc)
+        start_dt = parse_iso_utc(event_start_time_utc)
+        if obs_dt >= start_dt:
+            raise ValueError(
+                f"TEMPORAL_CONSISTENCY_VIOLATION: Observation time {observation_timestamp_utc} "
+                f"is at or after event start time {event_start_time_utc}."
+            )
+        return True
+
+    @staticmethod
+    def validate_monotonic_sequence(timestamps_utc: List[str]) -> bool:
+        if len(timestamps_utc) <= 1:
+            return True
+        for i in range(1, len(timestamps_utc)):
+            prev_dt = parse_iso_utc(timestamps_utc[i - 1])
+            curr_dt = parse_iso_utc(timestamps_utc[i])
+            if curr_dt < prev_dt:
+                raise ValueError(
+                    f"TEMPORAL_MONOTONICITY_VIOLATION: Timestamp at index {i} ({timestamps_utc[i]}) "
+                    f"is earlier than previous timestamp ({timestamps_utc[i - 1]})."
+                )
+        return True
+
+
+@dataclass
+class ObservationEvent:
+    event_id: str
+    observation_id: str
+    observation_timestamp_utc: str
+    event_start_time_utc: str
+    provenance: ObservationProvenance
+    payload: Dict[str, Any]
+    previous_event_hash: str = ""
+    event_hash: str = ""
+
+    def compute_sha256_hash(self) -> str:
+        prov_dict = asdict(self.provenance)
+        payload_data = {
+            "event_id": self.event_id,
+            "observation_id": self.observation_id,
+            "observation_timestamp_utc": self.observation_timestamp_utc,
+            "event_start_time_utc": self.event_start_time_utc,
+            "provenance": prov_dict,
+            "payload": self.payload,
+            "previous_event_hash": self.previous_event_hash,
+        }
+        serialized = json.dumps(payload_data, sort_keys=True, default=str)
+        return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+    def sign(self) -> str:
+        self.event_hash = self.compute_sha256_hash()
+        return self.event_hash
+
+
+class ReplayableObservationStream:
+    """Provides append-only, temporally validated observation stream with hash-chained replay ability."""
+
+    def __init__(self):
+        self.stream: List[ObservationEvent] = []
+
+    def append_event(
+        self,
+        event_id: str,
+        observation_id: str,
+        observation_timestamp_utc: str,
+        event_start_time_utc: str,
+        provenance: ObservationProvenance,
+        payload: Dict[str, Any],
+    ) -> ObservationEvent:
+        # Validate temporal pre-game lock
+        TemporalConsistencyValidator.validate_pre_game_observation(
+            observation_timestamp_utc, event_start_time_utc
+        )
+
+        # Validate temporal monotonicity with existing stream
+        if self.stream:
+            last_ts = self.stream[-1].observation_timestamp_utc
+            TemporalConsistencyValidator.validate_monotonic_sequence([last_ts, observation_timestamp_utc])
+            prev_hash = self.stream[-1].event_hash
+        else:
+            prev_hash = "GENESIS_0000000000000000000000000000000000000000000000000000000000000000"
+
+        if not provenance.provenance_hash:
+            provenance.sign()
+
+        obs_event = ObservationEvent(
+            event_id=event_id,
+            observation_id=observation_id,
+            observation_timestamp_utc=observation_timestamp_utc,
+            event_start_time_utc=event_start_time_utc,
+            provenance=provenance,
+            payload=payload,
+            previous_event_hash=prev_hash,
+        )
+        obs_event.sign()
+        self.stream.append(obs_event)
+        return obs_event
+
+    def verify_integrity(self) -> bool:
+        if not self.stream:
+            return True
+
+        timestamps = [e.observation_timestamp_utc for e in self.stream]
+        TemporalConsistencyValidator.validate_monotonic_sequence(timestamps)
+
+        expected_prev = "GENESIS_0000000000000000000000000000000000000000000000000000000000000000"
+        for idx, event in enumerate(self.stream):
+            if event.previous_event_hash != expected_prev:
+                raise ValueError(
+                    f"STREAM_HASH_CHAIN_FAIL at index {idx}: Previous hash '{event.previous_event_hash}' "
+                    f"does not match expected '{expected_prev}'."
+                )
+            computed_hash = event.compute_sha256_hash()
+            if event.event_hash != computed_hash:
+                raise ValueError(
+                    f"STREAM_EVENT_HASH_TAMPERED at index {idx}: Stored '{event.event_hash}' "
+                    f"differs from computed '{computed_hash}'."
+                )
+            expected_prev = event.event_hash
+
+        return True
+
+    def replay(self) -> List[Dict[str, Any]]:
+        self.verify_integrity()
+        replayed_state = []
+        for idx, event in enumerate(self.stream):
+            replayed_state.append({
+                "replay_sequence": idx,
+                "observation_id": event.observation_id,
+                "event_id": event.event_id,
+                "observation_timestamp_utc": event.observation_timestamp_utc,
+                "provenance_source": event.provenance.source_name,
+                "payload": event.payload,
+                "verified_hash": event.event_hash,
+            })
+        return replayed_state

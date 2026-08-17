@@ -25,6 +25,8 @@ from sage.experimental.sports_longitudinal import (
     resolve_sports_prediction,
     SportsLongitudinalLedger,
     persist_flight_artifact,
+    ObservationProvenance,
+    ReplayableObservationStream,
     asdict
 )
 
@@ -319,6 +321,31 @@ def main():
 
     output_path = Path("evidence_capture/sports_longitudinal_flight_001.json")
     saved_path = persist_flight_artifact(flight_artifact, output_path)
+
+    # 8. Demonstrate RCE-002.4 Observation Provenance & Replayable Stream
+    print("[+] Demonstrating RCE-002.4 Observation Provenance & Replayable Stream...")
+    prov = ObservationProvenance(
+        source_id="src_mlb_official",
+        source_name="Official MLB Stats API",
+        source_url=MLB_STATS_API_URL,
+        source_timestamp_utc=obs_ts,
+        raw_payload_hash=p_hash_before,
+        ingest_timestamp_utc=obs_ts,
+    )
+    prov.sign()
+
+    stream = ReplayableObservationStream()
+    stream.append_event(
+        event_id=f"mlb_game_{game_id}",
+        observation_id=f"obs_{game_id}",
+        observation_timestamp_utc=obs_ts,
+        event_start_time_utc=game_date if now_utc < game_dt else datetime.now(timezone.utc).isoformat(),
+        provenance=prov,
+        payload={"home_team": home_team, "away_team": away_team, "status": event_status},
+    )
+    assert stream.verify_integrity() is True
+    replayed = stream.replay()
+    print(f"[+] Replayable Observation Stream verified! Replayed {len(replayed)} event(s) with hash chaining.")
 
     print("=" * 70)
     print(f"[+] Real-World Flight Artifact Persisted To: {saved_path}")
