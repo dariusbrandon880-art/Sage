@@ -6,19 +6,18 @@ run adversarial validations, and support manual human approval to promote
 records from PROPOSED to VALIDATED lifecycle states.
 """
 
-import hashlib
-import json
 import os
 import re
+import json
 import time
 import uuid
+import hashlib
 from pathlib import Path
-from typing import Any
-
+from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field, field_validator
 
+from sage.acr.session.session_state import SessionStateManager, SessionState
 from sage.acr.session.checkpoint import CheckpointManager
-from sage.acr.session.session_state import SessionState, SessionStateManager
 from sage.mission_control import ExperimentalMissionState
 
 
@@ -30,15 +29,13 @@ class SAGEMissionTask(BaseModel):
     priority_score: float = 50.0
     lane: str = "engineering"
     authorized: bool = False
-    evidence_requirements: list[str] = Field(
-        default_factory=lambda: ["git_commit", "protection_report", "cmaps_audit_id"]
-    )
-    completion_criteria: list[str] = Field(default_factory=list)
+    evidence_requirements: List[str] = Field(default_factory=lambda: ["git_commit", "protection_report", "cmaps_audit_id"])
+    completion_criteria: List[str] = Field(default_factory=list)
     status: str = "PENDING"  # PENDING, RUNNING, COMPLETED, FAILED, PAUSED
     assigned_agent: str = "agent_jules_sage"
     description: str = ""
     created_at: float = Field(default_factory=time.time)
-    metadata: dict[str, Any] = Field(default_factory=dict)
+    metadata: Dict[str, Any] = Field(default_factory=dict)
 
     @field_validator("task_id")
     @classmethod
@@ -56,7 +53,7 @@ class SAGEMissionQueue:
         self.storage_path = Path(storage_path)
         self.storage_path.mkdir(parents=True, exist_ok=True)
         self.queue_file = self.storage_path / "mission_queue.json"
-        self.tasks: dict[str, SAGEMissionTask] = {}
+        self.tasks: Dict[str, SAGEMissionTask] = {}
         self.load_queue()
 
     def add_task(self, task: SAGEMissionTask) -> None:
@@ -64,19 +61,18 @@ class SAGEMissionQueue:
         self.tasks[task.task_id] = task
         self.save_queue()
 
-    def get_task(self, task_id: str) -> SAGEMissionTask | None:
+    def get_task(self, task_id: str) -> Optional[SAGEMissionTask]:
         """Retrieve task by its ID."""
         return self.tasks.get(task_id)
 
-    def list_tasks(self) -> list[SAGEMissionTask]:
+    def list_tasks(self) -> List[SAGEMissionTask]:
         """List all queued tasks."""
         return list(self.tasks.values())
 
-    def get_next_approved_task(self, approved_objectives: list[str]) -> SAGEMissionTask | None:
+    def get_next_approved_task(self, approved_objectives: List[str]) -> Optional[SAGEMissionTask]:
         """Query for the next approved, pending task belonging to approved objectives, sorted by priority."""
         eligible = [
-            t
-            for t in self.tasks.values()
+            t for t in self.tasks.values()
             if t.status == "PENDING" and t.authorized and t.objective_id in approved_objectives
         ]
         if not eligible:
@@ -111,12 +107,12 @@ class ContinuityControlRecord(BaseModel):
     timestamp: float
     action_taken: str
     decision_reasoning: str
-    evidence_payload: dict[str, Any] = Field(default_factory=dict)
-    failure_context: dict[str, Any] | None = None
-    recovery_path: str | None = None
+    evidence_payload: Dict[str, Any] = Field(default_factory=dict)
+    failure_context: Optional[Dict[str, Any]] = None
+    recovery_path: Optional[str] = None
     lifecycle_state: str = "PROPOSED"
-    workflow_friction: list[dict[str, Any]] = Field(default_factory=list)
-    improvement_opportunities: list[str] = Field(default_factory=list)
+    workflow_friction: List[Dict[str, Any]] = Field(default_factory=list)
+    improvement_opportunities: List[str] = Field(default_factory=list)
 
     @field_validator("record_id")
     @classmethod
@@ -140,8 +136,8 @@ class ContinuityControlLoop:
 
     def __init__(
         self,
-        session_manager: SessionStateManager | None = None,
-        storage_path: str = "sage_data/experimental_ccl",
+        session_manager: Optional[SessionStateManager] = None,
+        storage_path: str = "sage_data/experimental_ccl"
     ):
         """Initialize the Continuity Control Loop.
 
@@ -158,12 +154,12 @@ class ContinuityControlLoop:
         event_type: str,
         action_taken: str,
         decision_reasoning: str,
-        evidence_payload: dict[str, Any] | None = None,
-        failure_context: dict[str, Any] | None = None,
-        recovery_path: str | None = None,
-        session_id: str | None = None,
-        workflow_friction: list[dict[str, Any]] | None = None,
-        improvement_opportunities: list[str] | None = None,
+        evidence_payload: Optional[Dict[str, Any]] = None,
+        failure_context: Optional[Dict[str, Any]] = None,
+        recovery_path: Optional[str] = None,
+        session_id: Optional[str] = None,
+        workflow_friction: Optional[List[Dict[str, Any]]] = None,
+        improvement_opportunities: Optional[List[str]] = None,
     ) -> ContinuityControlRecord:
         """Intercepts AI workflow events and synthesizes a proposed continuity record.
 
@@ -189,20 +185,21 @@ class ContinuityControlLoop:
                 # If session_id is provided but doesn't exist, create it
                 # Make sure the session prefix is valid
                 clean_id = session_id
-                if not (clean_id.startswith(("session_", "SES_"))):
+                if not (clean_id.startswith("session_") or clean_id.startswith("SES_")):
                     clean_id = f"session_{session_id}"
                 session = self.session_manager.create_session(
-                    session_id=clean_id, active_objectives=["obj_experimental_coordination"]
+                    session_id=clean_id,
+                    active_objectives=["obj_experimental_coordination"]
                 )
         else:
             all_sessions = self.session_manager.list_all()
             if all_sessions:
                 # Retrieve most recent session based on timestamp
-                session = max(all_sessions, key=lambda s: s.timestamp)
+                session = sorted(all_sessions, key=lambda s: s.timestamp)[-1]
             else:
                 session = self.session_manager.create_session(
                     session_id=f"session_{uuid.uuid4().hex[:8]}",
-                    active_objectives=["obj_experimental_coordination"],
+                    active_objectives=["obj_experimental_coordination"]
                 )
 
         payload = dict(evidence_payload or {})
@@ -233,13 +230,13 @@ class ContinuityControlLoop:
 
         return record
 
-    def enrich_context(self, session: SessionState) -> dict[str, Any]:
+    def enrich_context(self, session: SessionState) -> Dict[str, Any]:
         """Queries SessionState to retrieve active objectives and related telemetry metadata."""
         return {
             "enriched_objectives": list(session.active_objectives),
             "session_completed_actions": list(session.completed_actions),
             "session_pending_actions": list(session.pending_actions),
-            "enrichment_timestamp": time.time(),
+            "enrichment_timestamp": time.time()
         }
 
     def validate_record(self, record: ContinuityControlRecord) -> bool:
@@ -253,12 +250,7 @@ class ContinuityControlLoop:
         # 1. Structural Checks
         if not record.record_id.startswith("CCL-REC-"):
             return False
-        if not (
-            record.session_id.startswith("session_")
-            or record.session_id.startswith("SES_")
-            or record.session_id.startswith("ws_session_")
-            or record.session_id.startswith("gh_session_")
-        ):
+        if not (record.session_id.startswith("session_") or record.session_id.startswith("SES_") or record.session_id.startswith("ws_session_") or record.session_id.startswith("gh_session_")):
             return False
 
         # 2. Chronological Monotonicity Check
@@ -293,7 +285,11 @@ class ContinuityControlLoop:
         return filepath
 
     def human_approval(
-        self, record_id: str, supervisor_id: str, signature: str, decision: str
+        self,
+        record_id: str,
+        supervisor_id: str,
+        signature: str,
+        decision: str
     ) -> ContinuityControlRecord:
         """Manages the human operator authorization review gate.
 
@@ -319,7 +315,7 @@ class ContinuityControlLoop:
             "supervisor_id": supervisor_id,
             "signature": signature,
             "decision": decision,
-            "approved_at": time.time(),
+            "approved_at": time.time()
         }
 
         # Reserialize
@@ -351,9 +347,9 @@ class SAGEImprovementSignal(BaseModel):
     signal_id: str
     event_id: str
     metric_category: str
-    metric_evaluation: dict[str, Any]
-    improvement_candidate: dict[str, Any]
-    discovery_lane_input: dict[str, Any]
+    metric_evaluation: Dict[str, Any]
+    improvement_candidate: Dict[str, Any]
+    discovery_lane_input: Dict[str, Any]
     timestamp: float
 
 
@@ -366,9 +362,9 @@ class SAGEOperationalIntelligenceLayer:
     def compute_metrics(
         self,
         record: ContinuityControlRecord,
-        cmaps_payload: dict[str, Any],
+        cmaps_payload: Dict[str, Any],
         duration: float,
-        session: SessionState,
+        session: SessionState
     ) -> SAGEOperationalMetrics:
         """Compute the high-fidelity operational and context efficiency metrics."""
 
@@ -397,16 +393,10 @@ class SAGEOperationalIntelligenceLayer:
         lifecycle_completion_rate = (validated_count / total_records) if total_records > 0 else 1.0
 
         # 2. Recovery Success Rate
-        recovery_records = [
-            r for r in all_records if r.get("event_type") == "recovered" or r.get("failure_context")
-        ]
-        recovered_and_validated = [
-            r for r in recovery_records if r.get("lifecycle_state") == "VALIDATED"
-        ]
+        recovery_records = [r for r in all_records if r.get("event_type") == "recovered" or r.get("failure_context")]
+        recovered_and_validated = [r for r in recovery_records if r.get("lifecycle_state") == "VALIDATED"]
 
-        recovery_success_rate = (
-            (len(recovered_and_validated) / len(recovery_records)) if recovery_records else 1.0
-        )
+        recovery_success_rate = (len(recovered_and_validated) / len(recovery_records)) if recovery_records else 1.0
 
         # 3. Evidence Completeness
         # Check presence of standard key items in current record/payload
@@ -415,7 +405,7 @@ class SAGEOperationalIntelligenceLayer:
             "git_commit": "git_commit" in payload_dict,
             "protection_report": "protection_report" in payload_dict,
             "cmaps_audit_id": "cmaps_audit_id" in payload_dict,
-            "human_approval_record": "human_approval_record" in payload_dict,
+            "human_approval_record": "human_approval_record" in payload_dict
         }
         present_count = sum(1 for v in expected_items.values() if v)
         evidence_completeness = present_count / len(expected_items)
@@ -424,18 +414,11 @@ class SAGEOperationalIntelligenceLayer:
         decision_events = cmaps_payload.get("decision_events", [])
         complete_decisions = 0
         for d in decision_events:
-            if (
-                d.get("decision_id")
-                and d.get("timestamp")
-                and d.get("summary")
-                and d.get("reasoning")
-            ):
+            if d.get("decision_id") and d.get("timestamp") and d.get("summary") and d.get("reasoning"):
                 # verify confidence is present and valid
                 if isinstance(d.get("confidence"), (int, float)) and d.get("confidence") > 0.0:
                     complete_decisions += 1
-        decision_trace_completeness = (
-            (complete_decisions / len(decision_events)) if decision_events else 1.0
-        )
+        decision_trace_completeness = (complete_decisions / len(decision_events)) if decision_events else 1.0
 
         # 5. Workflow State Accuracy
         # If failures are documented, status must be recovered, if approved it must be VALIDATED
@@ -482,15 +465,15 @@ class SAGEOperationalIntelligenceLayer:
             context_preservation_score=context_preservation_score,
             unnecessary_reassessment_events=unnecessary_reassessment_events,
             repeated_execution_prevention=repeated_execution_prevention,
-            state_restoration_success=state_restoration_success,
+            state_restoration_success=state_restoration_success
         )
 
     def generate_learning_signals(
         self,
         record: ContinuityControlRecord,
         metrics: SAGEOperationalMetrics,
-        register_path: Path = Path("evidence_capture/discovery_candidates_register.json"),
-    ) -> list[SAGEImprovementSignal]:
+        register_path: Path = Path("evidence_capture/discovery_candidates_register.json")
+    ) -> List[SAGEImprovementSignal]:
         """Convert operational events/metrics into structured SAGE Improvement Signals."""
         signals = []
 
@@ -508,7 +491,7 @@ class SAGEOperationalIntelligenceLayer:
                     "observed_friction_type": f_type,
                     "severity": f_severity,
                     "detail": f_detail,
-                    "execution_cycle_duration": metrics.execution_cycle_duration,
+                    "execution_cycle_duration": metrics.execution_cycle_duration
                 }
 
                 # Improvement Candidate
@@ -517,14 +500,14 @@ class SAGEOperationalIntelligenceLayer:
                     "candidate_id": candidate_id,
                     "description": f"Address {f_type} friction: {f_detail}",
                     "validation_criteria": "Reduction of observed cognitive/execution friction in future workflow runs.",
-                    "priority": "HIGH" if f_severity == "high" else "MEDIUM",
+                    "priority": "HIGH" if f_severity == "high" else "MEDIUM"
                 }
 
                 # Discovery Lane Input
                 lane_input = {
                     "target_process": f"workflow_coordination_{f_type}",
                     "actionable_remediation": f"Refactor automated flow to streamline and optimize {f_detail}",
-                    "evidence_reference": f"Record {record.record_id}",
+                    "evidence_reference": f"Record {record.record_id}"
                 }
 
                 sig = SAGEImprovementSignal(
@@ -534,7 +517,7 @@ class SAGEOperationalIntelligenceLayer:
                     metric_evaluation=eval_dict,
                     improvement_candidate=candidate,
                     discovery_lane_input=lane_input,
-                    timestamp=time.time(),
+                    timestamp=time.time()
                 )
                 signals.append(sig)
 
@@ -545,15 +528,13 @@ class SAGEOperationalIntelligenceLayer:
             eval_dict = {
                 "completeness_score": metrics.evidence_completeness,
                 "missing_fields": [
-                    field
-                    for field, present in {
+                    field for field, present in {
                         "git_commit": "git_commit" in record.evidence_payload,
                         "protection_report": "protection_report" in record.evidence_payload,
                         "cmaps_audit_id": "cmaps_audit_id" in record.evidence_payload,
-                        "human_approval_record": "human_approval_record" in record.evidence_payload,
-                    }.items()
-                    if not present
-                ],
+                        "human_approval_record": "human_approval_record" in record.evidence_payload
+                    }.items() if not present
+                ]
             }
 
             candidate_id = f"CANDIDATE-OIL-{uuid.uuid4().hex[:6].upper()}"
@@ -561,13 +542,13 @@ class SAGEOperationalIntelligenceLayer:
                 "candidate_id": candidate_id,
                 "description": "Auto-populate missing evidence fields on active workspace handoffs.",
                 "validation_criteria": "Achieve 100% evidence completeness across consecutive runs.",
-                "priority": "MEDIUM",
+                "priority": "MEDIUM"
             }
 
             lane_input = {
                 "target_process": "evidence_generation",
                 "actionable_remediation": "Implement validation hooks to block incomplete state records.",
-                "evidence_reference": f"Record {record.record_id}",
+                "evidence_reference": f"Record {record.record_id}"
             }
 
             sig = SAGEImprovementSignal(
@@ -577,7 +558,7 @@ class SAGEOperationalIntelligenceLayer:
                 metric_evaluation=eval_dict,
                 improvement_candidate=candidate,
                 discovery_lane_input=lane_input,
-                timestamp=time.time(),
+                timestamp=time.time()
             )
             signals.append(sig)
 
@@ -587,7 +568,7 @@ class SAGEOperationalIntelligenceLayer:
 
             eval_dict = {
                 "unnecessary_reassessment_events": metrics.unnecessary_reassessment_events,
-                "repeated_execution_prevention": metrics.repeated_execution_prevention,
+                "repeated_execution_prevention": metrics.repeated_execution_prevention
             }
 
             candidate_id = f"CANDIDATE-OIL-{uuid.uuid4().hex[:6].upper()}"
@@ -595,13 +576,13 @@ class SAGEOperationalIntelligenceLayer:
                 "candidate_id": candidate_id,
                 "description": "Optimize context preservation to prevent redundant reassessment of completed actions.",
                 "validation_criteria": "Ensure redundant step count resolves to 0.",
-                "priority": "HIGH",
+                "priority": "HIGH"
             }
 
             lane_input = {
                 "target_process": "context_rehydration",
                 "actionable_remediation": "Strictly filter pending actions against completed ones before executing subtasks.",
-                "evidence_reference": f"Record {record.record_id}",
+                "evidence_reference": f"Record {record.record_id}"
             }
 
             sig = SAGEImprovementSignal(
@@ -611,7 +592,7 @@ class SAGEOperationalIntelligenceLayer:
                 metric_evaluation=eval_dict,
                 improvement_candidate=candidate,
                 discovery_lane_input=lane_input,
-                timestamp=time.time(),
+                timestamp=time.time()
             )
             signals.append(sig)
 
@@ -628,10 +609,7 @@ class SAGEOperationalIntelligenceLayer:
 
             for sig in signals:
                 # Add to registry if not already present by ID
-                if not any(
-                    c.get("candidate_id") == sig.improvement_candidate["candidate_id"]
-                    for c in existing_candidates
-                ):
+                if not any(c.get("candidate_id") == sig.improvement_candidate["candidate_id"] for c in existing_candidates):
                     existing_candidates.append(sig.improvement_candidate)
 
             with open(register_path, "w", encoding="utf-8") as f:
@@ -645,10 +623,10 @@ class DeveloperWorkflowOrchestrator:
 
     def __init__(
         self,
-        session_id: str | None = None,
+        session_id: Optional[str] = None,
         objective: str = "obj_continuous_development",
-        ccl: ContinuityControlLoop | None = None,
-        evidence_output_path: str = "evidence_capture/ccl_operational_feedback.json",
+        ccl: Optional[ContinuityControlLoop] = None,
+        evidence_output_path: str = "evidence_capture/ccl_operational_feedback.json"
     ):
         self.ccl = ccl or ContinuityControlLoop(session_manager=SessionStateManager())
         self.session_manager = self.ccl.session_manager
@@ -660,7 +638,8 @@ class DeveloperWorkflowOrchestrator:
         self.session = self.session_manager.retrieve_session(self.session_id)
         if not self.session:
             self.session = self.session_manager.create_session(
-                session_id=self.session_id, active_objectives=[self.objective]
+                session_id=self.session_id,
+                active_objectives=[self.objective]
             )
         else:
             self.session.add_objective(self.objective)
@@ -668,13 +647,11 @@ class DeveloperWorkflowOrchestrator:
 
         self.active_task_id = None
         self.mission_queue = SAGEMissionQueue(storage_path=self.ccl.storage_path)
-        self.checkpoint_manager = CheckpointManager(
-            storage_path=str(self.ccl.storage_path / "checkpoints")
-        )
+        self.checkpoint_manager = CheckpointManager(storage_path=str(self.ccl.storage_path / "checkpoints"))
         self.loop_state_file = self.ccl.storage_path / "loop_state.json"
         self.loop_state = self.load_loop_state()
 
-    def load_loop_state(self) -> dict[str, Any]:
+    def load_loop_state(self) -> Dict[str, Any]:
         """Loads continuous execution loop state from disk."""
         if self.loop_state_file.exists():
             try:
@@ -685,7 +662,7 @@ class DeveloperWorkflowOrchestrator:
         return {
             "mode": "CONTINUOUS",  # CONTINUOUS, MANUAL_INTERVENTION_PAUSED, STOPPED
             "consecutive_failures": 0,
-            "last_checkpoint_id": None,
+            "last_checkpoint_id": None
         }
 
     def save_loop_state(self) -> None:
@@ -694,7 +671,8 @@ class DeveloperWorkflowOrchestrator:
             json.dump(self.loop_state, f, indent=2, default=str)
 
     def enqueue_authorized_mission_state(
-        self, mission_state: ExperimentalMissionState
+        self,
+        mission_state: ExperimentalMissionState
     ) -> SAGEMissionTask:
         """Enqueue an authorized mission state into the SAGE mission queue.
 
@@ -726,7 +704,7 @@ class DeveloperWorkflowOrchestrator:
             lane=lane,
             authorized=True,
             description=description,
-            target_files=mission_state.metadata.get("target_files", []),
+            target_files=mission_state.metadata.get("target_files", [])
         )
 
         self.mission_queue.add_task(task)
@@ -740,15 +718,13 @@ class DeveloperWorkflowOrchestrator:
             event_type="loop_control",
             action_taken="Paused execution loop",
             decision_reasoning="Manual intervention triggered by operator pause request",
-            session_id=self.session_id,
+            session_id=self.session_id
         )
 
     def resume_mission_execution_loop(self) -> None:
         """Resumes execution loop from manual pause."""
         if self.loop_state["mode"] == "STOPPED":
-            raise ValueError(
-                "SAGE continuous execution violation: Stopped loop cannot be resumed. Restart orchestrator."
-            )
+            raise ValueError("SAGE continuous execution violation: Stopped loop cannot be resumed. Restart orchestrator.")
         self.loop_state["mode"] = "CONTINUOUS"
         self.loop_state["consecutive_failures"] = 0
         self.save_loop_state()
@@ -756,7 +732,7 @@ class DeveloperWorkflowOrchestrator:
             event_type="loop_control",
             action_taken="Resumed execution loop",
             decision_reasoning="Operator cleared pause state and requested resume",
-            session_id=self.session_id,
+            session_id=self.session_id
         )
 
     def emergency_stop(self) -> None:
@@ -767,7 +743,7 @@ class DeveloperWorkflowOrchestrator:
             event_type="loop_control",
             action_taken="Emergency stop",
             decision_reasoning="Operator executed emergency stop boundary control",
-            session_id=self.session_id,
+            session_id=self.session_id
         )
 
     def redirect_mission_priorities(self, objective_id: str, priority_score: float) -> None:
@@ -780,10 +756,10 @@ class DeveloperWorkflowOrchestrator:
             event_type="priority_redirect",
             action_taken=f"Redirected priorities for objective '{objective_id}' to score {priority_score}",
             decision_reasoning="Human operator directed dynamic objective realignment",
-            session_id=self.session_id,
+            session_id=self.session_id
         )
 
-    def reconstruct_mission_state(self, mission_id: str | None = None) -> dict[str, Any]:
+    def reconstruct_mission_state(self, mission_id: Optional[str] = None) -> Dict[str, Any]:
         """Reconstructs mission state from durable disk evidence to answer the 4 core continuity questions without conversation memory.
 
         Questions answered:
@@ -820,16 +796,11 @@ class DeveloperWorkflowOrchestrator:
                         event_type="drift_detected",
                         action_taken="Freezing loop due to corrupted checkpoint file",
                         decision_reasoning=f"Fail-closed on checkpoint corruption: {e}",
-                        failure_context={
-                            "error": "corrupted_checkpoint_detected",
-                            "filepath": str(p),
-                        },
+                        failure_context={"error": "corrupted_checkpoint_detected", "filepath": str(p)},
                         recovery_path="manual_operator_verification_required",
-                        session_id=self.session_id,
+                        session_id=self.session_id
                     )
-                    raise ValueError(
-                        f"SAGE Continuity Violation: Corrupted checkpoint detected at {p}: {e}"
-                    )
+                    raise ValueError(f"SAGE Continuity Violation: Corrupted checkpoint detected at {p}: {e}")
 
         # Sort valid checkpoints chronologically
         valid_checkpoints.sort(key=lambda c: c.timestamp)
@@ -838,20 +809,12 @@ class DeveloperWorkflowOrchestrator:
         # 2. Audit CCL records on disk
         validated_ccl_records = []
         for p in self.ccl.storage_path.glob("*.json"):
-            if (
-                p.name == "mission_queue.json"
-                or p.name == "loop_state.json"
-                or p.name == "discovery_candidates_register.json"
-            ):
+            if p.name in ("mission_queue.json", "loop_state.json", "discovery_candidates_register.json"):
                 continue
             try:
                 with open(p, "r", encoding="utf-8") as f:
                     data = json.load(f)
-                if (
-                    isinstance(data, dict)
-                    and data.get("record_id", "").startswith("CCL-REC-")
-                    and data.get("lifecycle_state") == "VALIDATED"
-                ):
+                if isinstance(data, dict) and data.get("record_id", "").startswith("CCL-REC-") and data.get("lifecycle_state") == "VALIDATED":
                     validated_ccl_records.append(data)
             except Exception:
                 pass
@@ -875,9 +838,7 @@ class DeveloperWorkflowOrchestrator:
         running_tasks = [t for t in all_tasks if t.status == "RUNNING"]
         active_task = running_tasks[0] if running_tasks else None
 
-        # If no task is RUNNING, pick the last completed or last processed task
         if not active_task and all_tasks:
-            # Sort by created_at or priority
             sorted_all = sorted(all_tasks, key=lambda x: x.created_at, reverse=True)
             last_processed = sorted_all[0]
             active_task_id = last_processed.task_id
@@ -894,27 +855,19 @@ class DeveloperWorkflowOrchestrator:
 
         # Identify pending work ("WHAT REMAINS?")
         pending_tasks = [
-            t for t in all_tasks if t.status == "PENDING" and t.task_id not in completed_task_ids
+            t for t in all_tasks
+            if t.status == "PENDING" and t.task_id not in completed_task_ids
         ]
-        pending_authorized_tasks = [
-            t
-            for t in pending_tasks
-            if t.authorized and t.objective_id in self.session.active_objectives
-        ]
+        pending_authorized_tasks = [t for t in pending_tasks if t.authorized and t.objective_id in self.session.active_objectives]
 
         # Identify next authorized frontier ("WHAT AM I AUTHORIZED TO DO NEXT?")
-        next_authorized_task = self.mission_queue.get_next_approved_task(
-            self.session.active_objectives
-        )
+        next_authorized_task = self.mission_queue.get_next_approved_task(self.session.active_objectives)
 
         # Ensure completed tasks are NEVER re-executed as next authorized task
         if next_authorized_task and next_authorized_task.task_id in completed_task_ids:
-            # Mark it completed in queue and get next
             next_authorized_task.status = "COMPLETED"
             self.mission_queue.save_queue()
-            next_authorized_task = self.mission_queue.get_next_approved_task(
-                self.session.active_objectives
-            )
+            next_authorized_task = self.mission_queue.get_next_approved_task(self.session.active_objectives)
 
         if self.loop_state.get("mode") != "CONTINUOUS":
             next_action_str = f"PAUSED: Loop mode is '{self.loop_state.get('mode')}'. Manual intervention required."
@@ -926,9 +879,7 @@ class DeveloperWorkflowOrchestrator:
             next_action_str = "NO_PENDING_AUTHORIZED_WORK"
             auth_status = "QUEUE_EXHAUSTED"
 
-        last_ccl_action = (
-            validated_ccl_records[-1].get("action_taken") if validated_ccl_records else "None"
-        )
+        last_ccl_action = validated_ccl_records[-1].get("action_taken") if validated_ccl_records else "None"
 
         return {
             "status": "RECONSTRUCTED",
@@ -940,7 +891,7 @@ class DeveloperWorkflowOrchestrator:
                 "task_description": active_task_desc,
                 "task_status": active_task_status,
                 "last_checkpoint_id": latest_chk.id if latest_chk else None,
-                "last_ccl_action": last_ccl_action,
+                "last_ccl_action": last_ccl_action
             },
             "what_has_been_verified": {
                 "completed_task_ids": sorted(completed_task_ids),
@@ -948,23 +899,19 @@ class DeveloperWorkflowOrchestrator:
                 "verified_ccl_records_count": len(validated_ccl_records),
                 "verified_checkpoints_count": len(valid_checkpoints),
                 "progression_receipts_count": progression_receipts_count,
-                "evidence_hashes_verified": True,
+                "evidence_hashes_verified": True
             },
             "what_remains": {
                 "pending_task_ids": [t.task_id for t in pending_tasks],
                 "pending_authorized_task_ids": [t.task_id for t in pending_authorized_tasks],
-                "pending_tasks_count": len(pending_tasks),
+                "pending_tasks_count": len(pending_tasks)
             },
             "what_am_i_authorized_to_do_next": {
-                "next_authorized_task_id": next_authorized_task.task_id
-                if next_authorized_task
-                else None,
-                "next_authorized_objective": next_authorized_task.objective_id
-                if next_authorized_task
-                else None,
+                "next_authorized_task_id": next_authorized_task.task_id if next_authorized_task else None,
+                "next_authorized_objective": next_authorized_task.objective_id if next_authorized_task else None,
                 "action": next_action_str,
-                "authorization_status": auth_status,
-            },
+                "authorization_status": auth_status
+            }
         }
 
     def rollback_to_checkpoint(self, checkpoint_id: str) -> None:
@@ -983,7 +930,7 @@ class DeveloperWorkflowOrchestrator:
             decision_reasoning="Initiate recovery rollback from validated checkpoint state",
             failure_context={"error": "rollback_triggered"},
             recovery_path=f"rehydrated_checkpoint_{checkpoint_id}",
-            session_id=self.session_id,
+            session_id=self.session_id
         )
 
     def detect_external_workspace_drift(self) -> bool:
@@ -992,7 +939,6 @@ class DeveloperWorkflowOrchestrator:
         modified_files = workspace.get("modified_files", [])
 
         from sage.experimental.act.context_guard import ProtectedChangeDetector
-
         detector = ProtectedChangeDetector()
         protection_report = detector.audit_changes({"modified_files": modified_files})
 
@@ -1004,19 +950,14 @@ class DeveloperWorkflowOrchestrator:
                 event_type="drift_detected",
                 action_taken="Freezing runtime and locking mode to MANUAL_INTERVENTION_PAUSED",
                 decision_reasoning="SAGE safety alignment alert: untracked or unauthorized core namespace changes detected",
-                failure_context={
-                    "error": "external_workspace_drift_detected",
-                    "report": protection_report,
-                },
+                failure_context={"error": "external_workspace_drift_detected", "report": protection_report},
                 recovery_path="manual_operator_verification_required",
-                session_id=self.session_id,
+                session_id=self.session_id
             )
             return True
         return False
 
-    def handoff_discovery_candidate_to_mission(
-        self, candidate_id: str, objective_id: str | None = None
-    ) -> SAGEMissionTask:
+    def handoff_discovery_candidate_to_mission(self, candidate_id: str, objective_id: Optional[str] = None) -> SAGEMissionTask:
         """Transforms high-value discovery candidate into an authorized engineering task in the backlog queue."""
         obj_id = objective_id or self.objective
         description = "Implement automated improvement"
@@ -1050,16 +991,11 @@ class DeveloperWorkflowOrchestrator:
             task_id=task_id,
             objective_id=obj_id,
             priority_score=priority_score,
-            lane="optimization"
-            if "optimization" in description.lower() or "optimize" in description.lower()
-            else "engineering",
+            lane="optimization" if "optimization" in description.lower() or "optimize" in description.lower() else "engineering",
             authorized=True,
             metadata={},
-            completion_criteria=[
-                f"Implement recommendations for {candidate_id}",
-                "Verify performance improvements",
-            ],
-            description=description,
+            completion_criteria=[f"Implement recommendations for {candidate_id}", "Verify performance improvements"],
+            description=description
         )
 
         self.mission_queue.add_task(task)
@@ -1068,11 +1004,11 @@ class DeveloperWorkflowOrchestrator:
             event_type="handoff",
             action_taken=f"Handoff discovery candidate {candidate_id} to mission task",
             decision_reasoning="Programmatically promote approved discovery lane candidate to engineering queue",
-            session_id=self.session_id,
+            session_id=self.session_id
         )
         return task
 
-    def execute_autonomous_mission_loop(self, max_cycles: int = 5) -> dict[str, Any]:
+    def execute_autonomous_mission_loop(self, max_cycles: int = 5) -> Dict[str, Any]:
         """Runs the controlled continuous execution loop, processing approved and authorized queue backlog tasks."""
         completed_cycles = 0
         executed_tasks = []
@@ -1099,7 +1035,7 @@ class DeveloperWorkflowOrchestrator:
                 current_sage_state=self.session.model_dump(),
                 active_goals=list(self.session.active_objectives),
                 recent_decisions=[],
-                validation_status={"task_id": task.task_id, "status": "PRE_EXECUTION"},
+                validation_status={"task_id": task.task_id, "status": "PRE_EXECUTION"}
             )
 
             # 4. Agent Execution Simulation
@@ -1120,16 +1056,16 @@ class DeveloperWorkflowOrchestrator:
                 )
 
                 # SAGE Mission Progression Integration
+                from sage.experimental.progression import MissionProgressionController
                 from sage.core.hdg import HDGEngine
                 from sage.experimental.cognitive.state_schema import (
-                    CognitiveActiveMission,
+                    CognitiveState,
                     CognitiveAgentIdentity,
+                    CognitiveActiveMission,
                     CognitiveConfidenceState,
                     CognitiveNextAction,
                     CognitiveOperatorConstraints,
-                    CognitiveState,
                 )
-                from sage.experimental.progression import MissionProgressionController
 
                 # Initialize controller with appropriate HDGEngine
                 hdg_engine = HDGEngine(storage_path=self.ccl.storage_path / "hdg_causality.json")
@@ -1141,7 +1077,7 @@ class DeveloperWorkflowOrchestrator:
                     "objective": task.description or task.title,
                     "priority_score": task.priority_score,
                     "assigned_agent": task.assigned_agent,
-                    "required_evidence": task.evidence_requirements,
+                    "required_evidence": task.evidence_requirements
                 }
                 prog_controller.intake_mission(intake_payload)
 
@@ -1160,21 +1096,26 @@ class DeveloperWorkflowOrchestrator:
                 cog_mission = CognitiveActiveMission(
                     mission_id=task.task_id,
                     objective=task.description or task.title,
-                    status="RUNNING",
+                    status="RUNNING"
                 )
-                cog_constraints = CognitiveOperatorConstraints(authorized_agents=[agent_id])
-                cog_confidence = CognitiveConfidenceState(overall_confidence=1.0, last_updated=0.0)
+                cog_constraints = CognitiveOperatorConstraints(
+                    authorized_agents=[agent_id]
+                )
+                cog_confidence = CognitiveConfidenceState(
+                    overall_confidence=1.0,
+                    last_updated=0.0
+                )
                 cog_next_action = CognitiveNextAction(
                     action_id=f"task_{task.task_id}",
                     description=task.description or task.title,
-                    assigned_agent=agent_id,
+                    assigned_agent=agent_id
                 )
                 cog_state = CognitiveState(
                     agent_identity=cog_agent,
                     active_mission=cog_mission,
                     operator_constraints=cog_constraints,
                     confidence_state=cog_confidence,
-                    next_action=cog_next_action,
+                    next_action=cog_next_action
                 )
                 prog_controller.validate_preflight(cognitive_state=cog_state)
 
@@ -1191,13 +1132,11 @@ class DeveloperWorkflowOrchestrator:
                 ccl_rec = result_evidence.get("ccl_record", {})
                 evidence_payload = ccl_rec.get("evidence_payload", {})
                 git_commit = evidence_payload.get("git_commit", "a" * 40)
-                audit_id = ccl_rec.get("evidence_payload", {}).get(
-                    "cmaps_audit_id", "audit_" + "e" * 32
-                )
+                audit_id = ccl_rec.get("evidence_payload", {}).get("cmaps_audit_id", "audit_" + "e" * 32)
                 provided_evidence = {
                     "git_commit": git_commit,
                     "protection_report": "pass",
-                    "cmaps_audit_id": audit_id,
+                    "cmaps_audit_id": audit_id
                 }
                 prog_controller.validate_evidence(provided_evidence)
 
@@ -1205,9 +1144,7 @@ class DeveloperWorkflowOrchestrator:
                 _prog_receipt = prog_controller.classify_outcome("SUCCESS")
 
                 # Attach generated progression receipts to task metadata for audit trail
-                task.metadata["progression_receipts"] = [
-                    r.model_dump() for r in prog_controller.receipts
-                ]
+                task.metadata["progression_receipts"] = [r.model_dump() for r in prog_controller.receipts]
 
                 # Auto-cascade high-priority discovery candidates generated by SAGE-OIL into Mission Queue
                 op_intel = result_evidence.get("operational_intelligence", {})
@@ -1219,9 +1156,7 @@ class DeveloperWorkflowOrchestrator:
                         norm_cand = re.sub(r"[^a-zA-Z0-9_]", "_", candidate_id)
                         cand_task_id = f"task_impr_{norm_cand}"
                         if not self.mission_queue.get_task(cand_task_id):
-                            self.handoff_discovery_candidate_to_mission(
-                                candidate_id, objective_id=task.objective_id
-                            )
+                            self.handoff_discovery_candidate_to_mission(candidate_id, objective_id=task.objective_id)
 
                 # Reset failures on success
                 self.loop_state["consecutive_failures"] = 0
@@ -1234,7 +1169,7 @@ class DeveloperWorkflowOrchestrator:
                     current_sage_state=self.session.model_dump(),
                     active_goals=list(self.session.active_objectives),
                     recent_decisions=[task.task_id],
-                    validation_status={"task_id": task.task_id, "status": "SUCCESS"},
+                    validation_status={"task_id": task.task_id, "status": "SUCCESS"}
                 )
                 self.loop_state["last_checkpoint_id"] = post_chk.id
 
@@ -1253,15 +1188,9 @@ class DeveloperWorkflowOrchestrator:
                     event_type="recovered",
                     action_taken=f"Execution failed for task {task.task_id}",
                     decision_reasoning="Continuous execution loop error handler intercepted active agent failure",
-                    failure_context={
-                        "error": "task_execution_failed",
-                        "exception": str(e),
-                        "consecutive_failures": self.loop_state["consecutive_failures"],
-                    },
-                    recovery_path="hold_for_manual_operator_remediation"
-                    if self.loop_state["consecutive_failures"] >= 3
-                    else "continue_next_queue_task",
-                    session_id=self.session_id,
+                    failure_context={"error": "task_execution_failed", "exception": str(e), "consecutive_failures": self.loop_state["consecutive_failures"]},
+                    recovery_path="hold_for_manual_operator_remediation" if self.loop_state["consecutive_failures"] >= 3 else "continue_next_queue_task",
+                    session_id=self.session_id
                 )
 
             finally:
@@ -1287,17 +1216,19 @@ class DeveloperWorkflowOrchestrator:
             "terminal_reason": terminal_reason,
             "completed_cycles": completed_cycles,
             "executed_tasks": executed_tasks,
-            "consecutive_failures": self.loop_state["consecutive_failures"],
+            "consecutive_failures": self.loop_state["consecutive_failures"]
         }
 
-    def scan_git_workspace(self) -> dict[str, Any]:
+    def scan_git_workspace(self) -> Dict[str, Any]:
         """Programmatically queries git status and diffs for the active workspace."""
         import subprocess
-
         try:
             # Get modified, untracked, and staged files
             status_res = subprocess.run(
-                ["git", "status", "--porcelain"], capture_output=True, text=True, check=True
+                ["git", "status", "--porcelain"],
+                capture_output=True,
+                text=True,
+                check=True
             )
             lines = status_res.stdout.strip().split("\n")
             modified_files = []
@@ -1320,8 +1251,7 @@ class DeveloperWorkflowOrchestrator:
                     diff_res = subprocess.run(
                         ["git", "diff", "HEAD", "--", filepath],
                         capture_output=True,
-                        text=True,
-                        check=False,
+                        text=True
                     )
                     if diff_res.returncode == 0:
                         diffs[filepath] = diff_res.stdout
@@ -1329,34 +1259,32 @@ class DeveloperWorkflowOrchestrator:
             # Fallback if no files are modified/git status is clean
             if not modified_files:
                 modified_files = ["sage/experimental/act/continuity_control.py"]
-                diffs["sage/experimental/act/continuity_control.py"] = (
-                    "No external git diff. Scanning active orchestrator file."
-                )
+                diffs["sage/experimental/act/continuity_control.py"] = "No external git diff. Scanning active orchestrator file."
 
-            return {"modified_files": modified_files, "diffs": diffs}
+            return {
+                "modified_files": modified_files,
+                "diffs": diffs
+            }
         except Exception as e:
             # Robust fallback for environments without git or first-time setups
             return {
                 "modified_files": ["sage/experimental/act/continuity_control.py"],
-                "diffs": {
-                    "sage/experimental/act/continuity_control.py": f"Git scan bypassed due to error: {e}"
-                },
+                "diffs": {"sage/experimental/act/continuity_control.py": f"Git scan bypassed due to error: {e}"}
             }
 
     def execute_active_development_coordination(
         self,
         action_taken: str,
         decision_reasoning: str,
-        workflow_friction: list[dict[str, Any]] | None = None,
-        improvement_opportunities: list[str] | None = None,
-        supervisor_override: dict[str, Any] | None = None,
-        task: SAGEMissionTask | None = None,
-    ) -> dict[str, Any]:
+        workflow_friction: Optional[List[Dict[str, Any]]] = None,
+        improvement_opportunities: Optional[List[str]] = None,
+        supervisor_override: Optional[Dict[str, Any]] = None,
+        task: Optional[SAGEMissionTask] = None,
+    ) -> Dict[str, Any]:
         """Orchestrates workspace scanning, protection evaluation, lineage/CMAPS validation, and human sign-off."""
         start_time = time.time()
         import subprocess
         from datetime import datetime, timezone
-
         from sage.experimental.act.context_guard import ProtectedChangeDetector
         from sage.experimental.act.contracts import CrossModelAuditPayloadValidator
 
@@ -1373,37 +1301,20 @@ class DeveloperWorkflowOrchestrator:
         reval_failed = False
         reval_error_msg = ""
         reval_caps = []
-        if (
-            task
-            and task.lane == "engineering"
-            and task.metadata
-            and "target_files" in task.metadata
-        ):
+        if task and task.lane == "engineering" and task.metadata and "target_files" in task.metadata:
             from sage.experimental.mission_control_bridge import SAGEMissionExecutionBridge
-
             bridge = SAGEMissionExecutionBridge()
             reval_res = bridge.execute_revalidation_workload(
                 mission_id=task.task_id,
                 target_files=task.metadata["target_files"],
-                run_real_lint=True,
+                run_real_lint=True
             )
             reval_caps = reval_res.get("revalidated_capabilities", [])
             if not reval_res.get("overall_success", False):
                 reval_failed = True
-                failed_exec = next(
-                    (e for e in reval_res.get("execution_results", []) if not e.get("success")),
-                    None,
-                )
-                reval_error_msg = (
-                    failed_exec.get("stderr")
-                    or failed_exec.get("stdout")
-                    or "Workspace revalidation linter checks failed"
-                    if failed_exec
-                    else "Workspace revalidation linter checks failed"
-                )
-                action_taken = (
-                    f"Workspace revalidation failed for files: {task.metadata['target_files']}"
-                )
+                failed_exec = next((e for e in reval_res.get("execution_results", []) if not e.get("success")), None)
+                reval_error_msg = failed_exec.get("stderr") or failed_exec.get("stdout") or "Workspace revalidation linter checks failed" if failed_exec else "Workspace revalidation linter checks failed"
+                action_taken = f"Workspace revalidation failed for files: {task.metadata['target_files']}"
                 decision_reasoning = f"Linter checks failed during governed workspace revalidation: {reval_error_msg}"
             else:
                 action_taken = f"Successfully revalidated workspace capabilities for files: {task.metadata['target_files']}"
@@ -1412,7 +1323,9 @@ class DeveloperWorkflowOrchestrator:
         # 3. Dynamic Evidence/Commit Mapping
         try:
             commit_res = subprocess.run(
-                ["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=False
+                ["git", "rev-parse", "HEAD"],
+                capture_output=True,
+                text=True
             )
             git_commit = commit_res.stdout.strip() if commit_res.returncode == 0 else "a" * 40
             if len(git_commit) != 40:
@@ -1429,9 +1342,11 @@ class DeveloperWorkflowOrchestrator:
                         file_hash = hashlib.sha256(f.read()).hexdigest()
                 except Exception:
                     pass
-            evidence_relationships.append(
-                {"artifact_path": file, "git_commit": git_commit, "sha256_checksum": file_hash}
-            )
+            evidence_relationships.append({
+                "artifact_path": file,
+                "git_commit": git_commit,
+                "sha256_checksum": file_hash
+            })
 
         # 4. Construct CMAPS v1.0 Payload
         utc_now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
@@ -1440,42 +1355,34 @@ class DeveloperWorkflowOrchestrator:
         checkpoints = []
         if protection_report["is_violation_found"]:
             for violation in protection_report["violations"]:
-                failures.append(
-                    {
-                        "failure_id": f"fail_{uuid.uuid4().hex[:12]}",
-                        "timestamp": utc_now,
-                        "error_type": "PROTECTION_VIOLATION",
-                        "message": violation["reason"],
-                        "severity": violation["severity"],
-                    }
-                )
-            checkpoints.append(
-                {
-                    "checkpoint_id": f"chk_{uuid.uuid4().hex[:12]}",
+                failures.append({
+                    "failure_id": f"fail_{uuid.uuid4().hex[:12]}",
                     "timestamp": utc_now,
-                    "rehydration_token": f"token_{uuid.uuid4().hex[:16]}",
-                    "requires_human_approval": True,
-                }
-            )
+                    "error_type": "PROTECTION_VIOLATION",
+                    "message": violation["reason"],
+                    "severity": violation["severity"]
+                })
+            checkpoints.append({
+                "checkpoint_id": f"chk_{uuid.uuid4().hex[:12]}",
+                "timestamp": utc_now,
+                "rehydration_token": f"token_{uuid.uuid4().hex[:16]}",
+                "requires_human_approval": True
+            })
 
         if reval_failed:
-            failures.append(
-                {
-                    "failure_id": f"fail_lint_{uuid.uuid4().hex[:12]}",
-                    "timestamp": utc_now,
-                    "error_type": "LINTER_VIOLATION",
-                    "message": reval_error_msg,
-                    "severity": "high",
-                }
-            )
-            checkpoints.append(
-                {
-                    "checkpoint_id": f"chk_{uuid.uuid4().hex[:12]}",
-                    "timestamp": utc_now,
-                    "rehydration_token": f"token_{uuid.uuid4().hex[:16]}",
-                    "requires_human_approval": True,
-                }
-            )
+            failures.append({
+                "failure_id": f"fail_lint_{uuid.uuid4().hex[:12]}",
+                "timestamp": utc_now,
+                "error_type": "LINTER_VIOLATION",
+                "message": reval_error_msg,
+                "severity": "high"
+            })
+            checkpoints.append({
+                "checkpoint_id": f"chk_{uuid.uuid4().hex[:12]}",
+                "timestamp": utc_now,
+                "rehydration_token": f"token_{uuid.uuid4().hex[:16]}",
+                "requires_human_approval": True
+            })
 
         status = "recovered" if failures else "completed"
 
@@ -1486,26 +1393,24 @@ class DeveloperWorkflowOrchestrator:
                 "agent_id": "agent_jules_sage",
                 "name": "Jules",
                 "role": "Senior Software Engineer",
-                "governance_tier": "TIER_1_COORDINATOR",
+                "governance_tier": "TIER_1_COORDINATOR"
             },
             "model_provider": {
                 "provider": "anthropic",
                 "model_name": "claude-3-5-sonnet",
-                "temperature": 0.2,
+                "temperature": 0.2
             },
             "execution_state": {
                 "run_id": f"run_{uuid.uuid4().hex[:20]}",
                 "status": status,
                 "step_counter": 1,
                 "started_at": utc_now,
-                "updated_at": utc_now,
+                "updated_at": utc_now
             },
             "task_lineage": {
                 "session_id": "session_" + hashlib.md5(self.session_id.encode()).hexdigest()[:8],
-                "current_task_id": self.active_task_id
-                if getattr(self, "active_task_id", None)
-                else "task_active_development",
-                "subtask_ids": [],
+                "current_task_id": self.active_task_id if getattr(self, "active_task_id", None) else "task_active_development",
+                "subtask_ids": []
             },
             "decision_events": [
                 {
@@ -1513,7 +1418,7 @@ class DeveloperWorkflowOrchestrator:
                     "timestamp": utc_now,
                     "summary": action_taken,
                     "reasoning": decision_reasoning,
-                    "confidence": 1.0,
+                    "confidence": 1.0
                 }
             ],
             "failure_events": failures,
@@ -1522,8 +1427,8 @@ class DeveloperWorkflowOrchestrator:
             "attestation": {
                 "nonce": uuid.uuid4().hex[:16],
                 "signature": "pending_sig",
-                "signer_identity": "Jules",
-            },
+                "signer_identity": "Jules"
+            }
         }
 
         # Validate CMAPS Schema
@@ -1539,13 +1444,13 @@ class DeveloperWorkflowOrchestrator:
                 "git_commit": git_commit,
                 "protection_report": protection_report,
                 "cmaps_audit_id": cmaps_payload["audit_id"],
-                "revalidated_capabilities": reval_caps,
+                "revalidated_capabilities": reval_caps
             },
             failure_context=failures[0] if failures else None,
             recovery_path="interactive_supervisor_approval" if failures else None,
             session_id=self.session_id,
             workflow_friction=workflow_friction,
-            improvement_opportunities=improvement_opportunities,
+            improvement_opportunities=improvement_opportunities
         )
 
         # Validate SAGE-CCL Record
@@ -1562,9 +1467,7 @@ class DeveloperWorkflowOrchestrator:
         supervisor_id = "supervisor_jules"
         comments = "Operational active-development coordinate loop completed cleanly."
         if reval_failed:
-            comments = (
-                "Operational active-development coordinate loop failed due to linter violation."
-            )
+            comments = "Operational active-development coordinate loop failed due to linter violation."
         elif protection_report.get("is_violation_found", False):
             comments = "Operational active-development coordinate loop failed due to protected path violation."
         signature = f"sig_jules_{uuid.uuid4().hex[:12]}"
@@ -1580,7 +1483,7 @@ class DeveloperWorkflowOrchestrator:
             record_id=ccl_record.record_id,
             supervisor_id=supervisor_id,
             signature=signature,
-            decision=decision,
+            decision=decision
         )
 
         # Finalize CMAPS attestation signature
@@ -1595,14 +1498,12 @@ class DeveloperWorkflowOrchestrator:
             record=promoted_ccl,
             cmaps_payload=cmaps_payload,
             duration=duration,
-            session=self.session,
+            session=self.session
         )
 
         # Convert metrics/friction/opportunities to learning signals
         register_path = self.ccl.storage_path / "discovery_candidates_register.json"
-        signals = oil.generate_learning_signals(
-            record=promoted_ccl, metrics=metrics, register_path=register_path
-        )
+        signals = oil.generate_learning_signals(record=promoted_ccl, metrics=metrics, register_path=register_path)
 
         # Compile final integrated operational evidence package
         unified_evidence = {
@@ -1615,12 +1516,12 @@ class DeveloperWorkflowOrchestrator:
             "cmaps_payload": cmaps_payload,
             "developer_telemetry": {
                 "friction": workflow_friction or [],
-                "opportunities": improvement_opportunities or [],
+                "opportunities": improvement_opportunities or []
             },
             "operational_intelligence": {
                 "metrics": metrics.model_dump(),
-                "learning_signals": [sig.model_dump() for sig in signals],
-            },
+                "learning_signals": [sig.model_dump() for sig in signals]
+            }
         }
 
         # Write final evidence package to disk
@@ -1635,16 +1536,12 @@ class DeveloperWorkflowOrchestrator:
             raise RuntimeError(f"Workspace revalidation linter checks failed: {reval_error_msg}")
 
         if protection_report.get("is_violation_found", False):
-            violation_reasons = "; ".join(
-                [v["reason"] for v in protection_report.get("violations", [])]
-            )
-            raise PermissionError(
-                f"Protected namespace violation found in workspace changes: {violation_reasons}"
-            )
+            violation_reasons = "; ".join([v["reason"] for v in protection_report.get("violations", [])])
+            raise PermissionError(f"Protected namespace violation found in workspace changes: {violation_reasons}")
 
         return unified_evidence
 
-    def render_control_tower_summary(self, evidence_package: dict[str, Any]) -> str:
+    def render_control_tower_summary(self, evidence_package: Dict[str, Any]) -> str:
         """Renders a beautiful, operator-visible ASCII dashboard answering 5 core visibility questions."""
         op_intel = evidence_package.get("operational_intelligence", {})
         metrics = op_intel.get("metrics", {})
@@ -1656,28 +1553,19 @@ class DeveloperWorkflowOrchestrator:
         friction = evidence_package.get("developer_telemetry", {}).get("friction", [])
         if friction:
             health = "DEGRADED"
-        if (
-            evidence_package.get("status") == "REJECTED"
-            or ccl_record.get("event_type") == "recovered"
-        ) and evidence_package.get("status") != "VALIDATED":
-            health = "BLOCKED"
+        if evidence_package.get("status") == "REJECTED" or ccl_record.get("event_type") == "recovered":
+            if evidence_package.get("status") != "VALIDATED":
+                health = "BLOCKED"
 
         # 2. Compute dynamic next recommended action
         next_action = "Operational loop complete and authorized. Ready to push/integrate changes."
         if evidence_package.get("status") == "REJECTED":
-            next_action = (
-                "Review rejected by supervisor. Revise local workspace and coordinate loop."
-            )
+            next_action = "Review rejected by supervisor. Revise local workspace and coordinate loop."
         elif friction:
-            next_action = (
-                "Address observed workspace friction and optimize automated development flows."
-            )
+            next_action = "Address observed workspace friction and optimize automated development flows."
         elif metrics.get("evidence_completeness", 1.0) < 1.0:
             next_action = "Verify attestation signature and auto-populate missing evidence fields."
-        elif (
-            ccl_record.get("event_type") == "recovered"
-            and evidence_package.get("status") != "VALIDATED"
-        ):
+        elif ccl_record.get("event_type") == "recovered" and evidence_package.get("status") != "VALIDATED":
             next_action = "Initiate recovery rollback or seek supervisor override approval."
 
         # 3. Construct ASCII dashboard
@@ -1686,18 +1574,10 @@ class DeveloperWorkflowOrchestrator:
         dashboard.append("            SAGE CONTROL TOWER - OPERATIONAL INTELLIGENCE VIEW        ")
         dashboard.append("======================================================================")
         dashboard.append(f"  [Workflow Health]       :: {health}")
-        dashboard.append(
-            f"  [Completion Rate]      :: {metrics.get('lifecycle_completion_rate', 1.0) * 100:.1f}%"
-        )
-        dashboard.append(
-            f"  [Recovery Success Rate]:: {metrics.get('recovery_success_rate', 1.0) * 100:.1f}%"
-        )
-        dashboard.append(
-            f"  [Evidence Quality]     :: {metrics.get('evidence_completeness', 1.0) * 100:.1f}% (Completeness Score)"
-        )
-        dashboard.append(
-            f"  [Cycle Duration]       :: {metrics.get('execution_cycle_duration', 0.0):.4f} seconds"
-        )
+        dashboard.append(f"  [Completion Rate]      :: {metrics.get('lifecycle_completion_rate', 1.0) * 100:.1f}%")
+        dashboard.append(f"  [Recovery Success Rate]:: {metrics.get('recovery_success_rate', 1.0) * 100:.1f}%")
+        dashboard.append(f"  [Evidence Quality]     :: {metrics.get('evidence_completeness', 1.0) * 100:.1f}% (Completeness Score)")
+        dashboard.append(f"  [Cycle Duration]       :: {metrics.get('execution_cycle_duration', 0.0):.4f} seconds")
         dashboard.append("----------------------------------------------------------------------")
         dashboard.append("  OPERATIONAL VISIBILITY - FIVE CORE QUESTIONS:")
         dashboard.append("----------------------------------------------------------------------")
@@ -1705,24 +1585,18 @@ class DeveloperWorkflowOrchestrator:
         dashboard.append(f"     Action Taken: {ccl_record.get('action_taken')}")
         dashboard.append(f"     Status:       {evidence_package.get('status')}")
         dashboard.append("  2. WHO OWNS IT?")
-        dashboard.append(
-            f"     Agent:        {cmaps.get('agent_identity', {}).get('name')} ({cmaps.get('agent_identity', {}).get('role')})"
-        )
+        dashboard.append(f"     Agent:        {cmaps.get('agent_identity', {}).get('name')} ({cmaps.get('agent_identity', {}).get('role')})")
         approval_rec = ccl_record.get("evidence_payload", {}).get("human_approval_record", {})
         if approval_rec:
-            dashboard.append(
-                f"     Supervisor:   {approval_rec.get('supervisor_id')} (Signed: {approval_rec.get('signature')[:12]}...)"
-            )
+            dashboard.append(f"     Supervisor:   {approval_rec.get('supervisor_id')} (Signed: {approval_rec.get('signature')[:12]}...)")
         else:
             dashboard.append("     Supervisor:   PENDING AUTHORIZATION")
         dashboard.append("  3. WHY IS IT HAPPENING?")
         dashboard.append(f"     Reasoning:    {ccl_record.get('decision_reasoning')}")
         dashboard.append("  4. WHAT EVIDENCE SUPPORTS IT?")
-        dashboard.append(
-            f"     Commit:       {ccl_record.get('evidence_payload', {}).get('git_commit')[:10] if ccl_record.get('evidence_payload', {}).get('git_commit') else 'N/A'}"
-        )
+        dashboard.append(f"     Commit:       {ccl_record.get('evidence_payload', {}).get('git_commit')[:10] if ccl_record.get('evidence_payload', {}).get('git_commit') else 'N/A'}")
         dashboard.append(f"     CMAPS Audit:  {cmaps.get('audit_id')}")
-        protection = ccl_record.get("evidence_payload", {}).get("protection_report", {})
+        protection = ccl_record.get('evidence_payload', {}).get('protection_report', {})
         dashboard.append(f"     Safe Workspace: {not protection.get('is_violation_found', False)}")
         dashboard.append("  5. WHAT HAPPENS NEXT?")
         dashboard.append(f"     RECOMMENDED:  {next_action}")
@@ -1730,47 +1604,34 @@ class DeveloperWorkflowOrchestrator:
         if friction:
             dashboard.append("  BOTTLENECK INDICATORS:")
             for idx, f in enumerate(friction, 1):
-                dashboard.append(
-                    f"     - [{f.get('severity', 'MEDIUM').upper()}] {f.get('type')}: {f.get('detail')}"
-                )
+                dashboard.append(f"     - [{f.get('severity', 'MEDIUM').upper()}] {f.get('type')}: {f.get('detail')}")
         if metrics.get("unnecessary_reassessment_events", 0) > 0:
-            dashboard.append(
-                f"     - [WARNING] Detected {metrics.get('unnecessary_reassessment_events')} unnecessary reassessments."
-            )
+            dashboard.append(f"     - [WARNING] Detected {metrics.get('unnecessary_reassessment_events')} unnecessary reassessments.")
         dashboard.append("======================================================================")
 
         summary_str = "\n".join(dashboard)
         print(summary_str)
         return summary_str
 
-    def retrieve_external_agent_context(self, agent_id: str, session_id: str) -> dict[str, Any]:
+    def retrieve_external_agent_context(self, agent_id: str, session_id: str) -> Dict[str, Any]:
         """Securely retrieves external agent context including objectives, milestones, lineages, and boundaries."""
         # 1. Identity & Permission Validation
-        allowed_agents = {
-            "agent_jules_sage",
-            "ChatGPT",
-            "Jules",
-            "Claude",
-            "Gemini",
-            "chatgpt-runtime-agent",
-        }
+        allowed_agents = {"agent_jules_sage", "ChatGPT", "Jules", "Claude", "Gemini", "chatgpt-runtime-agent"}
         if agent_id not in allowed_agents:
-            raise PermissionError(
-                f"SAGE External Connection Gate Violation: Unauthorized agent '{agent_id}'"
-            )
+            raise PermissionError(f"SAGE External Connection Gate Violation: Unauthorized agent '{agent_id}'")
 
         # 2. Retrieve / Rehydrate Session State
         session = self.session_manager.retrieve_session(session_id)
         if not session:
             # Rehydrate from ledger or create new if not present
             session = self.session_manager.create_session(
-                session_id=session_id, active_objectives=[self.objective]
+                session_id=session_id,
+                active_objectives=[self.objective]
             )
 
         # 3. Retrieve Assigned task
         assigned_tasks = [
-            t.model_dump()
-            for t in self.mission_queue.list_tasks()
+            t.model_dump() for t in self.mission_queue.list_tasks()
             if t.assigned_agent == agent_id and t.status == "PENDING"
         ]
 
@@ -1783,12 +1644,12 @@ class DeveloperWorkflowOrchestrator:
             "pending_actions": list(session.pending_actions),
             "ownership_boundaries": {
                 "permitted_paths": ["sage/experimental/", "tests/experimental/"],
-                "restricted_paths": ["sage/runtime/", "sage/core/", "sage/acr/", "sage/agents/"],
+                "restricted_paths": ["sage/runtime/", "sage/core/", "sage/acr/", "sage/agents/"]
             },
             "protected_workspaces": ["sage/runtime/", "sage/core/", "sage/acr/", "sage/agents/"],
-            "lineage": [session.session_id],  # Lineage trace
+            "lineage": [session.session_id], # Lineage trace
             "assigned_tasks": assigned_tasks,
-            "timestamp": time.time(),
+            "timestamp": time.time()
         }
 
         # Intercept event in SAGE-CCL
@@ -1796,7 +1657,7 @@ class DeveloperWorkflowOrchestrator:
             event_type="context_retrieved",
             action_taken=f"Retrieved context for external agent '{agent_id}'",
             decision_reasoning="Provide secure, governed mission parameters to external model session",
-            session_id=session_id,
+            session_id=session_id
         )
 
         return context
@@ -1804,14 +1665,14 @@ class DeveloperWorkflowOrchestrator:
     def submit_external_agent_output(
         self,
         agent_id: str,
-        session_id: str | None = None,
-        task_id: str | None = None,
-        output: dict[str, Any] | None = None,
-        output_data: dict[str, Any] | None = None,
-        google_account: str | None = None,
+        session_id: Optional[str] = None,
+        task_id: Optional[str] = None,
+        output: Optional[Dict[str, Any]] = None,
+        output_data: Optional[Dict[str, Any]] = None,
+        google_account: Optional[str] = None,
         *args,
-        **kwargs,
-    ) -> dict[str, Any]:
+        **kwargs
+    ) -> Dict[str, Any]:
         """Ingests external agent execution output, performs security scanning, updates ledger, and syncs."""
         # Handle signature mismatch/flexible arguments
         if session_id is None:
@@ -1822,24 +1683,16 @@ class DeveloperWorkflowOrchestrator:
             task_id = output.get("completed_action") or "task_openai_runtime_activation"
 
         # 1. Identity & Permission Validation
-        allowed_agents = {
-            "agent_jules_sage",
-            "ChatGPT",
-            "Jules",
-            "Claude",
-            "Gemini",
-            "chatgpt-runtime-agent",
-        }
+        allowed_agents = {"agent_jules_sage", "ChatGPT", "Jules", "Claude", "Gemini", "chatgpt-runtime-agent"}
         if agent_id not in allowed_agents:
-            raise PermissionError(
-                f"SAGE External Connection Gate Violation: Unauthorized agent '{agent_id}'"
-            )
+            raise PermissionError(f"SAGE External Connection Gate Violation: Unauthorized agent '{agent_id}'")
 
         # 2. Retrieve / Rehydrate Session
         session = self.session_manager.retrieve_session(session_id)
         if not session:
             session = self.session_manager.create_session(
-                session_id=session_id, active_objectives=[self.objective]
+                session_id=session_id,
+                active_objectives=[self.objective]
             )
 
         # 3. Run Validation Scans
@@ -1857,14 +1710,11 @@ class DeveloperWorkflowOrchestrator:
 
         # Check for semantic injection in response content
         from sage.acr.control_plane import CognitiveHypervisor
-
         hypervisor = CognitiveHypervisor()
         content_to_scan = str(output.get("content", ""))
         eval_report = hypervisor.evaluate_mutation("submit_output", content_to_scan, {})
         if not eval_report["approved"]:
-            raise PermissionError(
-                "SAGE Governance Violation: Semantic/prompt injection detected in output content"
-            )
+            raise PermissionError("SAGE Governance Violation: Semantic/prompt injection detected in output content")
 
         # 4. Process Task and Ledger Update
         task = self.mission_queue.get_task(task_id)
@@ -1877,21 +1727,17 @@ class DeveloperWorkflowOrchestrator:
 
         # 5. Synchronization with Google Workspace (secure sync logs)
         from sage.integration import GoogleWorkspaceSyncManager
-
         class MockRuntime:
             def get_status(self):
                 return {
                     "active_task": task_id,
-                    "current_objective": self.objective
-                    if hasattr(self, "objective")
-                    else "obj_continuous_development",
+                    "current_objective": self.objective if hasattr(self, "objective") else "obj_continuous_development",
                     "session_depth": 1,
                     "memory_count": 5,
                     "archive_count": 2,
                     "decision_count": 0,
-                    "blockers": [],
+                    "blockers": []
                 }
-
         sync_manager = GoogleWorkspaceSyncManager(runtime=MockRuntime())
         sync_report = sync_manager.sync_to_google_workspace()
 
@@ -1900,7 +1746,7 @@ class DeveloperWorkflowOrchestrator:
             current_sage_state=session.model_dump(),
             active_goals=list(session.active_objectives),
             recent_decisions=[task_id],
-            validation_status={"task_id": task_id, "status": "COMPLETED"},
+            validation_status={"task_id": task_id, "status": "COMPLETED"}
         )
 
         # 7. Intercept event and save SAGE-CCL record
@@ -1911,9 +1757,9 @@ class DeveloperWorkflowOrchestrator:
             evidence_payload={
                 "git_commit": "b" * 40,
                 "google_workspace_sync_report": sync_report,
-                "checkpoint_id": chk.id,
+                "checkpoint_id": chk.id
             },
-            session_id=session_id,
+            session_id=session_id
         )
         self.ccl.serialize_record(ccl_record)
 
@@ -1922,14 +1768,13 @@ class DeveloperWorkflowOrchestrator:
             record_id=ccl_record.record_id,
             supervisor_id="supervisor_jules",
             signature="sig_chatgpt_sync_123",
-            decision="APPROVED",
+            decision="APPROVED"
         )
 
         # 8. Generate and Validate CMAPS Payload for activation compatibility
         import hashlib
-        from datetime import datetime, timezone
-
         from sage.experimental.act.contracts import CrossModelAuditPayloadValidator
+        from datetime import datetime, timezone
 
         # Format current timestamp for CMAPS
         utc_now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
@@ -1947,33 +1792,32 @@ class DeveloperWorkflowOrchestrator:
                 "agent_id": formatted_agent_id,
                 "name": "ChatGPT" if "chat" in agent_id.lower() else agent_id,
                 "role": "Governed External Reasoning Assistant",
-                "governance_tier": "TIER_2_EXECUTION",
+                "governance_tier": "TIER_2_EXECUTION"
             },
             "model_provider": {
                 "provider": "openai",
                 "model_name": "gpt-4o-mini",
-                "temperature": 0.2,
+                "temperature": 0.2
             },
             "execution_state": {
                 "run_id": f"run_{uuid.uuid4().hex[:20]}",
                 "status": "completed",
                 "step_counter": 1,
                 "started_at": utc_now,
-                "updated_at": utc_now,
+                "updated_at": utc_now
             },
             "task_lineage": {
                 "session_id": "session_" + hashlib.md5(session_id.encode()).hexdigest()[:8],
                 "current_task_id": task_id if task_id else "task_openai_runtime_activation",
-                "subtask_ids": [],
+                "subtask_ids": []
             },
             "decision_events": [
                 {
                     "decision_id": f"decision_{task_id if task_id else 'activation'}",
                     "timestamp": utc_now,
                     "summary": f"Completed task {task_id if task_id else 'activation'}",
-                    "reasoning": output.get("decision_reasoning")
-                    or "Handshake completed successfully",
-                    "confidence": 1.0,
+                    "reasoning": output.get("decision_reasoning") or "Handshake completed successfully",
+                    "confidence": 1.0
                 }
             ],
             "failure_events": [],
@@ -1982,14 +1826,14 @@ class DeveloperWorkflowOrchestrator:
                 {
                     "artifact_path": "evidence_capture/openai_runtime_live_connection.json",
                     "git_commit": "b" * 40,
-                    "sha256_checksum": "e" * 64,
+                    "sha256_checksum": "e" * 64
                 }
             ],
             "attestation": {
                 "nonce": uuid.uuid4().hex[:16],
                 "signature": "sig_chatgpt_sync_123",
-                "signer_identity": "ChatGPT",
-            },
+                "signer_identity": "ChatGPT"
+            }
         }
 
         # Run CMAPS validator to ensure complete compliance
@@ -2001,10 +1845,10 @@ class DeveloperWorkflowOrchestrator:
             "ccl_record_id": promoted_ccl.record_id,
             "checkpoint_id": chk.id,
             "google_workspace_sync": sync_report,
-            "cmaps_payload": cmaps_payload,
+            "cmaps_payload": cmaps_payload
         }
 
-    def execute_super_search(self, query: str) -> list[dict[str, Any]]:
+    def execute_super_search(self, query: str) -> List[Dict[str, Any]]:
         """Provides a governed keyword overlap search returning source records, confidence scores, and lineage references."""
         keywords = [w.lower() for w in re.findall(r"\w+", query) if len(w) > 2]
         results = []
@@ -2018,26 +1862,22 @@ class DeveloperWorkflowOrchestrator:
                     overlap = sum(1 for kw in keywords if kw in text_content)
                     if overlap > 0:
                         confidence = min(1.0, 0.2 + (overlap * 0.15))
-                        results.append(
-                            {
-                                "source": f"CCL Record: {data.get('record_id')}",
-                                "content": {
-                                    "action_taken": data.get("action_taken"),
-                                    "decision_reasoning": data.get("decision_reasoning"),
-                                },
-                                "confidence": confidence,
-                                "lineage_reference": data.get("record_id"),
-                            }
-                        )
+                        results.append({
+                            "source": f"CCL Record: {data.get('record_id')}",
+                            "content": {
+                                "action_taken": data.get("action_taken"),
+                                "decision_reasoning": data.get("decision_reasoning")
+                            },
+                            "confidence": confidence,
+                            "lineage_reference": data.get("record_id")
+                        })
             except Exception:
                 pass
 
         results = sorted(results, key=lambda x: x["confidence"], reverse=True)
         return results[:5]
 
-    def request_agent_context_package(
-        self, agent_id: str, session_id: str, query: str
-    ) -> dict[str, Any]:
+    def request_agent_context_package(self, agent_id: str, session_id: str, query: str) -> Dict[str, Any]:
         """Fetches agent profile, securely retrieves external context, and injects search-assisted operational solutions."""
         context_base = self.retrieve_external_agent_context(agent_id, session_id)
         solutions = self.execute_super_search(query)
@@ -2045,31 +1885,26 @@ class DeveloperWorkflowOrchestrator:
         context_package = {
             "agent_profile": {
                 "agent_id": agent_id,
-                "role": "Governed External Reasoning Assistant"
-                if agent_id == "ChatGPT"
-                else "Software Engineering Agent",
-                "authority_level": "TIER_2_EXECUTION",
+                "role": "Governed External Reasoning Assistant" if agent_id == "ChatGPT" else "Software Engineering Agent",
+                "authority_level": "TIER_2_EXECUTION"
             },
             "session_context": context_base,
             "injected_solutions": solutions,
             "constraints": {
                 "permitted_actions": ["execute_approved_work", "query_sage_context"],
-                "restricted_actions": ["mutate_production_namespaces", "bypass_human_approval"],
-            },
+                "restricted_actions": ["mutate_production_namespaces", "bypass_human_approval"]
+            }
         }
 
         return context_package
 
-    def submit_intelligence_assisted_agent_response(
-        self, agent_id: str, session_id: str, task_id: str, response: dict[str, Any]
-    ) -> dict[str, Any]:
+    def submit_intelligence_assisted_agent_response(self, agent_id: str, session_id: str, task_id: str, response: Dict[str, Any]) -> Dict[str, Any]:
         """Routes intelligence assisted agent responses through evidence validation, CCL interception, and automated learning."""
         from datetime import datetime, timezone
-
         output = {
             "content": response.get("content", ""),
             "modified_files": response.get("modified_files", []),
-            "metadata": response.get("metadata", {}),
+            "metadata": response.get("metadata", {})
         }
         submit_res = self.submit_external_agent_output(agent_id, session_id, task_id, output)
 
@@ -2089,7 +1924,7 @@ class DeveloperWorkflowOrchestrator:
                     "timestamp": utc_now,
                     "summary": f"Completed task {task_id}",
                     "reasoning": response.get("reasoning", "Intelligence assisted execution"),
-                    "confidence": 1.0,
+                    "confidence": 1.0
                 }
             ]
         }
@@ -2098,13 +1933,11 @@ class DeveloperWorkflowOrchestrator:
             record=record,
             cmaps_payload=cmaps_payload,
             duration=response.get("duration", 0.5),
-            session=session,
+            session=session
         )
 
         register_path = self.ccl.storage_path / "discovery_candidates_register.json"
-        signals = oil.generate_learning_signals(
-            record=record, metrics=metrics, register_path=register_path
-        )
+        signals = oil.generate_learning_signals(record=record, metrics=metrics, register_path=register_path)
 
         evidence_package = {
             "orchestrator_run_id": f"orch_run_{uuid.uuid4().hex[:12]}",
@@ -2116,12 +1949,12 @@ class DeveloperWorkflowOrchestrator:
             "cmaps_payload": cmaps_payload,
             "developer_telemetry": {
                 "friction": response.get("friction", []),
-                "opportunities": response.get("opportunities", []),
+                "opportunities": response.get("opportunities", [])
             },
             "operational_intelligence": {
                 "metrics": metrics.model_dump(),
-                "learning_signals": [sig.model_dump() for sig in signals],
-            },
+                "learning_signals": [sig.model_dump() for sig in signals]
+            }
         }
 
         self.evidence_output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -2134,7 +1967,7 @@ class DeveloperWorkflowOrchestrator:
             "status": "VALIDATED",
             "evidence_package": evidence_package,
             "metrics": metrics.model_dump(),
-            "learning_signals_count": len(signals),
+            "learning_signals_count": len(signals)
         }
 
 
@@ -2144,23 +1977,14 @@ class ChatGPTRuntimeAdapter:
     def __init__(self, orchestrator: DeveloperWorkflowOrchestrator):
         self.orchestrator = orchestrator
 
-    def authenticate_handshake(self, agent_id: str, auth_secret: str) -> dict[str, Any]:
+    def authenticate_handshake(self, agent_id: str, auth_secret: str) -> Dict[str, Any]:
         """Validates external agent identity and performs SHA-256 connection handshake."""
         import hashlib
 
         # Identity Validation
-        allowed_agents = {
-            "agent_jules_sage",
-            "ChatGPT",
-            "Jules",
-            "Claude",
-            "Gemini",
-            "chatgpt-runtime-agent",
-        }
+        allowed_agents = {"agent_jules_sage", "ChatGPT", "Jules", "Claude", "Gemini", "chatgpt-runtime-agent"}
         if agent_id not in allowed_agents:
-            raise PermissionError(
-                f"SAGE External Connection Handshake Violation: Unauthorized agent '{agent_id}'"
-            )
+            raise PermissionError(f"SAGE External Connection Handshake Violation: Unauthorized agent '{agent_id}'")
 
         # Secure SHA-256 verification of the authentication secret
         if not auth_secret:
@@ -2173,7 +1997,7 @@ class ChatGPTRuntimeAdapter:
             event_type="agent_authenticated",
             action_taken=f"Authenticated handshake for agent '{agent_id}'",
             decision_reasoning="Establish secure, validated live connection with ChatGPT runtime",
-            session_id=self.orchestrator.session_id,
+            session_id=self.orchestrator.session_id
         )
 
         return {
@@ -2181,7 +2005,7 @@ class ChatGPTRuntimeAdapter:
             "agent_id": agent_id,
             "session_id": self.orchestrator.session_id,
             "handshake_hash": secret_hash,
-            "role": "Governed External Reasoning Assistant",
+            "role": "Governed External Reasoning Assistant"
         }
 
 
@@ -2192,26 +2016,11 @@ if __name__ == "__main__":
     print("====================================================\n")
 
     import argparse
-
     parser = argparse.ArgumentParser(description="SAGE Developer Workflow Orchestrator CLI")
-    parser.add_argument(
-        "--action",
-        type=str,
-        default="SAGE Realignment Priority Implementation",
-        help="Action taken during this session",
-    )
-    parser.add_argument(
-        "--reasoning",
-        type=str,
-        default="Complete SAGE continuity capabilities and connect validated interfaces into usable workflows",
-        help="Decision reasoning",
-    )
-    parser.add_argument(
-        "--friction", type=str, action="append", help="Capture a workflow friction point"
-    )
-    parser.add_argument(
-        "--opportunity", type=str, action="append", help="Capture a SAGE improvement opportunity"
-    )
+    parser.add_argument("--action", type=str, default="SAGE Realignment Priority Implementation", help="Action taken during this session")
+    parser.add_argument("--reasoning", type=str, default="Complete SAGE continuity capabilities and connect validated interfaces into usable workflows", help="Decision reasoning")
+    parser.add_argument("--friction", type=str, action="append", help="Capture a workflow friction point")
+    parser.add_argument("--opportunity", type=str, action="append", help="Capture a SAGE improvement opportunity")
 
     args = parser.parse_args()
 
@@ -2220,28 +2029,23 @@ if __name__ == "__main__":
         for f in args.friction:
             friction_list.append({"type": "developer_observed", "detail": f, "severity": "medium"})
     else:
-        friction_list = [
-            {
-                "type": "cognitive_load",
-                "detail": "Manual discovery and connection of multi-layered experimental modules",
-                "severity": "low",
-            }
-        ]
+        friction_list = [{"type": "cognitive_load", "detail": "Manual discovery and connection of multi-layered experimental modules", "severity": "low"}]
 
     opp_list = args.opportunity or [
         "Automate pre-commit hooks to invoke DeveloperWorkflowOrchestrator prior to staging",
-        "Enable live visual dashboards of development sessions",
+        "Enable live visual dashboards of development sessions"
     ]
 
     print("[*] Initializing SAGE-DevLoop Orchestrator...")
     orchestrator = DeveloperWorkflowOrchestrator(
-        session_id="session_realignment_coordination", objective="obj_continuous_development"
+        session_id="session_realignment_coordination",
+        objective="obj_continuous_development"
     )
 
     print("[*] Scanning workspace via git...")
     workspace = orchestrator.scan_git_workspace()
     print(f"    - Found {len(workspace['modified_files'])} modified files:")
-    for f in workspace["modified_files"]:
+    for f in workspace['modified_files']:
         print(f"      + {f}")
 
     print("\n[*] Running coordination and validation pipeline...")
@@ -2249,7 +2053,7 @@ if __name__ == "__main__":
         action_taken=args.action,
         decision_reasoning=args.reasoning,
         workflow_friction=friction_list,
-        improvement_opportunities=opp_list,
+        improvement_opportunities=opp_list
     )
 
     print("\n[+] Pipeline execution completed successfully!")

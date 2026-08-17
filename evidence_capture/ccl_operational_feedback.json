@@ -1,20 +1,20 @@
 {
-  "orchestrator_run_id": "orch_run_f983e668498a",
-  "timestamp": "2026-08-04T08:56:36.345229Z",
-  "session_id": "session_realignment_coordination",
+  "orchestrator_run_id": "orch_run_49903e9e4a24",
+  "timestamp": "2026-08-17T05:20:34.736763Z",
+  "session_id": "session_non_reexec_001",
   "session_objectives": [
-    "obj_continuous_development"
+    "obj_autonomous_mission_continuity"
   ],
   "status": "VALIDATED",
   "ccl_record": {
-    "record_id": "CCL-REC-20260804-61b73c65-a49c-414a-8eaf-b22a3ac867cb",
-    "session_id": "session_realignment_coordination",
+    "record_id": "CCL-REC-20260817-03b8c07f-c61d-43ac-b1d5-3cdb1353a5fd",
+    "session_id": "session_non_reexec_001",
     "event_type": "state_transition",
-    "timestamp": 1785833796.3462594,
-    "action_taken": "SAGE Realignment Priority Implementation",
-    "decision_reasoning": "Complete SAGE continuity capabilities and connect validated interfaces into usable workflows",
+    "timestamp": 1786944034.736968,
+    "action_taken": "Successfully revalidated workspace capabilities for files: ['sage/experimental/act/continuity_control.py']",
+    "decision_reasoning": "Governed workspace revalidation executed cleanly; capability status updated and promoted to Master Archive",
     "evidence_payload": {
-      "git_commit": "520090f4a579248991c8204eb2a150665c2fd1e2",
+      "git_commit": "497869b8b696adde7dd1f71a996c047d81064e01",
       "protection_report": {
         "is_violation_found": false,
         "violations_found": 0,
@@ -22,38 +22,32 @@
         "violations": [],
         "status": "CLEAN_WORKSPACE"
       },
-      "cmaps_audit_id": "audit_debe118b685d4e0eb5e0d88582d7d110",
+      "cmaps_audit_id": "audit_3a3487edb9db42148ac9ead5ea0457c9",
+      "revalidated_capabilities": [
+        "CAP-PML-RELIABILITY"
+      ],
       "enriched_objectives": [
-        "obj_continuous_development"
+        "obj_autonomous_mission_continuity"
       ],
       "session_completed_actions": [],
       "session_pending_actions": [],
-      "enrichment_timestamp": 1785833796.3462188,
+      "enrichment_timestamp": 1786944034.7369356,
       "human_approval_record": {
         "supervisor_id": "supervisor_jules",
-        "signature": "sig_jules_929d025ac718",
+        "signature": "sig_jules_e67ccf2c7d1e",
         "decision": "APPROVED",
-        "approved_at": 1785833796.3475416
+        "approved_at": 1786944034.7376506
       }
     },
     "failure_context": null,
     "recovery_path": null,
     "lifecycle_state": "VALIDATED",
-    "workflow_friction": [
-      {
-        "type": "cognitive_load",
-        "detail": "Manual discovery and connection of multi-layered experimental modules",
-        "severity": "low"
-      }
-    ],
-    "improvement_opportunities": [
-      "Automate pre-commit hooks to invoke DeveloperWorkflowOrchestrator prior to staging",
-      "Enable live visual dashboards of development sessions"
-    ]
+    "workflow_friction": [],
+    "improvement_opportunities": []
   },
   "cmaps_payload": {
-    "audit_id": "audit_debe118b685d4e0eb5e0d88582d7d110",
-    "timestamp": "2026-08-04T08:56:36.345229Z",
+    "audit_id": "audit_3a3487edb9db42148ac9ead5ea0457c9",
+    "timestamp": "2026-08-17T05:20:34.736763Z",
     "agent_identity": {
       "agent_id": "agent_jules_sage",
       "name": "Jules",
@@ -66,23 +60,23 @@
       "temperature": 0.2
     },
     "execution_state": {
-      "run_id": "run_bd6684566f5d405d9536",
+      "run_id": "run_57d6adec09b84482aff0",
       "status": "completed",
       "step_counter": 1,
-      "started_at": "2026-08-04T08:56:36.345229Z",
-      "updated_at": "2026-08-04T08:56:36.345229Z"
+      "started_at": "2026-08-17T05:20:34.736763Z",
+      "updated_at": "2026-08-17T05:20:34.736763Z"
     },
     "task_lineage": {
-      "session_id": "session_0600efca",
-      "current_task_id": "task_active_development",
+      "session_id": "session_effddef5",
+      "current_task_id": "task_completed_once",
       "subtask_ids": []
     },
     "decision_events": [
       {
         "decision_id": "decision_coordinate_dev_loop",
-        "timestamp": "2026-08-04T08:56:36.345229Z",
-        "summary": "SAGE Realignment Priority Implementation",
-        "reasoning": "Complete SAGE continuity capabilities and connect validated interfaces into usable workflows",
+        "timestamp": "2026-08-17T05:20:34.736763Z",
+        "summary": "Successfully revalidated workspace capabilities for files: ['sage/experimental/act/continuity_control.py']",
+        "reasoning": "Governed workspace revalidation executed cleanly; capability status updated and promoted to Master Archive",
         "confidence": 1.0
       }
     ],
@@ -90,28 +84,59 @@
     "recovery_checkpoints": [],
     "evidence_relationships": [
       {
-        "artifact_path": "docs/SAGE-WORKFLOW-INCIDENT-RESPONSE.md",
-        "git_commit": "520090f4a579248991c8204eb2a150665c2fd1e2",
-        "sha256_checksum": "08d2734626cc9cdeb15218f055ce2e7f6daa4c154ae350c820700d7c98e0bcd6"
+        "artifact_path": "evidence_capture/ccl_operational_feedback.json",
+        "git_commit": "497869b8b696adde7dd1f71a996c047d81064e01",
+        "sha256_checksum": "9c0c86c9d843970d57fb269eb2bfa917e8fb704c75cfd7b119dcac06e91ae0a7"
+      },
+      {
+        "artifact_path": "pyproject.toml",
+        "git_commit": "497869b8b696adde7dd1f71a996c047d81064e01",
+        "sha256_checksum": "89789b5e2837a0a3709c032784aebf7caa4b4044bc8b4e2c71f127615a6a5dfe"
+      },
+      {
+        "artifact_path": "sage/experimental/act/continuity_control.py",
+        "git_commit": "497869b8b696adde7dd1f71a996c047d81064e01",
+        "sha256_checksum": "79e8c92805b7bb62b53a929ed112a6eba937e2af78ea8a286e414a8956268615"
+      },
+      {
+        "artifact_path": "sage/experimental/ccl_ops.py",
+        "git_commit": "497869b8b696adde7dd1f71a996c047d81064e01",
+        "sha256_checksum": "ff91a7bdef64ba439b1bf7fe3fb779aa65ee1f4558f0ac39969d6ab6345c267d"
+      },
+      {
+        "artifact_path": "tests/experimental/test_ccl_ops_integration.py",
+        "git_commit": "497869b8b696adde7dd1f71a996c047d81064e01",
+        "sha256_checksum": "c2840fc7817cd766799808e1da8f3e3299217da7a4def75e0f4156e8006143aa"
+      },
+      {
+        "artifact_path": "tests/experimental/test_governed_mission_continuity.py",
+        "git_commit": "497869b8b696adde7dd1f71a996c047d81064e01",
+        "sha256_checksum": "555ea12ef49aa25b3950b0bcf3e18576c8213f52d9c6d1c18f434882448ab66c"
       }
     ],
     "attestation": {
-      "nonce": "138c08c040ed4a5f",
-      "signature": "sig_jules_929d025ac718",
+      "nonce": "678298d7613949ee",
+      "signature": "sig_jules_e67ccf2c7d1e",
       "signer_identity": "supervisor_jules"
     }
   },
   "developer_telemetry": {
-    "friction": [
-      {
-        "type": "cognitive_load",
-        "detail": "Manual discovery and connection of multi-layered experimental modules",
-        "severity": "low"
-      }
-    ],
-    "opportunities": [
-      "Automate pre-commit hooks to invoke DeveloperWorkflowOrchestrator prior to staging",
-      "Enable live visual dashboards of development sessions"
-    ]
+    "friction": [],
+    "opportunities": []
+  },
+  "operational_intelligence": {
+    "metrics": {
+      "lifecycle_completion_rate": 1.0,
+      "recovery_success_rate": 1.0,
+      "evidence_completeness": 1.0,
+      "decision_trace_completeness": 1.0,
+      "workflow_state_accuracy": 1.0,
+      "execution_cycle_duration": 0.08923983573913574,
+      "context_preservation_score": 1.0,
+      "unnecessary_reassessment_events": 0,
+      "repeated_execution_prevention": true,
+      "state_restoration_success": true
+    },
+    "learning_signals": []
   }
 }

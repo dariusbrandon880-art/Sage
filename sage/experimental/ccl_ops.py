@@ -16,6 +16,7 @@ import json
 import time
 import uuid
 import hashlib
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -31,7 +32,6 @@ from sage.experimental.act.continuity_control import (
     ContinuityControlRecord,
 )
 from sage.experimental.sports_rce import SportsRCEResearchEngine
-from datetime import datetime, timezone
 from sage.experimental.flight_record import SAGEFlightRecordManager, SAGEFlightRecord
 from sage.acr.session.session_state import SessionStateManager
 from sage.acr.session.checkpoint import CheckpointManager
@@ -137,7 +137,6 @@ class SAGEGovernedControlLoop:
         # --- STAGE 5: DOMAIN OBSERVATION ---
         observation_record = domain_observation_data or {}
         if not observation_record:
-            # Generate domain observation via SportsRCEResearchEngine if available
             try:
                 sports_engine = SportsRCEResearchEngine(capture_dir=self.evidence_dir)
                 ev = sports_engine.fetch_upcoming_event()
