@@ -1,8 +1,8 @@
 """Mobile-First Conversation Renderer for SAGE Airspace.
 
 Formats AirspaceState, Missions, Sorties, Intel, Qualifications, Unified
-Operating Picture, and Operational Readiness Assessments for compact,
-high-density display on mobile conversation interfaces.
+Operating Picture, Operational Readiness Assessments, and Governed Decision
+Packages for compact, high-density display on mobile conversation interfaces.
 """
 
 from typing import Optional, Dict, Any, List
@@ -14,12 +14,13 @@ from sage.experimental.airspace.models import (
     IntelTelemetry,
     QualificationEvent,
 )
+from sage.experimental.airspace.decision_boundary import OperationalDecisionBoundary
 from sage.experimental.airspace.readiness import OperationalReadinessAssessment
 from sage.experimental.airspace.unified_operating_picture import UnifiedOperatingPicture
 
 
 class AirspaceRenderer:
-    """Renders SAGE Airspace operating picture, cards, and readiness assessments."""
+    """Renders SAGE Airspace operating picture, cards, readiness, and decision packages."""
 
     @staticmethod
     def render_progress_bar(current: int, total: int = 7, width: int = 10) -> str:
@@ -132,6 +133,32 @@ class AirspaceRenderer:
         lines.append("AUTHORIZED NEXT:")
         for k, v in assessment.authorized_next.items():
             lines.append(f"  ▪ {k:<18}: {v}")
+        lines.append("━" * 42)
+        return "\n".join(lines)
+
+    @classmethod
+    def render_decision_boundary(cls, boundary: OperationalDecisionBoundary) -> str:
+        """Renders mobile-first Governed Decision Package card."""
+        lines = []
+        lines.append("SAGE GOVERNED DECISION PACKAGE")
+        lines.append("━" * 42)
+        lines.append(f"DECISION ID      : {boundary.decision_id}")
+        lines.append(f"RECOMMENDATION   : {boundary.decision_recommendation.value}")
+        lines.append(f"READINESS STATE  : {boundary.readiness_reference}")
+        lines.append("─" * 42)
+        lines.append(f"RATIONALE        : {boundary.rationale}")
+        lines.append(f"RECOMMENDED FRONTIER: {boundary.recommended_frontier[:32]}")
+        lines.append("─" * 42)
+        lines.append("AUTHORIZATION REQUIRED:")
+        for k, v in boundary.authorization_required.items():
+            lines.append(f"  ▪ {k:<18}: {v}")
+        lines.append("─" * 42)
+        lines.append("SUPPORTING EVIDENCE:")
+        if boundary.supporting_evidence:
+            for ev in boundary.supporting_evidence[-3:]:  # Last 3
+                lines.append(f"  ✓ {ev[:34]}")
+        else:
+            lines.append("  ▪ None attached")
         lines.append("━" * 42)
         return "\n".join(lines)
 
