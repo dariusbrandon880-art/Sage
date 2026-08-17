@@ -141,5 +141,31 @@
     ],
     "checked_at": "2026-08-17T05:37:43.525112+00:00",
     "integrity_hash": "f431f28d3cd1cac2c68f396b4da0673f91538f3d81465920c46dbf17acd93a19"
+  },
+  {
+    "drift_record_id": "drift_1b7b1975bd40",
+    "observation_id": "pred_rce_999005",
+    "initial_snapshot_id": "snap_9751bec7e406",
+    "later_snapshot_id": "snap_9751bec7e406",
+    "drift_classification": "DRIFT_NONE",
+    "meaningful_semantic_change": false,
+    "drift_details": [
+      "Identical payload hash. No evidence drift detected."
+    ],
+    "checked_at": "2026-08-17T06:07:49.928621+00:00",
+    "integrity_hash": "e6145b73e863b58e23d5059002eacb6d52924a65b36f4953bf313a2bf1738852"
+  },
+  {
+    "drift_record_id": "drift_e0b20e03c8f1",
+    "observation_id": "pred_rce_999005",
+    "initial_snapshot_id": "snap_8b2eae1a4778",
+    "later_snapshot_id": "snap_8b2eae1a4778",
+    "drift_classification": "DRIFT_NONE",
+    "meaningful_semantic_change": false,
+    "drift_details": [
+      "Identical payload hash. No evidence drift detected."
+    ],
+    "checked_at": "2026-08-17T06:08:59.738662+00:00",
+    "integrity_hash": "8cf3327e9843157304f9459d73816175bcdd073db5b92eddf2889c2a0207d34b"
   }
 ]
