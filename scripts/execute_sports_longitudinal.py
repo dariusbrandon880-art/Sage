@@ -29,6 +29,7 @@ from sage.experimental.sports_longitudinal import (
     ReplayableObservationStream,
     asdict
 )
+from sage.experimental.sports_rce import HistoricalResearchReconstructionEngine
 
 MLB_STATS_API_URL = "https://statsapi.mlb.com/api/v1/schedule?sportId=1"
 
@@ -346,6 +347,39 @@ def main():
     assert stream.verify_integrity() is True
     replayed = stream.replay()
     print(f"[+] Replayable Observation Stream verified! Replayed {len(replayed)} event(s) with hash chaining.")
+
+    # 9. Demonstrate RCE-003.1 Point-in-Time Research Snapshot & Leakage Receipt
+    print("[+] Demonstrating RCE-003.1 Point-in-Time Research Snapshot & Leakage Receipt...")
+    obs_payloads = [
+        {
+            "observation_id": f"obs_early_{game_id}",
+            "event_id": f"mlb_game_{game_id}",
+            "provider": "Official MLB Stats API",
+            "availability_timestamp": lock_ts,
+            "home_team": home_team,
+            "away_team": away_team,
+            "status": "PRE_GAME_LOCKED"
+        },
+        {
+            "observation_id": f"obs_post_{game_id}",
+            "event_id": f"mlb_game_{game_id}",
+            "provider": "Official MLB Stats API",
+            "availability_timestamp": verif_ts,
+            "home_team": home_team,
+            "away_team": away_team,
+            "status": event_status
+        }
+    ]
+    snapshot, leakage_receipt = HistoricalResearchReconstructionEngine.reconstruct_snapshot(
+        observations=obs_payloads,
+        research_timestamp=lock_ts
+    )
+    print(f"    Snapshot ID: {snapshot.snapshot_id}")
+    print(f"    Snapshot Hash: {snapshot.snapshot_hash}")
+    print(f"    Integrity Status: {leakage_receipt.integrity_status}")
+    print(f"    Reason: {leakage_receipt.reason}")
+    print(f"    Included Refs: {leakage_receipt.included_reference_set}")
+    print(f"    Excluded Post-T Refs: {leakage_receipt.post_timestamp_reference_set}")
 
     print("=" * 70)
     print(f"[+] Real-World Flight Artifact Persisted To: {saved_path}")
