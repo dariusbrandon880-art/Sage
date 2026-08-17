@@ -50,5 +50,44 @@
     ],
     "checked_at": "2026-08-17T04:29:07.135226+00:00",
     "integrity_hash": "2f0d242ff8e52dc35d3692c1574244b09ee1dbbf78d39fa7d9fa8e0800d66c56"
+  },
+  {
+    "drift_record_id": "drift_84910f0dc44f",
+    "observation_id": "pred_rce_2398016",
+    "initial_snapshot_id": "snap_4df02c2d1bb3",
+    "later_snapshot_id": "snap_4df02c2d1bb3",
+    "drift_classification": "DRIFT_NONE",
+    "meaningful_semantic_change": false,
+    "drift_details": [
+      "Identical payload hash. No evidence drift detected."
+    ],
+    "checked_at": "2026-08-17T05:02:11.076917+00:00",
+    "integrity_hash": "709fd0d8673dc0582a294b82330d6bd9907cc842f2ca08f97bb33563bda8a067"
+  },
+  {
+    "drift_record_id": "drift_287ba20d067e",
+    "observation_id": "pred_rce_999005",
+    "initial_snapshot_id": "snap_29f5c20fa0b5",
+    "later_snapshot_id": "snap_29f5c20fa0b5",
+    "drift_classification": "DRIFT_NONE",
+    "meaningful_semantic_change": false,
+    "drift_details": [
+      "Identical payload hash. No evidence drift detected."
+    ],
+    "checked_at": "2026-08-17T05:03:06.972499+00:00",
+    "integrity_hash": "ff4a8220d71ec122d676c66c10e9e25b8305378a1a80c69ae01e7b9f2d5905ca"
+  },
+  {
+    "drift_record_id": "drift_9d53a158e83f",
+    "observation_id": "pred_rce_999005",
+    "initial_snapshot_id": "snap_d2c434265156",
+    "later_snapshot_id": "snap_d2c434265156",
+    "drift_classification": "DRIFT_NONE",
+    "meaningful_semantic_change": false,
+    "drift_details": [
+      "Identical payload hash. No evidence drift detected."
+    ],
+    "checked_at": "2026-08-17T05:04:47.864426+00:00",
+    "integrity_hash": "9938dad0cc4c6a55ab994f18b219f09f7003b16bebef66872aae9407d21eb1d9"
   }
 ]
