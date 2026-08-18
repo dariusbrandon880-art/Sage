@@ -1,0 +1,193 @@
+{
+  "metadata": {
+    "flight_type": "STAGE_2_SELF_APPLICATION_FLIGHT",
+    "classification": "GOVERNED_WORKFLOW_SELF_APPLICATION",
+    "execution_id": "exec_wf_1b936c2c235d",
+    "mission_id": "mission_stage2_flight_001",
+    "governance": "SAGE CONTROLLED STAGE 2 AUTHORIZATION ONLY"
+  },
+  "execution_result": {
+    "execution_id": "exec_wf_1b936c2c235d",
+    "mission_id": "mission_stage2_flight_001",
+    "start_timestamp_utc": "2026-08-17T11:06:24.038220+00:00",
+    "end_timestamp_utc": "2026-08-17T11:06:24.039332+00:00",
+    "final_stage": "OUTCOME_CLASSIFIED",
+    "progression_receipts": [
+      {
+        "receipt_id": "rec_prog_e30a0231dc85",
+        "previous_state": null,
+        "next_state": "INTAKE",
+        "mission_id": "mission_stage2_flight_001",
+        "reason": "Mission successfully received and registered at Intake boundary.",
+        "validation_result": {
+          "status": "APPROVED",
+          "details": "All required intake fields verified."
+        },
+        "provenance_reference": "intake_boundary_v1",
+        "sequence_order": 1,
+        "timestamp": "2026-08-17T11:06:24.038529+00:00",
+        "signature": "mock_attestation_ab8d0da3982ce708f44c3cc313f1bc5c7e9f4878b884f6326c6867df30aa1f37"
+      },
+      {
+        "receipt_id": "rec_prog_3b1892c052dd",
+        "previous_state": "INTAKE",
+        "next_state": "PRIORITIZED",
+        "mission_id": "mission_stage2_flight_001",
+        "reason": "Priority score successfully evaluated and approved.",
+        "validation_result": {
+          "status": "APPROVED",
+          "priority_score": 92.0,
+          "priority_threshold": 50.0
+        },
+        "provenance_reference": "priority_gate_v1",
+        "sequence_order": 2,
+        "timestamp": "2026-08-17T11:06:24.038642+00:00",
+        "signature": "mock_attestation_ae51778f8b5fd450aee49b791b78d0b4c9c66705a9bbc694ef777c9b195eb432"
+      },
+      {
+        "receipt_id": "rec_prog_afae1b74c061",
+        "previous_state": "PRIORITIZED",
+        "next_state": "PREFLIGHT_VALIDATED",
+        "mission_id": "mission_stage2_flight_001",
+        "reason": "PFC Gate Preflight check successfully executed and passed.",
+        "validation_result": {
+          "status": "APPROVED",
+          "reason": "Proposed next action aligns with active mission, passes constraint checks, respects completed milestones, and possesses required evidence.",
+          "confidence_recorded": 1.0,
+          "checks_performed": {
+            "mission_alignment": true,
+            "completed_work_protection": true,
+            "constraint_validation": true,
+            "evidence_requirement_detection": true
+          }
+        },
+        "provenance_reference": "pfc_preflight_gate_v1",
+        "sequence_order": 3,
+        "timestamp": "2026-08-17T11:06:24.038837+00:00",
+        "signature": "mock_attestation_dab6753a61e82f6d4c75f81ba2149347e3b6d4bab494ebcce4d1e3c7dbadfeab"
+      },
+      {
+        "receipt_id": "rec_prog_fece8e9c81a9",
+        "previous_state": "PREFLIGHT_VALIDATED",
+        "next_state": "HANDOFF_READY",
+        "mission_id": "mission_stage2_flight_001",
+        "reason": "Agent authority verified. Mission handoff is ready.",
+        "validation_result": {
+          "status": "APPROVED",
+          "assigned_agent": "agent_jules_sage",
+          "authority_level": "VERIFIED"
+        },
+        "provenance_reference": "agent_authorization_gate_v1",
+        "sequence_order": 4,
+        "timestamp": "2026-08-17T11:06:24.038920+00:00",
+        "signature": "mock_attestation_be1036bf668487275c4e2b7d29d8f51d6f8e51139ab7bcbcdb61bdde91423d21"
+      },
+      {
+        "receipt_id": "rec_prog_fb0bd34f6136",
+        "previous_state": "HANDOFF_READY",
+        "next_state": "HANDOFF_EMITTED",
+        "mission_id": "mission_stage2_flight_001",
+        "reason": "MEC Handoff executed successfully.",
+        "validation_result": {
+          "status": "HANDOFF_EMITTED_SUCCESSFULLY",
+          "assigned_agent": "agent_jules_sage",
+          "delegated_at": "telemetry",
+          "zero_spawning_enforced": true
+        },
+        "provenance_reference": "mec_handoff_gate_v1",
+        "sequence_order": 5,
+        "timestamp": "2026-08-17T11:06:24.039014+00:00",
+        "signature": "mock_attestation_44dd9599804464aa5138ee05c624f0eb61be66bb46f5b3192bfc0e139cb3131d"
+      },
+      {
+        "receipt_id": "rec_prog_7661d9e31311",
+        "previous_state": "HANDOFF_EMITTED",
+        "next_state": "EXECUTION_RESULT_RECEIVED",
+        "mission_id": "mission_stage2_flight_001",
+        "reason": "Execution results received and validated.",
+        "validation_result": {
+          "status": "APPROVED",
+          "output_data_hash": "c4f40fe8c53a9ec67e8933fe1e05c4cdab077670bc1e83b36352497d63471883"
+        },
+        "provenance_reference": "execution_result_boundary_v1",
+        "sequence_order": 6,
+        "timestamp": "2026-08-17T11:06:24.039107+00:00",
+        "signature": "mock_attestation_a03710a2956d316c30ce4efaedad8903c83254b851aa65cf6de87cc60909162f"
+      },
+      {
+        "receipt_id": "rec_prog_e6658771500e",
+        "previous_state": "EXECUTION_RESULT_RECEIVED",
+        "next_state": "EVIDENCE_VALIDATED",
+        "mission_id": "mission_stage2_flight_001",
+        "reason": "Evidence validation and Epistemic Causality checks passed.",
+        "validation_result": {
+          "status": "APPROVED",
+          "evidence_validation": "SUCCESS",
+          "causality_validation": "SKIPPED_NO_NODE_ID"
+        },
+        "provenance_reference": "evidence_validation_gate_v1",
+        "sequence_order": 7,
+        "timestamp": "2026-08-17T11:06:24.039189+00:00",
+        "signature": "mock_attestation_4dc8269e28a8d7317cc42bc469dc1b34f3ba7ead420a99f1149b5a5f2d6d16e4"
+      },
+      {
+        "receipt_id": "rec_prog_3925c094e5b7",
+        "previous_state": "EVIDENCE_VALIDATED",
+        "next_state": "OUTCOME_CLASSIFIED",
+        "mission_id": "mission_stage2_flight_001",
+        "reason": "Mission successfully completed. Outcome classified as 'SUCCESS'.",
+        "validation_result": {
+          "status": "APPROVED",
+          "outcome_classification": "SUCCESS"
+        },
+        "provenance_reference": "outcome_classification_boundary_v1",
+        "sequence_order": 8,
+        "timestamp": "2026-08-17T11:06:24.039313+00:00",
+        "signature": "mock_attestation_eb12bf442898b6af8efdc16ffa18f128294b327f47c5d40da039abfe38d11bfa"
+      }
+    ],
+    "pfc_decision_outcome": "APPROVED",
+    "execution_output": {
+      "task_status": "COMPLETED",
+      "modified_files": [
+        "sage/experimental/workflow_control.py"
+      ],
+      "summary": "Completed bounded engineering task: Execute bounded engineering workflow control loop for SAGE self-application"
+    },
+    "test_validation_result": {
+      "passed": 38,
+      "failed": 0,
+      "errors": 0,
+      "suite": "platform_experimental_suite"
+    },
+    "evidence_receipt": {
+      "receipt_id": "rec_prog_e6658771500e",
+      "previous_state": "EXECUTION_RESULT_RECEIVED",
+      "next_state": "EVIDENCE_VALIDATED",
+      "mission_id": "mission_stage2_flight_001",
+      "reason": "Evidence validation and Epistemic Causality checks passed.",
+      "validation_result": {
+        "status": "APPROVED",
+        "evidence_validation": "SUCCESS",
+        "causality_validation": "SKIPPED_NO_NODE_ID"
+      },
+      "provenance_reference": "evidence_validation_gate_v1",
+      "sequence_order": 7,
+      "timestamp": "2026-08-17T11:06:24.039189+00:00",
+      "signature": "mock_attestation_4dc8269e28a8d7317cc42bc469dc1b34f3ba7ead420a99f1149b5a5f2d6d16e4"
+    },
+    "review_result": {
+      "review_gate": "PASSED",
+      "code_review_rating": "#Correct#",
+      "protected_path_audit": "CLEAN",
+      "verified_by": "SAGEAutomatedReviewEngine"
+    },
+    "next_decision_state": {
+      "decision": "HOLD_HUMAN_DECISION_REQUIRED",
+      "reason": "Workflow flight completed successfully. Human/Command Center decision required before next mission.",
+      "authorized_next_action": null,
+      "self_authorization_permitted": false
+    },
+    "integrity_hash": "65c7d943df63e49f8e3388a7e807bcfd6a98f3104f52438007ac7c7536ef7d6a"
+  }
+}

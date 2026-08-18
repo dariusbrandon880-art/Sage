@@ -68,5 +68,301 @@
     "blockers": null,
     "next_authorized_boundary": "Close actual 48-hour flight report gap via durable ledger ingestion",
     "record_sha256": "856dae81f1f6501914a624c6086cf007e81b37ef947d6570343ffd549559f24e"
+  },
+  {
+    "record_id": "exec_wf_e6b4a7995b4c",
+    "timestamp": "2026-08-17T11:04:55.395006+00:00",
+    "mission_id": "mission_self_auth_block",
+    "operator_or_agent": "agent_jules_sage",
+    "session_id": "session_wf_mission_self_auth_block",
+    "task_description": "Self auth check",
+    "action_type": "WORKFLOW_CONTROL_CYCLE",
+    "files_touched": [
+      "sage/experimental/workflow_control.py"
+    ],
+    "commit_sha": null,
+    "pr_number": null,
+    "test_results": {
+      "passed": 38,
+      "failed": 0,
+      "errors": 0,
+      "suite": "platform_experimental_suite"
+    },
+    "receipt_ids": [
+      "rec_prog_14c7985bd366",
+      "rec_prog_b7e0b9d83445",
+      "rec_prog_621aba79d193",
+      "rec_prog_852b20aef844",
+      "rec_prog_c33b54b5ccc4",
+      "rec_prog_22708dc680d5",
+      "rec_prog_360399a383b5",
+      "rec_prog_1eac1bde419d"
+    ],
+    "artifact_paths": [],
+    "result_status": "SUCCESS",
+    "capability_classification": "GOVERNED_WORKFLOW_SELF_APPLICATION",
+    "learning_notes": null,
+    "blockers": null,
+    "next_authorized_boundary": "HOLD_HUMAN_DECISION_REQUIRED",
+    "record_sha256": "6bb27c4f05078f941d5384964ea28e01c7f5f4c37b7ccad4fca08b70de1548fe"
+  },
+  {
+    "record_id": "exec_wf_1b936c2c235d",
+    "timestamp": "2026-08-17T11:06:24.038220+00:00",
+    "mission_id": "mission_stage2_flight_001",
+    "operator_or_agent": "agent_jules_sage",
+    "session_id": "session_wf_mission_stage2_flight_001",
+    "task_description": "Execute bounded engineering workflow control loop for SAGE self-application",
+    "action_type": "WORKFLOW_CONTROL_CYCLE",
+    "files_touched": [
+      "sage/experimental/workflow_control.py"
+    ],
+    "commit_sha": null,
+    "pr_number": null,
+    "test_results": {
+      "passed": 38,
+      "failed": 0,
+      "errors": 0,
+      "suite": "platform_experimental_suite"
+    },
+    "receipt_ids": [
+      "rec_prog_e30a0231dc85",
+      "rec_prog_3b1892c052dd",
+      "rec_prog_afae1b74c061",
+      "rec_prog_fece8e9c81a9",
+      "rec_prog_fb0bd34f6136",
+      "rec_prog_7661d9e31311",
+      "rec_prog_e6658771500e",
+      "rec_prog_3925c094e5b7"
+    ],
+    "artifact_paths": [],
+    "result_status": "SUCCESS",
+    "capability_classification": "GOVERNED_WORKFLOW_SELF_APPLICATION",
+    "learning_notes": null,
+    "blockers": null,
+    "next_authorized_boundary": "HOLD_HUMAN_DECISION_REQUIRED",
+    "record_sha256": "564a5bdfbd140abb0556365d8e40e24a712bd55dd7df1233b6d238cce505fb6b"
+  },
+  {
+    "record_id": "exec_wf_9129b1afa60c",
+    "timestamp": "2026-08-17T11:06:59.572270+00:00",
+    "mission_id": "mission_self_auth_block",
+    "operator_or_agent": "agent_jules_sage",
+    "session_id": "session_wf_mission_self_auth_block",
+    "task_description": "Self auth check",
+    "action_type": "WORKFLOW_CONTROL_CYCLE",
+    "files_touched": [
+      "sage/experimental/workflow_control.py"
+    ],
+    "commit_sha": null,
+    "pr_number": null,
+    "test_results": {
+      "passed": 38,
+      "failed": 0,
+      "errors": 0,
+      "suite": "platform_experimental_suite"
+    },
+    "receipt_ids": [
+      "rec_prog_561584c68202",
+      "rec_prog_05e88a5d50f6",
+      "rec_prog_af938b2d7b6b",
+      "rec_prog_594a09a23492",
+      "rec_prog_80358472adc5",
+      "rec_prog_7c58399a9698",
+      "rec_prog_d5a73225aa93",
+      "rec_prog_9789434ac409"
+    ],
+    "artifact_paths": [],
+    "result_status": "SUCCESS",
+    "capability_classification": "GOVERNED_WORKFLOW_SELF_APPLICATION",
+    "learning_notes": null,
+    "blockers": null,
+    "next_authorized_boundary": "HOLD_HUMAN_DECISION_REQUIRED",
+    "record_sha256": "2ca75b9c632dc7f2bf17003b01f1ee132a52b5e4d129df51c8262fc22e688c93"
+  },
+  {
+    "record_id": "exec_wf_5d5f6530b79a",
+    "timestamp": "2026-08-17T11:15:57.625704+00:00",
+    "mission_id": "mission_self_auth_block",
+    "operator_or_agent": "agent_jules_sage",
+    "session_id": "session_wf_mission_self_auth_block",
+    "task_description": "Self auth check",
+    "action_type": "WORKFLOW_CONTROL_CYCLE",
+    "files_touched": [
+      "sage/experimental/workflow_control.py"
+    ],
+    "commit_sha": null,
+    "pr_number": null,
+    "test_results": {
+      "passed": 38,
+      "failed": 0,
+      "errors": 0,
+      "suite": "platform_experimental_suite"
+    },
+    "receipt_ids": [
+      "rec_prog_19f3d4a781a8",
+      "rec_prog_2601ea2a6bbe",
+      "rec_prog_6f5b13b786aa",
+      "rec_prog_27c4acf8220c",
+      "rec_prog_1efdaa7f3c98",
+      "rec_prog_51fa0835eb40",
+      "rec_prog_11d1673a9936",
+      "rec_prog_4c8c23a5dfa7"
+    ],
+    "artifact_paths": [],
+    "result_status": "SUCCESS",
+    "capability_classification": "GOVERNED_WORKFLOW_SELF_APPLICATION",
+    "learning_notes": null,
+    "blockers": null,
+    "next_authorized_boundary": "HOLD_HUMAN_DECISION_REQUIRED",
+    "record_sha256": "669cbac04a1223fe039a492ac306dfda4b5c6f5c5e9b0ab2b0c9a15f4bcb9890"
+  },
+  {
+    "record_id": "exec_wf_092c2651efc8",
+    "timestamp": "2026-08-17T11:23:26.190063+00:00",
+    "mission_id": "eval_001_success",
+    "operator_or_agent": "agent_jules_sage",
+    "session_id": "session_wf_eval_001_success",
+    "task_description": "Cycle 1 evaluation task",
+    "action_type": "WORKFLOW_CONTROL_CYCLE",
+    "files_touched": [
+      "sage/experimental/workflow_control.py"
+    ],
+    "commit_sha": null,
+    "pr_number": null,
+    "test_results": {
+      "passed": 38,
+      "failed": 0,
+      "errors": 0,
+      "suite": "platform_experimental_suite"
+    },
+    "receipt_ids": [
+      "rec_prog_79f1b1f98701",
+      "rec_prog_d2fcc65372fa",
+      "rec_prog_5dc9ce31d177",
+      "rec_prog_f6a780c75a4e",
+      "rec_prog_7316962ab0f6",
+      "rec_prog_adf0acbaebfc",
+      "rec_prog_aa0abc732965",
+      "rec_prog_f7b85b6e9967"
+    ],
+    "artifact_paths": [],
+    "result_status": "SUCCESS",
+    "capability_classification": "GOVERNED_WORKFLOW_SELF_APPLICATION",
+    "learning_notes": null,
+    "blockers": null,
+    "next_authorized_boundary": "HOLD_HUMAN_DECISION_REQUIRED",
+    "record_sha256": "30356b0b7bb0b5ed42ac375ad443849d507f7391357ecbb01ee2a53a19980990"
+  },
+  {
+    "record_id": "exec_wf_4c0faac8c595",
+    "timestamp": "2026-08-17T11:24:29.465679+00:00",
+    "mission_id": "mission_self_auth_block",
+    "operator_or_agent": "agent_jules_sage",
+    "session_id": "session_wf_mission_self_auth_block",
+    "task_description": "Self auth check",
+    "action_type": "WORKFLOW_CONTROL_CYCLE",
+    "files_touched": [
+      "sage/experimental/workflow_control.py"
+    ],
+    "commit_sha": null,
+    "pr_number": null,
+    "test_results": {
+      "passed": 38,
+      "failed": 0,
+      "errors": 0,
+      "suite": "platform_experimental_suite"
+    },
+    "receipt_ids": [
+      "rec_prog_8f30c4dd6085",
+      "rec_prog_90f57dd9a7f8",
+      "rec_prog_3646db259cb3",
+      "rec_prog_421f06f95d45",
+      "rec_prog_322e87bcfd97",
+      "rec_prog_a2d6bf7f7e6f",
+      "rec_prog_e1015e4dcccb",
+      "rec_prog_61d9ae527cd5"
+    ],
+    "artifact_paths": [],
+    "result_status": "SUCCESS",
+    "capability_classification": "GOVERNED_WORKFLOW_SELF_APPLICATION",
+    "learning_notes": null,
+    "blockers": null,
+    "next_authorized_boundary": "HOLD_HUMAN_DECISION_REQUIRED",
+    "record_sha256": "6380d05dd8d9c0ff83b871b8d16e8dafa6947ba0230fab41e0579188c355b91e"
+  },
+  {
+    "record_id": "exec_wf_02fa521e7e20",
+    "timestamp": "2026-08-17T11:25:27.913796+00:00",
+    "mission_id": "mission_self_auth_block",
+    "operator_or_agent": "agent_jules_sage",
+    "session_id": "session_wf_mission_self_auth_block",
+    "task_description": "Self auth check",
+    "action_type": "WORKFLOW_CONTROL_CYCLE",
+    "files_touched": [
+      "sage/experimental/workflow_control.py"
+    ],
+    "commit_sha": null,
+    "pr_number": null,
+    "test_results": {
+      "passed": 38,
+      "failed": 0,
+      "errors": 0,
+      "suite": "platform_experimental_suite"
+    },
+    "receipt_ids": [
+      "rec_prog_cba7150a3f64",
+      "rec_prog_6ccb76360f41",
+      "rec_prog_da94169c6d23",
+      "rec_prog_2493293d705a",
+      "rec_prog_c724f70aa18b",
+      "rec_prog_1591ac52d330",
+      "rec_prog_5fe4b919012f",
+      "rec_prog_f8f5ef2e7e46"
+    ],
+    "artifact_paths": [],
+    "result_status": "SUCCESS",
+    "capability_classification": "GOVERNED_WORKFLOW_SELF_APPLICATION",
+    "learning_notes": null,
+    "blockers": null,
+    "next_authorized_boundary": "HOLD_HUMAN_DECISION_REQUIRED",
+    "record_sha256": "ce182012c28a5b63875963a073d2a6cd21ede23ea3a5f7d0b8f43828a6a27b4d"
+  },
+  {
+    "record_id": "exec_wf_0832b6572078",
+    "timestamp": "2026-08-18T12:23:00.687416+00:00",
+    "mission_id": "mission_self_auth_block",
+    "operator_or_agent": "agent_jules_sage",
+    "session_id": "session_wf_mission_self_auth_block",
+    "task_description": "Self auth check",
+    "action_type": "WORKFLOW_CONTROL_CYCLE",
+    "files_touched": [
+      "sage/experimental/workflow_control.py"
+    ],
+    "commit_sha": null,
+    "pr_number": null,
+    "test_results": {
+      "passed": 38,
+      "failed": 0,
+      "errors": 0,
+      "suite": "platform_experimental_suite"
+    },
+    "receipt_ids": [
+      "rec_prog_552136d2adcc",
+      "rec_prog_8b9c1b7c4b05",
+      "rec_prog_0ea4a72f03f3",
+      "rec_prog_dacf41990d3d",
+      "rec_prog_a324b7a8c089",
+      "rec_prog_355aa62defe6",
+      "rec_prog_701e1e5fb7b1",
+      "rec_prog_14c43807a12a"
+    ],
+    "artifact_paths": [],
+    "result_status": "SUCCESS",
+    "capability_classification": "GOVERNED_WORKFLOW_SELF_APPLICATION",
+    "learning_notes": null,
+    "blockers": null,
+    "next_authorized_boundary": "HOLD_HUMAN_DECISION_REQUIRED",
+    "record_sha256": "c11de1d71427cb887a0c1a3aad18140977b0676561c23afa75598434a8e46973"
   }
 ]
