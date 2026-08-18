@@ -549,3 +549,50 @@ class MissionProgressionController:
         self.receipts.append(receipt)
         self.sequence_counter += 1
         return receipt
+
+    def save_receipt(self, receipt: MissionProgressionReceipt, filename: str = "controlled_mission_progression.json") -> str:
+        """Persists a progression receipt to disk in an append-only JSON evidence array."""
+        from pathlib import Path
+        capture_dir = Path("evidence_capture")
+        capture_dir.mkdir(parents=True, exist_ok=True)
+        file_path = capture_dir / filename
+
+        existing_receipts = []
+        if file_path.exists():
+            try:
+                with open(file_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    if isinstance(data, list):
+                        existing_receipts = data
+                    elif isinstance(data, dict):
+                        existing_receipts = [data]
+            except Exception:
+                existing_receipts = []
+
+        receipt_dict = receipt.model_dump()
+        existing_receipts.append(receipt_dict)
+
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(existing_receipts, f, indent=2, default=str)
+
+        return str(file_path)
+
+    @staticmethod
+    def load_receipts(filename: str = "controlled_mission_progression.json") -> List[MissionProgressionReceipt]:
+        """Loads serialized progression receipts from an evidence capture file."""
+        from pathlib import Path
+        file_path = Path("evidence_capture") / filename
+        if not file_path.exists():
+            return []
+
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+
+            if isinstance(data, list):
+                return [MissionProgressionReceipt.model_validate(item) for item in data if isinstance(item, dict)]
+            elif isinstance(data, dict):
+                return [MissionProgressionReceipt.model_validate(data)]
+            return []
+        except Exception:
+            return []

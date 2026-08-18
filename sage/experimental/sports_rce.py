@@ -366,3 +366,88 @@ class HistoricalResearchReconstructionEngine:
         receipt.sign()
 
         return snapshot, receipt
+
+    @classmethod
+    def reconstruct_snapshot_from_evidence(
+        cls,
+        evidence_data: Any,
+        research_timestamp: str
+    ) -> Tuple[HistoricalResearchSnapshot, ResearchIntegrityReceipt]:
+        """Ingests persisted flight evidence (dict, list, or JSON string) and reconstructs point-in-time snapshot."""
+        if isinstance(evidence_data, str):
+            try:
+                evidence_data = json.loads(evidence_data)
+            except Exception as exc:
+                raise ValueError(f"FAIL_CLOSED_INVALID_EVIDENCE: Failed to parse JSON evidence string: {exc}") from exc
+
+        observations = []
+        if isinstance(evidence_data, list):
+            observations = evidence_data
+        elif isinstance(evidence_data, dict):
+            # Inspect structure for flight record or prediction list
+            if "flight_record" in evidence_data and isinstance(evidence_data["flight_record"], dict):
+                rec = evidence_data["flight_record"]
+                if "locked_prediction" in rec and isinstance(rec["locked_prediction"], dict):
+                    obs_dict = dict(rec["locked_prediction"])
+                    evt_obs = obs_dict.get("event_observation") or {}
+                    if isinstance(evt_obs, dict):
+                        obs_dict["availability_timestamp"] = (
+                            evt_obs.get("observation_timestamp_utc") or
+                            evt_obs.get("event_start_time_utc") or
+                            obs_dict.get("lock_timestamp_utc")
+                        )
+                    else:
+                        obs_dict["availability_timestamp"] = obs_dict.get("lock_timestamp_utc")
+                    observations.append(obs_dict)
+            elif "predictions" in evidence_data and isinstance(evidence_data["predictions"], list):
+                for pred in evidence_data["predictions"]:
+                    if isinstance(pred, dict):
+                        obs_dict = dict(pred)
+                        evt_obs = obs_dict.get("event_observation") or {}
+                        if isinstance(evt_obs, dict):
+                            obs_dict["availability_timestamp"] = (
+                                evt_obs.get("observation_timestamp_utc") or
+                                evt_obs.get("event_start_time_utc") or
+                                obs_dict.get("lock_timestamp_utc")
+                            )
+                        else:
+                            obs_dict["availability_timestamp"] = obs_dict.get("lock_timestamp_utc")
+                        observations.append(obs_dict)
+            elif "prediction_id" in evidence_data or "observation_id" in evidence_data or "event_id" in evidence_data:
+                obs_dict = dict(evidence_data)
+                evt_obs = obs_dict.get("event_observation") or {}
+                if isinstance(evt_obs, dict):
+                    obs_dict["availability_timestamp"] = (
+                        obs_dict.get("availability_timestamp") or
+                        evt_obs.get("observation_timestamp_utc") or
+                        obs_dict.get("lock_timestamp_utc")
+                    )
+                observations.append(obs_dict)
+            else:
+                raise ValueError("FAIL_CLOSED_INVALID_EVIDENCE: Dict evidence structure unrecognized.")
+        else:
+            raise ValueError(f"FAIL_CLOSED_INVALID_EVIDENCE: Unsupported evidence data type '{type(evidence_data)}'")
+
+        if not observations:
+            raise ValueError("FAIL_CLOSED_INVALID_EVIDENCE: No valid observations extracted from evidence payload.")
+
+        return cls.reconstruct_snapshot(observations=observations, research_timestamp=research_timestamp)
+
+    @classmethod
+    def reconstruct_snapshot_from_file(
+        cls,
+        file_path: Path | str,
+        research_timestamp: str
+    ) -> Tuple[HistoricalResearchSnapshot, ResearchIntegrityReceipt]:
+        """Loads persisted flight evidence JSON file directly from disk and reconstructs point-in-time snapshot."""
+        path = Path(file_path)
+        if not path.exists():
+            raise ValueError(f"FAIL_CLOSED_FILE_NOT_FOUND: Evidence file '{path}' does not exist.")
+
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception as exc:
+            raise ValueError(f"FAIL_CLOSED_INVALID_EVIDENCE: Failed to load JSON from '{path}': {exc}") from exc
+
+        return cls.reconstruct_snapshot_from_evidence(evidence_data=data, research_timestamp=research_timestamp)

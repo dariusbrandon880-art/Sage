@@ -458,6 +458,31 @@ def test_17_existing_capability_status_immutability():
     assert cap_reg_path.stat().st_size == original_size
 
 
+def test_19_receipt_serialization_and_deserialization(tmp_path):
+    controller = MissionProgressionController()
+    mission_data = {
+        "mission_id": "test_mission_ser_001",
+        "objective": "Test receipt serialization",
+        "priority_score": 85.0,
+        "assigned_agent": "agent_jules_sage"
+    }
+    rcpt = controller.intake_mission(mission_data)
+    test_file = "test_controlled_mission_progression.json"
+
+    saved_path = controller.save_receipt(rcpt, filename=test_file)
+    assert Path(saved_path).exists()
+
+    loaded_receipts = MissionProgressionController.load_receipts(filename=test_file)
+    assert len(loaded_receipts) >= 1
+    latest = loaded_receipts[-1]
+    assert latest.mission_id == "test_mission_ser_001"
+    assert latest.next_state == "INTAKE"
+    assert latest.signature == rcpt.signature
+
+    # Clean up test file
+    Path(saved_path).unlink(missing_ok=True)
+
+
 def test_18_protected_boundary_exclusion():
     """Test 18: Confirm that protected production directories remain strictly untouched."""
     # We assert that no python files under sage/core, sage/runtime, or sage/acr have been touched by our testing

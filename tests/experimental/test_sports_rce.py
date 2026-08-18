@@ -470,3 +470,44 @@ def test_leakage_receipt_is_replayable():
     assert r1.integrity_hash == r2.integrity_hash
     assert r1.included_reference_set == r2.included_reference_set
     assert r1.post_timestamp_reference_set == r2.post_timestamp_reference_set
+
+
+def test_reconstruct_snapshot_from_persisted_flight_001_file():
+    flight_file = Path("evidence_capture/sports_longitudinal_flight_001.json")
+    if flight_file.exists():
+        snap, rcpt = HistoricalResearchReconstructionEngine.reconstruct_snapshot_from_file(
+            file_path=flight_file,
+            research_timestamp="2026-08-18T00:00:00Z"
+        )
+        assert snap is not None
+        assert len(snap.included_observations) > 0
+        assert rcpt.integrity_status == "RESEARCH_TIME_CLEAN"
+        assert len(snap.snapshot_hash) > 0
+
+
+def test_reconstruct_snapshot_from_persisted_ledger_file():
+    ledger_file = Path("evidence_capture/sports_longitudinal_ledger.json")
+    if ledger_file.exists():
+        snap, rcpt = HistoricalResearchReconstructionEngine.reconstruct_snapshot_from_file(
+            file_path=ledger_file,
+            research_timestamp="2026-08-18T00:00:00Z"
+        )
+        assert snap is not None
+        assert len(snap.included_observations) > 0
+        assert rcpt.integrity_status == "RESEARCH_TIME_CLEAN"
+
+
+def test_reconstruct_snapshot_from_missing_file_fails_closed():
+    with pytest.raises(ValueError, match="FAIL_CLOSED_FILE_NOT_FOUND"):
+        HistoricalResearchReconstructionEngine.reconstruct_snapshot_from_file(
+            file_path="evidence_capture/non_existent_file.json",
+            research_timestamp="2026-08-18T00:00:00Z"
+        )
+
+
+def test_reconstruct_snapshot_from_invalid_evidence_fails_closed():
+    with pytest.raises(ValueError, match="FAIL_CLOSED_INVALID_EVIDENCE"):
+        HistoricalResearchReconstructionEngine.reconstruct_snapshot_from_evidence(
+            evidence_data={"unrecognized_key": 123},
+            research_timestamp="2026-08-18T00:00:00Z"
+        )
