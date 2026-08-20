@@ -1017,10 +1017,13 @@ class DeveloperWorkflowOrchestrator:
     def handoff_discovery_candidate_to_mission(
         self, candidate_id: str, objective_id: str | None = None
     ) -> SAGEMissionTask:
-        """Transforms high-value discovery candidate into an authorized engineering task in the backlog queue."""
-        obj_id = objective_id or self.objective
+        """Transforms high-value discovery candidate into an unauthorized candidate task in the backlog queue."""
+        obj_id = objective_id or "obj_discovery_backlog"
         description = "Implement automated improvement"
         priority_score = 50.0
+        signal_id = None
+        evidence_ref = None
+        priority_str = "MEDIUM"
 
         # Try to find candidate from register
         register_path = Path("evidence_capture/discovery_candidates_register.json")
@@ -1031,10 +1034,12 @@ class DeveloperWorkflowOrchestrator:
                     for cand in candidates:
                         if cand.get("candidate_id") == candidate_id:
                             description = cand.get("description", description)
-                            p_str = cand.get("priority", "MEDIUM")
-                            if p_str == "HIGH":
+                            priority_str = cand.get("priority", "MEDIUM")
+                            signal_id = cand.get("signal_id")
+                            evidence_ref = cand.get("evidence_reference")
+                            if priority_str == "HIGH":
                                 priority_score = 80.0
-                            elif p_str == "MEDIUM":
+                            elif priority_str == "MEDIUM":
                                 priority_score = 50.0
                             else:
                                 priority_score = 20.0
@@ -1046,6 +1051,14 @@ class DeveloperWorkflowOrchestrator:
         normalized_cand_id = re.sub(r"[^a-zA-Z0-9_]", "_", candidate_id)
         task_id = f"task_impr_{normalized_cand_id}"
 
+        metadata = {
+            "candidate_id": candidate_id,
+            "signal_id": signal_id,
+            "priority": priority_str,
+            "source_evidence_reference": evidence_ref,
+            "is_improvement_candidate": True,
+        }
+
         task = SAGEMissionTask(
             task_id=task_id,
             objective_id=obj_id,
@@ -1053,8 +1066,8 @@ class DeveloperWorkflowOrchestrator:
             lane="optimization"
             if "optimization" in description.lower() or "optimize" in description.lower()
             else "engineering",
-            authorized=True,
-            metadata={},
+            authorized=False,
+            metadata=metadata,
             completion_criteria=[
                 f"Implement recommendations for {candidate_id}",
                 "Verify performance improvements",
@@ -1220,7 +1233,7 @@ class DeveloperWorkflowOrchestrator:
                         cand_task_id = f"task_impr_{norm_cand}"
                         if not self.mission_queue.get_task(cand_task_id):
                             self.handoff_discovery_candidate_to_mission(
-                                candidate_id, objective_id=task.objective_id
+                                candidate_id, objective_id="obj_discovery_backlog"
                             )
 
                 # Reset failures on success

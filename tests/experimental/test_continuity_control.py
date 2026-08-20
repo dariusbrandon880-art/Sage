@@ -718,7 +718,10 @@ def test_sage_continuous_execution_and_governance_loop(tmp_path):
         assert task_hand.task_id == "task_impr_CANDIDATE_OIL_TEST99"
         assert task_hand.priority_score == 80.0
         assert task_hand.lane == "optimization"
-        assert task_hand.authorized is True
+        assert task_hand.authorized is False
+        assert task_hand.objective_id == "obj_discovery_backlog"
+        assert task_hand.metadata["candidate_id"] == "CANDIDATE-OIL-TEST99"
+        assert task_hand.metadata["is_improvement_candidate"] is True
 
     # -----------------
     # 7. External Workspace Drift Detection
@@ -1577,14 +1580,29 @@ def test_orchestrator_discovery_to_mission_auto_cascade(tmp_path):
         # Run loop with max_cycles=2
         res = orchestrator.execute_autonomous_mission_loop(max_cycles=2)
 
-    # Verify that cycle 1 executed task_cascade_root, auto-cascaded CANDIDATE-CASCADE-TEST-100 into SAGEMissionQueue, and cycle 2 executed the cascaded task!
-    assert res["completed_cycles"] == 2
+    # Cycle 1 executes task_cascade_root and auto-queues CANDIDATE-CASCADE-TEST-100 as unauthorized in backlog.
+    # Cycle 2 finds no further authorized tasks and stops safely (completed_cycles == 1).
+    assert res["completed_cycles"] == 1
     assert "task_cascade_root" in res["executed_tasks"]
     cascaded_task_id = "task_impr_CANDIDATE_CASCADE_TEST_100"
-    assert cascaded_task_id in res["executed_tasks"]
+    assert cascaded_task_id not in res["executed_tasks"]
 
-    # Verify both tasks reached COMPLETED status
     t_root = orchestrator.mission_queue.get_task("task_cascade_root")
     t_cascaded = orchestrator.mission_queue.get_task(cascaded_task_id)
     assert t_root.status == "COMPLETED"
+    assert t_cascaded is not None
+    assert t_cascaded.authorized is False
+    assert t_cascaded.status == "PENDING"
+    assert t_cascaded.objective_id == "obj_discovery_backlog"
+
+    # Demonstrate that explicit human authorization and objective approval permits execution on subsequent cycles
+    t_cascaded.authorized = True
+    orchestrator.mission_queue.add_task(t_cascaded)
+
+    # Add backlog objective to active session objectives
+    orchestrator.session.active_objectives.append("obj_discovery_backlog")
+
+    res_auth = orchestrator.execute_autonomous_mission_loop(max_cycles=1)
+    assert res_auth["completed_cycles"] == 1
+    assert cascaded_task_id in res_auth["executed_tasks"]
     assert t_cascaded.status == "COMPLETED"

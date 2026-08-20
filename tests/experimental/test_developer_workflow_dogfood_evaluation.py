@@ -195,3 +195,36 @@ def test_validator_pure_side_effect_boundary():
     assert res.is_valid is True
     assert res.classification == EvaluationClassification.VALID_NEUTRAL
     assert res.delta_score == 0.0
+
+
+def test_discovery_candidate_to_mission_handoff_enforces_unauthorized_backlog_and_provenance():
+    """Test that handoff_discovery_candidate_to_mission creates unauthorized backlog tasks with full provenance."""
+    orchestrator = DeveloperWorkflowOrchestrator(
+        session_id="session_discovery_handoff_test",
+        objective="obj_continuous_development",
+    )
+
+    task = orchestrator.handoff_discovery_candidate_to_mission("CANDIDATE-OIL-TEST2026")
+
+    assert task.authorized is False
+    assert task.objective_id == "obj_discovery_backlog"
+    assert task.task_id == "task_impr_CANDIDATE_OIL_TEST2026"
+    assert task.metadata["candidate_id"] == "CANDIDATE-OIL-TEST2026"
+    assert task.metadata["is_improvement_candidate"] is True
+
+    # Queue selector MUST NOT pick up the unauthorized candidate task even if parent objective is approved
+    selected = orchestrator.mission_queue.get_next_approved_task(
+        approved_objectives=["obj_continuous_development", "obj_discovery_backlog"]
+    )
+    assert selected is None
+
+    # Explicit human authorization + approved objective enables selection
+    task.authorized = True
+    orchestrator.mission_queue.add_task(task)
+
+    selected = orchestrator.mission_queue.get_next_approved_task(
+        approved_objectives=["obj_discovery_backlog"]
+    )
+    assert selected is not None
+    assert selected.task_id == "task_impr_CANDIDATE_OIL_TEST2026"
+    assert selected.authorized is True
