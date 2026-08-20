@@ -470,3 +470,72 @@ def test_leakage_receipt_is_replayable():
     assert r1.integrity_hash == r2.integrity_hash
     assert r1.included_reference_set == r2.included_reference_set
     assert r1.post_timestamp_reference_set == r2.post_timestamp_reference_set
+
+
+def test_oddspapi_adapter_parsing_and_contract_validation():
+    """Verify OddsPapi raw observation parsing, timestamp preservation, and fail-closed validation."""
+    from sage.experimental.sports_rce import OddsPapiObservationAdapter
+
+    raw_entry = {
+        "createdAt": "2025-04-16T20:50:58.321847+00:00",
+        "price": 1.95,
+        "limit": 1000.0,
+        "active": True,
+    }
+    context = {
+        "event_id": "oddspapi_evt_101",
+        "provider_id": "pinnacle",
+        "market": "h2h",
+        "selection": "home",
+        "event_start": "2025-04-16T22:00:00.000000+00:00",
+    }
+
+    obs = OddsPapiObservationAdapter.parse_observation(raw_entry, context)
+    assert obs["event_id"] == "oddspapi_evt_101"
+    assert obs["provider_id"] == "pinnacle"
+    assert obs["quoted_price"] == 1.95
+    assert obs["availability_timestamp"] == "2025-04-16T20:50:58.321847Z"
+    assert obs["event_start_timestamp"] == "2025-04-16T22:00:00Z"
+    assert "observation_id" in obs
+    assert obs["provenance_id"] == "oddspapi_pinnacle_oddspapi_evt_101_h2h"
+
+
+def test_oddspapi_adapter_reconstruction_at_t_excludes_post_t_and_in_play():
+    """Verify reconstruction at T excludes post-T entries and in-play observations fail closed."""
+    from sage.experimental.sports_rce import OddsPapiObservationAdapter
+
+    context = {
+        "event_id": "oddspapi_evt_102",
+        "provider_id": "draftkings",
+        "market": "h2h",
+        "selection": "away",
+        "event_start": "2025-04-16T22:00:00+00:00",
+    }
+
+    entry_t1 = {"createdAt": "2025-04-16T20:00:00+00:00", "price": 2.10}
+    entry_t2 = {"createdAt": "2025-04-16T21:00:00+00:00", "price": 2.20}
+    entry_post_t = {"createdAt": "2025-04-16T21:30:00+00:00", "price": 2.30}
+
+    obs_t1 = OddsPapiObservationAdapter.parse_observation(entry_t1, context)
+    obs_t2 = OddsPapiObservationAdapter.parse_observation(entry_t2, context)
+    obs_post_t = OddsPapiObservationAdapter.parse_observation(entry_post_t, context)
+
+    # In-play observation fails closed
+    entry_in_play = {"createdAt": "2025-04-16T22:05:00+00:00", "price": 2.50}
+    with pytest.raises(ValueError, match="FAIL_CLOSED_IN_PLAY_CONTAMINATION"):
+        OddsPapiObservationAdapter.parse_observation(entry_in_play, context)
+
+    # Missing timestamp fails closed
+    with pytest.raises(ValueError, match="FAIL_CLOSED_MISSING_TIMESTAMP"):
+        OddsPapiObservationAdapter.parse_observation({"price": 2.10}, context)
+
+    # Reconstruct snapshot at T = 2025-04-16T21:15:00Z
+    snapshot, receipt = HistoricalResearchReconstructionEngine.reconstruct_snapshot(
+        [obs_t1, obs_t2, obs_post_t], "2025-04-16T21:15:00Z"
+    )
+
+    assert receipt.integrity_status == "POST_TIMESTAMP_INFORMATION_DETECTED"
+    assert receipt.excluded_count == 1
+    assert len(snapshot.included_observations) == 1
+    # Latest observation prior to T = 21:15:00Z is obs_t2 (price 2.20)
+    assert snapshot.included_observations[0]["quoted_price"] == 2.20

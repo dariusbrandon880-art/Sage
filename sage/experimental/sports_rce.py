@@ -366,3 +366,82 @@ class HistoricalResearchReconstructionEngine:
         receipt.sign()
 
         return snapshot, receipt
+
+
+class OddsPapiObservationAdapter:
+    """Adapter parsing OddsPapi historical odds payloads into standardized SAGE observation dicts."""
+
+    @staticmethod
+    def parse_observation(raw_entry: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
+        """Parses a single OddsPapi price/historical entry into a standardized SAGE raw odds observation.
+
+        Enforces strict fail-closed validation on timestamps, prices, and required metadata.
+        """
+        if not isinstance(raw_entry, dict):
+            raise ValueError("FAIL_CLOSED: Raw entry must be a dictionary")
+
+        created_at = raw_entry.get("createdAt") or raw_entry.get("availability_timestamp")
+        if not created_at:
+            raise ValueError("FAIL_CLOSED_MISSING_TIMESTAMP: Missing 'createdAt' / availability timestamp")
+
+        # Validate timestamp format
+        try:
+            avail_dt = parse_iso_utc(created_at)
+        except Exception as exc:
+            raise ValueError(f"FAIL_CLOSED_AMBIGUOUS_TIMING: Unparseable createdAt timestamp '{created_at}': {exc}") from exc
+
+        price = raw_entry.get("price") or raw_entry.get("quoted_price")
+        if price is None:
+            raise ValueError("FAIL_CLOSED_MISSING_PRICE: OddsPapi entry missing 'price'")
+
+        try:
+            quoted_price = float(price)
+            if quoted_price <= 1.0:
+                raise ValueError(f"Invalid price value {quoted_price}")
+        except Exception as exc:
+            raise ValueError(f"FAIL_CLOSED_INVALID_PRICE: Invalid quoted price '{price}': {exc}") from exc
+
+        event_id = str(context.get("event_id") or raw_entry.get("event_id") or "")
+        if not event_id:
+            raise ValueError("FAIL_CLOSED_MISSING_EVENT: Context/entry missing 'event_id'")
+
+        provider_id = str(context.get("provider_id") or raw_entry.get("bookmaker") or raw_entry.get("provider") or "oddspapi_default")
+        market = str(context.get("market") or raw_entry.get("market") or "h2h")
+        selection = str(context.get("selection") or raw_entry.get("selection") or "home")
+
+        event_start = context.get("event_start") or context.get("event_start_timestamp") or raw_entry.get("event_start")
+        if not event_start:
+            raise ValueError("FAIL_CLOSED_MISSING_EVENT_START: Context missing 'event_start'")
+
+        try:
+            start_dt = parse_iso_utc(event_start)
+        except Exception as exc:
+            raise ValueError(f"FAIL_CLOSED_AMBIGUOUS_TIMING: Unparseable event_start timestamp '{event_start}': {exc}") from exc
+
+        # In-play contamination check: t_avail >= t_start
+        if avail_dt >= start_dt:
+            raise ValueError(
+                f"FAIL_CLOSED_IN_PLAY_CONTAMINATION: Availability timestamp ({created_at}) "
+                f">= Event start timestamp ({event_start})"
+            )
+
+        provenance_id = f"oddspapi_{provider_id}_{event_id}_{market}"
+        obs_payload = {
+            "event_id": event_id,
+            "provider": provider_id,
+            "provider_id": provider_id,
+            "market": market,
+            "selection": selection,
+            "observed_odds": quoted_price,
+            "quoted_price": quoted_price,
+            "availability_timestamp": avail_dt.isoformat().replace("+00:00", "Z"),
+            "source_timestamp": avail_dt.isoformat().replace("+00:00", "Z"),
+            "event_start_timestamp": start_dt.isoformat().replace("+00:00", "Z"),
+            "provenance_id": provenance_id,
+        }
+
+        # Deterministic SHA-256 observation_id
+        serialized = json.dumps(obs_payload, sort_keys=True)
+        obs_payload["observation_id"] = f"obs_oddspapi_{hashlib.sha256(serialized.encode('utf-8')).hexdigest()[:16]}"
+
+        return obs_payload
