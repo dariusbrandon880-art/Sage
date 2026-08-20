@@ -4,6 +4,7 @@ import os
 import ast
 import json
 import time
+import tempfile
 import pytest
 from pathlib import Path
 from pydantic import ValidationError
@@ -1588,3 +1589,44 @@ def test_orchestrator_discovery_to_mission_auto_cascade(tmp_path):
     t_cascaded = orchestrator.mission_queue.get_task(cascaded_task_id)
     assert t_root.status == "COMPLETED"
     assert t_cascaded.status == "COMPLETED"
+
+
+def test_chatgpt_as_sage_c2_rehydration_and_operating_cycle():
+    """Verify fresh ChatGPT session handshake, C2 context rehydration, and governed execution cycle."""
+    from sage.experimental.act.continuity_control import (
+        ChatGPTRuntimeAdapter,
+        DeveloperWorkflowOrchestrator,
+    )
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        tmp_path = Path(tmp_dir)
+        ccl = ContinuityControlLoop(storage_path=str(tmp_path / "ccl"))
+        orchestrator = DeveloperWorkflowOrchestrator(
+            session_id="session_chatgpt_c2_test",
+            ccl=ccl,
+            evidence_output_path=str(tmp_path / "evidence.json"),
+        )
+
+        adapter = ChatGPTRuntimeAdapter(orchestrator)
+
+        # 1. Authenticate ChatGPT Handshake
+        hs_res = adapter.authenticate_handshake(agent_id="ChatGPT", auth_secret="sage_c2_secret")
+        assert hs_res["status"] == "SUCCESS"
+        assert hs_res["role"] == "Governed External Reasoning Assistant"
+
+        # 2. Rehydrate ChatGPT-as-SAGE C2 Operating Context
+        ctx = adapter.rehydrate_c2_operating_context("session_chatgpt_c2_test")
+        assert ctx["status"] == "REHYDRATED"
+        assert ctx["canonical_state"]["master_archive_valid"] is True
+        assert ctx["governance_authority"]["c2_role"] == "ChatGPT (Mission Control)"
+        assert ctx["governance_authority"]["execution_role"] == "Jules (Senior Software Engineer)"
+        assert "LANE 2" in ctx["active_frontier"]
+
+        # 3. Execute Bounded Governed Action via Orchestrator
+        coord_res = orchestrator.execute_active_development_coordination(
+            action_taken="ChatGPT C2 Rehydration & Governed Execution Cycle",
+            decision_reasoning="Demonstrate fresh ChatGPT session rehydrates SAGE state and operates through governed loop",
+        )
+
+        assert coord_res["status"] == "VALIDATED"
+        assert "orchestrator_run_id" in coord_res

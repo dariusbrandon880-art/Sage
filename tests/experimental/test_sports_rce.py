@@ -477,6 +477,7 @@ def test_oddspapi_adapter_parsing_and_contract_validation():
     from sage.experimental.sports_rce import OddsPapiObservationAdapter
 
     raw_entry = {
+        "id": "entry_oddspapi_9991",
         "createdAt": "2025-04-16T20:50:58.321847+00:00",
         "price": 1.95,
         "limit": 1000.0,
@@ -494,10 +495,11 @@ def test_oddspapi_adapter_parsing_and_contract_validation():
     assert obs["event_id"] == "oddspapi_evt_101"
     assert obs["provider_id"] == "pinnacle"
     assert obs["quoted_price"] == 1.95
+    assert obs["source_entry_id"] == "entry_oddspapi_9991"
     assert obs["availability_timestamp"] == "2025-04-16T20:50:58.321847Z"
     assert obs["event_start_timestamp"] == "2025-04-16T22:00:00Z"
     assert "observation_id" in obs
-    assert obs["provenance_id"] == "oddspapi_pinnacle_oddspapi_evt_101_h2h"
+    assert obs["provenance_id"] == "oddspapi_pinnacle_oddspapi_evt_101_h2h_entry_oddspapi_9991"
 
 
 def test_oddspapi_adapter_reconstruction_at_t_excludes_post_t_and_in_play():

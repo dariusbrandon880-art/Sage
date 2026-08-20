@@ -401,13 +401,23 @@ class OddsPapiObservationAdapter:
         except Exception as exc:
             raise ValueError(f"FAIL_CLOSED_INVALID_PRICE: Invalid quoted price '{price}': {exc}") from exc
 
-        event_id = str(context.get("event_id") or raw_entry.get("event_id") or "")
+        event_id = str(context.get("event_id") or raw_entry.get("event_id") or raw_entry.get("fixture_id") or "")
         if not event_id:
             raise ValueError("FAIL_CLOSED_MISSING_EVENT: Context/entry missing 'event_id'")
 
-        provider_id = str(context.get("provider_id") or raw_entry.get("bookmaker") or raw_entry.get("provider") or "oddspapi_default")
-        market = str(context.get("market") or raw_entry.get("market") or "h2h")
-        selection = str(context.get("selection") or raw_entry.get("selection") or "home")
+        provider_id = str(context.get("provider_id") or raw_entry.get("bookmaker") or raw_entry.get("provider") or "")
+        if not provider_id:
+            raise ValueError("FAIL_CLOSED_MISSING_PROVIDER: Context/entry missing 'provider_id' / 'bookmaker'")
+
+        market = str(context.get("market") or raw_entry.get("market") or "")
+        if not market:
+            raise ValueError("FAIL_CLOSED_MISSING_MARKET: Context/entry missing 'market'")
+
+        selection = str(context.get("selection") or raw_entry.get("selection") or "")
+        if not selection:
+            raise ValueError("FAIL_CLOSED_MISSING_SELECTION: Context/entry missing 'selection'")
+
+        entry_source_id = str(raw_entry.get("id") or raw_entry.get("entry_id") or "")
 
         event_start = context.get("event_start") or context.get("event_start_timestamp") or raw_entry.get("event_start")
         if not event_start:
@@ -425,13 +435,14 @@ class OddsPapiObservationAdapter:
                 f">= Event start timestamp ({event_start})"
             )
 
-        provenance_id = f"oddspapi_{provider_id}_{event_id}_{market}"
+        provenance_id = f"oddspapi_{provider_id}_{event_id}_{market}_{entry_source_id}" if entry_source_id else f"oddspapi_{provider_id}_{event_id}_{market}"
         obs_payload = {
             "event_id": event_id,
             "provider": provider_id,
             "provider_id": provider_id,
             "market": market,
             "selection": selection,
+            "source_entry_id": entry_source_id,
             "observed_odds": quoted_price,
             "quoted_price": quoted_price,
             "availability_timestamp": avail_dt.isoformat().replace("+00:00", "Z"),
@@ -440,7 +451,7 @@ class OddsPapiObservationAdapter:
             "provenance_id": provenance_id,
         }
 
-        # Deterministic SHA-256 observation_id
+        # Deterministic SHA-256 observation_id incorporating entry source identity
         serialized = json.dumps(obs_payload, sort_keys=True)
         obs_payload["observation_id"] = f"obs_oddspapi_{hashlib.sha256(serialized.encode('utf-8')).hexdigest()[:16]}"
 

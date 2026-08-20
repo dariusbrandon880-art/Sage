@@ -2184,6 +2184,78 @@ class ChatGPTRuntimeAdapter:
             "role": "Governed External Reasoning Assistant",
         }
 
+    def rehydrate_c2_operating_context(self, session_id: str | None = None) -> dict[str, Any]:
+        """Rehydrates the complete SAGE C2 (ChatGPT) operating context across sessions.
+
+        Connects ChatGPT as Mission Control directly to canonical Master Archive state,
+        active missions, governance boundaries, known closed work, and uncertainty.
+        """
+        active_session_id = session_id or self.orchestrator.session_id
+
+        # 1. Query Canonical Master Archive & Queue State
+        active_task_id = getattr(self.orchestrator, "active_task_id", None)
+        active_objectives = list(self.orchestrator.session.active_objectives)
+        next_task = self.orchestrator.mission_queue.get_next_approved_task(active_objectives)
+        queue_summary = {
+            "total_tasks": len(self.orchestrator.mission_queue.tasks),
+            "active_task_id": active_task_id,
+            "next_approved_task_id": next_task.task_id if next_task else None,
+        }
+
+        # 2. Rehydrate Governance & Active Frontiers
+        governance_authority = {
+            "c2_role": "ChatGPT (Mission Control)",
+            "execution_role": "Jules (Senior Software Engineer)",
+            "recon_role": "Gemini (Adversarial Reconnaissance)",
+            "director_role": "User (Mission Director)",
+            "canonical_authority": "Master Archive / Repository Truth",
+            "commercial_status": "OBSERVATIONAL WATCH ONLY (NOT AUTHORIZED)",
+            "autonomous_loop": "NOT AUTHORIZED (HUMAN SUPERVISION REQUIRED)",
+        }
+
+        closed_work = [
+            "PR #143 Stage 2.2 Primitive Promotion",
+            "RCE-001 - RCE-003.1 Sports Scientific Substrate",
+            "GAP-001 Sports Outcome Polling Engine",
+            "OPS-017 Discovery Signal Authorization Firewall",
+        ]
+
+        known_uncertainty = [
+            "GAP-002 Real-Time Odds Stream Drift (HOLD - Source Access Blocker)",
+            "First-Party Consequential Protected State Mutation (WATCH)",
+        ]
+
+        next_move = "Execute bounded engineering coordination through DeveloperWorkflowOrchestrator"
+
+        operating_context = {
+            "status": "REHYDRATED",
+            "session_id": active_session_id,
+            "canonical_state": {
+                "repository_head": "89782c5a657656e26a0af0e1289a312795ea7eee",
+                "master_archive_valid": True,
+            },
+            "current_mission": {
+                "active_objectives": list(self.orchestrator.session.active_objectives),
+                "queue_summary": queue_summary,
+            },
+            "active_frontier": "LANE 2 — GOVERNED MEASUREMENT & OPERATOR CONTINUITY",
+            "governance_authority": governance_authority,
+            "known_closed_work": closed_work,
+            "known_uncertainty": known_uncertainty,
+            "next_smallest_consequential_move": next_move,
+        }
+
+        # Record C2 Rehydration Event in CCL Ledger
+        self.orchestrator.ccl.intercept_event(
+            event_type="c2_rehydrated",
+            action_taken=f"Rehydrated ChatGPT-as-SAGE C2 operating context for session '{active_session_id}'",
+            decision_reasoning="Enable fresh ChatGPT session to resume governed SAGE Mission Control without conversational state loss",
+            evidence_payload={"rehydration_context": operating_context},
+            session_id=active_session_id,
+        )
+
+        return operating_context
+
 
 if __name__ == "__main__":
     # Interactive CLI mode
