@@ -8,9 +8,207 @@ import os
 import json
 import hashlib
 import uuid
-from typing import Any, Dict, List
+import re
+from typing import Any, Dict, List, Optional
 from datetime import datetime, timezone
 from pathlib import Path
+from enum import Enum
+from dataclasses import dataclass, asdict
+
+
+class EvaluationClassification(str, Enum):
+    """Classification states for Stage 2.2 pre/post learning prediction evaluation."""
+    VALID_IMPROVEMENT = "VALID_IMPROVEMENT"
+    VALID_REGRESSION = "VALID_REGRESSION"
+    VALID_NEUTRAL = "VALID_NEUTRAL"
+    INVALID_EVALUATION = "INVALID_EVALUATION"
+
+
+def is_valid_sha256_hex(val: str) -> bool:
+    """Helper to verify that a string is a valid 64-character lowercase or uppercase hex SHA-256."""
+    if not isinstance(val, str):
+        return False
+    return bool(re.match(r"^[a-fA-F0-9]{64}$", val))
+
+
+@dataclass
+class PreExecutionBaseline:
+    """Pre-learning baseline prediction capture."""
+    fixture_id: str
+    fixture_hash: str
+    baseline_sha256: str
+    baseline_score: float
+    timestamp: float
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "PreExecutionBaseline":
+        return cls(
+            fixture_id=data["fixture_id"],
+            fixture_hash=data["fixture_hash"],
+            baseline_sha256=data["baseline_sha256"],
+            baseline_score=float(data["baseline_score"]),
+            timestamp=float(data["timestamp"]),
+        )
+
+
+@dataclass
+class LearningIntervention:
+    """Learning signal intervention applied between baseline and post-execution observation."""
+    fixture_id: str
+    intervention_id: str
+    learning_signal_hash: str
+    timestamp: float
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "LearningIntervention":
+        return cls(
+            fixture_id=data["fixture_id"],
+            intervention_id=data["intervention_id"],
+            learning_signal_hash=data["learning_signal_hash"],
+            timestamp=float(data["timestamp"]),
+        )
+
+
+@dataclass
+class PostExecutionObservation:
+    """Post-learning observation capture."""
+    fixture_id: str
+    fixture_hash: str
+    receipt_sha256: str
+    observed_score: float
+    timestamp: float
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "PostExecutionObservation":
+        return cls(
+            fixture_id=data["fixture_id"],
+            fixture_hash=data["fixture_hash"],
+            receipt_sha256=data["receipt_sha256"],
+            observed_score=float(data["observed_score"]),
+            timestamp=float(data["timestamp"]),
+        )
+
+
+@dataclass
+class PreRecordedPredictionValidatorResult:
+    """Validation result produced by PreRecordedPredictionValidator."""
+    classification: EvaluationClassification
+    delta_score: float
+    is_valid: bool
+    rejection_reasons: List[str]
+    fixture_id: str
+
+    def to_dict(self) -> Dict[str, Any]:
+        d = asdict(self)
+        d["classification"] = self.classification.value if isinstance(self.classification, Enum) else self.classification
+        return d
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "PreRecordedPredictionValidatorResult":
+        raw_class = data["classification"]
+        classification = EvaluationClassification(raw_class) if isinstance(raw_class, str) else raw_class
+        return cls(
+            classification=classification,
+            delta_score=float(data["delta_score"]),
+            is_valid=bool(data["is_valid"]),
+            rejection_reasons=list(data["rejection_reasons"]),
+            fixture_id=data["fixture_id"],
+        )
+
+
+class PreRecordedPredictionValidator:
+    """Validator enforcing Stage 2.2 pre-recorded prediction evaluation invariants.
+
+    Evaluates baseline predictions, interventions, and post-execution observations
+    under strict fail-closed invariants:
+      1) fixture_id match across all artifacts
+      2) fixture_hash match between baseline and observation
+      3) Strict temporal ordering: t_baseline < t_intervention < t_observation
+      4) Valid 64-character SHA-256 hashes for baseline and receipt artifacts
+    """
+
+    @staticmethod
+    def evaluate(
+        baseline: PreExecutionBaseline,
+        intervention: LearningIntervention,
+        observation: PostExecutionObservation,
+        epsilon: float = 1e-4,
+    ) -> PreRecordedPredictionValidatorResult:
+        rejection_reasons: List[str] = []
+
+        # Invariant 1: fixture_id match
+        if not (baseline.fixture_id == intervention.fixture_id == observation.fixture_id):
+            rejection_reasons.append(
+                f"Fixture ID mismatch: baseline='{baseline.fixture_id}', "
+                f"intervention='{intervention.fixture_id}', observation='{observation.fixture_id}'"
+            )
+
+        # Invariant 2: fixture_hash match
+        if baseline.fixture_hash != observation.fixture_hash:
+            rejection_reasons.append(
+                f"Fixture hash mismatch: baseline_hash='{baseline.fixture_hash}', "
+                f"observation_hash='{observation.fixture_hash}'"
+            )
+
+        # Invariant 3: Strict temporal sequence (t_baseline < t_intervention < t_observation)
+        if baseline.timestamp >= intervention.timestamp:
+            rejection_reasons.append(
+                f"Temporal ordering violation: baseline timestamp ({baseline.timestamp}) "
+                f">= intervention timestamp ({intervention.timestamp})"
+            )
+
+        if intervention.timestamp >= observation.timestamp:
+            rejection_reasons.append(
+                f"Temporal ordering violation: intervention timestamp ({intervention.timestamp}) "
+                f">= observation timestamp ({observation.timestamp})"
+            )
+
+        # Invariant 4: Hash format checks
+        if not is_valid_sha256_hex(baseline.baseline_sha256):
+            rejection_reasons.append(
+                f"Invalid baseline_sha256 hash format: '{baseline.baseline_sha256}'"
+            )
+
+        if not is_valid_sha256_hex(observation.receipt_sha256):
+            rejection_reasons.append(
+                f"Invalid receipt_sha256 hash format: '{observation.receipt_sha256}'"
+            )
+
+        if rejection_reasons:
+            return PreRecordedPredictionValidatorResult(
+                classification=EvaluationClassification.INVALID_EVALUATION,
+                delta_score=0.0,
+                is_valid=False,
+                rejection_reasons=rejection_reasons,
+                fixture_id=baseline.fixture_id,
+            )
+
+        # Calculate score delta: post_score - baseline_score
+        delta = observation.observed_score - baseline.baseline_score
+
+        if delta > epsilon:
+            classification = EvaluationClassification.VALID_IMPROVEMENT
+        elif delta < -epsilon:
+            classification = EvaluationClassification.VALID_REGRESSION
+        else:
+            classification = EvaluationClassification.VALID_NEUTRAL
+
+        return PreRecordedPredictionValidatorResult(
+            classification=classification,
+            delta_score=delta,
+            is_valid=True,
+            rejection_reasons=[],
+            fixture_id=baseline.fixture_id,
+        )
 
 
 class Phase4EvaluationRunner:
