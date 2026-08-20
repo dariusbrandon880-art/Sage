@@ -1360,10 +1360,29 @@ class DeveloperWorkflowOrchestrator:
         from sage.experimental.act.context_guard import ProtectedChangeDetector
         from sage.experimental.act.contracts import CrossModelAuditPayloadValidator
 
-        # 1. Scan Workspace
+        # 1. Scan Workspace & Perform Preflight Protection Audit for Real Pre-Execution Observation B(t0)
         workspace = self.scan_git_workspace()
         modified_files = workspace["modified_files"]
         _diffs = workspace["diffs"]
+
+        preflight_detector = ProtectedChangeDetector()
+        preflight_protection_report = preflight_detector.audit_changes({"modified_files": modified_files})
+
+        # Derived scalar prediction baseline: 1.0 if clean preflight workspace, 0.0 if initial violation
+        preflight_baseline_score = 0.0 if preflight_protection_report.get("is_violation_found", False) else 1.0
+
+        task_fixture_id = task.task_id if task else f"task_{self.session_id[:8]}"
+        fixture_hash = hashlib.sha256(task_fixture_id.encode()).hexdigest()
+        baseline_sha = hashlib.sha256(f"{task_fixture_id}:{start_time}:{json.dumps(modified_files, sort_keys=True)}".encode()).hexdigest()
+        t_base = start_time
+
+        dogfood_baseline = self.capture_pre_execution_baseline(
+            fixture_id=task_fixture_id,
+            fixture_hash=fixture_hash,
+            baseline_sha256=baseline_sha,
+            baseline_score=preflight_baseline_score,
+            timestamp=t_base,
+        )
 
         # 2. Protected Namespace Audit
         detector = ProtectedChangeDetector()
@@ -1622,6 +1641,22 @@ class DeveloperWorkflowOrchestrator:
                 "learning_signals": [sig.model_dump() for sig in signals],
             },
         }
+
+        # Automatic Stage 2.2 Post-Execution Observation Evaluation
+        t_inter = start_time + (duration * 0.5)
+        t_obs = start_time + duration
+        receipt_sha = hashlib.sha256(f"{unified_evidence['orchestrator_run_id']}:{t_obs}".encode()).hexdigest()
+        obs_score = 1.0 if decision == "APPROVED" else 0.0
+        dogfood_eval_res = self.evaluate_post_execution_observation(
+            baseline=dogfood_baseline,
+            learning_signal_hash=hashlib.sha256(json.dumps(cmaps_payload, default=str).encode()).hexdigest(),
+            observed_score=obs_score,
+            receipt_sha256=receipt_sha,
+            intervention_id=f"int_coordination_{unified_evidence['orchestrator_run_id'][:8]}",
+            t_intervention=t_inter,
+            t_observation=t_obs,
+        )
+        unified_evidence["stage_2_2_dogfood_evaluation"] = dogfood_eval_res.to_dict()
 
         # Write final evidence package to disk
         self.evidence_output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -2136,6 +2171,88 @@ class DeveloperWorkflowOrchestrator:
             "metrics": metrics.model_dump(),
             "learning_signals_count": len(signals),
         }
+
+    def capture_pre_execution_baseline(
+        self,
+        fixture_id: str,
+        fixture_hash: str,
+        baseline_sha256: str,
+        baseline_score: float = 0.5,
+        timestamp: float | None = None,
+    ):
+        """Captures a Stage 2.2 pre-execution prediction baseline prior to a governed dogfood intervention."""
+        from sage.experimental.act.phase_4_eval import PreExecutionBaseline
+        if timestamp is None:
+            timestamp = time.time()
+        baseline = PreExecutionBaseline(
+            fixture_id=fixture_id,
+            fixture_hash=fixture_hash,
+            baseline_sha256=baseline_sha256,
+            baseline_score=baseline_score,
+            timestamp=timestamp,
+        )
+        self.ccl.intercept_event(
+            event_type="baseline_captured",
+            action_taken=f"Captured pre-execution baseline for fixture {fixture_id}",
+            decision_reasoning="Stage 2.2 pre-execution prediction baseline capture for governed dogfood evaluation",
+            session_id=self.session_id,
+        )
+        return baseline
+
+    def evaluate_post_execution_observation(
+        self,
+        baseline,
+        learning_signal_hash: str,
+        observed_score: float,
+        receipt_sha256: str,
+        intervention_id: str = "int_dogfood_01",
+        t_intervention: float | None = None,
+        t_observation: float | None = None,
+        epsilon: float = 1e-4,
+    ):
+        """Evaluates a post-execution observation against the pre-execution baseline using PreRecordedPredictionValidator."""
+        from sage.experimental.act.phase_4_eval import (
+            LearningIntervention,
+            PostExecutionObservation,
+            PreRecordedPredictionValidator,
+        )
+        now = time.time()
+        if t_intervention is None:
+            t_intervention = now
+        if t_observation is None:
+            t_observation = now + 0.001
+
+        intervention = LearningIntervention(
+            fixture_id=baseline.fixture_id,
+            intervention_id=intervention_id,
+            learning_signal_hash=learning_signal_hash,
+            timestamp=t_intervention,
+        )
+
+        observation = PostExecutionObservation(
+            fixture_id=baseline.fixture_id,
+            fixture_hash=baseline.fixture_hash,
+            receipt_sha256=receipt_sha256,
+            observed_score=observed_score,
+            timestamp=t_observation,
+        )
+
+        val_result = PreRecordedPredictionValidator.evaluate(
+            baseline=baseline,
+            intervention=intervention,
+            observation=observation,
+            epsilon=epsilon,
+        )
+
+        self.ccl.intercept_event(
+            event_type="dogfood_evaluation_completed",
+            action_taken=f"Evaluated dogfood execution delta for fixture {baseline.fixture_id}",
+            decision_reasoning=f"PreRecordedPredictionValidator evaluated classification: {val_result.classification}",
+            failure_context={"rejection_reasons": val_result.rejection_reasons} if not val_result.is_valid else {},
+            session_id=self.session_id,
+        )
+
+        return val_result
 
 
 class ChatGPTRuntimeAdapter:
