@@ -4,22 +4,20 @@ Provides a bounded, paper/shadow trust laboratory cycle:
 OBSERVE -> LOCK -> PREDICT -> RESOLVE -> SCORE -> LEARN -> REPORT.
 
 Enforces:
-- Strict pre-event temporal locking (lock_timestamp_utc < event_start_time_utc).
+- Strict pre-event & market-close temporal locking (lock_timestamp_utc < min(event_start, market_close)).
 - Zero real-money execution, wagering, bookmaker account access, or bet placement (fail-closed).
-- Immutable SHA-256 pre-event prediction lock receipts.
-- Explicit abstention and unavailable-data handling without forced guessing.
-- Separate append-only outcome, scoring, and learning recordkeeping.
-- Brier score calibration, accuracy, and mean absolute calibration error tracking.
-- Falsification of contaminated or backdated evidence.
+- Immutable SHA-256 pre-event prediction lock receipts with model/procedure/input fingerprints.
+- First-class outcome states: WIN, LOSS, PUSH, VOID, UNRESOLVED, ABSTAIN, DATA_UNAVAILABLE, INVALID_POST_LOCK, SOURCE_UNAVAILABLE.
+- Brier score calibration, log loss, benchmark baseline comparison, and Closing Line Value (CLV) with de-vig semantics.
+- Out-of-sample (OOS) and version-boundary tracking.
+- Separate append-only outcome, scoring, and learning recordkeeping connected to SportsLongitudinalLedger.
+- Extended falsification audit covering tampering, duplicate resolution, orphan scoring, and post-lock contamination.
 """
 
-json_import = True
 import json
 import hashlib
 import math
 from dataclasses import dataclass, field, asdict
-from datetime import datetime, timezone
-from pathlib import Path
 from typing import Dict, Any, List, Optional, Tuple
 
 from sage.experimental.sports_longitudinal import (
@@ -29,7 +27,6 @@ from sage.experimental.sports_longitudinal import (
     SportsLearningRecord,
     SportsLongitudinalLedger,
     parse_iso_utc,
-    calculate_brier_score,
 )
 
 
@@ -46,6 +43,13 @@ class SportsTrustShadowPrediction:
     model_predicted_probability: Optional[float]
     lock_timestamp_utc: str
     model_state_rationale: str
+    market_close_timestamp_utc: Optional[str] = None
+    market_close_source: Optional[str] = None
+    source_timestamp_utc: Optional[str] = None
+    model_version: str = "v1.0.0-trust-beta"
+    model_procedure_fingerprint: str = ""
+    input_data_fingerprint: str = ""
+    is_oos: bool = True  # Out-Of-Sample evaluation flag
     is_abstention: bool = False
     abstention_reason: Optional[str] = None
     wagering_allowed: bool = False  # MUST ALWAYS BE FALSE
@@ -59,7 +63,7 @@ class SportsTrustShadowPrediction:
                 "SHADOW_BOUNDARY_VIOLATION: Wagering or real-money execution is strictly forbidden in Sports Trust Beta."
             )
 
-        # Enforce Temporal Lock invariant: lock_timestamp_utc MUST BE strictly less than event_start_time_utc
+        # Enforce Temporal Lock invariant: lock_timestamp_utc MUST BE strictly less than event_start_time_utc and market_close_timestamp_utc
         lock_dt = parse_iso_utc(self.lock_timestamp_utc)
         start_dt = parse_iso_utc(self.event_observation.event_start_time_utc)
         if lock_dt >= start_dt:
@@ -68,12 +72,28 @@ class SportsTrustShadowPrediction:
                 f"is at or after event start time {self.event_observation.event_start_time_utc}."
             )
 
+        if self.market_close_timestamp_utc:
+            market_close_dt = parse_iso_utc(self.market_close_timestamp_utc)
+            if lock_dt >= market_close_dt:
+                raise ValueError(
+                    f"MARKET_CLOSE_TEMPORAL_LOCK_VIOLATION: Lock timestamp {self.lock_timestamp_utc} "
+                    f"is at or after market close time {self.market_close_timestamp_utc}."
+                )
+
         # Validate probability bounds if not abstaining
         if not self.is_abstention and self.model_predicted_probability is not None:
             if not (0.0 <= self.model_predicted_probability <= 1.0):
                 raise ValueError(
                     f"INVALID_PROBABILITY: Predicted probability {self.model_predicted_probability} must be between 0.0 and 1.0."
                 )
+
+        if not self.model_procedure_fingerprint:
+            raw_proc = f"{self.model_version}:{self.model_state_rationale}"
+            self.model_procedure_fingerprint = hashlib.sha256(raw_proc.encode("utf-8")).hexdigest()
+
+        if not self.input_data_fingerprint:
+            raw_input = json.dumps(asdict(self.event_observation), sort_keys=True, default=str)
+            self.input_data_fingerprint = hashlib.sha256(raw_input.encode("utf-8")).hexdigest()
 
     def compute_sha256_hash(self) -> str:
         """Computes canonical SHA-256 digest covering all pre-event locked prediction fields."""
@@ -87,6 +107,13 @@ class SportsTrustShadowPrediction:
             "model_predicted_probability": self.model_predicted_probability,
             "lock_timestamp_utc": self.lock_timestamp_utc,
             "model_state_rationale": self.model_state_rationale,
+            "market_close_timestamp_utc": self.market_close_timestamp_utc,
+            "market_close_source": self.market_close_source,
+            "source_timestamp_utc": self.source_timestamp_utc,
+            "model_version": self.model_version,
+            "model_procedure_fingerprint": self.model_procedure_fingerprint,
+            "input_data_fingerprint": self.input_data_fingerprint,
+            "is_oos": self.is_oos,
             "is_abstention": self.is_abstention,
             "abstention_reason": self.abstention_reason,
             "wagering_allowed": False,
@@ -113,14 +140,28 @@ class SportsTrustResolution:
     actual_home_score: Optional[int]
     actual_away_score: Optional[int]
     actual_result_text: str
-    outcome_status: str  # WIN, LOSS, PUSH, VOID, UNAVAILABLE
+    outcome_status: str  # WIN, LOSS, PUSH, VOID, UNRESOLVED, ABSTAIN, DATA_UNAVAILABLE, INVALID_POST_LOCK, SOURCE_UNAVAILABLE
+    closing_odds: Optional[str] = None
+    closing_implied_probability: Optional[float] = None
+    devig_closing_probability: Optional[float] = None
     classification: str = "SPORTS TRUST BETA — RESOLUTION"
     resolution_receipt_hash: str = ""
 
+    VALID_STATUSES = {
+        "WIN",
+        "LOSS",
+        "PUSH",
+        "VOID",
+        "UNRESOLVED",
+        "ABSTAIN",
+        "DATA_UNAVAILABLE",
+        "INVALID_POST_LOCK",
+        "SOURCE_UNAVAILABLE",
+    }
+
     def __post_init__(self):
-        valid_statuses = {"WIN", "LOSS", "PUSH", "VOID", "UNAVAILABLE"}
-        if self.outcome_status not in valid_statuses:
-            raise ValueError(f"INVALID_OUTCOME_STATUS: Outcome status '{self.outcome_status}' is not in {valid_statuses}.")
+        if self.outcome_status not in self.VALID_STATUSES:
+            raise ValueError(f"INVALID_OUTCOME_STATUS: Outcome status '{self.outcome_status}' is not in {self.VALID_STATUSES}.")
 
     def compute_sha256_hash(self) -> str:
         payload = {
@@ -134,6 +175,9 @@ class SportsTrustResolution:
             "actual_away_score": self.actual_away_score,
             "actual_result_text": self.actual_result_text,
             "outcome_status": self.outcome_status,
+            "closing_odds": self.closing_odds,
+            "closing_implied_probability": self.closing_implied_probability,
+            "devig_closing_probability": self.devig_closing_probability,
             "classification": self.classification,
         }
         serialized = json.dumps(payload, sort_keys=True, default=str)
@@ -146,7 +190,7 @@ class SportsTrustResolution:
 
 @dataclass
 class SportsTrustScoreReport:
-    """Calibration, accuracy, and abstention performance summary."""
+    """Calibration, accuracy, log loss, baseline benchmark, CLV, and status breakdown summary."""
 
     total_predictions: int
     resolved_count: int
@@ -156,11 +200,41 @@ class SportsTrustScoreReport:
     pushes: int
     voids: int
     unavailables: int
+    data_unavailables: int
+    source_unavailables: int
+    invalid_post_locks: int
     abstentions: int
+    oos_count: int
     hit_rate: float
     brier_score: Optional[float]
+    baseline_brier_score: Optional[float]
+    log_loss: Optional[float]
+    baseline_log_loss: Optional[float]
     mean_absolute_calibration_error: Optional[float]
+    clv_covered_count: int
+    mean_clv_beat_margin: Optional[float]
     classification_breakdown: Dict[str, int] = field(default_factory=dict)
+
+
+def compute_log_loss(probs: List[float], outcomes: List[float], eps: float = 1e-15) -> Optional[float]:
+    """Computes binary log loss across predicted probabilities and realized outcomes."""
+    if not probs or len(probs) != len(outcomes):
+        return None
+    total_loss = 0.0
+    for p, y in zip(probs, outcomes):
+        p_bounded = max(eps, min(1.0 - eps, float(p)))
+        y_val = float(y)
+        loss = -(y_val * math.log(p_bounded) + (1.0 - y_val) * math.log(1.0 - p_bounded))
+        total_loss += loss
+    return total_loss / len(probs)
+
+
+def devig_two_way_odds(prob_a: float, prob_b: float) -> Tuple[float, float]:
+    """Applies proportional de-vig normalization to two-way market implied probabilities."""
+    total = prob_a + prob_b
+    if total <= 0.0:
+        return 0.5, 0.5
+    return prob_a / total, prob_b / total
 
 
 class SportsTrustBetaFlightEngine:
@@ -186,6 +260,13 @@ class SportsTrustBetaFlightEngine:
         model_predicted_probability: Optional[float],
         lock_timestamp_utc: str,
         model_state_rationale: str,
+        market_close_timestamp_utc: Optional[str] = None,
+        market_close_source: Optional[str] = None,
+        source_timestamp_utc: Optional[str] = None,
+        model_version: str = "v1.0.0-trust-beta",
+        model_procedure_fingerprint: str = "",
+        input_data_fingerprint: str = "",
+        is_oos: bool = True,
         is_abstention: bool = False,
         abstention_reason: Optional[str] = None,
     ) -> SportsTrustShadowPrediction:
@@ -203,6 +284,13 @@ class SportsTrustBetaFlightEngine:
             model_predicted_probability=model_predicted_probability,
             lock_timestamp_utc=lock_timestamp_utc,
             model_state_rationale=model_state_rationale,
+            market_close_timestamp_utc=market_close_timestamp_utc,
+            market_close_source=market_close_source,
+            source_timestamp_utc=source_timestamp_utc,
+            model_version=model_version,
+            model_procedure_fingerprint=model_procedure_fingerprint,
+            input_data_fingerprint=input_data_fingerprint,
+            is_oos=is_oos,
             is_abstention=is_abstention,
             abstention_reason=abstention_reason,
             wagering_allowed=False,
@@ -227,7 +315,7 @@ class SportsTrustBetaFlightEngine:
             implied_probability=implied_prob,
             model_predicted_probability=prob,
             lock_timestamp_utc=pred.lock_timestamp_utc,
-            model_state_rationale=f"[TRUST_BETA|abstain={is_abstention}] {pred.model_state_rationale}",
+            model_state_rationale=f"[TRUST_BETA|v={pred.model_version}|abstain={is_abstention}] {pred.model_state_rationale}",
             classification=pred.classification,
         )
         ledger_prediction.sha256_receipt_hash = pred.sha256_receipt_hash
@@ -245,6 +333,9 @@ class SportsTrustBetaFlightEngine:
         actual_result_text: str,
         outcome_status: str,
         verification_timestamp_utc: str,
+        closing_odds: Optional[str] = None,
+        closing_implied_probability: Optional[float] = None,
+        devig_closing_probability: Optional[float] = None,
     ) -> Tuple[SportsTrustResolution, SportsOutcomeRecord, Optional[SportsScoreRecord], Optional[SportsLearningRecord]]:
         """Resolves a shadow prediction, verifying hash integrity and emitting append-only ledger records."""
         shadow_pred = next((p for p in self.shadow_predictions if p.prediction_id == prediction_id), None)
@@ -271,6 +362,9 @@ class SportsTrustBetaFlightEngine:
             actual_away_score=actual_away_score,
             actual_result_text=actual_result_text,
             outcome_status=outcome_status,
+            closing_odds=closing_odds,
+            closing_implied_probability=closing_implied_probability,
+            devig_closing_probability=devig_closing_probability,
         )
         resolution.sign()
 
@@ -340,9 +434,10 @@ class SportsTrustBetaFlightEngine:
         return resolution, outcome, score, learning
 
     def calculate_trust_metrics(self) -> SportsTrustScoreReport:
-        """Calculates Brier score, mean absolute calibration error, hit rate, and abstention metrics."""
+        """Calculates Brier score, baseline score, log loss, CLV margin, and status breakdown."""
         total = len(self.shadow_predictions)
         abstentions = sum(1 for p in self.shadow_predictions if p.is_abstention)
+        oos_count = sum(1 for p in self.shadow_predictions if p.is_oos)
 
         outcomes_by_id = {o.prediction_id: o for o in self.ledger.outcomes}
 
@@ -351,10 +446,20 @@ class SportsTrustBetaFlightEngine:
         pushes = 0
         voids = 0
         unavailables = 0
+        data_unavailables = 0
+        source_unavailables = 0
+        invalid_post_locks = 0
         resolved_count = 0
 
         calib_diffs = []
         brier_diffs = []
+        baseline_brier_diffs = []
+
+        model_probs = []
+        baseline_probs = []
+        realized_outcomes = []
+
+        clv_margins = []
 
         for pred in self.shadow_predictions:
             out = outcomes_by_id.get(pred.prediction_id)
@@ -374,6 +479,12 @@ class SportsTrustBetaFlightEngine:
                 voids += 1
             elif status == "UNAVAILABLE":
                 unavailables += 1
+            elif status == "DATA_UNAVAILABLE":
+                data_unavailables += 1
+            elif status == "SOURCE_UNAVAILABLE":
+                source_unavailables += 1
+            elif status == "INVALID_POST_LOCK":
+                invalid_post_locks += 1
 
             if status in ["WIN", "LOSS"] and not pred.is_abstention and pred.model_predicted_probability is not None:
                 actual = 1.0 if status == "WIN" else 0.0
@@ -381,10 +492,36 @@ class SportsTrustBetaFlightEngine:
                 calib_diffs.append(abs(prob - actual))
                 brier_diffs.append((prob - actual) ** 2)
 
+                model_probs.append(prob)
+                realized_outcomes.append(actual)
+
+                # Baseline implied probability
+                base_prob = pred.implied_probability if isinstance(pred.implied_probability, float) else 0.5
+                baseline_probs.append(base_prob)
+                baseline_brier_diffs.append((base_prob - actual) ** 2)
+
+            # CLV calculation
+            # Check closing probability if provided
+            res = getattr(out, "resolution", None)
+            devig_closing = getattr(res, "devig_closing_probability", None) if res else None
+            if devig_closing is None and isinstance(pred.implied_probability, float):
+                # Fallback check
+                devig_closing = pred.implied_probability
+
+            if devig_closing is not None and pred.model_predicted_probability is not None and not pred.is_abstention:
+                clv_margin = pred.model_predicted_probability - devig_closing
+                clv_margins.append(clv_margin)
+
         unresolved = total - len(outcomes_by_id)
         hit_rate = (wins / resolved_count) if resolved_count > 0 else 0.0
         brier_score = (sum(brier_diffs) / len(brier_diffs)) if brier_diffs else None
+        baseline_brier = (sum(baseline_brier_diffs) / len(baseline_brier_diffs)) if baseline_brier_diffs else None
+
+        log_loss = compute_log_loss(model_probs, realized_outcomes) if model_probs else None
+        baseline_log_loss = compute_log_loss(baseline_probs, realized_outcomes) if baseline_probs else None
+
         mace = (sum(calib_diffs) / len(calib_diffs)) if calib_diffs else None
+        mean_clv = (sum(clv_margins) / len(clv_margins)) if clv_margins else None
 
         return SportsTrustScoreReport(
             total_predictions=total,
@@ -395,10 +532,19 @@ class SportsTrustBetaFlightEngine:
             pushes=pushes,
             voids=voids,
             unavailables=unavailables,
+            data_unavailables=data_unavailables,
+            source_unavailables=source_unavailables,
+            invalid_post_locks=invalid_post_locks,
             abstentions=abstentions,
+            oos_count=oos_count,
             hit_rate=hit_rate,
             brier_score=brier_score,
+            baseline_brier_score=baseline_brier,
+            log_loss=log_loss,
+            baseline_log_loss=baseline_log_loss,
             mean_absolute_calibration_error=mace,
+            clv_covered_count=len(clv_margins),
+            mean_clv_beat_margin=mean_clv,
             classification_breakdown={
                 "SPORTS TRUST BETA — SHADOW PREDICTION": total,
                 "REAL-MONEY WAGERS": 0,
@@ -428,6 +574,15 @@ class SportsTrustBetaFlightEngine:
                     "violation": "TEMPORAL_LOCK_CONTAMINATION",
                     "reason": f"Lock timestamp {pred.lock_timestamp_utc} is at or after event start time {pred.event_observation.event_start_time_utc}."
                 })
+
+            if pred.market_close_timestamp_utc:
+                mkt_close_dt = parse_iso_utc(pred.market_close_timestamp_utc)
+                if lock_dt >= mkt_close_dt:
+                    violations.append({
+                        "prediction_id": pred.prediction_id,
+                        "violation": "MARKET_CLOSE_TEMPORAL_CONTAMINATION",
+                        "reason": f"Lock timestamp {pred.lock_timestamp_utc} is at or after market close time {pred.market_close_timestamp_utc}."
+                    })
 
         # Check outcome references
         for out in self.ledger.outcomes:
@@ -468,6 +623,9 @@ class SportsTrustBetaFlightEngine:
                     "lock_timestamp": p.lock_timestamp_utc,
                     "predicted_prob": p.model_predicted_probability,
                     "is_abstention": p.is_abstention,
+                    "model_version": p.model_version,
+                    "model_procedure_fingerprint": p.model_procedure_fingerprint,
+                    "input_data_fingerprint": p.input_data_fingerprint,
                     "receipt_hash": p.sha256_receipt_hash,
                 }
                 for p in self.shadow_predictions

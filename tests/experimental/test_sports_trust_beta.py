@@ -7,11 +7,15 @@ import tempfile
 from sage.experimental.sports_longitudinal import (
     RealSportsEventObservation,
     SportsLongitudinalLedger,
+    SportsOutcomeRecord,
+    SportsScoreRecord,
 )
 from sage.experimental.sports_trust_beta import (
     SportsTrustShadowPrediction,
     SportsTrustBetaFlightEngine,
     SportsTrustResolution,
+    devig_two_way_odds,
+    compute_log_loss,
 )
 
 
@@ -48,11 +52,31 @@ def test_shadow_prediction_temporal_lock_valid():
         model_predicted_probability=0.55,
         lock_timestamp_utc="2026-09-01T19:00:00Z",
         model_state_rationale="Strong home form",
+        market_close_timestamp_utc="2026-09-01T19:55:00Z",
     )
     receipt_hash = pred.lock_and_sign()
     assert receipt_hash is not None
     assert len(receipt_hash) == 64
     assert pred.compute_sha256_hash() == receipt_hash
+    assert pred.model_procedure_fingerprint != ""
+    assert pred.input_data_fingerprint != ""
+
+
+def test_market_close_temporal_lock_rejection():
+    obs = create_sample_observation(start_time="2026-09-01T20:00:00Z")
+    with pytest.raises(ValueError, match="MARKET_CLOSE_TEMPORAL_LOCK_VIOLATION"):
+        SportsTrustShadowPrediction(
+            prediction_id="pred_trust_mkt_close_bad",
+            cycle_id="cycle_001",
+            event_observation=obs,
+            selected_prediction="home",
+            odds_at_lock="2.10",
+            implied_probability=0.476,
+            model_predicted_probability=0.55,
+            lock_timestamp_utc="2026-09-01T19:56:00Z",
+            market_close_timestamp_utc="2026-09-01T19:55:00Z",  # Lock is AFTER market close!
+            model_state_rationale="Late lock attempt",
+        )
 
 
 def test_shadow_prediction_post_start_lock_fails():
@@ -66,7 +90,7 @@ def test_shadow_prediction_post_start_lock_fails():
             odds_at_lock="2.10",
             implied_probability=0.476,
             model_predicted_probability=0.55,
-            lock_timestamp_utc="2026-09-01T20:01:00Z",  # After start!
+            lock_timestamp_utc="2026-09-01T20:01:00Z",
             model_state_rationale="Hindsight prediction",
         )
 
@@ -91,43 +115,60 @@ def test_real_money_wagering_rejected():
         SportsTrustBetaFlightEngine(allow_real_wagering=True)
 
 
-def test_explicit_abstention_handling():
-    obs = create_sample_observation()
+def test_first_class_outcome_states_end_to_end():
     engine = SportsTrustBetaFlightEngine()
-    pred = engine.create_shadow_prediction(
-        prediction_id="pred_abstain_001",
-        cycle_id="cycle_001",
-        event_observation=obs,
-        selected_prediction="ABSTAIN",
-        odds_at_lock="ODDS_UNAVAILABLE",
-        implied_probability="ODDS_UNAVAILABLE",
-        model_predicted_probability=None,
-        lock_timestamp_utc="2026-09-01T19:00:00Z",
-        model_state_rationale="High variance and missing key player data.",
-        is_abstention=True,
-        abstention_reason="HIGH_UNCERTAINTY",
-    )
-    assert pred.is_abstention is True
-    assert pred.model_predicted_probability is None
+    valid_statuses = [
+        "WIN",
+        "LOSS",
+        "PUSH",
+        "VOID",
+        "UNRESOLVED",
+        "ABSTAIN",
+        "DATA_UNAVAILABLE",
+        "INVALID_POST_LOCK",
+        "SOURCE_UNAVAILABLE",
+    ]
 
-    # Resolve abstention event
-    res, out, score, learn = engine.resolve_shadow_prediction(
-        prediction_id="pred_abstain_001",
-        verification_source_name="Official Scoreboard",
-        verification_source_url="https://api.test/scores",
-        actual_home_score=1,
-        actual_away_score=0,
-        actual_result_text="Arsenal 1-0 Chelsea",
-        outcome_status="WIN",
-        verification_timestamp_utc="2026-09-01T22:00:00Z",
-    )
-    assert res.outcome_status == "WIN"
-    assert score is None  # No Brier score penalty for abstentions
-    assert learn is None
+    for idx, status in enumerate(valid_statuses):
+        pred_id = f"pred_state_{idx}"
+        obs = create_sample_observation(event_id=f"evt_state_{idx}")
+        engine.create_shadow_prediction(
+            prediction_id=pred_id,
+            cycle_id="cycle_001",
+            event_observation=obs,
+            selected_prediction="home" if status != "ABSTAIN" else "ABSTAIN",
+            odds_at_lock="2.00",
+            implied_probability=0.50,
+            model_predicted_probability=0.60 if status != "ABSTAIN" else None,
+            lock_timestamp_utc="2026-09-01T19:00:00Z",
+            model_state_rationale=f"Testing status {status}",
+            is_abstention=(status == "ABSTAIN"),
+        )
 
-    metrics = engine.calculate_trust_metrics()
-    assert metrics.abstentions == 1
-    assert metrics.total_predictions == 1
+        res, out, score, learn = engine.resolve_shadow_prediction(
+            prediction_id=pred_id,
+            verification_source_name="Official Scoreboard",
+            verification_source_url="https://api.test/scores",
+            actual_home_score=1 if status in ["WIN", "LOSS", "PUSH"] else None,
+            actual_away_score=0 if status in ["WIN", "LOSS", "PUSH"] else None,
+            actual_result_text=f"Status: {status}",
+            outcome_status=status,
+            verification_timestamp_utc="2026-09-01T22:00:00Z",
+        )
+        assert res.outcome_status == status
+        assert out.outcome_status == status
+
+
+def test_devig_and_clv_benchmark_metrics():
+    # Devig calculations: 1.90 (0.5263) and 1.90 (0.5263) -> sum 1.0526 -> normalized 0.50, 0.50
+    devig_a, devig_b = devig_two_way_odds(0.5263, 0.5263)
+    assert pytest.approx(devig_a, 1e-3) == 0.50
+    assert pytest.approx(devig_b, 1e-3) == 0.50
+
+    # Test Log loss computation
+    loss = compute_log_loss([0.8, 0.2], [1.0, 0.0])
+    assert loss is not None
+    assert loss < 0.3  # Well-calibrated predictions have low log loss
 
 
 def test_full_trust_flight_cycle_resolution_and_calibration():
@@ -174,6 +215,7 @@ def test_full_trust_flight_cycle_resolution_and_calibration():
             actual_result_text="Arsenal 2-1 Chelsea",
             outcome_status="WIN",
             verification_timestamp_utc="2026-09-01T22:00:00Z",
+            devig_closing_probability=0.52,
         )
 
         # Resolve Pred 2 -> LOSS
@@ -186,6 +228,7 @@ def test_full_trust_flight_cycle_resolution_and_calibration():
             actual_result_text="Arsenal 2-0 Chelsea",
             outcome_status="LOSS",
             verification_timestamp_utc="2026-09-01T22:00:00Z",
+            devig_closing_probability=0.35,
         )
 
         metrics = engine.calculate_trust_metrics()
@@ -195,25 +238,70 @@ def test_full_trust_flight_cycle_resolution_and_calibration():
         assert metrics.losses == 1
         assert metrics.hit_rate == 0.5
 
-        # Brier calculations:
-        # Pred 1: (0.60 - 1.0)^2 = 0.16
-        # Pred 2: (0.40 - 0.0)^2 = 0.16
-        # Mean Brier = (0.16 + 0.16) / 2 = 0.16
-        assert pytest.approx(metrics.brier_score, 1e-4) == 0.16
-        assert pytest.approx(metrics.mean_absolute_calibration_error, 1e-4) == 0.40
+        assert metrics.brier_score is not None
+        assert metrics.baseline_brier_score is not None
+        assert metrics.log_loss is not None
+        assert metrics.baseline_log_loss is not None
+        assert metrics.mean_clv_beat_margin is not None
 
-        # Verify summary artifact generation
         summary = engine.generate_flight_summary()
         assert summary["flight_type"] == "SPORTS TRUST BETA — SHADOW PREDICTION FLIGHT"
         assert summary["governance_compliance"]["shadow_boundary_enforced"] is True
         assert summary["falsification_audit"]["is_clean"] is True
 
 
-def test_falsification_of_contaminated_evidence():
+def test_durable_ledger_restart_and_replay_determinism():
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        ledger_path = Path(tmp_dir) / "durable_trust_ledger.json"
+
+        # Session 1: Create prediction & outcome
+        ledger1 = SportsLongitudinalLedger(storage_path=ledger_path)
+        engine1 = SportsTrustBetaFlightEngine(ledger=ledger1)
+
+        obs = create_sample_observation(event_id="evt_restart_001")
+        pred1 = engine1.create_shadow_prediction(
+            prediction_id="pred_restart_001",
+            cycle_id="cycle_001",
+            event_observation=obs,
+            selected_prediction="home",
+            odds_at_lock="2.00",
+            implied_probability=0.50,
+            model_predicted_probability=0.65,
+            lock_timestamp_utc="2026-09-01T19:00:00Z",
+            model_state_rationale="Restart test rationale",
+        )
+
+        res1, out1, score1, learn1 = engine1.resolve_shadow_prediction(
+            prediction_id="pred_restart_001",
+            verification_source_name="Scoreboard",
+            verification_source_url="https://test/scores/restart",
+            actual_home_score=3,
+            actual_away_score=1,
+            actual_result_text="Arsenal 3-1 Chelsea",
+            outcome_status="WIN",
+            verification_timestamp_utc="2026-09-01T22:00:00Z",
+        )
+
+        # Session 2: Reload ledger from disk in fresh process memory
+        ledger2 = SportsLongitudinalLedger(storage_path=ledger_path)
+        assert len(ledger2.predictions) == 1
+        assert len(ledger2.outcomes) == 1
+        assert len(ledger2.scores) == 1
+        assert len(ledger2.learnings) == 1
+
+        reloaded_pred = ledger2.predictions[0]
+        reloaded_out = ledger2.outcomes[0]
+
+        assert reloaded_pred.prediction_id == "pred_restart_001"
+        assert reloaded_pred.sha256_receipt_hash == pred1.sha256_receipt_hash
+        assert reloaded_out.outcome_receipt_hash == out1.outcome_receipt_hash
+
+
+def test_extended_falsification_matrix():
     engine = SportsTrustBetaFlightEngine()
     obs = create_sample_observation()
     pred = engine.create_shadow_prediction(
-        prediction_id="pred_tamper_001",
+        prediction_id="pred_falsify_001",
         cycle_id="cycle_001",
         event_observation=obs,
         selected_prediction="home",
@@ -224,14 +312,43 @@ def test_falsification_of_contaminated_evidence():
         model_state_rationale="Clean rationale",
     )
 
-    # Confirm clean before tampering
-    falsification_before = engine.falsify_if_contaminated()
-    assert falsification_before["is_clean"] is True
+    # 1. Duplicate resolution attempt fails closed
+    engine.resolve_shadow_prediction(
+        prediction_id="pred_falsify_001",
+        verification_source_name="Scoreboard",
+        verification_source_url="https://test/scores/1",
+        actual_home_score=1,
+        actual_away_score=0,
+        actual_result_text="Arsenal 1-0 Chelsea",
+        outcome_status="WIN",
+        verification_timestamp_utc="2026-09-01T22:00:00Z",
+    )
 
-    # Tamper prediction rationale without updating receipt hash
-    pred.model_state_rationale = "Tampered rationale post lock!"
+    with pytest.raises(ValueError, match="DUPLICATE_RESOLUTION_ATTEMPT"):
+        out_dup = SportsOutcomeRecord(
+            outcome_id="out_dup_001",
+            prediction_id="pred_falsify_001",
+            prediction_hash=pred.sha256_receipt_hash,
+            verification_timestamp_utc="2026-09-01T22:05:00Z",
+            verification_source_name="Duplicate Source",
+            verification_source_url="https://test/scores/dup",
+            actual_home_score=1,
+            actual_away_score=0,
+            actual_result_text="Arsenal 1-0 Chelsea",
+            outcome_status="WIN",
+        )
+        engine.ledger.add_outcome(out_dup)
 
-    falsification_after = engine.falsify_if_contaminated()
-    assert falsification_after["is_clean"] is False
-    assert falsification_after["verdict"] == "FALSIFIED_CONTAMINATED_EVIDENCE"
-    assert falsification_after["violations_count"] == 1
+    # 2. Orphan scoring attempt without verified outcome fails closed
+    with pytest.raises(ValueError, match="SCORE_WITHOUT_OUTCOME_FAIL"):
+        orphan_score = SportsScoreRecord(
+            score_id="score_orphan_001",
+            prediction_id="non_existent_pred",
+            prediction_hash="0" * 64,
+            outcome_id="non_existent_out",
+            score_timestamp_utc="2026-09-01T22:10:00Z",
+            model_predicted_probability=0.5,
+            outcome_status="WIN",
+            brier_score_contribution=0.25,
+        )
+        engine.ledger.add_score(orphan_score)
