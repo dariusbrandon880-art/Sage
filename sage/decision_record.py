@@ -21,7 +21,6 @@ _LOCKED = "LOCKED"
 _PENDING = "PENDING"
 _VERIFIED = "VERIFIED"
 _FALSIFIED = "FALSIFIED"
-
 _SHA256 = re.compile(r"^[0-9a-fA-F]{64}$")
 
 
@@ -36,8 +35,6 @@ def _freeze_mapping(value: Mapping[str, Any]) -> Mapping[str, Any]:
 def _validate_ref(value: str, field: str) -> str:
     if not isinstance(value, str) or not value.strip():
         raise ValueError(f"{field} must be a non-empty reference")
-    # Existing receipt/artifact references are either canonical SHA-256 digests
-    # or explicit stable identifiers. Never accept whitespace-only references.
     if any(ch.isspace() for ch in value):
         raise ValueError(f"{field} must not contain whitespace")
     return value
@@ -87,16 +84,9 @@ class DecisionRecord:
     """Pure decision lifecycle projection with no persistence side effects."""
 
     __slots__ = (
-        "_decision_id",
-        "_context_id",
-        "_authority_ref",
-        "_evidence_refs",
-        "_decision_payload",
-        "_timestamp_locked",
-        "_status",
-        "_resolution",
-        "_capability_impact_ref",
-        "_decision_hash",
+        "_decision_id", "_context_id", "_authority_ref", "_evidence_refs",
+        "_decision_payload_json", "_timestamp_locked", "_status", "_resolution",
+        "_capability_impact_ref", "_decision_hash",
     )
 
     def __init__(
@@ -123,7 +113,9 @@ class DecisionRecord:
         if len(refs) != len(set(refs)):
             raise ValueError("duplicate evidence_ref is not allowed")
         self._evidence_refs = refs
-        self._decision_payload = _freeze_mapping(decision_payload)
+        if not isinstance(decision_payload, Mapping):
+            raise ValueError("decision_payload must be a mapping")
+        self._decision_payload_json = _canonical(dict(decision_payload))
         if timestamp_locked is None or str(timestamp_locked).strip() == "":
             raise ValueError("timestamp_locked is required")
         self._timestamp_locked = timestamp_locked
@@ -131,8 +123,7 @@ class DecisionRecord:
         self._resolution = None
         self._capability_impact_ref = (
             _validate_ref(capability_impact_ref, "capability_impact_ref")
-            if capability_impact_ref is not None
-            else None
+            if capability_impact_ref is not None else None
         )
         self._decision_hash = self._compute_decision_hash()
 
@@ -143,7 +134,7 @@ class DecisionRecord:
             "context_id": self._context_id,
             "authority_ref": self._authority_ref,
             "evidence_refs": list(self._evidence_refs),
-            "decision_payload": copy.deepcopy(dict(self._decision_payload)),
+            "decision_payload": json.loads(self._decision_payload_json),
             "timestamp_locked": self._timestamp_locked,
             "capability_impact_ref": self._capability_impact_ref,
         }
@@ -188,7 +179,6 @@ class DecisionRecord:
         return _canonical(self.to_dict())
 
     def replay(self) -> "DecisionRecord":
-        """Reconstruct a detached record from its public serialization."""
         payload = json.loads(self.serialize())
         replayed = DecisionRecord(
             decision_id=payload["decision_id"],
@@ -207,8 +197,14 @@ class DecisionRecord:
         return replayed
 
     def __setattr__(self, name: str, value: Any) -> None:
-        if name in {"_decision_payload", "_evidence_refs", "_authority_ref", "_context_id", "_decision_id", "_timestamp_locked", "_capability_impact_ref", "_decision_hash"} and hasattr(self, name):
+        immutable = {
+            "_decision_payload_json", "_evidence_refs", "_authority_ref", "_context_id",
+            "_decision_id", "_timestamp_locked", "_capability_impact_ref", "_decision_hash",
+        }
+        if name in immutable and hasattr(self, name):
             raise AttributeError("locked DecisionRecord decision block is immutable")
-        if name == "_status" and hasattr(self, "_status") and self._status == _LOCKED:
-            raise AttributeError("DecisionRecord status cannot mutate the locked decision block")
+        if name == "_status" and hasattr(self, "_status"):
+            raise AttributeError("DecisionRecord status is immutable")
+        if name == "_resolution" and hasattr(self, "_resolution"):
+            raise AttributeError("DecisionRecord resolution is append-only")
         super().__setattr__(name, value)
