@@ -4,15 +4,12 @@ import pytest
 
 from sage.decision_record import DecisionRecord
 
-
 AUTHORITY = "SAGE_LEVEL_3"
 
 
 def make_record() -> DecisionRecord:
     return DecisionRecord.create(
-        decision_id="dec-001",
-        context_id="ctx-001",
-        authority_ref=AUTHORITY,
+        decision_id="dec-001", context_id="ctx-001", authority_ref=AUTHORITY,
         evidence_refs=["sha256:receipt-001"],
         decision_payload={"action": "observe", "confidence": 0.8, "features": {"x": [1, 2]}},
         timestamp_locked=1000.0,
@@ -21,8 +18,7 @@ def make_record() -> DecisionRecord:
 
 
 def test_deterministic_serialization_and_replay():
-    first = make_record()
-    second = make_record()
+    first = make_record(); second = make_record()
     assert first.serialize() == second.serialize()
     assert first.to_dict() == second.to_dict()
     assert first.verify_integrity()
@@ -42,23 +38,18 @@ def test_authority_mismatch_fails_closed():
 
 def test_post_lock_mutation_rejected():
     record = make_record()
-    with pytest.raises(TypeError):
-        record.decision_payload["action"] = "mutate"
-    with pytest.raises(TypeError):
-        record.decision_payload["features"]["x"] += (3,)
+    with pytest.raises(TypeError): record.decision_payload["action"] = "mutate"
+    with pytest.raises(TypeError): record.decision_payload["features"]["x"] += (3,)
     assert record.verify_integrity()
 
 
 def test_duplicate_resolution_rejected_and_unresolved_preserved():
     record = make_record()
-    assert record.resolution is None
     resolved = record.resolve({"result": "success", "evidence": {"score": 1}}, verification_status="VERIFIED")
     assert record.resolution is None
     assert resolved.resolution["verification_status"] == "VERIFIED"
-    with pytest.raises(TypeError):
-        resolved.resolution["evidence"]["score"] = 2
-    with pytest.raises(ValueError):
-        resolved.resolve({"result": "again"}, verification_status="VERIFIED")
+    with pytest.raises(TypeError): resolved.resolution["evidence"]["score"] = 2
+    with pytest.raises(ValueError): resolved.resolve({"result": "again"}, verification_status="VERIFIED")
 
 
 def test_capability_impact_cannot_mutate_progression():
