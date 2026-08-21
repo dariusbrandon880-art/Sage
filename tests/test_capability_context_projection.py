@@ -61,7 +61,8 @@ def test_complete_evaluation_projects_candidate_without_authority():
     projected = project_capability_evaluation_to_envelope(envelope, make_evaluation())
     identity = projected["sender_identity_projection"]
 
-    assert projected["projection_version"] == PROJECTION_VERSION
+    assert projected["projection_version"] == ENVELOPE_VERSION
+    assert projected["capability_projection_version"] == PROJECTION_VERSION
     assert identity["capability_verdict"] == "PROMOTION_CANDIDATE"
     assert identity["capability_delta"] == "CANDIDATE_UP"
     assert identity["reviewer_required"] is True
