@@ -42,6 +42,18 @@ def test_complete_evidence_produces_promotion_candidate_not_promotion():
     assert not hasattr(evaluation, "promote")
 
 
+def test_evaluator_does_not_mutate_decision():
+    decision = make_decision()
+    before = decision.serialize()
+    evaluation = EvidenceCapabilityEvaluator().evaluate(
+        decision,
+        capability_ref="CAP-EXAMPLE",
+        evidence_verdicts={"receipt:001": "VERIFIED", "receipt:002": "VERIFIED"},
+    )
+    assert evaluation.decision_id == "decision-001"
+    assert decision.serialize() == before
+
+
 def test_missing_evidence_holds_closed():
     evaluation = EvidenceCapabilityEvaluator().evaluate(
         make_decision(),
@@ -98,9 +110,6 @@ def test_unresolved_decision_holds_closed():
 
 
 def test_falsified_resolution_holds_closed():
-    record = make_decision()
-    record.add_resolution
-    # Build a fresh record because DecisionRecord permits exactly one resolution.
     record = DecisionRecord(
         decision_id="decision-false",
         context_id="ctx-001",
