@@ -1,7 +1,5 @@
 """SAGE Integration Layer - AI client interfaces and engineering tool connections."""
 
-import json
-import os
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -81,7 +79,10 @@ class ChatGPTClient(BaseAIClient):
         self.c2_provider = c2_provider
 
     def execute_query(self, request: AIQueryRequest) -> AIQueryResponse:
-        # 1. Retrieve context from SAGE memory/archive and C2 operating context
+        import json
+        import os
+
+        # Retrieve context from SAGE memory/archive
         context = self.retrieve_context(request.prompt)
         session_id = request.session_id or f"session_{uuid.uuid4().hex[:8]}"
 
@@ -114,7 +115,6 @@ class ChatGPTClient(BaseAIClient):
             a["id"] for a in context["matched_archives"]
         ]
 
-        # 2. Failure Ordering: API Key Check -> API Call -> Successful Output -> Ingestion
         if request.response_override:
             response_text = request.response_override
             reasoning = f"ChatGPT analyzed prompt: '{request.prompt}' and retrieved {len(referenced_ids)} relevant engineering artifacts (override response applied)."
@@ -149,7 +149,7 @@ class ChatGPTClient(BaseAIClient):
             except Exception as e:
                 raise RuntimeError(f"OpenAI API execution failed: {e}") from e
 
-        # 3. Route through unified Continuity Bridge
+        # Route through unified Continuity Bridge
         from sage.models import ExternalSessionPayload
 
         payload = ExternalSessionPayload(

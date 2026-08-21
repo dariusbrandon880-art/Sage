@@ -262,7 +262,7 @@ def test_ai_clients_and_tools_bridge_routing(temp_workspace):
     tool_mgr = ToolIntegrationManager(runtime)
 
     # 1. ChatGPT
-    chatgpt_req = AIQueryRequest(prompt="Explain the Continuity Bridge architecture")
+    chatgpt_req = AIQueryRequest(prompt="Explain the Continuity Bridge architecture", response_override="Continuity Bridge response text")
     chatgpt_res = chatgpt.execute_query(chatgpt_req)
     assert chatgpt_res.session_id is not None
     # Verify interaction is ingested as memory
