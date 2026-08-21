@@ -23,7 +23,7 @@ ENGINEERING_ACTIVE = "ENGINEERING_ACTIVE"
 C2_REVIEW_ACTIVE = "C2_REVIEW_ACTIVE"
 VERIFYING = "VERIFYING"
 
-# Existing canonical Airspace event types. No new persistence channel is used.
+# Existing canonical Airspace event types plus the bounded communication types.
 COORDINATION_EVENT_TYPES = {
     "MISSION_CREATED",
     "SORTIE_CREATED",
@@ -32,10 +32,15 @@ COORDINATION_EVENT_TYPES = {
     "QUALIFICATION_PROMOTED",
     "QUALIFICATION_CHALLENGED",
     "XP_AWARDED",
+    "AGENT_COORDINATION_MESSAGE",
+    "AGENT_HANDOFF",
+    "AGENT_ASSIGNMENT",
+    "AGENT_CHALLENGE",
+    "AGENT_VERIFICATION",
 }
 
 
-def _load() -> tuple[Any, Any, Any]:
+def _load() -> tuple[Any, Any]:
     manager_module = importlib.import_module("sage.experimental.airspace.manager")
     state = manager_module.AirspaceManager().reconstruct_airspace_state()
     return manager_module, state
