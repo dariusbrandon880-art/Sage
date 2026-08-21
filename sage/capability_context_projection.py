@@ -45,6 +45,6 @@ def project_capability_evaluation_to_envelope(
     existing["authority_granted"] = False
     existing["qualification_mutated"] = False
     projected["sender_identity_projection"] = existing
-    projected["projection_version"] = PROJECTION_VERSION
+    projected["capability_projection_version"] = PROJECTION_VERSION
     projected["read_only"] = True
     return projected
