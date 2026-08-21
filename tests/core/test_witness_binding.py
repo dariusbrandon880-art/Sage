@@ -85,9 +85,21 @@ def test_invalid_empty_provenance_fails_closed():
     raise AssertionError("empty source_version must fail closed")
 
 
-def test_wrong_provider_signature_does_not_verify():
+def test_tampered_signature_does_not_verify():
     claim = _claim()
-    assert not claim.verify_signature(CryptographicAttestationProvider("TPM"))
+    bad_signature = claim.signature[:-1] + ("0" if claim.signature[-1] != "0" else "1")
+    tampered = WitnessBinding(
+        evidence_ref=claim.evidence_ref,
+        context_id=claim.context_id,
+        source_id=claim.source_id,
+        source_version=claim.source_version,
+        observed_at=claim.observed_at,
+        witness_id=claim.witness_id,
+        provider_mode=claim.provider_mode,
+        signature=bad_signature,
+        claim_kind=claim.claim_kind,
+    )
+    assert not tampered.verify_signature(CryptographicAttestationProvider("MOCK"))
 
 
 def test_provider_mode_is_recorded_without_becoming_authority():
