@@ -48,8 +48,20 @@ class EvidenceBinding:
             raise ValueError("verification_status must be VERIFIED, FALSIFIED, or PENDING")
         _required_text(self.content_hash, "content_hash")
 
+    def canonical_bound_payload(self) -> dict[str, Any]:
+        """Return every field whose identity must remain bound to the evidence."""
+        return {
+            "binding_version": self.binding_version,
+            "evidence_ref": self.evidence_ref,
+            "source_id": self.source_id,
+            "source_version": self.source_version,
+            "observed_at": self.observed_at,
+            "content": self.content,
+        }
+
     def computed_hash(self) -> str:
-        return hashlib.sha256(_canonical(self.content).encode("utf-8")).hexdigest()
+        """Hash the evidence identity and payload, not payload content alone."""
+        return hashlib.sha256(_canonical(self.canonical_bound_payload()).encode("utf-8")).hexdigest()
 
     def verify_integrity(self) -> bool:
         return self.computed_hash() == self.content_hash.lower()
@@ -59,12 +71,7 @@ class EvidenceBinding:
 
     def to_dict(self) -> dict[str, Any]:
         return {
-            "binding_version": self.binding_version,
-            "evidence_ref": self.evidence_ref,
-            "source_id": self.source_id,
-            "source_version": self.source_version,
-            "observed_at": self.observed_at,
-            "content": self.content,
+            **self.canonical_bound_payload(),
             "content_hash": self.content_hash.lower(),
             "verification_status": self.verification_status,
         }
