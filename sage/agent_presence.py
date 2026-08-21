@@ -88,5 +88,5 @@ def get_team_context() -> dict[str, Any]:
         "stations": stations,
         "coordination": coordination.get_coordination_state(),
         "read_only": True,
-        "authority": "canonical_airspace_state_and_event_ledger",
+        "authority": "canonical_airspace_state",
     }
