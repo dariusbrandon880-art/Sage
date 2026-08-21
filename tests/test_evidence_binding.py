@@ -20,15 +20,27 @@ def digest(value):
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
-def binding(ref="receipt:001", content=None, status=VERIFIED):
+def bound_digest(ref, source_id, source_version, observed_at, content):
+    payload = {
+        "binding_version": BINDING_VERSION,
+        "evidence_ref": ref,
+        "source_id": source_id,
+        "source_version": source_version,
+        "observed_at": observed_at,
+        "content": content,
+    }
+    return digest(payload)
+
+
+def binding(ref="receipt:001", content=None, status=VERIFIED, source_id="source-A", source_version="2026.08", observed_at="2026-08-21T23:00:00Z"):
     payload = content or {"value": 42, "source": "fixture"}
     return EvidenceBinding(
         evidence_ref=ref,
-        source_id="source-A",
-        source_version="2026.08",
-        observed_at="2026-08-21T23:00:00Z",
+        source_id=source_id,
+        source_version=source_version,
+        observed_at=observed_at,
         content=payload,
-        content_hash=digest(payload),
+        content_hash=bound_digest(ref, source_id, source_version, observed_at, payload),
         verification_status=status,
     )
 
@@ -52,6 +64,45 @@ def test_tampered_content_fails_integrity():
     )
     assert tampered.verify_integrity() is False
     assert tampered.is_admissible() is False
+
+
+def test_tampered_source_identity_fails_integrity():
+    item = binding()
+    tampered = EvidenceBinding(
+        evidence_ref=item.evidence_ref,
+        source_id="source-B",
+        source_version=item.source_version,
+        observed_at=item.observed_at,
+        content=item.content,
+        content_hash=item.content_hash,
+    )
+    assert tampered.verify_integrity() is False
+
+
+def test_tampered_source_version_fails_integrity():
+    item = binding()
+    tampered = EvidenceBinding(
+        evidence_ref=item.evidence_ref,
+        source_id=item.source_id,
+        source_version="2027.01",
+        observed_at=item.observed_at,
+        content=item.content,
+        content_hash=item.content_hash,
+    )
+    assert tampered.verify_integrity() is False
+
+
+def test_tampered_observation_timestamp_fails_integrity():
+    item = binding()
+    tampered = EvidenceBinding(
+        evidence_ref=item.evidence_ref,
+        source_id=item.source_id,
+        source_version=item.source_version,
+        observed_at="2026-08-22T00:00:00Z",
+        content=item.content,
+        content_hash=item.content_hash,
+    )
+    assert tampered.verify_integrity() is False
 
 
 def test_pending_binding_is_not_admissible():
@@ -111,5 +162,5 @@ def test_missing_source_metadata_fails_closed():
             source_version="2026.08",
             observed_at="2026-08-21T23:00:00Z",
             content={"x": 1},
-            content_hash=digest({"x": 1}),
+            content_hash=bound_digest("receipt:001", "", "2026.08", "2026-08-21T23:00:00Z", {"x": 1}),
         )
