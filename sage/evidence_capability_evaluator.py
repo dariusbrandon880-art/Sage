@@ -137,6 +137,6 @@ class EvidenceCapabilityEvaluator:
     @staticmethod
     def verify(evaluation: CapabilityEvaluation) -> bool:
         payload = evaluation.to_dict()
-        expected = dict(payload)
-        expected.pop("evaluation_hash")
-        return hashlib.sha256(_canonical(expected).encode("utf-8")).hexdigest() == evaluation.evaluation_hash
+        payload.pop("evaluation_id")
+        payload.pop("evaluation_hash")
+        return hashlib.sha256(_canonical(payload).encode("utf-8")).hexdigest() == evaluation.evaluation_hash
