@@ -43,6 +43,7 @@ class CapabilityEvaluation:
 
     evaluation_id: str
     decision_id: str
+    context_id: str
     capability_ref: str
     verdict: str
     capability_delta: str
@@ -57,6 +58,7 @@ class CapabilityEvaluation:
             "evaluation_version": self.version,
             "evaluation_id": self.evaluation_id,
             "decision_id": self.decision_id,
+            "context_id": self.context_id,
             "capability_ref": self.capability_ref,
             "verdict": self.verdict,
             "capability_delta": self.capability_delta,
@@ -117,9 +119,11 @@ class EvidenceCapabilityEvaluator:
             verdict = "PROMOTION_CANDIDATE"
             capability_delta = "CANDIDATE_UP"
 
+        context_id = decision.to_dict()["context_id"]
         payload = {
             "evaluation_version": EVALUATOR_VERSION,
             "decision_id": decision.to_dict()["decision_id"],
+            "context_id": context_id,
             "capability_ref": capability_ref,
             "verdict": verdict,
             "capability_delta": capability_delta,
@@ -132,6 +136,7 @@ class EvidenceCapabilityEvaluator:
         return CapabilityEvaluation(
             evaluation_id=evaluation_id,
             decision_id=decision.to_dict()["decision_id"],
+            context_id=context_id,
             capability_ref=capability_ref,
             verdict=verdict,
             capability_delta=capability_delta,
