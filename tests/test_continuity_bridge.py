@@ -262,10 +262,7 @@ def test_ai_clients_and_tools_bridge_routing(temp_workspace):
     tool_mgr = ToolIntegrationManager(runtime)
 
     # 1. ChatGPT
-    chatgpt_req = AIQueryRequest(
-        prompt="Explain the Continuity Bridge architecture",
-        response_override="Continuity Bridge explanation response",
-    )
+    chatgpt_req = AIQueryRequest(prompt="Explain the Continuity Bridge architecture")
     chatgpt_res = chatgpt.execute_query(chatgpt_req)
     assert chatgpt_res.session_id is not None
     # Verify interaction is ingested as memory
@@ -276,9 +273,7 @@ def test_ai_clients_and_tools_bridge_routing(temp_workspace):
 
     # 2. Gemini
     gemini_req = AIQueryRequest(
-        prompt="What are SAGE requirements?",
-        session_id=chatgpt_res.session_id,
-        response_override="Gemini requirements response",
+        prompt="What are SAGE requirements?", session_id=chatgpt_res.session_id
     )
     gemini_res = gemini.execute_query(gemini_req)
     assert gemini_res.session_id == chatgpt_res.session_id
