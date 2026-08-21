@@ -60,6 +60,7 @@ def main():
         if args.task:
             session_id = runtime.set_task(args.task)
             print(f"Success: Task set to '{args.task}'")
+            print(f"Session ID: {session_id}")
         else:
             print(f"Current Task: {runtime.current_state.active_task or 'None'}")
     elif args.command == "status":
@@ -134,7 +135,7 @@ def main():
     elif args.command == "capabilities":
         try:
             from sage.runtime import generate_capability_report
-            print(json.dumps(generate_capability_report(runtime), indent=2))
+            print(json.dumps(generate_capability_report(runtime), indent=2)
         except Exception as e:
             print(f"Error: Capability reporting failed: {e!s}")
             sys.exit(1)
