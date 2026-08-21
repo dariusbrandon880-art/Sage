@@ -19,7 +19,6 @@ DECISION_RECORD_VERSION = "decision-record-v0.1"
 
 
 def _freeze(value: Any) -> Any:
-    """Recursively freeze JSON-like public decision data."""
     if isinstance(value, Mapping):
         return MappingProxyType({key: _freeze(item) for key, item in value.items()})
     if isinstance(value, list):
@@ -30,7 +29,6 @@ def _freeze(value: Any) -> Any:
 
 
 def _thaw(value: Any) -> Any:
-    """Return JSON-serializable mutable copies of frozen public data."""
     if isinstance(value, Mapping):
         return {key: _thaw(item) for key, item in value.items()}
     if isinstance(value, (tuple, list)):
@@ -85,7 +83,6 @@ class DecisionRecord:
         timestamp_locked: float | str,
         envelope: Mapping[str, Any] | None = None,
     ) -> "DecisionRecord":
-        """Create a locked record after validating context/authority linkage."""
         _require_text(decision_id, "decision_id")
         _require_text(context_id, "context_id")
         _require_text(authority_ref, "authority_ref")
@@ -134,14 +131,12 @@ class DecisionRecord:
         }
 
     def verify_integrity(self) -> bool:
-        """Verify the immutable pre-lock decision block against its stored hash."""
         if not self.decision_hash:
             return False
         expected = hashlib.sha256(_canonical(self._decision_block()).encode("utf-8")).hexdigest()
         return expected == self.decision_hash
 
     def resolve(self, outcome: Mapping[str, Any], *, verification_status: str) -> "DecisionRecord":
-        """Append a resolution as a new immutable projection; never mutate the lock."""
         if self.resolution is not None:
             raise ValueError("decision already has a resolution")
         if not isinstance(outcome, Mapping):
@@ -151,12 +146,10 @@ class DecisionRecord:
         return replace(self, resolution=resolution)
 
     def with_capability_impact(self, capability_impact_ref: str) -> "DecisionRecord":
-        """Attach an external evaluation reference without granting capability."""
         _require_text(capability_impact_ref, "capability_impact_ref")
         return replace(self, capability_impact_ref=capability_impact_ref)
 
     def to_dict(self) -> dict[str, Any]:
-        """Return deterministic public serialization with no private reasoning."""
         return {
             "decision_record_version": self.version,
             "decision_id": self.decision_id,
