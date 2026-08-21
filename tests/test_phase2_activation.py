@@ -76,7 +76,7 @@ def test_ai_clients_and_context_retrieval():
         assert context["matched_memories"][0]["id"] == obj.id
 
         # Test Query
-        req = AIQueryRequest(prompt="Continue the v1_activation work", session_id="session_test_1", response_override="Response for v1_activation work")
+        req = AIQueryRequest(prompt="Continue the v1_activation work", session_id="session_test_1")
         res = client.execute_query(req)
         assert res.session_id == "session_test_1"
         assert len(res.referenced_memories) > 0
@@ -147,7 +147,6 @@ def test_api_integration_endpoints():
             "session_id": "api_session_1",
             "include_validated_memory": True,
             "include_knowledge_state": True,
-            "response_override": "Response for continuity of platform validation",
         }
         res = client.post("/ai/query/chatgpt", json=ai_payload)
         assert res.status_code == 200
