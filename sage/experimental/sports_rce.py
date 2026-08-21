@@ -366,3 +366,164 @@ class HistoricalResearchReconstructionEngine:
         receipt.sign()
 
         return snapshot, receipt
+
+
+import math
+
+
+class OddsPapiObservationAdapter:
+    """Adapter parsing OddsPapi historical odds payloads into standardized SAGE observation dicts."""
+
+    @classmethod
+    def parse_nested_response(cls, payload: Dict[str, Any], context: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Parses a full nested OddsPapi historical odds response structure into a flattened list of standardized observations.
+
+        Navigates: bookmakers -> markets -> outcomes -> players["0"] -> snapshots
+        """
+        if not isinstance(payload, dict):
+            raise ValueError("FAIL_CLOSED: OddsPapi payload must be a dictionary")
+
+        bookmakers = payload.get("bookmakers") or payload.get("data", {}).get("bookmakers") or []
+
+        observations = []
+
+        for bm in bookmakers:
+            provider_id = str(bm.get("id") or bm.get("key") or bm.get("name") or context.get("provider_id") or "")
+            markets = bm.get("markets") or []
+
+            for mkt in markets:
+                market_id = str(mkt.get("id") or mkt.get("key") or mkt.get("name") or context.get("market") or "")
+                outcomes = mkt.get("outcomes") or []
+
+                for out in outcomes:
+                    outcome_id = str(out.get("id") or out.get("key") or out.get("name") or context.get("selection") or "")
+                    players = out.get("players") or {}
+
+                    player_id = "0"
+                    snapshots = []
+                    if isinstance(players, dict):
+                        for p_key, p_val in players.items():
+                            player_id = str(p_key)
+                            if isinstance(p_val, dict):
+                                snapshots = p_val.get("snapshots") or []
+                            elif isinstance(p_val, list):
+                                snapshots = p_val
+                            break
+                    elif isinstance(players, list):
+                        for idx, p in enumerate(players):
+                            if isinstance(p, dict):
+                                player_id = str(p.get("id") or idx)
+                                snapshots.extend(p.get("snapshots") or [])
+
+                    for snap in snapshots:
+                        entry_ctx = dict(context)
+                        if provider_id:
+                            entry_ctx["provider_id"] = provider_id
+                        if market_id:
+                            entry_ctx["market"] = market_id
+                        if outcome_id:
+                            entry_ctx["selection"] = outcome_id
+                        if player_id:
+                            entry_ctx["player_id"] = player_id
+
+                        parsed_obs = cls.parse_observation(snap, entry_ctx)
+                        parsed_obs["limit"] = snap.get("limit")
+                        parsed_obs["active"] = snap.get("active", True)
+                        parsed_obs["player_id"] = player_id
+                        exchange_meta = snap.get("exchangeMeta") or snap.get("exchange")
+                        if exchange_meta is not None:
+                            parsed_obs["exchangeMeta"] = exchange_meta
+                            parsed_obs["exchange_metadata"] = exchange_meta
+                        observations.append(parsed_obs)
+
+        return observations
+
+    @staticmethod
+    def parse_observation(raw_entry: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
+        """Parses a single OddsPapi price/historical entry into a standardized SAGE raw odds observation.
+
+        Enforces strict fail-closed validation on timestamps, prices, and required metadata.
+        """
+        if not isinstance(raw_entry, dict):
+            raise ValueError("FAIL_CLOSED: Raw entry must be a dictionary")
+
+        created_at = raw_entry.get("createdAt") or raw_entry.get("availability_timestamp")
+        if not created_at:
+            raise ValueError("FAIL_CLOSED_MISSING_TIMESTAMP: Missing 'createdAt' / availability timestamp")
+
+        # Validate timestamp format
+        try:
+            avail_dt = parse_iso_utc(created_at)
+        except Exception as exc:
+            raise ValueError(f"FAIL_CLOSED_AMBIGUOUS_TIMING: Unparseable createdAt timestamp '{created_at}': {exc}") from exc
+
+        price = raw_entry.get("price")
+        if price is None:
+            price = raw_entry.get("quoted_price")
+
+        if price is None or isinstance(price, bool):
+            raise ValueError("FAIL_CLOSED_MISSING_PRICE: OddsPapi entry missing valid 'price'")
+
+        try:
+            quoted_price = float(price)
+            if not math.isfinite(quoted_price):
+                raise ValueError(f"Invalid non-finite price value {quoted_price}")
+        except Exception as exc:
+            raise ValueError(f"FAIL_CLOSED_INVALID_PRICE: Invalid quoted price '{price}': {exc}") from exc
+
+        event_id = str(context.get("event_id") or raw_entry.get("event_id") or raw_entry.get("fixture_id") or "")
+        if not event_id:
+            raise ValueError("FAIL_CLOSED_MISSING_EVENT: Context/entry missing 'event_id'")
+
+        provider_id = str(context.get("provider_id") or raw_entry.get("bookmaker") or raw_entry.get("provider") or "")
+        if not provider_id:
+            raise ValueError("FAIL_CLOSED_MISSING_PROVIDER: Context/entry missing 'provider_id' / 'bookmaker'")
+
+        market = str(context.get("market") or raw_entry.get("market") or "")
+        if not market:
+            raise ValueError("FAIL_CLOSED_MISSING_MARKET: Context/entry missing 'market'")
+
+        selection = str(context.get("selection") or raw_entry.get("selection") or "")
+        if not selection:
+            raise ValueError("FAIL_CLOSED_MISSING_SELECTION: Context/entry missing 'selection'")
+
+        entry_source_id = str(raw_entry.get("id") or raw_entry.get("entry_id") or "")
+
+        event_start = context.get("event_start") or context.get("event_start_timestamp") or raw_entry.get("event_start")
+        if not event_start:
+            raise ValueError("FAIL_CLOSED_MISSING_EVENT_START: Context missing 'event_start'")
+
+        try:
+            start_dt = parse_iso_utc(event_start)
+        except Exception as exc:
+            raise ValueError(f"FAIL_CLOSED_AMBIGUOUS_TIMING: Unparseable event_start timestamp '{event_start}': {exc}") from exc
+
+        # In-play contamination check: t_avail >= t_start
+        if avail_dt >= start_dt:
+            raise ValueError(
+                f"FAIL_CLOSED_IN_PLAY_CONTAMINATION: Availability timestamp ({created_at}) "
+                f">= Event start timestamp ({event_start})"
+            )
+
+        provenance_id = f"oddspapi_{provider_id}_{event_id}_{market}_{entry_source_id}" if entry_source_id else f"oddspapi_{provider_id}_{event_id}_{market}"
+        obs_payload = {
+            "event_id": event_id,
+            "provider": provider_id,
+            "provider_id": provider_id,
+            "market": market,
+            "selection": selection,
+            "player_id": str(context.get("player_id") or "0"),
+            "source_entry_id": entry_source_id,
+            "observed_odds": quoted_price,
+            "quoted_price": quoted_price,
+            "availability_timestamp": avail_dt.isoformat().replace("+00:00", "Z"),
+            "source_timestamp": avail_dt.isoformat().replace("+00:00", "Z"),
+            "event_start_timestamp": start_dt.isoformat().replace("+00:00", "Z"),
+            "provenance_id": provenance_id,
+        }
+
+        # Deterministic SHA-256 observation_id incorporating entry source identity
+        serialized = json.dumps(obs_payload, sort_keys=True)
+        obs_payload["observation_id"] = f"obs_oddspapi_{hashlib.sha256(serialized.encode('utf-8')).hexdigest()[:16]}"
+
+        return obs_payload

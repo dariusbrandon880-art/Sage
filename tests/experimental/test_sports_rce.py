@@ -470,3 +470,135 @@ def test_leakage_receipt_is_replayable():
     assert r1.integrity_hash == r2.integrity_hash
     assert r1.included_reference_set == r2.included_reference_set
     assert r1.post_timestamp_reference_set == r2.post_timestamp_reference_set
+
+
+def test_oddspapi_price_test_matrix_18_cases():
+    """Verify all 18 cases of the SAGE // GAP-002 price test matrix."""
+    import math
+    from sage.experimental.sports_rce import OddsPapiObservationAdapter
+
+    context = {
+        "event_id": "evt_matrix_18_2026",
+        "provider_id": "pinnacle",
+        "market": "h2h",
+        "selection": "home",
+        "event_start": "2026-08-16T22:00:00Z",
+    }
+
+    # Case 1: Documented nested payload parses
+    nested_payload = {
+        "bookmakers": [
+            {
+                "id": "pinnacle",
+                "name": "Pinnacle",
+                "markets": [
+                    {
+                        "id": "h2h",
+                        "outcomes": [
+                            {
+                                "id": "home_win",
+                                "players": {
+                                    "0": {
+                                        "snapshots": [
+                                            {"id": "s_nest_1", "createdAt": "2026-08-16T18:00:00Z", "price": 1.95}
+                                        ]
+                                    }
+                                },
+                            }
+                        ],
+                    }
+                ],
+            }
+        ]
+    }
+    nested_obs = OddsPapiObservationAdapter.parse_nested_response(nested_payload, context)
+    assert len(nested_obs) == 1
+
+    # Case 2: players["0"] snapshot list is flattened
+    assert nested_obs[0]["source_entry_id"] == "s_nest_1"
+    assert nested_obs[0]["player_id"] == "0"
+
+    # Case 3: Valid numeric price is preserved
+    entry1 = {"id": "s_valid", "createdAt": "2026-08-16T18:00:00Z", "price": 1.952}
+    obs1 = OddsPapiObservationAdapter.parse_observation(entry1, context)
+    assert obs1["quoted_price"] == 1.952
+
+    # Case 4: Missing price fails closed
+    with pytest.raises(ValueError, match="FAIL_CLOSED_MISSING_PRICE"):
+        OddsPapiObservationAdapter.parse_observation({"createdAt": "2026-08-16T18:00:00Z"}, context)
+
+    # Case 5: Non-numeric price fails closed
+    with pytest.raises(ValueError, match="FAIL_CLOSED_INVALID_PRICE"):
+        OddsPapiObservationAdapter.parse_observation({"createdAt": "2026-08-16T18:00:00Z", "price": "invalid"}, context)
+
+    # Case 6: Non-finite price fails closed
+    with pytest.raises(ValueError, match="FAIL_CLOSED_INVALID_PRICE"):
+        OddsPapiObservationAdapter.parse_observation({"createdAt": "2026-08-16T18:00:00Z", "price": float("nan")}, context)
+    with pytest.raises(ValueError, match="FAIL_CLOSED_INVALID_PRICE"):
+        OddsPapiObservationAdapter.parse_observation({"createdAt": "2026-08-16T18:00:00Z", "price": float("inf")}, context)
+
+    # Case 7: Boolean price fails closed
+    with pytest.raises(ValueError, match="FAIL_CLOSED_MISSING_PRICE"):
+        OddsPapiObservationAdapter.parse_observation({"createdAt": "2026-08-16T18:00:00Z", "price": True}, context)
+
+    # Case 8: Multiple snapshots preserve distinct timestamps and prices
+    s1 = OddsPapiObservationAdapter.parse_observation({"id": "s1", "createdAt": "2026-08-16T10:00:00Z", "price": 1.80}, context)
+    s2 = OddsPapiObservationAdapter.parse_observation({"id": "s2", "createdAt": "2026-08-16T11:00:00Z", "price": 1.85}, context)
+    assert s1["quoted_price"] == 1.80
+    assert s2["quoted_price"] == 1.85
+    assert s1["availability_timestamp"] != s2["availability_timestamp"]
+
+    # Case 9 & 10: createdAt <= T is eligible, createdAt > T is excluded
+    snap_pre = {"id": "snap_pre", "createdAt": "2026-08-16T18:00:00Z", "price": 2.05}
+    snap_post = {"id": "snap_post", "createdAt": "2026-08-16T20:00:00Z", "price": 2.15}
+    obs_pre = OddsPapiObservationAdapter.parse_observation(snap_pre, context)
+    obs_post = OddsPapiObservationAdapter.parse_observation(snap_post, context)
+
+    s_res, r_res = HistoricalResearchReconstructionEngine.reconstruct_snapshot([obs_pre, obs_post], "2026-08-16T19:00:00Z")
+
+    # Case 11: Post-T exclusion emits leakage receipt
+    assert r_res.integrity_status == "POST_TIMESTAMP_INFORMATION_DETECTED"
+    assert r_res.excluded_count == 1
+
+    # Case 12: Pre-game snapshot survives
+    assert len(s_res.included_observations) == 1
+    assert s_res.included_observations[0]["source_entry_id"] == "snap_pre"
+
+    # Case 13: In-play snapshot fails closed
+    snap_inplay = {"id": "snap_inplay", "createdAt": "2026-08-16T22:05:00Z", "price": 2.20}
+    with pytest.raises(ValueError, match="FAIL_CLOSED_IN_PLAY_CONTAMINATION"):
+        OddsPapiObservationAdapter.parse_observation(snap_inplay, context)
+
+    # Case 14: Source identifiers remain unchanged
+    assert obs1["event_id"] == "evt_matrix_18_2026"
+    assert obs1["provider_id"] == "pinnacle"
+    assert obs1["market"] == "h2h"
+    assert obs1["selection"] == "home"
+
+    # Case 15 & 16: Deterministic observation & provenance identity remains stable
+    obs_a1 = OddsPapiObservationAdapter.parse_observation({"id": "e_det", "createdAt": "2026-08-16T12:00:00Z", "price": 2.00}, context)
+    obs_a2 = OddsPapiObservationAdapter.parse_observation({"id": "e_det", "createdAt": "2026-08-16T12:00:00Z", "price": 2.00}, context)
+    assert obs_a1["observation_id"] == obs_a2["observation_id"]
+    assert obs_a1["provenance_id"] == obs_a2["provenance_id"]
+
+    # Case 17: Exchange metadata is preserved
+    snap_ex = {
+        "id": "ex_snap_1",
+        "createdAt": "2026-08-16T15:00:00Z",
+        "price": 2.10,
+        "exchangeMeta": {"back": [{"price": 2.10, "size": 100}]},
+    }
+    obs_ex = OddsPapiObservationAdapter.parse_observation(snap_ex, context)
+    obs_ex["exchangeMeta"] = snap_ex["exchangeMeta"]
+    assert obs_ex["quoted_price"] == 2.10
+    assert "back" in obs_ex["exchangeMeta"]
+
+    # Case 18: Malformed exchange price fails closed without fabricated primary price
+    snap_ex_bad = {
+        "id": "ex_snap_bad",
+        "createdAt": "2026-08-16T15:00:00Z",
+        "price": "NON_NUMERIC_PRICE",
+        "exchangeMeta": {"back": []},
+    }
+    with pytest.raises(ValueError, match="FAIL_CLOSED_INVALID_PRICE"):
+        OddsPapiObservationAdapter.parse_observation(snap_ex_bad, context)
