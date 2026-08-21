@@ -11,6 +11,7 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 import hashlib
 import json
+from types import MappingProxyType
 from typing import Any, Mapping
 
 
@@ -77,17 +78,16 @@ class DecisionRecord:
         if envelope is not None:
             if envelope.get("context_id") != context_id:
                 raise ValueError("authority/context envelope mismatch: context_id")
-            envelope_authority = envelope.get("authority")
-            if envelope_authority != authority_ref:
+            if envelope.get("authority") != authority_ref:
                 raise ValueError("authority/context envelope mismatch: authority")
 
-        payload = dict(decision_payload)
+        payload = MappingProxyType(dict(decision_payload))
         decision_block = {
             "decision_id": decision_id,
             "context_id": context_id,
             "authority_ref": authority_ref,
             "evidence_refs": list(refs),
-            "decision_payload": payload,
+            "decision_payload": dict(payload),
             "timestamp_locked": timestamp_locked,
             "version": DECISION_RECORD_VERSION,
         }
@@ -127,8 +127,7 @@ class DecisionRecord:
         if not isinstance(outcome, Mapping):
             raise ValueError("resolution must be a mapping")
         _require_text(verification_status, "verification_status")
-        resolution = dict(outcome)
-        resolution["verification_status"] = verification_status
+        resolution = MappingProxyType({**dict(outcome), "verification_status": verification_status})
         return replace(self, resolution=resolution)
 
     def with_capability_impact(self, capability_impact_ref: str) -> "DecisionRecord":
