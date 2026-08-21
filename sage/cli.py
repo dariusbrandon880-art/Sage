@@ -142,9 +142,18 @@ def main():
     elif args.command == "chat":
         try:
             from sage.integration import AIQueryRequest, ChatGPTClient
+            from sage.agent_presence import get_team_context, render_chat_identity
+
+            # Preserve the existing ChatGPTClient constructor seam for tests and
+            # alternate clients while injecting canonical C2 context when supported.
             client = ChatGPTClient(runtime)
+            if hasattr(client, "c2_provider"):
+                client.c2_provider = get_team_context
+
             if args.prompt:
-                print(client.execute_query(AIQueryRequest(prompt=args.prompt)).response_text)
+                response = client.execute_query(AIQueryRequest(prompt=args.prompt))
+                print(render_chat_identity())
+                print(response.response_text)
             else:
                 session_id = None
                 while True:
@@ -155,6 +164,7 @@ def main():
                         continue
                     response = client.execute_query(AIQueryRequest(prompt=prompt, session_id=session_id))
                     session_id = response.session_id
+                    print(render_chat_identity())
                     print(response.response_text)
         except Exception as e:
             print(f"Error: Chat query failed: {e!s}")

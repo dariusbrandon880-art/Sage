@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class ConfidenceLevel(str, Enum):
@@ -56,7 +56,7 @@ class ValidationRecord(BaseModel):
 
 
 class KnowledgeLineage(BaseModel):
-    """Lineage tracking the origin and history of archived knowledge."""
+    """Knowledge origin and validation lineage."""
 
     source: str = "unknown"
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -77,8 +77,8 @@ class ReviewHistoryItem(BaseModel):
 class ConfidenceTracker(BaseModel):
     """Tracking details of confidence, validation, and reviews."""
 
-    confidence_level: float = 1.0  # Explicit assignment (0.0 to 1.0)
-    validation_status: str = "archived"  # e.g., hypothesis, validated, archived
+    confidence_level: float = 1.0
+    validation_status: str = "archived"
     evidence_references: list[str] = Field(default_factory=list)
     review_history: list[ReviewHistoryItem] = Field(default_factory=list)
 
@@ -88,9 +88,7 @@ class KnowledgeRelationship(BaseModel):
 
     source_id: str
     target_id: str
-    relationship_type: (
-        str  # e.g., "related_to", "depends_on", "derived_from", "replaces", "validated_by"
-    )
+    relationship_type: str
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 
@@ -151,7 +149,7 @@ class RuntimeState(BaseModel):
 
 
 class ExternalSessionPayload(BaseModel):
-    """Payload representing an external engineering session to ingest."""
+    """External session data; model observations cannot become active tasks."""
 
     session_id: str | None = None
     objective: str
@@ -159,3 +157,11 @@ class ExternalSessionPayload(BaseModel):
     memories: list[dict[str, Any]] = Field(default_factory=list)
     decisions: list[dict[str, Any]] = Field(default_factory=list)
     metadata: dict[str, Any] = Field(default_factory=dict)
+
+    @field_validator("task")
+    @classmethod
+    def reject_model_query_as_runtime_task(cls, value: str | None) -> str | None:
+        """Keep AI observations as data rather than runtime authorization/task state."""
+        if value and value.startswith(("ChatGPT Query:", "GeminiJules Query:")):
+            return None
+        return value

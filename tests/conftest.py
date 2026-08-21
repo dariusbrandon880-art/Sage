@@ -1,7 +1,10 @@
 """Test utilities and fixtures for SAGE tests."""
 
+import os
+import sys
 import tempfile
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -47,3 +50,21 @@ def decision_tracker(temp_workspace):
 def validation_system(memory_store, archive):
     """Create a test validation system."""
     return ValidationSystem(memory_store, archive)
+
+
+if os.environ.get("SAGE_CI_OPENAI_STUB") == "1":
+    # The CI stub replaces the SDK transport and also supplies a deterministic
+    # initialization token so client-side credential guards can construct the
+    # client without reaching a real external service. Tests that verify the
+    # missing-key invariant explicitly clear OPENAI_API_KEY themselves.
+    os.environ.setdefault("OPENAI_API_KEY", "sage-ci-deterministic-stub")
+
+    class _Responses:
+        def create(self, *, model, instructions, input):
+            return SimpleNamespace(output_text=f"CI stub response for: {input}")
+
+    class _Client:
+        def __init__(self, api_key=None):
+            self.responses = _Responses()
+
+    sys.modules.setdefault("openai", SimpleNamespace(OpenAI=_Client))
