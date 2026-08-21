@@ -30,24 +30,14 @@ def test_deterministic_serialization_and_replay():
 
 def test_missing_or_invalid_evidence_ref_fails_closed():
     with pytest.raises(ValueError):
-        DecisionRecord.create(
-            decision_id="dec-001", context_id="ctx-001", authority_ref=AUTHORITY,
-            evidence_refs=[], decision_payload={}, timestamp_locked=1.0,
-        )
+        DecisionRecord.create(decision_id="dec-001", context_id="ctx-001", authority_ref=AUTHORITY, evidence_refs=[], decision_payload={}, timestamp_locked=1.0)
     with pytest.raises(ValueError):
-        DecisionRecord.create(
-            decision_id="dec-001", context_id="ctx-001", authority_ref=AUTHORITY,
-            evidence_refs=[""], decision_payload={}, timestamp_locked=1.0,
-        )
+        DecisionRecord.create(decision_id="dec-001", context_id="ctx-001", authority_ref=AUTHORITY, evidence_refs=[""], decision_payload={}, timestamp_locked=1.0)
 
 
 def test_authority_mismatch_fails_closed():
     with pytest.raises(ValueError):
-        DecisionRecord.create(
-            decision_id="dec-001", context_id="ctx-001", authority_ref=AUTHORITY,
-            evidence_refs=["receipt-1"], decision_payload={}, timestamp_locked=1.0,
-            envelope={"context_id": "ctx-001", "authority": "WRONG"},
-        )
+        DecisionRecord.create(decision_id="dec-001", context_id="ctx-001", authority_ref=AUTHORITY, evidence_refs=["receipt-1"], decision_payload={}, timestamp_locked=1.0, envelope={"context_id": "ctx-001", "authority": "WRONG"})
 
 
 def test_post_lock_mutation_rejected():
@@ -82,27 +72,17 @@ def test_capability_impact_cannot_mutate_progression():
 
 def test_envelope_context_linkage():
     with pytest.raises(ValueError):
-        DecisionRecord.create(
-            decision_id="dec-001", context_id="ctx-A", authority_ref=AUTHORITY,
-            evidence_refs=["receipt-1"], decision_payload={}, timestamp_locked=1.0,
-            envelope={"context_id": "ctx-B", "authority": AUTHORITY},
-        )
+        DecisionRecord.create(decision_id="dec-001", context_id="ctx-A", authority_ref=AUTHORITY, evidence_refs=["receipt-1"], decision_payload={}, timestamp_locked=1.0, envelope={"context_id": "ctx-B", "authority": AUTHORITY})
 
 
 def test_tamper_and_hash_integrity():
     record = make_record()
-    tampered = record.__class__(
-        **{**record.__dict__, "decision_payload": {"action": "tampered", "confidence": 0.8}}
-    )
+    tampered = record.__class__(**{**record.__dict__, "decision_payload": {"action": "tampered", "confidence": 0.8}})
     assert record.verify_integrity()
     assert not tampered.verify_integrity()
 
 
 def test_backward_compatible_public_receipt_references():
-    record = DecisionRecord.create(
-        decision_id="dec-legacy", context_id="ctx-legacy", authority_ref=AUTHORITY,
-        evidence_refs=["receipt.json", "sha256:legacy-receipt"],
-        decision_payload={"legacy": True}, timestamp_locked="2026-08-21T20:00:00Z",
-    )
+    record = DecisionRecord.create(decision_id="dec-legacy", context_id="ctx-legacy", authority_ref=AUTHORITY, evidence_refs=["receipt.json", "sha256:legacy-receipt"], decision_payload={"legacy": True}, timestamp_locked="2026-08-21T20:00:00Z")
     assert record.verify_integrity()
     assert record.to_dict()["evidence_refs"] == ["receipt.json", "sha256:legacy-receipt"]
