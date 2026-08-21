@@ -1,7 +1,10 @@
 """Test utilities and fixtures for SAGE tests."""
 
+import os
+import sys
 import tempfile
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -47,3 +50,15 @@ def decision_tracker(temp_workspace):
 def validation_system(memory_store, archive):
     """Create a test validation system."""
     return ValidationSystem(memory_store, archive)
+
+
+if os.environ.get("SAGE_CI_OPENAI_STUB") == "1":
+    class _Responses:
+        def create(self, *, model, instructions, input):
+            return SimpleNamespace(output_text=f"CI stub response for: {input}")
+
+    class _Client:
+        def __init__(self, api_key=None):
+            self.responses = _Responses()
+
+    sys.modules.setdefault("openai", SimpleNamespace(OpenAI=_Client))
