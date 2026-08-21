@@ -90,6 +90,25 @@ def test_unbound_required_evidence_holds_closed():
     assert "UNBOUND:receipt:003" in evaluation.unmet_requirements
 
 
+def test_duplicate_required_evidence_fails_closed():
+    with pytest.raises(ValueError, match="duplicate required evidence_ref"):
+        EvidenceCapabilityEvaluator().evaluate(
+            make_decision(),
+            capability_ref="CAP-EXAMPLE",
+            evidence_verdicts={"receipt:001": "VERIFIED", "receipt:002": "VERIFIED"},
+            required_evidence_refs=["receipt:001", "receipt:001"],
+        )
+
+
+def test_invalid_evidence_verdict_fails_closed():
+    with pytest.raises(ValueError, match="invalid evidence verdict"):
+        EvidenceCapabilityEvaluator().evaluate(
+            make_decision(),
+            capability_ref="CAP-EXAMPLE",
+            evidence_verdicts={"receipt:001": "VERIFIED", "receipt:002": "GUESS"},
+        )
+
+
 def test_unresolved_decision_holds_closed():
     record = DecisionRecord(
         decision_id="decision-pending",
