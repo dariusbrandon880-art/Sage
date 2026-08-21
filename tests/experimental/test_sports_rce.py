@@ -472,6 +472,31 @@ def test_leakage_receipt_is_replayable():
     assert r1.post_timestamp_reference_set == r2.post_timestamp_reference_set
 
 
+def test_oddspapi_optional_id_preservation_and_absence():
+    """Verify that optional historical snapshot entry ID is preserved when present and omitted when absent."""
+    from sage.experimental.sports_rce import OddsPapiObservationAdapter
+
+    context = {
+        "event_id": "evt_opt_id_2026",
+        "provider_id": "pinnacle",
+        "market": "h2h",
+        "selection": "home",
+        "event_start": "2026-08-16T22:00:00Z",
+    }
+
+    # When optional entry id is present, source_entry_id is populated and included in provenance_id
+    snap_with_id = {"id": "snap_id_999", "createdAt": "2026-08-16T18:00:00Z", "price": 1.95}
+    obs1 = OddsPapiObservationAdapter.parse_observation(snap_with_id, context)
+    assert obs1["source_entry_id"] == "snap_id_999"
+    assert obs1["provenance_id"] == "oddspapi_pinnacle_evt_opt_id_2026_h2h_snap_id_999"
+
+    # When optional entry id is absent, source_entry_id is empty and provenance_id is clean
+    snap_no_id = {"createdAt": "2026-08-16T18:00:00Z", "price": 1.95}
+    obs2 = OddsPapiObservationAdapter.parse_observation(snap_no_id, context)
+    assert obs2["source_entry_id"] == ""
+    assert obs2["provenance_id"] == "oddspapi_pinnacle_evt_opt_id_2026_h2h"
+
+
 def test_oddspapi_price_test_matrix_18_cases():
     """Verify all 18 cases of the SAGE // GAP-002 price test matrix."""
     import math
