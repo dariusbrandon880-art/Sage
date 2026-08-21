@@ -18,8 +18,28 @@ from typing import Any, Mapping
 DECISION_RECORD_VERSION = "decision-record-v0.1"
 
 
+def _freeze(value: Any) -> Any:
+    """Recursively freeze JSON-like public decision data."""
+    if isinstance(value, Mapping):
+        return MappingProxyType({key: _freeze(item) for key, item in value.items()})
+    if isinstance(value, list):
+        return tuple(_freeze(item) for item in value)
+    if isinstance(value, tuple):
+        return tuple(_freeze(item) for item in value)
+    return value
+
+
+def _thaw(value: Any) -> Any:
+    """Return JSON-serializable mutable copies of frozen public data."""
+    if isinstance(value, Mapping):
+        return {key: _thaw(item) for key, item in value.items()}
+    if isinstance(value, (tuple, list)):
+        return [_thaw(item) for item in value]
+    return value
+
+
 def _canonical(value: Any) -> str:
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), default=str)
+    return json.dumps(_thaw(value), sort_keys=True, separators=(",", ":"), default=str)
 
 
 def _require_text(value: str, field: str) -> str:
@@ -81,13 +101,13 @@ class DecisionRecord:
             if envelope.get("authority") != authority_ref:
                 raise ValueError("authority/context envelope mismatch: authority")
 
-        payload = MappingProxyType(dict(decision_payload))
+        payload = _freeze(decision_payload)
         decision_block = {
             "decision_id": decision_id,
             "context_id": context_id,
             "authority_ref": authority_ref,
-            "evidence_refs": list(refs),
-            "decision_payload": dict(payload),
+            "evidence_refs": refs,
+            "decision_payload": payload,
             "timestamp_locked": timestamp_locked,
             "version": DECISION_RECORD_VERSION,
         }
@@ -107,8 +127,8 @@ class DecisionRecord:
             "decision_id": self.decision_id,
             "context_id": self.context_id,
             "authority_ref": self.authority_ref,
-            "evidence_refs": list(self.evidence_refs),
-            "decision_payload": dict(self.decision_payload),
+            "evidence_refs": self.evidence_refs,
+            "decision_payload": self.decision_payload,
             "timestamp_locked": self.timestamp_locked,
             "version": self.version,
         }
@@ -127,7 +147,7 @@ class DecisionRecord:
         if not isinstance(outcome, Mapping):
             raise ValueError("resolution must be a mapping")
         _require_text(verification_status, "verification_status")
-        resolution = MappingProxyType({**dict(outcome), "verification_status": verification_status})
+        resolution = _freeze({**dict(outcome), "verification_status": verification_status})
         return replace(self, resolution=resolution)
 
     def with_capability_impact(self, capability_impact_ref: str) -> "DecisionRecord":
@@ -143,9 +163,9 @@ class DecisionRecord:
             "context_id": self.context_id,
             "authority_ref": self.authority_ref,
             "evidence_refs": list(self.evidence_refs),
-            "decision_payload": dict(self.decision_payload),
+            "decision_payload": _thaw(self.decision_payload),
             "timestamp_locked": self.timestamp_locked,
-            "resolution": dict(self.resolution) if self.resolution is not None else None,
+            "resolution": _thaw(self.resolution) if self.resolution is not None else None,
             "capability_impact_ref": self.capability_impact_ref,
             "decision_hash": self.decision_hash,
         }
