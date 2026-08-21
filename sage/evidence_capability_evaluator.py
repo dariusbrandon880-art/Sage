@@ -20,6 +20,7 @@ EVALUATOR_VERSION = "evidence-capability-evaluator-v0.1"
 VERIFIED = "VERIFIED"
 FALSIFIED = "FALSIFIED"
 PENDING = "PENDING"
+_ALLOWED_EVIDENCE_VERDICTS = {VERIFIED, FALSIFIED, PENDING}
 
 
 def _canonical(value: Any) -> str:
@@ -85,8 +86,14 @@ class EvidenceCapabilityEvaluator:
             raise ValueError("decision integrity failed; capability evaluation is blocked")
 
         required = tuple(required_evidence_refs or decision.to_dict()["evidence_refs"])
+        if len(required) != len(set(required)):
+            raise ValueError("duplicate required evidence_ref is not allowed")
         decision_refs = set(decision.to_dict()["evidence_refs"])
         verdicts = dict(evidence_verdicts)
+        for ref, status in verdicts.items():
+            _require_text(ref, "evidence_ref")
+            if status not in _ALLOWED_EVIDENCE_VERDICTS:
+                raise ValueError(f"invalid evidence verdict: {status}")
 
         unmet: list[str] = []
         for ref in required:
