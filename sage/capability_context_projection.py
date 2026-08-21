@@ -29,8 +29,16 @@ def project_capability_evaluation_to_envelope(
         raise ValueError("capability evaluation integrity failed")
     if envelope.get("envelope_version") != ENVELOPE_VERSION:
         raise ValueError("unsupported or missing Agent Context Envelope version")
-    if not envelope.get("context_id"):
+    context_id = envelope.get("context_id")
+    if not context_id:
         raise ValueError("context_id is required for capability projection")
+
+    decision_id = evaluation.decision_id
+    # The evaluator's decision ID is the only linkage available here; the
+    # projection must reject an envelope that cannot prove the same context.
+    decision_context_id = getattr(evaluation, "context_id", None)
+    if decision_context_id is not None and decision_context_id != context_id:
+        raise ValueError("evaluation/envelope context mismatch")
 
     projected = copy.deepcopy(dict(envelope))
     existing = copy.deepcopy(projected.get("sender_identity_projection") or {})
@@ -44,6 +52,7 @@ def project_capability_evaluation_to_envelope(
     existing["evaluation_version"] = evaluation.version
     existing["authority_granted"] = False
     existing["qualification_mutated"] = False
+    existing["projection_only"] = True
     projected["sender_identity_projection"] = existing
     projected["capability_projection_version"] = PROJECTION_VERSION
     projected["read_only"] = True
