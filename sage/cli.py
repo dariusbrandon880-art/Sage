@@ -79,6 +79,18 @@ def main():
     # metrics subcommand
     subparsers.add_parser("metrics", help="Show collected runtime telemetry metrics")
 
+    # chat subcommand
+    chat_parser = subparsers.add_parser(
+        "chat", help="Execute queries against ChatGPT-as-SAGE boundary"
+    )
+    chat_parser.add_argument("--prompt", type=str, help="One-shot prompt to query")
+    chat_parser.add_argument("--session-id", type=str, help="Session ID for continuity tracking")
+    chat_parser.add_argument(
+        "--interactive",
+        action="store_true",
+        help="Run interactive multi-turn session loop",
+    )
+
     # audit subcommand
     audit_parser = subparsers.add_parser(
         "audit", help="ACT-PROD cross-model audit dashboard operator interface"
@@ -233,6 +245,42 @@ def main():
         except Exception as e:
             print(f"Error: Metrics gathering failed: {e!s}")
             sys.exit(1)
+
+    elif args.command == "chat":
+        from sage.integration import AIQueryRequest, ChatGPTClient
+
+        client = ChatGPTClient(runtime)
+        session_id = args.session_id
+
+        if args.prompt and not args.interactive:
+            try:
+                request = AIQueryRequest(prompt=args.prompt, session_id=session_id)
+                response = client.execute_query(request)
+                print(f"Response: {response.response_text}")
+                print(f"Session ID: {response.session_id}")
+            except Exception as e:
+                print(f"Error executing chat query: {e!s}")
+                sys.exit(1)
+        else:
+            print("Entering interactive SAGE ChatGPT session. Type 'exit' or 'quit' to end.")
+            import uuid
+
+            session_id = session_id or f"session_{uuid.uuid4().hex[:8]}"
+            while True:
+                try:
+                    user_input = input("SAGE> ")
+                    if user_input.strip().lower() in ["exit", "quit"]:
+                        break
+                    if not user_input.strip():
+                        continue
+                    request = AIQueryRequest(prompt=user_input, session_id=session_id)
+                    response = client.execute_query(request)
+                    print(f"\n{response.response_text}\n")
+                except (KeyboardInterrupt, EOFError):
+                    print("\nExiting chat session.")
+                    break
+                except Exception as e:
+                    print(f"Error: {e!s}")
 
     elif args.command == "audit":
         try:

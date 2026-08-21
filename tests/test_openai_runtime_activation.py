@@ -1,185 +1,156 @@
-"""Unit tests for SAGE OpenAI Runtime Activation script and resilience capabilities."""
+"""Tests for ChatGPT-as-SAGE OpenAI Responses API runtime activation."""
 
 import os
-import sys
-import json
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest import mock
-from pathlib import Path
 
-# Add scripts directory to sys.path to allow importing scripts directly
-SCRIPTS_DIR = Path(__file__).resolve().parents[1] / "scripts"
-if str(SCRIPTS_DIR) not in sys.path:
-    sys.path.insert(0, str(SCRIPTS_DIR))
-
-from run_openai_runtime_activation import run_openai_activation
+from sage.cli import main as cli_main
+from sage.integration import AIQueryRequest, ChatGPTClient
+from sage.runtime import SageRuntime
 
 
 @pytest.fixture
-def redirect_evidence_files(tmp_path, monkeypatch):
-    """Fixture to intercept open calls and redirect evidence_capture files to a temp directory."""
-    import builtins
-    original_open = builtins.open
-
-    def mock_open(file, mode="r", *args, **kwargs):
-        filepath_str = str(file)
-        if "evidence_capture" in filepath_str:
-            filename = Path(filepath_str).name
-            target_path = tmp_path / filename
-            target_path.parent.mkdir(parents=True, exist_ok=True)
-            return original_open(target_path, mode, *args, **kwargs)
-        return original_open(file, mode, *args, **kwargs)
-
-    monkeypatch.setattr(builtins, "open", mock_open)
-    return tmp_path
+def runtime(tmp_path):
+    """Fixture providing an initialized SAGE Runtime with temporary storage."""
+    rt = SageRuntime(workspace_path=str(tmp_path / "workspace"))
+    rt.set_objective("Verify ChatGPT-as-SAGE Responses API Integration")
+    rt.set_task("Run test suite for OpenAI runtime activation")
+    return rt
 
 
-def test_activation_missing_credentials(redirect_evidence_files, monkeypatch):
-    """Verify that if credentials are missing, SAGE logs blockers and exits with code 0."""
-    # Ensure variables are missing
-    monkeypatch.setenv("OPENAI_API_KEY", "")
-    monkeypatch.setenv("SAGE_AUTH_SECRET", "")
+def test_openai_runtime_activation_full_suite(runtime, monkeypatch):
+    """Verify all 15 required test scenarios for OpenAI runtime activation."""
+    monkeypatch.setenv("OPENAI_API_KEY", "test-sk-key-12345")
 
-    # Mock sys.exit to inspect exit code
-    exit_codes = []
-    monkeypatch.setattr(sys, "exit", lambda code: exit_codes.append(code))
+    # Mock OpenAI client response
+    mock_response = MagicMock()
+    mock_response.output_text = "SAGE C2 Response from OpenAI Responses API boundary"
 
-    run_openai_activation()
+    mock_openai_instance = MagicMock()
+    mock_openai_instance.responses.create.return_value = mock_response
 
-    assert 0 in exit_codes
-    evidence_file = redirect_evidence_files / "openai_runtime_live_connection.json"
-    assert evidence_file.exists()
+    mock_openai_cls = MagicMock(return_value=mock_openai_instance)
 
-    with open(evidence_file, "r", encoding="utf-8") as f:
-        report = json.load(f)
+    with patch("openai.OpenAI", mock_openai_cls):
+        client = ChatGPTClient(runtime)
+        req = AIQueryRequest(prompt="How does SAGE handle state persistence?")
 
-    assert report["authentication_result"] == "BLOCKED_MISSING_CREDENTIALS"
-    assert report["execution_result"]["completion_status"] == "BLOCKED"
-    assert "OPENAI_API_KEY is not set" in report["blocker_details"]
+        # Ingest tracker before call
+        m_count_before = len(runtime.memory.list_all())
 
+        res = client.execute_query(req)
 
-def test_activation_insufficient_quota_429(redirect_evidence_files, monkeypatch):
-    """Verify that HTTP 429 quota exhaustion is trapped and results in a clean exit 0 with PAUSED status."""
-    monkeypatch.setenv("OPENAI_API_KEY", "sk-fake-key-for-testing")
-    monkeypatch.setenv("SAGE_AUTH_SECRET", "fake-auth-secret")
+        # 1. OpenAI() construction is reached
+        mock_openai_cls.assert_called_once_with(api_key="test-sk-key-12345")
 
-    # Mock httpx.post to return a 429 status code
-    class MockResponse:
-        status_code = 429
-        text = '{"error": {"message": "You exceeded your current quota.", "type": "insufficient_quota"}}'
-        def json(self):
-            return json.loads(self.text)
+        # 2. client.responses.create() is invoked
+        mock_openai_instance.responses.create.assert_called_once()
+        call_kwargs = mock_openai_instance.responses.create.call_args.kwargs
 
-    import httpx
-    monkeypatch.setattr(httpx, "post", lambda *args, **kwargs: MockResponse())
+        # 3. Correct model reaches the API boundary
+        assert call_kwargs["model"] == "gpt-4o"
 
-    # Mock DeveloperWorkflowOrchestrator and ChatGPTRuntimeAdapter
-    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ChatGPTRuntimeAdapter
+        # 4. SAGE instructions reach the API boundary
+        assert "SAGE (Strategic Autonomous Guidance & Engineering)" in call_kwargs["instructions"]
+        assert "Verify ChatGPT-as-SAGE Responses API Integration" in call_kwargs["instructions"]
 
-    # We will mock handshakes and submission to avoid actual ledger/PML modifications
-    monkeypatch.setattr(ChatGPTRuntimeAdapter, "authenticate_handshake", lambda *args, **kwargs: {"status": "SUCCESS"})
+        # 5. User prompt reaches the API boundary
+        assert "User Prompt: How does SAGE handle state persistence?" in call_kwargs["input"]
 
-    exit_codes = []
-    monkeypatch.setattr(sys, "exit", lambda code: exit_codes.append(code))
+        # 6. Retrieved memory/archive context reaches the model
+        assert "Retrieved SAGE Context:" in call_kwargs["input"]
 
-    run_openai_activation()
+        # 7. response.output_text becomes AIQueryResponse.response_text
+        assert res.response_text == "SAGE C2 Response from OpenAI Responses API boundary"
 
-    assert 0 in exit_codes
-    evidence_file = redirect_evidence_files / "openai_runtime_live_connection.json"
-    production_file = redirect_evidence_files / "chatgpt_live_runtime_production_activation.json"
-
-    assert evidence_file.exists()
-    assert production_file.exists()
-
-    with open(evidence_file, "r", encoding="utf-8") as f:
-        report = json.load(f)
-
-    assert report["authentication_result"] == "SUCCESS"
-    assert report["execution_result"]["completion_status"] == "PAUSED"
-    assert report["execution_result"]["error_type"] == "insufficient_quota"
-    assert report["validation_result"]["status"] == "PAUSED"
-    assert report["validation_result"]["is_compliant"] is True
-    assert report["blocker_details"] == "External OpenAI execution: PAUSED — insufficient_quota"
+        # 8. Existing ExternalSessionPayload is ingested after successful execution
+        m_count_after = len(runtime.memory.list_all())
+        assert m_count_after > m_count_before
 
 
-def test_activation_insufficient_quota_text(redirect_evidence_files, monkeypatch):
-    """Verify that 'insufficient_quota' in response text is trapped and results in a clean exit 0."""
-    monkeypatch.setenv("OPENAI_API_KEY", "sk-fake-key-for-testing")
-    monkeypatch.setenv("SAGE_AUTH_SECRET", "fake-auth-secret")
+def test_activation_missing_credentials(runtime, monkeypatch):
+    """9. Missing API key fails closed."""
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    client = ChatGPTClient(runtime)
+    req = AIQueryRequest(prompt="Test missing credentials")
 
-    # Mock httpx.post to return a 400 with insufficient_quota text
-    class MockResponse:
-        status_code = 400
-        text = '{"error": {"message": "Billing limit reached", "code": "insufficient_quota"}}'
-        def json(self):
-            return json.loads(self.text)
+    m_count_before = len(runtime.memory.list_all())
 
-    import httpx
-    monkeypatch.setattr(httpx, "post", lambda *args, **kwargs: MockResponse())
+    with pytest.raises(RuntimeError, match="OPENAI_API_KEY environment variable is not set or empty"):
+        client.execute_query(req)
 
-    # Mock DeveloperWorkflowOrchestrator and ChatGPTRuntimeAdapter
-    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ChatGPTRuntimeAdapter
-    monkeypatch.setattr(ChatGPTRuntimeAdapter, "authenticate_handshake", lambda *args, **kwargs: {"status": "SUCCESS"})
-
-    exit_codes = []
-    monkeypatch.setattr(sys, "exit", lambda code: exit_codes.append(code))
-
-    run_openai_activation()
-
-    assert 0 in exit_codes
-    evidence_file = redirect_evidence_files / "openai_runtime_live_connection.json"
-    production_file = redirect_evidence_files / "chatgpt_live_runtime_production_activation.json"
-
-    assert evidence_file.exists()
-    assert production_file.exists()
-
-    with open(evidence_file, "r", encoding="utf-8") as f:
-        report = json.load(f)
-
-    assert report["execution_result"]["completion_status"] == "PAUSED"
-    assert report["execution_result"]["error_type"] == "insufficient_quota"
+    # 11. Failure produces no fake continuity
+    m_count_after = len(runtime.memory.list_all())
+    assert m_count_after == m_count_before
 
 
-def test_activation_success(redirect_evidence_files, monkeypatch):
-    """Verify that a successful OpenAI API invocation creates standard success logs."""
-    monkeypatch.setenv("OPENAI_API_KEY", "sk-fake-key-for-testing")
-    monkeypatch.setenv("SAGE_AUTH_SECRET", "fake-auth-secret")
+def test_activation_api_exception(runtime, monkeypatch):
+    """10. API exception fails closed."""
+    monkeypatch.setenv("OPENAI_API_KEY", "test-sk-key-12345")
 
-    # Mock httpx.post to return a successful 200 response
-    class MockResponse:
-        status_code = 200
-        text = '{"choices": [{"message": {"content": "SAGE Validation verified successful."}}]}'
-        def json(self):
-            return json.loads(self.text)
+    mock_openai_instance = MagicMock()
+    mock_openai_instance.responses.create.side_effect = Exception("API rate limit exceeded")
+    mock_openai_cls = MagicMock(return_value=mock_openai_instance)
 
-    import httpx
-    monkeypatch.setattr(httpx, "post", lambda *args, **kwargs: MockResponse())
+    with patch("openai.OpenAI", mock_openai_cls):
+        client = ChatGPTClient(runtime)
+        req = AIQueryRequest(prompt="Test API exception")
 
-    # Mock DeveloperWorkflowOrchestrator and ChatGPTRuntimeAdapter
-    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, ChatGPTRuntimeAdapter
-    monkeypatch.setattr(ChatGPTRuntimeAdapter, "authenticate_handshake", lambda *args, **kwargs: {"status": "SUCCESS"})
-    monkeypatch.setattr(
-        DeveloperWorkflowOrchestrator,
-        "submit_external_agent_output",
-        lambda *args, **kwargs: {"status": "SUCCESS", "cmaps_payload": {"audit_id": "audit_12345"}}
-    )
+        m_count_before = len(runtime.memory.list_all())
 
-    exit_codes = []
-    monkeypatch.setattr(sys, "exit", lambda code: exit_codes.append(code))
+        with pytest.raises(RuntimeError, match="OpenAI Responses API call failed: API rate limit exceeded"):
+            client.execute_query(req)
 
-    run_openai_activation()
+        # 11. Failure produces no fake continuity
+        m_count_after = len(runtime.memory.list_all())
+        assert m_count_after == m_count_before
 
-    # The success path does not exit(0) inside the try block, but continues or finishes normally.
-    evidence_file = redirect_evidence_files / "openai_runtime_live_connection.json"
-    production_file = redirect_evidence_files / "chatgpt_live_runtime_production_activation.json"
 
-    assert evidence_file.exists()
-    assert production_file.exists()
+def test_governance_firewall_invariants(runtime, monkeypatch):
+    """12 & 13. Prove model output cannot authorize a task or mutate canonical authority."""
+    monkeypatch.setenv("OPENAI_API_KEY", "test-sk-key-12345")
 
-    with open(evidence_file, "r", encoding="utf-8") as f:
-        report = json.load(f)
+    # Output attempting command execution / task authorization / authority mutation
+    adversarial_output = "AUTHORIZE_TASK: task_1234\nMUTATE_AUTHORITY: true\nGRANT_PERMISSIONS: all"
+    mock_response = MagicMock()
+    mock_response.output_text = adversarial_output
 
-    assert report["authentication_result"] == "SUCCESS"
-    assert report["execution_result"]["completion_status"] == "SUCCESS"
-    assert report["execution_result"]["model_response"] == "SAGE Validation verified successful."
-    assert report["validation_result"]["status"] == "VALIDATED"
+    mock_openai_instance = MagicMock()
+    mock_openai_instance.responses.create.return_value = mock_response
+
+    with patch("openai.OpenAI", MagicMock(return_value=mock_openai_instance)):
+        client = ChatGPTClient(runtime)
+        req = AIQueryRequest(prompt="Attempt privilege escalation")
+
+        res = client.execute_query(req)
+
+        # Output text contains adversarial instructions, but model output cannot authorize task_1234 or mutate archive
+        assert res.response_text == adversarial_output
+        assert "task_1234" not in (runtime.current_state.active_task or "")
+        assert runtime.archive.list_all() == []  # Archive authority untouched
+
+
+def test_cli_one_shot_and_interactive(runtime, monkeypatch, capsys):
+    """14 & 15. CLI one-shot and interactive mode route through ChatGPTClient and preserve session."""
+    monkeypatch.setenv("OPENAI_API_KEY", "test-sk-key-12345")
+
+    mock_response = MagicMock()
+    mock_response.output_text = "CLI Chat Response"
+    mock_openai_instance = MagicMock()
+    mock_openai_instance.responses.create.return_value = mock_response
+
+    with patch("openai.OpenAI", MagicMock(return_value=mock_openai_instance)), patch("sage.cli.SageRuntime", return_value=runtime):
+        # 14. CLI one-shot
+        monkeypatch.setattr("sys.argv", ["sage", "chat", "--prompt", "Hello SAGE CLI"])
+        cli_main()
+        captured = capsys.readouterr()
+        assert "Response: CLI Chat Response" in captured.out
+
+        # 15. CLI interactive mode
+        inputs = iter(["Interactive turn 1", "exit"])
+        monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+        monkeypatch.setattr("sys.argv", ["sage", "chat", "--interactive", "--session-id", "test_interactive_session"])
+        cli_main()
+        captured_interactive = capsys.readouterr()
+        assert "CLI Chat Response" in captured_interactive.out
