@@ -36,10 +36,9 @@ COORDINATION_EVENT_TYPES = {
 
 
 def _load() -> tuple[Any, Any, Any]:
-    models = importlib.import_module("sage.experimental.airspace.models")
     manager_module = importlib.import_module("sage.experimental.airspace.manager")
     state = manager_module.AirspaceManager().reconstruct_airspace_state()
-    return models, manager_module, state
+    return manager_module, state
 
 
 def _events(manager_module: Any) -> list[dict[str, Any]]:
@@ -49,10 +48,11 @@ def _events(manager_module: Any) -> list[dict[str, Any]]:
 
 
 def _active_sorties(state: Any) -> list[Any]:
+    """Only execution/evidence lifecycle states count as active work."""
     return [
         sortie
         for sortie in state.active_sorties
-        if sortie.status.value not in {"CLOSED", "ABORTED", "FAILED", "BLOCKED"}
+        if sortie.status.value in {"ACTIVE", "EVIDENCE_CAPTURE", "DEBRIEF", "VERIFIED"}
     ]
 
 
@@ -74,14 +74,12 @@ def _station_activity(station_id: Any, sorties: list[Any]) -> str:
         if value == "MISSION_CONTROL":
             return C2_REVIEW_ACTIVE
         return WORKING
-    if status in {"CLEARED", "BRIEFED", "CREATED"}:
-        return WORKING
     return STANDBY
 
 
 def get_coordination_state() -> dict[str, Any]:
     """Return deterministic, read-only team coordination state."""
-    models, manager_module, state = _load()
+    manager_module, state = _load()
     sorties = _active_sorties(state)
     stations = {}
     active_stations = []
