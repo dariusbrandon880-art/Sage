@@ -60,7 +60,6 @@ def main():
         if args.task:
             session_id = runtime.set_task(args.task)
             print(f"Success: Task set to '{args.task}'")
-            print(f"Session ID: {session_id}")
         else:
             print(f"Current Task: {runtime.current_state.active_task or 'None'}")
     elif args.command == "status":
@@ -142,9 +141,18 @@ def main():
     elif args.command == "chat":
         try:
             from sage.integration import AIQueryRequest, ChatGPTClient
+            from sage.experimental.airspace.manager import AirspaceManager
+            from sage.experimental.airspace.models import StationID
+            from sage.experimental.airspace.nameplate import render_chat_nameplate
+
             client = ChatGPTClient(runtime)
+            airspace_state = AirspaceManager().reconstruct_airspace_state()
+            nameplate = render_chat_nameplate(airspace_state, StationID.MISSION_CONTROL)
+
             if args.prompt:
-                print(client.execute_query(AIQueryRequest(prompt=args.prompt)).response_text)
+                response = client.execute_query(AIQueryRequest(prompt=args.prompt))
+                print(nameplate)
+                print(response.response_text)
             else:
                 session_id = None
                 while True:
@@ -155,6 +163,7 @@ def main():
                         continue
                     response = client.execute_query(AIQueryRequest(prompt=prompt, session_id=session_id))
                     session_id = response.session_id
+                    print(nameplate)
                     print(response.response_text)
         except Exception as e:
             print(f"Error: Chat query failed: {e!s}")
