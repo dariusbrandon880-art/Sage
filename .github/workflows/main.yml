@@ -9,6 +9,9 @@ on:
 permissions:
   contents: read
 
+env:
+  SAGE_CI_OPENAI_STUB: "1"
+
 jobs:
   test:
     runs-on: ubuntu-latest
