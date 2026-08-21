@@ -14,6 +14,7 @@ from __future__ import annotations
 import importlib
 from typing import Any
 
+from sage.agent_context_envelope import build_agent_context_envelope
 from sage.coordination_events import AGENT_COORDINATION_RECEIPT
 
 
@@ -57,13 +58,7 @@ def _recipients(event: dict[str, Any]) -> list[str]:
 
 
 def _active_sorties(state: Any) -> list[Any]:
-    """Return active sorties when the canonical state exposes them.
-
-    Minimal read-only projection fixtures may intentionally provide only the
-    state fields needed for identity/context projection. Treat missing sortie
-    state as an empty activity set rather than making unread projection depend
-    on unrelated Airspace fields.
-    """
+    """Return active sorties when the canonical state exposes them."""
     active_sorties = getattr(state, "active_sorties", None)
     if active_sorties is None:
         return []
@@ -123,11 +118,7 @@ def _identity_for_actor(state: Any, actor: str, *, state_label: str = STANDBY) -
 
 
 def get_unread_coordination(agent_id: str) -> list[dict[str, Any]]:
-    """Return deterministic pending coordination events for one agent.
-
-    Pending is deliberately distinct from delivered/received. Only an explicit
-    canonical receipt removes an event from this projection.
-    """
+    """Return deterministic pending coordination events for one agent."""
     if not isinstance(agent_id, str) or not agent_id.strip():
         raise ValueError("agent_id must be a non-empty string")
     manager_module, state = _load()
@@ -154,24 +145,23 @@ def get_unread_coordination(agent_id: str) -> list[dict[str, Any]]:
                 sender_state = _station_activity(station_id, sorties)
                 break
         payload = event.get("payload") or {}
-        unread.append({
-            "event_id": event_id,
-            "event_type": event.get("event_type"),
-            "timestamp": event.get("timestamp"),
-            "actor": event.get("actor"),
-            "recipients": _recipients(event),
+        identity_projection = _identity_for_actor(state, actor, state_label=sender_state)
+        envelope = build_agent_context_envelope(
+            sender=actor,
+            recipient=agent_id,
+            context_id=payload.get("context_id"),
+            event_id=str(event_id),
+            timestamp=event.get("timestamp"),
+            event_type=str(event.get("event_type")),
+            payload=payload,
+            sender_identity_projection=identity_projection,
+        )
+        envelope.update({
             "mission_id": event.get("mission_id"),
             "sortie_id": event.get("sortie_id"),
             "evidence_refs": list(event.get("evidence_refs", [])),
-            "payload": payload,
-            "context_id": payload.get("context_id"),
-            "sender_identity": _identity_for_actor(state, actor, state_label=sender_state),
-            "projection_version": "coordination-context-v0.1",
-            "delivery_state": "PENDING",
-            "delivery_semantics": "pull_projection_only",
-            "read_only": True,
-            "authority": "canonical_airspace_state_and_event_ledger",
         })
+        unread.append(envelope)
     return unread
 
 
