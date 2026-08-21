@@ -14,7 +14,6 @@ import json
 from types import MappingProxyType
 from typing import Any, Mapping
 
-
 DECISION_RECORD_VERSION = "decision-record-v0.1"
 
 
@@ -91,13 +90,11 @@ class DecisionRecord:
             raise ValueError("decision_payload must be a mapping")
         if timestamp_locked is None or (isinstance(timestamp_locked, str) and not timestamp_locked.strip()):
             raise ValueError("timestamp_locked is required")
-
         if envelope is not None:
             if envelope.get("context_id") != context_id:
                 raise ValueError("authority/context envelope mismatch: context_id")
             if envelope.get("authority") != authority_ref:
                 raise ValueError("authority/context envelope mismatch: authority")
-
         payload = _freeze(decision_payload)
         decision_block = {
             "decision_id": decision_id,
@@ -109,10 +106,26 @@ class DecisionRecord:
             "version": DECISION_RECORD_VERSION,
         }
         digest = hashlib.sha256(_canonical(decision_block).encode("utf-8")).hexdigest()
-        return cls(decision_id=decision_id, context_id=context_id, authority_ref=authority_ref, evidence_refs=refs, decision_payload=payload, timestamp_locked=timestamp_locked, decision_hash=digest)
+        return cls(
+            decision_id=decision_id,
+            context_id=context_id,
+            authority_ref=authority_ref,
+            evidence_refs=refs,
+            decision_payload=payload,
+            timestamp_locked=timestamp_locked,
+            decision_hash=digest,
+        )
 
     def _decision_block(self) -> dict[str, Any]:
-        return {"decision_id": self.decision_id, "context_id": self.context_id, "authority_ref": self.authority_ref, "evidence_refs": self.evidence_refs, "decision_payload": self.decision_payload, "timestamp_locked": self.timestamp_locked, "version": self.version}
+        return {
+            "decision_id": self.decision_id,
+            "context_id": self.context_id,
+            "authority_ref": self.authority_ref,
+            "evidence_refs": self.evidence_refs,
+            "decision_payload": self.decision_payload,
+            "timestamp_locked": self.timestamp_locked,
+            "version": self.version,
+        }
 
     def verify_integrity(self) -> bool:
         if not self.decision_hash:
@@ -126,14 +139,26 @@ class DecisionRecord:
         if not isinstance(outcome, Mapping):
             raise ValueError("resolution must be a mapping")
         _require_text(verification_status, "verification_status")
-        return replace(self, resolution=_freeze({**dict(outcome), "verification_status": verification_status}))
+        resolution = _freeze({**dict(outcome), "verification_status": verification_status})
+        return replace(self, resolution=resolution)
 
     def with_capability_impact(self, capability_impact_ref: str) -> "DecisionRecord":
         _require_text(capability_impact_ref, "capability_impact_ref")
         return replace(self, capability_impact_ref=capability_impact_ref)
 
     def to_dict(self) -> dict[str, Any]:
-        return {"decision_record_version": self.version, "decision_id": self.decision_id, "context_id": self.context_id, "authority_ref": self.authority_ref, "evidence_refs": list(self.evidence_refs), "decision_payload": _thaw(self.decision_payload), "timestamp_locked": self.timestamp_locked, "resolution": _thaw(self.resolution) if self.resolution is not None else None, "capability_impact_ref": self.capability_impact_ref, "decision_hash": self.decision_hash}
+        return {
+            "decision_record_version": self.version,
+            "decision_id": self.decision_id,
+            "context_id": self.context_id,
+            "authority_ref": self.authority_ref,
+            "evidence_refs": list(self.evidence_refs),
+            "decision_payload": _thaw(self.decision_payload),
+            "timestamp_locked": self.timestamp_locked,
+            "resolution": _thaw(self.resolution) if self.resolution is not None else None,
+            "capability_impact_ref": self.capability_impact_ref,
+            "decision_hash": self.decision_hash,
+        }
 
     def serialize(self) -> str:
         return _canonical(self.to_dict())
