@@ -14,6 +14,8 @@ from __future__ import annotations
 import importlib
 from typing import Any
 
+from sage.coordination_events import AGENT_COORDINATION_RECEIPT
+
 
 STANDBY = "STANDBY"
 WORKING = "WORKING"
@@ -23,7 +25,6 @@ ENGINEERING_ACTIVE = "ENGINEERING_ACTIVE"
 C2_REVIEW_ACTIVE = "C2_REVIEW_ACTIVE"
 VERIFYING = "VERIFYING"
 
-# Existing canonical Airspace event types plus the bounded communication types.
 COORDINATION_EVENT_TYPES = {
     "MISSION_CREATED",
     "SORTIE_CREATED",
@@ -32,6 +33,15 @@ COORDINATION_EVENT_TYPES = {
     "QUALIFICATION_PROMOTED",
     "QUALIFICATION_CHALLENGED",
     "XP_AWARDED",
+    "AGENT_COORDINATION_MESSAGE",
+    "AGENT_HANDOFF",
+    "AGENT_ASSIGNMENT",
+    "AGENT_CHALLENGE",
+    "AGENT_VERIFICATION",
+    AGENT_COORDINATION_RECEIPT,
+}
+
+DELIVERABLE_COORDINATION_EVENT_TYPES = {
     "AGENT_COORDINATION_MESSAGE",
     "AGENT_HANDOFF",
     "AGENT_ASSIGNMENT",
@@ -52,8 +62,15 @@ def _events(manager_module: Any) -> list[dict[str, Any]]:
     return list(manager._load_raw_events())
 
 
+def _recipients(event: dict[str, Any]) -> list[str]:
+    payload = event.get("payload") or {}
+    recipients = payload.get("recipients", payload.get("recipient", payload.get("to_agent")))
+    if isinstance(recipients, str):
+        recipients = [recipients]
+    return [str(value) for value in recipients] if isinstance(recipients, list) else []
+
+
 def _active_sorties(state: Any) -> list[Any]:
-    """Only execution/evidence lifecycle states count as active work."""
     return [
         sortie
         for sortie in state.active_sorties
@@ -65,7 +82,6 @@ def _station_activity(station_id: Any, sorties: list[Any]) -> str:
     station_sorties = [s for s in sorties if s.station == station_id]
     if not station_sorties:
         return STANDBY
-
     current = station_sorties[-1]
     status = current.status.value
     if status in {"EVIDENCE_CAPTURE", "DEBRIEF"}:
@@ -83,34 +99,60 @@ def _station_activity(station_id: Any, sorties: list[Any]) -> str:
 
 
 def _communication_projection(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Expose only explicit participant metadata; never infer relationships."""
     projected = []
     for event in events:
         payload = event.get("payload") or {}
-        recipients = payload.get("recipients", payload.get("recipient", payload.get("to_agent")))
         participants = payload.get("participants")
-        if isinstance(recipients, str):
-            recipients = [recipients]
-        if not isinstance(recipients, list):
-            recipients = []
         if isinstance(participants, str):
             participants = [participants]
         if not isinstance(participants, list):
             participants = []
-        projected.append(
-            {
-                "event_id": event.get("event_id"),
-                "event_type": event.get("event_type"),
-                "timestamp": event.get("timestamp"),
-                "actor": event.get("actor"),
-                "recipients": [str(v) for v in recipients],
-                "participants": [str(v) for v in participants],
-                "mission_id": event.get("mission_id"),
-                "sortie_id": event.get("sortie_id"),
-                "evidence_refs": list(event.get("evidence_refs", [])),
-            }
-        )
+        projected.append({
+            "event_id": event.get("event_id"),
+            "event_type": event.get("event_type"),
+            "timestamp": event.get("timestamp"),
+            "actor": event.get("actor"),
+            "recipients": _recipients(event),
+            "participants": [str(v) for v in participants],
+            "mission_id": event.get("mission_id"),
+            "sortie_id": event.get("sortie_id"),
+            "evidence_refs": list(event.get("evidence_refs", [])),
+        })
     return projected[-10:]
+
+
+def get_unread_coordination(agent_id: str) -> list[dict[str, Any]]:
+    """Pure recipient projection derived from events minus that agent's receipts."""
+    if not isinstance(agent_id, str) or not agent_id.strip():
+        raise ValueError("agent_id must be a non-empty string")
+    manager_module, _ = _load()
+    events = _events(manager_module)
+    acknowledged = {
+        (event.get("payload") or {}).get("acknowledged_event_id")
+        for event in events
+        if event.get("event_type") == AGENT_COORDINATION_RECEIPT
+        and event.get("actor") == agent_id
+    }
+    unread = [
+        event for event in events
+        if event.get("event_type") in DELIVERABLE_COORDINATION_EVENT_TYPES
+        and agent_id in _recipients(event)
+        and event.get("event_id") not in acknowledged
+    ]
+    return [
+        {
+            "event_id": event.get("event_id"),
+            "event_type": event.get("event_type"),
+            "timestamp": event.get("timestamp"),
+            "actor": event.get("actor"),
+            "recipients": _recipients(event),
+            "mission_id": event.get("mission_id"),
+            "sortie_id": event.get("sortie_id"),
+            "evidence_refs": list(event.get("evidence_refs", [])),
+            "payload": event.get("payload") or {},
+        }
+        for event in unread
+    ]
 
 
 def get_coordination_state() -> dict[str, Any]:
@@ -119,7 +161,6 @@ def get_coordination_state() -> dict[str, Any]:
     sorties = _active_sorties(state)
     stations = {}
     active_stations = []
-
     for station_id, station in state.stations.items():
         activity = _station_activity(station_id, sorties)
         if activity != STANDBY:
@@ -128,69 +169,42 @@ def get_coordination_state() -> dict[str, Any]:
             "agent_name": station.agent_name,
             "activity": activity,
             "active": bool(activity != STANDBY and station.active_status),
-            "mission_id": next(
-                (s.mission_id for s in sorties if s.station == station_id), None
-            ),
+            "mission_id": next((s.mission_id for s in sorties if s.station == station_id), None),
             "sorties": [s.sortie_id for s in sorties if s.station == station_id],
             "cql": station.current_cql,
             "sql": station.current_sql,
             "xp": state.game_progression.get_total_xp_for_station(station_id),
         }
-
     mission = state.active_mission
     assigned = [s.value for s in mission.assigned_stations] if mission else []
     overall = COORDINATING if len(set(active_stations)) > 1 else STANDBY
     if len(active_stations) == 1:
         overall = stations[active_stations[0]]["activity"]
-
     events = _events(manager_module)
-    coordination_events = [
-        {
-            "event_id": e.get("event_id"),
-            "event_type": e.get("event_type"),
-            "timestamp": e.get("timestamp"),
-            "actor": e.get("actor"),
-            "mission_id": e.get("mission_id"),
-            "sortie_id": e.get("sortie_id"),
-            "evidence_refs": list(e.get("evidence_refs", [])),
-            "payload": e.get("payload") or {},
-        }
-        for e in events
-        if e.get("event_type") in COORDINATION_EVENT_TYPES
-    ]
-
+    coordination_events = [{
+        "event_id": e.get("event_id"), "event_type": e.get("event_type"),
+        "timestamp": e.get("timestamp"), "actor": e.get("actor"),
+        "mission_id": e.get("mission_id"), "sortie_id": e.get("sortie_id"),
+        "evidence_refs": list(e.get("evidence_refs", [])), "payload": e.get("payload") or {},
+    } for e in events if e.get("event_type") in COORDINATION_EVENT_TYPES]
     last_event = coordination_events[-1] if coordination_events else None
     if last_event:
         last_event = {k: v for k, v in last_event.items() if k != "payload"}
-
     return {
-        "status": overall,
-        "mission_id": mission.mission_id if mission else None,
+        "status": overall, "mission_id": mission.mission_id if mission else None,
         "mission_name": mission.mission_name if mission else None,
         "mission_objective": mission.objective if mission else None,
-        "assigned_stations": assigned,
-        "active_stations": active_stations,
+        "assigned_stations": assigned, "active_stations": active_stations,
         "stations": stations,
-        "active_sorties": [
-            {
-                "sortie_id": s.sortie_id,
-                "mission_id": s.mission_id,
-                "station": s.station.value,
-                "objective": s.objective,
-                "status": s.status.value,
-            }
-            for s in sorties
-        ],
+        "active_sorties": [{"sortie_id": s.sortie_id, "mission_id": s.mission_id, "station": s.station.value, "objective": s.objective, "status": s.status.value} for s in sorties],
         "last_coordination_event": last_event,
         "recent_communications": _communication_projection(coordination_events),
         "coordination_event_count": len(coordination_events),
-        "read_only": True,
-        "authority": "canonical_airspace_state_and_event_ledger",
+        "read_only": True, "authority": "canonical_airspace_state_and_event_ledger",
     }
 
 
 def render_coordination_status() -> str:
-    """Render a compact truthful team activity line."""
     context = get_coordination_state()
     participants = []
     for station in context["stations"].values():
