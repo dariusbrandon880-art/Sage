@@ -159,6 +159,10 @@ def get_coordination_state() -> dict[str, Any]:
         if e.get("event_type") in COORDINATION_EVENT_TYPES
     ]
 
+    last_event = coordination_events[-1] if coordination_events else None
+    if last_event:
+        last_event = {k: v for k, v in last_event.items() if k != "payload"}
+
     return {
         "status": overall,
         "mission_id": mission.mission_id if mission else None,
@@ -177,9 +181,7 @@ def get_coordination_state() -> dict[str, Any]:
             }
             for s in sorties
         ],
-        "last_coordination_event": (
-            coordination_events[-1] if coordination_events else None
-        ),
+        "last_coordination_event": last_event,
         "recent_communications": _communication_projection(coordination_events),
         "coordination_event_count": len(coordination_events),
         "read_only": True,
