@@ -19,14 +19,14 @@ def test_nameplate_uses_canonical_station_progression():
     assert "XP 125" in rendered
 
 
-def test_chat_nameplate_is_compact_and_bracketed():
+def test_chat_nameplate_is_canonical_and_bracketed():
     state = AirspaceState()
     rendered = render_chat_nameplate(state, StationID.ENGINEERING_FLIGHT)
 
-    assert rendered.startswith("[")
+    assert rendered.startswith("[SAGE::ENGINEER::JULES]")
     assert "Jules" in rendered
     assert "CQL-4" in rendered
-    assert rendered.endswith("]")
+    assert "XP 0" in rendered
 
 
 def test_nameplate_does_not_mutate_progression():
