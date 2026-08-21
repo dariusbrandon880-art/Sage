@@ -53,6 +53,12 @@ def validation_system(memory_store, archive):
 
 
 if os.environ.get("SAGE_CI_OPENAI_STUB") == "1":
+    # The CI stub replaces the SDK transport and also supplies a deterministic
+    # initialization token so client-side credential guards can construct the
+    # client without reaching a real external service. Tests that verify the
+    # missing-key invariant explicitly clear OPENAI_API_KEY themselves.
+    os.environ.setdefault("OPENAI_API_KEY", "sage-ci-deterministic-stub")
+
     class _Responses:
         def create(self, *, model, instructions, input):
             return SimpleNamespace(output_text=f"CI stub response for: {input}")
