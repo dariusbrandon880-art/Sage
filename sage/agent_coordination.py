@@ -57,7 +57,7 @@ def _active_sorties(state: Any) -> list[Any]:
     return [
         sortie
         for sortie in state.active_sorties
-        if sortie.status.value in {"ACTIVE", "EVIDENCE_CAPTURE", "DEBRIEF", "VERIFIED"}
+        if sortie.status.value in {"ACTIVE", "EVIDENCE_CAPTURE", "DEBRIEF"}
     ]
 
 
@@ -68,7 +68,7 @@ def _station_activity(station_id: Any, sorties: list[Any]) -> str:
 
     current = station_sorties[-1]
     status = current.status.value
-    if status in {"EVIDENCE_CAPTURE", "DEBRIEF", "VERIFIED"}:
+    if status in {"EVIDENCE_CAPTURE", "DEBRIEF"}:
         return VERIFYING
     if status == "ACTIVE":
         value = station_id.value
@@ -80,6 +80,37 @@ def _station_activity(station_id: Any, sorties: list[Any]) -> str:
             return C2_REVIEW_ACTIVE
         return WORKING
     return STANDBY
+
+
+def _communication_projection(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Expose only explicit participant metadata; never infer relationships."""
+    projected = []
+    for event in events:
+        payload = event.get("payload") or {}
+        recipients = payload.get("recipients", payload.get("recipient", payload.get("to_agent")))
+        participants = payload.get("participants")
+        if isinstance(recipients, str):
+            recipients = [recipients]
+        if not isinstance(recipients, list):
+            recipients = []
+        if isinstance(participants, str):
+            participants = [participants]
+        if not isinstance(participants, list):
+            participants = []
+        projected.append(
+            {
+                "event_id": event.get("event_id"),
+                "event_type": event.get("event_type"),
+                "timestamp": event.get("timestamp"),
+                "actor": event.get("actor"),
+                "recipients": [str(v) for v in recipients],
+                "participants": [str(v) for v in participants],
+                "mission_id": event.get("mission_id"),
+                "sortie_id": event.get("sortie_id"),
+                "evidence_refs": list(event.get("evidence_refs", [])),
+            }
+        )
+    return projected[-10:]
 
 
 def get_coordination_state() -> dict[str, Any]:
@@ -122,6 +153,7 @@ def get_coordination_state() -> dict[str, Any]:
             "mission_id": e.get("mission_id"),
             "sortie_id": e.get("sortie_id"),
             "evidence_refs": list(e.get("evidence_refs", [])),
+            "payload": e.get("payload") or {},
         }
         for e in events
         if e.get("event_type") in COORDINATION_EVENT_TYPES
@@ -145,7 +177,10 @@ def get_coordination_state() -> dict[str, Any]:
             }
             for s in sorties
         ],
-        "last_coordination_event": coordination_events[-1] if coordination_events else None,
+        "last_coordination_event": (
+            coordination_events[-1] if coordination_events else None
+        ),
+        "recent_communications": _communication_projection(coordination_events),
         "coordination_event_count": len(coordination_events),
         "read_only": True,
         "authority": "canonical_airspace_state_and_event_ledger",
