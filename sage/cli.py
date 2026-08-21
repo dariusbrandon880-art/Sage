@@ -76,6 +76,13 @@ def main():
     # capabilities subcommand
     subparsers.add_parser("capabilities", help="Get report of SAGE platform capabilities")
 
+    # chat subcommand
+    chat_parser = subparsers.add_parser(
+        "chat", help="Execute a query using ChatGPTClient and SAGE runtime continuity"
+    )
+    chat_parser.add_argument("--prompt", type=str, required=True, help="The query prompt for ChatGPT")
+    chat_parser.add_argument("--response", type=str, help="Optional response override for test stubs")
+
     # metrics subcommand
     subparsers.add_parser("metrics", help="Show collected runtime telemetry metrics")
 
@@ -222,6 +229,18 @@ def main():
             print(json.dumps(result, indent=2))
         except Exception as e:
             print(f"Error: Capability reporting failed: {e!s}")
+            sys.exit(1)
+
+    elif args.command == "chat":
+        try:
+            from sage.integration import ChatGPTClient, AIQueryRequest
+
+            client = ChatGPTClient(runtime)
+            req = AIQueryRequest(prompt=args.prompt, response_override=args.response)
+            res = client.execute_query(req)
+            print(res.response_text)
+        except Exception as e:
+            print(f"Error: Chat query failed: {e!s}")
             sys.exit(1)
 
     elif args.command == "metrics":

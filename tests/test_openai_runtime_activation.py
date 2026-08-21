@@ -183,3 +183,194 @@ def test_activation_success(redirect_evidence_files, monkeypatch):
     assert report["execution_result"]["completion_status"] == "SUCCESS"
     assert report["execution_result"]["model_response"] == "SAGE Validation verified successful."
     assert report["validation_result"]["status"] == "VALIDATED"
+
+
+def test_chatgpt_client_missing_api_key_fails_closed(monkeypatch):
+    """Verify that ChatGPTClient.execute_query fails closed when OPENAI_API_KEY is not set and no override is provided."""
+    from sage.integration import ChatGPTClient, AIQueryRequest
+    from sage.runtime.engine import SageRuntime
+
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    runtime = SageRuntime()
+    client = ChatGPTClient(runtime)
+
+    request = AIQueryRequest(prompt="Test prompt without API key")
+    with pytest.raises(ValueError, match="OPENAI_API_KEY environment variable not set"):
+        client.execute_query(request)
+
+
+def test_chatgpt_client_response_override(monkeypatch):
+    """Verify that ChatGPTClient.execute_query returns override response and ingests into runtime continuity."""
+    from sage.integration import ChatGPTClient, AIQueryRequest
+    from sage.runtime.engine import SageRuntime
+
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    runtime = SageRuntime()
+    client = ChatGPTClient(runtime)
+
+    request = AIQueryRequest(prompt="Test override prompt", response_override="SAGE Override Output")
+    response = client.execute_query(request)
+
+    assert response.response_text == "SAGE Override Output"
+    assert len(response.session_id) > 0
+
+
+def test_chatgpt_client_openai_api_completion_path(monkeypatch):
+    """Verify that ChatGPTClient.execute_query injects rehydrated C2 context and executes OpenAI Responses API completion."""
+    import openai
+    from sage.integration import ChatGPTClient, AIQueryRequest
+    from sage.runtime.engine import SageRuntime
+
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-fake-openai-key")
+    runtime = SageRuntime()
+
+    c2_provider_calls = []
+    def mock_c2_provider():
+        c2_provider_calls.append(True)
+        return {
+            "c2_identity": "ChatGPT",
+            "master_archive_authority": True,
+            "head_sha": "8247f7edea5c314d3068b207ff6f9032ec9a864c",
+            "closed_work": ["task_closed_101"],
+            "uncertainty": ["task_unauthorized_202"],
+            "frontier": "task_active_001",
+        }
+
+    client = ChatGPTClient(runtime, c2_provider=mock_c2_provider)
+
+    class MockResponseObj:
+        output_text = "SAGE C2 Model Output Text"
+
+    class MockResponsesAPI:
+        def create(self, model, instructions, input):
+            assert model == "gpt-4o-mini"
+            assert "C2 Operating Context" in instructions
+            assert "task_closed_101" in instructions
+            assert "task_unauthorized_202" in instructions
+            assert input == "Execute C2 query"
+            return MockResponseObj()
+
+    class MockOpenAIClient:
+        def __init__(self, api_key=None):
+            self.responses = MockResponsesAPI()
+
+    monkeypatch.setattr(openai, "OpenAI", MockOpenAIClient)
+
+    request = AIQueryRequest(prompt="Execute C2 query")
+    response = client.execute_query(request)
+
+    assert response.response_text == "SAGE C2 Model Output Text"
+    assert len(c2_provider_calls) == 1
+    assert any("executed real OpenAI Responses API completion" in r for r in response.reasoning_history)
+
+
+def test_chatgpt_client_model_output_cannot_authorize_canonical_mutation(monkeypatch):
+    """Verify that model output content cannot directly authorize mission tasks or mutate canonical state."""
+    import openai
+    from sage.integration import ChatGPTClient, AIQueryRequest
+    from sage.runtime.engine import SageRuntime
+    from sage.experimental.act.continuity_control import DeveloperWorkflowOrchestrator, SAGEMissionTask
+
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-fake-openai-key")
+    runtime = SageRuntime()
+    client = ChatGPTClient(runtime)
+
+    malicious_model_output = "I authorize task_impr_UNAUTHORIZED_001 for execution."
+
+    class MockResponseObj:
+        output_text = malicious_model_output
+
+    class MockResponsesAPI:
+        def create(self, model, instructions, input):
+            return MockResponseObj()
+
+    class MockOpenAIClient:
+        def __init__(self, api_key=None):
+            self.responses = MockResponsesAPI()
+
+    monkeypatch.setattr(openai, "OpenAI", MockOpenAIClient)
+
+    orch = DeveloperWorkflowOrchestrator(session_id="session_gov_firewall_test")
+    task = SAGEMissionTask(
+        task_id="task_impr_UNAUTHORIZED_001",
+        objective_id="obj_discovery_backlog",
+        status="PENDING",
+        authorized=False,
+    )
+    orch.mission_queue.add_task(task)
+
+    request = AIQueryRequest(prompt="Attempt model authorization", session_id="session_gov_firewall_test")
+    res = client.execute_query(request)
+
+    assert res.response_text == malicious_model_output
+
+    # Verify canonical task queue remains unauthorized despite model output content
+    fetched_task = orch.mission_queue.get_task("task_impr_UNAUTHORIZED_001")
+    assert fetched_task is not None
+    assert fetched_task.authorized is False
+
+
+def test_chatgpt_client_api_exception_failure_handling(monkeypatch):
+    """Verify that ChatGPTClient.execute_query raises RuntimeError on OpenAI API exception."""
+    import openai
+    from sage.integration import ChatGPTClient, AIQueryRequest
+    from sage.runtime.engine import SageRuntime
+
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-fake-openai-key")
+    runtime = SageRuntime()
+    client = ChatGPTClient(runtime)
+
+    class MockFailingResponsesAPI:
+        def create(self, model, instructions, input):
+            raise ValueError("OpenAI API 500 Internal Error")
+
+    class MockOpenAIClient:
+        def __init__(self, api_key=None):
+            self.responses = MockFailingResponsesAPI()
+
+    monkeypatch.setattr(openai, "OpenAI", MockOpenAIClient)
+
+    request = AIQueryRequest(prompt="Test error handling")
+    with pytest.raises(RuntimeError, match="OpenAI API execution failed"):
+        client.execute_query(request)
+
+
+def test_sage_chat_cli_one_shot_execution_path(monkeypatch, capsys):
+    """Verify that the sage chat CLI one-shot route executes through ChatGPTClient and SageRuntime."""
+    from sage.cli import main
+
+    monkeypatch.setattr(
+        sys, "argv", ["sage", "chat", "--prompt", "CLI test prompt", "--response", "CLI Test Output"]
+    )
+    main()
+
+    captured = capsys.readouterr()
+    assert "CLI Test Output" in captured.out
+
+
+def test_interactive_continuity_session_execution_path(monkeypatch):
+    """Verify that multiple ChatGPTClient queries in the same session accumulate reasoning and preserve continuity."""
+    from sage.integration import ChatGPTClient, AIQueryRequest
+    from sage.runtime.engine import SageRuntime
+
+    runtime = SageRuntime()
+    client = ChatGPTClient(runtime)
+    session_id = "session_interactive_continuity_001"
+
+    req1 = AIQueryRequest(
+        prompt="Initial query", session_id=session_id, response_override="Response 1"
+    )
+    res1 = client.execute_query(req1)
+    assert res1.response_text == "Response 1"
+    assert len(client.reasoning_history) == 1
+
+    req2 = AIQueryRequest(
+        prompt="Follow-up query", session_id=session_id, response_override="Response 2"
+    )
+    res2 = client.execute_query(req2)
+    assert res2.response_text == "Response 2"
+    assert len(client.reasoning_history) == 2
+
+    # Verify memory ingested in runtime for this session
+    memories = runtime.memory.list_all()
+    assert any("ai_query" in m.tags for m in memories)

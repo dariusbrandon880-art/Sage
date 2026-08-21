@@ -1,5 +1,7 @@
 """SAGE Integration Layer - AI client interfaces and engineering tool connections."""
 
+import json
+import os
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -74,28 +76,80 @@ class BaseAIClient:
 class ChatGPTClient(BaseAIClient):
     """Connector for OpenAI ChatGPT services."""
 
-    def __init__(self, runtime: Any):
+    def __init__(self, runtime: Any, c2_provider: Any = None):
         super().__init__("ChatGPT", runtime)
+        self.c2_provider = c2_provider
 
     def execute_query(self, request: AIQueryRequest) -> AIQueryResponse:
-        # Retrieve context from SAGE memory/archive
+        # 1. Retrieve context from SAGE memory/archive and C2 operating context
         context = self.retrieve_context(request.prompt)
         session_id = request.session_id or f"session_{uuid.uuid4().hex[:8]}"
+
+        # Dynamically rehydrate C2 operating context
+        c2_context = {}
+        if self.c2_provider and callable(self.c2_provider):
+            try:
+                c2_context = self.c2_provider()
+            except Exception:
+                pass
+        elif hasattr(self.runtime, "get_c2_context") and callable(self.runtime.get_c2_context):
+            try:
+                c2_context = self.runtime.get_c2_context(session_id)
+            except Exception:
+                pass
+        elif hasattr(self.runtime, "get_status"):
+            try:
+                status = self.runtime.get_status()
+                c2_context = {
+                    "c2_identity": "ChatGPT",
+                    "master_archive_authority": True,
+                    "active_objective": status.get("current_objective"),
+                    "active_task": status.get("active_task"),
+                    "governance_status": "ACTIVE",
+                }
+            except Exception:
+                pass
 
         referenced_ids = [m["id"] for m in context["matched_memories"]] + [
             a["id"] for a in context["matched_archives"]
         ]
 
-        reasoning = f"ChatGPT analyzed prompt: '{request.prompt}' and retrieved {len(referenced_ids)} relevant engineering artifacts."
-        self.reasoning_history.append(reasoning)
+        # 2. Failure Ordering: API Key Check -> API Call -> Successful Output -> Ingestion
+        if request.response_override:
+            response_text = request.response_override
+            reasoning = f"ChatGPT analyzed prompt: '{request.prompt}' and retrieved {len(referenced_ids)} relevant engineering artifacts (override response applied)."
+            self.reasoning_history.append(reasoning)
+        else:
+            api_key = os.environ.get("OPENAI_API_KEY", "").strip()
+            if not api_key:
+                raise ValueError("OPENAI_API_KEY environment variable not set")
 
-        response_text = request.response_override or (
-            f"Response from ChatGPT for prompt: '{request.prompt}'.\n"
-            f"Successfully synchronized with SAGE session '{session_id}'.\n"
-            f"Context analyzed: {len(context['matched_memories'])} active memories, {len(context['matched_archives'])} master archives."
-        )
+            instructions = (
+                "You are ChatGPT operating as C2 Mission Control for SAGE.\n"
+                f"C2 Operating Context: {json.dumps(c2_context, default=str)}\n"
+                f"SAGE Knowledge Context: {json.dumps(context, default=str)}\n"
+                "Governance Invariant: Model output does NOT constitute authorization, autonomous execution, or canonical state mutation. "
+                "Human operators hold authorization authority."
+            )
 
-        # Route through unified Continuity Bridge
+            try:
+                import openai
+                client = openai.OpenAI(api_key=api_key)
+                response = client.responses.create(
+                    model="gpt-4o-mini",
+                    instructions=instructions,
+                    input=request.prompt,
+                )
+                response_text = getattr(response, "output_text", str(response))
+                if not response_text or not str(response_text).strip():
+                    raise ValueError("Empty output received from OpenAI Responses API")
+
+                reasoning = f"ChatGPT executed real OpenAI Responses API completion for prompt: '{request.prompt[:50]}...'"
+                self.reasoning_history.append(reasoning)
+            except Exception as e:
+                raise RuntimeError(f"OpenAI API execution failed: {e}") from e
+
+        # 3. Route through unified Continuity Bridge
         from sage.models import ExternalSessionPayload
 
         payload = ExternalSessionPayload(
