@@ -135,7 +135,7 @@ def main():
     elif args.command == "capabilities":
         try:
             from sage.runtime import generate_capability_report
-            print(json.dumps(generate_capability_report(runtime), indent=2)
+            print(json.dumps(generate_capability_report(runtime), indent=2))
         except Exception as e:
             print(f"Error: Capability reporting failed: {e!s}")
             sys.exit(1)
