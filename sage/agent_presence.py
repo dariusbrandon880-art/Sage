@@ -19,9 +19,11 @@ def load_airspace_state() -> Any:
 
 
 def render_team_status() -> str:
-    """Render a compact roster showing all station ranks and current coordination."""
+    """Render a compact roster using canonical coordination activity."""
     models = importlib.import_module("sage.experimental.airspace.models")
+    coordination = importlib.import_module("sage.agent_coordination")
     state = load_airspace_state()
+    context = coordination.get_coordination_state()
     StationID = models.StationID
 
     ordered = (
@@ -37,23 +39,18 @@ def render_team_status() -> str:
         StationID.ENGINEERING_FLIGHT: "Engineering",
     }
 
-    active_mission = state.active_mission
-    assigned = set(active_mission.assigned_stations) if active_mission else set()
-    active_sorties = [s for s in state.active_sorties if s.status.value == "ACTIVE"]
-    coordinating = len(assigned) > 1 or len(active_sorties) > 1
-    activity = "COORDINATING" if coordinating else "STANDBY"
-
     roster = []
     for station_id in ordered:
         station = state.stations[station_id]
         xp = state.game_progression.get_total_xp_for_station(station_id)
-        marker = "*" if station_id in assigned else "-"
+        activity = context["stations"][station_id.value]["activity"]
+        marker = "*" if activity != coordination.STANDBY else "-"
         roster.append(
             f"{marker}{labels[station_id]}:{station.agent_name} "
             f"CQL-{station.current_cql}/SQL-{station.current_sql} XP-{xp}"
         )
 
-    return f"TEAM {activity} | " + " | ".join(roster)
+    return f"TEAM {context['status']} | " + " | ".join(roster)
 
 
 def render_chat_identity(station_id_value: str = "MISSION_CONTROL") -> str:
@@ -71,8 +68,8 @@ def render_chat_identity(station_id_value: str = "MISSION_CONTROL") -> str:
 
 def get_team_context() -> dict[str, Any]:
     """Return structured read-only team state suitable for agent context injection."""
-    models = importlib.import_module("sage.experimental.airspace.models")
     coordination = importlib.import_module("sage.agent_coordination")
+    models = importlib.import_module("sage.experimental.airspace.models")
     state = load_airspace_state()
     StationID = models.StationID
 
@@ -87,10 +84,9 @@ def get_team_context() -> dict[str, Any]:
             "active": station.active_status,
         }
 
-    team_coordination = coordination.get_coordination_state()
     return {
         "stations": stations,
-        "coordination": team_coordination,
+        "coordination": coordination.get_coordination_state(),
         "read_only": True,
         "authority": "canonical_airspace_state_and_event_ledger",
     }
