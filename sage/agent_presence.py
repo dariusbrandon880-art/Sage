@@ -68,6 +68,7 @@ def render_chat_identity(station_id_value: str = "MISSION_CONTROL") -> str:
 def get_team_context() -> dict[str, Any]:
     """Return structured read-only team state suitable for agent context injection."""
     models = importlib.import_module("sage.experimental.airspace.models")
+    coordination = importlib.import_module("sage.agent_coordination")
     state = load_airspace_state()
     StationID = models.StationID
 
@@ -82,17 +83,10 @@ def get_team_context() -> dict[str, Any]:
             "active": station.active_status,
         }
 
-    mission = state.active_mission
+    team_coordination = coordination.get_coordination_state()
     return {
         "stations": stations,
-        "coordination": {
-            "status": "COORDINATING"
-            if mission and len(mission.assigned_stations) > 1
-            else "STANDBY",
-            "mission_id": mission.mission_id if mission else None,
-            "assigned_stations": [s.value for s in mission.assigned_stations] if mission else [],
-            "active_sorties": [s.sortie_id for s in state.active_sorties if s.status.value == "ACTIVE"],
-        },
+        "coordination": team_coordination,
         "read_only": True,
-        "authority": "canonical_airspace_state",
+        "authority": "canonical_airspace_state_and_event_ledger",
     }
