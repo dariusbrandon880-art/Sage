@@ -59,9 +59,9 @@ def test_unread_projection_filters_acknowledged_events(monkeypatch):
 def test_unread_projection_carries_structured_identity_and_delivery_semantics(monkeypatch):
     _patch(monkeypatch, _events())
     event = coordination.get_unread_coordination("C2")[0]
-    assert event["sender_identity"]["nameplate"] == "[SAGE::GEMINI]"
+    assert event["sender_identity_projection"]["nameplate"] == "[SAGE::GEMINI]"
     assert event["context_id"] == "ctx-2"
-    assert event["projection_version"] == "coordination-context-v0.1"
+    assert event["projection_version"] == "agent-context-envelope-v0.1"
     assert event["delivery_state"] == "PENDING"
     assert event["delivery_semantics"] == "pull_projection_only"
     assert event["read_only"] is True
