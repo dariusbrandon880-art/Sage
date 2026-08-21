@@ -57,7 +57,20 @@ def _recipients(event: dict[str, Any]) -> list[str]:
 
 
 def _active_sorties(state: Any) -> list[Any]:
-    return [s for s in state.active_sorties if s.status.value in {"ACTIVE", "EVIDENCE_CAPTURE", "DEBRIEF"}]
+    """Return active sorties when the canonical state exposes them.
+
+    Minimal read-only projection fixtures may intentionally provide only the
+    state fields needed for identity/context projection. Treat missing sortie
+    state as an empty activity set rather than making unread projection depend
+    on unrelated Airspace fields.
+    """
+    active_sorties = getattr(state, "active_sorties", None)
+    if active_sorties is None:
+        return []
+    return [
+        sortie for sortie in active_sorties
+        if sortie.status.value in {"ACTIVE", "EVIDENCE_CAPTURE", "DEBRIEF"}
+    ]
 
 
 def _station_activity(station_id: Any, sorties: list[Any]) -> str:
