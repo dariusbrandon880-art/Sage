@@ -185,8 +185,8 @@ def test_activation_success(redirect_evidence_files, monkeypatch):
     assert report["validation_result"]["status"] == "VALIDATED"
 
 
-def test_chatgpt_client_missing_api_key_fallback(monkeypatch):
-    """Verify that ChatGPTClient.execute_query uses default sync response when OPENAI_API_KEY is not set and no override is passed."""
+def test_chatgpt_client_missing_api_key_fails_closed(monkeypatch):
+    """Verify that ChatGPTClient.execute_query fails closed and prevents continuity ingestion when OPENAI_API_KEY is missing."""
     from sage.integration import ChatGPTClient, AIQueryRequest
     from sage.runtime.engine import SageRuntime
 
@@ -194,9 +194,45 @@ def test_chatgpt_client_missing_api_key_fallback(monkeypatch):
     runtime = SageRuntime()
     client = ChatGPTClient(runtime)
 
+    initial_memory_count = len(runtime.memory.list_all())
     request = AIQueryRequest(prompt="Test prompt without API key")
-    res = client.execute_query(request)
-    assert "Response from ChatGPT for prompt: 'Test prompt without API key'" in res.response_text
+
+    with pytest.raises(ValueError, match="OPENAI_API_KEY environment variable not set"):
+        client.execute_query(request)
+
+    # Prove failure Ordering: missing key = failure -> NO continuity ingestion!
+    assert len(runtime.memory.list_all()) == initial_memory_count
+
+
+def test_chatgpt_client_api_exception_prevents_continuity_ingestion(monkeypatch):
+    """Verify that an API exception prevents continuity ingestion."""
+    openai_mod = _get_mock_openai_module()
+    from sage.integration import ChatGPTClient, AIQueryRequest
+    from sage.runtime.engine import SageRuntime
+
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-fake-openai-key")
+    runtime = SageRuntime()
+    client = ChatGPTClient(runtime)
+
+    initial_memory_count = len(runtime.memory.list_all())
+
+    class MockFailingResponsesAPI:
+        def create(self, model, instructions, input):
+            raise ValueError("OpenAI API 500 Internal Error")
+
+    class MockOpenAIClient:
+        def __init__(self, api_key=None):
+            self.responses = MockFailingResponsesAPI()
+
+    monkeypatch.setattr(openai_mod, "OpenAI", MockOpenAIClient)
+
+    request = AIQueryRequest(prompt="Test API exception continuity isolation")
+
+    with pytest.raises(RuntimeError, match="OpenAI API execution failed"):
+        client.execute_query(request)
+
+    # Prove failure Ordering: API error = failure -> NO continuity ingestion!
+    assert len(runtime.memory.list_all()) == initial_memory_count
 
 
 def test_chatgpt_client_response_override(monkeypatch):
@@ -351,12 +387,12 @@ def test_sage_chat_cli_one_shot_execution_path(monkeypatch, capsys):
     from sage.cli import main
 
     monkeypatch.setattr(
-        sys, "argv", ["sage", "chat", "--prompt", "CLI test prompt", "--response", "CLI Test Output"]
+        sys, "argv", ["sage", "chat", "--prompt", "CLI_test_prompt", "--response", "CLI_Test_Output"]
     )
     main()
 
     captured = capsys.readouterr()
-    assert "CLI Test Output" in captured.out
+    assert "CLI_Test_Output" in captured.out
 
 
 def test_interactive_continuity_session_execution_path(monkeypatch):

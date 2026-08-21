@@ -119,8 +119,10 @@ class ChatGPTClient(BaseAIClient):
             response_text = request.response_override
             reasoning = f"ChatGPT analyzed prompt: '{request.prompt}' and retrieved {len(referenced_ids)} relevant engineering artifacts (override response applied)."
             self.reasoning_history.append(reasoning)
-        elif os.environ.get("OPENAI_API_KEY", "").strip():
+        else:
             api_key = os.environ.get("OPENAI_API_KEY", "").strip()
+            if not api_key:
+                raise ValueError("OPENAI_API_KEY environment variable not set")
 
             instructions = (
                 "You are ChatGPT operating as C2 Mission Control for SAGE.\n"
@@ -138,22 +140,14 @@ class ChatGPTClient(BaseAIClient):
                     instructions=instructions,
                     input=request.prompt,
                 )
-                response_text = getattr(response, "output_text", str(response))
+                response_text = response.output_text
                 if not response_text or not str(response_text).strip():
-                    raise ValueError("Empty output received from OpenAI Responses API")
+                    raise ValueError("Empty or malformed output received from OpenAI Responses API")
 
                 reasoning = f"ChatGPT executed real OpenAI Responses API completion for prompt: '{request.prompt[:50]}...'"
                 self.reasoning_history.append(reasoning)
             except Exception as e:
                 raise RuntimeError(f"OpenAI API execution failed: {e}") from e
-        else:
-            response_text = (
-                f"Response from ChatGPT for prompt: '{request.prompt}'.\n"
-                f"Successfully synchronized with SAGE session '{session_id}'.\n"
-                f"Context analyzed: {len(context['matched_memories'])} active memories, {len(context['matched_archives'])} master archives."
-            )
-            reasoning = f"ChatGPT analyzed prompt: '{request.prompt}' and retrieved {len(referenced_ids)} relevant engineering artifacts."
-            self.reasoning_history.append(reasoning)
 
         # 3. Route through unified Continuity Bridge
         from sage.models import ExternalSessionPayload
