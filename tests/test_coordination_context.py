@@ -43,7 +43,11 @@ def _events():
 def _patch(monkeypatch, events):
     monkeypatch.setattr(coordination, "_load", lambda: (_ManagerModule, _State()))
     monkeypatch.setattr(coordination, "_events", lambda manager: events)
-    monkeypatch.setattr(coordination, "_identity_for_actor", lambda state, actor: {"nameplate": f"[SAGE::{actor}]", "read_only": True})
+    monkeypatch.setattr(
+        coordination,
+        "_identity_for_actor",
+        lambda state, actor, **kwargs: {"nameplate": f"[SAGE::{actor}]", "read_only": True},
+    )
 
 
 def test_unread_projection_filters_acknowledged_events(monkeypatch):
