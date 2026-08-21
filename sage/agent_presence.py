@@ -57,12 +57,16 @@ def render_team_status() -> str:
 
 
 def render_chat_identity(station_id_value: str = "MISSION_CONTROL") -> str:
-    """Render the active station nameplate plus shared team state."""
+    """Render the active station nameplate plus shared team coordination state."""
     models = importlib.import_module("sage.experimental.airspace.models")
     nameplate_module = importlib.import_module("sage.experimental.airspace.nameplate")
+    coordination = importlib.import_module("sage.agent_coordination")
     state = load_airspace_state()
     station_id = models.StationID(station_id_value)
-    return f"[{nameplate_module.render_agent_nameplate(state, station_id)}] {render_team_status()}"
+    return (
+        f"[{nameplate_module.render_agent_nameplate(state, station_id)}] "
+        f"{coordination.render_coordination_status()}"
+    )
 
 
 def get_team_context() -> dict[str, Any]:
