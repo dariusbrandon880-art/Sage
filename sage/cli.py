@@ -142,9 +142,9 @@ def main():
     elif args.command == "chat":
         try:
             from sage.integration import AIQueryRequest, ChatGPTClient
-            from sage.agent_presence import render_chat_identity
+            from sage.agent_presence import get_team_context, render_chat_identity
 
-            client = ChatGPTClient(runtime)
+            client = ChatGPTClient(runtime, c2_provider=get_team_context)
 
             if args.prompt:
                 response = client.execute_query(AIQueryRequest(prompt=args.prompt))
