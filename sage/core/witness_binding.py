@@ -132,6 +132,26 @@ class WitnessBinding:
         """Verify the signature over the exact canonical claim payload."""
         return attestation_provider.verify(self._claim_payload(), self.signature)
 
+    def verification_report(self, attestation_provider: CryptographicAttestationProvider) -> Dict[str, Any]:
+        """Return an epistemically bounded verification result.
+
+        SAGE deliberately separates cryptographic integrity from evidentiary
+        sufficiency. A valid signature establishes that this exact claim was
+        signed by the configured provider; it does not establish independent
+        witnessing or real-world effect. Independence remains UNKNOWN until
+        a verifier has separate trust evidence comparing distinct parties.
+        """
+        signature_valid = self.verify_signature(attestation_provider)
+        return {
+            "claim_digest": self.claim_digest,
+            "signature_valid": signature_valid,
+            "provenance_bound": True,
+            "independence_status": "UNKNOWN",
+            "real_world_effect_proven": False,
+            "authority_granted": False,
+            "verification_scope": "SIGNED_CLAIM_INTEGRITY_ONLY",
+        }
+
     def to_dict(self) -> Dict[str, Any]:
         """Return deterministic public evidence metadata; no private reasoning."""
         return {
