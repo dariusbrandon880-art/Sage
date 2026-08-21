@@ -13,10 +13,10 @@ from sage.decision_record import DecisionRecord, DecisionResolution
 from sage.evidence_capability_evaluator import EvidenceCapabilityEvaluator
 
 
-def make_evaluation():
+def make_evaluation(context_id="ctx-001"):
     decision = DecisionRecord(
         decision_id="decision-001",
-        context_id="ctx-001",
+        context_id=context_id,
         authority_ref="c2-level-1",
         evidence_refs=["receipt:001"],
         decision_payload={"action": "evaluate"},
@@ -38,12 +38,12 @@ def make_evaluation():
     )
 
 
-def make_envelope():
+def make_envelope(context_id="ctx-001"):
     return {
         "envelope_version": ENVELOPE_VERSION,
         "sender": "SAGE::ENGINE",
         "recipient": "SAGE::C2",
-        "context_id": "ctx-001",
+        "context_id": context_id,
         "event_id": "event-001",
         "event_type": "DECISION",
         "timestamp": "2026-08-21T23:00:00Z",
@@ -68,6 +68,7 @@ def test_complete_evaluation_projects_candidate_without_authority():
     assert identity["reviewer_required"] is True
     assert identity["authority_granted"] is False
     assert identity["qualification_mutated"] is False
+    assert identity["projection_only"] is True
     assert projected["read_only"] is True
 
 
@@ -93,6 +94,11 @@ def test_hold_evaluation_remains_hold():
     assert projected["sender_identity_projection"]["capability_delta"] == "NO_CHANGE"
     assert projected["sender_identity_projection"]["authority_granted"] is False
     assert evaluation.verdict == "PROMOTION_CANDIDATE"
+
+
+def test_context_mismatch_fails_closed():
+    with pytest.raises(ValueError, match="context mismatch"):
+        project_capability_evaluation_to_envelope(make_envelope("ctx-other"), make_evaluation("ctx-001"))
 
 
 def test_projection_does_not_mutate_envelope():
