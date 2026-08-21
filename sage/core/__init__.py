@@ -6,6 +6,7 @@ from sage.core.hdg import HDGEngine
 from sage.core.compliance import ComplianceEngine
 from sage.core.spek import SpekEngine
 from sage.core.models import RuleState, Proposal, HypothesisNode, SpekReceipt
+from sage.core.witness_binding import WitnessBinding, WitnessBindingValidationError, WitnessClaimKind
 from sage.core.version import __version__
 
 __all__ = [
@@ -18,5 +19,8 @@ __all__ = [
     "Proposal",
     "HypothesisNode",
     "SpekReceipt",
+    "WitnessBinding",
+    "WitnessBindingValidationError",
+    "WitnessClaimKind",
     "__version__",
 ]
