@@ -142,17 +142,13 @@ def main():
     elif args.command == "chat":
         try:
             from sage.integration import AIQueryRequest, ChatGPTClient
-            from sage.experimental.airspace.manager import AirspaceManager
-            from sage.experimental.airspace.models import StationID
-            from sage.experimental.airspace.nameplate import render_chat_nameplate
+            from sage.agent_presence import render_chat_identity
 
             client = ChatGPTClient(runtime)
-            airspace_state = AirspaceManager().reconstruct_airspace_state()
-            nameplate = render_chat_nameplate(airspace_state, StationID.MISSION_CONTROL)
 
             if args.prompt:
                 response = client.execute_query(AIQueryRequest(prompt=args.prompt))
-                print(nameplate)
+                print(render_chat_identity())
                 print(response.response_text)
             else:
                 session_id = None
@@ -164,7 +160,7 @@ def main():
                         continue
                     response = client.execute_query(AIQueryRequest(prompt=prompt, session_id=session_id))
                     session_id = response.session_id
-                    print(nameplate)
+                    print(render_chat_identity())
                     print(response.response_text)
         except Exception as e:
             print(f"Error: Chat query failed: {e!s}")
