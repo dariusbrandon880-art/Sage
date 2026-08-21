@@ -31,9 +31,26 @@ ALLOWED_COORDINATION_EVENT_TYPES = frozenset(
 )
 
 
-def _validate_receipt_payload(payload: dict[str, Any]) -> None:
-    acknowledged_event_id = payload.get("acknowledged_event_id")
-    acknowledged_at = payload.get("acknowledged_at")
+def _recipients(event: dict[str, Any]) -> set[str]:
+    payload = event.get("payload") or {}
+    recipients = payload.get("recipients", payload.get("recipient", payload.get("to_agent")))
+    if isinstance(recipients, str):
+        return {recipients}
+    if isinstance(recipients, list):
+        return {str(value) for value in recipients}
+    return set()
+
+
+def _validate_receipt_payload(
+    payload: dict[str, Any], *, actor: str, ledger_events: list[dict[str, Any]]
+) -> None:
+    allowed = {"acknowledged_event_id", "acknowledged_at"}
+    if set(payload) != allowed:
+        raise ValueError(
+            "Receipt payload must contain exactly 'acknowledged_event_id' and 'acknowledged_at'"
+        )
+    acknowledged_event_id = payload["acknowledged_event_id"]
+    acknowledged_at = payload["acknowledged_at"]
     if not isinstance(acknowledged_event_id, str) or not acknowledged_event_id.strip():
         raise ValueError("Receipt requires a non-empty acknowledged_event_id")
     if not isinstance(acknowledged_at, str) or not acknowledged_at.strip():
@@ -42,6 +59,18 @@ def _validate_receipt_payload(payload: dict[str, Any]) -> None:
         datetime.fromisoformat(acknowledged_at.replace("Z", "+00:00"))
     except ValueError as exc:
         raise ValueError("Receipt acknowledged_at must be ISO-8601") from exc
+
+    target = next(
+        (event for event in ledger_events if event.get("event_id") == acknowledged_event_id),
+        None,
+    )
+    if target is None:
+        raise ValueError(f"Target event {acknowledged_event_id} does not exist in ledger")
+    if actor not in _recipients(target):
+        raise ValueError(
+            f"Actor {actor} cannot acknowledge event intended for "
+            f"{sorted(_recipients(target)) or 'no recipient'}"
+        )
 
 
 def record_coordination_event(
@@ -56,15 +85,17 @@ def record_coordination_event(
     """Append one explicit coordination event to canonical Airspace state."""
     if event_type not in ALLOWED_COORDINATION_EVENT_TYPES:
         raise ValueError(f"Unsupported coordination event type: {event_type}")
-    if not actor.strip():
+    if not isinstance(actor, str) or not actor.strip():
         raise ValueError("Coordination event actor cannot be empty")
     if not isinstance(payload, dict):
         raise TypeError("Coordination event payload must be a dictionary")
-    if event_type == AGENT_COORDINATION_RECEIPT:
-        _validate_receipt_payload(payload)
 
     manager_module = importlib.import_module("sage.experimental.airspace.manager")
-    event = manager_module.AirspaceManager().record_event(
+    manager = manager_module.AirspaceManager()
+    if event_type == AGENT_COORDINATION_RECEIPT:
+        _validate_receipt_payload(payload, actor=actor, ledger_events=manager._load_raw_events())
+
+    event = manager.record_event(
         event_type=event_type,
         actor=actor,
         payload=payload,
