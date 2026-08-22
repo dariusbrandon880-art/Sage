@@ -1,0 +1,90 @@
+name: SAGE Capability Evolution Benchmark
+
+on:
+  push:
+    branches: [ c2/capability-evolution-benchmark-20260822 ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  five-flights:
+    name: "C2 Capability Evolution / ${{ matrix.front }}"
+    strategy:
+      fail-fast: false
+      max-parallel: 5
+      matrix:
+        front: [H1, H2, H3, H4, H5]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run benchmark invariants
+        run: python -m pytest -q tests/benchmarks/test_capability_evolution_benchmark.py
+      - name: Run focused five-front benchmark
+        run: |
+          python benchmarks/capability_evolution/runner.py \
+            --front "${{ matrix.front }}" \
+            --output "capability_evolution_${{ matrix.front }}.json"
+      - name: Upload flight evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: sage-capability-evolution-${{ matrix.front }}-${{ github.sha }}
+          path: capability_evolution_${{ matrix.front }}.json
+          if-no-files-found: error
+
+  reconverge:
+    name: C2 Capability Evolution Fail-Closed Reconvergence
+    if: ${{ always() }}
+    needs: [five-flights]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download five independent flight results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: sage-capability-evolution-*
+          path: five-flight-results
+          merge-multiple: false
+      - name: Verify complete benchmark wave
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          root = Path("five-flight-results")
+          expected = {"H1", "H2", "H3", "H4", "H5"}
+          found = {}
+          for p in root.glob("*/capability_evolution_*.json"):
+              data = json.loads(p.read_text())
+              found[data["focus_front"]] = data
+          missing = sorted(expected - set(found))
+          if missing:
+              raise SystemExit(f"missing benchmark flights: {missing}")
+          for front, data in sorted(found.items()):
+              if {r["policy"] for r in data["results"]} != {"SEQUENTIAL", "PARALLEL_UNGOVERNED", "DEPENDENCY_AWARE", "SAGE_GOVERNED"}:
+                  raise SystemExit(f"incomplete policy set for {front}")
+          sage = {front: next(r["metrics"] for r in data["results"] if r["policy"] == "SAGE_GOVERNED") for front, data in found.items()}
+          report = {
+              "benchmark": "SAGE-CAPABILITY-EVOLUTION-001",
+              "commit_sha": os.environ["EXPECTED_SHA"],
+              "flights": sorted(found),
+              "sage_focus_results": sage,
+              "verdict": "RESEARCH_EVIDENCE_READY_FOR_INDEPENDENT_REVIEW"
+          }
+          Path("capability_evolution_wave_report.json").write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
+          print(json.dumps(report, indent=2, sort_keys=True))
+          PY
+      - name: Upload compound benchmark evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: sage-capability-evolution-wave-${{ github.sha }}
+          path: capability_evolution_wave_report.json
+          if-no-files-found: error
