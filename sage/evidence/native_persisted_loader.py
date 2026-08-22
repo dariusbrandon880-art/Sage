@@ -32,7 +32,7 @@ class NativePersistedEvidenceLoader:
                 raise ValueError("Persisted evidence loader requires exactly one ArchiveEntry per file")
             raw = raw[0]
         if not isinstance(raw, dict):
-            raise ValueError("Persisted evidence root must be an object")
+            raise TypeError("Persisted evidence root must be an object")
         return ArchiveEntry.model_validate(raw)
 
     def load_all(self) -> list[ArchiveEntry]:
