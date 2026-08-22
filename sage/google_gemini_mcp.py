@@ -34,14 +34,13 @@ router = APIRouter(prefix="/mcp", tags=["Google Gemini MCP"])
 
 def _jsonrpc_result(request_id: Any, result: dict[str, Any]) -> JSONResponse:
     result.setdefault("_meta", {})
-    result["_meta"][SERVER_INFO_META_KEY] = {
-        "name": SERVER_NAME,
-        "version": SERVER_VERSION,
-    }
+    result["_meta"][SERVER_INFO_META_KEY] = {"name": SERVER_NAME, "version": SERVER_VERSION}
     return JSONResponse({"jsonrpc": "2.0", "id": request_id, "result": result})
 
 
-def _jsonrpc_error(request_id: Any, code: int, message: str, data: Any = None, status: int = 400) -> JSONResponse:
+def _jsonrpc_error(
+    request_id: Any, code: int, message: str, data: Any = None, status: int = 400
+) -> JSONResponse:
     error: dict[str, Any] = {"code": code, "message": message}
     if data is not None:
         error["data"] = data
@@ -49,8 +48,16 @@ def _jsonrpc_error(request_id: Any, code: int, message: str, data: Any = None, s
 
 
 def _authorized(request: Request) -> bool:
+    """Use dedicated MCP auth when configured; otherwise inherit SAGE API auth.
+
+    Render production already enforces SAGE_REQUIRE_AUTH at the application
+    middleware layer. Keeping that boundary authoritative avoids a second secret
+    that Gemini users would have to synchronize manually.
+    """
     expected = os.getenv("SAGE_GOOGLE_MCP_API_KEY", "").strip()
     if not expected:
+        if os.getenv("SAGE_REQUIRE_AUTH", "false").lower() == "true":
+            return True
         return os.getenv("SAGE_GOOGLE_MCP_ALLOW_ANONYMOUS", "false").lower() == "true"
     supplied = request.headers.get("x-api-key", "")
     if not supplied:
@@ -138,17 +145,15 @@ def _tool_definitions() -> list[dict[str, Any]]:
 
 def _call_tool(runtime: Any, name: str, arguments: dict[str, Any]) -> dict[str, Any]:
     if name == "sage_context":
-        return {"structuredContent": _context(runtime), "content": [{"type": "text", "text": json.dumps(_context(runtime), sort_keys=True)}]}
+        context = _context(runtime)
+        return {"structuredContent": context, "content": [{"type": "text", "text": json.dumps(context, sort_keys=True)}]}
 
     if name == "sage_search":
         tag = arguments.get("tag")
         object_type = arguments.get("object_type")
         if bool(tag) == bool(object_type):
             raise ValueError("provide exactly one of tag or object_type")
-        if tag:
-            results = runtime.memory.search_by_tag(str(tag))
-        else:
-            results = runtime.memory.search_by_type(str(object_type))
+        results = runtime.memory.search_by_tag(str(tag)) if tag else runtime.memory.search_by_type(str(object_type))
         payload = {"count": len(results), "results": [item.model_dump() for item in results[:25]]}
         return {"structuredContent": payload, "content": [{"type": "text", "text": json.dumps(payload, default=str, sort_keys=True)}]}
 
@@ -235,7 +240,6 @@ async def google_gemini_mcp(request: Request) -> JSONResponse:
             status=400,
         )
 
-    # Runtime is imported lazily to avoid import cycles during app construction.
     from sage.api import runtime
 
     if method == "tools/list":
@@ -250,10 +254,7 @@ async def google_gemini_mcp(request: Request) -> JSONResponse:
         except KeyError:
             return _jsonrpc_error(request_id, -32602, f"Unknown tool: {name}", status=400)
         except (TypeError, ValueError) as exc:
-            return _jsonrpc_result(
-                request_id,
-                {"isError": True, "content": [{"type": "text", "text": str(exc)}]},
-            )
+            return _jsonrpc_result(request_id, {"isError": True, "content": [{"type": "text", "text": str(exc)}]})
         return _jsonrpc_result(request_id, result)
 
     return _jsonrpc_error(request_id, -32601, f"Method not found: {method}", status=404)
