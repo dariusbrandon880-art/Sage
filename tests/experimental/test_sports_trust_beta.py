@@ -243,6 +243,7 @@ def test_full_trust_flight_cycle_resolution_and_calibration():
         assert metrics.log_loss is not None
         assert metrics.baseline_log_loss is not None
         assert metrics.mean_clv_beat_margin is not None
+        assert pytest.approx(metrics.mean_clv_beat_margin, 1e-3) == 0.065
 
         summary = engine.generate_flight_summary()
         assert summary["flight_type"] == "SPORTS TRUST BETA — SHADOW PREDICTION FLIGHT"

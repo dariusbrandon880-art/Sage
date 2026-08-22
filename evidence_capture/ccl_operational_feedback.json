@@ -1,20 +1,20 @@
 {
-  "orchestrator_run_id": "orch_run_ce551a9fc3b8",
-  "timestamp": "2026-08-21T01:57:59.536203Z",
+  "orchestrator_run_id": "orch_run_459e3bb749e6",
+  "timestamp": "2026-08-22T20:57:45.532882Z",
   "session_id": "session_non_reexec_001",
   "session_objectives": [
     "obj_autonomous_mission_continuity"
   ],
   "status": "VALIDATED",
   "ccl_record": {
-    "record_id": "CCL-REC-20260821-4eb6b747-43b8-4c39-a14e-a9665ec5b915",
+    "record_id": "CCL-REC-20260822-ddab8e26-5a42-424a-acf5-b28e59a44f7f",
     "session_id": "session_non_reexec_001",
     "event_type": "state_transition",
-    "timestamp": 1787277479.536355,
+    "timestamp": 1787432265.533101,
     "action_taken": "Successfully revalidated workspace capabilities for files: ['sage/experimental/act/continuity_control.py']",
     "decision_reasoning": "Governed workspace revalidation executed cleanly; capability status updated and promoted to Master Archive",
     "evidence_payload": {
-      "git_commit": "8247f7edea5c314d3068b207ff6f9032ec9a864c",
+      "git_commit": "8bc8cbbf948dc58f75c91ebf725609b6430e7240",
       "protection_report": {
         "is_violation_found": false,
         "violations_found": 0,
@@ -22,7 +22,7 @@
         "violations": [],
         "status": "CLEAN_WORKSPACE"
       },
-      "cmaps_audit_id": "audit_9465398862c64eb0aac999020be4a2ef",
+      "cmaps_audit_id": "audit_0ed423cbbedb44bdac35e0cba7130620",
       "revalidated_capabilities": [
         "CAP-PML-RELIABILITY"
       ],
@@ -31,12 +31,12 @@
       ],
       "session_completed_actions": [],
       "session_pending_actions": [],
-      "enrichment_timestamp": 1787277479.5363295,
+      "enrichment_timestamp": 1787432265.5330741,
       "human_approval_record": {
         "supervisor_id": "supervisor_jules",
-        "signature": "sig_jules_0a8db78a2fd7",
+        "signature": "sig_jules_11820355b4e8",
         "decision": "APPROVED",
-        "approved_at": 1787277479.537075
+        "approved_at": 1787432265.533752
       }
     },
     "failure_context": null,
@@ -46,8 +46,8 @@
     "improvement_opportunities": []
   },
   "cmaps_payload": {
-    "audit_id": "audit_9465398862c64eb0aac999020be4a2ef",
-    "timestamp": "2026-08-21T01:57:59.536203Z",
+    "audit_id": "audit_0ed423cbbedb44bdac35e0cba7130620",
+    "timestamp": "2026-08-22T20:57:45.532882Z",
     "agent_identity": {
       "agent_id": "agent_jules_sage",
       "name": "Jules",
@@ -60,11 +60,11 @@
       "temperature": 0.2
     },
     "execution_state": {
-      "run_id": "run_636fc7c2e08142c9bfed",
+      "run_id": "run_393f652b4e41478fb627",
       "status": "completed",
       "step_counter": 1,
-      "started_at": "2026-08-21T01:57:59.536203Z",
-      "updated_at": "2026-08-21T01:57:59.536203Z"
+      "started_at": "2026-08-22T20:57:45.532882Z",
+      "updated_at": "2026-08-22T20:57:45.532882Z"
     },
     "task_lineage": {
       "session_id": "session_effddef5",
@@ -74,7 +74,7 @@
     "decision_events": [
       {
         "decision_id": "decision_coordinate_dev_loop",
-        "timestamp": "2026-08-21T01:57:59.536203Z",
+        "timestamp": "2026-08-22T20:57:45.532882Z",
         "summary": "Successfully revalidated workspace capabilities for files: ['sage/experimental/act/continuity_control.py']",
         "reasoning": "Governed workspace revalidation executed cleanly; capability status updated and promoted to Master Archive",
         "confidence": 1.0
@@ -84,19 +84,34 @@
     "recovery_checkpoints": [],
     "evidence_relationships": [
       {
-        "artifact_path": "sage/experimental/sports_rce.py",
-        "git_commit": "8247f7edea5c314d3068b207ff6f9032ec9a864c",
-        "sha256_checksum": "7df93dc28081d249f00ae0990785890568d8dbcd3c6a231a7e1ec68e8cacf023"
+        "artifact_path": "sage/experimental/act/continuity_control.py",
+        "git_commit": "8bc8cbbf948dc58f75c91ebf725609b6430e7240",
+        "sha256_checksum": "da0b7048c0b8a9d4532c4e5adea2d8223e71a44af05601ff10a7d81308636047"
       },
       {
-        "artifact_path": "tests/experimental/test_sports_rce.py",
-        "git_commit": "8247f7edea5c314d3068b207ff6f9032ec9a864c",
-        "sha256_checksum": "e765319c65849b5fe16d8c0305199ab59e5fb81fe37772b972dacdc4f0ef7862"
+        "artifact_path": "sage/experimental/sports_trust_beta.py",
+        "git_commit": "8bc8cbbf948dc58f75c91ebf725609b6430e7240",
+        "sha256_checksum": "42684aa0ffd7143ede89998ef85088e133c828e57e59b51dd4f0e4d166c5a80e"
+      },
+      {
+        "artifact_path": "sage/integration.py",
+        "git_commit": "8bc8cbbf948dc58f75c91ebf725609b6430e7240",
+        "sha256_checksum": "a23ff6aefee91d002b483f1a283ab0cdc3583a1b67a7160dc87c83f25b0153ec"
+      },
+      {
+        "artifact_path": "tests/experimental/test_sports_trust_beta.py",
+        "git_commit": "8bc8cbbf948dc58f75c91ebf725609b6430e7240",
+        "sha256_checksum": "75f7949f5229c4987b8c268fed330746e7ab82439cd202a86bb780d37153428c"
+      },
+      {
+        "artifact_path": "tests/test_continuity_bridge.py",
+        "git_commit": "8bc8cbbf948dc58f75c91ebf725609b6430e7240",
+        "sha256_checksum": "a1651eb31fa3e70a50ee26c6e6e97e7b8133ecb779ef89a554b8f29b92c09832"
       }
     ],
     "attestation": {
-      "nonce": "495b071d36564a29",
-      "signature": "sig_jules_0a8db78a2fd7",
+      "nonce": "c3bc38874920460c",
+      "signature": "sig_jules_11820355b4e8",
       "signer_identity": "supervisor_jules"
     }
   },
@@ -111,7 +126,7 @@
       "evidence_completeness": 1.0,
       "decision_trace_completeness": 1.0,
       "workflow_state_accuracy": 1.0,
-      "execution_cycle_duration": 0.07927107810974121,
+      "execution_cycle_duration": 0.06967973709106445,
       "context_preservation_score": 1.0,
       "unnecessary_reassessment_events": 0,
       "repeated_execution_prevention": true,

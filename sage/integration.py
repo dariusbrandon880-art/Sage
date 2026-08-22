@@ -124,12 +124,18 @@ class ChatGPTClient(BaseAIClient):
             if not api_key:
                 raise ValueError("OPENAI_API_KEY environment variable not set")
 
+            c2_protocol = {
+                "protocol": "SAGE C2 Five Flight Execution Protocol",
+                "cycle": ["Discover", "Design", "Build", "Verify + Compound"],
+                "rule": "Flights are adaptive build agents. Director selects mission targets; C2 executes the 4-step loop per flight.",
+            }
             instructions = (
                 "You are ChatGPT operating as C2 Mission Control for SAGE.\n"
+                f"C2 Flight Protocol: {json.dumps(c2_protocol, default=str)}\n"
                 f"C2 Operating Context: {json.dumps(c2_context, default=str)}\n"
                 f"SAGE Knowledge Context: {json.dumps(context, default=str)}\n"
                 "Governance Invariant: Model output does NOT constitute authorization, autonomous execution, or canonical state mutation. "
-                "Human operators hold authorization authority."
+                "Human operators / Mission Director hold authorization authority."
             )
 
             try:

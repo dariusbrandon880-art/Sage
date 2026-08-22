@@ -2144,6 +2144,33 @@ class ChatGPTRuntimeAdapter:
     def __init__(self, orchestrator: DeveloperWorkflowOrchestrator):
         self.orchestrator = orchestrator
 
+    def rehydrate_c2_operating_context(self) -> dict[str, Any]:
+        """Rehydrates C2 Operating Context dynamically from canonical repository and orchestrator state."""
+        import subprocess
+
+        # 1. Fetch current git HEAD SHA
+        try:
+            res = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=False)
+            git_head = res.stdout.strip() if res.returncode == 0 else "unknown_head"
+        except Exception:
+            git_head = "unknown_head"
+
+        # 2. Reconstruct mission state for active questions
+        mission_recon = self.orchestrator.reconstruct_mission_state()
+
+        return {
+            "c2_identity": "ChatGPT",
+            "protocol": "SAGE C2 Five Flight Execution Protocol",
+            "flight_cycle": ["Discover", "Design", "Build", "Verify + Compound"],
+            "rule": "Director selects mission targets; C2 executes the 4-step loop per flight across any authorized target.",
+            "git_head_sha": git_head,
+            "session_id": self.orchestrator.session_id,
+            "active_objective": self.orchestrator.objective,
+            "mission_reconstruction": mission_recon,
+            "loop_mode": self.orchestrator.loop_state.get("mode", "CONTINUOUS"),
+            "timestamp": time.time(),
+        }
+
     def authenticate_handshake(self, agent_id: str, auth_secret: str) -> dict[str, Any]:
         """Validates external agent identity and performs SHA-256 connection handshake."""
         import hashlib

@@ -199,7 +199,6 @@ class SportsTrustScoreReport:
     losses: int
     pushes: int
     voids: int
-    unavailables: int
     data_unavailables: int
     source_unavailables: int
     invalid_post_locks: int
@@ -247,6 +246,7 @@ class SportsTrustBetaFlightEngine:
             )
         self.ledger = ledger or SportsLongitudinalLedger()
         self.shadow_predictions: List[SportsTrustShadowPrediction] = []
+        self.resolutions_by_pred_id: Dict[str, SportsTrustResolution] = {}
         self._shadow_prediction_ids: set[str] = set()
 
     def create_shadow_prediction(
@@ -367,6 +367,7 @@ class SportsTrustBetaFlightEngine:
             devig_closing_probability=devig_closing_probability,
         )
         resolution.sign()
+        self.resolutions_by_pred_id[prediction_id] = resolution
 
         # Map to longitudinal outcome record
         outcome = SportsOutcomeRecord(
@@ -445,7 +446,6 @@ class SportsTrustBetaFlightEngine:
         losses = 0
         pushes = 0
         voids = 0
-        unavailables = 0
         data_unavailables = 0
         source_unavailables = 0
         invalid_post_locks = 0
@@ -477,8 +477,6 @@ class SportsTrustBetaFlightEngine:
                 pushes += 1
             elif status == "VOID":
                 voids += 1
-            elif status == "UNAVAILABLE":
-                unavailables += 1
             elif status == "DATA_UNAVAILABLE":
                 data_unavailables += 1
             elif status == "SOURCE_UNAVAILABLE":
@@ -500,13 +498,11 @@ class SportsTrustBetaFlightEngine:
                 baseline_probs.append(base_prob)
                 baseline_brier_diffs.append((base_prob - actual) ** 2)
 
-            # CLV calculation
-            # Check closing probability if provided
-            res = getattr(out, "resolution", None)
-            devig_closing = getattr(res, "devig_closing_probability", None) if res else None
-            if devig_closing is None and isinstance(pred.implied_probability, float):
-                # Fallback check
-                devig_closing = pred.implied_probability
+            # CLV calculation using actual stored resolution
+            res = self.resolutions_by_pred_id.get(pred.prediction_id)
+            devig_closing = res.devig_closing_probability if res and res.devig_closing_probability is not None else (
+                res.closing_implied_probability if res and res.closing_implied_probability is not None else None
+            )
 
             if devig_closing is not None and pred.model_predicted_probability is not None and not pred.is_abstention:
                 clv_margin = pred.model_predicted_probability - devig_closing
@@ -531,7 +527,6 @@ class SportsTrustBetaFlightEngine:
             losses=losses,
             pushes=pushes,
             voids=voids,
-            unavailables=unavailables,
             data_unavailables=data_unavailables,
             source_unavailables=source_unavailables,
             invalid_post_locks=invalid_post_locks,
