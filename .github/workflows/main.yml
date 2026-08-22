@@ -5,6 +5,7 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -47,12 +48,12 @@ jobs:
           echo "## SAGE Longitudinal Pilot Telemetry"
           echo
           echo "Commit: $GITHUB_SHA"
-          if [ -f evidence_capture/longitudinal_pilot_001.json ]; then
+          if [ -f longitudinal_pilot_stdout.json ]; then
             echo '```json'
-            cat evidence_capture/longitudinal_pilot_001.json
+            cat longitudinal_pilot_stdout.json
             echo '```'
           else
-            echo "No pilot report was produced. Flight execution failed before report persistence."
+            echo "No pilot stdout report was produced. Flight execution failed before report emission."
           fi
         } >> "$GITHUB_STEP_SUMMARY"
 
@@ -61,8 +62,5 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: sage-longitudinal-pilot-${{ github.sha }}
-        path: |
-          evidence_capture/longitudinal_pilot_001.json
-          evidence_capture/longitudinal_pilot_state/*.json
-          longitudinal_pilot_stdout.json
-        if-no-files-found: warn
+        path: longitudinal_pilot_stdout.json
+        if-no-files-found: error

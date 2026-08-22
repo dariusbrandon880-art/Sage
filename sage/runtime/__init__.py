@@ -23,8 +23,12 @@ from sage.runtime.model_gateway import (
     SAGEStateSnapshot,
 )
 
-# Preserve the existing runtime-engine public alias. The model gateway is an
-# explicit control-plane boundary rather than a replacement for SageRuntime.
+# Preserve the established runtime-engine public API: sage.runtime.SAGERuntime
+# is the operational engine consumed by sage.api and the existing service stack.
+SAGERuntime = SageRuntime
+
+# The model gateway remains a separate control-plane runtime. Expose it under
+# its explicit gateway name so it cannot shadow the operational engine API.
 SAGEModelRuntime = __import__("sage.runtime.model_gateway", fromlist=["SAGERuntime"]).SAGERuntime
 
 
@@ -44,6 +48,7 @@ __all__ = [
     "ModelAdapter",
     "ModelResponse",
     "SAGEModelRuntime",
+    "SAGERuntime",
     "SAGERuntimeEnvelope",
     "SAGEStateSnapshot",
     "SageRuntime",
