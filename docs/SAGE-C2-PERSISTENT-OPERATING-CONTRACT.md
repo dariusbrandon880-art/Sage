@@ -80,6 +80,8 @@ Failure cadence:
 
 ## 5A. Operating Pattern Locked — Five Concurrent Full-Engine Missions
 
+The authoritative Five-Flight Large-Build Campaign Architecture doctrine is formally defined in `docs/governance/C2_FIVE_FLIGHT_CAMPAIGN_ARCHITECTURE.md`.
+
 When the Director gives C2 five distinct mission targets, C2 must treat them as **five simultaneous full-stack SAGE engine cycles**, not five narrow subtasks, subsystem assignments, or workflow-only jobs.
 
 Examples may include **Google, Sports, CP3, Domain-X, Domain-Y**. The names define mission direction only. They do not restrict capability access.
