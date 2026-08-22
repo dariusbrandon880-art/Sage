@@ -1,6 +1,6 @@
 # SAGE MASTER INDEX
 
-Version: 1.1.0
+Version: 1.2.0
 Projection Schema Version: 1.0.0
 
 Authority:
@@ -17,6 +17,7 @@ Files:
 05_ACTIVE_WORK.md
 06_LATEST_EXECUTION_REPORT.md
 07_NEXT_COMPOUND.md
+08_C2_LARGE_BUILD_DOCTRINE.md
 
 Projection Rule:
 Drive reflects SAGE technical truth.
@@ -24,3 +25,6 @@ Drive does not create SAGE technical truth.
 
 Conflict Rule:
 Git/main and validated evidence outrank Drive.
+
+C2 Doctrine:
+Large-build campaigns expand capability aperture while preserving governance, evidence, authorization, and validation boundaries.
