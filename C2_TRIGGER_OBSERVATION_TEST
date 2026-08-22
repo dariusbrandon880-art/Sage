@@ -1,1 +1,4 @@
-C2 execution transport observation test. No capability promotion. Verify the pull-request workflow trigger and five-front execution path.
+C2 execution transport observation test.
+
+Attempt 2: retrigger the pull-request workflow and observe the five-front engine.
+No capability promotion from machine success; C2 independently verifies evidence.
