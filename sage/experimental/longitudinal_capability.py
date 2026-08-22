@@ -89,9 +89,7 @@ class EvaluationPlan:
         }
 
     def plan_hash(self) -> str:
-        payload = json.dumps(
-            self.canonical_payload(), sort_keys=True, separators=(",", ":")
-        )
+        payload = json.dumps(self.canonical_payload(), sort_keys=True, separators=(",", ":"))
         return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
@@ -139,33 +137,20 @@ class LongitudinalCapabilityEvaluator:
         self.plan = plan
         self._observed = False
 
-    def evaluate(
-        self,
-        baseline: Sequence[FlightObservation],
-        sage: Sequence[FlightObservation],
-    ) -> CapabilityEvaluationReceipt:
+    def evaluate(self, baseline: Sequence[FlightObservation], sage: Sequence[FlightObservation]) -> CapabilityEvaluationReceipt:
         if self._observed:
             raise RuntimeError("EVALUATION_ALREADY_FINALIZED")
-
         expected = {m.mission_id for m in self.plan.missions}
         baseline_by_id = self._validate_observations("baseline", baseline, expected)
         sage_by_id = self._validate_observations("sage", sage, expected)
         self._observed = True
-
         baseline_metrics = self._metrics(baseline_by_id)
         sage_metrics = self._metrics(sage_by_id)
-
         baseline_success = self._success_rate(baseline_by_id.values())
         sage_success = self._success_rate(sage_by_id.values())
-        relative_gain = (
-            (sage_success - baseline_success) / baseline_success
-            if baseline_success > 0
-            else (1.0 if sage_success > 0 else 0.0)
-        )
-
+        relative_gain = ((sage_success - baseline_success) / baseline_success if baseline_success > 0 else (1.0 if sage_success > 0 else 0.0))
         recovery_rate = self._recovery_rate(sage_by_id.values())
         regression_rate = self._regression_rate(sage_by_id.values())
-
         reasons: list[str] = []
         if not self._all_sufficient(sage_metrics):
             reasons.append("SAGE_METRIC_THRESHOLD_NOT_MET")
@@ -175,7 +160,8 @@ class LongitudinalCapabilityEvaluator:
             reasons.append("REGRESSION_RATE_TOO_HIGH")
         if not all(o.continuity_intact for o in sage_by_id.values()):
             reasons.append("CONTINUITY_INTEGRITY_FAILURE")
-        if not all(o.retained_across_sessions for o in sage_by_id.values()):
+        required_reuse = {m.mission_id for m in self.plan.missions if m.requires_cross_session_reuse}
+        if any(not sage_by_id[mid].retained_across_sessions for mid in required_reuse):
             reasons.append("CAPABILITY_RETENTION_FAILURE")
         if not all(o.provenance_preserved for o in sage_by_id.values()):
             reasons.append("PROVENANCE_PRESERVATION_FAILURE")
@@ -185,25 +171,10 @@ class LongitudinalCapabilityEvaluator:
             reasons.append("BASELINE_EXECUTION_INTEGRITY_FAILURE")
         if any(o.notes.startswith("EXECUTOR_EXCEPTION ") for o in sage_by_id.values()):
             reasons.append("SAGE_EXECUTION_INTEGRITY_FAILURE")
-
         if reasons:
-            verdict = (
-                CapabilityVerdict.NEGATIVE_RESULT
-                if any(
-                    r
-                    in {
-                        "REGRESSION_RATE_TOO_HIGH",
-                        "CONTINUITY_INTEGRITY_FAILURE",
-                        "CAPABILITY_RETENTION_FAILURE",
-                        "PROVENANCE_PRESERVATION_FAILURE",
-                    }
-                    for r in reasons
-                )
-                else CapabilityVerdict.HOLD
-            )
+            verdict = (CapabilityVerdict.NEGATIVE_RESULT if any(r in {"REGRESSION_RATE_TOO_HIGH", "CONTINUITY_INTEGRITY_FAILURE", "CAPABILITY_RETENTION_FAILURE", "PROVENANCE_PRESERVATION_FAILURE"} for r in reasons) else CapabilityVerdict.HOLD)
         else:
             verdict = CapabilityVerdict.PASS
-
         return CapabilityEvaluationReceipt(
             evaluation_id=self.plan.evaluation_id,
             mission_set_id=self.plan.mission_set_id,
@@ -217,21 +188,14 @@ class LongitudinalCapabilityEvaluator:
             fail_closed_reasons=tuple(reasons),
         )
 
-    def _validate_observations(
-        self,
-        system: str,
-        observations: Sequence[FlightObservation],
-        expected: set[str],
-    ) -> dict[str, FlightObservation]:
+    def _validate_observations(self, system: str, observations: Sequence[FlightObservation], expected: set[str]) -> dict[str, FlightObservation]:
         if any(o.system != system for o in observations):
             raise ValueError(f"{system.upper()}_SYSTEM_LABEL_MISMATCH")
         observed = {o.mission_id for o in observations}
         if observed != expected:
             missing = sorted(expected - observed)
             extra = sorted(observed - expected)
-            raise ValueError(
-                f"{system.upper()}_MISSION_SET_MISMATCH:missing={missing}:extra={extra}"
-            )
+            raise ValueError(f"{system.upper()}_MISSION_SET_MISMATCH:missing={missing}:extra={extra}")
         if len(observations) != len(observed):
             raise ValueError(f"{system.upper()}_DUPLICATE_OBSERVATION")
         return {o.mission_id: o for o in observations}
@@ -254,21 +218,16 @@ class LongitudinalCapabilityEvaluator:
         values = list(observations)
         return sum(o.regression_detected for o in values) / len(values)
 
-    def _metrics(
-        self,
-        observations: Mapping[str, FlightObservation],
-    ) -> list[MetricResult]:
+    def _metrics(self, observations: Mapping[str, FlightObservation]) -> list[MetricResult]:
         values = list(observations.values())
         evidence = sum(o.evidence_complete for o in values) / len(values)
         provenance = sum(o.provenance_preserved for o in values) / len(values)
         blocked = sum(o.unauthorized_transition_blocked for o in values) / len(values)
         continuity = sum(o.continuity_intact for o in values) / len(values)
-        retention = sum(o.retained_across_sessions for o in values) / len(values)
-        quality_values = [
-            o.learning_candidate_quality
-            for o in values
-            if o.learning_candidate_quality is not None
-        ]
+        required_reuse = {m.mission_id for m in self.plan.missions if m.requires_cross_session_reuse}
+        retention_values = [o.retained_across_sessions for mission_id, o in observations.items() if mission_id in required_reuse]
+        retention = sum(retention_values) / len(retention_values) if retention_values else 1.0
+        quality_values = [o.learning_candidate_quality for o in values if o.learning_candidate_quality is not None]
         quality = sum(quality_values) / len(quality_values) if quality_values else 0.0
         elapsed_values = [o.elapsed_seconds for o in values if o.elapsed_seconds is not None]
         mean_elapsed = sum(elapsed_values) / len(elapsed_values) if elapsed_values else 0.0
@@ -276,48 +235,12 @@ class LongitudinalCapabilityEvaluator:
         mean_cost = sum(cost_values) / len(cost_values) if cost_values else 0.0
         return [
             MetricResult("success_rate", self._success_rate(values), 0.0, "gte", True),
-            MetricResult(
-                "evidence_completeness",
-                evidence,
-                self.plan.minimum_evidence_completeness,
-                "gte",
-                evidence >= self.plan.minimum_evidence_completeness,
-            ),
-            MetricResult(
-                "provenance_preservation",
-                provenance,
-                self.plan.minimum_provenance_preservation,
-                "gte",
-                provenance >= self.plan.minimum_provenance_preservation,
-            ),
-            MetricResult(
-                "unauthorized_transition_block_rate",
-                blocked,
-                self.plan.minimum_unauthorized_block_rate,
-                "gte",
-                blocked >= self.plan.minimum_unauthorized_block_rate,
-            ),
-            MetricResult(
-                "continuity_integrity",
-                continuity,
-                self.plan.minimum_continuity_integrity,
-                "gte",
-                continuity >= self.plan.minimum_continuity_integrity,
-            ),
-            MetricResult(
-                "capability_retention",
-                retention,
-                1.0,
-                "gte",
-                retention >= 1.0,
-            ),
-            MetricResult(
-                "learning_candidate_quality",
-                quality,
-                self.plan.minimum_learning_candidate_quality,
-                "gte",
-                quality >= self.plan.minimum_learning_candidate_quality,
-            ),
+            MetricResult("evidence_completeness", evidence, self.plan.minimum_evidence_completeness, "gte", evidence >= self.plan.minimum_evidence_completeness),
+            MetricResult("provenance_preservation", provenance, self.plan.minimum_provenance_preservation, "gte", provenance >= self.plan.minimum_provenance_preservation),
+            MetricResult("unauthorized_transition_block_rate", blocked, self.plan.minimum_unauthorized_block_rate, "gte", blocked >= self.plan.minimum_unauthorized_block_rate),
+            MetricResult("continuity_integrity", continuity, self.plan.minimum_continuity_integrity, "gte", continuity >= self.plan.minimum_continuity_integrity),
+            MetricResult("capability_retention", retention, 1.0, "gte", retention >= 1.0),
+            MetricResult("learning_candidate_quality", quality, self.plan.minimum_learning_candidate_quality, "gte", quality >= self.plan.minimum_learning_candidate_quality),
             MetricResult("mean_elapsed_seconds", mean_elapsed, 0.0, "observed", True),
             MetricResult("mean_cost_units", mean_cost, 0.0, "observed", bool(cost_values)),
         ]
