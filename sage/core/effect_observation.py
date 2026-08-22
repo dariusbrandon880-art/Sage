@@ -9,7 +9,7 @@ external boundary cannot be observed.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 import hashlib
 import json
@@ -97,7 +97,7 @@ class EffectObservation:
             raise EffectObservationValidationError(
                 "observed_at must include an explicit timezone."
             )
-        if parsed.astimezone(timezone.utc) != parsed:
+        if parsed.utcoffset() != timedelta(0):
             raise EffectObservationValidationError(
                 "observed_at must be expressed in UTC."
             )
