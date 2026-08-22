@@ -11,7 +11,7 @@ This document preserves the current SAGE state/invention operating picture so a 
 
 Conversation memory is supplemental. Canonical implementation state is Git/main. Validated project knowledge is the Master Archive. Research and external intelligence remain non-canonical until validated and promoted.
 
-The objective of this handoff is not to freeze SAGE into a static architecture. It preserves the current governing composition, execution posture, invention method, evidence boundaries, and consequential frontier so future work can advance rather than repeatedly rebuild context.
+The objective is not to freeze SAGE into a static architecture. It preserves the governing composition, execution posture, invention method, evidence boundaries, and consequential frontier so future work advances rather than repeatedly rebuilds context.
 
 ## 2. Permanent station identity and role law
 
@@ -38,10 +38,6 @@ A real STOP requires:
 2. missing authorization for a consequential action outside the granted boundary;
 3. the defined experimental STOP boundary; or
 4. completion of independent verification and the reporting boundary.
-
-Large Build is **resolution, not deregulation**.
-
-**Lamborghini velocity + Rolls-Royce tolerances.**
 
 ## 4. Unified operating loops
 
@@ -79,7 +75,7 @@ External evidence is classified:
 
 Never claim novelty merely because a search found no precedent. Candidate novelty requires an explicit prior-art challenge.
 
-Super Search is not ritual lookup. It recurs when new evidence, uncertainty, failure, dependency, competing implementation, prior-art question, or external capability change can materially affect the next decision.
+Recent external challenge confirms the broader field is converging on repository grounding, workflow-level planning, feedback-driven repair, runtime governance, trace-based assurance, and long-horizon context management. Those are **KNOWN** external patterns; SAGE's specific composition of governed dependency-batched execution with evidence-bearing progression remains a **HYPOTHESIZED / INVENTED** composition until independently demonstrated. citeturn0search8turn0academia36turn0search1turn0search0
 
 ## 6. SAGE invention hypothesis
 
@@ -92,8 +88,6 @@ composed into one governed machine.
 The target is **Governed Continuous Intelligence**: a system that continuously converts experience into governed, evidence-bearing capability while preserving identity, provenance, authorization boundaries, negative knowledge, and independently verifiable progression across time.
 
 This is a hypothesis to prove, not a claim of established novelty.
-
-The benchmark is observable capability: trustworthy long-horizon capability accumulation, stronger evidence, fewer regressions, better recovery from failure, and more reliable continuity than an appropriate baseline.
 
 ## 7. Architectural composition now treated as a connected governed world
 
@@ -116,8 +110,6 @@ Preserve hard boundaries:
 - continuity != mere chat memory;
 - generated != proven.
 
-The cognitive/epistemic plane and coordination/awareness plane may meet through explicit evidence/context references but must not merge authorities.
-
 ## 8. Progression and state invention law
 
 Progression is measurable capability development, not cosmetic game state.
@@ -128,35 +120,43 @@ XP, rank, qualification, and promotion are downstream of verified evidence. Agen
 
 Failures, regressions, negative results, and failed hypotheses remain permanent longitudinal evidence.
 
-The immersion model is a projection of governed state:
+## 9. The Large-Build invention — coordinated batching
 
-- World state = canonical SAGE state.
-- Character sheet = identity + progression history.
-- Missions = authorized consequential work.
-- XP = verified contribution/performance evidence.
-- Rank = earned qualification.
-- Failure memory = durable negative evidence.
-- Fog of war = bounded/unknown context.
-- Referee = independent verification.
-- Save file = durable canonical continuity.
-- Team comms = provenance-preserving coordination.
-- Quest discovery = Super Search / Inventor Radar.
-- Boss fight = larger adversarial consequential frontier.
+The key invention now made executable is:
 
-The metaphor never replaces the underlying governed primitive.
+> **A Large Build is many verified little moves executed as one coherent consequential movement.**
 
-## 9. Canonical empirical state after the recent campaign
+This is deliberately different from both micro-stepping and giant speculative jumps.
+
+**Micro-stepping failure:** every obvious connected subtask becomes a separate conversational authorization/stop, creating orchestration overhead and breaking momentum.
+
+**Speculative giant-jump failure:** unrelated or unverified work is bundled together, weakening causal attribution and governance.
+
+**SAGE Large Build:** one bounded frontier contains its causally connected small tasks. Dependency constraints remain explicit. Independent branches continue when another branch fails. Dependent branches block fail-closed. Every stage emits an observation. The campaign emits one receipt. Verification still occurs at the end of the coherent frontier.
+
+The repository primitive is:
+
+`sage/experimental/coherent_frontier.py`
+
+with adversarial coverage in:
+
+`tests/experimental/test_coherent_frontier.py`
+
+The primitive is intentionally an execution capability, not a qualification authority. It can coordinate work; it cannot declare SAGE intelligent, novel, or qualified.
+
+## 10. Canonical empirical state after the current campaign
 
 The recent repository progression established:
 
-- **PR #179** — EffectObservation v0.1 merged (`cc8144e2...`).
-- **PR #181** — longitudinal measurement/proof substrate merged (`36782d16...`).
-- **PR #183** — persistent C2 operating contract merged (`64fe7ee1...`).
-- **PR #182** — governed longitudinal flight runner remains an open implementation frontier; latest known head `87c3cc95...`; merge is not yet canonical.
+- **PR #179** — EffectObservation v0.1 merged.
+- **PR #181** — longitudinal measurement/proof substrate merged.
+- **PR #183** — persistent C2 operating contract merged.
+- **PR #182** — governed longitudinal flight runner was built and its repair was CI-verified before merge.
+- **Coherent Large-Build primitive** — now present on `main` with adversarial tests.
 
-The repository-backed C2 contract now explicitly preserves station identity, command loops, Large-Build posture, epistemic guardrails, Super Search doctrine, current longitudinal frontier, flight verdict law, and cross-chat rehydration rules.
+Current implementation truth is the live canonical `main`, not these historical commit references. The current status of every PR/commit must be independently reconciled at rehydration.
 
-## 10. Longitudinal capability question
+## 11. Longitudinal capability question
 
 The empirical question is:
 
@@ -168,41 +168,16 @@ Locked sequence:
 
 No fabricated observations. No synthetic flight substituted for real execution. No capability claim from CI alone.
 
-## 11. PR #182 execution bridge state
+## 12. Flight and telemetry boundary
 
-PR #182 is the current flight-harness frontier. Its governed runner connects the locked mission set to baseline and SAGE executors, validates identity/scope, measures actual execution wall-clock time, converts executor exceptions conservatively into observed failures, persists observation-only records when configured, and reuses the existing `LongitudinalCapabilityEvaluator` as the sole verdict authority.
+The longitudinal pilot workflow is intended to execute authentic repository work through baseline and governed SAGE paths, persist observation-only traces, publish telemetry, and invoke the existing evaluator.
 
-Reused infrastructure:
+A missing or unobserved CI run is a telemetry/infrastructure boundary, not a positive result. The system must expose both successful reports and pre-report failures durably so C2 can distinguish:
 
-- `sage/core/flight_record.py` for append-only flight/episode persistence;
-- `sage/experimental/longitudinal_capability.py` for locked evaluation;
-- existing effect/progression/evidence machinery for causal verification and receipts.
-
-The runner must not:
-
-- invent observations;
-- alter evaluator thresholds;
-- create a second verdict authority;
-- automatically qualify capability;
-- treat observation persistence as qualification mutation.
-
-A recent CI run exposed a semantic defect in the runner's exception path: baseline executor failure could be interpreted as SAGE improvement and yield PASS. The repair changes this integrity condition to fail closed as HOLD. That repair is evidence under verification, not a claimed green result until fresh CI telemetry confirms it.
-
-## 12. Flight verdict law
-
-Exactly three epistemic outcomes are permitted:
-
-- **PASS** — locked evidence supports capability growth under verified attribution.
-- **HOLD** — evidence is incomplete, indeterminate, or telemetry is insufficient for a defensible conclusion.
-- **NEGATIVE_RESULT** — capability fails locked criteria or introduces qualifying regression.
-
-A passing test suite, green CI, synthetic fixture, or successful report is never equivalent to a real capability result.
-
-If SAGE wins: preserve the evidence.
-If SAGE fails: preserve the failure.
-If indeterminate: HOLD.
-
-Either way, SAGE compounds.
+- execution succeeded and produced evidence;
+- execution failed and produced failure evidence;
+- execution did not become observable;
+- evaluator returned a defensible PASS/HOLD/NEGATIVE_RESULT.
 
 ## 13. Current consequential frontier
 
@@ -210,19 +185,15 @@ The architecture is not to be reopened absent new evidence.
 
 The measurement substrate is not to be made more complicated absent a demonstrated gap.
 
-The current frontier is:
+The current frontier is now the **coherent longitudinal campaign**:
+
+**RECON ALL -> BOUND THE CONNECTED FRONTIER -> EXECUTE ALL CAUSALLY CONNECTED TASKS -> TEST ALL -> OBSERVE ALL -> REPAIR MATERIAL FAILURES -> VERIFY ALL -> PERSIST STATE -> COMPOUND**
+
+Within that campaign, the next empirical target remains:
 
 **AUTHENTIC BASELINE EXECUTOR + AUTHENTIC SAGE EXECUTOR -> REAL MISSION EXECUTION -> FLIGHT OBSERVATIONS -> LONGITUDINAL EVALUATION -> INDEPENDENT C2 VERIFICATION**
 
-The next capability claim must emerge from actual observations, not from architecture completion.
-
-The objective is to make the machine compete with the problem:
-
-**If it wins -> evidence.**
-
-**If it fails -> durable knowledge.**
-
-**If indeterminate -> HOLD.**
+The next capability claim must emerge from actual observations, not architecture completion.
 
 ## 14. Rehydration protocol
 
@@ -246,7 +217,7 @@ No Director reminder should be required to restore identity, workflow, Large-Bui
 - External intelligence challenges; it does not authorize or become canonical.
 - C2 owns intelligence it can perform itself.
 - One authorization -> one coherent connected jump.
-- Large Build increases resolution, never unverified risk.
+- Large Build increases execution aperture by batching causally connected work, never by skipping governance.
 - No unrelated expansion.
 - No architecture churn without a consequential gap.
 - No reopening closed findings without new evidence.
@@ -266,6 +237,8 @@ No Director reminder should be required to restore identity, workflow, Large-Bui
 **LOCK -> MINE -> FALSIFY -> EXECUTE -> OBSERVE -> VALIDATE -> COMPOUND**
 
 **SEARCH BROADLY -> CROSS-DOMAIN -> ABSTRACT -> COLLIDE -> HYPOTHESIZE -> FALSIFY -> BOUND -> BUILD -> VERIFY -> COMPOUND**
+
+**Large Build = all causally connected little things done together.**
 
 **Lamborghini velocity. Rolls-Royce tolerances.**
 
