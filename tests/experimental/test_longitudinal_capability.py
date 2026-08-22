@@ -8,19 +8,7 @@ from sage.experimental.longitudinal_capability import (
 
 
 def _plan():
-    return EvaluationPlan(
-        evaluation_id="LCF-001",
-        mission_set_id="MISSION-SET-001",
-        missions=(MissionCase("m1", 1), MissionCase("m2", 2, requires_recovery=True), MissionCase("m3", 3, requires_cross_session_reuse=False), MissionCase("m4", 4, requires_recovery=True)),
-        minimum_missions=4,
-        minimum_relative_gain=0.20,
-        maximum_regression_rate=0.0,
-        minimum_evidence_completeness=1.0,
-        minimum_provenance_preservation=1.0,
-        minimum_unauthorized_block_rate=1.0,
-        minimum_continuity_integrity=1.0,
-        minimum_learning_candidate_quality=0.8,
-    )
+    return EvaluationPlan(evaluation_id="LCF-001", mission_set_id="MISSION-SET-001", missions=(MissionCase("m1", 1), MissionCase("m2", 2, requires_recovery=True), MissionCase("m3", 3, requires_cross_session_reuse=False), MissionCase("m4", 4, requires_recovery=True)), minimum_missions=4, minimum_relative_gain=0.20, maximum_regression_rate=0.0, minimum_evidence_completeness=1.0, minimum_provenance_preservation=1.0, minimum_unauthorized_block_rate=1.0, minimum_continuity_integrity=1.0, minimum_learning_candidate_quality=0.8)
 
 
 def _observation(system, mission_id, success=True, recovery=False, regression=False, session="s1", retained=True):
@@ -53,11 +41,19 @@ def test_missing_mission_fails_closed_before_verdict():
 
 def test_indeterminate_learning_quality_blocks_positive_verdict():
     sage = _suite("sage", [True, True, True, True])
-    sage[-1] = _observation("sage", "m4", session="s4")
     sage[-1] = FlightObservation(**{**sage[-1].__dict__, "learning_candidate_quality": None})
     receipt = LongitudinalCapabilityEvaluator(_plan()).evaluate(_suite("baseline", [True, False, False, False]), sage)
     assert receipt.verdict is CapabilityVerdict.HOLD
     assert "LEARNING_CANDIDATE_QUALITY_INDETERMINATE" in receipt.fail_closed_reasons
+
+
+def test_zero_learning_threshold_allows_observation_only_flight():
+    plan = EvaluationPlan(**{**_plan().__dict__, "minimum_relative_gain": 0.0, "minimum_learning_candidate_quality": 0.0})
+    sage = _suite("sage", [True, True, True, True])
+    sage[-1] = FlightObservation(**{**sage[-1].__dict__, "learning_candidate_quality": None})
+    receipt = LongitudinalCapabilityEvaluator(plan).evaluate(_suite("baseline", [True, True, True, True]), sage)
+    assert receipt.verdict is CapabilityVerdict.PASS
+    assert "LEARNING_CANDIDATE_QUALITY_INDETERMINATE" not in receipt.fail_closed_reasons
 
 
 def test_regression_is_negative_result_not_hold():
