@@ -110,9 +110,13 @@ class TransitionSufficiency:
                 "assessment_digest must be a non-empty string."
             )
         if not isinstance(self.policy, TransitionSufficiencyPolicy):
-            raise TransitionSufficiencyValidationError("policy must be a TransitionSufficiencyPolicy.")
+            raise TransitionSufficiencyValidationError(
+                "policy must be a TransitionSufficiencyPolicy."
+            )
         if not isinstance(self.verdict, SufficiencyVerdict):
-            raise TransitionSufficiencyValidationError("verdict must be a SufficiencyVerdict.")
+            raise TransitionSufficiencyValidationError(
+                "verdict must be a SufficiencyVerdict."
+            )
         if not isinstance(self.failed_requirements, tuple) or any(
             not isinstance(item, str) or not item.strip()
             for item in self.failed_requirements
@@ -151,8 +155,8 @@ class TransitionSufficiency:
     @classmethod
     def evaluate(
         cls,
-        *,
         assessment: QualificationAssessment,
+        *,
         policy: TransitionSufficiencyPolicy | None = None,
     ) -> "TransitionSufficiency":
         """Evaluate sufficiency without persistence, mutation, or authorization."""
