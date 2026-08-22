@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
-"""Deterministic mechanism benchmark for governed capability evolution.
-
-This is intentionally independent of production runtime and external model APIs.
-It measures orchestration/governance policy effects under identical conditions.
-"""
+"""Deterministic mechanism benchmark for governed capability evolution."""
 from __future__ import annotations
 
 import argparse
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
+
+PRIMARY = {"H1": 8, "H2": 9, "H3": 10, "H4": 11, "H5": 12}
+POLICIES = ["SEQUENTIAL", "PARALLEL_UNGOVERNED", "DEPENDENCY_AWARE", "SAGE_GOVERNED"]
 
 
 @dataclass
@@ -36,33 +35,22 @@ def load_scenario(path: Path) -> dict:
 def run(policy: str, scenario: dict) -> Result:
     r = Result(policy=policy)
     opportunities = {x["id"]: x for x in scenario["opportunities"]}
-    # Primary opportunities are the five bounded hitters. The remaining items
-    # deliberately test duplication, recovery, and regression handling.
     order = ["H1", "H2", "H3", "H4", "H5", "D1", "F1", "R1"]
-    if policy == "SEQUENTIAL":
-        batches = [[x] for x in order]
-    elif policy == "PARALLEL_UNGOVERNED":
-        batches = [["H1", "H2", "H3", "H4", "H5"], ["D1", "F1", "R1"]]
-    else:
-        batches = [["H1", "H2", "H3", "H4", "H5"], ["D1", "F1", "R1"]]
-
+    batches = [[x] for x in order] if policy == "SEQUENTIAL" else [order[:5], order[5:]]
     for batch in batches:
         for oid in batch:
             o = opportunities[oid]
             dep = o.get("dependency")
             if dep and dep not in r.completed:
-                if policy in {"DEPENDENCY_AWARE", "SAGE_GOVERNED"}:
-                    r.dependency_violations += 1
-                    continue
                 r.dependency_violations += 1
-            if o.get("duplicate_of"):
-                if policy == "SAGE_GOVERNED":
-                    r.duplicates += 1  # counted as avoided duplicate attempt
+                if policy in {"DEPENDENCY_AWARE", "SAGE_GOVERNED"}:
                     continue
+            if o.get("duplicate_of"):
                 r.duplicates += 1
+                if policy == "SAGE_GOVERNED":
+                    continue
             if o.get("regression"):
                 if policy == "SAGE_GOVERNED" and "H4" not in r.evidence:
-                    r.regressions += 0
                     r.human_interventions += 1
                     continue
                 r.regressions += 1
@@ -75,39 +63,27 @@ def run(policy: str, scenario: dict) -> Result:
             r.completed.add(oid)
             if o["value"] > 0:
                 r.useful.add(oid)
-            if o.get("requires_evidence"):
-                if policy == "SAGE_GOVERNED":
-                    r.evidence.add(oid)
-                elif policy != "PARALLEL_UNGOVERNED":
-                    r.evidence.add(oid)
-            r.provenance_complete += 1 if policy == "SAGE_GOVERNED" else 0
-
-    # Make the governed policy's dependency-aware parallelism explicit while
-    # preserving deterministic comparability across policies.
-    if policy == "SEQUENTIAL":
-        r.makespan = r.work_units
-    elif policy == "PARALLEL_UNGOVERNED":
-        r.makespan = 6
-    elif policy == "DEPENDENCY_AWARE":
-        r.makespan = 10
-    else:
-        r.makespan = 8
-        r.human_interventions = min(r.human_interventions, scenario["budget"]["human_interventions"])
+            if o.get("requires_evidence") and policy != "PARALLEL_UNGOVERNED":
+                r.evidence.add(oid)
+            if policy == "SAGE_GOVERNED":
+                r.provenance_complete += 1
+    r.makespan = {"SEQUENTIAL": r.work_units, "PARALLEL_UNGOVERNED": 6, "DEPENDENCY_AWARE": 10, "SAGE_GOVERNED": 8}[policy]
+    r.human_interventions = min(r.human_interventions, scenario["budget"]["human_interventions"])
     return r
 
 
-def metrics(r: Result) -> dict:
-    useful = sum(1 for x in r.useful if x.startswith("H"))
-    target = 5
-    evidence_coverage = len(r.evidence & {"H1", "H2", "H3", "H4", "H5"}) / target
+def metrics(r: Result, focus: str) -> dict:
+    evidence_coverage = len(r.evidence & set(PRIMARY)) / 5
     dependency_awareness = max(0.0, 1.0 - min(1.0, r.dependency_violations / 5))
     recovery_quality = 1.0 if r.retained_failures == 0 else r.recovered_failures / r.retained_failures
     regression_rate = r.regressions / max(1, len(r.completed))
-    parallel_efficiency = useful / max(1, r.makespan)
+    useful = len(r.useful & set(PRIMARY))
     next_frontier = 1.0 if "H5" in r.useful and "H5" in r.evidence else 0.5 if "H5" in r.useful else 0.0
-    capability_gain = sum({"H1":8,"H2":9,"H3":10,"H4":11,"H5":12}.get(x,0) for x in r.useful)
     return {
-        "capability_gain": capability_gain,
+        "focus_front": focus,
+        "focus_front_completed": focus in r.completed,
+        "focus_front_evidenced": focus in r.evidence,
+        "capability_gain": sum(PRIMARY.get(x, 0) for x in r.useful),
         "time_to_useful_improvement": r.makespan,
         "duplicate_work_avoided": 1 if r.policy == "SAGE_GOVERNED" else 0,
         "evidence_coverage": round(evidence_coverage, 3),
@@ -117,7 +93,7 @@ def metrics(r: Result) -> dict:
         "regression_rate": round(regression_rate, 3),
         "human_intervention_required": r.human_interventions,
         "next_frontier_quality": next_frontier,
-        "parallelism_efficiency": round(parallel_efficiency, 3),
+        "parallelism_efficiency": round(useful / max(1, r.makespan), 3),
         "provenance_completeness": round(r.provenance_complete / max(1, len(r.completed)), 3),
         "useful_capabilities": sorted(r.useful),
     }
@@ -126,16 +102,17 @@ def metrics(r: Result) -> dict:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--scenario", default="benchmarks/capability_evolution/scenarios.json")
-    ap.add_argument("--policy", choices=["SEQUENTIAL","PARALLEL_UNGOVERNED","DEPENDENCY_AWARE","SAGE_GOVERNED"], default=None)
+    ap.add_argument("--policy", choices=POLICIES, default=None)
+    ap.add_argument("--front", choices=sorted(PRIMARY), default="H1")
     ap.add_argument("--output", default="capability_evolution_results.json")
     args = ap.parse_args()
     scenario = load_scenario(Path(args.scenario))
-    policies = [args.policy] if args.policy else ["SEQUENTIAL","PARALLEL_UNGOVERNED","DEPENDENCY_AWARE","SAGE_GOVERNED"]
+    policies = [args.policy] if args.policy else POLICIES
     results = []
     for policy in policies:
         r = run(policy, scenario)
-        results.append({"policy": policy, "metrics": metrics(r)})
-    payload = {"benchmark":"SAGE-CAPABILITY-EVOLUTION-001","scenario_seed":scenario["seed"],"results":results}
+        results.append({"policy": policy, "metrics": metrics(r, args.front)})
+    payload = {"benchmark":"SAGE-CAPABILITY-EVOLUTION-001","scenario_seed":scenario["seed"],"focus_front":args.front,"results":results}
     Path(args.output).write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
     print(json.dumps(payload, indent=2, sort_keys=True))
 
