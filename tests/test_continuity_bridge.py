@@ -36,8 +36,6 @@ def temp_workspace():
 def test_continuity_bridge_ingest_pipeline(temp_workspace):
     """Test the single, authoritative ingest_session_payload pathway end-to-end."""
     runtime = SageRuntime(str(temp_workspace))
-
-    # Construct the ingestion payload
     payload_data = {
         "session_id": "session_external_123",
         "objective": "Build the single unified SAGE platform",
@@ -49,7 +47,7 @@ def test_continuity_bridge_ingest_pipeline(temp_workspace):
                 "content": {
                     "title": "Ingestion Rule",
                     "description": "All payloads must follow the single authoritative path",
-                    "archive": True,  # Request routing to master archive
+                    "archive": True,
                 },
                 "tags": ["architecture", "core"],
                 "confidence": "validated",
@@ -73,62 +71,37 @@ def test_continuity_bridge_ingest_pipeline(temp_workspace):
         ],
         "metadata": {"source": "ci_pipeline"},
     }
-
     payload = ExternalSessionPayload(**payload_data)
-
-    # Trigger single authoritative path
     result = runtime.ingest_session_payload(payload)
-
     assert result["status"] == "success"
     assert result["session_id"] == "session_external_123"
     assert "checkpoint_id" in result
     assert "snapshot_id" in result
-
-    # 1. Intake: Assert session ID is registered in lineage
     assert "session_external_123" in runtime.acr.get_lineage()
-
-    # 2. Classification & Restoration: Assert active context is loaded/rehydrated
     assert runtime.current_state.current_objective == "Build the single unified SAGE platform"
     assert runtime.current_state.active_task == "Implement the core ingestion interface"
     assert runtime.context is not None
     assert runtime.context.session_id == "session_external_123"
-
-    # 3. Validation: Check that both memories were stored
     mem1 = runtime.memory.retrieve("mem_rule_001")
     mem2 = runtime.memory.retrieve("mem_fact_002")
     assert mem1 is not None
     assert mem2 is not None
-
-    # 4. Archive Routing: mem_rule_001 should be routed to Master Archive (due to archive=True or archived confidence)
-    # Validate result lists it in routed entries
     assert "archive_mem_rule_001" in result["routed_archive_entries"]
     arch_entry = runtime.archive.retrieve_entry("archive_mem_rule_001")
     assert arch_entry is not None
     assert arch_entry.title == "Ingestion Rule"
     assert "architecture" in arch_entry.tags
-
-    # Memory state for mem_rule_001 should be ARCHIVED
     assert mem1.confidence == ConfidenceLevel.ARCHIVED
-
-    # mem_fact_002 is not marked for archiving, so it should be promoted to VALIDATED (since it's structurally valid)
     assert mem2.confidence == ConfidenceLevel.VALIDATED
-
-    # 5. Decision & Evidence Tracking: check decision is recorded and links established
     dec = runtime.decisions.retrieve_decision("dec_arch_001")
     assert dec is not None
     assert dec.decision_type == DecisionType.ARCHITECTURAL
     assert dec.evidence == ["mem_rule_001"]
-
-    # Verify memory links back to the decision
     updated_mem1 = runtime.memory.retrieve("mem_rule_001")
     assert "decisions" in updated_mem1.content
     assert "dec_arch_001" in updated_mem1.content["decisions"]
-
-    # Verify archive entry links back to the decision
     updated_arch = runtime.archive.retrieve_entry("archive_mem_rule_001")
     assert "dec_arch_001" in updated_arch.decision_history
-
-    # 6. Checkpoint & Snapshot: verify files are written
     checkpoint_file = temp_workspace / f"{result['checkpoint_id']}.json"
     assert checkpoint_file.exists()
 
@@ -136,21 +109,12 @@ def test_continuity_bridge_ingest_pipeline(temp_workspace):
 def test_continuity_reasoning(temp_workspace):
     """Test reasoning over continuity databases."""
     runtime = SageRuntime(str(temp_workspace))
-
-    # Initial state reasoning (no databases populated yet)
     reasoning_empty = runtime.reason_over_continuity()
     assert reasoning_empty["objective_alignment"] == "needs_alignment"
-    assert any(
-        "No technical/architectural decisions recorded" in sug
-        for sug in reasoning_empty["suggestions"]
-    )
-
-    # Setup some state
+    assert any("No technical/architectural decisions recorded" in sug for sug in reasoning_empty["suggestions"])
     runtime.set_objective("Launch Mars Shuttle")
     runtime.set_task("Verify fuel booster")
     runtime.add_blocker("Fuel leak in engine B")
-
-    # Store a memory and a decision referencing it
     obj = MemoryObject(
         id="mem_leak_001",
         object_type="report",
@@ -159,7 +123,6 @@ def test_continuity_reasoning(temp_workspace):
         confidence=ConfidenceLevel.HYPOTHESIS,
     )
     runtime.memory.store(obj)
-
     runtime.decisions.record_decision(
         decision_type=DecisionType.TECHNICAL,
         description="Replace engine B gasket",
@@ -167,8 +130,6 @@ def test_continuity_reasoning(temp_workspace):
         evidence=["mem_leak_001"],
         decision_id="dec_replace_gasket",
     )
-
-    # Perform continuity reasoning with populated data
     reasoning_full = runtime.reason_over_continuity()
     assert reasoning_full["objective_alignment"] == "aligned"
     assert reasoning_full["active_blockers_count"] == 1
@@ -182,13 +143,9 @@ def test_continuity_reasoning(temp_workspace):
 def test_self_verification_integrity(temp_workspace):
     """Test self-verification and integrity checking."""
     runtime = SageRuntime(str(temp_workspace))
-
-    # Initial state: verify empty workspace is syntactically valid (but folders exist because runtime initializes them)
     report = runtime.verify_integrity()
     assert report["is_valid"] is True
     assert report["lineage_valid"] is True
-
-    # Record a decision with non-existent evidence to trigger referential integrity violation
     runtime.decisions.record_decision(
         decision_type=DecisionType.PROCESS,
         description="A decision",
@@ -196,20 +153,14 @@ def test_self_verification_integrity(temp_workspace):
         evidence=["ghost_evidence_id"],
         decision_id="dec_with_ghost",
     )
-
-    # Verify integrity should now report a referential issue
     report_broken = runtime.verify_integrity()
     assert report_broken["is_valid"] is False
     assert len(report_broken["referential_integrity"]["missing_evidence_links"]) == 1
-    assert (
-        report_broken["referential_integrity"]["missing_evidence_links"][0]["evidence_id"]
-        == "ghost_evidence_id"
-    )
+    assert report_broken["referential_integrity"]["missing_evidence_links"][0]["evidence_id"] == "ghost_evidence_id"
 
 
 def test_cli_continuity_bridge_commands(temp_workspace):
     """Test SAGE CLI subcommands ingest, reason, and verify."""
-    # Create an ingestion payload file
     payload_file = temp_workspace / "payload.json"
     payload_data = {
         "session_id": "cli_session_123",
@@ -220,27 +171,19 @@ def test_cli_continuity_bridge_commands(temp_workspace):
     }
     with open(payload_file, "w") as f:
         json.dump(payload_data, f)
-
-    # Use patch to mock SageRuntime to point to our temp_workspace
     with patch("sage.cli.SageRuntime", return_value=SageRuntime(str(temp_workspace))):
-        # 1. Test Ingest Command
         with patch("sys.argv", ["sage-cli", "ingest", "--file", str(payload_file)]):
             with patch("builtins.print") as mock_print:
                 cli_main()
-                # Ensure something was printed and printed text contains session_id or success
                 printed_args = [call_args[0] for call_args, _ in mock_print.call_args_list]
                 full_print = "".join(printed_args)
                 assert "cli_session_123" in full_print or "success" in full_print.lower()
-
-        # 2. Test Reason Command
         with patch("sys.argv", ["sage-cli", "reason"]):
             with patch("builtins.print") as mock_print:
                 cli_main()
                 printed_args = [call_args[0] for call_args, _ in mock_print.call_args_list]
                 full_print = "".join(printed_args)
                 assert "objective_alignment" in full_print
-
-        # 3. Test Verify Command
         with patch("sys.argv", ["sage-cli", "verify"]):
             with patch("builtins.print") as mock_print:
                 try:
@@ -256,33 +199,25 @@ def test_ai_clients_and_tools_bridge_routing(temp_workspace):
     """Test that ChatGPT, Gemini, and Tool managers route directly through ingest_session_payload."""
     runtime = SageRuntime(str(temp_workspace))
     runtime.set_objective("Unified Bridge Integration")
-
     chatgpt = ChatGPTClient(runtime)
     gemini = GeminiJulesClient(runtime)
     tool_mgr = ToolIntegrationManager(runtime)
-
-    # 1. ChatGPT
-    chatgpt_req = AIQueryRequest(prompt="Explain the Continuity Bridge architecture")
+    chatgpt_req = AIQueryRequest(
+        prompt="Explain the Continuity Bridge architecture",
+        response_override="Deterministic ChatGPT bridge test response",
+    )
     chatgpt_res = chatgpt.execute_query(chatgpt_req)
     assert chatgpt_res.session_id is not None
-    # Verify interaction is ingested as memory
     memories = runtime.memory.list_all()
     chatgpt_mems = [m for m in memories if "chatgpt" in m.tags]
     assert len(chatgpt_mems) == 1
     assert chatgpt_mems[0].content["prompt"] == "Explain the Continuity Bridge architecture"
-
-    # 2. Gemini
-    gemini_req = AIQueryRequest(
-        prompt="What are SAGE requirements?", session_id=chatgpt_res.session_id
-    )
+    gemini_req = AIQueryRequest(prompt="What are SAGE requirements?", session_id=chatgpt_res.session_id)
     gemini_res = gemini.execute_query(gemini_req)
     assert gemini_res.session_id == chatgpt_res.session_id
-    # Verify interaction is ingested as memory
     memories = runtime.memory.list_all()
     gemini_mems = [m for m in memories if "gemini_jules" in m.tags]
     assert len(gemini_mems) == 1
-
-    # 3. Tool manager GitHub index
     gh_event = GitHubEvent(
         event_type="commit",
         repository="test-repo",
@@ -293,8 +228,6 @@ def test_ai_clients_and_tools_bridge_routing(temp_workspace):
     memories = runtime.memory.list_all()
     gh_mems = [m for m in memories if "github" in m.tags]
     assert len(gh_mems) == 1
-
-    # 4. Tool manager Workspace index
     artifact = GoogleWorkspaceArtifact(
         doc_id="arch_spec_1",
         title="Architecture Specification Doc",
@@ -313,27 +246,18 @@ def test_google_workspace_sync_dry_run_diagnostics(temp_workspace):
     runtime = SageRuntime(str(temp_workspace))
     runtime.set_objective("Testing Workspace Sync")
     runtime.set_task("Verify Sync Mapper")
-
     sync_mgr = GoogleWorkspaceSyncManager(runtime)
-    # Trigger sync (should fallback to dry-run since credentials and packages are not there/mocked)
     result = sync_mgr.sync_to_google_workspace()
-
     assert result["mode"] == "dry-run"
     assert result["status"] == "prepared"
     assert "required_scopes" in result
     assert "https://www.googleapis.com/auth/documents" in result["required_scopes"]
     assert "google_docs" in result["sync_mappings"]
     assert "google_sheets" in result["sync_mappings"]
-
-    # Verify document attributes
     google_docs = result["sync_mappings"]["google_docs"]
     assert len(google_docs) > 0
-    snapshot_mapping = next(
-        d for d in google_docs if d["source_file"] == "docs/master/MASTER_SNAPSHOT.md"
-    )
+    snapshot_mapping = next(d for d in google_docs if d["source_file"] == "docs/master/MASTER_SNAPSHOT.md")
     assert snapshot_mapping["title"] == "SAGE Master Snapshot"
-
-    # Verify sheet status values mapped correctly
     google_sheets = result["sync_mappings"]["google_sheets"]
     assert google_sheets["Engineering Tracker"]["current_objective"] == "Testing Workspace Sync"
     assert google_sheets["Engineering Tracker"]["active_task"] == "Verify Sync Mapper"
@@ -342,8 +266,6 @@ def test_google_workspace_sync_dry_run_diagnostics(temp_workspace):
 def test_live_continuity_path_e2e(temp_workspace):
     """Verify live continuity path: Session input -> Continuity Bridge -> validation -> archive/state persistence."""
     runtime = SageRuntime(str(temp_workspace))
-
-    # 1. Session Input
     payload_data = {
         "session_id": "activation_test_session_001",
         "objective": "Verify SAGE Final Activation Checkpoint",
@@ -372,42 +294,26 @@ def test_live_continuity_path_e2e(temp_workspace):
         ],
     }
     payload = ExternalSessionPayload(**payload_data)
-
-    # 2. Continuity Bridge
     result = runtime.ingest_session_payload(payload)
-
-    # Assert success and correct registration
     assert result["status"] == "success"
     assert result["session_id"] == "activation_test_session_001"
     assert "checkpoint_id" in result
     assert "snapshot_id" in result
-
-    # 3. Validation and Promotion
     assert "mem_activation_001" in result["validation_results"]
     assert result["validation_results"]["mem_activation_001"]["is_valid"] is True
-
-    # Check memory store persistence
     mem = runtime.memory.retrieve("mem_activation_001")
     assert mem is not None
     assert mem.confidence == ConfidenceLevel.ARCHIVED
-
-    # Check archive routing persistence
     assert "archive_mem_activation_001" in result["routed_archive_entries"]
     arch_entry = runtime.archive.retrieve_entry("archive_mem_activation_001")
     assert arch_entry is not None
     assert arch_entry.title == "Activation Rules"
-
-    # Check decision and evidence tracking
     dec = runtime.decisions.retrieve_decision("dec_activation_001")
     assert dec is not None
     assert "dec_activation_001" in result["tracked_decisions"]
     assert "dec_activation_001" in arch_entry.decision_history
-
-    # 4. State Persistence (checkpoints/snapshots)
     checkpoint_file = temp_workspace / f"{result['checkpoint_id']}.json"
     assert checkpoint_file.exists()
-
-    # Verify that the created snapshot can be loaded back
     snapshot_id = result["snapshot_id"]
     snapshots_list = runtime.list_workspace_snapshots()
     assert any(s["id"] == snapshot_id for s in snapshots_list)
@@ -418,12 +324,9 @@ def test_ai_query_response_override(temp_workspace):
     runtime = SageRuntime(str(temp_workspace))
     chatgpt = ChatGPTClient(runtime)
     gemini = GeminiJulesClient(runtime)
-
     override_text = "Custom live model inference response payload"
     req = AIQueryRequest(prompt="Test prompt", response_override=override_text)
-
     chatgpt_res = chatgpt.execute_query(req)
     assert chatgpt_res.response_text == override_text
-
     gemini_res = gemini.execute_query(req)
     assert gemini_res.response_text == override_text
