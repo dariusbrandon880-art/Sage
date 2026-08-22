@@ -7,9 +7,9 @@ substep.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Sequence
+from typing import Any, Callable, Dict, Optional, Sequence
 
 
 class StageStatus(str, Enum):
@@ -86,7 +86,6 @@ class CoherentFrontierExecutor:
                 raise ValueError(
                     f"stage '{stage.stage_id}' has unknown dependencies: {sorted(unknown)}"
                 )
-        # Kahn-style cycle check without changing the caller's declared order.
         remaining = {stage.stage_id: set(stage.depends_on) for stage in self.stages}
         resolved: set[str] = set()
         while remaining:
