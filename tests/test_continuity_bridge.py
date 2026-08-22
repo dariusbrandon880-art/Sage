@@ -262,7 +262,12 @@ def test_ai_clients_and_tools_bridge_routing(temp_workspace):
     tool_mgr = ToolIntegrationManager(runtime)
 
     # 1. ChatGPT
-    chatgpt_req = AIQueryRequest(prompt="Explain the Continuity Bridge architecture")
+    # This test verifies routing/ingestion, not a live provider call.
+    # Use the production-supported response_override seam so CI remains deterministic and network-free.
+    chatgpt_req = AIQueryRequest(
+        prompt="Explain the Continuity Bridge architecture",
+        response_override="Deterministic ChatGPT bridge test response",
+    )
     chatgpt_res = chatgpt.execute_query(chatgpt_req)
     assert chatgpt_res.session_id is not None
     # Verify interaction is ingested as memory
