@@ -30,6 +30,7 @@ def _awareness():
             "delivery_semantics": "pull_projection_only",
         },
         "read_only": True,
+        "authority": "canonical_airspace_state_and_event_ledger",
     }
 
 
@@ -129,6 +130,23 @@ def test_unsupported_awareness_authority_fails_closed():
         assert "authority" in str(exc)
     else:
         raise AssertionError("unsupported awareness authority was accepted")
+
+
+def test_missing_awareness_authority_fails_closed():
+    awareness = _awareness()
+    del awareness["authority"]
+
+    try:
+        build_governed_context_view(
+            awareness=awareness,
+            audience="SAGE::DIRECTOR",
+            purpose="HUD",
+            context_id="ctx-missing-authority",
+        )
+    except ValueError as exc:
+        assert "canonical authority" in str(exc)
+    else:
+        raise AssertionError("missing awareness authority was accepted")
 
 
 def test_projection_does_not_mutate_awareness():
