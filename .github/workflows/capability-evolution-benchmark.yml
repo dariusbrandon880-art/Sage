@@ -1,3 +1,4 @@
+# Five-flight reflight marker: controlled rerun after verified harness fix.
 name: SAGE Capability Evolution Benchmark
 
 on:
