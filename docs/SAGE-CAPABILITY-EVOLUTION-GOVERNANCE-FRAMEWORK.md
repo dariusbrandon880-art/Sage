@@ -3,24 +3,41 @@
 **Document Identifier:** SAGE-GOV-FRAMEWORK-2026-07-29
 **Classification:** Governed Research & Architecture Record
 **Status:** PROPOSED — Strategic Governance Design Phase
-**Author:** Jules (SAGE Engineering Node)
+**Author:** SAGE C2
 **Date:** July 2026
 
 ---
 
 ## Executive Summary
 
-The **SAGE Capability Evolution Governance Framework** serves as the control tower coordinating SAGE's architectural expansion. This framework establishes the master coordination model that prevents capability drift, preserves complete execution continuity, improves production engineering velocity, and ensures that every future capability has a mathematically and logically defined purpose, validation path, evidence trail, and archive destination.
+The **SAGE Capability Evolution Governance Framework** serves as the control tower coordinating SAGE's architectural expansion. This framework establishes the master coordination model that prevents capability drift, preserves execution continuity, improves production engineering velocity, and ensures that every future capability has a defined purpose, validation path, evidence trail, and archive destination.
 
 The core principle driving SAGE architecture is:
-$$\textbf{SAGE does not promote capabilities because they exist. SAGE promotes capabilities because they have evidence.}$$
 
-By formalizing strict, non-bypassable gateways from conceptual research to the pristine production core, SAGE maintains a controlled evolutionary pipeline:
+> **SAGE does not promote capabilities because they exist. SAGE promotes capabilities because they have evidence.**
+
+### Locked Operating Law — Multi-Axis Continuous Capability Growth
+
+SAGE shall grow across multiple capability dimensions simultaneously rather than requiring sequential completion of one subsystem before another may advance.
+
+A governed wave may advance different dimensions at the same time — including capability, cognition, memory, learning, governance, execution, and verification — provided every frontier remains independently bounded, observable, and verifiable.
+
+**Parallel growth does not create parallel authority.** Master Archive authority, Research Lab → Validation → Master Archive promotion, Director authorization, execution boundaries, and independent verification remain unchanged.
+
+### Locked Incompletion Law
+
+**Incompletion is first-class SAGE state.** An unfinished capability must remain explicitly represented as unfinished. It may be `DISCOVERED`, `BOUNDED`, `BUILDING`, `EXECUTED`, `OBSERVED`, `VERIFIED`, `VALIDATED`, or `COMPOUNDING`, and may also be `HOLD`, `BLOCKED`, `FAILED`, `NEGATIVE`, `INDETERMINATE`, or `SUPERSEDED` where applicable.
+
+No adjacent successful capability may promote an incomplete capability by association. No evidence artifact may be interpreted as capability qualification without the required independent verification.
+
+The governing evolutionary pipeline is therefore:
+
 $$\text{Research} \longrightarrow \text{Validation} \longrightarrow \text{Master Archive}$$
-$$\text{Identify} \longrightarrow \text{Propose} \longrightarrow \text{Validate} \longrightarrow \text{Demonstrate}$$
-$$\text{Authorize} \longrightarrow \text{Implement} \longrightarrow \text{Verify} \longrightarrow \text{Archive}$$
+$$\text{Identify} \longrightarrow \text{Bound} \longrightarrow \text{Build} \longrightarrow \text{Fly} \longrightarrow \text{Observe} \longrightarrow \text{Verify} \longrightarrow \text{Compound}$$
 
-This framework organizes complexity and preserves necessary specialization without introducing centralizing or autonomous risks.
+and, across parallel trajectories:
+
+$$\text{Multiple Frontiers} \longrightarrow \text{Independent Flights} \longrightarrow \text{Shared Evidence Fabric} \longrightarrow \text{Fail-Closed Reconvergence} \longrightarrow \text{Validated State}$$
 
 ---
 
@@ -46,21 +63,20 @@ The SAGE platform functions as an AI Reliability Infrastructure and Agent Govern
 ```
 
 ### 1.1 The Core Coordination Pillars
-1. **Capability Tree ("What exists?"):** The complete, structured map of active and proposed capabilities. It divides the platform strictly between the *Production Core Space* and the *Isolated Experimental Space*.
-2. **Validation Framework ("How do we test?"):** The active suites, harnesses, and parallel environments (such as Render) designed to stress-test and observe capabilities without risking production integrity.
-3. **Evidence Package Model ("How do we prove?"):** Standardized, immutable, and serialized payloads capturing execution realities, environmental variables, and failures.
-4. **Human Review Gate ("Who decides?"):** The ultimate decision-making authority. Systems analyze, but humans judge the quality, completeness, and safety of the evidence.
-5. **Master Archive Update ("Where is it recorded?"):** The definitive, decentralized, and synchronized ledger of authorized capability states and validation histories.
+1. **Capability Tree ("What exists?"):** The complete, structured map of active and proposed capabilities, including explicit incomplete states. It divides the platform strictly between the Production Core Space and the Isolated Experimental Space.
+2. **Validation Framework ("How do we test?"):** Active suites, harnesses, and parallel environments designed to stress-test and observe capabilities without risking production integrity.
+3. **Evidence Package Model ("How do we prove?"):** Standardized, immutable, serialized payloads capturing execution realities, environmental variables, successes, failures, and provenance.
+4. **Human Review Gate ("Who decides?"):** Ultimate decision-making authority. Systems analyze; authorized humans judge evidence quality, completeness, safety, and promotion.
+5. **Master Archive Update ("Where is it recorded?"):** Definitive synchronized record of authorized capability states and validation histories.
 
 ### 1.2 Relationship Between the Layers
 
-The architecture is governed by the **One-Way Import Law**, preventing any higher or protected layers from importing or relying on unvalidated experimental code.
+The architecture is governed by the **One-Way Import Law**, preventing higher or protected layers from importing or relying on unvalidated experimental code.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                       CORE LAYER                            │
 │  - Pristine, stable, and locked runtime engine.             │
-│  - Namespaces: sage/runtime/, sage/core/, sage/acr/          │
 │  - Only accepts features promoted through full evidence.    │
 └──────────────────────────────┬──────────────────────────────┘
                                ▲
@@ -68,223 +84,255 @@ The architecture is governed by the **One-Way Import Law**, preventing any highe
 ┌──────────────────────────────┴──────────────────────────────┐
 │                    EXPERIMENTAL LAYER                       │
 │  - Confined, sandboxed validation prototypes.               │
-│  - Namespaces: sage/experimental/act/, etc.                  │
-│  - Implements mock environments & read-only state linkers.  │
+│  - Produces observable execution evidence.                  │
 └──────────────────────────────┬──────────────────────────────┘
                                ▲
                                │ [Formalized into spec & design]
 ┌──────────────────────────────┴──────────────────────────────┐
 │                      RESEARCH LAYER                         │
-│  - Purely conceptual and design-focused specifications.      │
-│  - Resides entirely within the Main Archive and docs/.      │
-│  - Zero runtime footprint, zero active simulation code.      │
+│  - Conceptual and design-focused specifications.            │
+│  - Zero production runtime authority.                       │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+### 1.3 Multi-Axis Growth Model
+
+SAGE may advance multiple trajectories in one governed wave. A wave can contain different targets rather than five copies of the same target.
+
+```
+                         SHARED GOVERNANCE / EVIDENCE FABRIC
+                                      │
+          ┌───────────────┬───────────┼───────────┬───────────────┐
+          ▼               ▼           ▼           ▼               ▼
+      Capability       Cognition    Memory     Learning       Governance
+          │               │           │           │               │
+          └───────────────┴───────────┼───────────┴───────────────┘
+                                      ▼
+                              Independent Flights
+                                      │
+                                      ▼
+                           Observation / Verification
+                                      │
+                                      ▼
+                              Fail-Closed Merge
+                                      │
+                                      ▼
+                              Validated SAGE State
+```
+
+The five-capability intelligence wave is the reference pattern: Frontier Tree Core, PFC Decision Engine, Temporal Research Memory, Observation-to-Learning, and Portfolio Intelligence can advance concurrently while retaining independent flight boundaries.
+
+### 1.4 Incompletion as a Control Surface
+
+The Capability Tree must preserve incomplete work rather than flattening it into a binary built/not-built status. Incomplete state is operationally meaningful because it controls what may be selected, promoted, depended upon, or treated as evidence-backed.
+
+A downstream capability may depend on an upstream incomplete capability only when that dependency is explicitly represented and the dependent execution path is itself bounded and verified. A failed or negative result remains reusable knowledge rather than disappearing from the tree.
 
 ---
 
 ## Section 2 — Capability Passport Model
 
-To prevent the emergence of undocumented, unverified, or rogue capabilities, every component within SAGE must possess an immutable and registered identity record known as the **Capability Passport**.
+To prevent undocumented, unverified, or rogue capabilities, every component within SAGE must possess an immutable and registered identity record known as the **Capability Passport**.
 
 ### 2.1 Capability Passport Structure
-Each Capability Passport must explicitly define the following nine fields:
+Each Capability Passport must explicitly define:
 
-1. **Capability Name:** The unique, structured identifier of the capability (e.g., `SAGE-ACT-CCL`).
-2. **Purpose:** A precise, high-fidelity statement explaining the core problem the capability solves and its architectural value.
-3. **Lifecycle State:** The exact operational classification under the Index Layer Provenance Schema (`PROPOSED` $\rightarrow$ `VALIDATED` $\rightarrow$ `ARCHIVE_CANDIDATE` $\rightarrow$ `CANONICAL`).
-4. **Dependencies:** The explicit list of required modules, libraries, or parent capabilities.
-5. **Validation Strategy:** The designated testing, observation, or simulation protocol used to gather empirical proof of correctness.
-6. **Evidence Path:** The designated repository path where serialized evidence packages and test results are archived.
-7. **Archive Location:** The corresponding index entry location inside the `Main Archive/INDEX.md` file.
-8. **Reviewer Decision:** The audit decision recorded during the most recent review gate (e.g., `Approved`, `Pending`, `Revision Required`).
-9. **Allowed Next State:** The strictly bounded state transition path defined by security and architectural policies.
+1. Capability Name
+2. Purpose
+3. Lifecycle State
+4. Dependencies
+5. Validation Strategy
+6. Evidence Path
+7. Archive Location
+8. Reviewer Decision
+9. Allowed Next State
+10. **Incomplete/Blocked State and reason**, when applicable
+11. **Compounding Targets**, identifying validated capabilities that may consume its result
 
 ### 2.2 The No Orphan Capability Rule
-$$\textbf{No Orphan Capability Rule: } \mathcal{C} \implies \{ \text{Purpose}, \text{Lifecycle Classification}, \text{Validation Strategy}, \text{Evidence Path}, \text{Archive Reference} \}$$
 
-A capability is classified as an **orphan** if it lacks any of the core attributes of the Capability Passport. SAGE policies strictly enforce that:
-- No capability code may be written or compiled without an approved `PROPOSED` Capability Passport.
-- No experimental capability may transition to `VALIDATED` or above without an linked, verified, and complete evidence path.
-- Orphan features are subject to immediate, automated isolation or decommissioning.
+A capability is an orphan if it lacks purpose, lifecycle classification, validation strategy, evidence path, or archive reference. Orphan capabilities remain isolated until those fields are supplied and verified.
 
 ---
 
 ## Section 3 — Capability State Transition Record
 
-The **Capability State Transition Record** standardizes how a capability progresses through lifecycle states. Every transition must be documented using a structured ledger to ensure full traceability.
+Every transition must be documented using a structured ledger to ensure full traceability.
 
-### 3.1 Transition Model Structure
-The record is structured as follows:
+### 3.1 Transition Model
 
-- **Capability:** `[Structured Name]`
-- **Current State:** `[Lifecycle State]`
-- **Validation Strategy:** `[Testing / Observation Protocol]`
-- **Evidence Package:** `[Serialized Evidence Code / ID]`
-- **Reviewer Decision:** `[Pending / Approved / Rejected / Revision Required]`
-- **Next Allowed State:** `[Next Lifecycle State]`
+- Capability
+- Current State
+- Validation Strategy
+- Evidence Package
+- Reviewer Decision
+- Next Allowed State
+- Incompletion/Blocker Reason, if applicable
+- Dependencies Affected
+- Compounding Effect, if validated
 
-### 3.2 Concrete Example: CMAPS Validation Schema
-The following record demonstrates the model applied to the Cross-Model Audit Payload Schema (CMAPS):
+### 3.2 State Integrity Rule
 
-- **Capability:** CMAPS Validation Schema
-- **Current State:** PROPOSED
-- **Validation Strategy:** Render Evidence Integrity Test
-- **Evidence Package:** EXP-CMAPS-001
-- **Reviewer Decision:** Pending
-- **Next Allowed State:** VALIDATED EXPERIMENTAL
+A wave-level success never substitutes for capability-level verification. Each frontier must carry its own execution provenance and verification result before it can be treated as validated.
 
 ---
 
 ## Section 4 — Validation Integration
 
-SAGE integrates its Capability Tree with the **SAGE Parallel Validation Strategy Framework** to establish a rigid validation hierarchy. No state movement can bypass this cascade.
+SAGE integrates its Capability Tree with the SAGE Parallel Validation Strategy Framework to establish a rigid validation hierarchy. No state movement can bypass this cascade.
 
 ```
-  ┌──────────────────┐
-  │ Capability Tree  │  - Defines "What exists" and holds the passport.
-  └────────┬─────────┘
-           │
-           ▼ [Requires]
-  ┌──────────────────┐
-  │Validation Strat. │  - Specifies the test plan, environment (e.g., Render), and limits.
-  └────────┬─────────┘
-           │
-           ▼ [Generates]
-  ┌──────────────────┐
-  │ Evidence Package │  - Chronological, cryptographically signed event and state records.
-  └────────┬─────────┘
-           │
-           ▼ [Undergoes]
-  ┌──────────────────┐
-  │Human Interpretn. │  - Expert review of boundary compliance and adversarial resilience.
-  └────────┬─────────┘
-           │
-           ▼ [Determines]
-  ┌──────────────────┐
-  │Lifecycle Motion  │  - Master Archive update and permission boundary configuration.
-  └──────────────────┘
+  Capability Tree
+       │
+       ▼
+  Validation Strategy
+       │
+       ▼
+  Evidence Package
+       │
+       ▼
+  Independent Verification
+       │
+       ▼
+  Human Authorization
+       │
+       ▼
+  Master Archive Update
 ```
 
 ### 4.1 Core Invariants of Validation Integration
-- **Direct Correlation:** Every capability node in the Capability Tree must map directly to a validation strategy. General or unmapped testing is insufficient.
-- **Evidence Generation:** A validation strategy is considered incomplete until it emits a standard, serialized Evidence Package capturing both positive cases and simulated failures.
-- **Cognitive Superiority:** Software tools collect, correlate, and index telemetry; however, only a human supervisor has the authority to interpret evidence quality and execute state transitions.
+
+- Every capability node maps to a validation strategy.
+- A validation strategy is incomplete until it emits standard evidence capturing positive and negative cases where applicable.
+- Execution evidence is observational and does not itself create authority.
+- Parallel execution does not weaken independent verification.
+- Reconvergence is **fail-closed**: missing, stale, contradictory, or failed required evidence blocks wave qualification.
+- Global repository health remains a required reconvergence input even when individual capability flights execute independently.
 
 ---
 
 ## Section 5 — Evidence Package Model
 
-SAGE represents evidence as structured, immutable, and machine-readable packages. These packages serve as verifiable proof of execution correctness, boundary isolation, and failure resilience.
+SAGE represents evidence as structured, immutable, machine-readable packages. Evidence proves what happened; it does not automatically determine what should be promoted.
 
-### 5.1 Required Fields
-Every Evidence Package must include exactly these eleven fields:
+Every evidence package must preserve provenance sufficient to answer: **what ran, against which state, with which inputs, producing what result, under which commit/environment, and with which failures or exceptions?**
 
-1. **Experiment ID:** Unique chronological identifier (e.g., `EXP-CMAPS-001`).
-2. **Timestamp:** High-resolution ISO 8601 UTC timestamp.
-3. **Environment State:** Detailed record of the system environment, including active configuration options and dependency versions.
-4. **Scenario Blueprint:** The explicit description of the test scenario, input constraints, and execution boundaries.
-5. **Expected Result:** The mathematically or logically predicted outcome of the execution.
-6. **Observed Result:** The actual raw outcome captured during runtime execution.
-7. **Artifacts:** References or paths to captured logs, telemetry metrics, and state serialization files.
-8. **Failures:** Complete records of any caught exceptions, schema validation errors, or invariant violations.
-9. **Boundary Assessment:** Verification of zero side-effects inside protected namespaces (`sage/core/`, `sage/acr/`, `sage/runtime/`).
-10. **Lifecycle State:** The associated state of the capability during this specific run (e.g., `PROPOSED` or `VALIDATED EXPERIMENTAL`).
-11. **Reviewer Decision Ledger:** A historical log of human-signed reviews, feedback, and approvals linked to the package.
-
-### 5.2 Strict Administrative Boundary
-- **Observational Status:** Evidence packages are structured representations of empirical observations. They provide the necessary data for decision-making but **do not automatically create authority, execute promotions, or alter system configurations**.
-- **Immutable State:** Once written and signed by the observation layer, an Evidence Package is read-only and protected against modification or deletion.
+Evidence packages must remain traceable to the capability frontier and its lifecycle state.
 
 ---
 
 ## Section 6 — Failure as Information Model
 
-In traditional engineering, failures are treated as defects to be eliminated. In SAGE, **failures are highly valued research assets** that define the operational boundaries of autonomous systems.
+In SAGE, failures are research assets that define operational boundaries.
 
-### 6.1 Transformation of Failures into Research Assets
-A failure is transformed from a negative event into a valuable governance asset when it undergoes five-stage processing:
-1. **Isolated:** Confined within sandboxed test boundaries or isolated namespaces to prevent systemic contamination.
-2. **Measured:** Evaluated against defined parameters (e.g., latency, payload size, deviation from expected schemas).
-3. **Documented:** Fully recorded, capturing the complete call stack and active state maps.
-4. **Classified:** Sorted into known failure taxonomies (e.g., *Model Identity Spoofing*, *Nonce Replay*, *State-Drift Attempt*).
-5. **Preserved:** Permanently stored inside the Master Archive to serve as regression benchmarks and educational models for future development.
+### 6.1 Failure Processing
 
-### 6.2 The SAGE Failure-Information Pipeline
-$$\text{Observation} \longrightarrow \text{Evidence} \longrightarrow \text{Analysis} \longrightarrow \text{Decision} \longrightarrow \text{Archive}$$
+1. Isolate
+2. Measure
+3. Document
+4. Classify
+5. Preserve
+6. Feed the result into future frontier selection and regression testing
 
-Every execution anomaly passes through this sequence, ensuring that system boundaries are verified through empirical failure analysis rather than theoretical assumptions.
+### 6.2 Negative Knowledge Rule
+
+Negative results, blocked states, rejected hypotheses, and forbidden regressions remain first-class knowledge. They may constrain future portfolio selection and must not be silently erased by later successful runs.
 
 ---
 
 ## Section 7 — Production Velocity Improvement Model
 
-A common misconception is that strict governance slows down software development. By preventing wasteful development loops and defining clear boundaries early, SAGE's governance framework actively improves production engineering velocity.
+SAGE governance is designed to increase velocity by reducing invalid work, not by reducing verification.
 
-### 7.1 Comparing the Engineering Models
+### 7.1 Sequential Work vs Multi-Axis Growth
 
 ```
-OLD SOFTWARE PATTERN (High Waste, Low Certainty):
-Idea ──► Build ──► Discover Problems ──► Rewrite ──► Debate State ──► Slow Rollout
-  ▲                                                    │
-  └────────────────────────────────────────────────────┘ (Infinite Loop of Refactoring)
+SEQUENTIAL MODEL:
+Idea A → Build A → Finish A → Idea B → Build B → Finish B
 
-NEW SAGE PATTERN (High Velocity, Absolute Certainty):
-Idea ──► Classification ──► Validation Strategy ──► Evidence ──► Decision ──► Implementation
+SAGE MULTI-AXIS MODEL:
+                 ┌→ Frontier A → Fly → Verify ─┐
+Discover/Bound ──┼→ Frontier B → Fly → Verify ─┼→ Compound
+                 ├→ Frontier C → Fly → Verify ─┤
+                 ├→ Frontier D → Fly → Verify ─┤
+                 └→ Frontier E → Fly → Verify ─┘
 ```
+
+The second model allows breadth and depth to grow simultaneously while preserving a strict evidence boundary for every consequential claim.
 
 ### 7.2 Why SAGE Governance is Faster
-- **Wasted Cycles Elimination:** Engineers do not spend weeks writing code for unstable or conceptually flawed features. Directions are proven mathematically and logistically *before* expanding code complexity.
-- **Clear Engineering Boundaries:** Confining experimental code to `sage/experimental/act/` allows developers to iterate rapidly without worrying about breaking core stability or violating security policies.
-- **Automated Validation Feedback:** Programmatic isolation checks and schema audits provide immediate feedback, removing manual regression testing overhead.
+
+- Closed findings are not repeatedly re-proven without new evidence.
+- Independent fronts prevent unrelated failures from suppressing useful observations.
+- Shared evidence infrastructure avoids duplicate governance machinery.
+- Explicit incompletion prevents false completion and reduces hidden technical debt.
+- Portfolio selection can prioritize the smallest consequential frontier across the entire system rather than inside one subsystem.
 
 ---
 
-## Section 8 — Human Governance Boundary
+## Section 8 — Full-System Evolution Loop
 
-The boundary between machine-controlled observation and human-controlled authority is absolute.
+The complete SAGE evolutionary loop is:
 
-$$\begin{aligned}
-\text{Render} &\implies \text{Observes Execution Telemetry} \\
-\text{SAGE} &\implies \text{Analyzes Schema and Invariants} \\
-\text{Humans} &\implies \text{Decide and Authorize Transitions} \\
-\text{Master Archive} &\implies \text{Records Approved System States}
-\end{aligned}$$
+**SENSE → RECON → SUPER SEARCH → BOUND → DECIDE → AUTHORIZE → BUILD → FLY → OBSERVE → VERIFY → REMEMBER → LEARN → SELECT → COMPOUND**
 
-### 8.1 The Core Constraints of Human Sovereignty
-- **No Automated Promotion:** No software script, model, or CI/CD pipeline has the authority to transition a capability's state from `PROPOSED` to `VALIDATED` or `CANONICAL` autonomously.
-- **No Autonomous Lifecycle Advancement:** Life-cycle state progress requires a cryptographically validated, human-signed transition record.
-- **No Evidence Without Review:** Telemetry metrics and logs are raw data. They do not constitute "evidence" for state progression until they are reviewed, evaluated, and signed off by a human supervisor.
+Super Search is an external-world intelligence sensor and adversarial challenge layer. It may challenge SAGE assumptions and improve decisions but does not override repository truth or Master Archive authority.
+
+The loop operates across multiple simultaneous trajectories, but every trajectory retains its own evidence and lifecycle state.
 
 ---
 
-## Section 9 — Risk Controls
+## Section 9 — Full-System Puzzle Audit Contract
 
-SAGE implements specific controls to monitor and mitigate critical governance risks:
+A system-wide audit must inspect not merely whether components exist, but whether their interfaces preserve correct information, authority, evidence, and state flow.
 
-| Risk Category | Hazard Description | Mitigating Governance Control |
-|---|---|---|
-| **Cognitive Drift** | Concepts diverging from the founding design principles of SAGE. | Strict architectural cross-referencing against the [SAGE Constitution](../docs/master/CONSTITUTION.md) and Master Archive. |
-| **Orphan Capabilities** | Unregistered or undocumented capabilities executing without passports. | **No Orphan Capability Rule** enforced by static analysis and runtime checks. |
-| **Documentation Fragmentation** | scattered, unaligned, or contradictory planning and design records. | Centralized coordination of indices via `Main Archive/INDEX.md` and standard report linking. |
-| **Premature Implementation** | Production code written before validation strategies and evidence packages are formalized. | Enforcing the **Research $\rightarrow$ Experimental $\rightarrow$ Core** transition sequence. |
-| **Infrastructure Contamination** | Experimental code leaking into the active production environment. | Strict application of the **One-Way Import Law** verified by AST isolation checks. |
-| **False Confidence** | Assuming safety based on incomplete, green-path-only testing. | Mandatory inclusion of failure-state scenarios, adversarial audits, and boundary assessments in every Evidence Package. |
+The audit surface includes:
+
+- Constitutional layer and Master Archive
+- Capability/Frontier Tree
+- Research Graph and Context Fabric
+- Working Memory and cognitive persistence
+- PFC decision layer
+- Temporal research state
+- Governed execution and authorization
+- Observation and provenance
+- Evidence and receipts
+- Failure/negative memory
+- Learning and promotion
+- Portfolio/frontier selection
+- Verification/reconvergence
+- External Super Search
+- Fresh-process rehydration
+- Cross-layer import boundaries
+- Multi-axis incomplete-state propagation
+
+The audit must classify each interface as **VALIDATED, PARTIAL, MISSING, CONFLICTING, BLOCKED, or UNKNOWN**. It must then identify the **smallest consequential frontier** that materially improves the integrated system.
+
+No architecture is declared "perfect" by documentation alone. Completeness is an evidence-backed claim produced by the same governed lifecycle used for capabilities.
 
 ---
 
-## Section 10 — Awareness of Active SAGE Workstreams
+## Section 10 — Governance Invariants
 
-The SAGE platform coordinates multiple highly specialized workstreams to maintain complete blueprint continuity:
+1. Master Archive remains canonical.
+2. Research remains candidate knowledge until validated.
+3. Human/Director authorization remains the authority boundary.
+4. One-Way Import Law remains enforced.
+5. Parallel execution never implies parallel authority.
+6. Incompletion is explicit state.
+7. Negative knowledge is preserved.
+8. Evidence is provenance-bound.
+9. Reconvergence is fail-closed.
+10. Closed findings are not reopened without new evidence.
+11. No new lane may be created without authorization.
+12. Capability completion requires an observable, usable result plus independent verification.
+13. Every consequential claim must have a bounded verification path.
+14. Multi-axis growth may increase breadth and depth simultaneously, but it may not lower evidence standards.
 
-1. **Render Validation Framework:** Leverages the isolated hosting and cloud-based telemetry environment to capture execution states without impacting physical networks.
-2. **Continuity Proof Chamber:** Sandboxed environment validating that model-independent states can survive unexpected restarts or host context-switches.
-3. **SAGE-ACT Capability Tree:** Manages the multi-agent task and decision lineage maps confined to the experimental namespace.
-4. **CMAPS Evolution:** Advances robust, cryptographic payload validation to prevent model identity spoofing.
-5. **Evidence Lifecycle Framework:** Establishes the 6-stage lifecycle flow and 6 quality dimensions for validation records.
-6. **Decision Traceability:** Maps technical and architectural decisions directly to empirical evidence packages.
-7. **Knowledge Graph Alignment:** Maps documentation, capabilities, and decisions into a single synchronized graph.
-8. **Historical Architecture Recovery:** Maintains trace lineage of recovered architectural concepts and narritive metaphors (Prometheus, Star Wars, Marvel).
-9. **Future Capability Governance:** Implements the rules of this framework to govern all upcoming milestone candidates (such as SAGE-SDR or SAGE-CRC).
+---
 
-By managing these workstreams under a single Capability Evolution Governance Framework, SAGE guarantees that **no context is lost, duplicate efforts are prevented, and all developmental paths lead safely to the Master Archive**.
+## Status
+
+**Operating law locked into the SAGE Capability Evolution Governance Framework.**
+
+The framework remains the governing design record until its provisions are promoted through the normal validation and Master Archive process. The full-system puzzle audit is an execution task, not a declaration of architectural perfection.
