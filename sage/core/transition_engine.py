@@ -51,6 +51,7 @@ class TransitionRequest:
     capability_id: str
     subject_id: str
     policy_version: str
+    authorization_scope: str
     target_state: str
 
     def __post_init__(self) -> None:
@@ -58,6 +59,7 @@ class TransitionRequest:
             "capability_id",
             "subject_id",
             "policy_version",
+            "authorization_scope",
             "target_state",
         ):
             value = getattr(self, name)
@@ -75,6 +77,7 @@ class TransitionExecutionRecord:
     previous_state: str
     new_state: str
     policy_version: str
+    authorization_scope: str
     decision: TransitionDecision = TransitionDecision.APPLIED
     state_mutated: bool = True
 
@@ -85,8 +88,8 @@ class TransitionExecutionRecord:
             raise ValueError("capability_id and subject_id must be non-empty")
         if not self.previous_state.strip() or not self.new_state.strip():
             raise ValueError("transition states must be non-empty")
-        if not self.policy_version.strip():
-            raise ValueError("policy_version must be non-empty")
+        if not self.policy_version.strip() or not self.authorization_scope.strip():
+            raise ValueError("policy_version and authorization_scope must be non-empty")
         if self.decision is not TransitionDecision.APPLIED:
             raise ValueError("decision must be APPLIED")
         if not self.state_mutated:
@@ -113,7 +116,9 @@ class TransitionAuthorityEngine:
         self._trusted_reviewer_keys = dict(trusted_reviewer_keys)
         self._signature_verifier = signature_verifier
         self._capability_state = capability_state
-        self._consumed_receipt_ids = consumed_receipt_ids if consumed_receipt_ids is not None else set()
+        self._consumed_receipt_ids = (
+            consumed_receipt_ids if consumed_receipt_ids is not None else set()
+        )
 
     @property
     def consumed_receipt_ids(self) -> frozenset[str]:
@@ -130,7 +135,9 @@ class TransitionAuthorityEngine:
         if receipt.state_mutated:
             raise InvalidAttestationError("attestation receipt is already mutated")
         if receipt.decision is not AttestationDecision.APPROVED:
-            raise InvalidAttestationError("only APPROVED attestations may transition state")
+            raise InvalidAttestationError(
+                "only APPROVED attestations may transition state"
+            )
         if receipt.receipt_id in self._consumed_receipt_ids:
             raise ReplayAttestationError("attestation receipt has already been consumed")
 
@@ -148,8 +155,11 @@ class TransitionAuthorityEngine:
             receipt.capability_id != request.capability_id
             or receipt.subject_id != request.subject_id
             or receipt.policy_version != request.policy_version
+            or receipt.authorization_scope != request.authorization_scope
         ):
-            raise ScopeMismatchError("transition request does not match attestation scope")
+            raise ScopeMismatchError(
+                "transition request does not match attestation scope"
+            )
 
         state_key = f"{request.subject_id}:{request.capability_id}"
         previous_state = self._capability_state.get(state_key, "UNQUALIFIED")
@@ -165,4 +175,5 @@ class TransitionAuthorityEngine:
             previous_state=previous_state,
             new_state=request.target_state,
             policy_version=request.policy_version,
+            authorization_scope=request.authorization_scope,
         )
