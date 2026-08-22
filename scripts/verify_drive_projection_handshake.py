@@ -1,8 +1,8 @@
-#!/usr/bin/env python3
 """Verify the Google Drive projection boundary without mutating canonical state."""
 from __future__ import annotations
 
 import argparse
+
 from sage.integration import GoogleDriveProjectionSyncManager
 
 
