@@ -16,8 +16,16 @@ from sage.runtime.diagnostics import (
 from sage.runtime.engine import SageRuntime
 from sage.runtime.health import check_health, get_sage_identity
 from sage.runtime.metrics import get_metrics_collector
+from sage.runtime.model_gateway import (
+    ModelAdapter,
+    ModelResponse,
+    SAGERuntimeEnvelope,
+    SAGEStateSnapshot,
+)
 
-SAGERuntime = SageRuntime
+# Preserve the existing runtime-engine public alias. The model gateway is an
+# explicit control-plane boundary rather than a replacement for SageRuntime.
+SAGEModelRuntime = __import__("sage.runtime.model_gateway", fromlist=["SAGERuntime"]).SAGERuntime
 
 
 def __getattr__(name: str) -> Any:
@@ -33,7 +41,11 @@ def __getattr__(name: str) -> Any:
 
 __all__ = [
     "InitializationManager",
-    "SAGERuntime",
+    "ModelAdapter",
+    "ModelResponse",
+    "SAGEModelRuntime",
+    "SAGERuntimeEnvelope",
+    "SAGEStateSnapshot",
     "SageRuntime",
     "check_health",
     "discover_capabilities",
