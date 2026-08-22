@@ -1,4 +1,10 @@
-from sage.agent_awareness import AWARENESS_VERSION, CANONICAL_AUTHORITY, build_agent_awareness_snapshot, get_agent_awareness_snapshot
+from sage.agent_awareness import (
+    AWARENESS_VERSION,
+    CANONICAL_AUTHORITY,
+    build_agent_awareness_snapshot,
+    get_agent_awareness_snapshot,
+    get_live_agent_awareness_snapshot,
+)
 
 
 def _identity(agent_id):
@@ -115,6 +121,21 @@ def test_provider_composition_is_deterministic_and_read_only():
     )
     assert snapshot["read_only"] is True
     assert snapshot["self"]["authority"] == "canonical_airspace_state"
+
+
+def test_live_binding_uses_canonical_readers(monkeypatch):
+    import sage.agent_presence as presence
+    import sage.agent_coordination as coordination
+
+    monkeypatch.setattr(presence, "get_agent_identity", _identity)
+    monkeypatch.setattr(presence, "get_team_context", _team)
+    monkeypatch.setattr(coordination, "get_unread_coordination", lambda _agent: [_event()])
+
+    snapshot = get_live_agent_awareness_snapshot("MISSION_CONTROL")
+
+    assert snapshot["self"]["nameplate"] == "[SAGE::C2::CHATGPT]"
+    assert snapshot["team"]["stations"]["INTEL_STATION"]["state"] == "RECON"
+    assert snapshot["coordination"]["pending"][0]["sender"] == "SAGE::INTEL::GEMINI"
 
 
 def test_invalid_agent_id_fails_closed():
