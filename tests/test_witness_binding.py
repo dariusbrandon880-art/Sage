@@ -27,9 +27,7 @@ def _claim(**overrides):
 def test_verification_report_separates_integrity_from_truth():
     provider = CryptographicAttestationProvider("MOCK")
     claim = _claim()
-
     report = claim.verification_report(provider)
-
     assert report["signature_valid"] is True
     assert report["provenance_bound"] is True
     assert report["independence_status"] == "UNKNOWN"
@@ -52,7 +50,6 @@ def test_metadata_substitution_invalidates_signature():
         signature=claim.signature,
         claim_kind=claim.claim_kind,
     )
-
     assert substituted.verify_signature(provider) is False
     assert substituted.claim_digest != claim.claim_digest
 
@@ -60,7 +57,6 @@ def test_metadata_substitution_invalidates_signature():
 def test_claim_kind_is_part_of_digest_and_signature():
     observation = _claim(claim_kind=WitnessClaimKind.OBSERVATION)
     controller = _claim(claim_kind=WitnessClaimKind.CONTROLLER_REPORT)
-
     assert observation.claim_digest != controller.claim_digest
     assert observation.signature != controller.signature
 
