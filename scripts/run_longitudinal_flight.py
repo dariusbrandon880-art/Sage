@@ -10,7 +10,9 @@ governed execution receipts.
 """
 from __future__ import annotations
 
+import contextlib
 import hashlib
+import io
 import json
 import subprocess
 import tempfile
@@ -159,7 +161,9 @@ def main() -> int:
             return sage_executor(state_dir, sandbox_root, mission, session_id)
 
         runner = LongitudinalFlightRunner(PLAN, record_manager=None, mission_session_prefix="pilot-001")
-        result = runner.run(run_baseline, run_sage)
+        captured = io.StringIO()
+        with contextlib.redirect_stdout(captured):
+            result = runner.run(run_baseline, run_sage)
         receipt = result.evaluation
         report = {
             "flight": "SAGE-LONGITUDINAL-PILOT-001",
