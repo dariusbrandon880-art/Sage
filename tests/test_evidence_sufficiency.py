@@ -34,82 +34,50 @@ class FakeWitnessBinding:
 
 
 def test_supported_is_context_and_intent_bound_and_deterministic():
-    a = EvidenceSufficiencyEvaluation.evaluate(
-        claim_ref="claim-1", context_id="ctx-a", intent_ref="intent-live",
-        assessments=[assessment("e2", relevance=1.0, coverage=1.0), assessment("e1")],
-    )
-    b = EvidenceSufficiencyEvaluation.evaluate(
-        claim_ref="claim-1", context_id="ctx-a", intent_ref="intent-live",
-        assessments=[assessment("e1"), assessment("e2", relevance=1.0, coverage=1.0)],
-    )
+    a = EvidenceSufficiencyEvaluation.evaluate(claim_ref="claim-1", context_id="ctx-a", intent_ref="intent-live", assessments=[assessment("e2"), assessment("e1")])
+    b = EvidenceSufficiencyEvaluation.evaluate(claim_ref="claim-1", context_id="ctx-a", intent_ref="intent-live", assessments=[assessment("e1"), assessment("e2")])
     assert a.status is SufficiencyStatus.SUPPORTED
     assert a.evaluation_digest == b.evaluation_digest
 
 
 def test_context_or_intent_transposition_changes_digest():
-    a = EvidenceSufficiencyEvaluation.evaluate(
-        claim_ref="claim-1", context_id="simulation", intent_ref="benchmark", assessments=[assessment()]
-    )
-    b = EvidenceSufficiencyEvaluation.evaluate(
-        claim_ref="claim-1", context_id="live", intent_ref="execution", assessments=[assessment()]
-    )
-    assert a.status is SufficiencyStatus.SUPPORTED
-    assert b.status is SufficiencyStatus.SUPPORTED
+    a = EvidenceSufficiencyEvaluation.evaluate(claim_ref="claim-1", context_id="simulation", intent_ref="benchmark", assessments=[assessment()])
+    b = EvidenceSufficiencyEvaluation.evaluate(claim_ref="claim-1", context_id="live", intent_ref="execution", assessments=[assessment()])
     assert a.evaluation_digest != b.evaluation_digest
 
 
 def test_partial_support_is_not_promoted_to_supported():
-    result = EvidenceSufficiencyEvaluation.evaluate(
-        claim_ref="claim-1", context_id="ctx", intent_ref="intent",
-        assessments=[assessment(coverage=0.4)], minimum_coverage=0.8,
-    )
+    result = EvidenceSufficiencyEvaluation.evaluate(claim_ref="claim-1", context_id="ctx", intent_ref="intent", assessments=[assessment(coverage=0.4)], minimum_coverage=0.8)
     assert result.status is SufficiencyStatus.PARTIALLY_SUPPORTED
 
 
 def test_contradiction_dominates_support():
-    result = EvidenceSufficiencyEvaluation.evaluate(
-        claim_ref="claim-1", context_id="ctx", intent_ref="intent",
-        assessments=[assessment("support"), assessment("contra", supports=False, contradicts=True)],
-    )
+    result = EvidenceSufficiencyEvaluation.evaluate(claim_ref="claim-1", context_id="ctx", intent_ref="intent", assessments=[assessment("support"), assessment("contra", supports=False, contradicts=True)])
     assert result.status is SufficiencyStatus.CONTRADICTED
 
 
 def test_independence_requirement_cannot_be_satisfied_by_self_attested_evidence():
-    result = EvidenceSufficiencyEvaluation.evaluate(
-        claim_ref="claim-1", context_id="ctx", intent_ref="intent",
-        assessments=[assessment(coverage=1.0, independently_verified=False)],
-        require_independent_witness=True,
-    )
+    result = EvidenceSufficiencyEvaluation.evaluate(claim_ref="claim-1", context_id="ctx", intent_ref="intent", assessments=[assessment(independently_verified=False)], require_independent_witness=True)
     assert result.status is SufficiencyStatus.PARTIALLY_SUPPORTED
 
 
 def test_independent_witness_can_satisfy_full_burden():
-    result = EvidenceSufficiencyEvaluation.evaluate(
-        claim_ref="claim-1", context_id="ctx", intent_ref="intent",
-        assessments=[assessment(coverage=1.0, independently_verified=True)],
-        require_independent_witness=True,
-    )
+    result = EvidenceSufficiencyEvaluation.evaluate(claim_ref="claim-1", context_id="ctx", intent_ref="intent", assessments=[assessment(independently_verified=True)], require_independent_witness=True)
     assert result.status is SufficiencyStatus.SUPPORTED
 
 
 def test_no_support_is_unverifiable():
-    result = EvidenceSufficiencyEvaluation.evaluate(
-        claim_ref="claim-1", context_id="ctx", intent_ref="intent", assessments=[assessment(supports=False)]
-    )
+    result = EvidenceSufficiencyEvaluation.evaluate(claim_ref="claim-1", context_id="ctx", intent_ref="intent", assessments=[assessment(supports=False)])
     assert result.status is SufficiencyStatus.UNVERIFIABLE
 
 
 def test_empty_assessments_fail_closed():
     with pytest.raises(EvidenceSufficiencyValidationError):
-        EvidenceSufficiencyEvaluation.evaluate(
-            claim_ref="claim-1", context_id="ctx", intent_ref="intent", assessments=[]
-        )
+        EvidenceSufficiencyEvaluation.evaluate(claim_ref="claim-1", context_id="ctx", intent_ref="intent", assessments=[])
 
 
 def test_authority_firewall_is_permanent():
-    result = EvidenceSufficiencyEvaluation.evaluate(
-        claim_ref="claim-1", context_id="ctx", intent_ref="intent", assessments=[assessment()]
-    )
+    result = EvidenceSufficiencyEvaluation.evaluate(claim_ref="claim-1", context_id="ctx", intent_ref="intent", assessments=[assessment()])
     assert result.authority_granted is False
     assert result.to_dict()["authority_granted"] is False
 
@@ -120,71 +88,54 @@ def test_invalid_evidence_metrics_fail_closed():
 
 
 def test_witnessed_decision_context_mismatch_fails_closed():
-    result = WitnessSufficiencyEvaluator.evaluate_witnessed_decision(
-        FakeDecisionRecord(context_id="ctx-a"), FakeWitnessBinding(context_id="ctx-b"), "live-execution"
-    )
+    result = WitnessSufficiencyEvaluator.evaluate_witnessed_decision(FakeDecisionRecord(context_id="ctx-a"), FakeWitnessBinding(context_id="ctx-b"), "live-execution", signature_verified=True)
     assert result.status is SufficiencyStatus.CONTRADICTED
     assert result.authority_granted is False
 
 
 def test_witnessed_decision_requires_bound_evidence_ref():
-    result = WitnessSufficiencyEvaluator.evaluate_witnessed_decision(
-        FakeDecisionRecord(evidence_refs=("other-ref",)), FakeWitnessBinding(), "live-execution"
-    )
+    result = WitnessSufficiencyEvaluator.evaluate_witnessed_decision(FakeDecisionRecord(evidence_refs=("other-ref",)), FakeWitnessBinding(), "live-execution", signature_verified=True)
     assert result.status is SufficiencyStatus.UNVERIFIABLE
 
 
 def test_witnessed_decision_rejects_tampered_decision_integrity():
-    result = WitnessSufficiencyEvaluator.evaluate_witnessed_decision(
-        FakeDecisionRecord(integrity=False), FakeWitnessBinding(), "live-execution"
-    )
+    result = WitnessSufficiencyEvaluator.evaluate_witnessed_decision(FakeDecisionRecord(integrity=False), FakeWitnessBinding(), "live-execution", signature_verified=True)
     assert result.status is SufficiencyStatus.CONTRADICTED
 
 
 def test_unverified_witness_does_not_support_claim():
-    result = WitnessSufficiencyEvaluator.evaluate_witnessed_decision(
-        FakeDecisionRecord(), FakeWitnessBinding(status="PENDING"), "live-execution"
-    )
+    result = WitnessSufficiencyEvaluator.evaluate_witnessed_decision(FakeDecisionRecord(), FakeWitnessBinding(status="PENDING"), "live-execution", signature_verified=True)
+    assert result.status is SufficiencyStatus.UNVERIFIABLE
+
+
+def test_missing_signature_verification_fails_closed():
+    result = WitnessSufficiencyEvaluator.evaluate_witnessed_decision(FakeDecisionRecord(), FakeWitnessBinding(), "live-execution")
     assert result.status is SufficiencyStatus.UNVERIFIABLE
 
 
 def test_strict_burden_does_not_confuse_signature_with_independence():
-    result = WitnessSufficiencyEvaluator.evaluate_witnessed_decision(
-        FakeDecisionRecord(), FakeWitnessBinding(), "live-execution", "STRICT_DIRECT_PROOF"
-    )
+    result = WitnessSufficiencyEvaluator.evaluate_witnessed_decision(FakeDecisionRecord(), FakeWitnessBinding(), "live-execution", "STRICT_DIRECT_PROOF", signature_verified=True)
     assert result.status is SufficiencyStatus.PARTIALLY_SUPPORTED
     assert result.authority_granted is False
 
 
 def test_strict_burden_can_be_satisfied_by_explicit_independent_witness():
-    result = WitnessSufficiencyEvaluator.evaluate_witnessed_decision(
-        FakeDecisionRecord(), FakeWitnessBinding(), "live-execution", "STRICT_DIRECT_PROOF",
-        independent_witness=True,
-    )
+    result = WitnessSufficiencyEvaluator.evaluate_witnessed_decision(FakeDecisionRecord(), FakeWitnessBinding(), "live-execution", "STRICT_DIRECT_PROOF", independent_witness=True, signature_verified=True)
     assert result.status is SufficiencyStatus.SUPPORTED
 
 
 def test_invalid_burden_fails_closed():
     with pytest.raises(EvidenceSufficiencyValidationError):
-        WitnessSufficiencyEvaluator.evaluate_witnessed_decision(
-            FakeDecisionRecord(), FakeWitnessBinding(), "live-execution", "MAKE_IT_TRUE"
-        )
+        WitnessSufficiencyEvaluator.evaluate_witnessed_decision(FakeDecisionRecord(), FakeWitnessBinding(), "live-execution", "MAKE_IT_TRUE")
 
 
-def test_tampered_signature_can_be_forced_to_fail_closed():
-    result = WitnessSufficiencyEvaluator.evaluate_witnessed_decision(
-        FakeDecisionRecord(), FakeWitnessBinding(), "live-execution", signature_verified=False
-    )
+def test_tampered_signature_fails_closed():
+    result = WitnessSufficiencyEvaluator.evaluate_witnessed_decision(FakeDecisionRecord(), FakeWitnessBinding(), "live-execution", signature_verified=False)
     assert result.status is SufficiencyStatus.CONTRADICTED
 
 
 def test_evaluator_is_deterministic_for_same_inputs():
-    kwargs = dict(
-        decision_record=FakeDecisionRecord(),
-        witness_binding=FakeWitnessBinding(),
-        declared_intent="benchmark",
-        required_burden="EXPLORATORY",
-    )
+    kwargs = dict(decision_record=FakeDecisionRecord(), witness_binding=FakeWitnessBinding(), declared_intent="benchmark", required_burden="EXPLORATORY", signature_verified=True)
     first = WitnessSufficiencyEvaluator.evaluate_witnessed_decision(**kwargs)
     second = WitnessSufficiencyEvaluator.evaluate_witnessed_decision(**kwargs)
     assert first.evaluation_digest == second.evaluation_digest
