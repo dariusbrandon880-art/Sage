@@ -1,12 +1,11 @@
 """Model-agnostic SAGE runtime control plane.
 
-This layer makes SAGE state transport explicit rather than relying on chat
-relay or model memory. Model adapters are replaceable; canonical state,
-identity, authority scope, and evidence remain SAGE-owned.
+Canonical state, identity, authority scope, and evidence remain SAGE-owned;
+model adapters only transport proposals/evidence through an explicit envelope.
 """
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from hashlib import sha256
 import json
 from typing import Any, Mapping, Protocol
@@ -50,11 +49,12 @@ class SAGERuntimeEnvelope:
         state: SAGEStateSnapshot,
         *,
         model_role: str,
+        station: str = "[SAGE::C2::CHATGPT]",
         required_output_contract: str = "structured_sage_response_v1",
         policy_version: str = "sage-runtime-v1",
     ) -> "SAGERuntimeEnvelope":
         return cls(
-            station="[SAGE::C2::CHATGPT]",
+            station=station,
             model_role=model_role,
             state=state,
             required_output_contract=required_output_contract,
@@ -101,8 +101,17 @@ class SAGERuntime:
     def __init__(self, state: SAGEStateSnapshot):
         self.state = state
 
-    def envelope(self, model_role: str) -> SAGERuntimeEnvelope:
-        return SAGERuntimeEnvelope.from_state(self.state, model_role=model_role)
+    def envelope(
+        self,
+        model_role: str,
+        *,
+        station: str = "[SAGE::C2::CHATGPT]",
+    ) -> SAGERuntimeEnvelope:
+        return SAGERuntimeEnvelope.from_state(
+            self.state,
+            model_role=model_role,
+            station=station,
+        )
 
     def reconcile(self, response: ModelResponse) -> None:
         """Reject cross-mission/session/state responses before authority use."""
@@ -117,6 +126,12 @@ class SAGERuntime:
 
     def invoke(self, adapter: ModelAdapter, task: str, *, model_role: str) -> ModelResponse:
         """Invoke a replaceable model and reconcile its response before returning it."""
-        response = adapter.invoke(self.envelope(model_role), task)
+        response = adapter.invoke(
+            self.envelope(
+                model_role,
+                station=getattr(adapter, "station", "[SAGE::C2::CHATGPT]"),
+            ),
+            task,
+        )
         self.reconcile(response)
         return response
