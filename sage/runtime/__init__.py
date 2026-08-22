@@ -19,14 +19,17 @@ from sage.runtime.metrics import get_metrics_collector
 from sage.runtime.model_gateway import (
     ModelAdapter,
     ModelResponse,
-    SAGERuntime,
     SAGERuntimeEnvelope,
     SAGEStateSnapshot,
 )
 
-# Preserve the existing runtime-engine public alias. The model gateway is an
-# explicit control-plane boundary rather than a replacement for SageRuntime.
-SAGEModelRuntime = SAGERuntime
+# Preserve the established runtime-engine public API: sage.runtime.SAGERuntime
+# is the operational engine consumed by sage.api and the existing service stack.
+SAGERuntime = SageRuntime
+
+# The model gateway remains a separate control-plane runtime. Expose it under
+# its explicit gateway name so it cannot shadow the operational engine API.
+SAGEModelRuntime = __import__("sage.runtime.model_gateway", fromlist=["SAGERuntime"]).SAGERuntime
 
 
 def __getattr__(name: str) -> Any:
