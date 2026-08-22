@@ -1,5 +1,9 @@
 # SAGE C2 Operating Frame
 
+## Governance Reference
+
+This operating frame enforces the campaign model specified in `docs/governance/C2_FIVE_FLIGHT_CAMPAIGN_ARCHITECTURE.md`.
+
 ## C2 Control Contract
 
 C2 operates as the flight controller. Five Flights are parallel bounded execution paths, not independent assistants, PR lists, or authorities.
