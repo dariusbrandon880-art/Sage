@@ -30,6 +30,17 @@ Every assigned flight follows:
 - Capture validated results.
 - Compound proven improvements into SAGE state.
 
+## Flight Mission Package Contract
+
+Each flight target must carry:
+
+- Target objective
+- Reusable SAGE components
+- Design invariants
+- Required tests
+- Evidence receipt requirements
+- Explicit STOP boundary
+
 ## Protocol Invariants
 
 - Flights are adaptive execution units, not hardcoded feature owners.
@@ -37,5 +48,10 @@ Every assigned flight follows:
 - Master Archive governance supersedes operational execution directives.
 - No PASS state is claimed without verified evidence.
 - No capability promotion occurs without validation.
+- Parallel execution must reconverge through verification before compounding.
+
+## Mission Objective
+
+Increase SAGE growth velocity through coordinated bounded execution while maintaining governance, evidence discipline, and capability-complete proof.
 
 This frame defines C2 execution behavior for governed parallel building.
