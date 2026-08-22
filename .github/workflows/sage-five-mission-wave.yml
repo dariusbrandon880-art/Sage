@@ -48,21 +48,32 @@ jobs:
           SAGE_MISSION: ${{ matrix.mission }}
         run: |
           python -m compileall -q sage scripts
+          ruff check sage scripts
           python - <<'PY'
           import os
           print(f"FLIGHT={os.environ['SAGE_FLIGHT_ID']} MISSION={os.environ['SAGE_MISSION']}")
           PY
       - name: Execute full repository verification for mission
+        id: verify
+        continue-on-error: true
         run: python -m pytest -q ${{ matrix.test }}
+      - name: Fail mission when verification failed
+        if: steps.verify.outcome != 'success'
+        run: exit 1
       - name: Flight evidence marker
         if: always()
         env:
           SAGE_FLIGHT_ID: ${{ matrix.id }}
           SAGE_MISSION: ${{ matrix.mission }}
+          SAGE_COMMIT: ${{ github.sha }}
+          SAGE_OUTCOME: ${{ steps.verify.outcome }}
+          SAGE_CONCLUSION: ${{ steps.verify.conclusion }}
         run: |
           echo "SAGE_FLIGHT=${SAGE_FLIGHT_ID}"
           echo "SAGE_MISSION=${SAGE_MISSION}"
-          echo "SAGE_STATUS=${{ job.status }}"
+          echo "SAGE_COMMIT=${SAGE_COMMIT}"
+          echo "SAGE_OUTCOME=${SAGE_OUTCOME}"
+          echo "SAGE_CONCLUSION=${SAGE_CONCLUSION}"
 
   wave-gate:
     needs: flight
