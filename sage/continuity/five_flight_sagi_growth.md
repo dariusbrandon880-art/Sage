@@ -1,5 +1,19 @@
 # SAGE → SAGI Five-Flight Growth Architecture
 
+## Canonical terminology lock
+
+**When SAGE/C2 says “flight” in the singular, it means the complete Five-Flight mission wave unless an individual mission is explicitly called a hitter/front/mission.**
+
+Therefore:
+
+- **flight / a flight** = the complete set of five concurrent mission paths;
+- **fly / launch a flight** = launch all five mission paths;
+- **flight verification** = independently verify all five paths plus shared reconvergence;
+- **flight complete** = all five reach their completion boundary and C2 verifies the combined result;
+- an individual path is called a **hitter**, **front**, or **mission**, never an unqualified “flight”.
+
+This terminology prevents ambiguity between the universal Five-Flight mechanism and an individual mission within a wave.
+
 ## Canonical meaning
 
 The Five Flights are **five simultaneous, full-stack growth paths through one SAGE/SAGI organism**. A flight is a mission/frontier assigned by C2 (for example Google, Sports, CP3, or any other consequential target). The target determines the direction of travel; it does **not** restrict which SAGE capabilities the flight may use.
