@@ -31,74 +31,29 @@ jobs:
     - name: Run pytest
       run: pytest -v --tb=short
 
-  five-mission-large-build:
-    name: "${{ matrix.mission }} / ${{ matrix.task }}"
+  five-flight-large-build:
+    name: "Flight ${{ matrix.flight }} / ${{ matrix.mission }}"
     needs: test
     strategy:
       fail-fast: false
-      max-parallel: 20
+      max-parallel: 5
       matrix:
         include:
-          - mission: GOOGLE
-            flight: "003"
-            task: recon
-          - mission: GOOGLE
-            flight: "003"
-            task: build
-          - mission: GOOGLE
-            flight: "003"
-            task: repair
-          - mission: GOOGLE
-            flight: "003"
-            task: verify
-          - mission: SPORTS
-            flight: "004"
-            task: recon
-          - mission: SPORTS
-            flight: "004"
-            task: build
-          - mission: SPORTS
-            flight: "004"
-            task: repair
-          - mission: SPORTS
-            flight: "004"
-            task: verify
-          - mission: CP3
-            flight: "005"
-            task: recon
-          - mission: CP3
-            flight: "005"
-            task: build
-          - mission: CP3
-            flight: "005"
-            task: repair
-          - mission: CP3
-            flight: "005"
-            task: verify
-          - mission: BRAIN_SAGI
-            flight: "006"
-            task: recon
-          - mission: BRAIN_SAGI
-            flight: "006"
-            task: build
-          - mission: BRAIN_SAGI
-            flight: "006"
-            task: repair
-          - mission: BRAIN_SAGI
-            flight: "006"
-            task: verify
-          - mission: PROGRESSION
-            flight: "007"
-            task: recon
-          - mission: PROGRESSION
-            flight: "007"
-            task: build
-          - mission: PROGRESSION
-            flight: "007"
-            task: repair
-          - mission: PROGRESSION
-            flight: "007"
-            task: verify
+          - flight: "003"
+            mission: GOOGLE
+            target: scripts/verify_drive_projection_handshake.py
+          - flight: "004"
+            mission: SPORTS
+            target: sage/experimental/longitudinal_capability.py
+          - flight: "005"
+            mission: CP3
+            target: sage/c2/frontier_execution.py
+          - flight: "006"
+            mission: BRAIN_SAGI
+            target: sage/experimental/cognitive/prefrontal_cortex.py
+          - flight: "007"
+            mission: PROGRESSION
+            target: sage/experimental/longitudinal_runner.py
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -110,77 +65,104 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -e ".[dev]"
-    - name: Execute governed Large-Build task
-      run: |
-        set -o pipefail
-        if [ "${{ matrix.flight }}" = "003" ]; then
-          python scripts/run_longitudinal_flight_003.py | tee "five_mission_${{ matrix.mission }}_${{ matrix.task }}.json"
-        else
-          python scripts/run_longitudinal_campaign_flight.py --flight "${{ matrix.flight }}" | tee "five_mission_${{ matrix.mission }}_${{ matrix.task }}.json"
-        fi
-    - name: Publish task telemetry
-      if: always()
-      run: |
-        {
-          echo "## SAGE 5x20 Task: ${{ matrix.mission }} / ${{ matrix.task }}"
-          echo
-          echo "Commit: $GITHUB_SHA"
-          cat "five_mission_${{ matrix.mission }}_${{ matrix.task }}.json" 2>/dev/null || echo "No task report produced."
-        } >> "$GITHUB_STEP_SUMMARY"
-    - name: Upload task evidence
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: sage-5x20-${{ matrix.mission }}-${{ matrix.task }}-${{ github.sha }}
-        path: five_mission_${{ matrix.mission }}_${{ matrix.task }}.json
-        if-no-files-found: ignore
 
-  reconverge:
-    name: SAGE 5x20 Reconvergence
-    if: ${{ always() }}
-    needs: [test, five-mission-large-build]
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - name: Download all 20 task evidence
-      uses: actions/download-artifact@v4
-      with:
-        pattern: sage-5x20-*
-        path: five-mission-evidence
-        merge-multiple: true
-    - name: Build compound 5x20 report
+    - name: "01 RECON — ${{ matrix.mission }}"
+      run: |
+        set -euo pipefail
+        test -f "${{ matrix.target }}"
+        python -m compileall -q "${{ matrix.target }}"
+        ruff check "${{ matrix.target }}"
+        printf '%s\n' '{"stage":"recon","status":"PASS","mission":"${{ matrix.mission }}","target":"${{ matrix.target }}"}' > flight_${{ matrix.flight }}_recon.json
+
+    - name: "02 BUILD — ${{ matrix.mission }}"
+      run: |
+        set -euo pipefail
+        if [ "${{ matrix.flight }}" = "003" ]; then
+          python scripts/run_longitudinal_flight_003.py > flight_${{ matrix.flight }}_build.json
+        else
+          python scripts/run_longitudinal_campaign_flight.py --flight "${{ matrix.flight }}" > flight_${{ matrix.flight }}_build.json
+        fi
+        python - <<'PY'
+        import json
+        from pathlib import Path
+        p=Path("flight_${{ matrix.flight }}_build.json")
+        data=json.loads(p.read_text())
+        if data.get("verdict") in {"HOLD", "FAIL", "FAILED"}:
+            raise SystemExit(f"BUILD DID NOT PRODUCE A NON-FAILURE OBSERVATION: {data.get('verdict')}")
+        PY
+
+    - name: "03 REPAIR — ${{ matrix.mission }}"
+      run: |
+        set -euo pipefail
+        python -m pytest tests/experimental/test_longitudinal_runner.py -q
+        ruff check "${{ matrix.target }}"
+        printf '%s\n' '{"stage":"repair","status":"PASS","mission":"${{ matrix.mission }}","target":"${{ matrix.target }}"}' > flight_${{ matrix.flight }}_repair.json
+
+    - name: "04 VERIFY — ${{ matrix.mission }}"
+      run: |
+        set -euo pipefail
+        python -m pytest tests/experimental/test_longitudinal_runner.py -q
+        python -m compileall -q sage scripts
+        ruff check "${{ matrix.target }}"
+        printf '%s\n' '{"stage":"verify","status":"PASS","mission":"${{ matrix.mission }}","target":"${{ matrix.target }}"}' > flight_${{ matrix.flight }}_verify.json
+
+    - name: Build flight receipt
+      if: always()
       run: |
         python - <<'PY'
         import json
         from pathlib import Path
-        root = Path("five-mission-evidence")
-        reports = []
-        for path in sorted(root.glob("five_mission_*.json")):
-            try:
-                reports.append(json.loads(path.read_text()))
-            except Exception as exc:
-                reports.append({"source": path.name, "verdict": "HOLD", "parse_error": str(exc)})
-        expected = {f"{mission}_{task}" for mission in ("GOOGLE", "SPORTS", "CP3", "BRAIN_SAGI", "PROGRESSION") for task in ("recon", "build", "repair", "verify")}
-        observed = {path.stem.removeprefix("five_mission_") for path in root.glob("five_mission_*.json")}
-        missing = sorted(expected - observed)
-        wave = {
-            "wave": "SAGE-5X20-LARGE-BUILD",
-            "expected_task_count": 20,
-            "observed_task_count": len(observed),
-            "expected_tasks": sorted(expected),
-            "observed_tasks": sorted(observed),
-            "missing_tasks": missing,
-            "reports": reports,
-            "wave_verdict": "HOLD" if missing else "REQUIRES_INDEPENDENT_C2_VERIFICATION",
-            "authority_boundary": "This report aggregates observations; it does not qualify capability.",
-        }
-        Path("sage_5x20_wave_report.json").write_text(json.dumps(wave, indent=2, default=str))
-        print(json.dumps(wave, indent=2, default=str))
+        flight="${{ matrix.flight }}"
+        mission="${{ matrix.mission }}"
+        stages=[]
+        for stage in ("recon","build","repair","verify"):
+            p=Path(f"flight_{flight}_{stage}.json")
+            stages.append({"stage":stage,"present":p.exists()})
+        receipt={"wave":"SAGE-5-FLIGHT-LARGE-BUILD","flight":flight,"mission":mission,"expected_stages":4,"stages":stages,"all_stage_receipts_present":all(x["present"] for x in stages)}
+        Path(f"flight_{flight}_receipt.json").write_text(json.dumps(receipt,indent=2))
+        print(json.dumps(receipt,indent=2))
         PY
-    - name: Upload compound 5x20 evidence
+
+    - name: Upload flight evidence
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: sage-5x20-wave-${{ github.sha }}
-        path: sage_5x20_wave_report.json
+        name: sage-five-flight-${{ matrix.flight }}-${{ github.sha }}
+        path: flight_${{ matrix.flight }}_*.json
+        if-no-files-found: ignore
+
+  reconverge:
+    name: SAGE Five-Flight Compound Verification
+    if: ${{ always() }}
+    needs: [test, five-flight-large-build]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Download five flight evidence
+      uses: actions/download-artifact@v4
+      with:
+        pattern: sage-five-flight-*
+        path: five-flight-evidence
+        merge-multiple: true
+    - name: Verify complete five-flight wave
+      run: |
+        python - <<'PY'
+        import json
+        from pathlib import Path
+        root=Path("five-flight-evidence")
+        expected={"003","004","005","006","007"}
+        receipts={p.name.split("_")[1] for p in root.glob("flight_*_receipt.json") if len(p.name.split("_")) > 1}
+        missing=sorted(expected-receipts)
+        report={"wave":"SAGE-FIVE-FLIGHT-LARGE-BUILD","expected_flights":5,"observed_flights":len(receipts),"missing_flights":missing,"wave_verdict":"HOLD" if missing else "REQUIRES_INDEPENDENT_C2_VERIFICATION","authority_boundary":"Aggregates execution observations; does not itself promote capability."}
+        Path("sage_five_flight_wave_report.json").write_text(json.dumps(report,indent=2))
+        print(json.dumps(report,indent=2))
+        if missing:
+            raise SystemExit(1)
+        PY
+    - name: Upload compound evidence
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: sage-five-flight-wave-${{ github.sha }}
+        path: sage_five_flight_wave_report.json
         if-no-files-found: error
