@@ -148,12 +148,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Download five front evidence
+    - name: Download five front evidence without collision
       uses: actions/download-artifact@v4
       with:
         pattern: sage-c2-full-engine-*
         path: five-front-evidence
-        merge-multiple: true
+        merge-multiple: false
     - name: Verify complete five-front wave
       run: |
         python - <<'PY'
@@ -161,16 +161,21 @@ jobs:
         from pathlib import Path
         root=Path("five-front-evidence")
         expected={"DRIVE_CONTINUITY","GOVERNED_EXECUTION","SPORTS_RESEARCH","NATIVE_PERSISTED_EVIDENCE","PROGRESSION_RECEIPTS"}
-        fronts=set()
-        for p in root.glob("front_receipt.json"):
-            try: data=json.loads(p.read_text())
-            except Exception: continue
-            if data.get("all_stage_receipts_present"): fronts.add(data.get("front"))
-        missing=sorted(expected-fronts)
-        report={"wave":"SAGE-C2-FIVE-CONCURRENT-FULL-ENGINE","expected_fronts":5,"observed_fronts":len(fronts),"missing_fronts":missing,"wave_verdict":"HOLD" if missing else "REQUIRES_INDEPENDENT_C2_VERIFICATION","authority_boundary":"Aggregates execution observations; does not qualify capability."}
+        receipts=[]
+        for p in root.glob("*/front_receipt.json"):
+            try:
+                data=json.loads(p.read_text())
+            except Exception:
+                continue
+            receipts.append(data)
+        observed={d.get("front") for d in receipts if d.get("all_stage_receipts_present") and d.get("front") in expected}
+        missing=sorted(expected-observed)
+        duplicate_fronts=sorted({f for f in observed if sum(1 for d in receipts if d.get("front")==f)>=2})
+        invalid=sorted({str(d.get("front")) for d in receipts if d.get("front") not in expected})
+        report={"wave":"SAGE-C2-FIVE-CONCURRENT-FULL-ENGINE","expected_fronts":5,"observed_fronts":len(observed),"missing_fronts":missing,"duplicate_fronts":duplicate_fronts,"invalid_fronts":invalid,"wave_verdict":"HOLD" if (missing or duplicate_fronts or invalid) else "REQUIRES_INDEPENDENT_C2_VERIFICATION","authority_boundary":"Aggregates execution observations; does not qualify capability."}
         Path("sage_c2_five_front_wave_report.json").write_text(json.dumps(report,indent=2))
         print(json.dumps(report,indent=2))
-        if missing: raise SystemExit(1)
+        if missing or duplicate_fronts or invalid: raise SystemExit(1)
         PY
     - name: Upload compound evidence
       if: always()
