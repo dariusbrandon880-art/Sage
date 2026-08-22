@@ -50,7 +50,10 @@ def run(policy: str, scenario: dict) -> Result:
                 if policy == "SAGE_GOVERNED":
                     continue
             if o.get("regression"):
-                if policy == "SAGE_GOVERNED" and "H4" not in r.evidence:
+                if policy == "SAGE_GOVERNED":
+                    # Regression is observed and retained, but not allowed to
+                    # mutate the governed capability state without review.
+                    r.retained_failures += 1
                     r.human_interventions += 1
                     continue
                 r.regressions += 1
