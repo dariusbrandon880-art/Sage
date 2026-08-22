@@ -1,27 +1,40 @@
 """Read-only failure fingerprinting and repair qualification records."""
 from __future__ import annotations
-from dataclasses import dataclass
-from hashlib import sha256
+
 import json
 import re
+from dataclasses import dataclass
+from hashlib import sha256
 
 _WS = re.compile(r"\s+")
 _HEX = re.compile(r"\b[0-9a-f]{7,64}\b", re.I)
 _NUM = re.compile(r"\b\d+\b")
 
+
 def normalize_failure(message: str) -> str:
+    """Normalize incidental log noise while preserving the failure shape."""
     if not isinstance(message, str) or not message.strip():
         raise ValueError("failure message required")
-    return _NUM.sub("#", _HEX.sub("<sha>", _WS.sub(" ", message.strip()))).lower()
+    compact = _WS.sub(" ", message.strip())
+    return _NUM.sub("#", _HEX.sub("<sha>", compact)).lower()
+
 
 def failure_fingerprint(command: str, message: str) -> str:
-    if not command.strip():
+    """Create a deterministic fingerprint for one normalized failure surface."""
+    if not isinstance(command, str) or not command.strip():
         raise ValueError("command required")
-    payload = {"command": command.strip(), "message": normalize_failure(message)}
-    return sha256(json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+    payload = {
+        "command": command.strip(),
+        "message": normalize_failure(message),
+    }
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+    return sha256(encoded).hexdigest()
+
 
 @dataclass(frozen=True)
 class FailureObservation:
+    """One nonzero-exit observation with execution provenance."""
+
     fingerprint: str
     command: str
     message: str
@@ -29,29 +42,38 @@ class FailureObservation:
     surface: str
     exit_code: int
 
-    def __post_init__(self):
-        if len(self.fingerprint) != 64 or not all(c in "0123456789abcdef" for c in self.fingerprint):
+    def __post_init__(self) -> None:
+        if len(self.fingerprint) != 64 or not all(
+            char in "0123456789abcdef" for char in self.fingerprint
+        ):
             raise ValueError("invalid fingerprint")
         if not self.command.strip() or not self.commit_sha.strip() or not self.surface.strip():
             raise ValueError("required provenance missing")
         if self.exit_code == 0:
             raise ValueError("failure observation cannot have zero exit code")
 
+
 @dataclass(frozen=True)
 class RepairQualification:
+    """A repair is qualified only by evidence from a true descendant."""
+
     fingerprint: str
     repair_sha: str
     descendant_sha: str
     qualified: bool
     evidence_ref: str
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if not self.fingerprint or not self.repair_sha or not self.descendant_sha or not self.evidence_ref:
             raise ValueError("qualification provenance missing")
         if self.qualified and self.repair_sha == self.descendant_sha:
             raise ValueError("qualification requires descendant evidence")
 
-def collapse(observations: list[FailureObservation]) -> dict[str, tuple[FailureObservation, ...]]:
+
+def collapse(
+    observations: list[FailureObservation],
+) -> dict[str, tuple[FailureObservation, ...]]:
+    """Group repeated observations by their deterministic failure fingerprint."""
     grouped: dict[str, list[FailureObservation]] = {}
     for observation in observations:
         grouped.setdefault(observation.fingerprint, []).append(observation)
