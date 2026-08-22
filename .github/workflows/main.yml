@@ -34,3 +34,6 @@ jobs:
 
     - name: Run pytest
       run: pytest -v --tb=short
+
+    - name: Execute longitudinal pilot flight
+      run: python scripts/run_longitudinal_flight.py
