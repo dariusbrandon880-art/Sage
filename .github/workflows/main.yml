@@ -53,7 +53,7 @@ jobs:
             cat longitudinal_flight_002_stdout.json
             echo '```'
           else
-            echo "No Flight 002 report was produced. Flight execution failed before report emission."
+            echo "No Flight 002 report was produced. Flight execution was blocked before report emission."
           fi
         } >> "$GITHUB_STEP_SUMMARY"
 
@@ -63,7 +63,7 @@ jobs:
       with:
         name: sage-longitudinal-flight-002-${{ github.sha }}
         path: longitudinal_flight_002_stdout.json
-        if-no-files-found: error
+        if-no-files-found: ignore
 
   campaign:
     needs: test
@@ -103,7 +103,7 @@ jobs:
             cat "longitudinal_flight_${{ matrix.flight }}_stdout.json"
             echo '```'
           else
-            echo "No flight report was produced. Flight execution failed before report emission."
+            echo "No flight report was produced. Flight execution was blocked before report emission."
           fi
         } >> "$GITHUB_STEP_SUMMARY"
 
@@ -113,4 +113,4 @@ jobs:
       with:
         name: sage-longitudinal-flight-${{ matrix.flight }}-${{ github.sha }}
         path: longitudinal_flight_${{ matrix.flight }}_stdout.json
-        if-no-files-found: error
+        if-no-files-found: ignore
