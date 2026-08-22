@@ -36,41 +36,24 @@ jobs:
     - name: Run pytest
       run: pytest -v --tb=short
 
-    - name: Execute longitudinal flight 002
-      run: |
-        set -o pipefail
-        python scripts/run_longitudinal_flight_002.py | tee longitudinal_flight_002_stdout.json
-
-    - name: Publish longitudinal flight 002 telemetry
-      if: always()
-      run: |
-        {
-          echo "## SAGE Longitudinal Flight 002 Telemetry"
-          echo
-          echo "Commit: $GITHUB_SHA"
-          if [ -f longitudinal_flight_002_stdout.json ]; then
-            echo '```json'
-            cat longitudinal_flight_002_stdout.json
-            echo '```'
-          else
-            echo "No Flight 002 report was produced. Flight execution was blocked before report emission."
-          fi
-        } >> "$GITHUB_STEP_SUMMARY"
-
-    - name: Upload longitudinal flight 002 evidence
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: sage-longitudinal-flight-002-${{ github.sha }}
-        path: longitudinal_flight_002_stdout.json
-        if-no-files-found: ignore
-
-  campaign:
+  five-flight:
+    name: Five-Flight ${{ matrix.flight }}
     needs: test
     strategy:
       fail-fast: false
+      max-parallel: 5
       matrix:
-        flight: ["004", "005", "006", "007"]
+        include:
+          - flight: "002"
+            command: python scripts/run_longitudinal_flight_002.py
+          - flight: "004"
+            command: python scripts/run_longitudinal_campaign_flight.py --flight "004"
+          - flight: "005"
+            command: python scripts/run_longitudinal_campaign_flight.py --flight "005"
+          - flight: "006"
+            command: python scripts/run_longitudinal_campaign_flight.py --flight "006"
+          - flight: "007"
+            command: python scripts/run_longitudinal_campaign_flight.py --flight "007"
     runs-on: ubuntu-latest
 
     steps:
@@ -86,16 +69,16 @@ jobs:
         python -m pip install --upgrade pip
         pip install -e ".[dev]"
 
-    - name: Execute longitudinal campaign flight ${{ matrix.flight }}
+    - name: Execute five-flight cell ${{ matrix.flight }}
       run: |
         set -o pipefail
-        python scripts/run_longitudinal_campaign_flight.py --flight "${{ matrix.flight }}" | tee "longitudinal_flight_${{ matrix.flight }}_stdout.json"
+        ${{ matrix.command }} | tee "longitudinal_flight_${{ matrix.flight }}_stdout.json"
 
     - name: Publish flight ${{ matrix.flight }} telemetry
       if: always()
       run: |
         {
-          echo "## SAGE Longitudinal Flight ${{ matrix.flight }} Telemetry"
+          echo "## SAGE Five-Flight ${{ matrix.flight }} Telemetry"
           echo
           echo "Commit: $GITHUB_SHA"
           if [ -f "longitudinal_flight_${{ matrix.flight }}_stdout.json" ]; then
@@ -111,6 +94,73 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: sage-longitudinal-flight-${{ matrix.flight }}-${{ github.sha }}
+        name: sage-five-flight-${{ matrix.flight }}-${{ github.sha }}
         path: longitudinal_flight_${{ matrix.flight }}_stdout.json
         if-no-files-found: ignore
+
+  reconverge:
+    name: Five-Flight Reconvergence
+    if: ${{ always() }}
+    needs: [test, five-flight]
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Download all flight evidence
+      uses: actions/download-artifact@v4
+      with:
+        pattern: sage-five-flight-*
+        path: five-flight-evidence
+        merge-multiple: true
+
+    - name: Build one compound wave report
+      run: |
+        python - <<'PY'
+        import json
+        from pathlib import Path
+
+        root = Path("five-flight-evidence")
+        reports = []
+        for path in sorted(root.glob("longitudinal_flight_*_stdout.json")):
+            try:
+                reports.append(json.loads(path.read_text()))
+            except Exception as exc:
+                reports.append({
+                    "flight": path.stem,
+                    "verdict": "HOLD",
+                    "parse_error": str(exc),
+                })
+
+        observed = {str(item.get("flight", "")).split("-")[-1] for item in reports}
+        expected = {"002", "004", "005", "006", "007"}
+        missing = sorted(expected - observed)
+        wave = {
+            "wave": "SAGE-FIVE-FLIGHT",
+            "expected_flights": sorted(expected),
+            "observed_flights": sorted(observed),
+            "missing_flights": missing,
+            "reports": reports,
+            "wave_verdict": "HOLD" if missing else "REQUIRES_INDEPENDENT_C2_VERIFICATION",
+            "authority_boundary": "This report aggregates observations; it does not qualify capability.",
+        }
+        Path("five_flight_wave_report.json").write_text(json.dumps(wave, indent=2, default=str))
+        print(json.dumps(wave, indent=2, default=str))
+        PY
+
+    - name: Publish compound wave report
+      if: always()
+      run: |
+        {
+          echo "## SAGE Five-Flight Compound Report"
+          echo
+          cat five_flight_wave_report.json
+        } >> "$GITHUB_STEP_SUMMARY"
+
+    - name: Upload compound wave report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: sage-five-flight-wave-${{ github.sha }}
+        path: five_flight_wave_report.json
+        if-no-files-found: error
