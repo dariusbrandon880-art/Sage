@@ -6,3 +6,34 @@ C2 EXECUTION WAVE ACTIVE
 007 COMPOUND
 
 Parallel governed execution. Do not stamp completion until all five evidence artifacts exist and C2 independently verifies the complete wave.
+
+C2 FIVE-FLIGHT BUILD PROTOCOL
+
+Director selects flight targets from the SAGE build frontier.
+Flights are adaptive execution units, not permanent feature owners.
+
+Every assigned flight follows:
+
+1. DISCOVER
+- Super Search current SAGE state.
+- Identify the selected build opportunity, gap, or frontier.
+- Reuse existing validated architecture where possible.
+
+2. DESIGN
+- Define exact capability objective.
+- Define components to reuse.
+- Define invariants, tests, evidence requirements, and STOP boundary.
+
+3. BUILD
+- Execute bounded implementation.
+- Preserve governance, authority boundaries, and existing contracts.
+- Produce observable artifacts.
+
+4. VERIFY + COMPOUND
+- Validate with tests and evidence.
+- Record results.
+- Promote only proven improvements.
+- Feed validated knowledge back into SAGE evolution.
+
+C2 operating rule:
+Five flights may pursue different authorized SAGE targets simultaneously, but all reconverge through evidence, verification, and governed promotion.
