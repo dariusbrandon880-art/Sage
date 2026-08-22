@@ -36,31 +36,31 @@ jobs:
     - name: Run pytest
       run: pytest -v --tb=short
 
-    - name: Execute longitudinal pilot flight
+    - name: Execute longitudinal flight 002
       run: |
         set -o pipefail
-        python scripts/run_longitudinal_flight.py | tee longitudinal_pilot_stdout.json
+        python scripts/run_longitudinal_flight_002.py | tee longitudinal_flight_002_stdout.json
 
-    - name: Publish longitudinal pilot telemetry
+    - name: Publish longitudinal flight 002 telemetry
       if: always()
       run: |
         {
-          echo "## SAGE Longitudinal Pilot Telemetry"
+          echo "## SAGE Longitudinal Flight 002 Telemetry"
           echo
           echo "Commit: $GITHUB_SHA"
-          if [ -f longitudinal_pilot_stdout.json ]; then
+          if [ -f longitudinal_flight_002_stdout.json ]; then
             echo '```json'
-            cat longitudinal_pilot_stdout.json
+            cat longitudinal_flight_002_stdout.json
             echo '```'
           else
-            echo "No pilot stdout report was produced. Flight execution failed before report emission."
+            echo "No Flight 002 report was produced. Flight execution failed before report emission."
           fi
         } >> "$GITHUB_STEP_SUMMARY"
 
-    - name: Upload longitudinal pilot evidence
+    - name: Upload longitudinal flight 002 evidence
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: sage-longitudinal-pilot-${{ github.sha }}
-        path: longitudinal_pilot_stdout.json
+        name: sage-longitudinal-flight-002-${{ github.sha }}
+        path: longitudinal_flight_002_stdout.json
         if-no-files-found: error
