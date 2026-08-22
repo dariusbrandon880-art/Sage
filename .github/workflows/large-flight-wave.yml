@@ -28,7 +28,7 @@ jobs:
         run: pytest -q
 
   flight:
-    name: "Campaign ${{ matrix.campaign }} / ${{ matrix.cell }}"
+    name: "Campaign ${{ matrix.campaign }} / Flight ${{ matrix.flight }}"
     needs: governance
     runs-on: ubuntu-latest
     strategy:
@@ -36,7 +36,7 @@ jobs:
       max-parallel: 20
       matrix:
         campaign: ["01", "02", "03", "04", "05"]
-        cell: ["recovery", "reuse", "retention_regression", "compound"]
+        flight: ["004", "005", "006", "007"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -51,36 +51,36 @@ jobs:
       - name: Execute authentic flight cell
         env:
           SAGE_CAMPAIGN_ID: "${{ matrix.campaign }}"
-          SAGE_FLIGHT_CELL: "${{ matrix.cell }}"
+          SAGE_FLIGHT_CELL: "${{ matrix.flight }}"
         run: |
           set -o pipefail
-          python scripts/run_longitudinal_campaign_flight.py --flight "${{ matrix.cell }}" \
-            | tee "flight_${{ matrix.campaign }}_${{ matrix.cell }}.json"
+          python scripts/run_longitudinal_campaign_flight.py --flight "${{ matrix.flight }}" \
+            | tee "flight_${{ matrix.campaign }}_${{ matrix.flight }}.json"
       - name: Attach campaign/cell identity to evidence
         if: always()
         env:
           CAMPAIGN: "${{ matrix.campaign }}"
-          CELL: "${{ matrix.cell }}"
+          FLIGHT: "${{ matrix.flight }}"
         run: |
           python - <<'PY'
           import json
           import os
           from pathlib import Path
 
-          path = Path(f"flight_{os.environ['CAMPAIGN']}_{os.environ['CELL']}.json")
+          path = Path(f"flight_{os.environ['CAMPAIGN']}_{os.environ['FLIGHT']}.json")
           if not path.exists():
               raise SystemExit("flight produced no telemetry artifact")
           payload = json.loads(path.read_text())
           payload["campaign_id"] = os.environ["CAMPAIGN"]
-          payload["flight_cell"] = os.environ["CELL"]
+          payload["flight_cell"] = os.environ["FLIGHT"]
           payload["campaign_wave"] = "5x4"
           path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
       - name: Upload cell evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: sage-wave-${{ matrix.campaign }}-${{ matrix.cell }}-${{ github.sha }}
-          path: flight_${{ matrix.campaign }}_${{ matrix.cell }}.json
+          name: sage-wave-${{ matrix.campaign }}-${{ matrix.flight }}-${{ github.sha }}
+          path: flight_${{ matrix.campaign }}_${{ matrix.flight }}.json
           if-no-files-found: error
 
   verify-wave:
@@ -100,8 +100,8 @@ jobs:
           import json
           from pathlib import Path
 
-          expected = {(c, cell) for c in ["01", "02", "03", "04", "05"]
-                      for cell in ["recovery", "reuse", "retention_regression", "compound"]}
+          expected = {(c, flight) for c in ["01", "02", "03", "04", "05"]
+                      for flight in ["004", "005", "006", "007"]}
           observed = set()
           for path in Path("wave-artifacts").glob("*.json"):
               payload = json.loads(path.read_text())
