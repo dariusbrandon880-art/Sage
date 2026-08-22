@@ -1,0 +1,117 @@
+name: SAGE Control Tower Five-Flight Command
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+
+jobs:
+  launch:
+    if: >-
+      github.event.issue.number == 196 &&
+      github.event.issue.pull_request &&
+      github.actor == 'dariusbrandon880-art' &&
+      github.event.comment.body == '/sage launch five-flight'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 5
+      matrix:
+        include:
+          - flight: "003"
+            command: python scripts/run_longitudinal_flight_003.py
+          - flight: "004"
+            command: python scripts/run_longitudinal_campaign_flight.py --flight "004"
+          - flight: "005"
+            command: python scripts/run_longitudinal_campaign_flight.py --flight "005"
+          - flight: "006"
+            command: python scripts/run_longitudinal_campaign_flight.py --flight "006"
+          - flight: "007"
+            command: python scripts/run_longitudinal_campaign_flight.py --flight "007"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Governance preflight
+        run: python scripts/sage_precommit_hook.py
+
+      - name: Execute commanded flight ${{ matrix.flight }}
+        run: |
+          set -o pipefail
+          ${{ matrix.command }} | tee "longitudinal_flight_${{ matrix.flight }}_stdout.json"
+
+      - name: Upload flight evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sage-command-flight-${{ matrix.flight }}-${{ github.sha }}
+          path: longitudinal_flight_${{ matrix.flight }}_stdout.json
+          if-no-files-found: ignore
+
+  reconverge:
+    if: >-
+      github.event.issue.number == 196 &&
+      github.event.issue.pull_request &&
+      github.actor == 'dariusbrandon880-art' &&
+      github.event.comment.body == '/sage launch five-flight'
+    needs: launch
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Download commanded flight evidence
+        uses: actions/download-artifact@v4
+        with:
+          pattern: sage-command-flight-*
+          path: five-flight-evidence
+          merge-multiple: true
+
+      - name: Build compound command receipt
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root = Path('five-flight-evidence')
+          reports = []
+          for path in sorted(root.glob('longitudinal_flight_*_stdout.json')):
+              try:
+                  reports.append(json.loads(path.read_text()))
+              except Exception as exc:
+                  reports.append({'flight': path.stem, 'verdict': 'HOLD', 'parse_error': str(exc)})
+          expected = {'003','004','005','006','007'}
+          observed = {str(r.get('flight','')).split('-')[-1] for r in reports}
+          missing = sorted(expected - observed)
+          receipt = {
+              'wave': 'SAGE-FIVE-FLIGHT-COMMAND',
+              'expected_flights': sorted(expected),
+              'observed_flights': sorted(observed),
+              'missing_flights': missing,
+              'wave_verdict': 'HOLD' if missing else 'REQUIRES_INDEPENDENT_C2_VERIFICATION',
+              'authority_boundary': 'Observation aggregation only; no capability qualification.'
+          }
+          Path('five_flight_command_receipt.json').write_text(json.dumps(receipt, indent=2))
+          print(json.dumps(receipt, indent=2))
+          PY
+
+      - name: Upload compound receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sage-five-flight-command-receipt-${{ github.sha }}
+          path: five_flight_command_receipt.json
+          if-no-files-found: error
