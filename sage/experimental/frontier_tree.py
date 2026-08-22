@@ -36,5 +36,5 @@ class FrontierTree:
             if any(node_id in self.nodes[x].conflicts or x in n.conflicts for x in chosen): continue
             if all(d in chosen for d in n.dependencies): chosen.append(node_id)
         if len(chosen)!=5: raise ValueError("INSUFFICIENT_ADMISSIBLE_FRONTIERS")
-        scores=dict(ranked)
+        scores={node_id: score for score,node_id in ranked}
         return Portfolio(tuple(chosen),sum(scores[x] for x in chosen))
