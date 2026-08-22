@@ -1,9 +1,9 @@
-#!/usr/bin/env python3
 """Execute a SAGE Sports/RCE research-only observation flight."""
 
 import datetime as dt
 import json
 import sys
+
 from sage.experimental.sports_rce import SportsRCEResearchEngine
 
 

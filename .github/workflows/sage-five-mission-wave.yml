@@ -33,9 +33,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout canonical main
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.12'
       - name: Install repository
@@ -43,26 +43,97 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e '.[dev]' || pip install -e .
       - name: Mission preflight
+        id: preflight
+        continue-on-error: true
         env:
           SAGE_FLIGHT_ID: ${{ matrix.id }}
           SAGE_MISSION: ${{ matrix.mission }}
         run: |
+          set +e
           python -m compileall -q sage scripts
-          python - <<'PY'
+          rc=$?
+          if [ "$rc" -eq 0 ]; then ruff check sage scripts; rc=$?; fi
+          python - "$rc" <<'PY'
+          import json
           import os
-          print(f"FLIGHT={os.environ['SAGE_FLIGHT_ID']} MISSION={os.environ['SAGE_MISSION']}")
+          import sys
+          from pathlib import Path
+          rc = int(sys.argv[1])
+          report = {
+              "flight": os.environ["SAGE_FLIGHT_ID"],
+              "mission": os.environ["SAGE_MISSION"],
+              "stage": "PREFLIGHT",
+              "status": "PASS" if rc == 0 else "FAIL",
+              "exit_code": rc,
+              "commit_sha": "${{ github.sha }}",
+              "run_id": "${{ github.run_id }}",
+          }
+          Path("flight_preflight.json").write_text(json.dumps(report, indent=2))
+          print(json.dumps(report, indent=2))
+          raise SystemExit(rc)
           PY
       - name: Execute full repository verification for mission
-        run: python -m pytest -q ${{ matrix.test }}
-      - name: Flight evidence marker
+        id: verify
         if: always()
-        env:
-          SAGE_FLIGHT_ID: ${{ matrix.id }}
-          SAGE_MISSION: ${{ matrix.mission }}
+        continue-on-error: true
         run: |
-          echo "SAGE_FLIGHT=${SAGE_FLIGHT_ID}"
-          echo "SAGE_MISSION=${SAGE_MISSION}"
-          echo "SAGE_STATUS=${{ job.status }}"
+          set +e
+          python -m pytest -q ${{ matrix.test }}
+          rc=$?
+          python - "$rc" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+          rc = int(sys.argv[1])
+          report = {
+              "flight": "${{ matrix.id }}",
+              "mission": "${{ matrix.mission }}",
+              "stage": "VERIFY",
+              "status": "PASS" if rc == 0 else "FAIL",
+              "exit_code": rc,
+              "commit_sha": "${{ github.sha }}",
+              "run_id": "${{ github.run_id }}",
+          }
+          Path("flight_verify.json").write_text(json.dumps(report, indent=2))
+          print(json.dumps(report, indent=2))
+          raise SystemExit(rc)
+          PY
+      - name: Build flight receipt
+        if: always()
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          paths = [Path("flight_preflight.json"), Path("flight_verify.json")]
+          stages = []
+          for path in paths:
+              data = json.loads(path.read_text()) if path.exists() else None
+              stages.append({
+                  "stage": data.get("stage") if data else path.stem,
+                  "present": path.exists(),
+                  "status": data.get("status") if data else "MISSING",
+              })
+          report = {
+              "flight": "${{ matrix.id }}",
+              "mission": "${{ matrix.mission }}",
+              "commit_sha": "${{ github.sha }}",
+              "run_id": "${{ github.run_id }}",
+              "stages": stages,
+              "all_stage_receipts_present": all(stage["present"] for stage in stages),
+              "all_stage_passed": all(stage["status"] == "PASS" for stage in stages),
+          }
+          Path("flight_receipt.json").write_text(json.dumps(report, indent=2))
+          print(json.dumps(report, indent=2))
+          if not report["all_stage_receipts_present"] or not report["all_stage_passed"]:
+              raise SystemExit(1)
+          PY
+      - name: Upload flight evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: sage-five-mission-${{ matrix.id }}-${{ github.sha }}
+          path: flight_*.json
+          if-no-files-found: error
 
   wave-gate:
     needs: flight
