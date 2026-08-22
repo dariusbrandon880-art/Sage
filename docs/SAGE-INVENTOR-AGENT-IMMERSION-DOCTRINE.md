@@ -1,16 +1,16 @@
 # SAGE Inventor, Agent Progression & Immersion Doctrine
 
 **Status:** Governing design doctrine / cross-chat handoff
-**Scope:** SAGE operating model, agent progression, human/agent immersion, discovery, and large-build execution
+**Scope:** SAGE operating model, agent progression, human/agent immersion, discovery, interoperability, and Large Build execution
 **Authority:** Mission Director authorization; canonical repository + validated Master Archive remain authoritative
 
 ## 1. Purpose
 
-SAGE is a governed continuous-intelligence system whose capability is expected to compound through verified experience. The immersive/game-like presentation is not a separate game layer: it is a human-readable projection of actual governed state.
+SAGE is a governed continuous-intelligence system whose capability compounds through verified experience. The immersive/game-like presentation is not a separate game layer: it is a human-readable projection of actual governed state.
 
-The objective is to make SAGE increasingly capable while preserving evidence, provenance, authority boundaries, continuity, negative knowledge, and independent verification.
+The objective is to make SAGE increasingly capable while preserving evidence, provenance, authority boundaries, continuity, negative knowledge, and independent verification. The game metaphor is an operating interface for real capability progression, not a vanity leaderboard.
 
-The game metaphor is an operating interface for real capability progression, not a vanity leaderboard.
+SAGE is one integrated governed world: missions, agents, evidence, governance, progression, communication, and continuity are projections of the same underlying system rather than disconnected game mechanics.
 
 ## 2. Governing command loop
 
@@ -18,15 +18,19 @@ The standing command loop is:
 
 **SENSE -> RECON -> SUPER SEARCH -> BOUND -> DECIDE -> AUTHORIZE -> BUILD -> OBSERVE -> VERIFY -> COMPOUND**
 
-Large Build uses the same loop at larger resolution. It does not remove governance, recon, external challenge, testing, or independent verification. It permits a larger coherent capability frontier and its necessary supporting pieces to be built and verified in one campaign.
+The strategic continuous-intelligence loop may be expressed as **SENSE -> BOUND -> ACT -> MEASURE -> LEARN -> VERIFY -> IMPROVE**; the fuller operational loop above governs execution.
+
+Large Build uses the same loop at larger resolution. It does not remove governance, recon, external challenge, testing, or independent verification. It permits a larger coherent capability frontier and its causally necessary supporting pieces to be built and verified in one campaign.
 
 Large Build boundary:
 
 - one coherent consequential capability;
 - all causally necessary supporting components;
-- continuous Super Search when new evidence, uncertainty, failure, or dependency warrants it;
+- continuous Super Search whenever new evidence, uncertainty, failure, or dependency warrants it;
 - no unrelated expansion;
 - hard STOP boundary after independent verification.
+
+Large Build is **resolution, not deregulation**. The system performs more of the loop in one campaign; it does not skip stages. The target is fewer artificial stops, not weaker controls.
 
 Operating quality target: **Lamborghini velocity + Rolls-Royce quality** — increase the size of the jump, never the size of the unverified risk.
 
@@ -39,6 +43,8 @@ The human Director owns mission intent, strategic priority, protected boundaries
 ### Mission Control / C2 / ChatGPT
 
 C2 owns intelligence, repository/context reconnaissance, external challenge, architecture and governance decisions, scope, verification, and advancement judgment. C2 performs work directly when its available tooling permits it. Execution is delegated only when delegation materially helps; intelligence is never delegated when C2 can perform it itself.
+
+If C2 can inspect, search, modify, test, or verify through available tooling, C2 should do that work rather than creating an unnecessary execution handoff.
 
 ### Intel / Gemini
 
@@ -67,7 +73,7 @@ Agent state must be earned from evidence. A relayed message is evidence of what 
 
 Manual human relay is a valid current communication primitive when autonomous transport is unavailable. It must preserve sender, recipient, role, and message provenance. Future MCP/A2A transport may automate delivery without changing these semantics.
 
-## 5. Shared awareness and immersion
+## 5. Shared awareness, HUD, and immersion
 
 SAGE's immersion layer is a projection of governed operating state, not a parallel world.
 
@@ -76,6 +82,8 @@ Canonical state -> identity -> progression -> coordination -> governed context -
 The awareness/HUD plane is read-only and must not become an alternate authority, persistence system, delivery guarantee, execution control plane, or progression writer.
 
 The HUD/nameplate should expose the agent's current canonical identity, role, rank/qualification, XP, state, and relevant team awareness whenever the surface supports it, so users do not have to repeatedly request progression status.
+
+The desired experience is persistent visible progression across chats/surfaces without pretending that separate model surfaces are secretly connected. If transport is manual, the relay is part of the governed experience and provenance remains explicit.
 
 Presentation must never invent missing state. Unknown values remain unknown.
 
@@ -95,6 +103,8 @@ Agent progression is independent:
 - Gemini does not inherit Jules XP;
 - Jules does not inherit C2 XP;
 - human Director status is governed separately from agent qualification.
+
+The progression projection must be downstream of verification and must not itself mutate qualification or authority. Qualification assessment, transition sufficiency, attestation, and progression projection are separate governed steps rather than one implicit promotion operation.
 
 Progression should preserve a longitudinal capability profile containing, where supported by canonical state:
 
@@ -117,7 +127,7 @@ Failures are permanent historical evidence, not erased when an agent levels up. 
 
 The purpose is to test a real hypothesis: whether governed interaction with SAGE measurably improves the performance and capability of the humans and AI agents operating it.
 
-## 7. Epistemic integrity
+## 7. Epistemic integrity and qualification
 
 SAGE must preserve the distinction between:
 
@@ -127,8 +137,15 @@ SAGE must preserve the distinction between:
 - **Test pass != Real-world capability proof**
 - **Agent report != Canonical state**
 - **Candidate novelty != Established novelty**
+- **Assessment != Qualification mutation**
+- **Qualification recommendation != Authorization**
+- **Unresolved/Indeterminate != Positive evidence**
 
 External discoveries entering SAGE remain candidate knowledge until validated and promoted under canonical governance.
+
+Qualification assessment is evidence evaluation, not authority mutation. Contradiction, unresolved, or indeterminate evidence must fail closed for positive qualification decisions rather than silently becoming reinforcement or promotion evidence. Environment noise must remain distinct from agent fault.
+
+Assessment objects and receipts should be deterministic and immutable where the canonical contract requires it. Review/authorization remains explicit; qualification logic must not silently grant authority, XP, promotion, persistence, or execution control.
 
 ## 8. SAGE Inventor Stage
 
@@ -161,6 +178,8 @@ Media and secondary sources are weak signals only. They may generate candidates 
 
 The purpose is to identify structural/isomorphic patterns across disciplines and test whether their composition creates consequential SAGE capability that is not already adequately represented by existing systems.
 
+Super Search is used **in between build stages when materially warranted**—for a new dependency, unexpected failure, uncertainty, competing implementation, prior-art question, or external capability change. Search is not a ritual that interrupts every action, nor is it abandoned after the initial recon.
+
 ### Epistemic labels
 
 **KNOWN** — established elsewhere with supporting evidence.
@@ -187,7 +206,7 @@ The target capability is:
 
 The benchmark is observable capability: long-horizon capability accumulation, stronger evidence, fewer regressions, better recovery from failure, and more trustworthy continuity than an appropriate baseline.
 
-## 10. External interoperability boundary
+## 10. External intelligence and interoperability boundary
 
 MCP, A2A, Google/Gemini, OpenAI, Anthropic, other model ecosystems, and future external protocols are potential intelligence and interoperability surfaces. They are not canonical SAGE authority.
 
@@ -199,6 +218,10 @@ External systems cannot silently promote research, mutate qualification, award X
 
 Identity, context, audience, purpose, authority, and provenance remain explicit at the SAGE boundary.
 
+External research can be captured as a deterministic research run with source/query provenance where available, candidate primitives, uncertainty/contradictions, and an explicit KNOWN/TRANSFERRED/HYPOTHESIZED classification. External results remain non-authoritative until SAGE validation and promotion.
+
+MCP/A2A should be treated as future transport/interoperability surfaces behind an already-governed context boundary, not as the place where SAGE's authority model is invented.
+
 ## 11. Cross-domain learning without drift
 
 Math, science, biology, quantum information, neuroscience, control theory, formal verification, education, gaming, and other domains are used only when they strengthen the active consequential frontier.
@@ -209,7 +232,56 @@ The rule is not "add everything." The rule is:
 
 Novelty for novelty's sake is forbidden.
 
-## 12. Permanent guardrails
+Cross-domain reasoning is especially valuable when it exposes a reusable invariant, for example:
+
+- control theory -> state/observation/action/feedback discipline;
+- neuroscience -> memory, consolidation, attention, and cognitive-control distinctions;
+- formal methods -> generated != proven and machine-checkable evidence;
+- education -> learning as validated error-driven improvement rather than information accumulation;
+- game design -> visible progression as a projection of verified capability;
+- evolutionary systems -> governed selection rather than unconstrained fitness maximization;
+- complex systems/cybernetics -> identity, state, feedback, constraints, adaptation, and environment interaction;
+- quantum information -> disciplined language for state, measurement, information, and uncertainty, without importing unsupported quantum claims.
+
+These are candidate transfer mechanisms until validated in SAGE.
+
+## 12. Current architectural composition frontier
+
+The recent governed substrate has established a compositional chain around:
+
+**awareness -> governed context -> qualification assessment -> transition sufficiency -> immutable attestation -> governed transition authority -> effect observation -> governed learning candidate -> verified progression**
+
+These primitives remain intentionally separated. In particular:
+
+- awareness is a read-only projection;
+- governed context defines what an audience is allowed to see for a stated purpose/context;
+- qualification assessment evaluates evidence and does not itself mutate qualification;
+- transition sufficiency evaluates whether evidence is sufficient for a governed transition;
+- attestation records immutable evidence-bearing assertions;
+- transition authority enforces bounded transition permission and attestation scope;
+- EffectObservation records observed causal outcomes and must enforce explicit UTC timestamp contracts;
+- GovernedLearningCandidate represents candidate learning without automatically promoting it to canonical knowledge;
+- verified progression projects earned capability from verified state and must not invent XP/rank.
+
+The composition goal is not to collapse these into one authority object. The goal is to connect them through explicit evidence/context references so each boundary remains auditable.
+
+A key architectural separation is:
+
+**COGNITIVE / EPISTEMIC PLANE**
+
+T0 -> Decision -> Evidence -> Authorization -> Act
+
+T1 -> Observation -> Gap -> Outcome -> Learning Candidate
+
+versus:
+
+**COORDINATION / AWARENESS PLANE**
+
+Canonical State -> Identity / Progression -> Coordination Events -> Context Envelope -> Shared Awareness
+
+The two planes may meet through explicit evidence/context references, but must not merge their authorities.
+
+## 13. Permanent guardrails
 
 - Master Archive is canonical validated project knowledge.
 - Git/main is implementation truth.
@@ -225,8 +297,12 @@ Novelty for novelty's sake is forbidden.
 - No MCP/A2A transport expansion merely because interoperability is interesting.
 - No merge/commit/PR action without explicit authorization when the action is consequential.
 - C2 independently verifies delegated work.
+- CI telemetry is canonical evidence of the submitted build state; prose claims about CI are never substituted for actual telemetry.
+- A green test suite does not erase diff/topology discrepancies; repository implementation and CI evidence must reconcile before promotion.
+- Failure repair must distinguish semantic defects, API-contract mismatches, fixture/test defects, formatting/static-analysis defects, and infrastructure/environment noise before changing behavior.
+- Do not weaken tests or semantics merely to make CI green.
 
-## 13. The unified SAGE game/reality model
+## 14. The unified SAGE game/reality model
 
 The game and the real system are one governed model:
 
@@ -256,10 +332,49 @@ The game and the real system are one governed model:
 
 The analogy is useful because every game mechanic corresponds to an actual governed system primitive. It must never replace that primitive.
 
-## 14. Cross-chat handoff
+The desired immersion is earned, not cosmetic: visible rank, state, mission context, team awareness, and progression should always be projections of verified/canonical state. The fun comes from making real capability development legible and motivating, not from manufacturing rewards.
+
+## 15. Large-Build flight discipline
+
+When a consequential frontier is authorized and technically ready, C2's output should be a **BUILD directive**, not another planning loop, unless a genuine blocker exists.
+
+A Large-Build directive must state:
+
+- outcome;
+- components to reuse;
+- invariants;
+- required tests;
+- forbidden expansion;
+- hard STOP boundary.
+
+The preferred execution cadence is:
+
+**BUILD -> TEST -> VERIFY -> REPORT -> STOP**
+
+For a larger coherent frontier, Super Search may recur between these stages when new evidence warrants it. If a failure appears, the loop becomes:
+
+**OBSERVE -> CLASSIFY FAILURE -> SUPER SEARCH IF MATERIAL -> REPAIR -> TEST -> VERIFY**
+
+Never claim readiness, search coverage, test success, utility, novelty, or completion that was not actually established.
+
+After delegated execution, C2 independently inspects the diff, implementation, and tests. Verification is not delegated back to the same executor.
+
+## 16. Cross-chat handoff
 
 When a new SAGE conversation begins, this doctrine is part of the governing operating baseline. The conversation may rehydrate from canonical continuity/repository state, but current claims must still be reconciled against live canonical evidence.
+
+A chat is a station/surface, not a new SAGE world. Identity, role, progression, and operating doctrine should carry across chats through canonical state, while current operational facts remain evidence-reconciled.
 
 The governing principle is:
 
 **SAGE should feel like one continuous world because the underlying governed state is continuous—not because the system pretends that separate model surfaces are secretly connected.**
+
+## 17. Inventor-stage north star
+
+SAGE is not trying to become the best individual runtime, framework, observability product, memory system, knowledge graph, game, or interoperability protocol. Those ecosystems are intelligence sources and possible components.
+
+The north-star question is:
+
+> **Can SAGE demonstrably convert experience into governed, durable, evidence-bearing capability better over long horizons than an appropriate baseline, while preserving identity, provenance, authorization boundaries, negative knowledge, recovery quality, and trustworthy continuity?**
+
+If a cross-domain composition produces a real answer to that question, it becomes validated SAGE capability. If it does not, the negative result is still retained as SAGE knowledge.
