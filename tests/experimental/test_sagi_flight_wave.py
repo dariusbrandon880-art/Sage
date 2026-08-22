@@ -32,8 +32,27 @@ def test_each_campaign_contains_all_four_longitudinal_cells():
         assert cells == {"004", "005", "006", "007"}
 
 
+def test_each_campaign_is_bound_to_one_distinct_selected_flight():
+    plan = materialize_wave(make_proposal())
+    for campaign in {cell.campaign_id for cell in plan.cells}:
+        candidate_ids = {cell.candidate_id for cell in plan.cells if cell.campaign_id == campaign}
+        assert len(candidate_ids) == 1
+    assert len({cell.candidate_id for cell in plan.cells}) == 5
+
+
 def test_wave_requires_exactly_five_selected_flights():
     proposal = make_proposal()
     broken = proposal.__class__(proposal.candidates[:4], proposal.frontier_digest, proposal.selection_digest)
     with pytest.raises(ValueError, match="exactly five"):
         materialize_wave(broken)
+
+
+def test_wave_rejects_duplicate_selected_flights():
+    proposal = make_proposal()
+    duplicate = proposal.__class__(
+        (proposal.candidates[0], proposal.candidates[0], *proposal.candidates[2:]),
+        proposal.frontier_digest,
+        proposal.selection_digest,
+    )
+    with pytest.raises(ValueError, match="distinct"):
+        materialize_wave(duplicate)
