@@ -170,6 +170,14 @@ class QualificationAssessment:
         )
 
     @property
+    def unresolved_episodes(self) -> tuple[CapabilityEvidenceEpisode, ...]:
+        return tuple(
+            e
+            for e in self.independent_episodes
+            if e.verdict in {EpisodeVerdict.UNRESOLVED, EpisodeVerdict.INDETERMINATE}
+        )
+
+    @property
     def confidence_score(self) -> float:
         """Return a transparent evidence-balance score, not a probability of truth."""
         support = sum(e.evidence_weight for e in self.supporting_episodes)
@@ -190,10 +198,12 @@ class QualificationAssessment:
     def recommendation(self) -> QualificationRecommendation:
         if len(self.independent_episodes) < self.MIN_INDEPENDENT_EPISODES:
             return QualificationRecommendation.HOLD
-        if len(self.supporting_episodes) < self.MIN_SUPPORTING_EPISODES:
-            return QualificationRecommendation.REINFORCEMENT_NEEDED
         if self.contradictory_episodes:
             return QualificationRecommendation.HOLD
+        if self.unresolved_episodes:
+            return QualificationRecommendation.HOLD
+        if len(self.supporting_episodes) < self.MIN_SUPPORTING_EPISODES:
+            return QualificationRecommendation.REINFORCEMENT_NEEDED
         if self.agent_fault_rate > self.MAX_AGENT_FAULT_RATE:
             return QualificationRecommendation.REINFORCEMENT_NEEDED
         if self.confidence_score < self.PROMOTION_THRESHOLD:
