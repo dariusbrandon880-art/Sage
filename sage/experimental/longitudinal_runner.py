@@ -8,10 +8,10 @@ never fabricates successful telemetry or capability state.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from time import perf_counter
-from typing import Callable, Mapping, Optional, Sequence
+from typing import Callable, Optional
 from uuid import uuid4
 
 from .flight_record import SAGEFlightRecord, SAGEFlightRecordManager
@@ -72,8 +72,8 @@ class LongitudinalFlightRunner:
         records = tuple(
             self._persist_observation(system, observation)
             for system, observation in [
-                *(('baseline', item) for item in baseline),
-                *(('sage', item) for item in sage),
+                *(("baseline", item) for item in baseline),
+                *(("sage", item) for item in sage),
             ]
         )
         return LongitudinalFlightResult(
@@ -137,12 +137,7 @@ class LongitudinalFlightRunner:
         if observation.session_id != session_id:
             raise ValueError("EXECUTOR_SESSION_ID_MISMATCH")
         if observation.elapsed_seconds is None:
-            return FlightObservation(
-                **{
-                    **observation.__dict__,
-                    "elapsed_seconds": elapsed_seconds,
-                }
-            )
+            return replace(observation, elapsed_seconds=elapsed_seconds)
         if observation.elapsed_seconds < 0:
             raise ValueError("NEGATIVE_ELAPSED_SECONDS")
         return observation
