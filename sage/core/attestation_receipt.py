@@ -8,7 +8,7 @@ state, or perform a capability transition.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime
 from enum import Enum
 import hashlib
 import json
@@ -70,11 +70,7 @@ class AttestationReceipt:
             raise AttestationReceiptValidationError(
                 "attested_at must be a valid ISO-8601 timestamp."
             ) from exc
-        if parsed.tzinfo is None:
-            raise AttestationReceiptValidationError(
-                "attested_at must include an explicit timezone."
-            )
-        if not parsed.tzinfo.utcoffset(parsed):
+        if parsed.tzinfo is None or parsed.utcoffset() is None:
             raise AttestationReceiptValidationError(
                 "attested_at must include an explicit timezone."
             )
@@ -106,7 +102,7 @@ class AttestationReceipt:
 
     @property
     def attestation_payload_digest(self) -> str:
-        """Digest of the receipt payload bound by the attestation artifact."""
+        """Digest of the receipt payload excluding the supplied signature."""
         payload = dict(self._bound_payload())
         payload.pop("signature")
         canonical = json.dumps(
