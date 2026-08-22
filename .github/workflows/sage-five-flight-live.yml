@@ -1,0 +1,71 @@
+name: SAGE Five-Flight Live Campaign
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - C2_FIVE_FLIGHT_LAUNCH
+
+permissions:
+  contents: read
+
+jobs:
+  flight:
+    name: Flight ${{ matrix.flight }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 5
+      matrix:
+        include:
+          - flight: "003"
+            command: python scripts/run_longitudinal_flight_003.py
+          - flight: "004"
+            command: python scripts/run_longitudinal_campaign_flight.py --flight "004"
+          - flight: "005"
+            command: python scripts/run_longitudinal_campaign_flight.py --flight "005"
+          - flight: "006"
+            command: python scripts/run_longitudinal_campaign_flight.py --flight "006"
+          - flight: "007"
+            command: python scripts/run_longitudinal_campaign_flight.py --flight "007"
+    steps:
+      - name: Checkout exact launch commit
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install SAGE
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Governance preflight
+        run: python scripts/sage_precommit_hook.py
+      - name: Execute Flight ${{ matrix.flight }}
+        run: |
+          set -o pipefail
+          ${{ matrix.command }} | tee "flight-${{ matrix.flight }}.json"
+      - name: Publish flight evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sage-flight-${{ matrix.flight }}-${{ github.sha }}
+          path: flight-${{ matrix.flight }}.json
+          if-no-files-found: ignore
+
+  verify-wave:
+    name: Verify complete five-flight wave
+    needs: flight
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify all five jobs completed
+        run: |
+          test "${{ needs.flight.result }}" = "success"
+          printf '%s\n' '003 004 005 006 007' > five-flight-wave.txt
+          echo 'SAGE FIVE-FLIGHT WAVE: ALL FIVE EXECUTORS PASSED MACHINE GATE'
+      - name: Publish wave receipt
+        uses: actions/upload-artifact@v4
+        with:
+          name: sage-five-flight-wave-${{ github.sha }}
+          path: five-flight-wave.txt
