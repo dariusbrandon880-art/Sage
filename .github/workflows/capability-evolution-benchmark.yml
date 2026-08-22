@@ -25,6 +25,8 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Install benchmark test dependency
+        run: python -m pip install "pytest>=7.0"
       - name: Run benchmark invariants
         run: python -m pytest -q tests/benchmarks/test_capability_evolution_benchmark.py
       - name: Run focused five-front benchmark
