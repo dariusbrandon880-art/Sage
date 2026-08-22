@@ -1,0 +1,75 @@
+name: SAGE Five-Mission Control Tower Wave
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  flight:
+    strategy:
+      fail-fast: false
+      max-parallel: 5
+      matrix:
+        include:
+          - id: F1
+            mission: google-drive-continuity
+            test: tests/test_projection.py
+          - id: F2
+            mission: sports-scientific-integrity
+            test: tests
+          - id: F3
+            mission: cognitive-pfc-compound
+            test: tests/experimental/test_cognitive_kernel.py
+          - id: F4
+            mission: evidence-lineage-replay
+            test: tests
+          - id: F5
+            mission: progression-receipt-control-tower
+            test: tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout canonical main
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install repository
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e '.[dev]' || pip install -e .
+      - name: Mission preflight
+        env:
+          SAGE_FLIGHT_ID: ${{ matrix.id }}
+          SAGE_MISSION: ${{ matrix.mission }}
+        run: |
+          python -m compileall -q sage scripts
+          python - <<'PY'
+          import os
+          print(f"FLIGHT={os.environ['SAGE_FLIGHT_ID']} MISSION={os.environ['SAGE_MISSION']}")
+          PY
+      - name: Execute full repository verification for mission
+        run: python -m pytest -q ${{ matrix.test }}
+      - name: Flight evidence marker
+        if: always()
+        env:
+          SAGE_FLIGHT_ID: ${{ matrix.id }}
+          SAGE_MISSION: ${{ matrix.mission }}
+        run: |
+          echo "SAGE_FLIGHT=${SAGE_FLIGHT_ID}"
+          echo "SAGE_MISSION=${SAGE_MISSION}"
+          echo "SAGE_STATUS=${{ job.status }}"
+
+  wave-gate:
+    needs: flight
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require all five flights
+        run: |
+          test '${{ needs.flight.result }}' = 'success'
+          echo 'FIVE_MISSION_WAVE=VERIFIED'
