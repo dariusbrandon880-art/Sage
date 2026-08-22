@@ -30,7 +30,6 @@ class SufficiencyStatus(str, Enum):
 @dataclass(frozen=True)
 class EvidenceAssessment:
     """One bounded evidence contribution to a claim evaluation."""
-
     evidence_ref: str
     supports: bool
     relevance: float = 1.0
@@ -51,7 +50,6 @@ class EvidenceAssessment:
 @dataclass(frozen=True)
 class EvidenceSufficiencyEvaluation:
     """Immutable evaluation receipt; never grants authority or mutates state."""
-
     claim_ref: str
     context_id: str
     intent_ref: str
@@ -105,12 +103,7 @@ class EvidenceSufficiencyEvaluation:
 
 
 class WitnessSufficiencyEvaluator:
-    """Pure bridge from witnessed decisions to epistemic sufficiency.
-
-    Uses only the public shape of DecisionRecord and WitnessBinding so the
-    evaluator can be stacked onto either primitive without creating storage,
-    transport, or authority coupling.
-    """
+    """Pure bridge from witnessed decisions to epistemic sufficiency."""
 
     @staticmethod
     def evaluate_witnessed_decision(decision_record: Any, witness_binding: Any, declared_intent: str, required_burden: str = "STRICT_DIRECT_PROOF", *, independent_witness: bool = False, signature_verified: Optional[bool] = None) -> EvidenceSufficiencyEvaluation:
@@ -136,16 +129,20 @@ class WitnessSufficiencyEvaluator:
         integrity = getattr(decision_record, "verify_integrity", None)
         if callable(integrity) and not integrity():
             return EvidenceSufficiencyEvaluation.evaluate(claim_ref=decision_id, context_id=decision_context, intent_ref=declared_intent, assessments=[EvidenceAssessment(witness_ref, supports=False, contradicts=True)])
-
         if witness_status != "WITNESS_VERIFIED":
             return EvidenceSufficiencyEvaluation.evaluate(claim_ref=decision_id, context_id=decision_context, intent_ref=declared_intent, assessments=[EvidenceAssessment(witness_ref, supports=False)])
-
         if signature_verified is False:
             return EvidenceSufficiencyEvaluation.evaluate(claim_ref=decision_id, context_id=decision_context, intent_ref=declared_intent, assessments=[EvidenceAssessment(witness_ref, supports=False, contradicts=True)])
         if signature_verified is not True:
             return EvidenceSufficiencyEvaluation.evaluate(claim_ref=decision_id, context_id=decision_context, intent_ref=declared_intent, assessments=[EvidenceAssessment(witness_ref, supports=False)])
 
-        coverage = 1.0 if required_burden != "STRICT_DIRECT_PROOF" else 0.5
+        # A strict burden requires independent witnessing. A verified signature
+        # alone deliberately earns only partial support; independence closes it.
+        if required_burden == "STRICT_DIRECT_PROOF":
+            coverage = 1.0 if independent_witness else 0.5
+            minimum = 1.0
+        else:
+            coverage = 1.0
+            minimum = 0.5 if required_burden == "EXPLORATORY" else 1.0
         assessment = EvidenceAssessment(evidence_ref=witness_ref, supports=True, coverage=coverage, relevance=1.0, independently_verified=independent_witness)
-        minimum = 1.0 if required_burden != "EXPLORATORY" else 0.5
         return EvidenceSufficiencyEvaluation.evaluate(claim_ref=decision_id, context_id=decision_context, intent_ref=declared_intent, assessments=[assessment], minimum_coverage=minimum, require_independent_witness=(required_burden == "STRICT_DIRECT_PROOF"))
