@@ -71,3 +71,16 @@ def get_agent_awareness_snapshot(
         team_context=team_provider(),
         unread_coordination=unread_provider(agent_id),
     )
+
+
+def get_live_agent_awareness_snapshot(agent_id: str = "MISSION_CONTROL") -> dict[str, Any]:
+    """Bind the snapshot to SAGE's canonical identity and coordination readers."""
+    from sage.agent_coordination import get_unread_coordination
+    from sage.agent_presence import get_agent_identity, get_team_context
+
+    return get_agent_awareness_snapshot(
+        agent_id,
+        identity_provider=get_agent_identity,
+        team_provider=get_team_context,
+        unread_provider=get_unread_coordination,
+    )
