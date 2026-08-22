@@ -38,28 +38,24 @@ class SAGIWavePlan:
         return len(self.cells)
 
 
-def materialize_wave(
-    proposal: FlightSelectionProposal, *, campaigns: int = 5
-) -> SAGIWavePlan:
-    if campaigns <= 0:
-        raise ValueError("campaign count must be positive")
+def materialize_wave(proposal: FlightSelectionProposal) -> SAGIWavePlan:
+    """Turn five selected experiments into five campaigns x four cells."""
     if len(proposal.candidates) != 5:
         raise ValueError("SAGI wave requires exactly five selected flights")
 
     cells: list[SAGIWaveCell] = []
-    for campaign_number in range(1, campaigns + 1):
+    for campaign_number, candidate in enumerate(proposal.candidates, start=1):
         campaign_id = f"{campaign_number:02d}"
-        for candidate in proposal.candidates:
-            for cell_kind in WaveCellKind:
-                cells.append(
-                    SAGIWaveCell(
-                        campaign_id=campaign_id,
-                        candidate_id=candidate.candidate_id,
-                        role=candidate.role.value,
-                        flight_cell=cell_kind,
-                        frontier_digest=proposal.frontier_digest,
-                        provenance_ref=candidate.provenance_ref,
-                    )
+        for cell_kind in WaveCellKind:
+            cells.append(
+                SAGIWaveCell(
+                    campaign_id=campaign_id,
+                    candidate_id=candidate.candidate_id,
+                    role=candidate.role.value,
+                    flight_cell=cell_kind,
+                    frontier_digest=proposal.frontier_digest,
+                    provenance_ref=candidate.provenance_ref,
                 )
+            )
 
     return SAGIWavePlan(proposal.selection_digest, tuple(cells))
