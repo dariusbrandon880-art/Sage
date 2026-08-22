@@ -44,8 +44,8 @@ jobs:
       max-parallel: 5
       matrix:
         include:
-          - flight: "002"
-            command: python scripts/run_longitudinal_flight_002.py
+          - flight: "003"
+            command: python scripts/run_longitudinal_flight_003.py
           - flight: "004"
             command: python scripts/run_longitudinal_campaign_flight.py --flight "004"
           - flight: "005"
@@ -133,7 +133,7 @@ jobs:
                 })
 
         observed = {str(item.get("flight", "")).split("-")[-1] for item in reports}
-        expected = {"002", "004", "005", "006", "007"}
+        expected = {"003", "004", "005", "006", "007"}
         missing = sorted(expected - observed)
         wave = {
             "wave": "SAGE-FIVE-FLIGHT",
