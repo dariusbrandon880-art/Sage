@@ -36,4 +36,33 @@ jobs:
       run: pytest -v --tb=short
 
     - name: Execute longitudinal pilot flight
-      run: python scripts/run_longitudinal_flight.py
+      run: |
+        set -o pipefail
+        python scripts/run_longitudinal_flight.py | tee longitudinal_pilot_stdout.json
+
+    - name: Publish longitudinal pilot telemetry
+      if: always()
+      run: |
+        {
+          echo "## SAGE Longitudinal Pilot Telemetry"
+          echo
+          echo "Commit: $GITHUB_SHA"
+          if [ -f evidence_capture/longitudinal_pilot_001.json ]; then
+            echo '```json'
+            cat evidence_capture/longitudinal_pilot_001.json
+            echo '```'
+          else
+            echo "No pilot report was produced. Flight execution failed before report persistence."
+          fi
+        } >> "$GITHUB_STEP_SUMMARY"
+
+    - name: Upload longitudinal pilot evidence
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: sage-longitudinal-pilot-${{ github.sha }}
+        path: |
+          evidence_capture/longitudinal_pilot_001.json
+          evidence_capture/longitudinal_pilot_state/*.json
+          longitudinal_pilot_stdout.json
+        if-no-files-found: warn
