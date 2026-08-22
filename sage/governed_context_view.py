@@ -12,6 +12,13 @@ from typing import Any, Mapping
 
 
 CONTEXT_VIEW_VERSION = "governed-context-view-v0.1"
+CANONICAL_AUTHORITY = "canonical_airspace_state_and_event_ledger"
+ALLOWED_AUDIENCES = frozenset({
+    "SAGE::DIRECTOR",
+    "SAGE::C2::CHATGPT",
+    "SAGE::INTEL::GEMINI",
+    "SAGE::ENGINEER::JULES",
+})
 ALLOWED_PURPOSES = frozenset({"HUD", "COORDINATION", "VERIFICATION"})
 ALLOWED_PROFILES = frozenset({"SELF", "TEAM", "TEAM_COORDINATION"})
 
@@ -32,8 +39,8 @@ def build_governed_context_view(
     """
     if not isinstance(awareness, Mapping):
         raise TypeError("awareness must be a mapping")
-    if not isinstance(audience, str) or not audience.strip():
-        raise ValueError("audience must be a non-empty string")
+    if audience not in ALLOWED_AUDIENCES:
+        raise ValueError(f"unsupported audience: {audience}")
     if purpose not in ALLOWED_PURPOSES:
         raise ValueError(f"unsupported purpose: {purpose}")
     if profile not in ALLOWED_PROFILES:
@@ -44,6 +51,8 @@ def build_governed_context_view(
         raise ValueError("max_pending must be a non-negative integer")
     if awareness.get("read_only") is not True:
         raise ValueError("awareness source must be read-only")
+    if awareness.get("authority") not in {None, CANONICAL_AUTHORITY, "canonical_airspace_state"}:
+        raise ValueError("awareness source has unsupported authority")
 
     self_view = deepcopy(dict(awareness.get("self") or {}))
     team_view = deepcopy(dict(awareness.get("team") or {}))
@@ -70,5 +79,5 @@ def build_governed_context_view(
         },
         "bounded": True,
         "read_only": True,
-        "authority": "canonical_airspace_state_and_event_ledger",
+        "authority": CANONICAL_AUTHORITY,
     }
