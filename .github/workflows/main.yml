@@ -77,7 +77,7 @@ jobs:
         python - <<'PY'
         import json
         from pathlib import Path
-        report={"stage":"RECON","front":"${{ matrix.front }}","external_challenge_query":"${{ matrix.search }}","status":"PASS"}
+        report={"stage":"RECON","front":"${{ matrix.front }}","external_challenge_query":"${{ matrix.search }}","status":"PASS","commit_sha":"${{ github.sha }}","run_id":"${{ github.run_id }}","job":"${{ github.job }}"}
         Path("front_recon.json").write_text(json.dumps(report,indent=2))
         print(json.dumps(report,indent=2))
         PY
@@ -88,11 +88,11 @@ jobs:
         python - <<'PY'
         import json
         from pathlib import Path
-        report={"stage":"BUILD","front":"${{ matrix.front }}","status":"PASS","execution":"repository_tests"}
+        report={"stage":"BUILD","front":"${{ matrix.front }}","status":"PASS","execution":"repository_tests","commit_sha":"${{ github.sha }}","run_id":"${{ github.run_id }}","job":"${{ github.job }}"}
         Path("front_build.json").write_text(json.dumps(report,indent=2))
         print(json.dumps(report,indent=2))
         PY
-    - name: "03 OBSERVE / REPAIR — ${{ matrix.front }}"
+    - name: "03 OBSERVE — ${{ matrix.front }}"
       if: always()
       run: |
         set -euo pipefail
@@ -101,7 +101,7 @@ jobs:
         python - <<'PY'
         import json
         from pathlib import Path
-        report={"stage":"OBSERVE_REPAIR","front":"${{ matrix.front }}","status":"PASS","repair_mode":"validated-rerun; no semantic mutation on green evidence"}
+        report={"stage":"OBSERVE","front":"${{ matrix.front }}","status":"PASS","repair_mode":"none; repair requires a new governed build commit","commit_sha":"${{ github.sha }}","run_id":"${{ github.run_id }}","job":"${{ github.job }}"}
         Path("front_repair.json").write_text(json.dumps(report,indent=2))
         print(json.dumps(report,indent=2))
         PY
@@ -115,7 +115,7 @@ jobs:
         python - <<'PY'
         import json
         from pathlib import Path
-        report={"stage":"VERIFY_COMPOUND","front":"${{ matrix.front }}","status":"PASS","authority_boundary":"execution evidence only; C2 must independently verify before qualification"}
+        report={"stage":"VERIFY_COMPOUND","front":"${{ matrix.front }}","status":"PASS","authority_boundary":"execution evidence only; C2 must independently verify before qualification","commit_sha":"${{ github.sha }}","run_id":"${{ github.run_id }}","job":"${{ github.job }}"}
         Path("front_verify.json").write_text(json.dumps(report,indent=2))
         print(json.dumps(report,indent=2))
         PY
@@ -129,7 +129,7 @@ jobs:
         for stage in ("recon","build","repair","verify"):
             p=Path(f"front_{stage}.json")
             stages.append({"stage":stage,"present":p.exists()})
-        report={"wave":"SAGE-C2-FIVE-CONCURRENT-FULL-ENGINE","front":"${{ matrix.front }}","expected_stages":4,"stages":stages,"all_stage_receipts_present":all(x["present"] for x in stages)}
+        report={"wave":"SAGE-C2-FIVE-CONCURRENT-FULL-ENGINE","front":"${{ matrix.front }}","expected_stages":4,"stages":stages,"all_stage_receipts_present":all(x["present"] for x in stages),"commit_sha":"${{ github.sha }}","run_id":"${{ github.run_id }}","job":"${{ github.job }}"}
         Path("front_receipt.json").write_text(json.dumps(report,indent=2))
         print(json.dumps(report,indent=2))
         PY
@@ -158,6 +158,7 @@ jobs:
       run: |
         python - <<'PY'
         import json
+        import os
         from pathlib import Path
         root=Path("five-front-evidence")
         expected={"DRIVE_CONTINUITY","GOVERNED_EXECUTION","SPORTS_RESEARCH","NATIVE_PERSISTED_EVIDENCE","PROGRESSION_RECEIPTS"}
@@ -172,10 +173,13 @@ jobs:
         missing=sorted(expected-observed)
         duplicate_fronts=sorted({f for f in observed if sum(1 for d in receipts if d.get("front")==f)>=2})
         invalid=sorted({str(d.get("front")) for d in receipts if d.get("front") not in expected})
-        report={"wave":"SAGE-C2-FIVE-CONCURRENT-FULL-ENGINE","expected_fronts":5,"observed_fronts":len(observed),"missing_fronts":missing,"duplicate_fronts":duplicate_fronts,"invalid_fronts":invalid,"wave_verdict":"HOLD" if (missing or duplicate_fronts or invalid) else "REQUIRES_INDEPENDENT_C2_VERIFICATION","authority_boundary":"Aggregates execution observations; does not qualify capability."}
+        provenance={str(d.get("commit_sha")) for d in receipts if d.get("commit_sha")}
+        expected_sha=os.environ.get("GITHUB_SHA")
+        stale_or_mixed=sorted(provenance-{expected_sha}) if expected_sha else sorted(provenance)
+        report={"wave":"SAGE-C2-FIVE-CONCURRENT-FULL-ENGINE","expected_fronts":5,"observed_fronts":len(observed),"missing_fronts":missing,"duplicate_fronts":duplicate_fronts,"invalid_fronts":invalid,"provenance_commits":sorted(provenance),"expected_commit":expected_sha,"stale_or_mixed_commits":stale_or_mixed,"wave_verdict":"HOLD" if (missing or duplicate_fronts or invalid or stale_or_mixed or len(provenance)!=1) else "REQUIRES_INDEPENDENT_C2_VERIFICATION","authority_boundary":"Aggregates execution observations; does not qualify capability."}
         Path("sage_c2_five_front_wave_report.json").write_text(json.dumps(report,indent=2))
         print(json.dumps(report,indent=2))
-        if missing or duplicate_fronts or invalid: raise SystemExit(1)
+        if missing or duplicate_fronts or invalid or stale_or_mixed or len(provenance)!=1: raise SystemExit(1)
         PY
     - name: Upload compound evidence
       if: always()
