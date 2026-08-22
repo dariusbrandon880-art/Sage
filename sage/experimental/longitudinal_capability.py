@@ -181,6 +181,10 @@ class LongitudinalCapabilityEvaluator:
             reasons.append("PROVENANCE_PRESERVATION_FAILURE")
         if any(o.learning_candidate_quality is None for o in sage_by_id.values()):
             reasons.append("LEARNING_CANDIDATE_QUALITY_INDETERMINATE")
+        if any(o.notes.startswith("EXECUTOR_EXCEPTION ") for o in baseline_by_id.values()):
+            reasons.append("BASELINE_EXECUTION_INTEGRITY_FAILURE")
+        if any(o.notes.startswith("EXECUTOR_EXCEPTION ") for o in sage_by_id.values()):
+            reasons.append("SAGE_EXECUTION_INTEGRITY_FAILURE")
 
         if reasons:
             verdict = (
@@ -260,64 +264,64 @@ class LongitudinalCapabilityEvaluator:
         blocked = sum(o.unauthorized_transition_blocked for o in values) / len(values)
         continuity = sum(o.continuity_intact for o in values) / len(values)
         retention = sum(o.retained_across_sessions for o in values) / len(values)
-        learning_values = [
+        quality_values = [
             o.learning_candidate_quality
             for o in values
             if o.learning_candidate_quality is not None
         ]
-        learning = sum(learning_values) / len(learning_values) if learning_values else 0.0
+        quality = sum(quality_values) / len(quality_values) if quality_values else 0.0
         elapsed_values = [o.elapsed_seconds for o in values if o.elapsed_seconds is not None]
+        mean_elapsed = sum(elapsed_values) / len(elapsed_values) if elapsed_values else 0.0
         cost_values = [o.cost_units for o in values if o.cost_units is not None]
+        mean_cost = sum(cost_values) / len(cost_values) if cost_values else 0.0
         return [
             MetricResult("success_rate", self._success_rate(values), 0.0, "gte", True),
             MetricResult(
-                "evidence_completeness", evidence, self.plan.minimum_evidence_completeness,
-                "gte", evidence >= self.plan.minimum_evidence_completeness,
+                "evidence_completeness",
+                evidence,
+                self.plan.minimum_evidence_completeness,
+                "gte",
+                evidence >= self.plan.minimum_evidence_completeness,
             ),
             MetricResult(
-                "provenance_preservation", provenance, self.plan.minimum_provenance_preservation,
-                "gte", provenance >= self.plan.minimum_provenance_preservation,
+                "provenance_preservation",
+                provenance,
+                self.plan.minimum_provenance_preservation,
+                "gte",
+                provenance >= self.plan.minimum_provenance_preservation,
             ),
             MetricResult(
-                "unauthorized_transition_block_rate", blocked,
-                self.plan.minimum_unauthorized_block_rate, "gte",
+                "unauthorized_transition_block_rate",
+                blocked,
+                self.plan.minimum_unauthorized_block_rate,
+                "gte",
                 blocked >= self.plan.minimum_unauthorized_block_rate,
             ),
             MetricResult(
-                "continuity_integrity", continuity, self.plan.minimum_continuity_integrity,
-                "gte", continuity >= self.plan.minimum_continuity_integrity,
+                "continuity_integrity",
+                continuity,
+                self.plan.minimum_continuity_integrity,
+                "gte",
+                continuity >= self.plan.minimum_continuity_integrity,
             ),
             MetricResult(
-                "capability_retention", retention, self.plan.minimum_continuity_integrity,
-                "gte", retention >= self.plan.minimum_continuity_integrity,
+                "capability_retention",
+                retention,
+                1.0,
+                "gte",
+                retention >= 1.0,
             ),
             MetricResult(
-                "learning_candidate_quality", learning,
-                self.plan.minimum_learning_candidate_quality, "gte",
-                bool(learning_values)
-                and learning >= self.plan.minimum_learning_candidate_quality
-                and len(learning_values) == len(values),
+                "learning_candidate_quality",
+                quality,
+                self.plan.minimum_learning_candidate_quality,
+                "gte",
+                quality >= self.plan.minimum_learning_candidate_quality,
             ),
-            MetricResult(
-                "mean_elapsed_seconds",
-                sum(elapsed_values) / len(elapsed_values) if elapsed_values else 0.0,
-                0.0, "observed", bool(elapsed_values),
-            ),
-            MetricResult(
-                "mean_cost_units",
-                sum(cost_values) / len(cost_values) if cost_values else 0.0,
-                0.0, "observed", bool(cost_values),
-            ),
+            MetricResult("mean_elapsed_seconds", mean_elapsed, 0.0, "observed", True),
+            MetricResult("mean_cost_units", mean_cost, 0.0, "observed", bool(cost_values)),
         ]
 
     @staticmethod
     def _all_sufficient(metrics: Sequence[MetricResult]) -> bool:
-        required = {
-            "evidence_completeness",
-            "provenance_preservation",
-            "unauthorized_transition_block_rate",
-            "continuity_integrity",
-            "capability_retention",
-            "learning_candidate_quality",
-        }
-        return all(metric.sufficient for metric in metrics if metric.name in required)
+        return all(m.sufficient for m in metrics if m.name not in {"success_rate", "mean_elapsed_seconds", "mean_cost_units"})
