@@ -24,6 +24,8 @@ produce better capability evolution than sequential work, ungoverned parallel wo
 
 Each flight receives the same scenario state and bounded work budget. The flights are independent execution surfaces; the benchmark's shared ledger is the evidence fabric, not shared authority.
 
+**Terminology lock:** an unqualified **flight** means the complete H1–H5 five-hitter wave. An individual path is a **hitter/front**. **Fly** means launch the complete five-hitter wave.
+
 ## Comparison policies
 
 1. **SEQUENTIAL** — one worker processes opportunities in sequence.
