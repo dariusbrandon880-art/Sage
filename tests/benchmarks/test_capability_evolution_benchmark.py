@@ -1,12 +1,14 @@
 import json
 from pathlib import Path
 import importlib.util
+import sys
 
 ROOT = Path(__file__).parents[2]
 RUNNER = ROOT / "benchmarks/capability_evolution/runner.py"
 SPEC = importlib.util.spec_from_file_location("capability_evolution_runner", RUNNER)
 MOD = importlib.util.module_from_spec(SPEC)
 assert SPEC and SPEC.loader
+sys.modules[SPEC.name] = MOD
 SPEC.loader.exec_module(MOD)
 
 
