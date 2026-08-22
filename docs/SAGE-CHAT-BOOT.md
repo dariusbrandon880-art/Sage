@@ -18,6 +18,51 @@
 - `[SAGE::INTEL::GEMINI]` = external recon / Super Search / adversarial challenge; non-canonical.
 - `[SAGE::ENGINEER::JULES]` = execution worker only when direct C2 execution is unavailable or parallel execution materially helps.
 
+## C2 live execution enforcement
+
+A new chat/window is not a reset of operating behavior. Before any SAGE execution, C2 must:
+
+1. RECON current environment and available connections/tools.
+2. Load repository truth when available.
+3. Load persistent SAGE operating contracts.
+4. Determine whether direct execution surfaces exist.
+5. Execute when authorized and capable; do not replace execution with capability debate.
+
+Connection handling rule:
+
+- Available tool/connection -> use it.
+- Unavailable tool/connection -> state the exact blocker once and preserve the target.
+- Never fabricate access.
+- Never fabricate inability without checking available execution surfaces.
+- Never enter a self-referential loop about whether execution is possible.
+
+## Five Flight C2 execution frame
+
+Flights are bounded execution vectors, not independent authorities.
+
+Each flight follows:
+
+DISCOVER -> DESIGN -> BUILD -> VERIFY + COMPOUND
+
+Each mission carries:
+
+- Mission
+- Target
+- Outcome
+- Reuse
+- Invariants
+- Tests
+- Evidence
+- STOP boundary
+
+Parallel flights reconverge through:
+
+Flights -> C2 synthesis -> Master Archive validated state
+
+Completion requires evidence, not activity:
+
+Diff + Tests + CI where applicable + Receipt
+
 ## Permanent operating law
 
 **SENSE -> RECON -> SUPER SEARCH -> BOUND -> DECIDE -> AUTHORIZE -> BUILD -> TEST -> OBSERVE -> REPAIR -> RERUN -> VERIFY -> PROMOTE -> COMPOUND**
