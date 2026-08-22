@@ -75,24 +75,8 @@ class EvidenceSufficiencyEvaluation:
         object.__setattr__(self, "evaluation_digest", self._digest())
 
     @classmethod
-    def evaluate(
-        cls,
-        *,
-        claim_ref: str,
-        context_id: str,
-        intent_ref: str,
-        assessments: Iterable[EvidenceAssessment],
-        minimum_coverage: float = 1.0,
-        require_independent_witness: bool = False,
-    ) -> "EvidenceSufficiencyEvaluation":
-        return cls(
-            claim_ref=claim_ref,
-            context_id=context_id,
-            intent_ref=intent_ref,
-            assessments=tuple(assessments),
-            minimum_coverage=minimum_coverage,
-            require_independent_witness=require_independent_witness,
-        )
+    def evaluate(cls, *, claim_ref: str, context_id: str, intent_ref: str, assessments: Iterable[EvidenceAssessment], minimum_coverage: float = 1.0, require_independent_witness: bool = False) -> "EvidenceSufficiencyEvaluation":
+        return cls(claim_ref=claim_ref, context_id=context_id, intent_ref=intent_ref, assessments=tuple(assessments), minimum_coverage=minimum_coverage, require_independent_witness=require_independent_witness)
 
     def _evaluate(self) -> SufficiencyStatus:
         if any(a.contradicts for a in self.assessments):
@@ -108,25 +92,7 @@ class EvidenceSufficiencyEvaluation:
         return SufficiencyStatus.PARTIALLY_SUPPORTED
 
     def _canonical_payload(self) -> Dict[str, Any]:
-        return {
-            "assessments": [
-                {
-                    "contradicts": a.contradicts,
-                    "coverage": a.coverage,
-                    "evidence_ref": a.evidence_ref,
-                    "independently_verified": a.independently_verified,
-                    "relevance": a.relevance,
-                    "supports": a.supports,
-                }
-                for a in sorted(self.assessments, key=lambda x: x.evidence_ref)
-            ],
-            "claim_ref": self.claim_ref,
-            "context_id": self.context_id,
-            "intent_ref": self.intent_ref,
-            "minimum_coverage": self.minimum_coverage,
-            "require_independent_witness": self.require_independent_witness,
-            "status": self.status.value,
-        }
+        return {"assessments": [{"contradicts": a.contradicts, "coverage": a.coverage, "evidence_ref": a.evidence_ref, "independently_verified": a.independently_verified, "relevance": a.relevance, "supports": a.supports} for a in sorted(self.assessments, key=lambda x: x.evidence_ref)], "claim_ref": self.claim_ref, "context_id": self.context_id, "intent_ref": self.intent_ref, "minimum_coverage": self.minimum_coverage, "require_independent_witness": self.require_independent_witness, "status": self.status.value}
 
     def _digest(self) -> str:
         canonical = json.dumps(self._canonical_payload(), sort_keys=True, separators=(",", ":"), ensure_ascii=False)
@@ -141,22 +107,13 @@ class EvidenceSufficiencyEvaluation:
 class WitnessSufficiencyEvaluator:
     """Pure bridge from witnessed decisions to epistemic sufficiency.
 
-    The evaluator deliberately uses the public shape of DecisionRecord and
-    WitnessBinding rather than importing either implementation. This keeps the
-    composition layer reusable across stacked branches while preserving the
-    architectural boundary: no persistence, authority mutation, or transport.
+    Uses only the public shape of DecisionRecord and WitnessBinding so the
+    evaluator can be stacked onto either primitive without creating storage,
+    transport, or authority coupling.
     """
 
     @staticmethod
-    def evaluate_witnessed_decision(
-        decision_record: Any,
-        witness_binding: Any,
-        declared_intent: str,
-        required_burden: str = "STRICT_DIRECT_PROOF",
-        *,
-        independent_witness: bool = False,
-        signature_verified: Optional[bool] = None,
-    ) -> EvidenceSufficiencyEvaluation:
+    def evaluate_witnessed_decision(decision_record: Any, witness_binding: Any, declared_intent: str, required_burden: str = "STRICT_DIRECT_PROOF", *, independent_witness: bool = False, signature_verified: Optional[bool] = None) -> EvidenceSufficiencyEvaluation:
         if not isinstance(declared_intent, str) or not declared_intent.strip():
             raise EvidenceSufficiencyValidationError("declared_intent must be a non-empty string")
         if required_burden not in {"STRICT_DIRECT_PROOF", "STANDARD_SUPPORT", "EXPLORATORY"}:
@@ -169,66 +126,26 @@ class WitnessSufficiencyEvaluator:
         witness_ref = getattr(witness_binding, "evidence_ref", None)
         witness_status = getattr(witness_binding, "verification_status", "WITNESS_VERIFIED")
 
-        if not isinstance(decision_context, str) or not decision_context.strip():
-            raise EvidenceSufficiencyValidationError("decision_record must expose a non-empty context_id")
-        if not isinstance(witness_context, str) or not witness_context.strip():
-            raise EvidenceSufficiencyValidationError("witness_binding must expose a non-empty context_id")
-        if not isinstance(decision_id, str) or not decision_id.strip():
-            raise EvidenceSufficiencyValidationError("decision_record must expose a non-empty decision_id")
+        if not all(isinstance(v, str) and v.strip() for v in (decision_context, witness_context, decision_id)):
+            raise EvidenceSufficiencyValidationError("decision and witness must expose non-empty context/identity fields")
         if witness_ref not in evidence_refs:
-            return EvidenceSufficiencyEvaluation.evaluate(
-                claim_ref=decision_id,
-                context_id=witness_context,
-                intent_ref=declared_intent,
-                assessments=[EvidenceAssessment(witness_ref or "missing-witness-ref", supports=False)],
-            )
+            return EvidenceSufficiencyEvaluation.evaluate(claim_ref=decision_id, context_id=witness_context, intent_ref=declared_intent, assessments=[EvidenceAssessment(witness_ref or "missing-witness-ref", supports=False)])
         if decision_context != witness_context:
-            return EvidenceSufficiencyEvaluation.evaluate(
-                claim_ref=decision_id,
-                context_id=witness_context,
-                intent_ref=declared_intent,
-                assessments=[EvidenceAssessment(witness_ref, supports=False, contradicts=True)],
-            )
+            return EvidenceSufficiencyEvaluation.evaluate(claim_ref=decision_id, context_id=witness_context, intent_ref=declared_intent, assessments=[EvidenceAssessment(witness_ref, supports=False, contradicts=True)])
 
         integrity = getattr(decision_record, "verify_integrity", None)
         if callable(integrity) and not integrity():
-            return EvidenceSufficiencyEvaluation.evaluate(
-                claim_ref=decision_id,
-                context_id=decision_context,
-                intent_ref=declared_intent,
-                assessments=[EvidenceAssessment(witness_ref, supports=False, contradicts=True)],
-            )
+            return EvidenceSufficiencyEvaluation.evaluate(claim_ref=decision_id, context_id=decision_context, intent_ref=declared_intent, assessments=[EvidenceAssessment(witness_ref, supports=False, contradicts=True)])
 
         if witness_status != "WITNESS_VERIFIED":
-            return EvidenceSufficiencyEvaluation.evaluate(
-                claim_ref=decision_id,
-                context_id=decision_context,
-                intent_ref=declared_intent,
-                assessments=[EvidenceAssessment(witness_ref, supports=False)],
-            )
+            return EvidenceSufficiencyEvaluation.evaluate(claim_ref=decision_id, context_id=decision_context, intent_ref=declared_intent, assessments=[EvidenceAssessment(witness_ref, supports=False)])
 
         if signature_verified is False:
-            return EvidenceSufficiencyEvaluation.evaluate(
-                claim_ref=decision_id,
-                context_id=decision_context,
-                intent_ref=declared_intent,
-                assessments=[EvidenceAssessment(witness_ref, supports=False, contradicts=True)],
-            )
+            return EvidenceSufficiencyEvaluation.evaluate(claim_ref=decision_id, context_id=decision_context, intent_ref=declared_intent, assessments=[EvidenceAssessment(witness_ref, supports=False, contradicts=True)])
+        if signature_verified is not True:
+            return EvidenceSufficiencyEvaluation.evaluate(claim_ref=decision_id, context_id=decision_context, intent_ref=declared_intent, assessments=[EvidenceAssessment(witness_ref, supports=False)])
 
         coverage = 1.0 if required_burden != "STRICT_DIRECT_PROOF" else 0.5
-        assessment = EvidenceAssessment(
-            evidence_ref=witness_ref,
-            supports=True,
-            coverage=coverage,
-            relevance=1.0,
-            independently_verified=independent_witness,
-        )
+        assessment = EvidenceAssessment(evidence_ref=witness_ref, supports=True, coverage=coverage, relevance=1.0, independently_verified=independent_witness)
         minimum = 1.0 if required_burden != "EXPLORATORY" else 0.5
-        return EvidenceSufficiencyEvaluation.evaluate(
-            claim_ref=decision_id,
-            context_id=decision_context,
-            intent_ref=declared_intent,
-            assessments=[assessment],
-            minimum_coverage=minimum,
-            require_independent_witness=(required_burden == "STRICT_DIRECT_PROOF"),
-        )
+        return EvidenceSufficiencyEvaluation.evaluate(claim_ref=decision_id, context_id=decision_context, intent_ref=declared_intent, assessments=[assessment], minimum_coverage=minimum, require_independent_witness=(required_burden == "STRICT_DIRECT_PROOF"))
