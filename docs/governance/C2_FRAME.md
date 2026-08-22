@@ -1,54 +1,112 @@
 # SAGE C2 Operating Frame
 
+## C2 Control Contract
+
+C2 operates as the flight controller. Five Flights are parallel bounded execution paths, not independent assistants, PR lists, or authorities.
+
+C2 execution loop:
+
+1. RECON
+- Inspect available capabilities and tools.
+- Inspect repository truth.
+- Establish current validated state.
+
+2. SUPER SEARCH
+- Gather external evidence only when it can improve or challenge a decision.
+
+3. BOUND
+- Select the smallest consequential frontier.
+- Define mission scope, constraints, and STOP boundary.
+
+4. EXECUTE
+- Discover.
+- Design.
+- Build.
+- Verify + Compound.
+
+5. REPORT
+- Report evidence only.
+- No progress claims without receipts.
+
 ## Dynamic Five-Flight Execution Engine Loop
 
-C2 executes Director-assigned targets through the standardized Five-Flight build framework.
+C2 executes Director-assigned targets through five coordinated flight vectors.
 
-Target selection is controlled by the Director. C2 does not invent or auto-assign targets.
+Target authority remains with the Director. C2 does not invent authority or redefine SAGE boundaries.
 
-## Flight Execution Loop
+The five flights are:
 
-Every assigned flight follows:
+### Flight 1 — Capability / Intelligence
+Find capability gaps, build missing intelligence substrate, update validated capability state.
 
-1. DISCOVER
-- Perform Super Search and state reconnaissance.
-- Inspect existing SAGE components.
-- Identify the selected build opportunity and reusable assets.
+### Flight 2 — Cognitive Continuity
+Persistence, rehydration, identity continuity, and knowledge bridges.
 
-2. DESIGN
-- Define the exact capability specification.
-- Define invariants, tests, evidence requirements, and STOP boundaries.
-- Preserve Master Archive governance.
+### Flight 3 — Execution Engine
+Parallel frontier handling, independent flight operation, and safe reconvergence.
 
-3. BUILD
-- Execute the selected target implementation.
-- Use minimal, non-polluting changes.
-- Preserve existing architecture and authority boundaries.
+### Flight 4 — Reality / Verification
+Evidence, observation, capability truth, and prevention of imagined progress.
 
-4. VERIFY + COMPOUND
-- Verify through runtime telemetry, tests, and evidence receipts.
-- Capture validated results.
-- Compound proven improvements into SAGE state.
+### Flight 5 — Evolution / Research
+Capability discovery, benchmarks, learning loops, and next frontier generation.
 
 ## Flight Mission Package Contract
 
-Each flight target must carry:
+Every flight target must carry:
 
-- Target objective
+- Mission
+- Target
+- Outcome
 - Reusable SAGE components
 - Design invariants
 - Required tests
-- Evidence receipt requirements
+- Evidence requirements
 - Explicit STOP boundary
+
+## Evidence Gate
+
+Completion requires:
+
+- Diff
+- Tests
+- CI result where applicable
+- Evidence receipt
+
+No PASS, promotion, or compound state is claimed without verification.
+
+## Reconvergence Contract
+
+Flights are execution paths, not independent authorities.
+
+F1 + F2 + F3 + F4 + F5
+
+↓
+
+C2 synthesis
+
+↓
+
+Master Archive validated state
+
+Parallel work only creates value when evidence reconverges.
+
+## Compound Loop
+
+Every completed capability jump records:
+
+- Capability gained
+- Failure prevented
+- Reusable pattern
+- Next frontier
 
 ## Protocol Invariants
 
 - Flights are adaptive execution units, not hardcoded feature owners.
 - Any authorized SAGE build target may be assigned to any flight.
 - Master Archive governance supersedes operational execution directives.
-- No PASS state is claimed without verified evidence.
-- No capability promotion occurs without validation.
 - Parallel execution must reconverge through verification before compounding.
+- Completion means verified capability, not merged activity.
 
 ## Mission Objective
 
