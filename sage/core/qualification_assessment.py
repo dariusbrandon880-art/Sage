@@ -70,17 +70,25 @@ class CapabilityEvidenceEpisode:
             raise QualificationAssessmentValidationError(
                 "failure_attribution must be a FailureAttribution."
             )
-        if not isinstance(self.evidence_weight, (int, float)) or not 0.0 < self.evidence_weight <= 1.0:
+        if not isinstance(self.evidence_weight, (int, float)) or not (
+            0.0 < self.evidence_weight <= 1.0
+        ):
             raise QualificationAssessmentValidationError(
                 "evidence_weight must be greater than 0 and at most 1.0."
             )
         if not isinstance(self.independent, bool):
             raise QualificationAssessmentValidationError("independent must be bool.")
-        if self.verdict == EpisodeVerdict.VERIFIED_SUPPORT and self.failure_attribution != FailureAttribution.NONE:
+        if (
+            self.verdict == EpisodeVerdict.VERIFIED_SUPPORT
+            and self.failure_attribution != FailureAttribution.NONE
+        ):
             raise QualificationAssessmentValidationError(
                 "VERIFIED_SUPPORT cannot carry a failure attribution."
             )
-        if self.verdict == EpisodeVerdict.VERIFIED_CONTRADICTION and self.failure_attribution == FailureAttribution.NONE:
+        if (
+            self.verdict == EpisodeVerdict.VERIFIED_CONTRADICTION
+            and self.failure_attribution == FailureAttribution.NONE
+        ):
             raise QualificationAssessmentValidationError(
                 "VERIFIED_CONTRADICTION requires failure attribution."
             )
@@ -117,7 +125,9 @@ class QualificationAssessment:
                 "capability_id must be a non-empty string."
             )
         if not isinstance(self.episodes, tuple) or not self.episodes:
-            raise QualificationAssessmentValidationError("episodes must be a non-empty tuple.")
+            raise QualificationAssessmentValidationError(
+                "episodes must be a non-empty tuple."
+            )
         if any(not isinstance(e, CapabilityEvidenceEpisode) for e in self.episodes):
             raise QualificationAssessmentValidationError(
                 "episodes must contain CapabilityEvidenceEpisode values."
@@ -137,15 +147,27 @@ class QualificationAssessment:
 
     @property
     def supporting_episodes(self) -> tuple[CapabilityEvidenceEpisode, ...]:
-        return tuple(e for e in self.independent_episodes if e.verdict == EpisodeVerdict.VERIFIED_SUPPORT)
+        return tuple(
+            e
+            for e in self.independent_episodes
+            if e.verdict == EpisodeVerdict.VERIFIED_SUPPORT
+        )
 
     @property
     def contradictory_episodes(self) -> tuple[CapabilityEvidenceEpisode, ...]:
-        return tuple(e for e in self.independent_episodes if e.verdict == EpisodeVerdict.VERIFIED_CONTRADICTION)
+        return tuple(
+            e
+            for e in self.independent_episodes
+            if e.verdict == EpisodeVerdict.VERIFIED_CONTRADICTION
+        )
 
     @property
     def agent_fault_episodes(self) -> tuple[CapabilityEvidenceEpisode, ...]:
-        return tuple(e for e in self.independent_episodes if e.failure_attribution == FailureAttribution.AGENT_FAULT)
+        return tuple(
+            e
+            for e in self.independent_episodes
+            if e.failure_attribution == FailureAttribution.AGENT_FAULT
+        )
 
     @property
     def confidence_score(self) -> float:
@@ -189,7 +211,12 @@ class QualificationAssessment:
             "recommendation": self.recommendation.value,
             "reviewer_authorization_required": self.reviewer_authorization_required,
         }
-        canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+        canonical = json.dumps(
+            payload,
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=False,
+        )
         return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
     def to_dict(self) -> dict[str, object]:
