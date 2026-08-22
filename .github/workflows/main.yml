@@ -48,7 +48,7 @@ jobs:
             tests: tests/test_c2_five_fronts.py
             search: "failure memory prefight authorization safety governed execution verification receipt evidence"
           - front: SPORTS_RESEARCH
-            target: sage/experimental
+            target: scripts/run_sports_rce_flight.py
             tests: tests
             search: "sports scientific research leakage OOS robustness evidence"
           - front: NATIVE_PERSISTED_EVIDENCE
@@ -129,7 +129,7 @@ jobs:
         for stage in ("recon","build","repair","verify"):
             p=Path(f"front_{stage}.json")
             stages.append({"stage":stage,"present":p.exists()})
-        report={"wave":"SAGE-C2-FIVE-CONCURRENT-FULL-ENGINE","front":"${{ matrix.front }}","expected_stages":4,"stages":stages,"all_stage_receipts_present":all(x["present"] for x in stages),"commit_sha":"${{ github.sha }}","run_id":"${{ github.run_id }}","job":"${{ github.job }}"}
+        report={"wave":"SAGE-C2-FIVE-CONCURRENT-FULL-ENGINE","front":"${{ matrix.front }}","expected_stages":4,"stages":stages,"all_stage_receipts_present":all(x["present"] for x in stages),"commit_sha":"${{ github.sha }}","run_id":"${{ github.run_id }}","job":"${{ github.job}"}
         Path("front_receipt.json").write_text(json.dumps(report,indent=2))
         print(json.dumps(report,indent=2))
         PY
