@@ -162,3 +162,21 @@ def test_system_labels_are_not_interchangeable():
         assert "SAGE_SYSTEM_LABEL_MISMATCH" in str(exc)
     else:
         raise AssertionError("expected system label mismatch")
+
+
+def test_invalid_input_does_not_consume_evaluation():
+    evaluator = LongitudinalCapabilityEvaluator(_plan())
+    try:
+        evaluator.evaluate(
+            _suite("baseline", [True, True, True, True]),
+            _suite("sage", [True, True, True]),
+        )
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("expected validation failure")
+    receipt = evaluator.evaluate(
+        _suite("baseline", [True, False, False, False]),
+        _suite("sage", [True, True, True, True]),
+    )
+    assert receipt.verdict is CapabilityVerdict.PASS

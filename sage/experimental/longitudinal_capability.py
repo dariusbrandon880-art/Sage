@@ -146,11 +146,11 @@ class LongitudinalCapabilityEvaluator:
     ) -> CapabilityEvaluationReceipt:
         if self._observed:
             raise RuntimeError("EVALUATION_ALREADY_FINALIZED")
-        self._observed = True
 
         expected = {m.mission_id for m in self.plan.missions}
         baseline_by_id = self._validate_observations("baseline", baseline, expected)
         sage_by_id = self._validate_observations("sage", sage, expected)
+        self._observed = True
 
         baseline_metrics = self._metrics(baseline_by_id)
         sage_metrics = self._metrics(sage_by_id)
