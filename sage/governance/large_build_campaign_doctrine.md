@@ -101,6 +101,25 @@ Within that campaign:
 
 Speed is measured as **verified consequential progress per unit time**, not raw commit count or conversational activity.
 
+## Assembly-Line Resilience Rule
+
+A failure in one production cell is not automatically a reason to stop the entire machine.
+
+When a parallel campaign exposes a failure:
+
+1. **Observe** the actual failure and preserve its telemetry/evidence.
+2. **Collapse** dependent failures to the smallest shared consequential cause when the evidence supports common causality.
+3. **Repair once** at that shared boundary rather than patching each downstream symptom.
+4. **Keep independent healthy cells moving** when their correctness does not depend on the failed boundary.
+5. **Re-run the affected cells together** after the repair.
+6. **Verify every cell independently** plus the combined campaign boundary.
+
+A shared infrastructure defect is therefore a **repair frontier**, not a conversational stop signal. The machine may pause only the paths causally blocked by that defect.
+
+The specific lesson encoded here: a launcher/import-context defect caused all four longitudinal campaign cells to fail at the same execution boundary after the common governance and test gates had passed. The correct response was to repair the launcher boundary once and re-fly the affected matrix—not to treat the four failures as four separate capability failures or stop the campaign for narration.
+
+This rule does **not** permit bypassing a genuine shared safety, provenance, authorization, or evidentiary boundary. Those remain hard stops.
+
 ## Execution Authority
 
 [SAGE::DIRECTOR] — authorization.

@@ -64,3 +64,53 @@ jobs:
         name: sage-longitudinal-flight-002-${{ github.sha }}
         path: longitudinal_flight_002_stdout.json
         if-no-files-found: error
+
+  campaign:
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        flight: ["004", "005", "006", "007"]
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev]"
+
+    - name: Execute longitudinal campaign flight ${{ matrix.flight }}
+      run: |
+        set -o pipefail
+        python scripts/run_longitudinal_campaign_flight.py --flight "${{ matrix.flight }}" | tee "longitudinal_flight_${{ matrix.flight }}_stdout.json"
+
+    - name: Publish flight ${{ matrix.flight }} telemetry
+      if: always()
+      run: |
+        {
+          echo "## SAGE Longitudinal Flight ${{ matrix.flight }} Telemetry"
+          echo
+          echo "Commit: $GITHUB_SHA"
+          if [ -f "longitudinal_flight_${{ matrix.flight }}_stdout.json" ]; then
+            echo '```json'
+            cat "longitudinal_flight_${{ matrix.flight }}_stdout.json"
+            echo '```'
+          else
+            echo "No flight report was produced. Flight execution failed before report emission."
+          fi
+        } >> "$GITHUB_STEP_SUMMARY"
+
+    - name: Upload flight ${{ matrix.flight }} evidence
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: sage-longitudinal-flight-${{ matrix.flight }}-${{ github.sha }}
+        path: longitudinal_flight_${{ matrix.flight }}_stdout.json
+        if-no-files-found: error
