@@ -2,14 +2,14 @@
 
 from pathlib import Path
 from typing import List
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sage.capability_registry import SAGECapability
 
 
 class EvidenceClosure(BaseModel):
     capability_id: str
-    missing_evidence: List[str] = []
-    missing_tests: List[str] = []
+    missing_evidence: List[str] = Field(default_factory=list)
+    missing_tests: List[str] = Field(default_factory=list)
 
     @property
     def closed(self) -> bool:
@@ -19,10 +19,8 @@ class EvidenceClosure(BaseModel):
 def assess_evidence_closure(capability: SAGECapability, root: str = ".") -> EvidenceClosure:
     """Check whether declared evidence and tests actually exist; never mutates state."""
     base = Path(root)
-    missing_evidence = [p for p in capability.evidence_references if not (base / p).exists()]
-    missing_tests = [p for p in capability.test_references if not (base / p).exists()]
     return EvidenceClosure(
         capability_id=capability.capability_id,
-        missing_evidence=missing_evidence,
-        missing_tests=missing_tests,
+        missing_evidence=[p for p in capability.evidence_references if not (base / p).exists()],
+        missing_tests=[p for p in capability.test_references if not (base / p).exists()],
     )
