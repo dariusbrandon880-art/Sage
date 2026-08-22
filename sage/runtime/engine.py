@@ -9,6 +9,7 @@ from typing import Any
 from pydantic import BaseModel
 
 from sage.acr.bridge import ACRBridge
+from sage.runtime.c2_bootstrap import C2Bootstrap
 from sage.acr.session import (
     CheckpointManager,
     ContextTracker,
@@ -93,6 +94,12 @@ class SageRuntime:
         from sage.acr.control_plane import CognitiveHypervisor, ExternalAuthorityGate
         self.hypervisor = CognitiveHypervisor(attestation=self.validation.attestation)
         self.authority_gate = ExternalAuthorityGate(hypervisor=self.hypervisor)
+
+        # Initialize C2 Bootstrap control contract
+        self.c2_bootstrap = C2Bootstrap(
+            available_surfaces=("acr", "memory", "archive", "decisions", "validation", "hypervisor", "authority_gate")
+        )
+        self.c2_boot_result = self.c2_bootstrap.boot()
 
         # Load existing state if available, otherwise init fresh
         self.current_state = RuntimeState()
@@ -338,6 +345,12 @@ class SageRuntime:
             "archive_count": len(self.archive.list_all()),
             "decision_count": len(self.decisions.list_all()),
             "session_depth": self.acr.get_session_depth(),
+            "c2_status": {
+                "rehydrated": self.c2_boot_result.rehydrated,
+                "execution_surface_checked": self.c2_boot_result.execution_surface_checked,
+                "direct_execution_available": self.c2_boot_result.direct_execution_available,
+                "blocker": self.c2_boot_result.blocker,
+            },
         }
 
     def checkpoint(self) -> str:
