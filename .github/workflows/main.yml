@@ -31,29 +31,34 @@ jobs:
     - name: Run pytest
       run: pytest -v --tb=short
 
-  five-flight-large-build:
-    name: "Flight ${{ matrix.flight }} / ${{ matrix.mission }}"
+  five-front-full-engine:
+    name: "C2 Full Engine / ${{ matrix.front }}"
     needs: test
     strategy:
       fail-fast: false
       max-parallel: 5
       matrix:
         include:
-          - flight: "003"
-            mission: GOOGLE
+          - front: DRIVE_CONTINUITY
             target: scripts/verify_drive_projection_handshake.py
-          - flight: "004"
-            mission: SPORTS
-            target: sage/experimental/longitudinal_capability.py
-          - flight: "005"
-            mission: CP3
+            tests: tests
+            search: "drive continuity projection persistence"
+          - front: GOVERNED_EXECUTION
             target: sage/c2/frontier_execution.py
-          - flight: "006"
-            mission: BRAIN_SAGI
-            target: sage/experimental/cognitive/prefrontal_cortex.py
-          - flight: "007"
-            mission: PROGRESSION
-            target: sage/experimental/longitudinal_runner.py
+            tests: tests/test_c2_five_fronts.py
+            search: "failure memory prefight authorization safety governed execution verification receipt evidence"
+          - front: SPORTS_RESEARCH
+            target: sage/experimental
+            tests: tests
+            search: "sports scientific research leakage OOS robustness evidence"
+          - front: NATIVE_PERSISTED_EVIDENCE
+            target: sage/evidence/native_persisted_loader.py
+            tests: tests/test_c2_five_fronts.py
+            search: "native persisted evidence ArchiveEntry fail closed"
+          - front: PROGRESSION_RECEIPTS
+            target: sage/c2/progression_receipt_serializer.py
+            tests: tests/test_c2_five_fronts.py
+            search: "MissionProgressionReceipt canonical serialization digest"
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -66,95 +71,120 @@ jobs:
         python -m pip install --upgrade pip
         pip install -e ".[dev]"
 
-    - name: "01 RECON — ${{ matrix.mission }}"
+    - name: "01 RECON — ${{ matrix.front }}"
       run: |
         set -euo pipefail
-        test -f "${{ matrix.target }}"
-        python -m compileall -q "${{ matrix.target }}"
-        ruff check "${{ matrix.target }}"
-        printf '%s\n' '{"stage":"recon","status":"PASS","mission":"${{ matrix.mission }}","target":"${{ matrix.target }}"}' > flight_${{ matrix.flight }}_recon.json
-
-    - name: "02 BUILD — ${{ matrix.mission }}"
-      run: |
-        set -euo pipefail
-        if [ "${{ matrix.flight }}" = "003" ]; then
-          python scripts/run_longitudinal_flight_003.py > flight_${{ matrix.flight }}_build.json
+        if [ -f "${{ matrix.target }}" ]; then
+          python -m compileall -q "${{ matrix.target }}"
+          ruff check "${{ matrix.target }}"
         else
-          python scripts/run_longitudinal_campaign_flight.py --flight "${{ matrix.flight }}" > flight_${{ matrix.flight }}_build.json
+          test -d "${{ matrix.target }}"
+          python -m compileall -q "${{ matrix.target }}"
+          ruff check "${{ matrix.target }}"
         fi
         python - <<'PY'
         import json
         from pathlib import Path
-        p=Path("flight_${{ matrix.flight }}_build.json")
-        data=json.loads(p.read_text())
-        if data.get("verdict") in {"HOLD", "FAIL", "FAILED"}:
-            raise SystemExit(f"BUILD DID NOT PRODUCE A NON-FAILURE OBSERVATION: {data.get('verdict')}")
+        report={"stage":"RECON","front":"${{ matrix.front }}","external_challenge_query":"${{ matrix.search }}","status":"PASS"}
+        Path("front_recon.json").write_text(json.dumps(report,indent=2))
+        print(json.dumps(report,indent=2))
         PY
 
-    - name: "03 REPAIR — ${{ matrix.mission }}"
+    - name: "02 BUILD — ${{ matrix.front }}"
       run: |
         set -euo pipefail
-        python -m pytest tests/experimental/test_longitudinal_runner.py -q
-        ruff check "${{ matrix.target }}"
-        printf '%s\n' '{"stage":"repair","status":"PASS","mission":"${{ matrix.mission }}","target":"${{ matrix.target }}"}' > flight_${{ matrix.flight }}_repair.json
+        pytest -q "${{ matrix.tests }}" --tb=short
+        python - <<'PY'
+        import json
+        from pathlib import Path
+        report={"stage":"BUILD","front":"${{ matrix.front }}","status":"PASS","execution":"repository_tests"}
+        Path("front_build.json").write_text(json.dumps(report,indent=2))
+        print(json.dumps(report,indent=2))
+        PY
 
-    - name: "04 VERIFY — ${{ matrix.mission }}"
+    - name: "03 OBSERVE / REPAIR — ${{ matrix.front }}"
+      if: always()
       run: |
         set -euo pipefail
-        python -m pytest tests/experimental/test_longitudinal_runner.py -q
+        pytest -q "${{ matrix.tests }}" --tb=short
+        ruff check "${{ matrix.target }}"
+        python - <<'PY'
+        import json
+        from pathlib import Path
+        report={"stage":"OBSERVE_REPAIR","front":"${{ matrix.front }}","status":"PASS","repair_mode":"validated-rerun; no semantic mutation on green evidence"}
+        Path("front_repair.json").write_text(json.dumps(report,indent=2))
+        print(json.dumps(report,indent=2))
+        PY
+
+    - name: "04 VERIFY / COMPOUND — ${{ matrix.front }}"
+      if: always()
+      run: |
+        set -euo pipefail
+        pytest -q "${{ matrix.tests }}" --tb=short
         python -m compileall -q sage scripts
         ruff check "${{ matrix.target }}"
-        printf '%s\n' '{"stage":"verify","status":"PASS","mission":"${{ matrix.mission }}","target":"${{ matrix.target }}"}' > flight_${{ matrix.flight }}_verify.json
+        python - <<'PY'
+        import json
+        from pathlib import Path
+        report={"stage":"VERIFY_COMPOUND","front":"${{ matrix.front }}","status":"PASS","authority_boundary":"execution evidence only; C2 must independently verify before qualification"}
+        Path("front_verify.json").write_text(json.dumps(report,indent=2))
+        print(json.dumps(report,indent=2))
+        PY
 
-    - name: Build flight receipt
+    - name: Build full-engine receipt
       if: always()
       run: |
         python - <<'PY'
         import json
         from pathlib import Path
-        flight="${{ matrix.flight }}"
-        mission="${{ matrix.mission }}"
         stages=[]
         for stage in ("recon","build","repair","verify"):
-            p=Path(f"flight_{flight}_{stage}.json")
+            p=Path(f"front_{stage}.json")
             stages.append({"stage":stage,"present":p.exists()})
-        receipt={"wave":"SAGE-5-FLIGHT-LARGE-BUILD","flight":flight,"mission":mission,"expected_stages":4,"stages":stages,"all_stage_receipts_present":all(x["present"] for x in stages)}
-        Path(f"flight_{flight}_receipt.json").write_text(json.dumps(receipt,indent=2))
-        print(json.dumps(receipt,indent=2))
+        report={"wave":"SAGE-C2-FIVE-CONCURRENT-FULL-ENGINE","front":"${{ matrix.front }}","expected_stages":4,"stages":stages,"all_stage_receipts_present":all(x["present"] for x in stages)}
+        Path("front_receipt.json").write_text(json.dumps(report,indent=2))
+        print(json.dumps(report,indent=2))
         PY
 
-    - name: Upload flight evidence
+    - name: Upload front evidence
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: sage-five-flight-${{ matrix.flight }}-${{ github.sha }}
-        path: flight_${{ matrix.flight }}_*.json
+        name: sage-c2-full-engine-${{ matrix.front }}-${{ github.sha }}
+        path: front_*.json
         if-no-files-found: ignore
 
   reconverge:
-    name: SAGE Five-Flight Compound Verification
+    name: C2 Five-Front Fail-Closed Reconvergence
     if: ${{ always() }}
-    needs: [test, five-flight-large-build]
+    needs: [test, five-front-full-engine]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Download five flight evidence
+    - name: Download five front evidence
       uses: actions/download-artifact@v4
       with:
-        pattern: sage-five-flight-*
-        path: five-flight-evidence
+        pattern: sage-c2-full-engine-*
+        path: five-front-evidence
         merge-multiple: true
-    - name: Verify complete five-flight wave
+    - name: Verify complete five-front wave
       run: |
         python - <<'PY'
         import json
         from pathlib import Path
-        root=Path("five-flight-evidence")
-        expected={"003","004","005","006","007"}
-        receipts={p.name.split("_")[1] for p in root.glob("flight_*_receipt.json") if len(p.name.split("_")) > 1}
-        missing=sorted(expected-receipts)
-        report={"wave":"SAGE-FIVE-FLIGHT-LARGE-BUILD","expected_flights":5,"observed_flights":len(receipts),"missing_flights":missing,"wave_verdict":"HOLD" if missing else "REQUIRES_INDEPENDENT_C2_VERIFICATION","authority_boundary":"Aggregates execution observations; does not itself promote capability."}
-        Path("sage_five_flight_wave_report.json").write_text(json.dumps(report,indent=2))
+        root=Path("five-front-evidence")
+        expected={"DRIVE_CONTINUITY","GOVERNED_EXECUTION","SPORTS_RESEARCH","NATIVE_PERSISTED_EVIDENCE","PROGRESSION_RECEIPTS"}
+        fronts=set()
+        for p in root.glob("front_receipt.json"):
+            try:
+                data=json.loads(p.read_text())
+            except Exception:
+                continue
+            if data.get("all_stage_receipts_present"):
+                fronts.add(data.get("front"))
+        missing=sorted(expected-fronts)
+        report={"wave":"SAGE-C2-FIVE-CONCURRENT-FULL-ENGINE","expected_fronts":5,"observed_fronts":len(fronts),"missing_fronts":missing,"wave_verdict":"HOLD" if missing else "REQUIRES_INDEPENDENT_C2_VERIFICATION","authority_boundary":"Aggregates execution observations; does not qualify capability."}
+        Path("sage_c2_five_front_wave_report.json").write_text(json.dumps(report,indent=2))
         print(json.dumps(report,indent=2))
         if missing:
             raise SystemExit(1)
@@ -163,6 +193,6 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: sage-five-flight-wave-${{ github.sha }}
-        path: sage_five_flight_wave_report.json
+        name: sage-c2-five-front-wave-${{ github.sha }}
+        path: sage_c2_five_front_wave_report.json
         if-no-files-found: error
