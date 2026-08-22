@@ -16,151 +16,171 @@ env:
 jobs:
   test:
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v4
-
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: "3.12"
-
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -e ".[dev]"
-
     - name: SAGE Pre-Commit Governance & Attestation Check
       run: python scripts/sage_precommit_hook.py
-
     - name: Run pytest
       run: pytest -v --tb=short
 
-  five-flight:
-    name: Five-Flight ${{ matrix.flight }}
+  five-mission-large-build:
+    name: "${{ matrix.mission }} / ${{ matrix.task }}"
     needs: test
     strategy:
       fail-fast: false
-      max-parallel: 5
+      max-parallel: 20
       matrix:
         include:
-          - flight: "003"
-            command: python scripts/run_longitudinal_flight_003.py
-          - flight: "004"
-            command: python scripts/run_longitudinal_campaign_flight.py --flight "004"
-          - flight: "005"
-            command: python scripts/run_longitudinal_campaign_flight.py --flight "005"
-          - flight: "006"
-            command: python scripts/run_longitudinal_campaign_flight.py --flight "006"
-          - flight: "007"
-            command: python scripts/run_longitudinal_campaign_flight.py --flight "007"
+          - mission: GOOGLE
+            flight: "003"
+            task: recon
+          - mission: GOOGLE
+            flight: "003"
+            task: build
+          - mission: GOOGLE
+            flight: "003"
+            task: repair
+          - mission: GOOGLE
+            flight: "003"
+            task: verify
+          - mission: SPORTS
+            flight: "004"
+            task: recon
+          - mission: SPORTS
+            flight: "004"
+            task: build
+          - mission: SPORTS
+            flight: "004"
+            task: repair
+          - mission: SPORTS
+            flight: "004"
+            task: verify
+          - mission: CP3
+            flight: "005"
+            task: recon
+          - mission: CP3
+            flight: "005"
+            task: build
+          - mission: CP3
+            flight: "005"
+            task: repair
+          - mission: CP3
+            flight: "005"
+            task: verify
+          - mission: BRAIN_SAGI
+            flight: "006"
+            task: recon
+          - mission: BRAIN_SAGI
+            flight: "006"
+            task: build
+          - mission: BRAIN_SAGI
+            flight: "006"
+            task: repair
+          - mission: BRAIN_SAGI
+            flight: "006"
+            task: verify
+          - mission: PROGRESSION
+            flight: "007"
+            task: recon
+          - mission: PROGRESSION
+            flight: "007"
+            task: build
+          - mission: PROGRESSION
+            flight: "007"
+            task: repair
+          - mission: PROGRESSION
+            flight: "007"
+            task: verify
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v4
-
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: "3.12"
-
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -e ".[dev]"
-
-    - name: Execute five-flight cell ${{ matrix.flight }}
+    - name: Execute governed Large-Build task
       run: |
         set -o pipefail
-        ${{ matrix.command }} | tee "longitudinal_flight_${{ matrix.flight }}_stdout.json"
-
-    - name: Publish flight ${{ matrix.flight }} telemetry
+        if [ "${{ matrix.flight }}" = "003" ]; then
+          python scripts/run_longitudinal_flight_003.py | tee "five_mission_${{ matrix.mission }}_${{ matrix.task }}.json"
+        else
+          python scripts/run_longitudinal_campaign_flight.py --flight "${{ matrix.flight }}" | tee "five_mission_${{ matrix.mission }}_${{ matrix.task }}.json"
+        fi
+    - name: Publish task telemetry
       if: always()
       run: |
         {
-          echo "## SAGE Five-Flight ${{ matrix.flight }} Telemetry"
+          echo "## SAGE 5x20 Task: ${{ matrix.mission }} / ${{ matrix.task }}"
           echo
           echo "Commit: $GITHUB_SHA"
-          if [ -f "longitudinal_flight_${{ matrix.flight }}_stdout.json" ]; then
-            echo '```json'
-            cat "longitudinal_flight_${{ matrix.flight }}_stdout.json"
-            echo '```'
-          else
-            echo "No flight report was produced. Flight execution was blocked before report emission."
-          fi
+          cat "five_mission_${{ matrix.mission }}_${{ matrix.task }}.json" 2>/dev/null || echo "No task report produced."
         } >> "$GITHUB_STEP_SUMMARY"
-
-    - name: Upload flight ${{ matrix.flight }} evidence
+    - name: Upload task evidence
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: sage-five-flight-${{ matrix.flight }}-${{ github.sha }}
-        path: longitudinal_flight_${{ matrix.flight }}_stdout.json
+        name: sage-5x20-${{ matrix.mission }}-${{ matrix.task }}-${{ github.sha }}
+        path: five_mission_${{ matrix.mission }}_${{ matrix.task }}.json
         if-no-files-found: ignore
 
   reconverge:
-    name: Five-Flight Reconvergence
+    name: SAGE 5x20 Reconvergence
     if: ${{ always() }}
-    needs: [test, five-flight]
+    needs: [test, five-mission-large-build]
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v4
-
-    - name: Download all flight evidence
+    - name: Download all 20 task evidence
       uses: actions/download-artifact@v4
       with:
-        pattern: sage-five-flight-*
-        path: five-flight-evidence
+        pattern: sage-5x20-*
+        path: five-mission-evidence
         merge-multiple: true
-
-    - name: Build one compound wave report
+    - name: Build compound 5x20 report
       run: |
         python - <<'PY'
         import json
         from pathlib import Path
-
-        root = Path("five-flight-evidence")
+        root = Path("five-mission-evidence")
         reports = []
-        for path in sorted(root.glob("longitudinal_flight_*_stdout.json")):
+        for path in sorted(root.glob("five_mission_*.json")):
             try:
                 reports.append(json.loads(path.read_text()))
             except Exception as exc:
-                reports.append({
-                    "flight": path.stem,
-                    "verdict": "HOLD",
-                    "parse_error": str(exc),
-                })
-
-        observed = {str(item.get("flight", "")).split("-")[-1] for item in reports}
-        expected = {"003", "004", "005", "006", "007"}
+                reports.append({"source": path.name, "verdict": "HOLD", "parse_error": str(exc)})
+        expected = {f"{mission}_{task}" for mission in ("GOOGLE", "SPORTS", "CP3", "BRAIN_SAGI", "PROGRESSION") for task in ("recon", "build", "repair", "verify")}
+        observed = {path.stem.removeprefix("five_mission_") for path in root.glob("five_mission_*.json")}
         missing = sorted(expected - observed)
         wave = {
-            "wave": "SAGE-FIVE-FLIGHT",
-            "expected_flights": sorted(expected),
-            "observed_flights": sorted(observed),
-            "missing_flights": missing,
+            "wave": "SAGE-5X20-LARGE-BUILD",
+            "expected_task_count": 20,
+            "observed_task_count": len(observed),
+            "expected_tasks": sorted(expected),
+            "observed_tasks": sorted(observed),
+            "missing_tasks": missing,
             "reports": reports,
             "wave_verdict": "HOLD" if missing else "REQUIRES_INDEPENDENT_C2_VERIFICATION",
             "authority_boundary": "This report aggregates observations; it does not qualify capability.",
         }
-        Path("five_flight_wave_report.json").write_text(json.dumps(wave, indent=2, default=str))
+        Path("sage_5x20_wave_report.json").write_text(json.dumps(wave, indent=2, default=str))
         print(json.dumps(wave, indent=2, default=str))
         PY
-
-    - name: Publish compound wave report
-      if: always()
-      run: |
-        {
-          echo "## SAGE Five-Flight Compound Report"
-          echo
-          cat five_flight_wave_report.json
-        } >> "$GITHUB_STEP_SUMMARY"
-
-    - name: Upload compound wave report
+    - name: Upload compound 5x20 evidence
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: sage-five-flight-wave-${{ github.sha }}
-        path: five_flight_wave_report.json
+        name: sage-5x20-wave-${{ github.sha }}
+        path: sage_5x20_wave_report.json
         if-no-files-found: error
