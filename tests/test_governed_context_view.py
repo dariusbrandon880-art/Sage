@@ -99,10 +99,11 @@ def test_source_must_be_read_only():
 def test_invalid_context_controls_fail_closed():
     cases = [
         {"audience": "", "purpose": "HUD", "context_id": "ctx"},
-        {"audience": "DIRECTOR", "purpose": "UNKNOWN", "context_id": "ctx"},
-        {"audience": "DIRECTOR", "purpose": "HUD", "context_id": ""},
-        {"audience": "DIRECTOR", "purpose": "HUD", "context_id": "ctx", "max_pending": -1},
-        {"audience": "DIRECTOR", "purpose": "HUD", "context_id": "ctx", "profile": "UNKNOWN"},
+        {"audience": "UNTRUSTED", "purpose": "HUD", "context_id": "ctx"},
+        {"audience": "SAGE::DIRECTOR", "purpose": "UNKNOWN", "context_id": "ctx"},
+        {"audience": "SAGE::DIRECTOR", "purpose": "HUD", "context_id": ""},
+        {"audience": "SAGE::DIRECTOR", "purpose": "HUD", "context_id": "ctx", "max_pending": -1},
+        {"audience": "SAGE::DIRECTOR", "purpose": "HUD", "context_id": "ctx", "profile": "UNKNOWN"},
     ]
 
     for case in cases:
@@ -111,6 +112,23 @@ def test_invalid_context_controls_fail_closed():
         except ValueError:
             continue
         raise AssertionError(f"invalid context control accepted: {case}")
+
+
+def test_unsupported_awareness_authority_fails_closed():
+    awareness = _awareness()
+    awareness["authority"] = "external_provider"
+
+    try:
+        build_governed_context_view(
+            awareness=awareness,
+            audience="SAGE::DIRECTOR",
+            purpose="HUD",
+            context_id="ctx-authority",
+        )
+    except ValueError as exc:
+        assert "authority" in str(exc)
+    else:
+        raise AssertionError("unsupported awareness authority was accepted")
 
 
 def test_projection_does_not_mutate_awareness():
