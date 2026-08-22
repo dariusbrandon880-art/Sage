@@ -28,12 +28,13 @@ def make_observation(
     observed_state_hash: str | None = "expected-hash",
     observed_at: str = BASE["observed_at"],
 ) -> EffectObservation:
-    return EffectObservation(
+    payload = {
         **BASE,
-        observed_state_hash=observed_state_hash,
-        outcome=outcome,
-        observed_at=observed_at,
-    )
+        "observed_at": observed_at,
+        "observed_state_hash": observed_state_hash,
+        "outcome": outcome,
+    }
+    return EffectObservation(**payload)
 
 
 def test_confirmed_requires_observed_state_to_match_expected() -> None:
