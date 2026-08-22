@@ -51,8 +51,8 @@ def build_governed_context_view(
         raise ValueError("max_pending must be a non-negative integer")
     if awareness.get("read_only") is not True:
         raise ValueError("awareness source must be read-only")
-    if awareness.get("authority") not in {None, CANONICAL_AUTHORITY, "canonical_airspace_state"}:
-        raise ValueError("awareness source has unsupported authority")
+    if awareness.get("authority") != CANONICAL_AUTHORITY:
+        raise ValueError("awareness source must declare canonical authority")
 
     self_view = deepcopy(dict(awareness.get("self") or {}))
     team_view = deepcopy(dict(awareness.get("team") or {}))
