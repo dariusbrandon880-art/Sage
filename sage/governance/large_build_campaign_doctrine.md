@@ -19,7 +19,42 @@ SEARCH BROADLY → CROSS-DOMAIN → ABSTRACT → COLLIDE → HYPOTHESIZE → FAL
 
 A big jump is not permission to skip gates. It means bundling multiple tightly coupled, evidence-supported small changes into one coherent campaign when their boundaries and invariants are understood.
 
-Production speed is preserved by parallelizing independent discovery, implementation, testing, and evidence work where safe—not by weakening gates or inventing completion.
+Production speed is preserved by parallelizing independent discovery, implementation, testing, flight preparation, evidence analysis, and bounded repair where safe—not by weakening gates or inventing completion.
+
+## Parallel-First Execution Rule
+
+**Parallel is the default whenever the work can be separated without violating a shared invariant.**
+
+SAGE should not serialize independent fronts merely because they belong to different files, PRs, experiments, or scientific domains.
+
+Within a bounded campaign, C2 should:
+
+- run multiple independent build paths concurrently;
+- run multiple flight cells concurrently when their environments and evidence boundaries are isolated;
+- run research and implementation tracks concurrently when neither changes the other's authority boundary;
+- launch independent adversarial tests as soon as their targets exist;
+- repair one failing path while healthy paths continue;
+- merge only after each path passes its own verification gate and the combined state remains within the authorized frontier;
+- stop or HOLD only the affected path when isolation is proven, rather than unnecessarily stopping the whole campaign.
+
+Parallelism must never permit shared-state races, telemetry cross-contamination, authority duplication, evidence ambiguity, or bypass of verification.
+
+## Cross-Domain Super Search Rule
+
+Super Search is a standing discovery and adversarial challenge layer. For consequential frontiers, search broadly enough to surface transferable mechanisms, failure modes, and prior art across relevant domains rather than searching only the obvious AI/software literature.
+
+Default search aperture includes, when materially relevant:
+
+- AI/agent systems, model/runtime architecture, memory, evaluation, security, and distributed systems;
+- mathematics, probability, statistics, information theory, optimization, dynamical systems, control theory, game theory, and formal methods;
+- physics, quantum information, quantum error correction, fault tolerance, statistical physics, and complex systems;
+- biology, neuroscience, bioengineering, synthetic biology governance, adaptive systems, and systems biology;
+- robotics, human-computer interaction, education, scientific discovery, operations research, and reliability engineering;
+- standards, patents, companies, open-source systems, academic research, and practitioner signals when they can challenge or improve the frontier.
+
+External findings are classified **KNOWN / TRANSFERRED / HYPOTHESIZED**. Cross-domain analogy is not treated as proof. Candidate novelty requires an actual prior-art challenge before any novelty claim.
+
+The purpose of cross-domain search is not to add unrelated architecture. It is to discover mechanisms that can improve the **smallest consequential frontier** already bounded by SAGE.
 
 ## Five-Flight Campaign Pattern
 
@@ -29,7 +64,7 @@ Production speed is preserved by parallelizing independent discovery, implementa
 4. Retention/Regression — persistence across sessions and attack for collateral degradation.
 5. Compound — horizon + recovery + reuse + retention + regression under matched baseline/SAGE conditions.
 
-The five-flight pattern is the default campaign shape for the current longitudinal capability epoch. Flights may be expanded or compressed only when evidence supports the change.
+The five-flight pattern is the default campaign shape for the current longitudinal capability epoch. Flights should run in parallel when their evidence boundaries are independent. Flights may be expanded or compressed only when evidence supports the change.
 
 ## Hard Invariants
 
@@ -46,6 +81,7 @@ The five-flight pattern is the default campaign shape for the current longitudin
 - No fabricated telemetry, learning quality, recovery, retention, or capability result.
 - No unrelated expansion merely because a large build is authorized.
 - Closed findings are not reopened without new evidence.
+- Parallel paths must remain causally and evidentially separable until their results are reconciled.
 
 ## Production-Speed Rule
 
@@ -57,6 +93,7 @@ Within that campaign:
 - challenge consequential assumptions with Super Search;
 - build connected changes together;
 - run independent checks as soon as artifacts exist;
+- run independent paths concurrently whenever safe;
 - repair actual failures at their smallest consequential cause;
 - continue forward automatically when the next frontier is already bounded;
 - do not pause merely to narrate intermediate stages;
@@ -91,6 +128,8 @@ No model is expected to "remember" governance merely because a prior chat said i
 
 After each campaign/build, C2 independently inspects the implementation, diff, tests, telemetry, provenance, and result classification before promotion. A green CI run is a machine gate, not a capability claim.
 
+For parallel campaigns, verification occurs both **per path** and at the **combined-state boundary** before promotion.
+
 ## STOP Boundary
 
 Stop when the current consequential frontier is either verified, blocked by a genuine technical/evidentiary gap, or produces a result requiring HOLD/NEGATIVE_RESULT. Do not stop merely because the campaign contains multiple coupled tasks; continue through the bounded frontier while its invariants remain intact.
@@ -99,4 +138,4 @@ Stop when the current consequential frontier is either verified, blocked by a ge
 
 SAGE competes on trustworthy capability compounding: whether governed experience can improve long-horizon reliability, recovery, reuse, retention, and resistance to regression while preserving identity, provenance, authorization, negative knowledge, and independent verification.
 
-The strategic advantage is **Lamborghini production speed with Rolls-Royce tolerances**: move aggressively, compound many consequential advances in one flight, and make every promoted claim survive the same hard evidentiary standard.
+The strategic advantage is **Lamborghini production speed with Rolls-Royce tolerances**: move aggressively, run many independent consequential advances at once, use the widest relevant scientific and technical search aperture, compound the results, and make every promoted claim survive the same hard evidentiary standard.
