@@ -7,6 +7,13 @@ from sage.core.compliance import ComplianceEngine
 from sage.core.spek import SpekEngine
 from sage.core.models import RuleState, Proposal, HypothesisNode, SpekReceipt
 from sage.core.witness_binding import WitnessBinding, WitnessBindingValidationError, WitnessClaimKind
+from sage.core.evidence_sufficiency import (
+    EvidenceAssessment,
+    EvidenceSufficiencyEvaluation,
+    EvidenceSufficiencyValidationError,
+    SufficiencyStatus,
+    WitnessSufficiencyEvaluator,
+)
 from sage.core.version import __version__
 
 __all__ = [
@@ -22,5 +29,10 @@ __all__ = [
     "WitnessBinding",
     "WitnessBindingValidationError",
     "WitnessClaimKind",
+    "EvidenceAssessment",
+    "EvidenceSufficiencyEvaluation",
+    "EvidenceSufficiencyValidationError",
+    "SufficiencyStatus",
+    "WitnessSufficiencyEvaluator",
     "__version__",
 ]
