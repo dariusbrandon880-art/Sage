@@ -1,0 +1,8 @@
+C2 EXECUTION WAVE ACTIVE
+003 HORIZON
+004 RECOVERY
+005 REUSE
+006 RETENTION_REGRESSION
+007 COMPOUND
+
+Parallel governed execution. Do not stamp completion until all five evidence artifacts exist and C2 independently verifies the complete wave.
