@@ -32,7 +32,7 @@ class NativePersistedEvidenceLoader:
                 raise ValueError("Persisted evidence loader requires exactly one ArchiveEntry per file")
             raw = raw[0]
         if not isinstance(raw, dict):
-            raise ValueError("Persisted evidence root must be an object")
+            raise TypeError("Persisted evidence root must be an object")
         return ArchiveEntry.model_validate(raw)
 
     def load_all(self) -> list[ArchiveEntry]:
@@ -43,10 +43,16 @@ class NativePersistedEvidenceLoader:
             entries.append(self.load_file(path))
         return entries
 
-    def select(self, *, tag: str | None = None, knowledge_state: str | None = None) -> list[ArchiveEntry]:
+    def select(
+        self,
+        *,
+        tag: str | None = None,
+        knowledge_state: str | None = None,
+    ) -> list[ArchiveEntry]:
         entries = self.load_all()
         return [
-            entry for entry in entries
+            entry
+            for entry in entries
             if (tag is None or tag in entry.tags)
             and (knowledge_state is None or entry.knowledge_state.value == knowledge_state)
         ]
