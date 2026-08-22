@@ -1,6 +1,7 @@
 name: SAGE Large Flight Wave
 
 on:
+  pull_request:
   workflow_dispatch:
 
 permissions:
