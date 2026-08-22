@@ -3,10 +3,11 @@ from __future__ import annotations
 
 import hashlib
 import json
-from typing import TYPE_CHECKING, Any
+from typing import Any, Protocol
 
-if TYPE_CHECKING:
-    from sage.experimental.progression import MissionProgressionReceipt
+
+class _ReceiptModel(Protocol):
+    def model_dump(self, *, mode: str) -> dict[str, Any]: ...
 
 
 _NONDETERMINISTIC_FIELDS = {"timestamp", "receipt_id", "nonce", "created_at"}
@@ -34,11 +35,11 @@ def _canonical_serialize(data: dict[str, Any]) -> bytes:
 class MissionProgressionReceiptSerializer:
     """Produce stable bytes/hash without treating telemetry as canonical identity."""
 
-    def to_canonical_dict(self, receipt: MissionProgressionReceipt) -> dict[str, Any]:
+    def to_canonical_dict(self, receipt: _ReceiptModel) -> dict[str, Any]:
         return _filter_nondeterministic_fields(receipt.model_dump(mode="json"))
 
-    def serialize(self, receipt: MissionProgressionReceipt) -> bytes:
+    def serialize(self, receipt: _ReceiptModel) -> bytes:
         return _canonical_serialize(self.to_canonical_dict(receipt))
 
-    def digest(self, receipt: MissionProgressionReceipt) -> str:
+    def digest(self, receipt: _ReceiptModel) -> str:
         return hashlib.sha256(self.serialize(receipt)).hexdigest()
