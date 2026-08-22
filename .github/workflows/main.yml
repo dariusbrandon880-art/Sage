@@ -39,20 +39,20 @@ jobs:
       matrix:
         include:
           - front: FRONTIER_TREE_CORE
-            target: sage/experimental
-            tests: tests/test_c2_five_capability_wave.py
+            target: sage/experimental/frontier_tree.py
+            tests: tests/experimental/test_five_capability_wave.py
           - front: PFC_DECISION_ENGINE
-            target: sage/experimental
-            tests: tests/test_c2_five_capability_wave.py
+            target: sage/experimental/pfc_decision_engine.py
+            tests: tests/experimental/test_five_capability_wave.py
           - front: TEMPORAL_RESEARCH_MEMORY
-            target: sage/experimental
-            tests: tests/test_c2_five_capability_wave.py
+            target: sage/experimental/temporal_research_memory.py
+            tests: tests/experimental/test_five_capability_wave.py
           - front: OBSERVATION_LEARNING
-            target: sage/experimental
-            tests: tests/test_c2_five_capability_wave.py
+            target: sage/experimental/observation_learning.py
+            tests: tests/experimental/test_five_capability_wave.py
           - front: PORTFOLIO_INTELLIGENCE
-            target: sage/experimental
-            tests: tests/test_c2_five_capability_wave.py
+            target: sage/experimental/frontier_portfolio.py
+            tests: tests/experimental/test_five_capability_wave.py
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -67,8 +67,9 @@ jobs:
     - name: "01 RECON — ${{ matrix.front }}"
       run: |
         set -euo pipefail
+        python -m compileall -q "${{ matrix.target }}"
+        ruff check --select E9,F "${{ matrix.target }}"
         pytest -q "${{ matrix.tests }}" --tb=short
-        python -m compileall -q sage scripts
     - name: "02 BUILD — ${{ matrix.front }}"
       run: |
         set -euo pipefail
@@ -78,12 +79,14 @@ jobs:
       run: |
         set -euo pipefail
         pytest -q "${{ matrix.tests }}" --tb=short
+        ruff check --select E9,F "${{ matrix.target }}"
     - name: "04 VERIFY / COMPOUND — ${{ matrix.front }}"
       if: always()
       run: |
         set -euo pipefail
         pytest -q "${{ matrix.tests }}" --tb=short
-        python -m compileall -q sage scripts
+        python -m compileall -q "${{ matrix.target }}"
+        ruff check --select E9,F "${{ matrix.target }}"
     - name: Build full-engine receipt
       if: always()
       run: |
@@ -137,4 +140,4 @@ jobs:
         print(json.dumps(report,indent=2))
         if report["wave_verdict"] != "PASS":
             raise SystemExit(1)
-PY
+        PY
