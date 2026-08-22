@@ -16,7 +16,7 @@ from pathlib import Path
 
 from sage.experimental.longitudinal_capability import EvaluationPlan, MissionCase
 from sage.experimental.longitudinal_runner import LongitudinalFlightRunner
-from scripts.run_longitudinal_flight import baseline_executor, sage_executor
+from run_longitudinal_flight import baseline_executor, sage_executor
 
 PROFILES = {
     "004": {
