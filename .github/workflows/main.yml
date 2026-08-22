@@ -47,7 +47,7 @@ jobs:
             tests: tests/test_c2_five_fronts.py
             search: "failure memory prefight authorization safety governed execution verification receipt evidence"
           - front: SPORTS_RESEARCH
-            target: sage/experimental
+            target: scripts/run_sports_rce_flight.py
             tests: tests/test_c2_five_fronts.py
             search: "sports scientific research leakage OOS robustness evidence"
           - front: NATIVE_PERSISTED_EVIDENCE
@@ -100,7 +100,7 @@ jobs:
         python - <<'PY'
         import json
         from pathlib import Path
-        report={"stage":"OBSERVE","front":"${{ matrix.front }}","status":"PASS","repair_mode":"none; repair requires a new governed build commit","commit_sha":"${{ github.sha }}","run_id":"${{ github.run_id}}","job":"${{ github.job }}"}
+        report={"stage":"OBSERVE","front":"${{ matrix.front }}","status":"PASS","repair_mode":"none; repair requires a new governed build commit","commit_sha":"${{ github.sha }}","run_id":"${{ github.run_id }}","job":"${{ github.job }}"}
         Path("front_repair.json").write_text(json.dumps(report,indent=2))
         print(json.dumps(report,indent=2))
         PY
@@ -147,6 +147,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+    - name: Enforce upstream success gates
+      run: |
+        set -euo pipefail
+        if [ "${{ needs.test.result }}" != "success" ]; then
+          echo "Global test gate failed: ${{ needs.test.result }}"
+          exit 1
+        fi
+        if [ "${{ needs.five-front-full-engine.result }}" != "success" ]; then
+          echo "Five-front execution gate failed: ${{ needs.five-front-full-engine.result }}"
+          exit 1
+        fi
     - name: Download five front evidence without collision
       uses: actions/download-artifact@v4
       with:
@@ -178,4 +189,6 @@ jobs:
         report={"wave":"SAGE-C2-FIVE-CONCURRENT-FULL-ENGINE","expected_fronts":5,"observed_fronts":len(observed),"missing_fronts":missing,"duplicate_fronts":duplicate_fronts,"invalid_fronts":invalid,"provenance_commits":sorted(provenance),"expected_commit":expected_sha,"stale_or_mixed_commits":stale_or_mixed,"wave_verdict":"HOLD" if (missing or duplicate_fronts or invalid or stale_or_mixed or len(provenance)!=1) else "REQUIRES_INDEPENDENT_C2_VERIFICATION","authority_boundary":"Aggregates execution observations; does not qualify capability."}
         Path("sage_c2_five_front_wave_report.json").write_text(json.dumps(report,indent=2))
         print(json.dumps(report,indent=2))
+        if missing or duplicate_fronts or invalid or stale_or_mixed or len(provenance)!=1:
+            raise SystemExit("Five-front evidence is incomplete, duplicated, invalid, or provenance-mixed")
         PY
