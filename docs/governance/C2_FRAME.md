@@ -38,22 +38,13 @@ C2 executes Director-assigned targets through five coordinated flight vectors.
 
 Target authority remains with the Director. C2 does not invent authority or redefine SAGE boundaries.
 
-The five flights are:
+The Five Flights are dynamic parallel execution slots (not permanent names, fixed domains, or hardcoded ownership buckets). Each independent flight contains the F1–F5 operating roles:
 
-### Flight 1 — Capability / Intelligence
-Find capability gaps, build missing intelligence substrate, update validated capability state.
-
-### Flight 2 — Cognitive Continuity
-Persistence, rehydration, identity continuity, and knowledge bridges.
-
-### Flight 3 — Execution Engine
-Parallel frontier handling, independent flight operation, and safe reconvergence.
-
-### Flight 4 — Reality / Verification
-Evidence, observation, capability truth, and prevention of imagined progress.
-
-### Flight 5 — Evolution / Research
-Capability discovery, benchmarks, learning loops, and next frontier generation.
+- **F1 — Recon:** Find capability gaps, map repo state, and inspect architecture.
+- **F2 — Builder:** Execute target capability changes within an approved implementation boundary.
+- **F3 — Verification:** Run targeted and full test suites to prove zero regressions.
+- **F4 — Architecture Guard:** Conduct boundary reviews, risk detection, and protocol enforcement.
+- **F5 — Evidence:** Capture immutable receipts and persist evidence files.
 
 ## Flight Mission Package Contract
 

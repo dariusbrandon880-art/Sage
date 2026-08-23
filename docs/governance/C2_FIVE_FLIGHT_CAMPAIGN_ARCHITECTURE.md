@@ -218,6 +218,38 @@ No mixing the layers. This is the corrected architecture interpretation.
 
 ---
 
+# Big Jump Wave Architecture Rule
+
+```text
+BIG JUMP WAVE ARCHITECTURE RULE
+
+The Five Flights are dynamic parallel execution slots.
+
+They are NOT:
+- permanent names
+- domains
+- Sports/Drive/Cognitive/etc labels
+- fixed ownership buckets
+
+A Flight is assigned a mission by C2/SAGI based on the highest-value capability frontier.
+
+Each Flight independently runs the execution discipline:
+
+F1 — Recon
+F2 — Builder
+F3 — Verification
+F4 — Architecture Guard
+F5 — Evidence
+
+The Five-Flight system exists to create parallel capability growth while preserving:
+- repository truth
+- architecture integrity
+- evidence discipline
+- reusable capability.
+```
+
+---
+
 # Operational Reference
 
 The execution method for the C2 control plane is maintained separately in:
