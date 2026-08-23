@@ -132,3 +132,24 @@ def test_cli_interactive_preserves_session(monkeypatch, capsys):
     monkeypatch.setattr(sys, "argv", ["sage", "chat", "--interactive"])
     main()
     assert seen == [None, "shared"]
+
+
+def test_chatgpt_and_gemini_rehydration_with_runtime_get_c2_context(tmp_path):
+    from sage.integration import AIQueryRequest, ChatGPTClient, GeminiJulesClient
+    from sage.runtime import SageRuntime
+
+    runtime = SageRuntime(str(tmp_path))
+    runtime.set_objective("Unified Multi-Model Rehydration")
+
+    chatgpt_client = ChatGPTClient(runtime)
+    gemini_client = GeminiJulesClient(runtime)
+
+    chatgpt_resp = chatgpt_client.execute_query(
+        AIQueryRequest(prompt="ChatGPT test query", response_override="ChatGPT station active")
+    )
+    gemini_resp = gemini_client.execute_query(
+        AIQueryRequest(prompt="Gemini test query", response_override="Deep continuation response from Gemini/Jules station.")
+    )
+
+    assert chatgpt_resp.response_text == "ChatGPT station active"
+    assert "Gemini/Jules station" in gemini_resp.response_text
