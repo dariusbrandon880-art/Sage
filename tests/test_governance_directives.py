@@ -42,6 +42,36 @@ def test_jules_c2_capability_enhancement_directive_exists_and_conforms():
     assert "Do not collapse flights." in content
 
 
+def test_jules_five_flight_c2_capability_expansion_directive_exists_and_conforms():
+    """Verify that JULES_FIVE_FLIGHT_C2_CAPABILITY_EXPANSION_DIRECTIVE.md exists and contains required sections."""
+    root_dir = Path(__file__).parent.parent
+    expansion_file = root_dir / "docs" / "governance" / "JULES_FIVE_FLIGHT_C2_CAPABILITY_EXPANSION_DIRECTIVE.md"
+
+    assert expansion_file.exists(), "The Five-Flight C2 Capability Expansion Directive must exist under docs/governance/"
+
+    content = expansion_file.read_text(encoding="utf-8")
+
+    # Title check
+    assert "# JULES — FIVE-FLIGHT C2 CAPABILITY EXPANSION DIRECTIVE" in content
+
+    # Section checks
+    required_sections = [
+        "REQUIRED SUPER SEARCH DOMAINS",
+        "1. Multi-Agent Orchestration",
+        "2. Flight Lifecycle Automation",
+        "3. C2 Decision Intelligence",
+        "4. Repository Intelligence",
+        "5. Verification Flight Improvements",
+        "FIVE-FLIGHT OPERATING MODEL TARGET",
+        "HARD RULES",
+        "SELF-AUDIT QUESTIONS",
+        "SUCCESS CRITERIA",
+    ]
+
+    for section in required_sections:
+        assert section in content, f"Missing section in expansion directive: '{section}'"
+
+
 def test_governance_cross_references():
     """Verify that existing governance documents cross-reference the Jules C2 Capability Enhancement Directive."""
     root_dir = Path(__file__).parent.parent
@@ -60,3 +90,7 @@ def test_governance_cross_references():
     big_jump_frame = gov_dir / "BIG_JUMP_WAVE_C2_5X4_OPERATING_FRAME.md"
     assert big_jump_frame.exists()
     assert ref_doc in big_jump_frame.read_text(encoding="utf-8")
+
+    enhancement_doc = gov_dir / "JULES_C2_CAPABILITY_ENHANCEMENT_DIRECTIVE.md"
+    assert enhancement_doc.exists()
+    assert "JULES_FIVE_FLIGHT_C2_CAPABILITY_EXPANSION_DIRECTIVE.md" in enhancement_doc.read_text(encoding="utf-8")

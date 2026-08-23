@@ -259,3 +259,10 @@ Failure becomes warehouse knowledge.
 # FINAL DIRECTIVE
 
 > Jules: Always begin with the repository. Always load governing rules. Use Super Search as an intelligence multiplier. Preserve the Big Jump Wave parallel capability architecture. Improve C2 execution velocity without changing governance boundaries. Advance independent capability frontiers, verify everything, and compound every successful improvement into reusable system capability.
+
+---
+
+# COMPANION DIRECTIVE
+
+For Five-Flight capability coordinator expansion, see:
+`docs/governance/JULES_FIVE_FLIGHT_C2_CAPABILITY_EXPANSION_DIRECTIVE.md`
