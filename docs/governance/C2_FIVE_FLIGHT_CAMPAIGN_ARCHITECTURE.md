@@ -140,3 +140,78 @@ Enables:
 - capability compounding after proof
 
 Velocity begins after control, not before it.
+
+---
+
+## Big Build = Production Velocity + Large Jump Levels
+
+The **Big Build** is not just the build process itself.
+
+It represents the **velocity multiplier** created by:
+
+* parallel execution,
+* compounding capability,
+* increasing build scale,
+* moving into larger jump levels over time.
+
+So the hierarchy becomes:
+
+```text
+SAGI Brain
+(opportunity discovery)
+
+        ↓
+
+C2 / ChatGPT
+(command + execution coordination)
+
+        ↓
+
+Big Build Wave
+(parallel execution velocity)
+
+        ↓
+
+5 Concurrent Flights
+(each running independent targets)
+
+        ↓
+
+Big Build
+(input → build → verify → next task)
+
+        ↓
+
+Verified capability gain
+        ↓
+Higher jump level
+```
+
+The evolution of workflow scale:
+
+```text
+Small / Minimal
+        ↓
+Medium
+        ↓
+Big
+        ↓
+Large
+```
+
+Meaning:
+
+* **Small / Minimal** = focused execution and narrow changes
+* **Medium** = current expanded workflow with stronger coordination
+* **Big** = multiple connected builds increasing production velocity
+* **Large** = major capability jumps where parallel waves compound into a new operating level
+
+Important separation stays:
+
+* **SAGI Brain** finds possible next builds.
+* **C2/ChatGPT** coordinates and executes the selected wave.
+* **Big Build Wave** creates parallel velocity.
+* **Five Flights** are the concurrent execution units.
+* **Big Build** is the production law that each flight follows.
+
+No mixing the layers. This is the corrected architecture interpretation.
