@@ -215,3 +215,13 @@ Important separation stays:
 * **Big Build** is the production law that each flight follows.
 
 No mixing the layers. This is the corrected architecture interpretation.
+
+---
+
+# Operational Reference
+
+The execution method for the C2 control plane is maintained separately in:
+
+`docs/governance/C2_FLIGHT_CONTROL_OPERATING_MODEL.md`
+
+This preserves separation between architecture doctrine and operating procedure.
