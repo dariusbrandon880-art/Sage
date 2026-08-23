@@ -27,13 +27,28 @@ def test_responses_boundary_and_context(monkeypatch, tmp_path):
     from sage.integration import AIQueryRequest, ChatGPTClient
     from sage.runtime import SageRuntime
 
+    captured_instructions = []
+
+    class Responses:
+        def create(self, *, model, instructions, input):
+            captured_instructions.append(instructions)
+            return SimpleNamespace(output_text="SAGE output")
+
+    class Client:
+        def __init__(self, api_key=None):
+            self.responses = Responses()
+
+    monkeypatch.setitem(sys.modules, "openai", SimpleNamespace(OpenAI=Client))
     monkeypatch.setenv("OPENAI_API_KEY", "test-key")
-    _install_openai(monkeypatch)
+
     runtime = SageRuntime(str(tmp_path))
     client = ChatGPTClient(runtime, c2_provider=lambda: {"canonical": "state"})
     response = client.execute_query(AIQueryRequest(prompt="verify boundary"))
     assert response.response_text == "SAGE output"
     assert any("real OpenAI Responses API" in item for item in response.reasoning_history)
+    assert len(captured_instructions) == 1
+    assert "github_integration_active" in captured_instructions[0]
+    assert "execution_tools_available" in captured_instructions[0]
 
 
 def test_missing_key_fails_closed_without_ingestion(monkeypatch, tmp_path):

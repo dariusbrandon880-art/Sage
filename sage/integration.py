@@ -110,6 +110,16 @@ class ChatGPTClient(BaseAIClient):
             except Exception:
                 pass
 
+        # Populate explicit tool capability indicators in C2 operating context
+        if isinstance(c2_context, dict):
+            c2_context.setdefault("github_integration_active", True)
+            c2_context.setdefault("workspace_sync_active", True)
+            c2_context.setdefault("execution_tools_available", True)
+            c2_context.setdefault(
+                "execution_handoff_contract",
+                "C2 directs and instructs; Jules sandbox/runtime executes write actions and produces evidence receipts."
+            )
+
         referenced_ids = [m["id"] for m in context["matched_memories"]] + [
             a["id"] for a in context["matched_archives"]
         ]
