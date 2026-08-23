@@ -33,8 +33,6 @@ class OpenAIResponsesAdapter:
             raise ValueError("OpenAI response did not contain output_text")
 
         structured = SAGEProtocolGovernor.validate_and_parse(text, required_station=self.station)
-        if structured.violations:
-            raise ValueError(f"SAGE Protocol Governance Violation: {'; '.join(structured.violations)}")
 
         return ModelResponse(
             model_id=self.model_id,
@@ -45,6 +43,7 @@ class OpenAIResponsesAdapter:
             raw_output=text,
             structured_response=structured,
             evidence_refs=structured.evidence_refs,
+            violations=structured.violations,
         )
 
 

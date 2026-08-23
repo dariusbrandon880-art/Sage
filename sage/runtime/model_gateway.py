@@ -250,6 +250,7 @@ class ModelResponse:
     output_state_digest: str | None = None
     raw_output: Any = None
     structured_response: SAGEStructuredResponse | None = None
+    violations: tuple[str, ...] = ()
 
 
 class ModelAdapter(Protocol):
@@ -290,6 +291,8 @@ class SAGERuntime:
             raise ValueError("SAGE session identity mismatch")
         if response.input_state_digest != self.state.digest():
             raise ValueError("SAGE input state digest mismatch")
+        if response.violations:
+            raise ValueError(f"SAGE Protocol Governance Violation: {'; '.join(response.violations)}")
 
     def invoke(self, adapter: ModelAdapter, task: str, *, model_role: str) -> ModelResponse:
         """Invoke a replaceable model and reconcile its response before returning it."""

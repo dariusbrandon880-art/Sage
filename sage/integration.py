@@ -155,11 +155,20 @@ class ChatGPTClient(BaseAIClient):
         # Protocol Governance validation on response_text
         from sage.runtime.model_gateway import SAGEProtocolGovernor
         structured = SAGEProtocolGovernor.validate_and_parse(str(response_text), required_station="[SAGE::C2::CHATGPT]")
-        if structured.violations:
-            raise RuntimeError(f"SAGE Protocol Governance Violation: {'; '.join(structured.violations)}")
 
-        # 3. Route through unified Continuity Bridge
+        # 3. Route through unified Continuity Bridge with decision and memory tracking
         from sage.models import ExternalSessionPayload
+
+        decisions = []
+        if structured.violations:
+            decisions.append({
+                "id": f"dec_gov_violation_{uuid.uuid4().hex[:8]}",
+                "decision_type": "governance_intervention",
+                "description": f"SAGE Protocol Governance Violation Intercepted: {'; '.join(structured.violations)}",
+                "rationale": "Model output violated anti-roleplay, state mutation, or evidence requirements.",
+                "evidence": referenced_ids,
+                "outcome": "REJECTED_FAIL_CLOSED",
+            })
 
         payload = ExternalSessionPayload(
             session_id=session_id,
@@ -174,14 +183,18 @@ class ChatGPTClient(BaseAIClient):
                         "response": response_text,
                         "referenced_memories": referenced_ids,
                         "client": "ChatGPT",
+                        "violations": list(structured.violations),
                     },
                     "tags": ["ai_query", "chatgpt"],
-                    "confidence": "validated",
+                    "confidence": "validated" if not structured.violations else "unverified",
                 }
             ],
-            decisions=[],
+            decisions=decisions,
         )
         self.runtime.ingest_session_payload(payload)
+
+        if structured.violations:
+            raise RuntimeError(f"SAGE Protocol Governance Violation: {'; '.join(structured.violations)}")
 
         return AIQueryResponse(
             response_text=response_text,
