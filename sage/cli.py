@@ -46,6 +46,11 @@ def main():
     audit_parser.add_argument("--mission-id", type=str, help="Mission ID for diagnostics action")
     audit_parser.add_argument("--archive-path", type=str, default="sage_data/archive", help="Path to SAGE Archive")
 
+    c2_parser = subparsers.add_parser("c2", help="SAGE C2 Immersion Command Center")
+    c2_parser.add_argument("--action", choices=["context", "cycle"], default="context", help="C2 action to perform")
+    c2_parser.add_argument("--action-id", type=str, default="c2_cycle_init", help="Action ID for cycle execution")
+    c2_parser.add_argument("--description", type=str, default="C2 Governed Execution Cycle", help="Description for cycle execution")
+
     args = parser.parse_args()
     runtime = SageRuntime()
 
@@ -194,6 +199,29 @@ def main():
             print(json.dumps(result, indent=2))
         except Exception as e:
             print(f"Error: Audit execution failed: {e!s}")
+            sys.exit(1)
+    elif args.command == "c2":
+        try:
+            import importlib
+            from sage.agent_presence import render_team_status
+            bridge_module = importlib.import_module("sage.experimental.cognitive.runtime_bridge")
+            bridge = bridge_module.RuntimeCognitiveBridge(runtime)
+            print("======================================================================")
+            print("                SAGE C2 // IMMERSION COMMAND CENTER                  ")
+            print("======================================================================")
+            print(render_team_status())
+            print("----------------------------------------------------------------------")
+            if args.action == "context":
+                c2_context = bridge.get_c2_context()
+                print(json.dumps(c2_context, indent=2, default=str))
+            elif args.action == "cycle":
+                result = bridge.execute_cognitive_cycle(
+                    action_id=args.action_id,
+                    description=args.description,
+                )
+                print(json.dumps(result.model_dump(), indent=2, default=str))
+        except Exception as e:
+            print(f"Error: C2 command execution failed: {e!s}")
             sys.exit(1)
     else:
         parser.print_help()

@@ -1,5 +1,7 @@
 """Cognitive State Schema for SAGE Cognitive Kernel."""
 
+import uuid
+from datetime import datetime, timezone
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field
 
@@ -88,3 +90,24 @@ class CognitiveState(BaseModel):
     operator_constraints: CognitiveOperatorConstraints
     confidence_state: CognitiveConfidenceState
     next_action: Optional[CognitiveNextAction] = None
+
+
+CANONICAL_AUTHORIZED_AGENTS = [
+    "MISSION_CONTROL",
+    "MISSION_DIRECTOR",
+    "INTEL_STATION",
+    "ENGINEERING_FLIGHT",
+]
+
+
+class CognitiveProgressionReceipt(BaseModel):
+    """Data model for canonical cognitive progression receipt serialization."""
+
+    receipt_id: str = Field(default_factory=lambda: f"rcpt_cog_{uuid.uuid4().hex[:8]}")
+    action_id: str
+    mission_id: str
+    pfc_outcome: str
+    cognitive_digest: str
+    c2_identity: str = "SAGE_C2_COMMAND_CENTER"
+    c2_status: Dict[str, Any] = Field(default_factory=dict)
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
