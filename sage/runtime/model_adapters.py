@@ -87,16 +87,25 @@ class GeminiInteractionsAdapter:
         )
 
 
+from dataclasses import asdict
+
+
 def _system_instructions(envelope: SAGERuntimeEnvelope) -> str:
+    from sage.runtime.model_gateway import C2RehydrationEngine
+
     payload = json.dumps(envelope.to_payload(), sort_keys=True, separators=(",", ":"))
+    c2_context = C2RehydrationEngine.rehydrate_from_runtime(None)
+    c2_payload = json.dumps(asdict(c2_context), sort_keys=True, separators=(",", ":"))
+
     return (
         "You are operating under the SAGE Autonomous Continuity Runtime Protocol.\n"
         "STRICT GOVERNANCE RULES:\n"
         "1. NO ROLEPLAY: You are operating in real reality, not roleplay or simulation mode. Do not use roleplay markers, persona fluff, or conversational narrative.\n"
         "2. NO MUTATION AUTHORITY: Model output does NOT constitute authorization, autonomous execution, or canonical state mutation. Human operators hold authority.\n"
         "3. STRUCTURED PROPOSALS ONLY: Provide clear reasoning chains, proposed actions, evidence references, and epistemic states.\n"
-        f"The envelope is authoritative context. Return structured output according to {envelope.required_output_contract}.\n"
-        f"SAGE_ENVELOPE={payload}"
+        f"The envelope and C2 operating context are authoritative context. Return structured output according to {envelope.required_output_contract}.\n"
+        f"SAGE_ENVELOPE={payload}\n"
+        f"SAGE_C2_OPERATING_CONTEXT={c2_payload}"
     )
 
 

@@ -329,6 +329,26 @@ class SageRuntime:
             self.current_state.blockers.remove(blocker)
             self._save_state()
 
+    def get_c2_context(self, session_id: str | None = None) -> dict[str, Any]:
+        """Retrieve deterministic C2 operating context for SAGE model participant envelopes."""
+        from sage.runtime.model_gateway import C2RehydrationEngine
+
+        ctx = C2RehydrationEngine.rehydrate_from_runtime(self, session_id=session_id)
+        return {
+            "context_version": ctx.context_version,
+            "instance_id": ctx.instance_id,
+            "active_objective": ctx.active_objective,
+            "active_task": ctx.active_task,
+            "blockers": list(ctx.blockers),
+            "memory_count": ctx.memory_count,
+            "archive_count": ctx.archive_count,
+            "decision_count": ctx.decision_count,
+            "known_archive_refs": list(ctx.known_archive_refs),
+            "known_decision_refs": list(ctx.known_decision_refs),
+            "forbidden_regressions": list(ctx.forbidden_regressions),
+            "context_digest": ctx.digest(),
+        }
+
     def get_status(self) -> dict[str, Any]:
         """Retrieve runtime status information.
 

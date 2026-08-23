@@ -69,6 +69,90 @@ class SAGERuntimeEnvelope:
 
 
 @dataclass(frozen=True)
+class SAGEOperatingContext:
+    """Deterministic, versioned, hashable C2 operating context for SAGE models."""
+
+    context_version: str
+    instance_id: str
+    active_objective: str | None
+    active_task: str | None
+    blockers: tuple[str, ...]
+    memory_count: int
+    archive_count: int
+    decision_count: int
+    known_archive_refs: tuple[str, ...] = ()
+    known_decision_refs: tuple[str, ...] = ()
+    forbidden_regressions: tuple[str, ...] = ()
+
+    def digest(self) -> str:
+        payload = json.dumps(asdict(self), sort_keys=True, separators=(",", ":"))
+        return sha256(payload.encode("utf-8")).hexdigest()
+
+
+class C2RehydrationEngine:
+    """Rehydrates canonical repository/runtime truth into a SAGEOperatingContext."""
+
+    @classmethod
+    def rehydrate_from_runtime(cls, runtime: Any, session_id: str | None = None) -> SAGEOperatingContext:
+        status = runtime.get_status() if hasattr(runtime, "get_status") else {}
+        current_state = getattr(runtime, "current_state", None)
+
+        active_objective = getattr(current_state, "current_objective", None) or status.get("current_objective")
+        active_task = getattr(current_state, "active_task", None) or status.get("active_task")
+        blockers = tuple(status.get("blockers", []))
+
+        archive_refs: list[str] = []
+        if hasattr(runtime, "archive") and hasattr(runtime.archive, "list_all"):
+            archive_refs = [e.id for e in runtime.archive.list_all()[:10]]
+
+        decision_refs: list[str] = []
+        if hasattr(runtime, "decisions") and hasattr(runtime.decisions, "list_all"):
+            decision_refs = [d.id for d in runtime.decisions.list_all()[:10]]
+
+        forbidden_regressions = (
+            "FAILURE CLASS 01: WRONG REPOSITORY STATE",
+            "FAILURE CLASS 07: GOVERNANCE INVENTION",
+            "FAILURE CLASS 10: PROTECTED-BOUNDARY VIOLATION",
+            "FAILURE CLASS 11: RESEARCH -> CODE LEAK",
+        )
+
+        return SAGEOperatingContext(
+            context_version="v0.1",
+            instance_id=getattr(current_state, "instance_id", "sage-runtime-instance"),
+            active_objective=active_objective,
+            active_task=active_task,
+            blockers=blockers,
+            memory_count=status.get("memory_count", 0),
+            archive_count=status.get("archive_count", 0),
+            decision_count=status.get("decision_count", 0),
+            known_archive_refs=tuple(archive_refs),
+            known_decision_refs=tuple(decision_refs),
+            forbidden_regressions=forbidden_regressions,
+        )
+
+
+class KernelDecisionBridge:
+    """Binds model proposed actions into formal SAGE decision entries."""
+
+    @classmethod
+    def bind_proposal_to_decision(
+        cls, proposal: SAGEActionProposal, session_id: str, evidence_refs: tuple[str, ...] = ()
+    ) -> dict[str, Any]:
+        from sage.models import DecisionType
+
+        decision_id = f"dec_kernel_{sha256(f'{session_id}:{proposal.target}:{proposal.action_type}'.encode('utf-8')).hexdigest()[:8]}"
+        return {
+            "id": decision_id,
+            "decision_type": DecisionType.TECHNICAL.value,
+            "description": f"Proposed action '{proposal.action_type}' on target '{proposal.target}'",
+            "rationale": proposal.justification,
+            "evidence": list(evidence_refs),
+            "outcome": "BOUND_UNDER_SAGE_GOVERNANCE",
+            "parameters": proposal.parameters,
+        }
+
+
+@dataclass(frozen=True)
 class SAGEActionProposal:
     """Action proposed by a model under SAGE governance."""
 
