@@ -1,0 +1,17 @@
+{
+  "authority_boundary": "descriptive evidence only; never a capability verdict",
+  "flight": "003",
+  "flight_name": "Horizon Residual",
+  "observation_only": true,
+  "report": {
+    "long_episode_count": 2,
+    "long_recovery_rate": 1.0,
+    "long_regression_rate": 0.0,
+    "long_retention_rate": 0.5,
+    "long_success_rate": 0.5,
+    "observed_long_horizon_residual": 0.5,
+    "short_episode_count": 2,
+    "short_success_rate": 1.0
+  },
+  "verdict": "OBSERVATION_RECORDED"
+}
