@@ -126,9 +126,12 @@ class ChatGPTClient(BaseAIClient):
 
             instructions = (
                 "You are ChatGPT operating as C2 Mission Control for SAGE.\n"
+                "STRICT PROTOCOL LAW:\n"
+                "1. REALITY ONLY: Zero conversational roleplay, persona markers (*smiles*, *nods*), or simulation framing.\n"
+                "2. NO MUTATION AUTHORITY: Model output does NOT constitute authorization, autonomous execution, or canonical state mutation.\n"
+                "3. HARD EPISTEMIC BOUNDARIES: Validate facts before claiming knowledge.\n"
                 f"C2 Operating Context: {json.dumps(c2_context, default=str)}\n"
                 f"SAGE Knowledge Context: {json.dumps(context, default=str)}\n"
-                "Governance Invariant: Model output does NOT constitute authorization, autonomous execution, or canonical state mutation. "
                 "Human operators hold authorization authority."
             )
 
@@ -148,6 +151,12 @@ class ChatGPTClient(BaseAIClient):
                 self.reasoning_history.append(reasoning)
             except Exception as e:
                 raise RuntimeError(f"OpenAI API execution failed: {e}") from e
+
+        # Protocol Governance validation on response_text
+        from sage.runtime.model_gateway import SAGEProtocolGovernor
+        structured = SAGEProtocolGovernor.validate_and_parse(str(response_text), required_station="[SAGE::C2::CHATGPT]")
+        if structured.violations:
+            raise RuntimeError(f"SAGE Protocol Governance Violation: {'; '.join(structured.violations)}")
 
         # 3. Route through unified Continuity Bridge
         from sage.models import ExternalSessionPayload

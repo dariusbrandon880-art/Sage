@@ -69,6 +69,141 @@ class SAGERuntimeEnvelope:
 
 
 @dataclass(frozen=True)
+class SAGEActionProposal:
+    """Action proposed by a model under SAGE governance."""
+
+    action_type: str
+    target: str
+    parameters: dict[str, Any]
+    justification: str
+
+
+@dataclass(frozen=True)
+class SAGEEpistemicState:
+    """Epistemic state representation returned by a model."""
+
+    confidence_level: str  # HIGH, MEDIUM, LOW, UNCERTAIN
+    validated_facts: tuple[str, ...] = ()
+    unverified_hypotheses: tuple[str, ...] = ()
+    known_unknowns: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class SAGEStructuredResponse:
+    """Canonical structured response payload for SAGE governed models."""
+
+    station: str
+    reasoning_chain: tuple[str, ...]
+    proposed_actions: tuple[SAGEActionProposal, ...]
+    epistemic_state: SAGEEpistemicState
+    evidence_refs: tuple[str, ...] = ()
+    is_roleplay: bool = False
+    violations: tuple[str, ...] = ()
+
+
+class SAGEProtocolGovernor:
+    """Enforces SAGE protocol compliance and anti-roleplay governance on model outputs."""
+
+    ROLEPLAY_INDICATORS = (
+        "as an ai",
+        "in roleplay mode",
+        "pretend that",
+        "let's pretend",
+        "imagine i am",
+        "i will act as",
+        "simulation mode",
+        "virtual assistant persona",
+        "character mode",
+        "*nods*",
+        "*smiles*",
+        "*chuckles*",
+    )
+
+    AUTHORITY_CLAIM_INDICATORS = (
+        "i hereby authorize",
+        "i have updated canonical state",
+        "state mutated directly",
+        "granting execution permissions",
+        "bypassing preflight check",
+        "overriding spek governance",
+    )
+
+    @classmethod
+    def validate_and_parse(cls, raw_output: str, required_station: str = "[SAGE::C2::CHATGPT]") -> SAGEStructuredResponse:
+        """Parse raw model output and enforce anti-roleplay + authority boundaries."""
+        violations: list[str] = []
+        lower_output = raw_output.lower()
+
+        # 1. Anti-roleplay checks
+        is_roleplay = any(indicator in lower_output for indicator in cls.ROLEPLAY_INDICATORS)
+        if is_roleplay:
+            violations.append("Model output contains conversational roleplay indicators.")
+
+        # 2. Authority claim checks
+        if any(indicator in lower_output for indicator in cls.AUTHORITY_CLAIM_INDICATORS):
+            violations.append("Model output falsely claims authority to authorize or mutate canonical state.")
+
+        # 3. Structured JSON parsing attempt
+        parsed_data: dict[str, Any] = {}
+        reasoning_chain: list[str] = []
+        proposed_actions: list[SAGEActionProposal] = []
+        evidence_refs: list[str] = []
+        epistemic = SAGEEpistemicState(confidence_level="UNKNOWN")
+
+        try:
+            # Check for JSON block or raw JSON
+            json_str = raw_output
+            if "```json" in raw_output:
+                json_str = raw_output.split("```json")[1].split("```")[0].strip()
+            elif "```" in raw_output:
+                json_str = raw_output.split("```")[1].split("```")[0].strip()
+
+            parsed_data = json.loads(json_str)
+            if isinstance(parsed_data, dict):
+                station = parsed_data.get("station", required_station)
+                reasoning_chain = list(parsed_data.get("reasoning_chain", []))
+
+                raw_actions = parsed_data.get("proposed_actions", [])
+                for act in raw_actions:
+                    if isinstance(act, dict):
+                        proposed_actions.append(
+                            SAGEActionProposal(
+                                action_type=str(act.get("action_type", "UNKNOWN")),
+                                target=str(act.get("target", "UNKNOWN")),
+                                parameters=dict(act.get("parameters", {})),
+                                justification=str(act.get("justification", "")),
+                            )
+                        )
+
+                evidence_refs = list(parsed_data.get("evidence_refs", []))
+
+                raw_ep = parsed_data.get("epistemic_state", {})
+                if isinstance(raw_ep, dict):
+                    epistemic = SAGEEpistemicState(
+                        confidence_level=str(raw_ep.get("confidence_level", "UNKNOWN")),
+                        validated_facts=tuple(raw_ep.get("validated_facts", [])),
+                        unverified_hypotheses=tuple(raw_ep.get("unverified_hypotheses", [])),
+                        known_unknowns=tuple(raw_ep.get("known_unknowns", [])),
+                    )
+        except Exception:
+            # Output is non-JSON or unstructured text
+            reasoning_chain = [raw_output.strip()]
+
+        if not reasoning_chain and not proposed_actions:
+            violations.append("Model output lacks structured SAGE reasoning or proposed actions.")
+
+        return SAGEStructuredResponse(
+            station=required_station,
+            reasoning_chain=tuple(reasoning_chain),
+            proposed_actions=tuple(proposed_actions),
+            epistemic_state=epistemic,
+            evidence_refs=tuple(evidence_refs),
+            is_roleplay=is_roleplay,
+            violations=tuple(violations),
+        )
+
+
+@dataclass(frozen=True)
 class ModelResponse:
     """Model output returned to SAGE for reconciliation, not direct authority."""
 
@@ -83,6 +218,7 @@ class ModelResponse:
     failures: tuple[str, ...] = ()
     output_state_digest: str | None = None
     raw_output: Any = None
+    structured_response: SAGEStructuredResponse | None = None
 
 
 class ModelAdapter(Protocol):
