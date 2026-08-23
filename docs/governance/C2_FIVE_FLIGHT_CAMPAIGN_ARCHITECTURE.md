@@ -38,11 +38,10 @@ SENSE
               FIVE-FLIGHT CAMPAIGN ENGINE
 
      Flight 1        Flight 2        Flight 3
-     Google          Sports          Cognitive
+     Vector A        Vector B        Vector C
 
      Flight 4        Flight 5
-     Runtime         Research/
-     Capability      Discovery
+     Vector D        Vector E
 
 
                          |
@@ -96,119 +95,91 @@ No transition can be skipped. Before airborne:
 
 ---
 
+# Dynamic Vector Assignment & No-Fixed-Path Doctrine
+
+There are **no hardcoded, fixed, or pre-assigned flight paths**. Flights are not permanently assigned feature departments or fixed subject matter areas (e.g., Google, Sports, etc. are merely optional illustrative mission targets, never fixed structural tracks).
+
+The path of any flight is **100% determined dynamically by C2 and the Mission Director**. A campaign flight vector can be assigned to:
+* parallel feature builds
+* bug fixes and system repairs
+* substrate refactoring or hardening
+* verification and adversarial challenge
+* research, discovery, or tooling expansion
+
+Each flight vector receives the full SAGE engine capability aperture as needed by its assigned mission.
+
+---
+
 # Flight Rules
 
 Each flight is:
 
-* an adaptive execution unit assigned to an authorized SAGE target
+* an adaptive execution unit assigned to whatever target C2 and the Director decide
+* capable of handling builds, repairs, refactoring, tests, or discovery in parallel
 * a bounded mission path carrying a complete mission package (Mission, Target, Outcome, Invariants, Tests, Evidence, STOP Boundary)
 * allowed to create its own PR sequence
 * required to produce evidence and reconverge through verification
 
 Each flight is NOT:
 
-* a permanently assigned feature department or separate agent
-* a separate authority or memory
+* a fixed or permanently assigned feature owner (no set domain topics)
+* a separate agent or separate authority
+* a separate memory
 * allowed to bypass C2 governance
 
 ---
 
-# Example Flight Structure
+# Illustrative Campaign Flight Structures (Non-Binding Examples)
 
-## Flight 1 — External Intelligence / Google Path
+The following structures represent **illustrative examples** of how campaign vectors can be assigned across active work items. Any flight can be reassigned to any repair, build, or verification target at any time.
+
+## Example Vector Pattern — Discovery / Intelligence Vector
 
 Purpose:
 
-* external knowledge acquisition
-* tooling discovery
-* standards/patent/open-source scanning
+* external knowledge acquisition & tooling discovery
+* standards, patent, or open-source scanning
 
 Pipeline:
 
 ```text
-Search
- ↓
-Classification
- ↓
-Hypothesis
- ↓
-SAGE fit analysis
- ↓
-Implementation candidate
- ↓
-Verification
+Search → Classification → Hypothesis → SAGE fit analysis → Implementation candidate → Verification
 ```
 
 ---
 
-## Flight 2 — Sports Scientific Research Path
+## Example Vector Pattern — Domain / Scientific Research Vector
 
 Purpose:
 
-* scientific evaluation systems
-* robustness research
-* prediction methodology
-
-Rules:
-
-* research only
-* leakage controls
-* out-of-sample validation
-* negative findings preserved
+* scientific evaluation systems & prediction methodology
+* leakage controls, out-of-sample validation, and preservation of negative findings
 
 ---
 
-## Flight 3 — Cognitive Brain Tree Path
+## Example Vector Pattern — Cognitive & Continuity Vector
 
 Purpose:
-advance:
 
-```text
-Identity
- ↓
-Memory
- ↓
-Context Fabric
- ↓
-PFC Decision Layer
- ↓
-Learning Loop
- ↓
-Evolution
-```
+* identity, memory, context fabric, PFC decision layer, learning loops
 
 ---
 
-## Flight 4 — Runtime / Engineering Path
+## Example Vector Pattern — Runtime & Engineering Vector
 
 Purpose:
 
-* capabilities
-* architecture primitives
-* execution improvements
-* performance
-
-Requires:
-
-* tests
-* receipts
-* regression checks
+* parallel capability builds, architecture primitives, execution improvements, performance, and bug repairs
+* requires tests, receipts, and regression checks
 
 ---
 
-## Flight 5 — Adversarial / Discovery Path
+## Example Vector Pattern — Adversarial & System Repair Vector
 
 Purpose:
 
-attack the system.
-
-Checks:
-
-* false capability claims
-* authority leaks
-* weak evidence
-* recovery failures
-* hidden assumptions
+* attack the system, verify failure recovery, audit false capability claims, authority leaks, or weak evidence
+* isolate root causes and apply bounded repairs
 
 ---
 
