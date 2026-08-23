@@ -66,20 +66,49 @@ SENSE
 
 ---
 
+# Dynamic Vector & Gated Activation Doctrine
+
+The campaign architecture is a **coordination architecture only**. It does **not** create active work items automatically.
+
+The mandatory activation gate sequence is:
+
+```text
+CAMPAIGN ARCHITECTURE READY
+        |
+        v
+RECON REQUIRED
+        |
+        v
+FRONTIER IDENTIFIED
+        |
+        v
+AUTHORIZED BUILD
+        |
+        v
+FLIGHT AIRBORNE
+```
+
+No transition can be skipped. Before airborne:
+* Tasks are unknown
+* Flight numbers are not assigned
+* Capability claims are not created
+* Campaign paths are adaptive possibilities, not hardcoded departments
+
+---
+
 # Flight Rules
 
 Each flight is:
 
-* a bounded mission path
-* a capability campaign
+* an adaptive execution unit assigned to an authorized SAGE target
+* a bounded mission path carrying a complete mission package (Mission, Target, Outcome, Invariants, Tests, Evidence, STOP Boundary)
 * allowed to create its own PR sequence
-* required to produce evidence
+* required to produce evidence and reconverge through verification
 
 Each flight is NOT:
 
-* a separate agent
-* a separate authority
-* a separate memory
+* a permanently assigned feature department or separate agent
+* a separate authority or memory
 * allowed to bypass C2 governance
 
 ---

@@ -1,16 +1,16 @@
 {
-  "orchestrator_run_id": "orch_run_2742043001b3",
-  "timestamp": "2026-08-22T23:27:16.015223Z",
+  "orchestrator_run_id": "orch_run_839855352c18",
+  "timestamp": "2026-08-22T23:57:19.692023Z",
   "session_id": "session_non_reexec_001",
   "session_objectives": [
     "obj_autonomous_mission_continuity"
   ],
   "status": "VALIDATED",
   "ccl_record": {
-    "record_id": "CCL-REC-20260822-fc8b0d43-de83-4096-b556-17b4fc21773a",
+    "record_id": "CCL-REC-20260822-a961f786-e6ea-4b0d-b2f4-8a057c5d784c",
     "session_id": "session_non_reexec_001",
     "event_type": "state_transition",
-    "timestamp": 1787441236.015407,
+    "timestamp": 1787443039.6923149,
     "action_taken": "Successfully revalidated workspace capabilities for files: ['sage/experimental/act/continuity_control.py']",
     "decision_reasoning": "Governed workspace revalidation executed cleanly; capability status updated and promoted to Master Archive",
     "evidence_payload": {
@@ -22,7 +22,7 @@
         "violations": [],
         "status": "CLEAN_WORKSPACE"
       },
-      "cmaps_audit_id": "audit_a52fc18eaf3f45798ba7b8361b17a177",
+      "cmaps_audit_id": "audit_faf2f84c9de2402fbbcaa0128ee7716d",
       "revalidated_capabilities": [
         "CAP-PML-RELIABILITY"
       ],
@@ -31,12 +31,12 @@
       ],
       "session_completed_actions": [],
       "session_pending_actions": [],
-      "enrichment_timestamp": 1787441236.01538,
+      "enrichment_timestamp": 1787443039.6922762,
       "human_approval_record": {
         "supervisor_id": "supervisor_jules",
-        "signature": "sig_jules_7a8467c8212a",
+        "signature": "sig_jules_c164000f03ab",
         "decision": "APPROVED",
-        "approved_at": 1787441236.0161383
+        "approved_at": 1787443039.6934576
       }
     },
     "failure_context": null,
@@ -46,8 +46,8 @@
     "improvement_opportunities": []
   },
   "cmaps_payload": {
-    "audit_id": "audit_a52fc18eaf3f45798ba7b8361b17a177",
-    "timestamp": "2026-08-22T23:27:16.015223Z",
+    "audit_id": "audit_faf2f84c9de2402fbbcaa0128ee7716d",
+    "timestamp": "2026-08-22T23:57:19.692023Z",
     "agent_identity": {
       "agent_id": "agent_jules_sage",
       "name": "Jules",
@@ -60,11 +60,11 @@
       "temperature": 0.2
     },
     "execution_state": {
-      "run_id": "run_df01dfdff63041a78692",
+      "run_id": "run_0cca1a36f4f34002bed7",
       "status": "completed",
       "step_counter": 1,
-      "started_at": "2026-08-22T23:27:16.015223Z",
-      "updated_at": "2026-08-22T23:27:16.015223Z"
+      "started_at": "2026-08-22T23:57:19.692023Z",
+      "updated_at": "2026-08-22T23:57:19.692023Z"
     },
     "task_lineage": {
       "session_id": "session_effddef5",
@@ -74,7 +74,7 @@
     "decision_events": [
       {
         "decision_id": "decision_coordinate_dev_loop",
-        "timestamp": "2026-08-22T23:27:16.015223Z",
+        "timestamp": "2026-08-22T23:57:19.692023Z",
         "summary": "Successfully revalidated workspace capabilities for files: ['sage/experimental/act/continuity_control.py']",
         "reasoning": "Governed workspace revalidation executed cleanly; capability status updated and promoted to Master Archive",
         "confidence": 1.0
@@ -91,7 +91,7 @@
       {
         "artifact_path": "docs/governance/C2_FIVE_FLIGHT_CAMPAIGN_ARCHITECTURE.md",
         "git_commit": "ee8c13fc32b4fdba3d8e3508bc120ddd0bfad3d4",
-        "sha256_checksum": "fb2246e15560b0877fc32b23b2d91639601e982b6b7b3c789376d47fba8a6880"
+        "sha256_checksum": "17a1aac9a1d2a268b08970c7f548e01276fe197b67d9cc15e12868c2473a8457"
       },
       {
         "artifact_path": "docs/governance/C2_FRAME.md",
@@ -100,8 +100,8 @@
       }
     ],
     "attestation": {
-      "nonce": "67322e59c076462e",
-      "signature": "sig_jules_7a8467c8212a",
+      "nonce": "e878831c18fa4e70",
+      "signature": "sig_jules_c164000f03ab",
       "signer_identity": "supervisor_jules"
     }
   },
@@ -116,7 +116,7 @@
       "evidence_completeness": 1.0,
       "decision_trace_completeness": 1.0,
       "workflow_state_accuracy": 1.0,
-      "execution_cycle_duration": 0.060773372650146484,
+      "execution_cycle_duration": 0.07698535919189453,
       "context_preservation_score": 1.0,
       "unnecessary_reassessment_events": 0,
       "repeated_execution_prevention": true,
