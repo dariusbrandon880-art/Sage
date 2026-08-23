@@ -162,6 +162,7 @@ class ChatGPTClient(BaseAIClient):
         if structured.violations:
             raise RuntimeError(f"SAGE Protocol Governance Violation: {'; '.join(structured.violations)}")
 
+
         # 3. Route through unified Continuity Bridge
         from sage.models import ExternalSessionPayload
 

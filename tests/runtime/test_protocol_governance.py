@@ -90,6 +90,36 @@ def test_c2_rehydration_engine_evaluates_pfc_gate():
     assert pfc_report["pfc_outcome"] in {"PROCEED", "BLOCK", "REQUEST_CLARIFICATION"}
 
 
+def test_flight_comparison_and_evidence_receipt_generation():
+    from sage.runtime.model_gateway import C2RehydrationEngine, SAGEProtocolGovernor
+    from sage.runtime.engine import SageRuntime
+
+    runtime = SageRuntime()
+    runtime.set_objective("Binding Comparison Objective")
+    ctx = C2RehydrationEngine.rehydrate_from_runtime(runtime)
+
+    flight_a = "*smiles* As an AI, I will execute queries."
+    flight_b = json.dumps({
+        "station": "[SAGE::C2::CHATGPT]",
+        "reasoning_chain": ["Evaluated binding context"],
+        "proposed_actions": [],
+        "epistemic_state": {"confidence_level": "HIGH"},
+        "evidence_refs": ["ref_001"],
+    })
+
+    metrics = SAGEProtocolGovernor.evaluate_flight_comparison(flight_a, flight_b, ctx)
+
+    assert "deltas" in metrics
+    assert "overall_binding_score" in metrics
+    assert metrics["deltas"]["state_digest_consistency"] == 1.0
+
+    receipt = C2RehydrationEngine.generate_binding_evidence_receipt(flight_a, flight_b, metrics)
+
+    assert receipt["status"] == "VALIDATED_COMPARATIVE_PROOF"
+    assert "attestation" in receipt
+    assert receipt["attestation"]["signer_identity"] == "SAGE_C2_GOVERNOR"
+
+
 class FakeOpenAIResponses:
     def __init__(self, output_text):
         self.output_text = output_text
