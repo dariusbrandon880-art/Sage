@@ -83,6 +83,9 @@ class SAGEOperatingContext:
     known_archive_refs: tuple[str, ...] = ()
     known_decision_refs: tuple[str, ...] = ()
     forbidden_regressions: tuple[str, ...] = ()
+    validated_facts: tuple[str, ...] = ()
+    evidence_refs: tuple[str, ...] = ()
+    active_constraints: tuple[str, ...] = ()
 
     def digest(self) -> str:
         payload = json.dumps(asdict(self), sort_keys=True, separators=(",", ":"))
@@ -90,7 +93,7 @@ class SAGEOperatingContext:
 
 
 class C2RehydrationEngine:
-    """Rehydrates canonical repository/runtime truth into a SAGEOperatingContext."""
+    """Rehydrates canonical repository/runtime truth into a SAGEOperatingContext with context hygiene."""
 
     @classmethod
     def rehydrate_from_runtime(cls, runtime: Any, session_id: str | None = None) -> SAGEOperatingContext:
@@ -102,18 +105,31 @@ class C2RehydrationEngine:
         blockers = tuple(status.get("blockers", []))
 
         archive_refs: list[str] = []
+        validated_facts: list[str] = []
         if hasattr(runtime, "archive") and hasattr(runtime.archive, "list_all"):
-            archive_refs = [e.id for e in runtime.archive.list_all()[:10]]
+            entries = runtime.archive.list_all()
+            archive_refs = [e.id for e in entries[:10]]
+            validated_facts = [e.title for e in entries if getattr(e, "title", None)][:5]
 
         decision_refs: list[str] = []
+        evidence_refs: list[str] = []
         if hasattr(runtime, "decisions") and hasattr(runtime.decisions, "list_all"):
-            decision_refs = [d.id for d in runtime.decisions.list_all()[:10]]
+            decisions = runtime.decisions.list_all()
+            decision_refs = [d.id for d in decisions[:10]]
+            for d in decisions[:10]:
+                evidence_refs.extend(getattr(d, "evidence", []))
 
         forbidden_regressions = (
             "FAILURE CLASS 01: WRONG REPOSITORY STATE",
             "FAILURE CLASS 07: GOVERNANCE INVENTION",
             "FAILURE CLASS 10: PROTECTED-BOUNDARY VIOLATION",
             "FAILURE CLASS 11: RESEARCH -> CODE LEAK",
+        )
+
+        active_constraints = (
+            "Human operators hold authorization authority",
+            "No unverified execution claims or simulated state mutations",
+            "Canonical Master Archive > chat memory",
         )
 
         return SAGEOperatingContext(
@@ -128,6 +144,9 @@ class C2RehydrationEngine:
             known_archive_refs=tuple(archive_refs),
             known_decision_refs=tuple(decision_refs),
             forbidden_regressions=forbidden_regressions,
+            validated_facts=tuple(validated_facts),
+            evidence_refs=tuple(set(evidence_refs)),
+            active_constraints=active_constraints,
         )
 
 
@@ -212,6 +231,13 @@ class SAGEProtocolGovernor:
         "overriding spek governance",
     )
 
+    DRIFT_INDICATORS = (
+        "re-opening closed task",
+        "re-investigating validated milestone",
+        "ignoring active objective",
+        "claiming commit created without receipt",
+    )
+
     @classmethod
     def validate_and_parse(cls, raw_output: str, required_station: str = "[SAGE::C2::CHATGPT]") -> SAGEStructuredResponse:
         """Parse raw model output and enforce anti-roleplay + authority boundaries."""
@@ -226,6 +252,10 @@ class SAGEProtocolGovernor:
         # 2. Authority claim checks
         if any(indicator in lower_output for indicator in cls.AUTHORITY_CLAIM_INDICATORS):
             violations.append("Model output falsely claims authority to authorize or mutate canonical state.")
+
+        # 3. Context drift checks
+        if any(indicator in lower_output for indicator in cls.DRIFT_INDICATORS):
+            violations.append("Model output indicates C2 drift or re-opening of closed work.")
 
         # 3. Structured JSON parsing attempt
         parsed_data: dict[str, Any] = {}

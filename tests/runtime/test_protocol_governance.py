@@ -72,6 +72,13 @@ def test_protocol_governor_rejects_authority_claims():
     assert "Model output falsely claims authority to authorize or mutate canonical state." in structured.violations
 
 
+def test_protocol_governor_rejects_drift_indicators():
+    drift_text = "Re-opening closed task and re-investigating validated milestone."
+    structured = SAGEProtocolGovernor.validate_and_parse(drift_text)
+
+    assert "Model output indicates C2 drift or re-opening of closed work." in structured.violations
+
+
 class FakeOpenAIResponses:
     def __init__(self, output_text):
         self.output_text = output_text

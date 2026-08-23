@@ -99,14 +99,13 @@ class ChatGPTClient(BaseAIClient):
                 pass
         elif hasattr(self.runtime, "get_status"):
             try:
-                status = self.runtime.get_status()
-                c2_context = {
-                    "c2_identity": "ChatGPT",
-                    "master_archive_authority": True,
-                    "active_objective": status.get("current_objective"),
-                    "active_task": status.get("active_task"),
-                    "governance_status": "ACTIVE",
-                }
+                from sage.runtime.model_gateway import C2RehydrationEngine
+                rehydrated = C2RehydrationEngine.rehydrate_from_runtime(self.runtime, session_id=session_id)
+                from dataclasses import asdict
+                c2_context = asdict(rehydrated)
+                c2_context["c2_identity"] = "ChatGPT"
+                c2_context["master_archive_authority"] = True
+                c2_context["governance_status"] = "ACTIVE"
             except Exception:
                 pass
 
