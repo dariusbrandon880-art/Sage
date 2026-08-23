@@ -17,6 +17,7 @@ def main():
     task_parser = subparsers.add_parser("task", help="Manage SAGE current task")
     task_parser.add_argument("--task", type=str, help="The new task to set")
     subparsers.add_parser("status", help="Get current SAGE status")
+    subparsers.add_parser("c2", help="Get rehydrated C2 operating context and executive PFC gate report")
 
     handoff_parser = subparsers.add_parser("handoff", help="Generate a SAGE session handoff artifact")
     handoff_parser.add_argument("--file", type=str, help="The path to save the handoff JSON file")
@@ -65,6 +66,19 @@ def main():
             print(f"Current Task: {runtime.current_state.active_task or 'None'}")
     elif args.command == "status":
         print(json.dumps(runtime.get_status(), indent=2))
+    elif args.command == "c2":
+        try:
+            from sage.runtime.model_gateway import C2RehydrationEngine
+            c2_ctx = runtime.get_c2_context()
+            pfc_report = C2RehydrationEngine.evaluate_executive_pfc_gate(runtime)
+            result = {
+                "c2_operating_context": c2_ctx,
+                "executive_pfc_report": pfc_report,
+            }
+            print(json.dumps(result, indent=2))
+        except Exception as e:
+            print(f"Error: C2 evaluation failed: {e!s}")
+            sys.exit(1)
     elif args.command == "handoff":
         path = runtime.generate_handoff(args.file)
         print(f"Success: Handoff generated successfully at: '{path}'")

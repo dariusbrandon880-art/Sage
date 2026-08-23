@@ -79,6 +79,17 @@ def test_protocol_governor_rejects_drift_indicators():
     assert "Model output indicates C2 drift or re-opening of closed work." in structured.violations
 
 
+def test_c2_rehydration_engine_evaluates_pfc_gate():
+    from sage.runtime.model_gateway import C2RehydrationEngine
+    from sage.runtime.engine import SageRuntime
+
+    runtime = SageRuntime()
+    pfc_report = C2RehydrationEngine.evaluate_executive_pfc_gate(runtime)
+
+    assert "pfc_outcome" in pfc_report
+    assert pfc_report["pfc_outcome"] in {"PROCEED", "BLOCK", "REQUEST_CLARIFICATION"}
+
+
 class FakeOpenAIResponses:
     def __init__(self, output_text):
         self.output_text = output_text

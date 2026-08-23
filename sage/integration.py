@@ -151,8 +151,13 @@ class ChatGPTClient(BaseAIClient):
             except Exception as e:
                 raise RuntimeError(f"OpenAI API execution failed: {e}") from e
 
+        # Prefrontal Cortex Executive Gate Check
+        from sage.runtime.model_gateway import C2RehydrationEngine, SAGEProtocolGovernor
+        pfc_report = C2RehydrationEngine.evaluate_executive_pfc_gate(self.runtime)
+        if pfc_report.get("pfc_outcome") == "BLOCK":
+            raise RuntimeError(f"SAGE Prefrontal Cortex Gate Violation: {pfc_report.get('pfc_reason')}")
+
         # Protocol Governance validation on response_text
-        from sage.runtime.model_gateway import SAGEProtocolGovernor
         structured = SAGEProtocolGovernor.validate_and_parse(str(response_text), required_station="[SAGE::C2::CHATGPT]")
         if structured.violations:
             raise RuntimeError(f"SAGE Protocol Governance Violation: {'; '.join(structured.violations)}")

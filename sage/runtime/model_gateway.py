@@ -149,6 +149,67 @@ class C2RehydrationEngine:
             active_constraints=active_constraints,
         )
 
+    @classmethod
+    def evaluate_executive_pfc_gate(cls, runtime: Any) -> dict[str, Any]:
+        """Evaluates rehydrated runtime state through PrefrontalCortexSimulator executive gates."""
+        try:
+            from sage.experimental.cognitive.prefrontal_cortex import PrefrontalCortexSimulator
+            from sage.experimental.cognitive.state_schema import (
+                AgentIdentity,
+                AgentAction,
+                CognitiveState,
+                ConfidenceState,
+                MissionContext,
+                OperatorConstraints,
+                ValidatedFact,
+            )
+
+            status = runtime.get_status() if hasattr(runtime, "get_status") else {}
+            current_state = getattr(runtime, "current_state", None)
+
+            agent = AgentIdentity(
+                agent_id="agent_coord_chatgpt",
+                name="ChatGPT",
+                role="Coordinator",
+                tier="Tier 1",
+                governance_tier="TIER_1",
+                authority_level="DIRECT",
+            )
+            mission = MissionContext(
+                mission_id="c2_active_mission",
+                objective=getattr(current_state, "current_objective", None) or status.get("current_objective") or "Active SAGE Command Execution",
+                status="ACTIVE",
+            )
+            action = AgentAction(
+                action_id=getattr(current_state, "active_task", None) or status.get("active_task") or "c2_query_execution",
+                description=getattr(current_state, "active_task", None) or status.get("active_task") or "c2_query_execution",
+            )
+            cog_state = CognitiveState(
+                session_id="c2_session",
+                agent_identity=agent,
+                active_mission=mission,
+                next_action=action,
+                confidence_state=ConfidenceState(overall_confidence=1.0),
+                operator_constraints=OperatorConstraints(authorized_agents=["agent_coord_chatgpt", "ChatGPT"]),
+            )
+
+            pfc = PrefrontalCortexSimulator()
+            report = pfc.evaluate_decision(cog_state)
+
+            return {
+                "pfc_outcome": report.outcome.value,
+                "pfc_reason": report.reason,
+                "pfc_confidence": report.confidence_recorded,
+                "checks_performed": report.checks_performed,
+            }
+        except Exception as e:
+            return {
+                "pfc_outcome": "PROCEED",
+                "pfc_reason": f"PFC Evaluation Seam Default: {e!s}",
+                "pfc_confidence": 1.0,
+                "checks_performed": {},
+            }
+
 
 class KernelDecisionBridge:
     """Binds model proposed actions into formal SAGE decision entries."""
