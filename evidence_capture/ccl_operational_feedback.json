@@ -1,20 +1,20 @@
 {
-  "orchestrator_run_id": "orch_run_34839c6711da",
-  "timestamp": "2026-08-23T20:47:06.354897Z",
+  "orchestrator_run_id": "orch_run_2742043001b3",
+  "timestamp": "2026-08-22T23:27:16.015223Z",
   "session_id": "session_non_reexec_001",
   "session_objectives": [
     "obj_autonomous_mission_continuity"
   ],
   "status": "VALIDATED",
   "ccl_record": {
-    "record_id": "CCL-REC-20260823-092dafe5-8d9d-44d0-8c06-241ee361d5bc",
+    "record_id": "CCL-REC-20260822-fc8b0d43-de83-4096-b556-17b4fc21773a",
     "session_id": "session_non_reexec_001",
     "event_type": "state_transition",
-    "timestamp": 1787518026.3550863,
+    "timestamp": 1787441236.015407,
     "action_taken": "Successfully revalidated workspace capabilities for files: ['sage/experimental/act/continuity_control.py']",
     "decision_reasoning": "Governed workspace revalidation executed cleanly; capability status updated and promoted to Master Archive",
     "evidence_payload": {
-      "git_commit": "83e23911e47eec6c95c3d9165e84c9e096c63395",
+      "git_commit": "ee8c13fc32b4fdba3d8e3508bc120ddd0bfad3d4",
       "protection_report": {
         "is_violation_found": false,
         "violations_found": 0,
@@ -22,7 +22,7 @@
         "violations": [],
         "status": "CLEAN_WORKSPACE"
       },
-      "cmaps_audit_id": "audit_300ad9b512e94db9bd9dcfd7448f1178",
+      "cmaps_audit_id": "audit_a52fc18eaf3f45798ba7b8361b17a177",
       "revalidated_capabilities": [
         "CAP-PML-RELIABILITY"
       ],
@@ -31,12 +31,12 @@
       ],
       "session_completed_actions": [],
       "session_pending_actions": [],
-      "enrichment_timestamp": 1787518026.3550565,
+      "enrichment_timestamp": 1787441236.01538,
       "human_approval_record": {
         "supervisor_id": "supervisor_jules",
-        "signature": "sig_jules_704a657ff848",
+        "signature": "sig_jules_7a8467c8212a",
         "decision": "APPROVED",
-        "approved_at": 1787518026.3558645
+        "approved_at": 1787441236.0161383
       }
     },
     "failure_context": null,
@@ -46,8 +46,8 @@
     "improvement_opportunities": []
   },
   "cmaps_payload": {
-    "audit_id": "audit_300ad9b512e94db9bd9dcfd7448f1178",
-    "timestamp": "2026-08-23T20:47:06.354897Z",
+    "audit_id": "audit_a52fc18eaf3f45798ba7b8361b17a177",
+    "timestamp": "2026-08-22T23:27:16.015223Z",
     "agent_identity": {
       "agent_id": "agent_jules_sage",
       "name": "Jules",
@@ -60,11 +60,11 @@
       "temperature": 0.2
     },
     "execution_state": {
-      "run_id": "run_1f5102d42cf64f79a4bb",
+      "run_id": "run_df01dfdff63041a78692",
       "status": "completed",
       "step_counter": 1,
-      "started_at": "2026-08-23T20:47:06.354897Z",
-      "updated_at": "2026-08-23T20:47:06.354897Z"
+      "started_at": "2026-08-22T23:27:16.015223Z",
+      "updated_at": "2026-08-22T23:27:16.015223Z"
     },
     "task_lineage": {
       "session_id": "session_effddef5",
@@ -74,7 +74,7 @@
     "decision_events": [
       {
         "decision_id": "decision_coordinate_dev_loop",
-        "timestamp": "2026-08-23T20:47:06.354897Z",
+        "timestamp": "2026-08-22T23:27:16.015223Z",
         "summary": "Successfully revalidated workspace capabilities for files: ['sage/experimental/act/continuity_control.py']",
         "reasoning": "Governed workspace revalidation executed cleanly; capability status updated and promoted to Master Archive",
         "confidence": 1.0
@@ -84,39 +84,24 @@
     "recovery_checkpoints": [],
     "evidence_relationships": [
       {
-        "artifact_path": "sage/cli.py",
-        "git_commit": "83e23911e47eec6c95c3d9165e84c9e096c63395",
-        "sha256_checksum": "069491d7af80fa93b582987773bcaaa5f583397b0c8d2af182bf24a69fb031e1"
+        "artifact_path": "docs/SAGE-C2-PERSISTENT-OPERATING-CONTRACT.md",
+        "git_commit": "ee8c13fc32b4fdba3d8e3508bc120ddd0bfad3d4",
+        "sha256_checksum": "5e6417a2eca266a165ff4f48be370b56ce579f7fb928b27f03953b19a6f992d3"
       },
       {
-        "artifact_path": "sage/experimental/cognitive/runtime_bridge.py",
-        "git_commit": "83e23911e47eec6c95c3d9165e84c9e096c63395",
-        "sha256_checksum": "7f6c3ae009916ecac0f202a174ac8efc23658c141f1ec7b26546292fa2d24e61"
+        "artifact_path": "docs/governance/C2_FIVE_FLIGHT_CAMPAIGN_ARCHITECTURE.md",
+        "git_commit": "ee8c13fc32b4fdba3d8e3508bc120ddd0bfad3d4",
+        "sha256_checksum": "fb2246e15560b0877fc32b23b2d91639601e982b6b7b3c789376d47fba8a6880"
       },
       {
-        "artifact_path": "sage/experimental/cognitive/state_schema.py",
-        "git_commit": "83e23911e47eec6c95c3d9165e84c9e096c63395",
-        "sha256_checksum": "3bbb143d879954c346f0a26258cc63af78daebb66276d145e99f33e3afee61b1"
-      },
-      {
-        "artifact_path": "sage/integration.py",
-        "git_commit": "83e23911e47eec6c95c3d9165e84c9e096c63395",
-        "sha256_checksum": "6f08eecbf6014d5755436e4dc6ae4f1a79e79eff7527b2aeed390cca6d57391b"
-      },
-      {
-        "artifact_path": "tests/test_openai_runtime_activation.py",
-        "git_commit": "83e23911e47eec6c95c3d9165e84c9e096c63395",
-        "sha256_checksum": "418e803660000f312a6ff39d6541348e11a318be1352be37d3eec1cc4a311039"
-      },
-      {
-        "artifact_path": "tests/test_runtime_cognitive_integration.py",
-        "git_commit": "83e23911e47eec6c95c3d9165e84c9e096c63395",
-        "sha256_checksum": "b9c0188734a57cfa852f8ddedf90f4a7a40074c1aa31051bafcdf7a3d2839a48"
+        "artifact_path": "docs/governance/C2_FRAME.md",
+        "git_commit": "ee8c13fc32b4fdba3d8e3508bc120ddd0bfad3d4",
+        "sha256_checksum": "8bb193aabd502a79e018345cd55125497bcf36e012eb1a9253bf1675dc572e6b"
       }
     ],
     "attestation": {
-      "nonce": "702f6e8dc3394355",
-      "signature": "sig_jules_704a657ff848",
+      "nonce": "67322e59c076462e",
+      "signature": "sig_jules_7a8467c8212a",
       "signer_identity": "supervisor_jules"
     }
   },
@@ -131,7 +116,7 @@
       "evidence_completeness": 1.0,
       "decision_trace_completeness": 1.0,
       "workflow_state_accuracy": 1.0,
-      "execution_cycle_duration": 0.08779621124267578,
+      "execution_cycle_duration": 0.060773372650146484,
       "context_preservation_score": 1.0,
       "unnecessary_reassessment_events": 0,
       "repeated_execution_prevention": true,
