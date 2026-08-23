@@ -10,7 +10,7 @@ The campaign architecture defines the hierarchy and boundaries:
 
 SAGI Brain → C2 / ChatGPT → Big Build Wave → Concurrent Flights → Big Build Loop → Verified Capability Gain
 
-This operating model defines how C2 executes within that structure.
+This operating model defines how C2 executes within that structure, adhering to the execution directives in `docs/governance/JULES_C2_CAPABILITY_ENHANCEMENT_DIRECTIVE.md`.
 
 ## C2 Mission
 
