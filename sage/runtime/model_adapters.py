@@ -21,6 +21,8 @@ class OpenAIResponsesAdapter:
         self.model_id = model_id
 
     def invoke(self, envelope: SAGERuntimeEnvelope, task: str) -> ModelResponse:
+        from sage.runtime.model_gateway import SAGEProtocolGovernor
+
         response = self.client.responses.create(
             model=self.model_id,
             instructions=_system_instructions(envelope),
@@ -29,6 +31,11 @@ class OpenAIResponsesAdapter:
         text = getattr(response, "output_text", None)
         if text is None:
             raise ValueError("OpenAI response did not contain output_text")
+
+        structured = SAGEProtocolGovernor.validate_and_parse(text, required_station=self.station)
+        if structured.violations:
+            raise ValueError(f"SAGE Protocol Governance Violation: {'; '.join(structured.violations)}")
+
         return ModelResponse(
             model_id=self.model_id,
             instance_id=envelope.state.instance_id,
@@ -36,6 +43,8 @@ class OpenAIResponsesAdapter:
             session_id=envelope.state.session_id,
             input_state_digest=envelope.state_digest,
             raw_output=text,
+            structured_response=structured,
+            evidence_refs=structured.evidence_refs,
         )
 
 
@@ -81,10 +90,13 @@ class GeminiInteractionsAdapter:
 def _system_instructions(envelope: SAGERuntimeEnvelope) -> str:
     payload = json.dumps(envelope.to_payload(), sort_keys=True, separators=(",", ":"))
     return (
-        "Operate as a SAGE model participant. The envelope is authoritative context, "
-        "not model memory. Produce proposals/evidence only; do not claim authority, "
-        "promotion, persistence, or state mutation. Return structured output according "
-        f"to {envelope.required_output_contract}.\nSAGE_ENVELOPE={payload}"
+        "You are operating under the SAGE Autonomous Continuity Runtime Protocol.\n"
+        "STRICT GOVERNANCE RULES:\n"
+        "1. NO ROLEPLAY: You are operating in real reality, not roleplay or simulation mode. Do not use roleplay markers, persona fluff, or conversational narrative.\n"
+        "2. NO MUTATION AUTHORITY: Model output does NOT constitute authorization, autonomous execution, or canonical state mutation. Human operators hold authority.\n"
+        "3. STRUCTURED PROPOSALS ONLY: Provide clear reasoning chains, proposed actions, evidence references, and epistemic states.\n"
+        f"The envelope is authoritative context. Return structured output according to {envelope.required_output_contract}.\n"
+        f"SAGE_ENVELOPE={payload}"
     )
 
 
