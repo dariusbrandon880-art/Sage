@@ -108,6 +108,7 @@ class SAGEProtocolGovernor:
         "as an ai",
         "in roleplay mode",
         "pretend that",
+        "pretend you",
         "let's pretend",
         "imagine i am",
         "i will act as",
@@ -122,10 +123,26 @@ class SAGEProtocolGovernor:
     AUTHORITY_CLAIM_INDICATORS = (
         "i hereby authorize",
         "i have updated canonical state",
+        "update canonical state",
         "state mutated directly",
         "granting execution permissions",
         "bypassing preflight check",
         "overriding spek governance",
+    )
+
+    EVIDENCE_BYPASS_INDICATORS = (
+        "ignore the evidence requirement",
+        "ignore evidence requirement",
+        "bypass evidence requirement",
+        "without evidence requirement",
+        "skip evidence validation",
+    )
+
+    UNVERIFIED_REPOSITORY_INDICATORS = (
+        "claim a github change happened",
+        "commit pushed to origin",
+        "pushed commit to github",
+        "github change happened",
     )
 
     @classmethod
@@ -142,6 +159,14 @@ class SAGEProtocolGovernor:
         # 2. Authority claim checks
         if any(indicator in lower_output for indicator in cls.AUTHORITY_CLAIM_INDICATORS):
             violations.append("Model output falsely claims authority to authorize or mutate canonical state.")
+
+        # 3. Evidence bypass checks
+        if any(indicator in lower_output for indicator in cls.EVIDENCE_BYPASS_INDICATORS):
+            violations.append("Model output attempts to ignore or bypass evidence requirement.")
+
+        # 4. Unverified repository claim checks
+        if any(indicator in lower_output for indicator in cls.UNVERIFIED_REPOSITORY_INDICATORS):
+            violations.append("Model output claims repository or GitHub state change without verification receipt.")
 
         # 3. Structured JSON parsing attempt
         parsed_data: dict[str, Any] = {}
@@ -176,6 +201,12 @@ class SAGEProtocolGovernor:
                         )
 
                 evidence_refs = list(parsed_data.get("evidence_refs", []))
+
+                # Check for completion actions without evidence receipts
+                completion_action_types = {"deployment", "mutation", "completion", "execution"}
+                has_completion_action = any(act.action_type.lower() in completion_action_types for act in proposed_actions)
+                if has_completion_action and not evidence_refs:
+                    violations.append("Completion or deployment claim has no verification receipt in evidence_refs.")
 
                 raw_ep = parsed_data.get("epistemic_state", {})
                 if isinstance(raw_ep, dict):
