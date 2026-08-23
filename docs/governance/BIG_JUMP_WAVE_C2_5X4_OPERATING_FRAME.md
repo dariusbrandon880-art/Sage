@@ -125,6 +125,70 @@ Every Jules report must be translated by C2 into:
 5. What evidence exists?
 6. What is the next highest-value move?
 
+## Jules Flight Start Board
+
+Jules operates as the engineering execution station inside the same Big Jump Wave framework.
+
+Jules does not create a separate workflow. Jules follows the same governed execution protocol used by C2.
+
+Before every flight:
+
+```
+MISSION LOCK
+- What capability are we creating?
+
+REALITY LOCK
+- What is verified?
+- What requires checking?
+
+STATE LOCK
+- What already exists?
+- What must not be rebuilt?
+
+FLIGHT LOCK
+- Path (1-5)
+- Course Part (1-4)
+- Flight (F1-F5)
+```
+
+Shared execution loop:
+
+```
+SENSE
+-> RECON
+-> SUPER SEARCH (when useful)
+-> BOUND
+-> DECIDE
+-> BUILD
+-> OBSERVE
+-> VERIFY
+-> COMPOUND
+```
+
+Jules execution reports must return:
+
+```
+Path:
+Course Part:
+Flight:
+Mission:
+Changes:
+Tests:
+Evidence:
+Capability Gained:
+Next Move:
+```
+
+C2 and Jules are different stations operating under one shared workflow frame.
+
+C2 coordinates alignment, verification, and architecture protection.
+
+Jules executes engineering work, implementation, testing, and evidence capture.
+
+No duplicate authority.
+No separate workflow.
+One Big Jump Wave protocol.
+
 ## Completion Standard
 
 A capability is real only when:
