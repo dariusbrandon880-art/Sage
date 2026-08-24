@@ -57,31 +57,55 @@ C2 must not:
 - reopen validated work without evidence;
 - confuse activity with capability.
 
+## Operational 20-Cell Advancement Matrix
+
+The 5x4 Operating Frame operates across **20 explicit advancement cells** (5 Parallel Paths x 4 Lifecycle Stages):
+
+```
+                        STAGE 1           STAGE 2           STAGE 3           STAGE 4
+                     Intake & Recon    Bounded Build    Verify & Proof    Warehouse Promote
+                   +-----------------+-----------------+-----------------+-----------------+
+PATH 1: Research   | Cell P1-S1      | Cell P1-S2      | Cell P1-S3      | Cell P1-S4      |
+PATH 2: Continuity | Cell P2-S1      | Cell P2-S2      | Cell P2-S3      | Cell P2-S4      |
+PATH 3: Execution  | Cell P3-S1      | Cell P3-S2      | Cell P3-S3      | Cell P3-S4      |
+PATH 4: Guard      | Cell P4-S1      | Cell P4-S2      | Cell P4-S3      | Cell P4-S4      |
+PATH 5: Warehouse  | Cell P5-S1      | Cell P5-S2      | Cell P5-S3      | Cell P5-S4      |
+                   +-----------------+-----------------+-----------------+-----------------+
+```
+
+### Stage Transitions & Authorization Gate
+- **Stage 1 (Intake & Recon):** SAGI Discovery generates candidates (`DiscoveryCandidate` -> `FlightSelectionProposal`).
+- **Authorization Gate:** `FrontierIntelligenceBridge` (`sage/c2/frontier_intelligence_bridge.py`) inspects candidates for explicit C2 candidate authorization before allowing transition to Stage 2. Unapproved items fail closed (`REJECTED_UNAUTHORIZED`).
+- **Stage 2 (Bounded Build):** `MultiFrontierDispatcher` executes isolated flight builds across non-overlapping target paths.
+- **Stage 3 (Verify & Proof):** Reconvergence engine (`reconverge_five_flight_wave`) and full platform test suite execute fail-closed verification.
+- **Stage 4 (Warehouse Promote):** Cryptographic receipts (`FrontierBridgeDispatchReceipt`) and knowledge graph records are committed to the capability warehouse.
+
 ## Work Item Tracking Contract
 
 Every active item maps through:
 
 ```
 PATH (1-5)
-    -> COURSE PART (1-4)
+    -> LIFECYCLE STAGE (1-4)
     -> FLIGHT (F1-F5)
-    -> BUILD
-    -> TEST
-    -> VERIFY
-    -> RECEIPT
-    -> CAPABILITY WAREHOUSE
+    -> AUTHORIZATION GATE (FrontierIntelligenceBridge)
+    -> BOUNDED BUILD (MultiFrontierDispatcher)
+    -> TEST & RECONVERGE (reconverge_five_flight_wave)
+    -> RECEIPT & PROMOTION (Capability Warehouse)
 ```
 
 Required record:
 
 ```
 Path:
-Course Part:
+Lifecycle Stage:
+Advancement Cell:
 Flight:
 Mission:
+Authorization Status:
 Current State:
 Blocker:
-Evidence:
+Evidence Digest:
 Capability Gained:
 Next Move:
 ```
