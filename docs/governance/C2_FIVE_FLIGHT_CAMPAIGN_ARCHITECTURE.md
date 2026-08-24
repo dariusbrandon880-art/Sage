@@ -52,6 +52,55 @@ COMPOUND
 
 ---
 
+# C2 FIVE-FLIGHT MODEL (LOCKED)
+
+```text
+                 C2 MISSION CONTROL
+                         |
+        ┌────────┬────────┬────────┬────────┬────────┐
+        ▼        ▼        ▼        ▼        ▼
+
+     FLIGHT 1  FLIGHT 2  FLIGHT 3  FLIGHT 4  FLIGHT 5
+
+     Own       Own       Own       Own       Own
+     Frontier  Frontier  Frontier  Frontier  Frontier
+
+        \        |        |        |        /
+                 ▼
+          C2 RECONVERGENCE
+          Evidence + Receipts
+          Promotion Gate
+```
+
+A flight is **NOT** a staged pipeline:
+- NOT "Flight 1 = discovery stage"
+- NOT "Flight 2 = testing stage"
+- NOT "Flight 3 = build stage"
+
+A flight **IS**:
+- an independent capability attack vector
+- a bounded build mission
+- its own recon
+- its own tests
+- its own evidence
+- its own milestone reporting back to C2 reconvergence
+
+# Big Strike Wave Definition
+
+A **Big Strike Wave** means:
+> **One coordinated wave where multiple independent flights hit separate frontiers and reconverge.**
+
+It does **NOT** mean five flights building one single thing.
+
+Example Big Strike Wave:
+- Flight 1 → Fleet intelligence advancement
+- Flight 2 → HUD/immersion advancement
+- Flight 3 → Engineering capability advancement
+- Flight 4 → Governance/security advancement
+- Flight 5 → Evidence/archive advancement
+
+Each produces its own delta, then C2 evaluates the combined strike.
+
 # Campaign Model
 
 When authorized, C2 may coordinate parallel capability work through bounded execution paths.
