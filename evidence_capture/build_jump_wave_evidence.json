@@ -1,0 +1,16 @@
+{
+  "wave_id": "wave_bjw_2026_08_24",
+  "commit_sha": "ed70dc8",
+  "status": "RECONVERGED",
+  "verdict": "PASS",
+  "tests": "tests/c2/test_build_jump_wave.py (3/3 PASS)",
+  "receipt_digest": "4c38d4d7f573ad7d8e64c3917feec3cbcaef81b899a77efaa3b1a20b721e05d0",
+  "flights": [
+    "F1_FOUNDATION",
+    "F2_INTELLIGENCE",
+    "F3_EXECUTION",
+    "F4_VERIFICATION",
+    "F5_WAREHOUSE"
+  ],
+  "timestamp_utc": "2026-08-24T00:15:00Z"
+}
