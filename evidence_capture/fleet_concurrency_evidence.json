@@ -1,25 +1,37 @@
 {
   "receipt_type": "FLEET_CONCURRENCY_CAMPAIGN_RECEIPT",
   "campaign": "SAGE BIG STRIKE FULL CAMPAIGN",
-  "status": "COMPLETED_AND_RECONVERGED",
-  "timestamp": "2026-08-25T00:00:00Z",
-  "active_tracks": [
-    "F1 Continuity Projection",
-    "F2 Assembly-Line Governed Execution",
-    "F3 Sports Scientific Robustness",
-    "F4 Evidence Fabric / Lifecycle",
-    "F5 Cognitive Integration Bridge",
-    "Fleet Concurrency Substrate"
+  "status": "VERIFIED",
+  "pr_number": 247,
+  "pr_head_sha": "62379cc189da632c1cf6150bb6a09b1a62d25202",
+  "verified_merge_commit_sha": "e4abbb1f2981fccafb63082da5873d666bf48821",
+  "platform_test_command": "pytest -v --tb=short",
+  "platform_tests": "897 passed",
+  "targeted_hardening_tests": "9 passed",
+  "targeted_hardening": [
+    "tests/experimental/test_fleet_concurrency.py",
+    "tests/experimental/test_failure_memory_preflight.py"
   ],
   "fleet_concurrency_substrate": {
     "engine": "FleetConcurrencyEngine",
     "target": "sage/experimental/airspace/fleet_concurrency.py",
-    "test_suite": "tests/experimental/test_fleet_concurrency.py",
-    "status": "PASSED"
+    "dag_validation": "FAIL_CLOSED",
+    "namespace_collision_protection": "FAIL_CLOSED",
+    "dependency_validation": "FAIL_CLOSED",
+    "deterministic_receipts": "PASS",
+    "concurrent_ready_levels": "PASS"
   },
   "governed_execution_enhancement": {
     "failure_memory_integration": "sage/experimental/progression.py",
-    "preflight_status": "PASSED"
+    "preflight_status": "FAIL_CLOSED",
+    "mission_selection_authority": "NONE"
   },
-  "verdict": "PASS"
+  "protected_namespaces": {
+    "sage/core/": "UNTOUCHED",
+    "sage/runtime/": "UNTOUCHED",
+    "sage/acr/": "UNTOUCHED",
+    "sage/agents/": "UNTOUCHED"
+  },
+  "ci_governance_check": "PASS",
+  "verification_status": "PASS"
 }
