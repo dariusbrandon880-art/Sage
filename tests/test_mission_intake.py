@@ -1,8 +1,6 @@
 """Unit tests for SAGE Governed Mission Intake Layer."""
 
-import pytest
-import time
-from sage.mission_intake import SAGEMissionIntakeLayer, MissionProposal
+from sage.mission_intake import SAGEMissionIntakeLayer
 
 
 def test_valid_proposal_acceptance():
@@ -13,7 +11,7 @@ def test_valid_proposal_acceptance():
         "description": "Trace cryptographic audit trails across session records",
         "objective": "Verify the integrity of SHA-256 fingerprint chains in PML",
         "operator_id": "operator_jules_01",
-        "prerequisites": {"value_appraisal_approved": True}
+        "prerequisites": {"value_appraisal_approved": True},
     }
 
     res = intake.submit_proposal(proposal)
@@ -57,7 +55,7 @@ def test_missing_required_metadata():
         "name": "   ",  # Blank name
         "description": "Valid description",
         "objective": "Valid objective",
-        "operator_id": "operator_jules_01"
+        "operator_id": "operator_jules_01",
     }
 
     res = intake.submit_proposal(proposal)
@@ -102,15 +100,17 @@ def test_provenance_preservation():
         "description": "Trace cryptographic audit trails across session records",
         "objective": "Verify the integrity of SHA-256 fingerprint chains in PML",
         "operator_id": "operator_jules_01",
-        "prerequisites": {"value_appraisal_approved": True}
+        "provenance_ref": "ref_hash_abc_123",
+        "prerequisites": {"value_appraisal_approved": True},
     }
 
-    res = intake.submit_proposal(proposal)
+    intake.submit_proposal(proposal)
     enqueued = intake.get_queue()[0]
 
     provenance = enqueued.metadata["provenance"]
     assert provenance["operator_id"] == "operator_jules_01"
-    assert provenance["original_proposal"] == proposal
+    assert provenance["provenance_ref"] == "ref_hash_abc_123"
+    assert enqueued.metadata["authorized"] is False
 
 
 def test_intake_cannot_authorize_execution():
@@ -120,7 +120,7 @@ def test_intake_cannot_authorize_execution():
         "name": "Audit System",
         "description": "Trace audit trails",
         "objective": "Verify integrity",
-        "operator_id": "operator_jules_01"
+        "operator_id": "operator_jules_01",
     }
 
     res = intake.submit_proposal(proposal)
@@ -140,7 +140,7 @@ def test_integration_with_progression_controller():
         "description": "Trace audit trails",
         "objective": "Verify integrity",
         "operator_id": "operator_jules_01",
-        "prerequisites": {"value_appraisal_approved": True}
+        "prerequisites": {"value_appraisal_approved": True},
     }
 
     res = intake.submit_proposal(proposal)

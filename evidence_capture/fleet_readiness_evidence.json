@@ -1,0 +1,54 @@
+{
+  "receipt_id": "readiness_rcpt_f994e01d500c",
+  "commit_sha": "af4370abf5270bfdfec962da65ce4bcb40f575a8",
+  "station_scores": {
+    "MISSION_DIRECTOR": {
+      "station_id": "MISSION_DIRECTOR",
+      "overall_score": 0.76,
+      "status": "READY",
+      "test_pass_rate": 1.0,
+      "evidence_completeness": 0.2,
+      "protected_path_violations": 0,
+      "qualification_level": 7,
+      "rationale": "READY: All tests passed, verified evidence attached, 0 protected path violations.",
+      "read_only": true
+    },
+    "MISSION_CONTROL": {
+      "station_id": "MISSION_CONTROL",
+      "overall_score": 0.7171,
+      "status": "READY",
+      "test_pass_rate": 1.0,
+      "evidence_completeness": 0.2,
+      "protected_path_violations": 0,
+      "qualification_level": 4,
+      "rationale": "READY: All tests passed, verified evidence attached, 0 protected path violations.",
+      "read_only": true
+    },
+    "INTEL_STATION": {
+      "station_id": "INTEL_STATION",
+      "overall_score": 0.7029,
+      "status": "READY",
+      "test_pass_rate": 1.0,
+      "evidence_completeness": 0.2,
+      "protected_path_violations": 0,
+      "qualification_level": 3,
+      "rationale": "READY: All tests passed, verified evidence attached, 0 protected path violations.",
+      "read_only": true
+    },
+    "ENGINEERING_FLIGHT": {
+      "station_id": "ENGINEERING_FLIGHT",
+      "overall_score": 0.7171,
+      "status": "READY",
+      "test_pass_rate": 1.0,
+      "evidence_completeness": 0.2,
+      "protected_path_violations": 0,
+      "qualification_level": 4,
+      "rationale": "READY: All tests passed, verified evidence attached, 0 protected path violations.",
+      "read_only": true
+    }
+  },
+  "fleet_verdict": "READY",
+  "overall_fleet_readiness": 0.7243,
+  "provenance_hash": "3c00869317006eb322d25125c8caff2d8f4b6afc3ddc71203d593637a179252d",
+  "timestamp": "2026-08-24T07:37:39.565526+00:00"
+}

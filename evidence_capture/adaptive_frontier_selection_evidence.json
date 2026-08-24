@@ -1,0 +1,124 @@
+{
+  "commit_sha": "af4370abf5270bfdfec962da65ce4bcb40f575a8",
+  "intake_submission": {
+    "accepted": true,
+    "status": "ACCEPTED",
+    "mission_id": "msn-intake-2e62da274eb8955d",
+    "current_state": "MISSION_PROPOSED",
+    "queue_position": 0,
+    "authorized": false,
+    "has_unsatisfied_prerequisites": false
+  },
+  "packages": [
+    {
+      "package_id": "auth_pkg_124b00b07184",
+      "candidate_id": "cand_consequent_adaptive_01",
+      "risk_surface": {
+        "candidate_id": "cand_consequent_adaptive_01",
+        "risk_score": 0.1,
+        "protected_paths": [],
+        "verification_plan_present": true,
+        "evidence_requirements": [
+          "evidence_receipt",
+          "git_commit",
+          "test_report"
+        ],
+        "risk_verdict": "SAFE"
+      },
+      "is_authorized": true,
+      "authorization_status": "AUTHORIZED_BY_C2",
+      "authorization_token": "auth_token_c2_adaptive_cand_consequent_adaptive_01",
+      "package_hash": "9183436912da44cbf36fa7842105019a4fd1159e79fdb2c49209dc6df116b60f",
+      "commit_sha": "af4370abf5270bfdfec962da65ce4bcb40f575a8"
+    },
+    {
+      "package_id": "auth_pkg_996f27f5b805",
+      "candidate_id": "cand_info_gain_adaptive_02",
+      "risk_surface": {
+        "candidate_id": "cand_info_gain_adaptive_02",
+        "risk_score": 0.1,
+        "protected_paths": [],
+        "verification_plan_present": true,
+        "evidence_requirements": [
+          "evidence_receipt",
+          "git_commit",
+          "test_report"
+        ],
+        "risk_verdict": "SAFE"
+      },
+      "is_authorized": true,
+      "authorization_status": "AUTHORIZED_BY_C2",
+      "authorization_token": "auth_token_c2_adaptive_cand_info_gain_adaptive_02",
+      "package_hash": "ca2882084b12ddee1e538d5cb8132ab44b7ae480461a8b417e4160a2ef7b53b6",
+      "commit_sha": "af4370abf5270bfdfec962da65ce4bcb40f575a8"
+    },
+    {
+      "package_id": "auth_pkg_b7c399b36b39",
+      "candidate_id": "cand_falsification_adaptive_03",
+      "risk_surface": {
+        "candidate_id": "cand_falsification_adaptive_03",
+        "risk_score": 0.1,
+        "protected_paths": [],
+        "verification_plan_present": true,
+        "evidence_requirements": [
+          "evidence_receipt",
+          "git_commit",
+          "test_report"
+        ],
+        "risk_verdict": "SAFE"
+      },
+      "is_authorized": true,
+      "authorization_status": "AUTHORIZED_BY_C2",
+      "authorization_token": "auth_token_c2_adaptive_cand_falsification_adaptive_03",
+      "package_hash": "beb528a44f519ad417a0d2133083a8434eaa530f9d1fb37cdf6804577405c64b",
+      "commit_sha": "af4370abf5270bfdfec962da65ce4bcb40f575a8"
+    },
+    {
+      "package_id": "auth_pkg_2368b2132187",
+      "candidate_id": "cand_recovery_adaptive_04",
+      "risk_surface": {
+        "candidate_id": "cand_recovery_adaptive_04",
+        "risk_score": 0.1,
+        "protected_paths": [],
+        "verification_plan_present": true,
+        "evidence_requirements": [
+          "evidence_receipt",
+          "git_commit",
+          "test_report"
+        ],
+        "risk_verdict": "SAFE"
+      },
+      "is_authorized": true,
+      "authorization_status": "AUTHORIZED_BY_C2",
+      "authorization_token": "auth_token_c2_adaptive_cand_recovery_adaptive_04",
+      "package_hash": "7c7dfec48cde37b396cc98044da96d4c9e62b273067fce8e9be5c5ba5d25e436",
+      "commit_sha": "af4370abf5270bfdfec962da65ce4bcb40f575a8"
+    },
+    {
+      "package_id": "auth_pkg_c7b70cd8c69d",
+      "candidate_id": "cand_transfer_adaptive_05",
+      "risk_surface": {
+        "candidate_id": "cand_transfer_adaptive_05",
+        "risk_score": 0.1,
+        "protected_paths": [],
+        "verification_plan_present": true,
+        "evidence_requirements": [
+          "evidence_receipt",
+          "git_commit",
+          "test_report"
+        ],
+        "risk_verdict": "SAFE"
+      },
+      "is_authorized": true,
+      "authorization_status": "AUTHORIZED_BY_C2",
+      "authorization_token": "auth_token_c2_adaptive_cand_transfer_adaptive_05",
+      "package_hash": "fbbbfe4af39019728322f747148bf0bfd69982620c3823994b0a9625fa19d3ea",
+      "commit_sha": "af4370abf5270bfdfec962da65ce4bcb40f575a8"
+    }
+  ],
+  "proposal_selection_digest": "ecf8ab4ee42e0e667bb9f9d524a6d0ea8d82206017c92c636a8e0e1f157659de",
+  "bridge_digest": "f5ab7185d13809d804d3a2224b554007dd58fd7d6001a2c8a35ff556a49a28d4",
+  "is_authorized": true,
+  "dispatch_verdict": "PASS",
+  "selection_verdict": "PASS"
+}
