@@ -1,153 +1,97 @@
-"""Frontier Intelligence Bridge for SAGE C2 Big Jump Wave execution.
+"""Frontier Intelligence Bridge connecting discovery proposals to C2 MultiFrontierDispatcher.
 
-Adapts a SAGI FlightSelectionProposal into C2 MultiFrontierDispatcher flight missions
-while enforcing fail-closed authorization, selection digest verification,
-and candidate safety gates.
-
-Governance Laws:
-- Fail-Closed Authorization: Every candidate must have explicit authorization (authorized == True).
-- No Autonomous Promotion: Proposals are selection candidates until authorized by C2.
-- Selection Digest Verification: Recomputes and validates proposal selection_digest before wave build.
+Provides a fail-closed authorization gate ensuring discovery candidates
+cannot execute through MultiFrontierDispatcher without explicit C2 authorization.
 """
-
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 import hashlib
-import importlib
-import subprocess
-from typing import Any, Dict, List, Optional, Tuple
+import json
+from typing import Any, Mapping
+
+from sage.c2.multi_frontier_dispatch import (
+    MultiFrontierDispatcher,
+    MultiFrontierDispatchReceipt,
+)
 
 
 @dataclass(frozen=True)
-class AuthorizedCandidate:
-    candidate_id: str
-    authorized: bool
-    authorized_by: str
-    authorization_token: str
+class FrontierBridgeDispatchReceipt:
+    proposal_frontier_digest: str
+    proposal_selection_digest: str
+    authorized_candidate_ids: tuple[str, ...]
+    unauthorized_candidate_ids: tuple[str, ...]
+    is_authorized: bool
+    dispatch_result: MultiFrontierDispatchReceipt | None
+    bridge_digest: str
 
-
-@dataclass(frozen=True)
-class FrontierBridgeReceipt:
-    selection_digest: str
-    frontier_digest: str
-    authorized_candidate_ids: Tuple[str, ...]
-    unauthorized_candidate_ids: Tuple[str, ...]
-    bridge_verdict: str
-    commit_sha: str
-    dispatch_receipt: Optional[Dict[str, Any]] = None
-    provenance_hash: str = ""
-
-    def to_dict(self) -> Dict[str, Any]:
-        return asdict(self)
-
-
-def _get_current_commit_sha() -> str:
-    try:
-        res = subprocess.run(
-            ["git", "rev-parse", "HEAD"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            check=True,
-        )
-        return res.stdout.strip()
-    except Exception:
-        return "UNKNOWN_COMMIT"
-
-
-def compute_bridge_provenance_hash(
-    selection_digest: str, frontier_digest: str, authorized_ids: Tuple[str, ...], commit_sha: str
-) -> str:
-    payload = f"{selection_digest}:{frontier_digest}:{','.join(sorted(authorized_ids))}:{commit_sha}".encode(
-        "utf-8"
-    )
-    return hashlib.sha256(payload).hexdigest()
+    def digest(self) -> str:
+        payload = {
+            "proposal_frontier_digest": self.proposal_frontier_digest,
+            "proposal_selection_digest": self.proposal_selection_digest,
+            "authorized_candidate_ids": sorted(self.authorized_candidate_ids),
+            "unauthorized_candidate_ids": sorted(self.unauthorized_candidate_ids),
+            "is_authorized": self.is_authorized,
+            "dispatch_verdict": self.dispatch_result.wave_verdict if self.dispatch_result else "REJECTED_UNAUTHORIZED",
+        }
+        raw = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+        return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 
 class FrontierIntelligenceBridge:
-    """Governed bridge mapping SAGI proposals to C2 MultiFrontierDispatcher execution waves."""
+    """Fail-closed bridge adapting discovery proposals to MultiFrontierDispatcher."""
 
-    def __init__(self, commit_sha: Optional[str] = None) -> None:
-        self.commit_sha = commit_sha or _get_current_commit_sha()
+    def __init__(self, dispatcher: MultiFrontierDispatcher | None = None):
+        self.dispatcher = dispatcher or MultiFrontierDispatcher()
 
-    def adapt_and_dispatch(
+    def bridge_and_dispatch(
         self,
-        proposal: Any,  # FlightSelectionProposal
-        authorized_candidates: Dict[str, AuthorizedCandidate],
-    ) -> FrontierBridgeReceipt:
-        """Validate proposal, enforce candidate authorization gate, adapt to dispatcher, and execute wave."""
-        if not hasattr(proposal, "selection_digest") or not proposal.selection_digest:
-            raise ValueError("Invalid proposal: missing selection_digest")
-        if not hasattr(proposal, "frontier_digest") or not proposal.frontier_digest:
-            raise ValueError("Invalid proposal: missing frontier_digest")
-        if not hasattr(proposal, "candidates") or not proposal.candidates:
-            raise ValueError("Invalid proposal: candidates list is empty")
+        proposal: Any,
+        *,
+        authorized_candidate_ids: tuple[str, ...],
+        commit_sha: str | None = None,
+    ) -> FrontierBridgeDispatchReceipt:
+        """Evaluate candidate authorizations and dispatch via MultiFrontierDispatcher if approved."""
+        if not proposal or not getattr(proposal, "candidates", None):
+            raise ValueError("proposal requires valid discovery candidates")
 
-        if len(proposal.candidates) != 5:
-            raise ValueError(
-                f"Proposal must contain exactly 5 candidates, found {len(proposal.candidates)}"
+        candidates = proposal.candidates
+        candidate_ids = tuple(getattr(c, "candidate_id", "") for c in candidates)
+        authorized_set = set(authorized_candidate_ids)
+
+        authorized_ids = tuple(sorted(cid for cid in candidate_ids if cid in authorized_set))
+        unauthorized_ids = tuple(sorted(cid for cid in candidate_ids if cid not in authorized_set))
+
+        is_authorized = len(unauthorized_ids) == 0 and len(authorized_ids) == len(candidate_ids)
+
+        if not is_authorized:
+            receipt = FrontierBridgeDispatchReceipt(
+                proposal_frontier_digest=getattr(proposal, "frontier_digest", ""),
+                proposal_selection_digest=getattr(proposal, "selection_digest", ""),
+                authorized_candidate_ids=authorized_ids,
+                unauthorized_candidate_ids=unauthorized_ids,
+                is_authorized=False,
+                dispatch_result=None,
+                bridge_digest="",
             )
+            object.__setattr__(receipt, "bridge_digest", receipt.digest())
+            return receipt
 
-        # Re-verify selection digest
-        mod_selector = importlib.import_module("sage.experimental.sagi_discovery_flight_selector")
-        SAGIDiscoveryFlightSelector = mod_selector.SAGIDiscoveryFlightSelector
+        # Dispatch via MultiFrontierDispatcher
+        if commit_sha:
+            self.dispatcher.commit_sha = commit_sha
 
-        recomputed_digest = SAGIDiscoveryFlightSelector._digest(
-            proposal.candidates, proposal.frontier_digest
+        dispatch_result = self.dispatcher.dispatch_all()
+
+        receipt = FrontierBridgeDispatchReceipt(
+            proposal_frontier_digest=getattr(proposal, "frontier_digest", ""),
+            proposal_selection_digest=getattr(proposal, "selection_digest", ""),
+            authorized_candidate_ids=authorized_ids,
+            unauthorized_candidate_ids=unauthorized_ids,
+            is_authorized=True,
+            dispatch_result=dispatch_result,
+            bridge_digest="",
         )
-        if recomputed_digest != proposal.selection_digest:
-            raise ValueError(
-                f"Selection digest mismatch! Recomputed '{recomputed_digest}' != expected '{proposal.selection_digest}'"
-            )
-
-        authorized_ids: List[str] = []
-        unauthorized_ids: List[str] = []
-
-        for candidate in proposal.candidates:
-            cid = candidate.candidate_id
-            if candidate.safety <= 0.0:
-                raise ValueError(f"Candidate '{cid}' has unsafe score safety={candidate.safety}")
-            if not candidate.provenance_ref:
-                raise ValueError(f"Candidate '{cid}' missing required provenance_ref")
-
-            auth_record = authorized_candidates.get(cid)
-            if auth_record and auth_record.authorized:
-                authorized_ids.append(cid)
-            else:
-                unauthorized_ids.append(cid)
-
-        # Fail closed if any selected candidate is unauthorized
-        if unauthorized_ids:
-            raise PermissionError(
-                f"Frontier Intelligence Gate Violation: Candidate(s) {unauthorized_ids} lack explicit C2 authorization"
-            )
-
-        # Dispatch wave via MultiFrontierDispatcher
-        mod_dispatcher = importlib.import_module("sage.c2.multi_frontier_dispatch")
-        MultiFrontierDispatcher = mod_dispatcher.MultiFrontierDispatcher
-
-        dispatcher = MultiFrontierDispatcher(commit_sha=self.commit_sha)
-        dispatch_receipt = dispatcher.dispatch_all()
-
-        provenance_hash = compute_bridge_provenance_hash(
-            proposal.selection_digest,
-            proposal.frontier_digest,
-            tuple(sorted(authorized_ids)),
-            self.commit_sha,
-        )
-
-        overall_verdict = (
-            "PASS" if (not unauthorized_ids and dispatch_receipt.wave_verdict == "PASS") else "HOLD"
-        )
-
-        return FrontierBridgeReceipt(
-            selection_digest=proposal.selection_digest,
-            frontier_digest=proposal.frontier_digest,
-            authorized_candidate_ids=tuple(sorted(authorized_ids)),
-            unauthorized_candidate_ids=tuple(sorted(unauthorized_ids)),
-            bridge_verdict=overall_verdict,
-            commit_sha=self.commit_sha,
-            dispatch_receipt=dispatch_receipt.to_dict(),
-            provenance_hash=provenance_hash,
-        )
+        object.__setattr__(receipt, "bridge_digest", receipt.digest())
+        return receipt
