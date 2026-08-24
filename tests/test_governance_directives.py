@@ -118,6 +118,26 @@ def test_c2_big_build_learning_loop_experiment_report_exists_and_conforms():
     assert "ACTIVE HYPOTHESES" in content
 
 
+def test_fleet_qualification_immersion_recon_report_exists_and_conforms():
+    """Verify that FLEET_QUALIFICATION_IMMERSION_RECON_REPORT.md exists and contains required sections."""
+    root_dir = Path(__file__).parent.parent
+    recon_file = root_dir / "docs" / "governance" / "FLEET_QUALIFICATION_IMMERSION_RECON_REPORT.md"
+
+    assert recon_file.exists(), "The Fleet Qualification Immersion Recon Report must exist under docs/governance/"
+
+    content = recon_file.read_text(encoding="utf-8")
+
+    assert "# FLEET QUALIFICATION & IMMERSION ARCHITECTURE RECONNAISSANCE REPORT" in content
+    assert "Air Force Qualification Models" in content
+    assert "Flight Simulator & Tactical Progression Systems" in content
+    assert "RPG Skill Tree & Qualification Curves" in content
+    assert "FLIGHT A — EXTERNAL RESEARCH & PATTERN RECON" in content
+    assert "FLIGHT B — SAGE ASSET MAPPING" in content
+    assert "FLIGHT C — CANDIDATE FLEET QUALIFICATION MODEL" in content
+    assert "FLIGHT D — ADVERSARIAL FALSIFICATION & RISK ANALYSIS" in content
+    assert "FLIGHT E — CAPABILITY WAREHOUSE DECISION" in content
+
+
 def test_public_security_posture_files_exist_and_conform():
     """Verify that SECURITY.md, .github/CODEOWNERS, and .github/workflows/security.yml exist and conform."""
     root_dir = Path(__file__).parent.parent
