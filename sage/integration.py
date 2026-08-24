@@ -194,24 +194,57 @@ class ChatGPTClient(BaseAIClient):
 class GeminiJulesClient(BaseAIClient):
     """Connector for Google Gemini / Jules continuity workflow."""
 
-    def __init__(self, runtime: Any):
+    def __init__(self, runtime: Any, c2_provider: Any = None):
         super().__init__("GeminiJules", runtime)
+        self.c2_provider = c2_provider
 
     def execute_query(self, request: AIQueryRequest) -> AIQueryResponse:
         context = self.retrieve_context(request.prompt)
         session_id = request.session_id or f"session_{uuid.uuid4().hex[:8]}"
+
+        # Dynamically rehydrate C2 operating context
+        c2_context = {}
+        if self.c2_provider and callable(self.c2_provider):
+            try:
+                c2_context = self.c2_provider()
+            except Exception:
+                pass
+        elif hasattr(self.runtime, "get_c2_context") and callable(self.runtime.get_c2_context):
+            try:
+                c2_context = self.runtime.get_c2_context(session_id)
+            except Exception:
+                pass
+        elif hasattr(self.runtime, "get_status"):
+            try:
+                status = self.runtime.get_status()
+                c2_context = {
+                    "c2_identity": "GeminiJules",
+                    "master_archive_authority": True,
+                    "active_objective": status.get("current_objective"),
+                    "active_task": status.get("active_task"),
+                    "governance_status": "ACTIVE",
+                }
+            except Exception:
+                pass
+
         referenced_ids = [m["id"] for m in context["matched_memories"]] + [
             a["id"] for a in context["matched_archives"]
         ]
 
-        reasoning = f"Gemini/Jules established high-fidelity alignment with SAGE knowledge graph for session '{session_id}'."
+        reasoning = f"Gemini/Jules rehydrated C2 context for session '{session_id}' and aligned with {len(referenced_ids)} SAGE knowledge artifacts."
         self.reasoning_history.append(reasoning)
 
         response_text = request.response_override or (
-            f"Deep continuation response from Gemini/Jules.\n"
-            f"Continuity state retrieved successfully. Running with SAGE runtime alignment.\n"
+            f"Deep continuation response from Gemini/Jules station.\n"
+            f"C2 Operating Context rehydrated successfully: {json.dumps(c2_context, default=str)}\n"
             f"Referenced SAGE keys: {referenced_ids}"
         )
+
+        # Protocol Governance validation on response_text
+        from sage.runtime.model_gateway import SAGEProtocolGovernor
+        structured = SAGEProtocolGovernor.validate_and_parse(str(response_text), required_station="[SAGE::C2::GEMINI_JULES]")
+        if structured.violations:
+            raise RuntimeError(f"SAGE Protocol Governance Violation: {'; '.join(structured.violations)}")
 
         # Route through unified Continuity Bridge
         from sage.models import ExternalSessionPayload
@@ -228,9 +261,10 @@ class GeminiJulesClient(BaseAIClient):
                         "prompt": request.prompt,
                         "response": response_text,
                         "referenced_memories": referenced_ids,
+                        "c2_context": c2_context,
                         "client": "GeminiJules",
                     },
-                    "tags": ["ai_query", "gemini_jules"],
+                    "tags": ["ai_query", "gemini_jules", "c2_rehydrated"],
                     "confidence": "validated",
                 }
             ],
