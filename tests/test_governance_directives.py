@@ -118,6 +118,26 @@ def test_c2_big_build_learning_loop_experiment_report_exists_and_conforms():
     assert "ACTIVE HYPOTHESES" in content
 
 
+def test_big_strike_immersion_vocabulary_directive_exists_and_conforms():
+    """Verify that BIG_STRIKE_IMMERSION_VOCABULARY_DIRECTIVE.md exists and contains required sections."""
+    root_dir = Path(__file__).parent.parent
+    strike_file = root_dir / "docs" / "governance" / "BIG_STRIKE_IMMERSION_VOCABULARY_DIRECTIVE.md"
+
+    assert strike_file.exists(), "The Big Strike Immersion Vocabulary Directive must exist under docs/governance/"
+
+    content = strike_file.read_text(encoding="utf-8")
+
+    assert "# SAGE BIG STRIKE CAMPAIGN & IMMERSION VOCABULARY DIRECTIVE" in content
+    assert "Precision Strike" in content
+    assert "Recon Strike" in content
+    assert "Defense Strike" in content
+    assert "Countermeasure Sweep" in content
+    assert "Supply Drop" in content
+    assert "Command Push" in content
+    assert "After Action Report" in content
+    assert "SAGE FLEET COMMAND HUD" in content
+
+
 def test_fleet_qualification_immersion_recon_report_exists_and_conforms():
     """Verify that FLEET_QUALIFICATION_IMMERSION_RECON_REPORT.md exists and contains required sections."""
     root_dir = Path(__file__).parent.parent
