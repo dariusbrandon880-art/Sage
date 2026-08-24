@@ -1,0 +1,12 @@
+{
+  "capability": "adaptive_mission_selection",
+  "decision_packets_generated": true,
+  "packets_count": 2,
+  "authorization_default": true,
+  "protected_path_checks": "PASS",
+  "verification_status": "PASS",
+  "packets_digest": [
+    "b081d76234d36a4ce3acc320130bc26bba91d584a41d3dbeda61f4d71af79ef0",
+    "6e0e39b1e8b51e167ecb0cb41869295afbbc13cd0ea4d474f5647e16a7ee6660"
+  ]
+}
