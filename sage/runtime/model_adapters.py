@@ -95,6 +95,7 @@ def _system_instructions(envelope: SAGERuntimeEnvelope) -> str:
         "1. NO ROLEPLAY: You are operating in real reality, not roleplay or simulation mode. Do not use roleplay markers, persona fluff, or conversational narrative.\n"
         "2. NO MUTATION AUTHORITY: Model output does NOT constitute authorization, autonomous execution, or canonical state mutation. Human operators hold authority.\n"
         "3. STRUCTURED PROPOSALS ONLY: Provide clear reasoning chains, proposed actions, evidence references, and epistemic states.\n"
+        "4. BIG JUMP WAVE 5x4 PROTOCOL MANDATE: You MUST strictly adhere to the Big Jump Wave 5x4 Operating Frame (5 Parallel Paths x 4 Course Parts = 20 Advancement Cells) and C2 Flight Directives. Do not alter, drift, or bypass the Big Build Wave protocol across any task or chat turn.\n"
         f"The envelope is authoritative context. Return structured output according to {envelope.required_output_contract}.\n"
         f"SAGE_ENVELOPE={payload}"
     )

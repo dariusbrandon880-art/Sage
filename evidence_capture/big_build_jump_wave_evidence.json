@@ -1,0 +1,12 @@
+{
+  "wave_id": "wave_bbjw_2026_08_24",
+  "commit_sha": "ed70dc8",
+  "status": "RECONVERGED",
+  "collision_status": "CLEARED",
+  "boundary_status": "VERIFIED",
+  "validation_status": "PASS",
+  "promotion_status": "CLEARED_FOR_PROMOTION",
+  "tests": "tests/c2/test_big_build_jump_wave.py (4/4 PASS)",
+  "receipt_digest": "413da0538f5ceecbeecbd1ec29edb18eb3d6ce74a35bc7b9ed9d90f2fb97be5f",
+  "timestamp_utc": "2026-08-24T00:30:00Z"
+}
