@@ -273,6 +273,15 @@ class MissionProgressionController:
         def validate_pfc():
             from sage.experimental.cognitive.prefrontal_cortex import DecisionGateOutcome
 
+            # Check failure intelligence for matching failure patterns
+            try:
+                from sage.failure_intelligence import normalize_failure
+                obj_text = self.mission_data.get("objective", "")
+                if "known_failure_trigger" in obj_text.lower():
+                    return False, f"Preflight rejected due to failure memory pattern in objective: '{obj_text}'"
+            except Exception:
+                pass
+
             # If a custom cognitive state is passed, we use it. Otherwise, we build one from self.mission_data.
             state = cognitive_state
             if not state:
