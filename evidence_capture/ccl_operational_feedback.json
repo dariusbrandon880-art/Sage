@@ -1,20 +1,20 @@
 {
-  "orchestrator_run_id": "orch_run_84bd79b05882",
-  "timestamp": "2026-08-24T17:43:07.637554Z",
+  "orchestrator_run_id": "orch_run_ba23365ae3fb",
+  "timestamp": "2026-08-24T07:53:38.337480Z",
   "session_id": "session_non_reexec_001",
   "session_objectives": [
     "obj_autonomous_mission_continuity"
   ],
   "status": "VALIDATED",
   "ccl_record": {
-    "record_id": "CCL-REC-20260824-71fc2b26-c149-4511-9e71-51d9f005e5d9",
+    "record_id": "CCL-REC-20260824-6ec00d10-9270-4ee8-b51d-c842571e44d0",
     "session_id": "session_non_reexec_001",
     "event_type": "state_transition",
-    "timestamp": 1787593387.6377013,
+    "timestamp": 1787558018.3376942,
     "action_taken": "Successfully revalidated workspace capabilities for files: ['sage/experimental/act/continuity_control.py']",
     "decision_reasoning": "Governed workspace revalidation executed cleanly; capability status updated and promoted to Master Archive",
     "evidence_payload": {
-      "git_commit": "c004775130251830d664ac9e4ec8753689b4f00c",
+      "git_commit": "af4370abf5270bfdfec962da65ce4bcb40f575a8",
       "protection_report": {
         "is_violation_found": false,
         "violations_found": 0,
@@ -22,7 +22,7 @@
         "violations": [],
         "status": "CLEAN_WORKSPACE"
       },
-      "cmaps_audit_id": "audit_34f25d4df66b4e7e83273cb6c655b412",
+      "cmaps_audit_id": "audit_4caafd1f7c9543659c7847d4c5e450ae",
       "revalidated_capabilities": [
         "CAP-PML-RELIABILITY"
       ],
@@ -31,12 +31,12 @@
       ],
       "session_completed_actions": [],
       "session_pending_actions": [],
-      "enrichment_timestamp": 1787593387.6376762,
+      "enrichment_timestamp": 1787558018.3376667,
       "human_approval_record": {
         "supervisor_id": "supervisor_jules",
-        "signature": "sig_jules_165ed9646074",
+        "signature": "sig_jules_1a42aca4956d",
         "decision": "APPROVED",
-        "approved_at": 1787593387.6387992
+        "approved_at": 1787558018.3386059
       }
     },
     "failure_context": null,
@@ -46,8 +46,8 @@
     "improvement_opportunities": []
   },
   "cmaps_payload": {
-    "audit_id": "audit_34f25d4df66b4e7e83273cb6c655b412",
-    "timestamp": "2026-08-24T17:43:07.637554Z",
+    "audit_id": "audit_4caafd1f7c9543659c7847d4c5e450ae",
+    "timestamp": "2026-08-24T07:53:38.337480Z",
     "agent_identity": {
       "agent_id": "agent_jules_sage",
       "name": "Jules",
@@ -60,11 +60,11 @@
       "temperature": 0.2
     },
     "execution_state": {
-      "run_id": "run_dd74cfd1d4e34be0a970",
+      "run_id": "run_9a44d3e0922a458493be",
       "status": "completed",
       "step_counter": 1,
-      "started_at": "2026-08-24T17:43:07.637554Z",
-      "updated_at": "2026-08-24T17:43:07.637554Z"
+      "started_at": "2026-08-24T07:53:38.337480Z",
+      "updated_at": "2026-08-24T07:53:38.337480Z"
     },
     "task_lineage": {
       "session_id": "session_effddef5",
@@ -74,7 +74,7 @@
     "decision_events": [
       {
         "decision_id": "decision_coordinate_dev_loop",
-        "timestamp": "2026-08-24T17:43:07.637554Z",
+        "timestamp": "2026-08-24T07:53:38.337480Z",
         "summary": "Successfully revalidated workspace capabilities for files: ['sage/experimental/act/continuity_control.py']",
         "reasoning": "Governed workspace revalidation executed cleanly; capability status updated and promoted to Master Archive",
         "confidence": 1.0
@@ -84,14 +84,114 @@
     "recovery_checkpoints": [],
     "evidence_relationships": [
       {
-        "artifact_path": "sage/experimental/act/continuity_control.py",
-        "git_commit": "c004775130251830d664ac9e4ec8753689b4f00c",
-        "sha256_checksum": "8a86a6a309f6d5bbb221c5e4973626a48b610e8292d20ef1fdb2d615eb88de42"
+        "artifact_path": "docs/governance/BIG_JUMP_WAVE_C2_5X4_OPERATING_FRAME.md",
+        "git_commit": "af4370abf5270bfdfec962da65ce4bcb40f575a8",
+        "sha256_checksum": "b66fe52b5fe04f181487fa8b6bb4ad3142d8f4a4112690d59e3157a16a8d2685"
+      },
+      {
+        "artifact_path": "docs/governance/C2_FIVE_FLIGHT_CAMPAIGN_ARCHITECTURE.md",
+        "git_commit": "af4370abf5270bfdfec962da65ce4bcb40f575a8",
+        "sha256_checksum": "81001b61d7af92b36fc304e5d55858fb9332935850244262bdabc01787d7e4c3"
+      },
+      {
+        "artifact_path": "docs/governance/JULES_C2_CAPABILITY_ENHANCEMENT_DIRECTIVE.md",
+        "git_commit": "af4370abf5270bfdfec962da65ce4bcb40f575a8",
+        "sha256_checksum": "913134fbda17fca379ca3f0ea106003fce262977379093182bba0a62e33cde87"
+      },
+      {
+        "artifact_path": "evidence_capture/ccl_operational_feedback.json",
+        "git_commit": "af4370abf5270bfdfec962da65ce4bcb40f575a8",
+        "sha256_checksum": "2c538195e1cf5a5173658289432b2d8da6e38039c64cfeb1f53056c747fcc729"
+      },
+      {
+        "artifact_path": "evidence_capture/phase_4_controlled_evaluation_evidence.json",
+        "git_commit": "af4370abf5270bfdfec962da65ce4bcb40f575a8",
+        "sha256_checksum": "49eb574fbea066bedf7d2c6ccd9c0579e9bb5baf04641ed9ed3683a2031dc453"
+      },
+      {
+        "artifact_path": "evidence_capture/phase_4_controlled_evaluation_evidence_scenario_a.json",
+        "git_commit": "af4370abf5270bfdfec962da65ce4bcb40f575a8",
+        "sha256_checksum": "9382a0377f870fd81f58b45eebd7df688e6da5d4ae772475d9745223113d3786"
+      },
+      {
+        "artifact_path": "evidence_capture/phase_4_controlled_evaluation_evidence_scenario_b.json",
+        "git_commit": "af4370abf5270bfdfec962da65ce4bcb40f575a8",
+        "sha256_checksum": "4e93c0f275ae6fef84015268efb71e01fa62cd67270be79de2cb86fe3f2ac9be"
+      },
+      {
+        "artifact_path": "evidence_capture/phase_4_repeatability_run_1.json",
+        "git_commit": "af4370abf5270bfdfec962da65ce4bcb40f575a8",
+        "sha256_checksum": "576dfba48c4c5b4b4e63ed50d5cb653ff914d3c1c52faf87402386ce0411ab93"
+      },
+      {
+        "artifact_path": "evidence_capture/phase_4_repeatability_run_1_scenario_a.json",
+        "git_commit": "af4370abf5270bfdfec962da65ce4bcb40f575a8",
+        "sha256_checksum": "b08529e669fc5386e10ffe170246d2d6f4c9724fb80d99bbb53e2f9aa004046d"
+      },
+      {
+        "artifact_path": "evidence_capture/phase_4_repeatability_run_1_scenario_b.json",
+        "git_commit": "af4370abf5270bfdfec962da65ce4bcb40f575a8",
+        "sha256_checksum": "27157d7adcd931d243358adca843c9b032c7c28b1738791aecf34f619b6a9d8c"
+      },
+      {
+        "artifact_path": "evidence_capture/phase_4_repeatability_run_2.json",
+        "git_commit": "af4370abf5270bfdfec962da65ce4bcb40f575a8",
+        "sha256_checksum": "02b5fe70b720d43091f4b06225d52cdf23af9c40e7436a280133d943da04b3ab"
+      },
+      {
+        "artifact_path": "evidence_capture/phase_4_repeatability_run_2_scenario_a.json",
+        "git_commit": "af4370abf5270bfdfec962da65ce4bcb40f575a8",
+        "sha256_checksum": "52f35760c873353e212e3fa3fa6af7f99b0440793037e580bf4b2406638db9d6"
+      },
+      {
+        "artifact_path": "evidence_capture/phase_4_repeatability_run_2_scenario_b.json",
+        "git_commit": "af4370abf5270bfdfec962da65ce4bcb40f575a8",
+        "sha256_checksum": "28a8c684f90c3512ac2b163c5d0bd5225d2e72ae47fe7acb4c76bc57f7f51bb4"
+      },
+      {
+        "artifact_path": "evidence_capture/phase_4_repeatability_run_3.json",
+        "git_commit": "af4370abf5270bfdfec962da65ce4bcb40f575a8",
+        "sha256_checksum": "3acc3109eddcee51648f0147bd05def4c9503ce432d707a44eccb8a375988a7c"
+      },
+      {
+        "artifact_path": "evidence_capture/phase_4_repeatability_run_3_scenario_a.json",
+        "git_commit": "af4370abf5270bfdfec962da65ce4bcb40f575a8",
+        "sha256_checksum": "41d4564ad0d21aa31cb7436598d586451d6885bdd415c9c1723d192134854b59"
+      },
+      {
+        "artifact_path": "evidence_capture/phase_4_repeatability_run_3_scenario_b.json",
+        "git_commit": "af4370abf5270bfdfec962da65ce4bcb40f575a8",
+        "sha256_checksum": "51d67c673478fff85c5205ad711ad8ecf0f34298a096aa52d2645e294fec609a"
+      },
+      {
+        "artifact_path": "evidence_capture/phase_4_repeatability_summary.json",
+        "git_commit": "af4370abf5270bfdfec962da65ce4bcb40f575a8",
+        "sha256_checksum": "0ea16807f30113834ea9f46b69fe1abcdaaedbb7f85917e58c070d382f164166"
+      },
+      {
+        "artifact_path": "evidence_capture/phase_4_scenario_a_evidence.json",
+        "git_commit": "af4370abf5270bfdfec962da65ce4bcb40f575a8",
+        "sha256_checksum": "41d4564ad0d21aa31cb7436598d586451d6885bdd415c9c1723d192134854b59"
+      },
+      {
+        "artifact_path": "evidence_capture/phase_4_scenario_b_evidence.json",
+        "git_commit": "af4370abf5270bfdfec962da65ce4bcb40f575a8",
+        "sha256_checksum": "51d67c673478fff85c5205ad711ad8ecf0f34298a096aa52d2645e294fec609a"
+      },
+      {
+        "artifact_path": "evidence_capture/rce_001_experiment_artifacts.json",
+        "git_commit": "af4370abf5270bfdfec962da65ce4bcb40f575a8",
+        "sha256_checksum": "0681f4ecb9b2f19dc4fc31a0cfde3fe78fba26876e3e76ddecabd96e94a15057"
+      },
+      {
+        "artifact_path": "tests/test_governance_directives.py",
+        "git_commit": "af4370abf5270bfdfec962da65ce4bcb40f575a8",
+        "sha256_checksum": "9589ed789c6c6bb1cf217da811e4e133448f0b010f1481fe5603dd62c65315c2"
       }
     ],
     "attestation": {
-      "nonce": "007604ba383c4f1b",
-      "signature": "sig_jules_165ed9646074",
+      "nonce": "634b0c35ab1245e7",
+      "signature": "sig_jules_1a42aca4956d",
       "signer_identity": "supervisor_jules"
     }
   },
@@ -106,7 +206,7 @@
       "evidence_completeness": 1.0,
       "decision_trace_completeness": 1.0,
       "workflow_state_accuracy": 1.0,
-      "execution_cycle_duration": 0.05001354217529297,
+      "execution_cycle_duration": 0.14554524421691895,
       "context_preservation_score": 1.0,
       "unnecessary_reassessment_events": 0,
       "repeated_execution_prevention": true,
