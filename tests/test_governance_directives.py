@@ -94,3 +94,26 @@ def test_governance_cross_references():
     enhancement_doc = gov_dir / "JULES_C2_CAPABILITY_ENHANCEMENT_DIRECTIVE.md"
     assert enhancement_doc.exists()
     assert "JULES_FIVE_FLIGHT_C2_CAPABILITY_EXPANSION_DIRECTIVE.md" in enhancement_doc.read_text(encoding="utf-8")
+
+
+def test_public_security_posture_files_exist_and_conform():
+    """Verify that SECURITY.md, .github/CODEOWNERS, and .github/workflows/security.yml exist and conform."""
+    root_dir = Path(__file__).parent.parent
+
+    security_md = root_dir / "SECURITY.md"
+    assert security_md.exists(), "SECURITY.md must exist in the root directory"
+    sec_content = security_md.read_text(encoding="utf-8")
+    assert "# SAGE Security Policy" in sec_content
+    assert "Protected Core Namespaces" in sec_content
+    assert "One-Way Import Law" in sec_content
+
+    codeowners = root_dir / ".github" / "CODEOWNERS"
+    assert codeowners.exists(), ".github/CODEOWNERS must exist"
+    co_content = codeowners.read_text(encoding="utf-8")
+    assert "@dariusbrandon880-art" in co_content
+    assert "/docs/governance/" in co_content
+
+    sec_workflow = root_dir / ".github" / "workflows" / "security.yml"
+    assert sec_workflow.exists(), ".github/workflows/security.yml must exist"
+    wf_content = sec_workflow.read_text(encoding="utf-8")
+    assert "Secret & Dependency Vulnerability Audit" in wf_content

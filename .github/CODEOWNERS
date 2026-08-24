@@ -1,0 +1,20 @@
+# SAGE Core Governance & Security CODEOWNERS
+# Requires explicit authorization for protected namespaces and governance files.
+
+# Global default
+* @dariusbrandon880-art
+
+# Protected Governance & Architecture Doctrine
+/docs/governance/ @dariusbrandon880-art
+/docs/SAGE-C2-PERSISTENT-OPERATING-CONTRACT.md @dariusbrandon880-art
+/AGENTS.md @dariusbrandon880-art
+
+# Protected Core Namespaces
+/sage/runtime/ @dariusbrandon880-art
+/sage/core/ @dariusbrandon880-art
+/sage/acr/ @dariusbrandon880-art
+/sage/agents/ @dariusbrandon880-art
+
+# Workflows & Security Configurations
+/.github/ @dariusbrandon880-art
+/SECURITY.md @dariusbrandon880-art
