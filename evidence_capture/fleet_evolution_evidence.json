@@ -1,0 +1,29 @@
+{
+  "receipt_id": "evol_rcpt_18fbdadac2d5",
+  "commit_sha": "af4370abf5270bfdfec962da65ce4bcb40f575a8",
+  "metrics": {
+    "flight_quality": {
+      "metric_name": "flight_quality",
+      "category": "FLIGHT_QUALITY",
+      "score": 1.0,
+      "evidence_refs": [
+        "ed70dc864ab1b65e447ae84d7b2c78ec29a8b420",
+        "readiness_rcpt_f994e01d500c"
+      ],
+      "rationale": "Flight quality ratio is 100.0% across 2 receipts."
+    },
+    "regression_resistance": {
+      "metric_name": "regression_resistance",
+      "category": "REGRESSION_RESISTANCE",
+      "score": 1.0,
+      "evidence_refs": [
+        "platform_test_suite"
+      ],
+      "rationale": "Platform test pass rate is 100.0%."
+    }
+  },
+  "growth_index": 0.9,
+  "growth_signal": "DEGRADED",
+  "provenance_hash": "716ff3b320c7c72284936af1ca1c0ca8436d68d5471534bc3545f79f83caa1bf",
+  "timestamp": "2026-08-24T08:05:30.856816+00:00"
+}
