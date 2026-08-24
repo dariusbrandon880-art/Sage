@@ -138,6 +138,29 @@ def test_big_strike_immersion_vocabulary_directive_exists_and_conforms():
     assert "SAGE FLEET COMMAND HUD" in content
 
 
+def test_game_immersion_cross_media_research_report_exists_and_conforms():
+    """Verify that GAME_IMMERSION_CROSS_MEDIA_RESEARCH_REPORT.md exists and contains required sections."""
+    root_dir = Path(__file__).parent.parent
+    report_file = root_dir / "docs" / "governance" / "GAME_IMMERSION_CROSS_MEDIA_RESEARCH_REPORT.md"
+
+    assert report_file.exists(), "The Game Immersion Cross-Media Research Report must exist under docs/governance/"
+
+    content = report_file.read_text(encoding="utf-8")
+
+    assert "# GAME IMMERSION & CROSS-MEDIA SIMULATION RESEARCH REPORT" in content
+    assert "EVE Online & Elite Dangerous" in content
+    assert "XCOM & Darkest Dungeon" in content
+    assert "DCS World & Arma 3" in content
+    assert "StarCraft II & League of Legends Broadcast HUDs" in content
+    assert "Star Trek (LCARS) & Ender's Game (Command School)" in content
+    assert "Iron Man (JARVIS/FRIDAY) & The Matrix (Operator Station)" in content
+    assert "FLIGHT 1 — TACTICAL SIMULATORS & PERSISTENT WORLD GAMES" in content
+    assert "FLIGHT 2 — ESPORTS & LIVE-STREAM HUD ARCHITECTURES" in content
+    assert "FLIGHT 3 — SCI-FI CINEMA & COMMAND INTERFACES" in content
+    assert "FLIGHT 4 — ADVERSARIAL FALSIFICATION & ANTI-GAMIFICATION GAURDS" in content
+    assert "FLIGHT 5 — CAPABILITY WAREHOUSE & SAGE INTEGRATION" in content
+
+
 def test_fleet_qualification_immersion_recon_report_exists_and_conforms():
     """Verify that FLEET_QUALIFICATION_IMMERSION_RECON_REPORT.md exists and contains required sections."""
     root_dir = Path(__file__).parent.parent
