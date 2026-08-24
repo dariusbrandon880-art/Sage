@@ -100,3 +100,23 @@ def test_fleet_concurrency_rejects_promotional_authority_action():
 
     with pytest.raises(ValueError, match="Unsupported action type"):
         engine.execute_concurrent_wave("WAVE-PROMOTION", units)
+
+
+def test_fleet_concurrency_rejects_protected_namespace():
+    engine = FleetConcurrencyEngine()
+    units = [
+        FlightWorkUnit(unit_id="U1", flight_id="F1", target_path="sage/runtime/model.py"),
+    ]
+
+    with pytest.raises(ValueError, match="protected namespace"):
+        engine.execute_concurrent_wave("WAVE-PROTECTED", units)
+
+
+def test_fleet_concurrency_rejects_path_traversal():
+    engine = FleetConcurrencyEngine()
+    units = [
+        FlightWorkUnit(unit_id="U1", flight_id="F1", target_path="sage/c2/../runtime/model.py"),
+    ]
+
+    with pytest.raises(ValueError, match="protected namespace"):
+        engine.execute_concurrent_wave("WAVE-TRAVERSAL", units)

@@ -1,10 +1,11 @@
 {
   "receipt_type": "FLEET_CONCURRENCY_CAMPAIGN_RECEIPT",
   "campaign": "SAGE BIG STRIKE FULL CAMPAIGN",
-  "status": "VERIFIED",
+  "status": "HISTORICAL_VERIFICATION_SNAPSHOT",
   "pr_number": 247,
-  "pr_head_sha": "e10f33309cf4914facc95b783ae649ff478682ec",
-  "verified_merge_commit_sha": "61b1fb18bd58c1250a7f439d0123d54fecaedc10",
+  "snapshot_source_head_sha": "34f7cf9cc50e45edc0ec4a67b5d53f1095afdfea",
+  "snapshot_verified_merge_commit_sha": "bd04c73851b81f31a7088752beb50e8c6617f688",
+  "snapshot_workflow_run_id": 32791081027,
   "platform_test_command": "pytest -v --tb=short",
   "platform_tests": "897 passed",
   "targeted_hardening_tests": "9 passed",
@@ -17,6 +18,7 @@
     "target": "sage/experimental/airspace/fleet_concurrency.py",
     "dag_validation": "FAIL_CLOSED",
     "namespace_collision_protection": "FAIL_CLOSED",
+    "protected_namespace_protection": "FAIL_CLOSED",
     "dependency_validation": "FAIL_CLOSED",
     "deterministic_receipts": "PASS",
     "concurrent_ready_levels": "PASS"
@@ -33,5 +35,6 @@
     "sage/agents/": "UNTOUCHED"
   },
   "ci_governance_check": "PASS",
-  "verification_status": "PASS"
+  "verification_status": "SNAPSHOT_PASS",
+  "canonical_promotion_rule": "Fresh CI evidence on the final PR head is authoritative; this receipt is historical evidence for the snapshot_source_head_sha and must not be treated as proof of a later head."
 }

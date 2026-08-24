@@ -1,8 +1,9 @@
 """Fleet concurrency substrate for bounded SAGE flight waves.
 
 The engine coordinates independent work units without granting C2 authority. It
-validates dependency structure, rejects namespace collisions before execution,
-executes independent DAG levels concurrently, and emits deterministic receipts.
+validates dependency structure, rejects protected namespace claims and namespace
+collisions before execution, executes independent DAG levels concurrently, and
+emits deterministic receipts.
 """
 
 from __future__ import annotations
@@ -10,6 +11,7 @@ from __future__ import annotations
 from concurrent.futures import ThreadPoolExecutor
 import hashlib
 import json
+import posixpath
 import threading
 import time
 from typing import Any, Dict, List, Set
@@ -47,16 +49,29 @@ class FleetConcurrencyEngine:
     """Coordinate independent flight units while preserving bounded authority."""
 
     _ALLOWED_ACTION_TYPES = {"EXECUTE", "VERIFY"}
+    _PROTECTED_PREFIXES = ("sage/core", "sage/runtime", "sage/acr", "sage/agents")
 
     def __init__(self) -> None:
         self.active_locks: Set[str] = set()
         self._lock_guard = threading.Lock()
+
+    @classmethod
+    def _validate_target_path(cls, target_path: str) -> None:
+        """Reject malformed, traversal, or protected repository namespace claims."""
+        if not target_path or target_path.startswith("/"):
+            raise ValueError("Fleet concurrency unit target_path must be a non-empty relative path.")
+        normalized = posixpath.normpath(target_path)
+        if normalized == ".." or normalized.startswith("../"):
+            raise ValueError(f"Fleet concurrency unit target_path escapes repository root: '{target_path}'")
+        if any(normalized == prefix or normalized.startswith(f"{prefix}/") for prefix in cls._PROTECTED_PREFIXES):
+            raise ValueError(f"Fleet concurrency unit targets protected namespace: '{target_path}'")
 
     def _validate_units(self, units: List[FlightWorkUnit]) -> Dict[str, FlightWorkUnit]:
         unit_map = {unit.unit_id: unit for unit in units}
         if len(unit_map) != len(units):
             raise ValueError("Fleet concurrency wave contains duplicate unit IDs.")
         for unit in units:
+            self._validate_target_path(unit.target_path)
             if unit.action_type not in self._ALLOWED_ACTION_TYPES:
                 raise ValueError(
                     f"Unsupported action type '{unit.action_type}' for bounded fleet execution."
