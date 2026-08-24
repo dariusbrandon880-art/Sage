@@ -1,0 +1,15 @@
+{
+  "capability": "fleet_concurrency_engine",
+  "dispatch_id": "dispatch-wave-conc-001",
+  "flight_units_executed": 3,
+  "collisions_detected": [],
+  "successful_missions": [
+    "msn-concat-001",
+    "msn-concat-002",
+    "msn-concat-003"
+  ],
+  "failed_missions": [],
+  "verdict": "PASS",
+  "receipt_digest": "bfe6c7f094b14b7d49289db560f6938f40a8a175b2ad63920b2a5c74bf10c7e2",
+  "timestamp": 1787602636.708791
+}

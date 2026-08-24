@@ -1,5 +1,5 @@
 {
-  "commit_sha": "ed70dc864ab1b65e447ae84d7b2c78ec29a8b420",
+  "commit_sha": "af4370abf5270bfdfec962da65ce4bcb40f575a8",
   "flight_receipts": [
     {
       "flight_id": "Flight A",
@@ -7,7 +7,7 @@
       "frontier_name": "research_intelligence",
       "boundary_scope": "sage.c2.dispatch.flight_a",
       "status": "PASS",
-      "commit_sha": "ed70dc864ab1b65e447ae84d7b2c78ec29a8b420",
+      "commit_sha": "af4370abf5270bfdfec962da65ce4bcb40f575a8",
       "proof_type": "mission_objective_output_receipt",
       "proof_data": {
         "mission_objective": "Execute research & capability discovery synthesis with output receipt",
@@ -21,7 +21,7 @@
           "evidence_reference": "research_flight_a_verified"
         }
       },
-      "receipt_hash": "409db015a8f711f723da406e77c6b42ff528a9d76ce5b74756c289a5eb9039fb"
+      "receipt_hash": "af4d4c287d3c11a4e87a7d4a511632485983f5d9e93113a6fc58c4180ee6fb72"
     },
     {
       "flight_id": "Flight B",
@@ -29,7 +29,7 @@
       "frontier_name": "continuity_context",
       "boundary_scope": "sage.c2.dispatch.flight_b",
       "status": "PASS",
-      "commit_sha": "ed70dc864ab1b65e447ae84d7b2c78ec29a8b420",
+      "commit_sha": "af4370abf5270bfdfec962da65ce4bcb40f575a8",
       "proof_type": "independent_execution_boundary",
       "proof_data": {
         "boundary_scope": "sage.c2.dispatch.flight_b",
@@ -40,7 +40,7 @@
           "cross_flight_leakage": false
         }
       },
-      "receipt_hash": "7fd16d47e281409f4ba0b30ccc3382e38dd8345c3fc892e8e6ee600adef3798a"
+      "receipt_hash": "75a943fbf7c93aa178b798d157ce4b024fa8779538e8e5c4151a0dcd7345e813"
     },
     {
       "flight_id": "Flight C",
@@ -48,7 +48,7 @@
       "frontier_name": "execution_substrate",
       "boundary_scope": "sage.c2.dispatch.flight_c",
       "status": "PASS",
-      "commit_sha": "ed70dc864ab1b65e447ae84d7b2c78ec29a8b420",
+      "commit_sha": "af4370abf5270bfdfec962da65ce4bcb40f575a8",
       "proof_type": "independent_capability_result",
       "proof_data": {
         "execution_engine": "ParallelFrontierExecutor",
@@ -58,7 +58,7 @@
           "outcome": "SUCCESS"
         }
       },
-      "receipt_hash": "8d23155a1562862baf570d4fab0d250a0c5bef1fdd32a40a898652a2df511493"
+      "receipt_hash": "0c8c570266c749ab63bca47e5582ec1a64904e3f2e0591debe8b966de9325cfe"
     },
     {
       "flight_id": "Flight D",
@@ -66,7 +66,7 @@
       "frontier_name": "architecture_guard",
       "boundary_scope": "sage.c2.dispatch.flight_d",
       "status": "PASS",
-      "commit_sha": "ed70dc864ab1b65e447ae84d7b2c78ec29a8b420",
+      "commit_sha": "af4370abf5270bfdfec962da65ce4bcb40f575a8",
       "proof_type": "architecture_guard_result",
       "proof_data": {
         "guard_rules_checked": [
@@ -80,7 +80,7 @@
           "risk_score": 0.0
         }
       },
-      "receipt_hash": "26b745c7009a7cb175fbcda03e303acb31c0e72659d87b49bd1336aefff5e55f"
+      "receipt_hash": "174e607f879aeb8c91d77693df5a3f61f4b316134cd16c329748e7bb2f0344ca"
     },
     {
       "flight_id": "Flight E",
@@ -88,7 +88,7 @@
       "frontier_name": "capability_warehouse",
       "boundary_scope": "sage.c2.dispatch.flight_e",
       "status": "PASS",
-      "commit_sha": "ed70dc864ab1b65e447ae84d7b2c78ec29a8b420",
+      "commit_sha": "af4370abf5270bfdfec962da65ce4bcb40f575a8",
       "proof_type": "evidence_warehouse_receipt",
       "proof_data": {
         "warehouse_partition": "evidence_capture/multi_frontier_dispatch_evidence.json",
@@ -98,7 +98,7 @@
           "retention_status": "LOCKED"
         }
       },
-      "receipt_hash": "aa12239cff6366f49f33cd11a2341abf1088cb7e864bc699b52b27bd46b38fbf"
+      "receipt_hash": "e46012dc121f39d01640159af8e238edf7b285998f47ca47b82cb839659ee308"
     }
   ],
   "collision_count": 0,
