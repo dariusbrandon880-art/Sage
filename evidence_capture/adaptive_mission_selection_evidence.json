@@ -1,0 +1,74 @@
+{
+  "commit_sha": "8672a5e16fce9d2c16e36fd3f35cde3c322cf4ea",
+  "total_candidates_evaluated": 4,
+  "authorized_candidates_count": 2,
+  "decision_packets": [
+    {
+      "candidate_id": "cand_004_core_runtime_mutation_attempt",
+      "proposal_title": "Unauthorized Core Engine Optimization",
+      "target_lane": "Protected Core Frontier",
+      "target_paths": [
+        "sage/core/engine.py"
+      ],
+      "priority_score": 1.8,
+      "risk_score": 0.6,
+      "is_authorized": false,
+      "requires_c2_token": true,
+      "protected_paths_touched": [
+        "sage/core/engine.py"
+      ],
+      "provenance_hash": "14b4aaecd54f4a788202f481bdbc08456a5af1c7afd1fa94e8acf7855bd35bce",
+      "falsification_verdict": "FALSIFIED_REJECTED"
+    },
+    {
+      "candidate_id": "cand_001_continuity_projection",
+      "proposal_title": "Continuity Projection & Archive Rehydration Sync",
+      "target_lane": "Lane 1: Continuity Projection",
+      "target_paths": [
+        "sage/experimental/act/continuity_control.py"
+      ],
+      "priority_score": 1.5,
+      "risk_score": 0.1,
+      "is_authorized": true,
+      "requires_c2_token": false,
+      "protected_paths_touched": [],
+      "provenance_hash": "fdc77ed7a25347cf503c55575240410cdb87cf28c363aeefaa0ad66ed201ac9f",
+      "falsification_verdict": "VALIDATED_FEASIBLE"
+    },
+    {
+      "candidate_id": "cand_002_governed_execution",
+      "proposal_title": "End-to-End Governed Execution Assembly Line",
+      "target_lane": "Lane 2: Governed Execution",
+      "target_paths": [
+        "sage/experimental/airspace/fleet_readiness.py"
+      ],
+      "priority_score": 1.4,
+      "risk_score": 0.1,
+      "is_authorized": true,
+      "requires_c2_token": false,
+      "protected_paths_touched": [],
+      "provenance_hash": "cdbec6144486be8696f28d90fd6f1d0ed67edf92895a781e0b770d8ca20cdfe0",
+      "falsification_verdict": "VALIDATED_FEASIBLE"
+    },
+    {
+      "candidate_id": "cand_003_scientific_robustness",
+      "proposal_title": "Sports Research Substrate Out-of-Sample Separator",
+      "target_lane": "Lane 3: Sports Research Robustness",
+      "target_paths": [
+        "sage/experimental/sports_longitudinal.py"
+      ],
+      "priority_score": 1.2,
+      "risk_score": 0.1,
+      "is_authorized": false,
+      "requires_c2_token": true,
+      "protected_paths_touched": [],
+      "provenance_hash": "47cdc47d6d0166d81715a06096c9496e505723bfa8330782ad4b6db71659cf7c",
+      "falsification_verdict": "VALIDATED_FEASIBLE"
+    }
+  ],
+  "selection_verdict": "GOVERNED_SELECTION_COMPLETE",
+  "summary": {
+    "top_candidate_id": "cand_004_core_runtime_mutation_attempt",
+    "falsified_candidates_count": 1
+  }
+}
