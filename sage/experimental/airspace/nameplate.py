@@ -26,6 +26,39 @@ STATION_NAMEPLATES = {
     StationID.ENGINEERING_FLIGHT: "[SAGE::ENGINEER::JULES]",
 }
 
+RANK_TITLES = {
+    StationID.MISSION_DIRECTOR: {
+        0: "Director Candidate",
+        4: "Mission Director",
+        7: "Fleet Commander",
+    },
+    StationID.MISSION_CONTROL: {
+        0: "Flight Controller Trainee",
+        3: "C2 Flight Controller",
+        7: "Chief C2 Strategist",
+    },
+    StationID.INTEL_STATION: {
+        0: "Recon Analyst Trainee",
+        3: "Senior Intel Specialist",
+        7: "Chief Recon Officer",
+    },
+    StationID.ENGINEERING_FLIGHT: {
+        0: "Junior Engineer",
+        3: "Flight Engineer",
+        4: "Senior Software Engineer",
+        7: "Lead Systems Architect",
+    },
+}
+
+
+def get_rank_title(station_id: StationID, cql_level: int) -> str:
+    """Derive rank title from station responsibility and CQL qualification level."""
+    titles = RANK_TITLES.get(station_id, {})
+    matching_thresholds = [lvl for lvl in sorted(titles.keys()) if lvl <= cql_level]
+    if matching_thresholds:
+        return titles[matching_thresholds[-1]]
+    return "Operational Agent"
+
 
 def render_agent_nameplate(
     state: AirspaceState,
@@ -95,4 +128,48 @@ def render_agent_identity(
     return (
         f"{identity['nameplate']} • CQL-{identity['cql']}{sql} • "
         f"XP {identity['xp']} • {identity['state']}"
+    )
+
+
+def build_nametag_badge(
+    state: AirspaceState,
+    station_id: StationID,
+    *,
+    state_label: str = "OPERATIONAL",
+) -> dict[str, Any]:
+    """Build structured read-only nametag badge data payload."""
+    station = state.stations[station_id]
+    xp = state.game_progression.get_total_xp_for_station(station_id)
+    rank_title = get_rank_title(station_id, station.current_cql)
+    icon = STATION_ICONS.get(station_id, "▪")
+    nameplate = STATION_NAMEPLATES[station_id]
+
+    return {
+        "nameplate": nameplate,
+        "station_id": station_id.value,
+        "agent_name": station.agent_name,
+        "rank_title": rank_title,
+        "icon": icon,
+        "cql": station.current_cql,
+        "sql": station.current_sql,
+        "xp": xp,
+        "state": state_label,
+        "verification_badge": f"[VERIFIED::CQL-{station.current_cql}]",
+        "read_only": True,
+    }
+
+
+def render_nametag_badge(
+    state: AirspaceState,
+    station_id: StationID,
+    *,
+    state_label: str = "OPERATIONAL",
+) -> str:
+    """Render single-line compact ASCII nametag badge for HUD/chat headers."""
+    badge = build_nametag_badge(state, station_id, state_label=state_label)
+    sql_str = f" • SQL-{badge['sql']}" if badge["sql"] > 0 else ""
+    return (
+        f"{badge['nameplate']} {badge['icon']} {badge['agent_name']} "
+        f"({badge['rank_title']}) • CQL-{badge['cql']}{sql_str} • "
+        f"XP {badge['xp']} • {badge['verification_badge']} • {badge['state']}"
     )
