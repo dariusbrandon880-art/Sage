@@ -2,7 +2,7 @@
 
 ## Governance Reference
 
-This operating frame enforces the campaign model specified in `docs/governance/C2_FIVE_FLIGHT_CAMPAIGN_ARCHITECTURE.md` and the operating directives in `docs/governance/JULES_C2_CAPABILITY_ENHANCEMENT_DIRECTIVE.md`.
+This operating frame enforces the campaign model specified in `docs/governance/C2_FIVE_FLIGHT_CAMPAIGN_ARCHITECTURE.md`, the operating directives in `docs/governance/JULES_C2_CAPABILITY_ENHANCEMENT_DIRECTIVE.md`, and the learning experiment synthesis in `docs/governance/C2_BIG_BUILD_LEARNING_LOOP_EXPERIMENT_REPORT.md`.
 
 ## C2 Control Contract
 

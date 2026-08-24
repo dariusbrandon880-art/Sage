@@ -96,6 +96,28 @@ def test_governance_cross_references():
     assert "JULES_FIVE_FLIGHT_C2_CAPABILITY_EXPANSION_DIRECTIVE.md" in enhancement_doc.read_text(encoding="utf-8")
 
 
+def test_c2_big_build_learning_loop_experiment_report_exists_and_conforms():
+    """Verify that C2_BIG_BUILD_LEARNING_LOOP_EXPERIMENT_REPORT.md exists and contains required sections."""
+    root_dir = Path(__file__).parent.parent
+    report_file = root_dir / "docs" / "governance" / "C2_BIG_BUILD_LEARNING_LOOP_EXPERIMENT_REPORT.md"
+
+    assert report_file.exists(), "The C2 Big Build Learning Loop Experiment Report must exist under docs/governance/"
+
+    content = report_file.read_text(encoding="utf-8")
+
+    assert "# C2 BIG BUILD LEARNING LOOP EXPERIMENT REPORT" in content
+    assert "NASA Systems Engineering Principles" in content
+    assert "Henry Ford Production Principles" in content
+    assert "Lamborghini Performance Engineering" in content
+    assert "FLIGHT A — RESEARCH INTELLIGENCE" in content
+    assert "FLIGHT B — C2 OPERATING CAPABILITY" in content
+    assert "FLIGHT C — BIG JUMP WAVE ENGINE" in content
+    assert "FLIGHT D — FALSIFICATION & FAILURE MEMORY" in content
+    assert "FLIGHT E — CAPABILITY WAREHOUSE" in content
+    assert "PROVEN ASSETS" in content
+    assert "ACTIVE HYPOTHESES" in content
+
+
 def test_public_security_posture_files_exist_and_conform():
     """Verify that SECURITY.md, .github/CODEOWNERS, and .github/workflows/security.yml exist and conform."""
     root_dir = Path(__file__).parent.parent
