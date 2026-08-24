@@ -1,0 +1,20 @@
+{
+  "overall_status": "PASS",
+  "gitignore_protection": {
+    ".env": true,
+    ".sage/credentials.json": true,
+    "credentials.json": true,
+    "*.pem": true,
+    "*.key": true
+  },
+  "security_documentation": {
+    "SECURITY.md": true,
+    ".github/CODEOWNERS": true
+  },
+  "tracked_secret_violations": [],
+  "summary": {
+    "gitignore_complete": true,
+    "security_docs_complete": true,
+    "zero_tracked_secrets": true
+  }
+}
