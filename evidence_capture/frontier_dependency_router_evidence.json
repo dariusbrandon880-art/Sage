@@ -1,0 +1,232 @@
+{
+  "commit_sha": "ed70dc864ab1b65e447ae84d7b2c78ec29a8b420",
+  "packages": [
+    {
+      "candidate_id": "cand_consequent_01",
+      "risk_profile": {
+        "candidate_id": "cand_consequent_01",
+        "risk_score": 0.37,
+        "risk_level": "MEDIUM",
+        "protected_path_touches": [],
+        "dependency_edges": [
+          "sage.c2",
+          "sage.experimental"
+        ],
+        "requires_operator_override": false,
+        "fingerprint": "ffc74f6e1987d687c43147fda9f864f2bee33e7cd95db12c10ea894e9e57012c"
+      },
+      "authorization_ready": true,
+      "c2_authorization_status": "AUTHORIZED",
+      "authorized_by": "c2_lifecycle_router_authorizer",
+      "authorization_token": "auth_token_c2_cand_consequent_01",
+      "package_hash": "f2580f5186b76fe7ef6b0c71f28e93c7f1d4ecdfc6e27fe176dcb597ad883824"
+    },
+    {
+      "candidate_id": "cand_info_gain_02",
+      "risk_profile": {
+        "candidate_id": "cand_info_gain_02",
+        "risk_score": 0.29,
+        "risk_level": "MEDIUM",
+        "protected_path_touches": [],
+        "dependency_edges": [
+          "sage.experimental.act"
+        ],
+        "requires_operator_override": false,
+        "fingerprint": "8ad3275e0d571144346edc8b2ff24b07695f7fe7636d129a0061fe5198a6137e"
+      },
+      "authorization_ready": true,
+      "c2_authorization_status": "AUTHORIZED",
+      "authorized_by": "c2_lifecycle_router_authorizer",
+      "authorization_token": "auth_token_c2_cand_info_gain_02",
+      "package_hash": "cbca85924c7bc4b415846da3987331a6c344eef9be9362d9aa48ea7dab932998"
+    },
+    {
+      "candidate_id": "cand_falsification_03",
+      "risk_profile": {
+        "candidate_id": "cand_falsification_03",
+        "risk_score": 0.26,
+        "risk_level": "MEDIUM",
+        "protected_path_touches": [],
+        "dependency_edges": [
+          "tests.c2"
+        ],
+        "requires_operator_override": false,
+        "fingerprint": "a13becb01521b3b754d17a44c881fa24a6b55d7086d3c74b97832fbb9bc54631"
+      },
+      "authorization_ready": true,
+      "c2_authorization_status": "AUTHORIZED",
+      "authorized_by": "c2_lifecycle_router_authorizer",
+      "authorization_token": "auth_token_c2_cand_falsification_03",
+      "package_hash": "3a10986e9ccc724fb19e7d78c5919149c0f0b3ac4ea752984b8fd28f61a4f6e4"
+    },
+    {
+      "candidate_id": "cand_recovery_04",
+      "risk_profile": {
+        "candidate_id": "cand_recovery_04",
+        "risk_score": 0.305,
+        "risk_level": "MEDIUM",
+        "protected_path_touches": [],
+        "dependency_edges": [
+          "sage.experimental"
+        ],
+        "requires_operator_override": false,
+        "fingerprint": "025d0abcd44bd1445dc050ef8fba854a2167d2100033cec08e4053e5ad389eb0"
+      },
+      "authorization_ready": true,
+      "c2_authorization_status": "AUTHORIZED",
+      "authorized_by": "c2_lifecycle_router_authorizer",
+      "authorization_token": "auth_token_c2_cand_recovery_04",
+      "package_hash": "e83215a807580dee8d8f7f853fbae4f03660e73de1e8f65a913bceb7d13006cb"
+    },
+    {
+      "candidate_id": "cand_transfer_05",
+      "risk_profile": {
+        "candidate_id": "cand_transfer_05",
+        "risk_score": 0.275,
+        "risk_level": "MEDIUM",
+        "protected_path_touches": [],
+        "dependency_edges": [
+          "evidence_capture"
+        ],
+        "requires_operator_override": false,
+        "fingerprint": "7676cdde08de401c44d311571221ad0fbf50ba450d9c45bd9df7b324b5bdf96f"
+      },
+      "authorization_ready": true,
+      "c2_authorization_status": "AUTHORIZED",
+      "authorized_by": "c2_lifecycle_router_authorizer",
+      "authorization_token": "auth_token_c2_cand_transfer_05",
+      "package_hash": "b6fa28e519a2a1d65da26d1bc220c1f556cc55d7c43d391406e892d77392a804"
+    }
+  ],
+  "bridge_receipt": {
+    "selection_digest": "75a7ad2c1667faeee7bc8c6c9fb4c62174850a291cd8ca1dbe60972ed65dfed0",
+    "frontier_digest": "frontier_digest_router_v1",
+    "authorized_candidate_ids": [
+      "cand_consequent_01",
+      "cand_falsification_03",
+      "cand_info_gain_02",
+      "cand_recovery_04",
+      "cand_transfer_05"
+    ],
+    "unauthorized_candidate_ids": [],
+    "bridge_verdict": "PASS",
+    "commit_sha": "ed70dc864ab1b65e447ae84d7b2c78ec29a8b420",
+    "dispatch_receipt": {
+      "commit_sha": "ed70dc864ab1b65e447ae84d7b2c78ec29a8b420",
+      "flight_receipts": [
+        {
+          "flight_id": "Flight A",
+          "mission_id": "mission_flight_a_research",
+          "frontier_name": "research_intelligence",
+          "boundary_scope": "sage.c2.dispatch.flight_a",
+          "status": "PASS",
+          "commit_sha": "ed70dc864ab1b65e447ae84d7b2c78ec29a8b420",
+          "proof_type": "mission_objective_output_receipt",
+          "proof_data": {
+            "mission_objective": "Execute research & capability discovery synthesis with output receipt",
+            "discovery_vectors": [
+              "intelligence_substrate",
+              "capability_gap_analysis"
+            ],
+            "output_receipt": {
+              "vector_count": 2,
+              "status": "COMPLETED",
+              "evidence_reference": "research_flight_a_verified"
+            }
+          },
+          "receipt_hash": "409db015a8f711f723da406e77c6b42ff528a9d76ce5b74756c289a5eb9039fb"
+        },
+        {
+          "flight_id": "Flight B",
+          "mission_id": "mission_flight_b_continuity",
+          "frontier_name": "continuity_context",
+          "boundary_scope": "sage.c2.dispatch.flight_b",
+          "status": "PASS",
+          "commit_sha": "ed70dc864ab1b65e447ae84d7b2c78ec29a8b420",
+          "proof_type": "independent_execution_boundary",
+          "proof_data": {
+            "boundary_scope": "sage.c2.dispatch.flight_b",
+            "rehydration_status": "ACTIVE",
+            "context_isolation": "VERIFIED_ISOLATED",
+            "independent_boundary_receipt": {
+              "isolation_check": true,
+              "cross_flight_leakage": false
+            }
+          },
+          "receipt_hash": "7fd16d47e281409f4ba0b30ccc3382e38dd8345c3fc892e8e6ee600adef3798a"
+        },
+        {
+          "flight_id": "Flight C",
+          "mission_id": "mission_flight_c_execution",
+          "frontier_name": "execution_substrate",
+          "boundary_scope": "sage.c2.dispatch.flight_c",
+          "status": "PASS",
+          "commit_sha": "ed70dc864ab1b65e447ae84d7b2c78ec29a8b420",
+          "proof_type": "independent_capability_result",
+          "proof_data": {
+            "execution_engine": "ParallelFrontierExecutor",
+            "capability_result": {
+              "tasks_executed": 3,
+              "concurrency_limit": 5,
+              "outcome": "SUCCESS"
+            }
+          },
+          "receipt_hash": "8d23155a1562862baf570d4fab0d250a0c5bef1fdd32a40a898652a2df511493"
+        },
+        {
+          "flight_id": "Flight D",
+          "mission_id": "mission_flight_d_architecture",
+          "frontier_name": "architecture_guard",
+          "boundary_scope": "sage.c2.dispatch.flight_d",
+          "status": "PASS",
+          "commit_sha": "ed70dc864ab1b65e447ae84d7b2c78ec29a8b420",
+          "proof_type": "architecture_guard_result",
+          "proof_data": {
+            "guard_rules_checked": [
+              "one_way_import_law",
+              "protected_boundary",
+              "historical_immutability"
+            ],
+            "violations_found": 0,
+            "architecture_guard_result": {
+              "verdict": "PASS",
+              "risk_score": 0.0
+            }
+          },
+          "receipt_hash": "26b745c7009a7cb175fbcda03e303acb31c0e72659d87b49bd1336aefff5e55f"
+        },
+        {
+          "flight_id": "Flight E",
+          "mission_id": "mission_flight_e_warehouse",
+          "frontier_name": "capability_warehouse",
+          "boundary_scope": "sage.c2.dispatch.flight_e",
+          "status": "PASS",
+          "commit_sha": "ed70dc864ab1b65e447ae84d7b2c78ec29a8b420",
+          "proof_type": "evidence_warehouse_receipt",
+          "proof_data": {
+            "warehouse_partition": "evidence_capture/multi_frontier_dispatch_evidence.json",
+            "archived_records": 5,
+            "evidence_warehouse_receipt": {
+              "immutability_verified": true,
+              "retention_status": "LOCKED"
+            }
+          },
+          "receipt_hash": "aa12239cff6366f49f33cd11a2341abf1088cb7e864bc699b52b27bd46b38fbf"
+        }
+      ],
+      "collision_count": 0,
+      "collisions_detected": [],
+      "wave_verdict": "PASS",
+      "summary": {
+        "total_flights": 5,
+        "isolated_boundaries": 5,
+        "reconvergence_verdict": "PASS",
+        "missing_missions": [],
+        "duplicate_missions": [],
+        "stale_commits": []
+      }
+    },
+    "provenance_hash": "a714a4c2b4f742e858cedd8f636793670a149e907ea88c00e452e3a8d26dc77e"
+  },
+  "router_verdict": "PASS"
+}
