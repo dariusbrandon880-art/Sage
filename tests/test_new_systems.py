@@ -10,6 +10,7 @@ from sage.decision import DecisionTracker
 from sage.memory import Memory
 from sage.models import ConfidenceLevel, DecisionType, MemoryObject
 from sage.validation import ValidationSystem
+from sage.c2.progression_receipt_serializer import MissionProgressionReceiptSerializer
 
 
 @pytest.fixture
@@ -211,3 +212,29 @@ def test_sage_rt_kl_002_enforcement(temp_dir):
     success, archive_id = validation.promote_to_archive(signed_rule.id, "Signed SAGE Rule")
     assert success is True
     assert archive_id.startswith("archive_")
+
+
+def test_validate_receipt_lineage():
+    serializer = MissionProgressionReceiptSerializer()
+
+    hash_1 = "1111111111111111111111111111111111111111111111111111111111111111"
+    hash_2 = "2222222222222222222222222222222222222222222222222222222222222222"
+
+    valid_receipts = [
+        {"receipt_hash": hash_1, "parent_receipt_hash": None},
+        {"receipt_hash": hash_2, "parent_receipt_hash": hash_1},
+    ]
+
+    res = serializer.validate_receipt_lineage(valid_receipts)
+    assert res["is_valid"] is True
+    assert res["chain_length"] == 2
+    assert res["lineage_verdict"] == "LINEAGE_VERIFIED"
+
+    invalid_receipts = [
+        {"receipt_hash": hash_1, "parent_receipt_hash": None},
+        {"receipt_hash": hash_2, "parent_receipt_hash": "invalid_parent_hash"},
+    ]
+
+    res_invalid = serializer.validate_receipt_lineage(invalid_receipts)
+    assert res_invalid["is_valid"] is False
+    assert res_invalid["lineage_verdict"] == "LINEAGE_CHAIN_INVALID"

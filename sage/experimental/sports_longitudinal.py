@@ -208,7 +208,6 @@ def resolve_sports_prediction(
     verification_timestamp_utc: str
 ) -> tuple[SportsOutcomeRecord, Optional[SportsScoreRecord], Optional[SportsLearningRecord]]:
     """Resolves a sports prediction by creating SEPARATE append-only records without mutating original prediction."""
-    # Verify original prediction integrity before resolution
     computed_hash = prediction.compute_sha256_hash()
     if prediction.sha256_receipt_hash and prediction.sha256_receipt_hash != computed_hash:
         raise ValueError(f"PREDICTION_INTEGRITY_FAIL: Locked prediction hash {prediction.sha256_receipt_hash} does not match computed hash {computed_hash}.")
@@ -270,6 +269,53 @@ def resolve_sports_prediction(
         learning.sign()
 
     return outcome, score, learning
+
+
+class OutOfSampleDataSeparator:
+    """Enforces strict temporal out-of-sample (OOS) data partitioning for sports research datasets.
+
+    Guarantees:
+    - Rejects predictions/observations where event_start_time_utc < oos_cutoff_timestamp_utc
+    - Prevents lookahead/temporal leakage in model evaluation
+    - Emits deterministic negative-result falsification records for invalid temporal observations
+    """
+
+    def __init__(self, oos_cutoff_timestamp_utc: str) -> None:
+        self.oos_cutoff_timestamp_utc = oos_cutoff_timestamp_utc
+        self.cutoff_dt = parse_iso_utc(oos_cutoff_timestamp_utc)
+
+    def is_in_oos_partition(self, event_start_time_utc: str) -> bool:
+        """Checks if an event falls strictly within the out-of-sample partition."""
+        event_dt = parse_iso_utc(event_start_time_utc)
+        return event_dt >= self.cutoff_dt
+
+    def validate_and_partition(
+        self, observations: List[RealSportsEventObservation]
+    ) -> Dict[str, Any]:
+        """Partitions observations into valid OOS set and rejected in-sample set."""
+        oos_observations: List[RealSportsEventObservation] = []
+        falsified_rejections: List[Dict[str, Any]] = []
+
+        for obs in observations:
+            if self.is_in_oos_partition(obs.event_start_time_utc):
+                oos_observations.append(obs)
+            else:
+                falsified_rejections.append({
+                    "event_id": obs.event_id,
+                    "event_start_time_utc": obs.event_start_time_utc,
+                    "oos_cutoff_timestamp_utc": self.oos_cutoff_timestamp_utc,
+                    "reason": "TEMPORAL_LEAKAGE_REJECTED: Event start time is prior to OOS cutoff.",
+                })
+
+        return {
+            "oos_cutoff_timestamp_utc": self.oos_cutoff_timestamp_utc,
+            "total_evaluated": len(observations),
+            "oos_valid_count": len(oos_observations),
+            "falsified_rejections_count": len(falsified_rejections),
+            "oos_observations": [asdict(o) for o in oos_observations],
+            "falsified_rejections": falsified_rejections,
+        }
+
 
 class SportsLongitudinalLedger:
     def __init__(self, storage_path: Optional[str | Path] = None):
@@ -396,15 +442,12 @@ class SportsLongitudinalLedger:
         leg_ids = [leg.get("prediction_id") or leg.get("leg_id") for leg in parlay_pred.parlay_legs if leg.get("prediction_id") or leg.get("leg_id")]
         resolved_outcomes_by_id = {o.prediction_id: o for o in self.outcomes}
 
-        # Check if all legs are resolved
         leg_outcomes = []
         for leg_id in leg_ids:
             if leg_id not in resolved_outcomes_by_id:
-                # Parlay legs not yet complete
                 return None
             leg_outcomes.append(resolved_outcomes_by_id[leg_id])
 
-        # Evaluate parlay status
         if any(o.outcome_status == "LOSS" for o in leg_outcomes):
             parlay_status = "LOSS"
         elif all(o.outcome_status == "WIN" for o in leg_outcomes):
@@ -598,12 +641,10 @@ class ReplayableObservationStream:
         provenance: ObservationProvenance,
         payload: Dict[str, Any],
     ) -> ObservationEvent:
-        # Validate temporal pre-game lock
         TemporalConsistencyValidator.validate_pre_game_observation(
             observation_timestamp_utc, event_start_time_utc
         )
 
-        # Validate temporal monotonicity with existing stream
         if self.stream:
             last_ts = self.stream[-1].observation_timestamp_utc
             TemporalConsistencyValidator.validate_monotonic_sequence([last_ts, observation_timestamp_utc])
