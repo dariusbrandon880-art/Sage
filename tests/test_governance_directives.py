@@ -40,6 +40,9 @@ def test_jules_c2_capability_enhancement_directive_exists_and_conforms():
     # Core rule checks
     assert "Repository truth > chat context > assumptions" in content
     assert "Do not collapse flights." in content
+    assert "independent capability attack vector" in content
+    assert "Big Strike Wave Definition" in content
+    assert "Jules Capability Upgrade Targets" in content
 
 
 def test_jules_five_flight_c2_capability_expansion_directive_exists_and_conforms():
@@ -70,6 +73,25 @@ def test_jules_five_flight_c2_capability_expansion_directive_exists_and_conforms
 
     for section in required_sections:
         assert section in content, f"Missing section in expansion directive: '{section}'"
+
+
+def test_five_flight_locked_model_and_big_strike_conformance():
+    """Verify that campaign architecture and 5x4 operating frame contain locked Five-Flight model and Big Strike Wave definitions."""
+    root_dir = Path(__file__).parent.parent
+    gov_dir = root_dir / "docs" / "governance"
+
+    campaign_doc = gov_dir / "C2_FIVE_FLIGHT_CAMPAIGN_ARCHITECTURE.md"
+    assert campaign_doc.exists()
+    campaign_content = campaign_doc.read_text(encoding="utf-8")
+    assert "# C2 FIVE-FLIGHT MODEL (LOCKED)" in campaign_content
+    assert "Big Strike Wave Definition" in campaign_content
+    assert "independent capability attack vector" in campaign_content
+
+    operating_frame_doc = gov_dir / "BIG_JUMP_WAVE_C2_5X4_OPERATING_FRAME.md"
+    assert operating_frame_doc.exists()
+    operating_content = operating_frame_doc.read_text(encoding="utf-8")
+    assert "## Core Model (Independent Vehicles)" in operating_content
+    assert "Big Strike Wave Definition" in operating_content
 
 
 def test_governance_cross_references():

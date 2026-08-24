@@ -110,31 +110,41 @@ The system is:
 
 ```text
                  C2 MISSION CONTROL
+                         |
+        ┌────────┬────────┬────────┬────────┬────────┐
+        ▼        ▼        ▼        ▼        ▼
 
-                        |
-                        v
+     FLIGHT 1  FLIGHT 2  FLIGHT 3  FLIGHT 4  FLIGHT 5
 
-                 BIG BUILD WAVE
+     Own       Own       Own       Own       Own
+     Frontier  Frontier  Frontier  Frontier  Frontier
 
-        +-------------+-------------+
-        |             |             |
-        v             v             v
-
-    Frontier A    Frontier B    Frontier C
-
-        +-------------+-------------+
-
-        Frontier D          Frontier E
+        \        |        |        |        /
+                 ▼
+          C2 RECONVERGENCE
+          Evidence + Receipts
+          Promotion Gate
 ```
 
-Each flight:
+A flight is **NOT** a staged pipeline:
+* NOT "Flight 1 = discovery stage"
+* NOT "Flight 2 = testing stage"
+* NOT "Flight 3 = build stage"
 
-* owns a distinct capability frontier
-* can advance independently
-* reports evidence back to C2
-* converges through verification
+A flight **IS**:
+* an independent capability attack vector
+* a bounded build mission with its own recon, tests, evidence, and milestone reporting to C2 reconvergence.
 
-Do not turn five flights into five agents repairing the same problem.
+## Big Strike Wave Definition
+A **Big Strike Wave** is defined as one coordinated wave where multiple independent flights hit separate frontiers and reconverge (e.g. F1 Fleet intelligence, F2 HUD/immersion, F3 Engineering capability, F4 Governance/security, F5 Evidence/archive). It is NOT five flights building one single thing.
+
+## Jules Capability Upgrade Targets
+Jules focuses on upgrading 5 core capabilities:
+1. **Mission decomposition**: Identify clean independent frontiers.
+2. **Repo awareness**: Check existing artifacts before proposing new architecture.
+3. **Collision avoidance**: Each flight owns a dedicated namespace/boundary.
+4. **Pattern learning**: Successful builds become reusable playbooks in the capability warehouse.
+5. **Verification instinct**: Tests and evidence are integral flight execution components, not afterthoughts.
 
 ---
 

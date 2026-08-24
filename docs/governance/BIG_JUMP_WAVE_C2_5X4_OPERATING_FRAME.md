@@ -9,35 +9,33 @@ This document defines the Big Jump Wave execution frame as the primary accelerat
 
 The frame does not replace existing architecture, sessions, or authority boundaries. It coordinates them.
 
-## Core Model
+## Core Model (Independent Vehicles)
 
 ```
-SAGI BRAIN
-Discovery + Opportunity Generation
-        |
-        v
-C2 MISSION CONTROL
-Command | Alignment | Verification | Architecture Guard
-        |
-        v
-BIG JUMP WAVE
-        |
-        +-------------------------------+
-        |       |       |       |       |
-        v       v       v       v       v
-      P1      P2      P3      P4      P5
+                 C2 MISSION CONTROL
+                         |
+        ┌────────┬────────┬────────┬────────┬────────┐
+        ▼        ▼        ▼        ▼        ▼
 
-Five parallel completion paths
+     FLIGHT 1  FLIGHT 2  FLIGHT 3  FLIGHT 4  FLIGHT 5
 
-Each path owns:
-- mission
-- four-part completion course
-- evidence contract
-- dependencies
-- capability output
+     Own       Own       Own       Own       Own
+     Frontier  Frontier  Frontier  Frontier  Frontier
 
-5 PATHS x 4 PARTS = 20 ADVANCEMENT CELLS
+        \        |        |        |        /
+                 ▼
+          C2 RECONVERGENCE
+          Evidence + Receipts
+          Promotion Gate
 ```
+
+A flight is **NOT** a staged pipeline step.
+A flight **IS** an independent capability attack vector operating as a bounded build mission with its own recon, tests, evidence, and milestone output.
+
+5 PATHS x 4 LIFECYCLE STAGES = 20 ADVANCEMENT CELLS
+
+### Big Strike Wave Definition
+A **Big Strike Wave** is defined as one coordinated wave where multiple independent flights hit separate frontiers and reconverge (e.g., F1 Fleet intelligence, F2 HUD/immersion, F3 Engineering capability, F4 Governance/security, F5 Evidence/archive). It is NOT five flights building one single item.
 
 ## C2 Role
 
