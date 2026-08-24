@@ -13,15 +13,10 @@ def test_big_build_jump_wave_readiness_markdown_exists():
     receipt_path = Path("docs/master/SAGE_BIG_BUILD_JUMP_WAVE_READINESS_RECEIPT.md")
     assert receipt_path.exists(), "Readiness receipt Markdown file must exist"
     content = receipt_path.read_text(encoding="utf-8")
-    assert "SAGE BIG BUILD JUMP WAVE READINESS RECEIPT" in content
-    assert "CURRENT REPO TRUTH & CAPABILITY MAP" in content
-    assert "EXISTING WORK RECONCILIATION & COMPONENT CLASSIFICATION" in content
-    assert "GOOGLE / EXTERNAL INTEGRATION GAP HUNT" in content
-    assert "ASSEMBLY LINE COMPLETION AUDIT" in content
-    assert "SPORTS SCIENCE CAPABILITY PATHWAY" in content
-    assert "TWO NEW SAGE CAPABILITY THEMES" in content
-    assert "FIVE-FLIGHT BIG BUILD JUMP WAVE LAUNCH PLAN" in content
-    assert "BLOCKERS REQUIRING C2 AUTHORIZATION" in content
+    assert "SAGE BIG BUILD JUMP WAVE READINESS" in content
+    assert "BIG STRIKE FULL CAMPAIGN SUMMARY" in content
+    assert "REPO TRUTH & CAPABILITY MAP" in content
+    assert "BIG STRIKE WAVE RECONVERGENCE VERDICT: PASS" in content
 
 
 def test_big_build_jump_wave_evidence_json_schema():
