@@ -20,6 +20,7 @@ def test_valid_proposal_acceptance():
     assert res["accepted"] is True
     assert res["status"] == "ACCEPTED"
     assert res["current_state"] == "MISSION_PROPOSED"
+    assert res["authorized"] is False
     assert res["queue_position"] == 0
 
     # Verify queue entry
@@ -28,6 +29,49 @@ def test_valid_proposal_acceptance():
     enqueued = queue[0]
     assert enqueued.name == "Audit System Linage"
     assert enqueued.current_state == "MISSION_PROPOSED"
+    assert enqueued.metadata["authorized"] is False
+
+
+def test_proposal_rejection_on_unfulfilled_prerequisite():
+    """Verify that proposals with unfulfilled prerequisite dependencies are rejected."""
+    intake = SAGEMissionIntakeLayer()
+    proposal = {
+        "name": "Audit System Linage",
+        "description": "Trace cryptographic audit trails across session records",
+        "objective": "Verify the integrity of SHA-256 fingerprint chains in PML",
+        "operator_id": "operator_jules_01",
+        "prerequisites": {"value_appraisal_approved": False}
+    }
+
+    res = intake.submit_proposal(proposal)
+    assert res["accepted"] is False
+    assert res["status"] == "REJECTED"
+    assert "Unfulfilled prerequisite dependencies" in res["reason"]
+    assert res["unfulfilled_prerequisites"] == ["value_appraisal_approved"]
+
+
+def test_authorized_candidate_id_matching():
+    """Verify that matching candidate IDs set authorized=True in intake metadata."""
+    intake = SAGEMissionIntakeLayer()
+    proposal = {
+        "candidate_id": "cand_authorized_001",
+        "name": "Authorized Discovery Task",
+        "description": "Execute authorized candidate proposal",
+        "objective": "Advance capability under C2 approval",
+        "operator_id": "operator_jules_01",
+        "provenance_ref": "ref_prov_001",
+    }
+
+    res = intake.submit_proposal(
+        proposal,
+        authorized_candidate_ids=("cand_authorized_001", "cand_authorized_002"),
+    )
+    assert res["accepted"] is True
+    assert res["authorized"] is True
+
+    enqueued = intake.get_queue()[0]
+    assert enqueued.metadata["authorized"] is True
+    assert enqueued.metadata["provenance_ref"] == "ref_prov_001"
 
 
 def test_malformed_proposal_rejection():

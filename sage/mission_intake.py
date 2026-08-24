@@ -1,13 +1,14 @@
 """SAGE Governed Mission Intake Layer.
 
 Accepts proposed missions, validates their structural and metadata requirements,
-and registers them into the MISSION_PROPOSED state under strict sequential governance.
+evaluates prerequisite dependencies, and registers them into the MISSION_PROPOSED state
+under strict sequential governance with default unapproved authorization gates.
 """
 
 import time
 import json
 import hashlib
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Tuple
 from pydantic import BaseModel, Field
 
 from sage.mission_control import ExperimentalMissionState, SAGEMissionProgressionController
@@ -19,6 +20,10 @@ class MissionProposal(BaseModel):
     description: str = Field(..., description="Vivid description of purpose")
     objective: str = Field(..., description="Objective statement of the mission")
     operator_id: str = Field(..., description="The supervisor/operator proposing the mission")
+    provenance_ref: Optional[str] = Field(
+        default=None,
+        description="Source evidence or discovery signal provenance reference"
+    )
     prerequisites: Dict[str, bool] = Field(
         default_factory=dict,
         description="Satisfied prerequisites mapped at proposal time"
@@ -37,7 +42,7 @@ class ProposalRejectionRecord(BaseModel):
 
 
 class SAGEMissionIntakeLayer:
-    """Intake gateway validating mission proposals and maintaining a deterministic queue."""
+    """Intake gateway validating mission proposals, checking prerequisites, and maintaining queue."""
 
     def __init__(self) -> None:
         self.queue: List[ExperimentalMissionState] = []
@@ -50,11 +55,17 @@ class SAGEMissionIntakeLayer:
         sha = hashlib.sha256(seed_string.encode("utf-8")).hexdigest()
         return f"msn-intake-{sha[:16]}"
 
-    def submit_proposal(self, proposal: Dict[str, Any]) -> Dict[str, Any]:
+    def submit_proposal(
+        self,
+        proposal: Dict[str, Any],
+        *,
+        authorized_candidate_ids: Optional[Tuple[str, ...]] = None,
+    ) -> Dict[str, Any]:
         """Accept and validate an inbound mission proposal.
 
-        Enforces strict structural rules, provenance tracking, and enqueues
-        accepted missions in the initial MISSION_PROPOSED state.
+        Enforces strict structural rules, dependency prerequisite checks,
+        default unauthorized authorization gates, and enqueues accepted missions
+        strictly in the MISSION_PROPOSED state.
         """
         timestamp = time.time()
 
@@ -112,8 +123,32 @@ class SAGEMissionIntakeLayer:
                 "reason": reason
             }
 
-        # 4. Generate deterministic ID & preserve provenance
+        # 4. Dependency prerequisite check: Any explicitly listed prerequisite set to False fails intake
+        unfulfilled_prereqs = [req for req, satisfied in validated.prerequisites.items() if not satisfied]
+        if unfulfilled_prereqs:
+            reason = f"Rejection: Unfulfilled prerequisite dependencies: {', '.join(unfulfilled_prereqs)}"
+            self.rejections.append(
+                ProposalRejectionRecord(
+                    proposal_data=proposal,
+                    rejection_reason=reason,
+                    timestamp=timestamp
+                )
+            )
+            return {
+                "accepted": False,
+                "status": "REJECTED",
+                "reason": reason,
+                "unfulfilled_prerequisites": unfulfilled_prereqs,
+            }
+
+        # 5. Generate deterministic ID & preserve provenance
         mission_id = self.generate_deterministic_id(validated.name, validated.operator_id, timestamp)
+
+        # Authorization Gate Check: Defaults to False unless candidate ID is in authorized set
+        candidate_id = proposal.get("candidate_id") or proposal.get("metadata", {}).get("candidate_id")
+        is_authorized = False
+        if candidate_id and authorized_candidate_ids and candidate_id in authorized_candidate_ids:
+            is_authorized = True
 
         # Build initial governed mission state strictly in MISSION_PROPOSED
         mission_state = ExperimentalMissionState(
@@ -124,15 +159,17 @@ class SAGEMissionIntakeLayer:
             metadata={
                 "description": validated.description,
                 "objective": validated.objective,
+                "authorized": is_authorized,
+                "provenance_ref": validated.provenance_ref or proposal.get("provenance_ref"),
                 "provenance": {
                     "operator_id": validated.operator_id,
                     "timestamp": timestamp,
-                    "original_proposal": proposal
+                    "original_proposal": proposal,
                 }
             }
         )
 
-        # 5. Maintain deterministic queue order (FIFO enqueue)
+        # 6. Maintain deterministic queue order (FIFO enqueue)
         self.queue.append(mission_state)
 
         return {
@@ -140,6 +177,7 @@ class SAGEMissionIntakeLayer:
             "status": "ACCEPTED",
             "mission_id": mission_id,
             "current_state": "MISSION_PROPOSED",
+            "authorized": is_authorized,
             "queue_position": len(self.queue) - 1
         }
 
