@@ -1,0 +1,82 @@
+{
+  "_type": "https://in-toto.io/Statement/v1",
+  "subject": {
+    "name": "sage-c2-release-target",
+    "commit_sha": "8672a5e16fce9d2c16e36fd3f35cde3c322cf4ea"
+  },
+  "sbom_artifacts": [
+    {
+      "name": "poetry.lock",
+      "version": "1.0",
+      "sha256_checksum": "72b19e5a8dd68899fe4457cca5acc557e817086d6f71694162f458a08abfb682",
+      "type": "dependency_lockfile"
+    },
+    {
+      "name": "sage/c2/adaptive_mission_selection.py",
+      "version": "0.1",
+      "sha256_checksum": "b620395afe1d363791ead02bedf071f13261b45a6ca75a77f2f220baeedc7209",
+      "type": "source_module"
+    },
+    {
+      "name": "sage/c2/authorization_package_synthesis.py",
+      "version": "0.1",
+      "sha256_checksum": "5f3097ca15503c3b4930920586d5160d24d85066b39fb7d49580fe318488f6e6",
+      "type": "source_module"
+    },
+    {
+      "name": "sage/c2/build_jump_wave.py",
+      "version": "0.1",
+      "sha256_checksum": "e45c6a5a40c6d43b185d6c2ac4337e8cfe9d42dc685419856ad9b5375db72e1d",
+      "type": "source_module"
+    },
+    {
+      "name": "sage/c2/frontier_execution.py",
+      "version": "0.1",
+      "sha256_checksum": "f38645500fad6da3d9ab3f046dc3a1083c2f1df221c038c2b6d53d27c89d4b91",
+      "type": "source_module"
+    },
+    {
+      "name": "sage/c2/frontier_intelligence_bridge.py",
+      "version": "0.1",
+      "sha256_checksum": "00075f1982c766daf3c223b44bbf34e667a398d90b22dac6f53210bd3d4b84a3",
+      "type": "source_module"
+    },
+    {
+      "name": "sage/c2/multi_frontier_dispatch.py",
+      "version": "0.1",
+      "sha256_checksum": "146c6f6b4e8466556915d649160433e88b58e5d84c8e6141f202f6d6de52d593",
+      "type": "source_module"
+    },
+    {
+      "name": "sage/c2/progression_receipt_serializer.py",
+      "version": "0.1",
+      "sha256_checksum": "29d54f85f64d1f2c3f6f5f564c0fcdf3eb81928751b4025f288e42205709e6d8",
+      "type": "source_module"
+    },
+    {
+      "name": "sage/c2/supply_chain_attestation.py",
+      "version": "0.1",
+      "sha256_checksum": "98d239fe5f138ac617b7013008bd7017e26f2a565ddab6814cb67790d8392dde",
+      "type": "source_module"
+    }
+  ],
+  "provenance": {
+    "predicate_type": "https://slsa.dev/provenance/v1",
+    "builder_id": "https://github.com/dariusbrandon880-art/Sage/C2_BUILDER",
+    "source_commit_sha": "8672a5e16fce9d2c16e36fd3f35cde3c322cf4ea",
+    "build_type": "SAGE_C2_BIG_JUMP_WAVE_BUILD",
+    "invocation_steps": [
+      "poetry run pytest",
+      "poetry run python scripts/execute_build_jump_wave.py",
+      "poetry run python scripts/execute_adaptive_mission_selection.py"
+    ],
+    "verification_test_pass_count": 889,
+    "environment_meta": {
+      "python_version": "3.12.13",
+      "os": "linux",
+      "poetry_active": "true"
+    }
+  },
+  "signature_digest": "1827ecfaffbfed54d46e213ff14aba31fc6a28ac6c2b56a4eec49134f143d8ee",
+  "attestation_status": "VERIFIED_SECURE"
+}
