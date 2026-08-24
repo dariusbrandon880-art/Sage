@@ -1,6 +1,7 @@
 """SAGE Fleet Concurrency Engine.
 
 Enables safe parallel and concurrent multi-flight execution across N independent vehicles.
+FleetConcurrencyEngine is an execution coordination substrate, not a C2 authority layer.
 Combines DAG dependency scheduling, namespace collision locks, and deterministic
 receipt aggregation for C2 Big Strike Wave reconvergence.
 """
