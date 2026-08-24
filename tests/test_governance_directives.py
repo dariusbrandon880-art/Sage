@@ -161,6 +161,26 @@ def test_game_immersion_cross_media_research_report_exists_and_conforms():
     assert "FLIGHT 5 — CAPABILITY WAREHOUSE & SAGE INTEGRATION" in content
 
 
+def test_sage_big_build_jump_wave_readiness_receipt_exists_and_conforms():
+    """Verify that SAGE_BIG_BUILD_JUMP_WAVE_READINESS_RECEIPT.md exists and contains required sections."""
+    root_dir = Path(__file__).parent.parent
+    receipt_file = root_dir / "docs" / "governance" / "SAGE_BIG_BUILD_JUMP_WAVE_READINESS_RECEIPT.md"
+
+    assert receipt_file.exists(), "The SAGE Big Build Jump Wave Readiness Receipt must exist under docs/governance/"
+
+    content = receipt_file.read_text(encoding="utf-8")
+
+    assert "# SAGE BIG BUILD JUMP WAVE READINESS RECEIPT" in content
+    assert "PHASE 1 & 2 — REPOSITORY TRUTH & EXISTING WORK RECONCILIATION" in content
+    assert "PHASE 3 — GOOGLE / EXTERNAL INTEGRATION GAP HUNT" in content
+    assert "PHASE 4 — ASSEMBLY LINE COMPLETION AUDIT" in content
+    assert "PHASE 5 — SPORTS SCIENCE CAPABILITY TRANSITION" in content
+    assert "PHASE 6 — TWO NEW HIGH-VALUE SAGE CAPABILITY THEMES" in content
+    assert "Multi-Agent Epistemic Consensus & Dispute Resolution Engine" in content
+    assert "Autonomous Context Drift & Memory Rehydration Sentinel" in content
+    assert "PHASE 7 — FIVE-FLIGHT BIG JUMP WAVE LAUNCH PLAN" in content
+
+
 def test_fleet_qualification_immersion_recon_report_exists_and_conforms():
     """Verify that FLEET_QUALIFICATION_IMMERSION_RECON_REPORT.md exists and contains required sections."""
     root_dir = Path(__file__).parent.parent
