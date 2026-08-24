@@ -1,0 +1,106 @@
+{
+  "commit_sha": "8672a5e16fce9d2c16e36fd3f35cde3c322cf4ea",
+  "flight_receipts": [
+    {
+      "flight_id": "Flight 1",
+      "mission_id": "mission_flight_1_continuity_projection",
+      "frontier_lane": "Lane 1: Continuity Projection",
+      "boundary_scope": "sage.c2.build_jump.flight_1",
+      "status": "PASS",
+      "commit_sha": "8672a5e16fce9d2c16e36fd3f35cde3c322cf4ea",
+      "receipt_type": "Continuity Validation Receipt",
+      "proof_data": {
+        "mission_objective": "Validate persistent continuity projection path, rehydration, and archive synchronization",
+        "persistence_boundary": "VERIFIED_PERSISTENT",
+        "rehydration_proof": "SUCCESS",
+        "archive_sync_evidence": "MASTER_ARCHIVE_SYNCED",
+        "continuity_integrity": "INTACT"
+      },
+      "receipt_hash": "8d39d6167591c1f633f8113e3413ca206616743c0c4d354f5d9eef33ec072462"
+    },
+    {
+      "flight_id": "Flight 2",
+      "mission_id": "mission_flight_2_governed_execution",
+      "frontier_lane": "Lane 2: Governed Execution",
+      "boundary_scope": "sage.c2.build_jump.flight_2",
+      "status": "PASS",
+      "commit_sha": "8672a5e16fce9d2c16e36fd3f35cde3c322cf4ea",
+      "receipt_type": "Governed Execution Evidence Receipt",
+      "proof_data": {
+        "mission_objective": "Prove governed execution chain end-to-end (Failure Memory -> Prefight -> Auth -> Safety -> Execution -> Verification)",
+        "execution_flow": [
+          "failure_memory_check",
+          "preflight_verification",
+          "c2_authorization_check",
+          "safety_pfc_gate",
+          "governed_execution",
+          "post_execution_verification",
+          "evidence_receipt_emission"
+        ],
+        "end_to_end_verdict": "GOVERNED_PASS"
+      },
+      "receipt_hash": "0ec6c7e75260770929261a12c42db933eea27ceab891827f4c1a524f39f09869"
+    },
+    {
+      "flight_id": "Flight 3",
+      "mission_id": "mission_flight_3_scientific_robustness",
+      "frontier_lane": "Lane 3: Sports Research Robustness",
+      "boundary_scope": "sage.c2.build_jump.flight_3",
+      "status": "PASS",
+      "commit_sha": "8672a5e16fce9d2c16e36fd3f35cde3c322cf4ea",
+      "receipt_type": "Scientific Robustness Receipt",
+      "proof_data": {
+        "mission_objective": "Harden research substrate via OOS separation, leakage prevention, and reproducible negative-result handling",
+        "oos_separation": "STRICT_SEPARATION",
+        "leakage_prevention": "ZERO_TEMPORAL_LEAKAGE",
+        "reproducibility": "DETERMINISTIC_REPRODUCIBLE",
+        "negative_result_handling": "FAILS_CLOSED_RECORDED"
+      },
+      "receipt_hash": "f07c97ca2e981e988b655b5dd725832f892bcc2a0775867cdb0b3d82ac71697e"
+    },
+    {
+      "flight_id": "Flight 4",
+      "mission_id": "mission_flight_4_evidence_lifecycle",
+      "frontier_lane": "Added Flight: Evidence Fabric",
+      "boundary_scope": "sage.c2.build_jump.flight_4",
+      "status": "PASS",
+      "commit_sha": "8672a5e16fce9d2c16e36fd3f35cde3c322cf4ea",
+      "receipt_type": "Evidence Lifecycle Receipt",
+      "proof_data": {
+        "mission_objective": "Strengthen evidence lifecycle from research to master archive with provenance lineage",
+        "provenance_lineage": "SHA256_LINEAGE_TRACKED",
+        "promotion_boundary": "MASTER_ARCHIVE_GATE_ENFORCED",
+        "single_source_of_truth": "NO_DUPLICATE_TRUTH"
+      },
+      "receipt_hash": "e44a6298b1e63724d802bf7b2d5e446bc241cd76701fa94961390784638685f0"
+    },
+    {
+      "flight_id": "Flight 5",
+      "mission_id": "mission_flight_5_cognitive_integration",
+      "frontier_lane": "Added Flight: Adaptive Cognitive",
+      "boundary_scope": "sage.c2.build_jump.flight_5",
+      "status": "PASS",
+      "commit_sha": "8672a5e16fce9d2c16e36fd3f35cde3c322cf4ea",
+      "receipt_type": "Cognitive Integration Receipt",
+      "proof_data": {
+        "mission_objective": "Advance cognitive architecture, research-to-decision bridge, and deterministic context rehydration",
+        "research_decision_bridge": "ACTIVE_BRIDGE",
+        "context_persistence": "REHYDRATION_VERIFIED",
+        "decision_object_integrity": "HASH_VALIDATED",
+        "deterministic_rehydration": "DETERMINISTIC_PASS"
+      },
+      "receipt_hash": "b8abf7da8f590a2f79d5709c1adb6b4f02aec4fe95877748a513d7083949bd05"
+    }
+  ],
+  "collision_count": 0,
+  "collisions_detected": [],
+  "wave_verdict": "PASS",
+  "summary": {
+    "total_flights": 5,
+    "isolated_boundaries": 5,
+    "reconvergence_verdict": "PASS",
+    "missing_missions": [],
+    "duplicate_missions": [],
+    "stale_commits": []
+  }
+}
