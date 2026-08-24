@@ -1,0 +1,8 @@
+{
+  "capability": "agent_hud_projection",
+  "commit_sha": "ed70dc8",
+  "tests": "tests/experimental/test_agent_hud_projection.py (5/5 PASS)",
+  "boundary_check": "PASS",
+  "evidence_link": "evidence_capture/agent_hud_projection_evidence.json",
+  "promotion_status": "CLEARED_FOR_PROMOTION"
+}

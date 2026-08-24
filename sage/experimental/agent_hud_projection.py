@@ -26,8 +26,21 @@ class AgentHUDProjectionEngine:
     """Renders formatted Command Center Identity Badges for agent chat interfaces."""
 
     @staticmethod
+    def validate_identity(identity: AgentHUDIdentity) -> None:
+        """Validate identity fields preventing display spoofing or empty parameters."""
+        if not identity.call_sign or not identity.call_sign.strip():
+            raise ValueError("Agent HUD Failure: call_sign cannot be empty.")
+        if not identity.station_id or not identity.station_id.strip():
+            raise ValueError("Agent HUD Failure: station_id cannot be empty.")
+        if not identity.station_role or not identity.station_role.strip():
+            raise ValueError("Agent HUD Failure: station_role cannot be empty.")
+        if identity.verified_evidence_count < 0:
+            raise ValueError("Agent HUD Failure: verified_evidence_count cannot be negative.")
+
+    @staticmethod
     def render_identity_badge(identity: AgentHUDIdentity) -> str:
         """Render a formatted, high-visibility Command Center Identity Badge."""
+        AgentHUDProjectionEngine.validate_identity(identity)
         cql_str = f"CQL-{identity.cql_level}"
         sql_str = f"SQL-{identity.sql_level}"
         badge_header = f"═══ [ SAGE COMMAND CENTER :: {identity.call_sign.upper()} ] ═══"
