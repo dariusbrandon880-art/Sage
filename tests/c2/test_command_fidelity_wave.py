@@ -7,20 +7,38 @@ from sage.c2.command_fidelity_wave import CommandFidelityWaveDispatcher, Fidelit
 from sage.c2.reality_gate import OperationalClaim, SourceReceipt
 
 
+def _operation_receipt(commit_sha: str) -> SourceReceipt:
+    return SourceReceipt(
+        source_type="github",
+        resource_id=f"commit:{commit_sha}",
+        sha256_digest=commit_sha,
+        timestamp_utc=1.0,
+        metadata={"origin": "operation_boundary", "operation": "github_commit_observation"},
+    )
+
+
 def test_command_fidelity_wave_dispatch_success():
-    dispatcher = CommandFidelityWaveDispatcher()
-    receipt = dispatcher.dispatch_wave()
+    dispatcher = CommandFidelityWaveDispatcher(commit_sha="actual_sha_123")
+    receipt = dispatcher.dispatch_wave(_operation_receipt("actual_sha_123"))
 
     assert receipt.wave_verdict == "PASS"
     assert len(receipt.flight_results) == 5
-    assert receipt.commit_sha != "UNKNOWN_COMMIT"
+    assert receipt.commit_sha == "actual_sha_123"
     assert all(f.status == "PASS" for f in receipt.flight_results)
+
+
+def test_command_fidelity_wave_fails_closed_without_operation_receipt():
+    dispatcher = CommandFidelityWaveDispatcher(commit_sha="actual_sha_123")
+    receipt = dispatcher.dispatch_wave()
+
+    assert receipt.wave_verdict == "HOLD"
+    assert receipt.summary["operation_receipt_present"] is False
+    assert receipt.flight_results[1].status == "HOLD"
 
 
 def test_command_fidelity_wave_fails_closed_on_stale_sha():
     dispatcher = CommandFidelityWaveDispatcher(commit_sha="actual_sha_123")
-    receipt = dispatcher.dispatch_wave()
-    assert receipt.commit_sha == "actual_sha_123"
+    receipt = dispatcher.dispatch_wave(_operation_receipt("actual_sha_123"))
 
     stale_result = FidelityFlightResult(
         flight_id="Flight Stale",
@@ -39,7 +57,7 @@ def test_command_fidelity_wave_fails_closed_on_stale_sha():
 
 def test_command_fidelity_wave_evidence_persistence_and_validation(tmp_path):
     dispatcher = CommandFidelityWaveDispatcher(commit_sha="head_sha_abc")
-    receipt = dispatcher.dispatch_wave()
+    receipt = dispatcher.dispatch_wave(_operation_receipt("head_sha_abc"))
 
     evidence_file = tmp_path / "command_fidelity_wave_evidence.json"
     with open(evidence_file, "w", encoding="utf-8") as f:
@@ -56,7 +74,7 @@ def test_command_fidelity_wave_evidence_persistence_and_validation(tmp_path):
 
 def test_persisted_evidence_fails_closed_on_flight_sha_mismatch(tmp_path):
     dispatcher = CommandFidelityWaveDispatcher(commit_sha="head_sha_abc")
-    receipt = dispatcher.dispatch_wave()
+    receipt = dispatcher.dispatch_wave(_operation_receipt("head_sha_abc"))
 
     stale_dict = receipt.to_dict()
     stale_dict["flight_results"][0]["commit_sha"] = "stale_sha_70d1e"
@@ -109,5 +127,5 @@ def test_claim_provenance_requires_exact_resource_match():
     result = ClaimProvenanceCompiler.compile_claims([claim], [wrong_receipt])
 
     assert result.is_valid is False
-    assert len(result.unresolved_claims) == 1
-    assert result.unresolved_claims[0].status == "UNRESOLVED"
+    assert len(result.contradicted_claims) == 1
+    assert result.contradicted_claims[0].status == "CONTRADICTED"
