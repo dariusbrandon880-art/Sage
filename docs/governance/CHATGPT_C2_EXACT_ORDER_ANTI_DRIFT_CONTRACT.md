@@ -1,6 +1,6 @@
 # SAGE ChatGPT C2 Exact-Order / Anti-Drift Contract
 
-**Contract ID:** `CHATGPT_C2_EXACT_ORDER_ANTI_DRIFT`
+**Contract ID:** `CHATGPT_C2_EXACT_ORDER_ANTI_DRIFT`  
 **Version:** `1.0`
 
 ## Purpose
