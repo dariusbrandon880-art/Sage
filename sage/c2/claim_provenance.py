@@ -65,11 +65,21 @@ class ClaimProvenanceCompiler:
             if claim.target_resource and claim.target_resource in receipt_by_resource:
                 matching_receipt = receipt_by_resource[claim.target_resource]
             elif claim.required_source_type and claim.required_source_type in receipt_by_source:
-                matching_receipt = receipt_by_source[claim.required_source_type]
-            elif receipts:
-                # Fallback to first available receipt if source matches context
-                matching_receipt = receipts[0]
+                # Same source type receipt exists, check if it contradicts the claimed resource/digest
+                candidate = receipt_by_source[claim.required_source_type]
+                if claim.target_resource and candidate.resource_id != claim.target_resource:
+                    rec = VerifiedClaimReceipt(
+                        claim_id=claim.claim_id,
+                        statement=claim.statement,
+                        receipt_hash=candidate.sha256_digest,
+                        source_type=candidate.source_type,
+                        status="CONTRADICTED",
+                        reason=f"Resource mismatch: claimed '{claim.target_resource}', found '{candidate.resource_id}'",
+                    )
+                    contradicted.append(rec)
+                    continue
 
+            # Generic receipt fallback (receipts[0]) removed per Repair C: No match => UNRESOLVED.
             if matching_receipt:
                 # Validate digest match if specified
                 if claim.target_resource and ":" in claim.target_resource:
@@ -102,7 +112,7 @@ class ClaimProvenanceCompiler:
                     receipt_hash="UNRESOLVED",
                     source_type=claim.required_source_type or "UNKNOWN",
                     status="UNRESOLVED",
-                    reason="No matching source receipt found",
+                    reason="No exact matching source receipt found for claim target resource",
                 )
                 unresolved.append(rec)
 

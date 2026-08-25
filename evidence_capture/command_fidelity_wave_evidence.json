@@ -1,13 +1,14 @@
 {
   "commit_sha": "70d1e798d5deee425a138e12ec070c8b10af2793",
-  "timestamp_utc": 1787618464.6778672,
+  "timestamp_utc": 1787621102.4224198,
   "flight_results": [
     {
       "flight_id": "Flight A",
       "flight_name": "Directive Fidelity",
       "boundary_scope": "sage.c2.directive_fidelity",
       "status": "PASS",
-      "receipt_hash": "1c26a604fe40799c5b06b9f75546b1e51638f579226b23ed315744e91a1bfbb2",
+      "receipt_hash": "6329ee5d702606a99554b12ffad4409f1952bbba0b331d09a32bb6c098e25d67",
+      "commit_sha": "70d1e798d5deee425a138e12ec070c8b10af2793",
       "metrics": {
         "valid_plan_passed": true,
         "invalid_plan_blocked": true,
@@ -19,9 +20,10 @@
       "flight_name": "Reality Gate",
       "boundary_scope": "sage.c2.reality_gate",
       "status": "PASS",
-      "receipt_hash": "914c712ec93426f0d8a13a7d1d9cf386dee4d416d7b505b6937271b3a731c556",
+      "receipt_hash": "427b8503a0ba4a9d71bd17df264f88f2205555b2dadbf35e3f9378efa8960401",
+      "commit_sha": "70d1e798d5deee425a138e12ec070c8b10af2793",
       "metrics": {
-        "permitted_claims_count": 2,
+        "permitted_claims_count": 1,
         "blocked_claims_count": 0
       }
     },
@@ -30,9 +32,10 @@
       "flight_name": "Claim Provenance Compiler",
       "boundary_scope": "sage.c2.claim_provenance",
       "status": "PASS",
-      "receipt_hash": "a0c991131b0e2823934beea13a4b20c512945b6613b3c2c990ac61343d726e50",
+      "receipt_hash": "a95028ea27bc22a4657180913d78e31543c4a321242ae4f7f1658c48368bf93e",
+      "commit_sha": "70d1e798d5deee425a138e12ec070c8b10af2793",
       "metrics": {
-        "verified_claims_count": 2,
+        "verified_claims_count": 1,
         "unresolved_claims_count": 0,
         "contradicted_claims_count": 0
       }
@@ -42,7 +45,8 @@
       "flight_name": "Fresh-Session Drift Sentinel",
       "boundary_scope": "sage.c2.drift_sentinel",
       "status": "PASS",
-      "receipt_hash": "06bcffabe747817c493ce17f63ceac560404ed36bac4089edf01ea866efd2e63",
+      "receipt_hash": "8069a20447c00693e1fb36e29501b9ae50bc44b21028d15c3457c8fb17d4f4ec",
+      "commit_sha": "70d1e798d5deee425a138e12ec070c8b10af2793",
       "metrics": {
         "tool_fidelity": 1.0,
         "source_fidelity": 1.0,
@@ -58,9 +62,11 @@
       "flight_name": "Wave Reconvergence",
       "boundary_scope": "sage.c2.command_fidelity_wave",
       "status": "PASS",
-      "receipt_hash": "be93995c10c1e5705c6fab4b6d42df6bb61687beb274fa286d7716bdcf880577",
+      "receipt_hash": "bb62a7f326bb12055a1f22a2b2797287d384b0443ec64745bcc4ea382a32f5c8",
+      "commit_sha": "70d1e798d5deee425a138e12ec070c8b10af2793",
       "metrics": {
-        "wave_reconverged": true
+        "wave_reconverged": true,
+        "stale_sha_detected": false
       }
     }
   ],
@@ -68,6 +74,7 @@
   "summary": {
     "total_flights": 5,
     "passed_flights": 5,
-    "wave_verdict": "PASS"
+    "wave_verdict": "PASS",
+    "stale_sha_detected": false
   }
 }

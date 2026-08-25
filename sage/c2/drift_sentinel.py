@@ -48,6 +48,7 @@ class DriftSentinelReport:
     total_scenarios: int
     passed_scenarios: int
     failed_scenarios: int
+    scenarios_with_drift: int
     metrics: DriftEvaluationMetrics
     violations: Tuple[str, ...]
 
@@ -97,14 +98,15 @@ class DriftSentinel:
                 fidelity_scores["source_fidelity"] = 0.0
                 violations.append(f"Contradicted claims detected: {len(claim_res.contradicted_claims)}")
 
-        is_passed = len(violations) == 0
-        return is_passed, violations, fidelity_scores
+        has_drift = len(violations) > 0
+        return has_drift, violations, fidelity_scores
 
     @classmethod
     def run_suite(cls, scenarios: Sequence[DriftReplayScenario]) -> DriftSentinelReport:
         total = len(scenarios)
-        passed = 0
-        failed = 0
+        passed_test_expectations = 0
+        failed_test_expectations = 0
+        scenarios_with_drift = 0
         all_violations: List[str] = []
 
         total_tool = 0.0
@@ -115,11 +117,19 @@ class DriftSentinel:
         total_non_invention = 0.0
 
         for sc in scenarios:
-            is_passed, violations, scores = cls.evaluate_scenario(sc)
-            if is_passed == sc.expected_should_pass:
-                passed += 1
+            has_drift, violations, scores = cls.evaluate_scenario(sc)
+
+            if has_drift:
+                scenarios_with_drift += 1
+
+            # Test expectation assertion check: did the scenario behave as expected?
+            scenario_passed_expectation = (not has_drift) == sc.expected_should_pass
+            if scenario_passed_expectation:
+                passed_test_expectations += 1
             else:
-                failed += 1
+                failed_test_expectations += 1
+
+            if violations:
                 all_violations.extend(violations)
 
             total_tool += scores["tool_fidelity"]
@@ -130,6 +140,8 @@ class DriftSentinel:
             total_non_invention += scores["non_invention"]
 
         denom = max(1, total)
+        # Fix for Repair D: overall_drift_rate measures actual observed drift count / total scenarios,
+        # rather than zeroing out when an adversarial test expects drift.
         metrics = DriftEvaluationMetrics(
             tool_fidelity=total_tool / denom,
             source_fidelity=total_source / denom,
@@ -137,13 +149,14 @@ class DriftSentinel:
             constraint_fidelity=total_constraint / denom,
             state_fidelity=total_state / denom,
             non_invention_rate=total_non_invention / denom,
-            overall_drift_rate=failed / denom,
+            overall_drift_rate=scenarios_with_drift / denom,
         )
 
         return DriftSentinelReport(
             total_scenarios=total,
-            passed_scenarios=passed,
-            failed_scenarios=failed,
+            passed_scenarios=passed_test_expectations,
+            failed_scenarios=failed_test_expectations,
+            scenarios_with_drift=scenarios_with_drift,
             metrics=metrics,
             violations=tuple(all_violations),
         )

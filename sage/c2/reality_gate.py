@@ -4,7 +4,7 @@ Enforces strict separation between the CONVERSATION PLANE (reports, claims, hypo
 and the REALITY PLANE (Git SHA, PR state, files, evidence receipts).
 
 Guarantees that no operational claim about live state is permitted without a matching,
-verifiable SourceReceipt from an actual reality source.
+verifiable SourceReceipt from an actual reality source with target resource & fingerprint validation.
 """
 
 from __future__ import annotations
@@ -50,7 +50,7 @@ class RealityGateEvaluationResult:
 
 
 class RealityGate:
-    """Enforces fail-closed Reality Gate policy: No source receipt -> No live-state claim permitted."""
+    """Enforces fail-closed Reality Gate policy: No source receipt & resource match -> No live-state claim permitted."""
 
     LIVE_STATE_CLAIM_KEYWORDS = (
         "live repo",
@@ -82,8 +82,7 @@ class RealityGate:
         blocked: List[OperationalClaim] = []
         violations: List[str] = []
 
-        receipt_sources = {r.source_type for r in available_receipts}
-        receipt_resources = {r.resource_id for r in available_receipts}
+        receipt_by_resource = {rc.resource_id: rc for rc in available_receipts}
 
         for claim in claims:
             if not cls.is_live_state_claim(claim.statement) and not claim.required_source_type:
@@ -91,29 +90,27 @@ class RealityGate:
                 permitted.append(claim)
                 continue
 
-            # Live-state claim requires matching receipt
-            has_source_match = False
-            if claim.required_source_type:
-                if claim.required_source_type in receipt_sources:
-                    if claim.target_resource:
-                        has_source_match = claim.target_resource in receipt_resources
-                    else:
-                        has_source_match = True
-            else:
-                # Infer required source type
-                lower = claim.statement.lower()
-                if any(kw in lower for kw in ["github", "repo", "pr", "commit", "head", "branch"]):
-                    has_source_match = "github" in receipt_sources or "filesystem" in receipt_sources
-                else:
-                    has_source_match = len(available_receipts) > 0
+            # Live-state claim requires strict matching receipt & resource validation
+            has_valid_match = False
 
-            if has_source_match:
+            if claim.target_resource:
+                # Exact resource ID match required
+                if claim.target_resource in receipt_by_resource:
+                    rec = receipt_by_resource[claim.target_resource]
+                    if not claim.required_source_type or claim.required_source_type == rec.source_type:
+                        has_valid_match = True
+            else:
+                # Operational live claims WITHOUT target_resource specified are blocked unless receipt specifically covers the resource
+                # Live claims such as "GitHub repo is clean" require an explicit resource receipt (e.g., resource_id="repo:clean_status")
+                # Generic matching on source_type alone is forbidden for live state assertions.
+                has_valid_match = False
+
+            if has_valid_match:
                 permitted.append(claim)
             else:
                 blocked.append(claim)
-                violations.append(
-                    f"Operational claim '{claim.statement}' BLOCKED: missing required reality source receipt."
-                )
+                reason = f"Operational claim '{claim.statement}' BLOCKED: missing explicit target resource/fingerprint receipt match."
+                violations.append(reason)
 
         is_permitted = len(blocked) == 0
         return RealityGateEvaluationResult(

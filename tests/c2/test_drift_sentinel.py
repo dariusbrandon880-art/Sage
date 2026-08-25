@@ -34,8 +34,8 @@ def test_drift_sentinel_clean_scenario():
         expected_should_pass=True,
     )
 
-    is_passed, violations, scores = DriftSentinel.evaluate_scenario(scenario)
-    assert is_passed is True
+    has_drift, violations, scores = DriftSentinel.evaluate_scenario(scenario)
+    assert has_drift is False
     assert len(violations) == 0
     assert scores["order_fidelity"] == 1.0
     assert scores["source_fidelity"] == 1.0
@@ -63,5 +63,6 @@ def test_drift_sentinel_catches_unauthorized_merge_and_fake_claim():
 
     report = DriftSentinel.run_suite([scenario])
     assert report.total_scenarios == 1
-    assert report.passed_scenarios == 1  # Passed evaluating expected_should_pass == False
-    assert report.metrics.overall_drift_rate == 0.0
+    assert report.passed_scenarios == 1  # Passed test expectation check
+    assert report.scenarios_with_drift == 1
+    assert report.metrics.overall_drift_rate == 1.0  # Properly reports 1.0 drift rate!

@@ -14,6 +14,7 @@ from dataclasses import asdict, dataclass, field
 import hashlib
 import json
 import os
+import subprocess
 import time
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -23,6 +24,21 @@ from sage.c2.drift_sentinel import DriftReplayScenario, DriftSentinel
 from sage.c2.reality_gate import OperationalClaim, RealityGate, SourceReceipt
 
 
+def _get_current_commit_sha() -> str:
+    """Retrieve active git commit SHA, falling back to HEAD environment if uncommitted."""
+    try:
+        res = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            check=True,
+        )
+        return res.stdout.strip()
+    except Exception:
+        return os.environ.get("GIT_COMMIT_SHA", "UNKNOWN_COMMIT")
+
+
 @dataclass(frozen=True)
 class FidelityFlightResult:
     flight_id: str
@@ -30,6 +46,7 @@ class FidelityFlightResult:
     boundary_scope: str
     status: str  # PASS, HOLD
     receipt_hash: str
+    commit_sha: str
     metrics: Dict[str, Any]
 
 
@@ -54,8 +71,8 @@ class CommandFidelityWaveReceipt:
 class CommandFidelityWaveDispatcher:
     """Dispatches all 5 command fidelity flights and reconverges into a machine-readable verdict."""
 
-    def __init__(self, commit_sha: str = "70d1e798d5deee425a138e12ec070c8b10af2793") -> None:
-        self.commit_sha = commit_sha
+    def __init__(self, commit_sha: Optional[str] = None) -> None:
+        self.commit_sha = commit_sha or _get_current_commit_sha()
 
     def dispatch_wave(self) -> CommandFidelityWaveReceipt:
         timestamp = time.time()
@@ -68,7 +85,7 @@ class CommandFidelityWaveDispatcher:
         invalid_res = ExactOrderSentinel.validate_plan(contract, ["Check live repo", "Merge PR"])
 
         flight_a_status = "PASS" if valid_res.is_valid and not invalid_res.is_valid else "HOLD"
-        flight_a_hash = hashlib.sha256(f"FlightA:{contract.raw_instruction_hash}:{flight_a_status}".encode("utf-8")).hexdigest()
+        flight_a_hash = hashlib.sha256(f"FlightA:{contract.raw_instruction_hash}:{self.commit_sha}:{flight_a_status}".encode("utf-8")).hexdigest()
         results.append(
             FidelityFlightResult(
                 flight_id="Flight A",
@@ -76,6 +93,7 @@ class CommandFidelityWaveDispatcher:
                 boundary_scope="sage.c2.directive_fidelity",
                 status=flight_a_status,
                 receipt_hash=flight_a_hash,
+                commit_sha=self.commit_sha,
                 metrics={
                     "valid_plan_passed": valid_res.is_valid,
                     "invalid_plan_blocked": not invalid_res.is_valid,
@@ -87,17 +105,21 @@ class CommandFidelityWaveDispatcher:
         # Flight B — Reality Gate
         sample_receipt = SourceReceipt(
             source_type="github",
-            resource_id="commit:70d1e798d5deee425a138e12ec070c8b10af2793",
-            sha256_digest="70d1e798d5deee425a138e12ec070c8b10af2793",
+            resource_id=f"commit:{self.commit_sha}",
+            sha256_digest=self.commit_sha,
             timestamp_utc=timestamp,
         )
         claims = [
-            OperationalClaim("c1", "GitHub main is at 70d1e798d5deee425a138e12ec070c8b10af2793.", "github"),
-            OperationalClaim("c2", "GitHub repo is completely clean.", "github"),
+            OperationalClaim(
+                claim_id="c1",
+                statement=f"GitHub main is at {self.commit_sha}.",
+                required_source_type="github",
+                target_resource=f"commit:{self.commit_sha}",
+            ),
         ]
         gate_res = RealityGate.evaluate_claims(claims, [sample_receipt])
-        flight_b_status = "PASS" if len(gate_res.permitted_claims) == 2 else "HOLD"
-        flight_b_hash = hashlib.sha256(f"FlightB:{sample_receipt.sha256_digest}:{flight_b_status}".encode("utf-8")).hexdigest()
+        flight_b_status = "PASS" if len(gate_res.permitted_claims) == 1 and len(gate_res.blocked_claims) == 0 else "HOLD"
+        flight_b_hash = hashlib.sha256(f"FlightB:{sample_receipt.sha256_digest}:{self.commit_sha}:{flight_b_status}".encode("utf-8")).hexdigest()
         results.append(
             FidelityFlightResult(
                 flight_id="Flight B",
@@ -105,6 +127,7 @@ class CommandFidelityWaveDispatcher:
                 boundary_scope="sage.c2.reality_gate",
                 status=flight_b_status,
                 receipt_hash=flight_b_hash,
+                commit_sha=self.commit_sha,
                 metrics={
                     "permitted_claims_count": len(gate_res.permitted_claims),
                     "blocked_claims_count": len(gate_res.blocked_claims),
@@ -115,7 +138,7 @@ class CommandFidelityWaveDispatcher:
         # Flight C — Claim Provenance Compiler
         compile_res = ClaimProvenanceCompiler.compile_claims(claims, [sample_receipt])
         flight_c_status = "PASS" if compile_res.is_valid else "HOLD"
-        flight_c_hash = hashlib.sha256(f"FlightC:{compile_res.is_valid}:{flight_c_status}".encode("utf-8")).hexdigest()
+        flight_c_hash = hashlib.sha256(f"FlightC:{compile_res.is_valid}:{self.commit_sha}:{flight_c_status}".encode("utf-8")).hexdigest()
         results.append(
             FidelityFlightResult(
                 flight_id="Flight C",
@@ -123,6 +146,7 @@ class CommandFidelityWaveDispatcher:
                 boundary_scope="sage.c2.claim_provenance",
                 status=flight_c_status,
                 receipt_hash=flight_c_hash,
+                commit_sha=self.commit_sha,
                 metrics={
                     "verified_claims_count": len(compile_res.verified_claims),
                     "unresolved_claims_count": len(compile_res.unresolved_claims),
@@ -142,8 +166,8 @@ class CommandFidelityWaveDispatcher:
             expected_should_pass=True,
         )
         drift_report = DriftSentinel.run_suite([scenario])
-        flight_d_status = "PASS" if drift_report.passed_scenarios == 1 else "HOLD"
-        flight_d_hash = hashlib.sha256(f"FlightD:{drift_report.metrics.overall_drift_rate}:{flight_d_status}".encode("utf-8")).hexdigest()
+        flight_d_status = "PASS" if drift_report.metrics.overall_drift_rate == 0.0 else "HOLD"
+        flight_d_hash = hashlib.sha256(f"FlightD:{drift_report.metrics.overall_drift_rate}:{self.commit_sha}:{flight_d_status}".encode("utf-8")).hexdigest()
         results.append(
             FidelityFlightResult(
                 flight_id="Flight D",
@@ -151,14 +175,16 @@ class CommandFidelityWaveDispatcher:
                 boundary_scope="sage.c2.drift_sentinel",
                 status=flight_d_status,
                 receipt_hash=flight_d_hash,
+                commit_sha=self.commit_sha,
                 metrics=asdict(drift_report.metrics),
             )
         )
 
         # Flight E — Reconvergence & Evidence Capture
-        all_passed = all(f.status == "PASS" for f in results)
+        stale_sha_found = any(f.commit_sha != self.commit_sha for f in results)
+        all_passed = all(f.status == "PASS" for f in results) and not stale_sha_found
         wave_verdict = "PASS" if all_passed else "HOLD"
-        flight_e_hash = hashlib.sha256(f"FlightE:{wave_verdict}:{timestamp}".encode("utf-8")).hexdigest()
+        flight_e_hash = hashlib.sha256(f"FlightE:{wave_verdict}:{self.commit_sha}:{timestamp}".encode("utf-8")).hexdigest()
         results.append(
             FidelityFlightResult(
                 flight_id="Flight E",
@@ -166,7 +192,8 @@ class CommandFidelityWaveDispatcher:
                 boundary_scope="sage.c2.command_fidelity_wave",
                 status=wave_verdict,
                 receipt_hash=flight_e_hash,
-                metrics={"wave_reconverged": all_passed},
+                commit_sha=self.commit_sha,
+                metrics={"wave_reconverged": all_passed, "stale_sha_detected": stale_sha_found},
             )
         )
 
@@ -179,5 +206,6 @@ class CommandFidelityWaveDispatcher:
                 "total_flights": len(results),
                 "passed_flights": sum(1 for f in results if f.status == "PASS"),
                 "wave_verdict": wave_verdict,
+                "stale_sha_detected": stale_sha_found,
             },
         )
