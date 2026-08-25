@@ -77,27 +77,36 @@ class CommandFidelityWaveDispatcher:
         evidence_path: str | Path,
         expected_commit_sha: Optional[str] = None,
     ) -> bool:
+        """Fail closed on stale, incomplete, contradictory, or internally inconsistent evidence."""
         target_sha = expected_commit_sha or _get_current_commit_sha()
         if not target_sha or target_sha == "UNKNOWN_COMMIT":
             return False
         path = Path(evidence_path)
         if not path.exists():
-            raise FileNotFoundError(f"Persisted evidence file not found: {path}")
+            return False
         try:
             data = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
             return False
+
         if data.get("commit_sha") != target_sha or data.get("wave_verdict") != "PASS":
             return False
+
         flights = data.get("flight_results")
-        if not isinstance(flights, list) or len(flights) != 5:
+        if not isinstance(flights, list) or len(flights) != len(cls.REQUIRED_FLIGHTS):
             return False
         if tuple(f.get("flight_id") for f in flights) != cls.REQUIRED_FLIGHTS:
             return False
+
         for flight in flights:
             if flight.get("commit_sha") != target_sha or flight.get("status") != "PASS":
                 return False
-            if not isinstance(flight.get("receipt_hash"), str) or not flight["receipt_hash"]:
+            receipt_hash = flight.get("receipt_hash")
+            if (
+                not isinstance(receipt_hash, str)
+                or len(receipt_hash) != 64
+                or any(ch not in "0123456789abcdef" for ch in receipt_hash)
+            ):
                 return False
             metrics = flight.get("metrics")
             if not isinstance(metrics, dict):
@@ -108,14 +117,38 @@ class CommandFidelityWaveDispatcher:
                 return False
             if metrics.get("unresolved_claims_count", 0) != 0:
                 return False
+
+        flight_c_metrics = flights[2]["metrics"]
+        if flight_c_metrics.get("verified_claims_count", 0) < 1:
+            return False
+        if flight_c_metrics.get("unresolved_claims_count") != 0:
+            return False
+        if flight_c_metrics.get("contradicted_claims_count") != 0:
+            return False
+
+        flight_e_metrics = flights[4]["metrics"]
+        if flight_e_metrics.get("wave_reconverged") is not True:
+            return False
+        if flight_e_metrics.get("stale_sha_detected") is not False:
+            return False
+        if flight_e_metrics.get("operation_receipt_present") is not True:
+            return False
+
         summary = data.get("summary")
-        return (
-            isinstance(summary, dict)
-            and summary.get("total_flights") == 5
-            and summary.get("passed_flights") == 5
-            and summary.get("wave_verdict") == "PASS"
-            and summary.get("stale_sha_detected") is not True
-        )
+        if not isinstance(summary, dict):
+            return False
+        if summary.get("total_flights") != len(cls.REQUIRED_FLIGHTS):
+            return False
+        if summary.get("passed_flights") != len(cls.REQUIRED_FLIGHTS):
+            return False
+        if summary.get("wave_verdict") != "PASS":
+            return False
+        if summary.get("stale_sha_detected") is not False:
+            return False
+        if summary.get("operation_receipt_present") is not True:
+            return False
+
+        return True
 
     def dispatch_wave(
         self,
@@ -142,12 +175,9 @@ class CommandFidelityWaveDispatcher:
             )
         )
 
-        # No receipt is manufactured here. The operation boundary must provide it.
         if operation_receipt is None:
             live_claims: List[OperationalClaim] = [
-                OperationalClaim(
-                    "c1", "GitHub main was verified live.", "github", f"commit:{self.commit_sha}"
-                )
+                OperationalClaim("c1", "GitHub main was verified live.", "github", f"commit:{self.commit_sha}")
             ]
             gate_res = RealityGate.evaluate_claims(live_claims, [])
             flight_b_status = "HOLD"
@@ -161,10 +191,8 @@ class CommandFidelityWaveDispatcher:
         else:
             claims = [
                 OperationalClaim(
-                    "c1",
-                    f"GitHub main is at {operation_receipt.sha256_digest}.",
-                    "github",
-                    operation_receipt.resource_id,
+                    "c1", f"GitHub main is at {operation_receipt.sha256_digest}",
+                    "github", operation_receipt.resource_id,
                 )
             ]
             gate_res = RealityGate.evaluate_claims(claims, [operation_receipt])
