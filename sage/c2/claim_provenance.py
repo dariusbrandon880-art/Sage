@@ -76,16 +76,36 @@ class ClaimProvenanceCompiler:
 
             matching_receipt: Optional[SourceReceipt] = receipt_by_resource.get(claim.target_resource)
             if matching_receipt is None:
-                unresolved.append(
-                    VerifiedClaimReceipt(
-                        claim_id=claim.claim_id,
-                        statement=claim.statement,
-                        receipt_hash="UNRESOLVED",
-                        source_type=claim.required_source_type or "UNKNOWN",
-                        status="UNRESOLVED",
-                        reason="No exact matching source receipt found for claim target resource",
-                    )
+                # A receipt from the required source that points at a different
+                # resource is contradictory evidence, not permission and not a
+                # generic fallback. With no receipt from that source at all,
+                # the claim remains unresolved.
+                candidate = next(
+                    (r for r in receipts if not claim.required_source_type or r.source_type == claim.required_source_type),
+                    None,
                 )
+                if candidate is not None:
+                    contradicted.append(
+                        VerifiedClaimReceipt(
+                            claim_id=claim.claim_id,
+                            statement=claim.statement,
+                            receipt_hash=candidate.sha256_digest,
+                            source_type=candidate.source_type,
+                            status="CONTRADICTED",
+                            reason=f"Resource mismatch: claimed '{claim.target_resource}', found '{candidate.resource_id}'",
+                        )
+                    )
+                else:
+                    unresolved.append(
+                        VerifiedClaimReceipt(
+                            claim_id=claim.claim_id,
+                            statement=claim.statement,
+                            receipt_hash="UNRESOLVED",
+                            source_type=claim.required_source_type or "UNKNOWN",
+                            status="UNRESOLVED",
+                            reason="No exact matching source receipt found for claim target resource",
+                        )
+                    )
                 continue
 
             if claim.required_source_type and claim.required_source_type != matching_receipt.source_type:
@@ -102,8 +122,8 @@ class ClaimProvenanceCompiler:
                 continue
 
             if ":" in claim.target_resource:
-                expected_digest = claim.target_resource.split(":")[-1]
-                if expected_digest and expected_digest != matching_receipt.sha256_digest and expected_digest not in matching_receipt.resource_id:
+                expected_digest = claim.target_resource.rsplit(":", 1)[1]
+                if expected_digest and expected_digest != matching_receipt.sha256_digest:
                     contradicted.append(
                         VerifiedClaimReceipt(
                             claim_id=claim.claim_id,
