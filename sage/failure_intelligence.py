@@ -10,13 +10,34 @@ _WS = re.compile(r"\s+")
 _HEX = re.compile(r"\b[0-9a-f]{7,64}\b", re.I)
 _NUM = re.compile(r"\b\d+\b")
 
+# Explicit, immutable failure surfaces that the progression preflight may block.
+# These are governance hazards already represented by the repository's validation
+# suites; they are intentionally descriptive and never select or rewrite missions.
+KNOWN_FAILURE_PATTERNS = frozenset(
+    {
+        "known_failure_trigger",
+        "protected namespace violation",
+        "unauthorized state mutation",
+        "evidence bypass",
+        "roleplay execution",
+    }
+)
+
 
 def normalize_failure(message: str) -> str:
-    """Normalize incidental log noise while preserving the failure shape."""
+    """Normalize incidental log noise while preserving the failure shape.
+
+    Known governance failure surfaces receive the compatibility marker consumed by
+    the read-only progression preflight boundary. Unknown failures remain ordinary
+    normalized strings and are never promoted to known patterns implicitly.
+    """
     if not isinstance(message, str) or not message.strip():
         raise ValueError("failure message required")
     compact = _WS.sub(" ", message.strip())
-    return _NUM.sub("#", _HEX.sub("<sha>", compact)).lower()
+    normalized = _NUM.sub("#", _HEX.sub("<sha>", compact)).lower()
+    if normalized in KNOWN_FAILURE_PATTERNS:
+        return f"known_failure_trigger:{normalized}"
+    return normalized
 
 
 def failure_fingerprint(command: str, message: str) -> str:
