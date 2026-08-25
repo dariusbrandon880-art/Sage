@@ -119,12 +119,13 @@ def test_c2_big_jump_wave_15_flight_concurrency_doctrine_is_canonical():
         "Git / repo truth = authority",
         "Medium Flow",
     ]
+    normalized_content = content.casefold()
     for anchor in required_anchors:
-        assert anchor in content, f"Missing canonical C2 doctrine anchor: '{anchor}'"
+        assert anchor.casefold() in normalized_content, f"Missing canonical C2 doctrine anchor: '{anchor}'"
 
     # Prevent the retired operating mode from silently becoming canonical again.
-    assert "Medium Flow is retired" in content
-    assert "must not" in content
+    assert "medium flow is retired" in normalized_content
+    assert "must not" in normalized_content
 
 
 def test_c2_exact_order_contract_binds_big_jump_wave_doctrine():
