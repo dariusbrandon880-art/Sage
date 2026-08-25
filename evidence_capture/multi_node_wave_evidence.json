@@ -1,0 +1,277 @@
+{
+  "wave_id": "WAVE_MULTI_NODE_20260822_001",
+  "commit_sha": "407f7b52b161c520688bd8eef509146d86717c74",
+  "timestamp_utc": 1787649951.4197092,
+  "nodes_executed": [
+    "NODE_A",
+    "NODE_B",
+    "NODE_C"
+  ],
+  "total_flights_executed": 15,
+  "total_reserve_slots_allocated": 6,
+  "collision_check_passed": true,
+  "flow_anti_drift_verified": true,
+  "reconvergence_verdict": "PASS",
+  "node_results": {
+    "NODE_A": {
+      "node_id": "NODE_A",
+      "role": "PRIMARY_REPAIR_WAVE",
+      "active_flights_count": 5,
+      "reserve_slots_count": 2,
+      "flights_passed": 7,
+      "flights_failed": 0,
+      "namespaces_touched": [
+        "sage/c2/chatgpt_c2_contract.py",
+        "sage/c2/multi_node_wave.py",
+        "sage/c2/progression_receipt_serializer.py",
+        "sage/c2/release_provenance.py",
+        "sage/c2/reserve_a1/",
+        "sage/c2/reserve_a2/",
+        "sage/experimental/airspace/"
+      ],
+      "receipt_hash": "e3cccb42e5df25ebeb77aed83c02e006999ddcee9b2b288f8f0e66e0b02fbaa1",
+      "status": "PASS",
+      "details": {
+        "flights": [
+          {
+            "flight_id": "NODE_A_F1",
+            "frontier_name": "Fleet & Station Governance",
+            "target_namespaces": [
+              "sage/experimental/airspace/"
+            ],
+            "description": "Station identity, nametag badge, fleet rank state.",
+            "is_reserve": false
+          },
+          {
+            "flight_id": "NODE_A_F2",
+            "frontier_name": "C2 Contract & Command Fidelity",
+            "target_namespaces": [
+              "sage/c2/chatgpt_c2_contract.py"
+            ],
+            "description": "ChatGPT exact-order anti-drift contract enforcement.",
+            "is_reserve": false
+          },
+          {
+            "flight_id": "NODE_A_F3",
+            "frontier_name": "Provenance & Attestation Substrate",
+            "target_namespaces": [
+              "sage/c2/release_provenance.py"
+            ],
+            "description": "Cryptographic release provenance and attestation.",
+            "is_reserve": false
+          },
+          {
+            "flight_id": "NODE_A_F4",
+            "frontier_name": "Multi-Node Wave Execution Core",
+            "target_namespaces": [
+              "sage/c2/multi_node_wave.py"
+            ],
+            "description": "Multi-node 5-flight execution engine.",
+            "is_reserve": false
+          },
+          {
+            "flight_id": "NODE_A_F5",
+            "frontier_name": "Evidence & Progression Lifecycle",
+            "target_namespaces": [
+              "sage/c2/progression_receipt_serializer.py"
+            ],
+            "description": "Evidence receipt serialization and parent hashing.",
+            "is_reserve": false
+          },
+          {
+            "flight_id": "NODE_A_R1",
+            "frontier_name": "Node A Reserve Slot 1",
+            "target_namespaces": [
+              "sage/c2/reserve_a1/"
+            ],
+            "description": "Reserve repair slot for discovered defect 1.",
+            "is_reserve": true
+          },
+          {
+            "flight_id": "NODE_A_R2",
+            "frontier_name": "Node A Reserve Slot 2",
+            "target_namespaces": [
+              "sage/c2/reserve_a2/"
+            ],
+            "description": "Reserve repair slot for discovered defect 2.",
+            "is_reserve": true
+          }
+        ]
+      }
+    },
+    "NODE_B": {
+      "node_id": "NODE_B",
+      "role": "INDEPENDENT_VERIFICATION_WAVE",
+      "active_flights_count": 5,
+      "reserve_slots_count": 2,
+      "flights_passed": 7,
+      "flights_failed": 0,
+      "namespaces_touched": [
+        "scripts/verify_security_posture.py",
+        "tests/c2/test_multi_node_wave.py",
+        "tests/experimental/test_ccl_feedback_bridge.py",
+        "tests/experimental/test_fleet_readiness.py",
+        "tests/reserve_b1/",
+        "tests/reserve_b2/",
+        "tests/runtime/test_protocol_governance.py"
+      ],
+      "receipt_hash": "23de950175644412750d5172aac42ae33ae82f0f04b544fc11467ee3df21f090",
+      "status": "PASS",
+      "details": {
+        "flights": [
+          {
+            "flight_id": "NODE_B_F1",
+            "frontier_name": "Multi-Node Unit Verification",
+            "target_namespaces": [
+              "tests/c2/test_multi_node_wave.py"
+            ],
+            "description": "Multi-node wave unit and integration suite.",
+            "is_reserve": false
+          },
+          {
+            "flight_id": "NODE_B_F2",
+            "frontier_name": "Protocol Governance Suite",
+            "target_namespaces": [
+              "tests/runtime/test_protocol_governance.py"
+            ],
+            "description": "System instruction and protocol governance tests.",
+            "is_reserve": false
+          },
+          {
+            "flight_id": "NODE_B_F3",
+            "frontier_name": "CCL Feedback Bridge Suite",
+            "target_namespaces": [
+              "tests/experimental/test_ccl_feedback_bridge.py"
+            ],
+            "description": "Closed-loop capability outcome feedback verification.",
+            "is_reserve": false
+          },
+          {
+            "flight_id": "NODE_B_F4",
+            "frontier_name": "Fleet Readiness Suite",
+            "target_namespaces": [
+              "tests/experimental/test_fleet_readiness.py"
+            ],
+            "description": "Airspace fleet readiness score verification.",
+            "is_reserve": false
+          },
+          {
+            "flight_id": "NODE_B_F5",
+            "frontier_name": "Security Audit Runner",
+            "target_namespaces": [
+              "scripts/verify_security_posture.py"
+            ],
+            "description": "Security audit and secret scanner verification.",
+            "is_reserve": false
+          },
+          {
+            "flight_id": "NODE_B_R1",
+            "frontier_name": "Node B Reserve Slot 1",
+            "target_namespaces": [
+              "tests/reserve_b1/"
+            ],
+            "description": "Reserve verification slot 1.",
+            "is_reserve": true
+          },
+          {
+            "flight_id": "NODE_B_R2",
+            "frontier_name": "Node B Reserve Slot 2",
+            "target_namespaces": [
+              "tests/reserve_b2/"
+            ],
+            "description": "Reserve verification slot 2.",
+            "is_reserve": true
+          }
+        ]
+      }
+    },
+    "NODE_C": {
+      "node_id": "NODE_C",
+      "role": "ADVERSARIAL_RESEARCH_WAVE",
+      "active_flights_count": 5,
+      "reserve_slots_count": 2,
+      "flights_passed": 7,
+      "flights_failed": 0,
+      "namespaces_touched": [
+        "sage/c2/supply_chain_attestation.py",
+        "sage/experimental/sports_longitudinal.py",
+        "tests/c2/test_chatgpt_c2_contract.py",
+        "tests/c2/test_live_operation_receipt_provenance.py",
+        "tests/reserve_c1/",
+        "tests/reserve_c2/",
+        "tests/test_governance_directives.py"
+      ],
+      "receipt_hash": "c6257d42a8c1cce712fc7139bc267e41154a548a1b49cfa48237adfc8c43acf7",
+      "status": "PASS",
+      "details": {
+        "flights": [
+          {
+            "flight_id": "NODE_C_F1",
+            "frontier_name": "Adversarial Forgery Analysis",
+            "target_namespaces": [
+              "tests/c2/test_live_operation_receipt_provenance.py"
+            ],
+            "description": "Spoofed/replayed/mismatched live receipt attack analysis.",
+            "is_reserve": false
+          },
+          {
+            "flight_id": "NODE_C_F2",
+            "frontier_name": "Anti-Drift Contract Falsification",
+            "target_namespaces": [
+              "tests/c2/test_chatgpt_c2_contract.py"
+            ],
+            "description": "Exact directive preservation & drift falsification.",
+            "is_reserve": false
+          },
+          {
+            "flight_id": "NODE_C_F3",
+            "frontier_name": "Supply Chain Tamper Suite",
+            "target_namespaces": [
+              "sage/c2/supply_chain_attestation.py"
+            ],
+            "description": "SBOM and in-toto envelope tamper detection.",
+            "is_reserve": false
+          },
+          {
+            "flight_id": "NODE_C_F4",
+            "frontier_name": "Temporal Leakage Falsification",
+            "target_namespaces": [
+              "sage/experimental/sports_longitudinal.py"
+            ],
+            "description": "Out-of-sample data separation & temporal leakage test.",
+            "is_reserve": false
+          },
+          {
+            "flight_id": "NODE_C_F5",
+            "frontier_name": "Governance Directives Conformance",
+            "target_namespaces": [
+              "tests/test_governance_directives.py"
+            ],
+            "description": "Governance law and contract assertion test suite.",
+            "is_reserve": false
+          },
+          {
+            "flight_id": "NODE_C_R1",
+            "frontier_name": "Node C Reserve Slot 1",
+            "target_namespaces": [
+              "tests/reserve_c1/"
+            ],
+            "description": "Reserve adversarial slot 1.",
+            "is_reserve": true
+          },
+          {
+            "flight_id": "NODE_C_R2",
+            "frontier_name": "Node C Reserve Slot 2",
+            "target_namespaces": [
+              "tests/reserve_c2/"
+            ],
+            "description": "Reserve adversarial slot 2.",
+            "is_reserve": true
+          }
+        ]
+      }
+    }
+  },
+  "receipt_hash": "a33a1d2765fc9a13c66aafb3af0c72dcfa932224a1f28cdfa5c865aa88791dcc",
+  "signature": "mock_attestation_1d8da6ede0bc036fd7e597ecdd6eec639fd462c35c1aa2a27cdb569a4b4a5f2d"
+}

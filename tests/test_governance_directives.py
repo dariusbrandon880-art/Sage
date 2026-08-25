@@ -116,3 +116,24 @@ def test_governance_cross_references():
     enhancement_doc = gov_dir / "JULES_C2_CAPABILITY_ENHANCEMENT_DIRECTIVE.md"
     assert enhancement_doc.exists()
     assert "JULES_FIVE_FLIGHT_C2_CAPABILITY_EXPANSION_DIRECTIVE.md" in enhancement_doc.read_text(encoding="utf-8")
+
+
+def test_c2_multi_node_big_jump_wave_protocol_conformance():
+    """Verify that C2_MULTI_NODE_BIG_JUMP_WAVE_PROTOCOL.md exists and contains multi-node operating laws."""
+    root_dir = Path(__file__).parent.parent
+    protocol_doc = root_dir / "docs" / "governance" / "C2_MULTI_NODE_BIG_JUMP_WAVE_PROTOCOL.md"
+
+    assert protocol_doc.exists(), "The Multi-Node Big Jump Wave protocol document must exist."
+
+    content = protocol_doc.read_text(encoding="utf-8")
+
+    assert "C2_MULTI_NODE_BIG_JUMP_WAVE_PROTOCOL" in content
+    assert "JULES NODE A" in content
+    assert "JULES NODE B" in content
+    assert "JULES NODE C" in content
+    assert "Law 1: Node Autonomy with Bounded Scope" in content
+    assert "Law 2: Flight Definition Preservation" in content
+    assert "Law 3: Zero Flow Alteration" in content
+    assert "Law 4: Namespace Collision Locks" in content
+    assert "Law 5: Reserve Capacity Protocol" in content
+    assert "Law 6: Cryptographic SHA & Receipt Reconvergence" in content
