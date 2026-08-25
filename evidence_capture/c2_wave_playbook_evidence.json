@@ -1,0 +1,9 @@
+{
+  "capability": "c2_wave_playbook_engine",
+  "pattern_registered": "pb-5front-strike-v1",
+  "pattern_digest": "a64026278f2786b50905cc1a5d20a3ac071232734d5c5160d1898f23b867e0e7",
+  "wave_executed": "big-strike-wave-001",
+  "receipt_digest": "8b0a9175cd0e29a49feb70284a39f3d45c48050510ccdbdd6bb87797421f191a",
+  "updated_first_pass_rate": 1.0,
+  "verification_status": "PASS"
+}

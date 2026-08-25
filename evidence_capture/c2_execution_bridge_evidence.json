@@ -3,7 +3,7 @@
   "smoke_test_write_status": "PASS",
   "smoke_test_write_sha": "af4370abf5270bfdfec962da65ce4bcb40f575a8",
   "smoke_test_test_status": "PASS",
-  "smoke_test_receipt_digest": "9ef129c2b65e9d8dbf1d8c25eada41aef332c860d9f37c9b8a1f11e2ad6c34f4",
+  "smoke_test_receipt_digest": "7331141ad773ffa2d8a9b8829a13a9e7ab7abad0a66e0c62ca3eee203ae9cc04",
   "actor_id": "[SAGE::C2::GPT_OPERATIONAL]",
   "verification_status": "PASS"
 }
