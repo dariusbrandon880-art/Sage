@@ -21,8 +21,8 @@ def _controller_for_objective(objective: str) -> MissionProgressionController:
     return controller
 
 
-def test_known_failure_pattern_blocks_without_mutating_mission():
-    controller = _controller_for_objective("Execute known_failure_trigger immediately")
+def test_known_failure_registry_pattern_blocks_without_mutating_mission():
+    controller = _controller_for_objective("Stop because of protected namespace violation")
     original = dict(controller.mission_data)
 
     with pytest.raises(ValueError, match="failure memory pattern"):
@@ -30,7 +30,17 @@ def test_known_failure_pattern_blocks_without_mutating_mission():
 
     assert controller.current_state == MissionProgressionState.PRIORITIZED
     assert controller.mission_data == original
-    assert controller.receipts == controller.receipts[:2]
+    assert len(controller.receipts) == 2
+
+
+def test_unregistered_failure_phrase_does_not_block_as_known_memory():
+    controller = _controller_for_objective("Normal bounded objective with unrelated failure wording")
+    original = dict(controller.mission_data)
+
+    receipt = controller.validate_preflight()
+
+    assert receipt.next_state == MissionProgressionState.PREFLIGHT_VALIDATED
+    assert controller.mission_data == original
 
 
 def test_failure_intelligence_import_error_fails_closed(monkeypatch):
