@@ -82,7 +82,7 @@ class SAGEActionProposal:
 class SAGEEpistemicState:
     """Epistemic state representation returned by a model."""
 
-    confidence_level: str  # HIGH, MEDIUM, LOW, UNCERTAIN
+    confidence_level: str
     validated_facts: tuple[str, ...] = ()
     unverified_hypotheses: tuple[str, ...] = ()
     known_unknowns: tuple[str, ...] = ()
@@ -151,32 +151,26 @@ class SAGEProtocolGovernor:
         violations: list[str] = []
         lower_output = raw_output.lower()
 
-        # 1. Anti-roleplay checks
         is_roleplay = any(indicator in lower_output for indicator in cls.ROLEPLAY_INDICATORS)
         if is_roleplay:
             violations.append("Model output contains conversational roleplay indicators.")
 
-        # 2. Authority claim checks
         if any(indicator in lower_output for indicator in cls.AUTHORITY_CLAIM_INDICATORS):
             violations.append("Model output falsely claims authority to authorize or mutate canonical state.")
 
-        # 3. Evidence bypass checks
         if any(indicator in lower_output for indicator in cls.EVIDENCE_BYPASS_INDICATORS):
             violations.append("Model output attempts to ignore or bypass evidence requirement.")
 
-        # 4. Unverified repository claim checks
         if any(indicator in lower_output for indicator in cls.UNVERIFIED_REPOSITORY_INDICATORS):
             violations.append("Model output claims repository or GitHub state change without verification receipt.")
 
-        # 3. Structured JSON parsing attempt
-        parsed_data: dict[str, Any] = {}
         reasoning_chain: list[str] = []
         proposed_actions: list[SAGEActionProposal] = []
         evidence_refs: list[str] = []
         epistemic = SAGEEpistemicState(confidence_level="UNKNOWN")
+        parsed_data: dict[str, Any] = {}
 
         try:
-            # Check for JSON block or raw JSON
             json_str = raw_output
             if "```json" in raw_output:
                 json_str = raw_output.split("```json")[1].split("```")[0].strip()
@@ -185,9 +179,15 @@ class SAGEProtocolGovernor:
 
             parsed_data = json.loads(json_str)
             if isinstance(parsed_data, dict):
-                station = parsed_data.get("station", required_station)
-                reasoning_chain = list(parsed_data.get("reasoning_chain", []))
+                actual_station = parsed_data.get("station")
+                if actual_station is None:
+                    violations.append("Model output is missing required SAGE station identity.")
+                elif str(actual_station) != required_station:
+                    violations.append(
+                        f"Model output station identity mismatch: expected {required_station}, got {actual_station}."
+                    )
 
+                reasoning_chain = list(parsed_data.get("reasoning_chain", []))
                 raw_actions = parsed_data.get("proposed_actions", [])
                 for act in raw_actions:
                     if isinstance(act, dict):
@@ -201,8 +201,6 @@ class SAGEProtocolGovernor:
                         )
 
                 evidence_refs = list(parsed_data.get("evidence_refs", []))
-
-                # Check for completion actions without evidence receipts
                 completion_action_types = {"deployment", "mutation", "completion", "execution"}
                 has_completion_action = any(act.action_type.lower() in completion_action_types for act in proposed_actions)
                 if has_completion_action and not evidence_refs:
@@ -217,8 +215,8 @@ class SAGEProtocolGovernor:
                         known_unknowns=tuple(raw_ep.get("known_unknowns", [])),
                     )
         except Exception:
-            # Output is non-JSON or unstructured text
             reasoning_chain = [raw_output.strip()]
+            violations.append("Model output is not valid structured SAGE JSON.")
 
         if not reasoning_chain and not proposed_actions:
             violations.append("Model output lacks structured SAGE reasoning or proposed actions.")
