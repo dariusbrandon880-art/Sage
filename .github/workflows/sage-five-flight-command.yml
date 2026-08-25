@@ -8,12 +8,33 @@ permissions:
   contents: read
 
 jobs:
+  pin:
+    if: >-
+      github.event.issue.number == 196 &&
+      !github.event.issue.pull_request &&
+      github.actor == 'dariusbrandon880-art' &&
+      github.event.comment.body == '/sage launch five-flight'
+    runs-on: ubuntu-latest
+    outputs:
+      exact_head_sha: ${{ steps.pin.outputs.exact_head_sha }}
+    steps:
+      - name: Resolve exact launch HEAD
+        id: pin
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha="$(git ls-remote https://github.com/${{ github.repository }}.git refs/heads/main | awk '{print $1}')"
+          test "${#sha}" -eq 40
+          printf 'exact_head_sha=%s\n' "$sha" >> "$GITHUB_OUTPUT"
+          printf 'EXACT_HEAD_SHA=%s\n' "$sha"
+
   launch:
     if: >-
       github.event.issue.number == 196 &&
       !github.event.issue.pull_request &&
       github.actor == 'dariusbrandon880-art' &&
       github.event.comment.body == '/sage launch five-flight'
+    needs: pin
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -31,9 +52,20 @@ jobs:
           - flight: "007"
             command: python scripts/run_longitudinal_campaign_flight.py --flight "007"
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout exact launch commit
+        uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ needs.pin.outputs.exact_head_sha }}
+          fetch-depth: 0
+
+      - name: Verify exact checkout
+        env:
+          EXPECTED_SHA: ${{ needs.pin.outputs.exact_head_sha }}
+        run: |
+          set -euo pipefail
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$EXPECTED_SHA"
+          test "${#actual}" -eq 40
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -49,17 +81,47 @@ jobs:
         run: python scripts/sage_precommit_hook.py
 
       - name: Execute commanded flight ${{ matrix.flight }}
+        env:
+          SAGE_EXACT_HEAD_SHA: ${{ needs.pin.outputs.exact_head_sha }}
+          SAGE_FLIGHT_ID: ${{ matrix.flight }}
         run: |
           set -o pipefail
-          ${{ matrix.command }} | tee "longitudinal_flight_${{ matrix.flight }}_stdout.json"
+          ${{ matrix.command }} > "longitudinal_flight_${{ matrix.flight }}_stdout.raw"
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          flight = os.environ["SAGE_FLIGHT_ID"]
+          exact_head_sha = os.environ["SAGE_EXACT_HEAD_SHA"]
+          raw_path = Path(f"longitudinal_flight_{flight}_stdout.raw")
+          output_path = Path(f"longitudinal_flight_{flight}_stdout.json")
+          try:
+              payload = json.loads(raw_path.read_text())
+              if not isinstance(payload, dict):
+                  raise ValueError("flight output must be a JSON object")
+              payload["exact_head_sha"] = exact_head_sha
+              payload.setdefault("flight", flight)
+          except Exception as exc:
+              payload = {
+                  "flight": flight,
+                  "verdict": "HOLD",
+                  "exact_head_sha": exact_head_sha,
+                  "parse_error": str(exc),
+              }
+          output_path.write_text(json.dumps(payload, indent=2) + "\n")
+          print(json.dumps(payload, indent=2))
+          if payload.get("verdict") == "HOLD":
+              raise SystemExit(1)
+          PY
 
       - name: Upload flight evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: sage-command-flight-${{ matrix.flight }}-${{ github.sha }}
+          name: sage-command-flight-${{ matrix.flight }}-${{ needs.pin.outputs.exact_head_sha }}
           path: longitudinal_flight_${{ matrix.flight }}_stdout.json
-          if-no-files-found: ignore
+          if-no-files-found: error
 
   reconverge:
     if: >-
@@ -67,51 +129,81 @@ jobs:
       !github.event.issue.pull_request &&
       github.actor == 'dariusbrandon880-art' &&
       github.event.comment.body == '/sage launch five-flight'
-    needs: launch
+    needs: [pin, launch]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout exact launch commit
+        uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ needs.pin.outputs.exact_head_sha }}
+          fetch-depth: 0
+
+      - name: Verify exact reconvergence checkout
+        env:
+          EXPECTED_SHA: ${{ needs.pin.outputs.exact_head_sha }}
+        run: |
+          set -euo pipefail
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$EXPECTED_SHA"
+          test "${#actual}" -eq 40
 
       - name: Download commanded flight evidence
         uses: actions/download-artifact@v4
         with:
-          pattern: sage-command-flight-*
+          pattern: sage-command-flight-*-${{ needs.pin.outputs.exact_head_sha }}
           path: five-flight-evidence
           merge-multiple: true
 
       - name: Build compound command receipt
+        env:
+          EXPECTED_SHA: ${{ needs.pin.outputs.exact_head_sha }}
         run: |
           python - <<'PY'
           import json
+          import os
+          import re
           from pathlib import Path
-          root = Path('five-flight-evidence')
+
+          expected_sha = os.environ["EXPECTED_SHA"]
+          if not re.fullmatch(r"[0-9a-f]{40}", expected_sha):
+              raise SystemExit("invalid exact_head_sha")
+
+          root = Path("five-flight-evidence")
           reports = []
-          for path in sorted(root.glob('longitudinal_flight_*_stdout.json')):
+          for path in sorted(root.glob("longitudinal_flight_*_stdout.json")):
               try:
                   reports.append(json.loads(path.read_text()))
               except Exception as exc:
-                  reports.append({'flight': path.stem, 'verdict': 'HOLD', 'parse_error': str(exc)})
-          expected = {'003','004','005','006','007'}
-          observed = {str(r.get('flight','')).split('-')[-1] for r in reports}
+                  reports.append({"flight": path.stem, "verdict": "HOLD", "exact_head_sha": expected_sha, "parse_error": str(exc)})
+
+          expected = {"003", "004", "005", "006", "007"}
+          observed = {str(r.get("flight", "")) for r in reports}
           missing = sorted(expected - observed)
+          mismatched = sorted({str(r.get("exact_head_sha", "")) for r in reports if r.get("exact_head_sha") != expected_sha})
+          valid_count = sum(1 for r in reports if r.get("exact_head_sha") == expected_sha)
+
+          hold = bool(missing or mismatched or len(reports) != 5 or valid_count != 5)
           receipt = {
-              'wave': 'SAGE-FIVE-FLIGHT-COMMAND',
-              'expected_flights': sorted(expected),
-              'observed_flights': sorted(observed),
-              'missing_flights': missing,
-              'wave_verdict': 'HOLD' if missing else 'REQUIRES_INDEPENDENT_C2_VERIFICATION',
-              'authority_boundary': 'Observation aggregation only; no capability qualification.'
+              "wave": "SAGE-FIVE-FLIGHT-COMMAND",
+              "exact_head_sha": expected_sha,
+              "expected_flights": sorted(expected),
+              "observed_flights": sorted(observed),
+              "missing_flights": missing,
+              "sha_mismatches": mismatched,
+              "flight_count": len(reports),
+              "wave_verdict": "HOLD" if hold else "REQUIRES_INDEPENDENT_C2_VERIFICATION",
+              "authority_boundary": "Observation aggregation only; no capability qualification.",
           }
-          Path('five_flight_command_receipt.json').write_text(json.dumps(receipt, indent=2))
+          Path("five_flight_command_receipt.json").write_text(json.dumps(receipt, indent=2) + "\n")
           print(json.dumps(receipt, indent=2))
+          if hold:
+              raise SystemExit(1)
           PY
 
       - name: Upload compound receipt
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: sage-five-flight-command-receipt-${{ github.sha }}
+          name: sage-five-flight-command-receipt-${{ needs.pin.outputs.exact_head_sha }}
           path: five_flight_command_receipt.json
           if-no-files-found: error
