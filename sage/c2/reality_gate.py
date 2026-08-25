@@ -3,22 +3,20 @@
 Enforces strict separation between the CONVERSATION PLANE (reports, claims, hypotheses)
 and the REALITY PLANE (Git SHA, PR state, files, evidence receipts).
 
-Guarantees that no operational claim about live state is permitted without a matching,
-verifiable SourceReceipt from an actual reality source with target resource & fingerprint validation.
+No operational live-state claim is permitted without a matching source receipt,
+exact target resource, source type, and claim-specific fingerprint when one is encoded.
 """
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
-import hashlib
-import time
+from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 
 @dataclass(frozen=True)
 class SourceReceipt:
-    source_type: str  # "github", "filesystem", "ci_cd", "runtime_observation"
-    resource_id: str  # e.g., "commit:70d1e798", "file:sage/c2/reality_gate.py"
+    source_type: str
+    resource_id: str
     sha256_digest: str
     timestamp_utc: float
     metadata: Dict[str, Any] = field(default_factory=dict)
@@ -50,7 +48,7 @@ class RealityGateEvaluationResult:
 
 
 class RealityGate:
-    """Enforces fail-closed Reality Gate policy: No source receipt & resource match -> No live-state claim permitted."""
+    """Fail-closed live-state authorization using exact resource and fingerprint evidence."""
 
     LIVE_STATE_CLAIM_KEYWORDS = (
         "live repo",
@@ -72,6 +70,25 @@ class RealityGate:
         lower = statement.lower()
         return any(kw in lower for kw in cls.LIVE_STATE_CLAIM_KEYWORDS)
 
+    @staticmethod
+    def _fingerprint_matches(claim: OperationalClaim, receipt: SourceReceipt) -> bool:
+        if not claim.target_resource:
+            return False
+
+        if claim.target_resource != receipt.resource_id:
+            return False
+
+        # For resource IDs of the form "kind:fingerprint", the fingerprint
+        # must also match the receipt digest (or be represented by the receipt's
+        # exact resource identifier). This prevents a valid resource label from
+        # being paired with unrelated content.
+        if ":" in claim.target_resource:
+            expected_fingerprint = claim.target_resource.rsplit(":", 1)[1]
+            if expected_fingerprint and expected_fingerprint != receipt.sha256_digest:
+                return False
+
+        return True
+
     @classmethod
     def evaluate_claims(
         cls,
@@ -86,35 +103,42 @@ class RealityGate:
 
         for claim in claims:
             if not cls.is_live_state_claim(claim.statement) and not claim.required_source_type:
-                # Conversational or non-operational claim permitted
                 permitted.append(claim)
                 continue
 
-            # Live-state claim requires strict matching receipt & resource validation
-            has_valid_match = False
-
-            if claim.target_resource:
-                # Exact resource ID match required
-                if claim.target_resource in receipt_by_resource:
-                    rec = receipt_by_resource[claim.target_resource]
-                    if not claim.required_source_type or claim.required_source_type == rec.source_type:
-                        has_valid_match = True
-            else:
-                # Operational live claims WITHOUT target_resource specified are blocked unless receipt specifically covers the resource
-                # Live claims such as "GitHub repo is clean" require an explicit resource receipt (e.g., resource_id="repo:clean_status")
-                # Generic matching on source_type alone is forbidden for live state assertions.
-                has_valid_match = False
-
-            if has_valid_match:
-                permitted.append(claim)
-            else:
+            if not claim.target_resource:
                 blocked.append(claim)
-                reason = f"Operational claim '{claim.statement}' BLOCKED: missing explicit target resource/fingerprint receipt match."
-                violations.append(reason)
+                violations.append(
+                    f"Operational claim '{claim.statement}' BLOCKED: explicit target resource/fingerprint is required."
+                )
+                continue
 
-        is_permitted = len(blocked) == 0
+            receipt = receipt_by_resource.get(claim.target_resource)
+            if receipt is None:
+                blocked.append(claim)
+                violations.append(
+                    f"Operational claim '{claim.statement}' BLOCKED: no exact receipt for '{claim.target_resource}'."
+                )
+                continue
+
+            if claim.required_source_type and claim.required_source_type != receipt.source_type:
+                blocked.append(claim)
+                violations.append(
+                    f"Operational claim '{claim.statement}' BLOCKED: source type mismatch."
+                )
+                continue
+
+            if not cls._fingerprint_matches(claim, receipt):
+                blocked.append(claim)
+                violations.append(
+                    f"Operational claim '{claim.statement}' BLOCKED: resource fingerprint mismatch."
+                )
+                continue
+
+            permitted.append(claim)
+
         return RealityGateEvaluationResult(
-            is_permitted=is_permitted,
+            is_permitted=len(blocked) == 0,
             permitted_claims=tuple(permitted),
             blocked_claims=tuple(blocked),
             violations=tuple(violations),
