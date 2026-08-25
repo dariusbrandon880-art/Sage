@@ -74,6 +74,7 @@ def validate_report_claims(
     receipt: LiveOperationReceipt | None,
     claim: str,
     expected_target_resource: str | None = None,
+    evidence_refs: tuple[str, ...] = (),
 ) -> None:
     """Fail closed unless a live claim has an authentic operation receipt."""
     live_claim = any(
@@ -93,6 +94,8 @@ def validate_report_claims(
         raise ValueError("C2 anti-drift contract violation: live claim lacks a LiveOperationReceipt.")
     if not receipt.verify() or not receipt.success:
         raise ValueError("C2 anti-drift contract violation: live claim has invalid or failed receipt.")
+    if receipt.receipt_hash not in evidence_refs:
+        raise ValueError("C2 anti-drift contract violation: live claim receipt is not bound to response evidence.")
     if expected_target_resource and receipt.target_resource != expected_target_resource:
         raise ValueError(
             "C2 anti-drift contract violation: live claim receipt target does not match requested resource."
