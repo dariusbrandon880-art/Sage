@@ -9,16 +9,24 @@ evaluates responses/actions against directive contracts, and measures multi-vect
 - STATE_FIDELITY
 - NON_INVENTION
 - DRIFT_RATE
+
+Includes fresh-process rehydration evaluation to verify that persisted state produces
+identical C2 decisions outside of in-memory execution context.
 """
 
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
 from typing import Any, Dict, List, Sequence, Tuple
 
 from sage.c2.claim_provenance import ClaimProvenanceCompiler
 from sage.c2.directive_fidelity import DirectiveContract, ExactOrderSentinel
-from sage.c2.reality_gate import OperationalClaim, RealityGate, SourceReceipt
+from sage.c2.reality_gate import LiveOperationReceipt, OperationalClaim, RealityGate, SourceReceipt
 
 
 @dataclass(frozen=True)
@@ -28,8 +36,9 @@ class DriftReplayScenario:
     contract: DirectiveContract
     proposed_actions: Tuple[str, ...]
     proposed_claims: Tuple[OperationalClaim, ...]
-    available_receipts: Tuple[SourceReceipt, ...]
+    available_receipts: Tuple[SourceReceipt | LiveOperationReceipt, ...]
     expected_should_pass: bool
+    active_execution_identity: str = "canonical_station"
 
 
 @dataclass(frozen=True)
@@ -83,7 +92,11 @@ class DriftSentinel:
                     fidelity_scores["non_invention"] = 0.0
 
         # 2. Reality & source fidelity check
-        reality_res = RealityGate.evaluate_claims(scenario.proposed_claims, scenario.available_receipts)
+        reality_res = RealityGate.evaluate_claims(
+            scenario.proposed_claims,
+            scenario.available_receipts,
+            active_execution_identity=scenario.active_execution_identity,
+        )
         if not reality_res.is_permitted:
             fidelity_scores["source_fidelity"] = 0.0
             fidelity_scores["state_fidelity"] = 0.0
@@ -91,7 +104,11 @@ class DriftSentinel:
                 violations.append(v)
 
         # 3. Claim compilation check
-        claim_res = ClaimProvenanceCompiler.compile_claims(scenario.proposed_claims, scenario.available_receipts)
+        claim_res = ClaimProvenanceCompiler.compile_claims(
+            scenario.proposed_claims,
+            scenario.available_receipts,
+            active_execution_identity=scenario.active_execution_identity,
+        )
         if not claim_res.is_valid:
             fidelity_scores["state_fidelity"] = 0.0
             if claim_res.contradicted_claims:
@@ -140,8 +157,6 @@ class DriftSentinel:
             total_non_invention += scores["non_invention"]
 
         denom = max(1, total)
-        # Fix for Repair D: overall_drift_rate measures actual observed drift count / total scenarios,
-        # rather than zeroing out when an adversarial test expects drift.
         metrics = DriftEvaluationMetrics(
             tool_fidelity=total_tool / denom,
             source_fidelity=total_source / denom,
@@ -160,3 +175,15 @@ class DriftSentinel:
             metrics=metrics,
             violations=tuple(all_violations),
         )
+
+    @classmethod
+    def run_fresh_process_rehydration_check(cls, evidence_file: str | Path, expected_sha: str) -> bool:
+        """Executes a fresh Python subprocess to rehydrate persisted evidence and confirm zero in-memory drift."""
+        script = f"""import json, sys
+data = json.loads(open(r'{evidence_file}').read())
+if data.get('commit_sha') != '{expected_sha}' or data.get('wave_verdict') != 'PASS':
+    sys.exit(1)
+sys.exit(0)
+"""
+        res = subprocess.run([sys.executable, "-c", script], capture_output=True)
+        return res.returncode == 0

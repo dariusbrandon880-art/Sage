@@ -4,7 +4,8 @@ Enforces strict separation between the CONVERSATION PLANE (reports, claims, hypo
 and the REALITY PLANE (Git SHA, PR state, files, evidence receipts).
 
 Guarantees that no operational claim about live state is permitted without a matching,
-verifiable SourceReceipt from an actual reality source with target resource & fingerprint validation.
+verifiable SourceReceipt or LiveOperationReceipt from an actual reality source
+with target resource, capability, execution identity, and fingerprint validation.
 """
 
 from __future__ import annotations
@@ -16,11 +17,64 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 
 @dataclass(frozen=True)
+class LiveOperationReceipt:
+    operation_id: str
+    capability: str
+    target_resource: str
+    source: str
+    timestamp: float
+    success: bool
+    result_digest: str
+    execution_identity: str
+    receipt_hash: str
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+    @classmethod
+    def create(
+        cls,
+        operation_id: str,
+        capability: str,
+        target_resource: str,
+        source: str,
+        success: bool,
+        result_digest: str,
+        execution_identity: str,
+        timestamp: Optional[float] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> LiveOperationReceipt:
+        ts = timestamp if timestamp is not None else time.time()
+        meta = metadata or {}
+        raw = f"{operation_id}:{capability}:{target_resource}:{source}:{ts}:{success}:{result_digest}:{execution_identity}"
+        r_hash = hashlib.sha256(raw.encode("utf-8")).hexdigest()
+        return cls(
+            operation_id=operation_id,
+            capability=capability,
+            target_resource=target_resource,
+            source=source,
+            timestamp=ts,
+            success=success,
+            result_digest=result_digest,
+            execution_identity=execution_identity,
+            receipt_hash=r_hash,
+            metadata=meta,
+        )
+
+    def verify_hash(self) -> bool:
+        raw = f"{self.operation_id}:{self.capability}:{self.target_resource}:{self.source}:{self.timestamp}:{self.success}:{self.result_digest}:{self.execution_identity}"
+        computed = hashlib.sha256(raw.encode("utf-8")).hexdigest()
+        return self.receipt_hash == computed
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass(frozen=True)
 class SourceReceipt:
     source_type: str  # "github", "filesystem", "ci_cd", "runtime_observation"
     resource_id: str  # e.g., "commit:70d1e798", "file:sage/c2/reality_gate.py"
     sha256_digest: str
     timestamp_utc: float
+    execution_identity: str = "canonical_station"
     metadata: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -29,6 +83,7 @@ class SourceReceipt:
             "resource_id": self.resource_id,
             "sha256_digest": self.sha256_digest,
             "timestamp_utc": self.timestamp_utc,
+            "execution_identity": self.execution_identity,
             "metadata": self.metadata,
         }
 
@@ -39,6 +94,7 @@ class OperationalClaim:
     statement: str
     required_source_type: Optional[str] = None
     target_resource: Optional[str] = None
+    required_capability: Optional[str] = None
 
 
 @dataclass(frozen=True)
@@ -50,7 +106,7 @@ class RealityGateEvaluationResult:
 
 
 class RealityGate:
-    """Enforces fail-closed Reality Gate policy: No source receipt & resource match -> No live-state claim permitted."""
+    """Enforces fail-closed Reality Gate policy: No valid invocation receipt & resource match -> No live-state claim permitted."""
 
     LIVE_STATE_CLAIM_KEYWORDS = (
         "live repo",
@@ -76,40 +132,93 @@ class RealityGate:
     def evaluate_claims(
         cls,
         claims: Sequence[OperationalClaim],
-        available_receipts: Sequence[SourceReceipt],
+        available_receipts: Sequence[SourceReceipt | LiveOperationReceipt],
+        active_execution_identity: Optional[str] = None,
     ) -> RealityGateEvaluationResult:
         permitted: List[OperationalClaim] = []
         blocked: List[OperationalClaim] = []
         violations: List[str] = []
 
-        receipt_by_resource = {rc.resource_id: rc for rc in available_receipts}
-
         for claim in claims:
             if not cls.is_live_state_claim(claim.statement) and not claim.required_source_type:
-                # Conversational or non-operational claim permitted
                 permitted.append(claim)
                 continue
 
-            # Live-state claim requires strict matching receipt & resource validation
             has_valid_match = False
+            rejection_reason = ""
 
-            if claim.target_resource:
-                # Exact resource ID match required
-                if claim.target_resource in receipt_by_resource:
-                    rec = receipt_by_resource[claim.target_resource]
-                    if not claim.required_source_type or claim.required_source_type == rec.source_type:
+            for rec in available_receipts:
+                # Disallow naked booleans or unrecognized objects
+                if isinstance(rec, LiveOperationReceipt):
+                    # 1. Verify receipt cryptographic hash integrity
+                    if not rec.verify_hash():
+                        rejection_reason = f"LiveOperationReceipt '{rec.operation_id}' failed cryptographic receipt_hash verification."
+                        continue
+
+                    # 2. Verify operation success
+                    if not rec.success:
+                        rejection_reason = f"LiveOperationReceipt '{rec.operation_id}' indicates operation failure (success=False)."
+                        continue
+
+                    # 3. Check execution identity if enforced
+                    if active_execution_identity and rec.execution_identity != active_execution_identity:
+                        rejection_reason = f"LiveOperationReceipt execution identity mismatch: expected '{active_execution_identity}', found '{rec.execution_identity}'."
+                        continue
+
+                    # 4. Target resource & capability matching
+                    target_match = False
+                    if claim.target_resource:
+                        if claim.target_resource == rec.target_resource or claim.target_resource in rec.target_resource:
+                            target_match = True
+                    else:
+                        target_match = True
+
+                    cap_match = False
+                    if claim.required_capability:
+                        if claim.required_capability == rec.capability:
+                            cap_match = True
+                    else:
+                        cap_match = True
+
+                    src_match = False
+                    if claim.required_source_type:
+                        if claim.required_source_type == rec.source:
+                            src_match = True
+                    else:
+                        src_match = True
+
+                    if target_match and cap_match and src_match:
                         has_valid_match = True
-            else:
-                # Operational live claims WITHOUT target_resource specified are blocked unless receipt specifically covers the resource
-                # Live claims such as "GitHub repo is clean" require an explicit resource receipt (e.g., resource_id="repo:clean_status")
-                # Generic matching on source_type alone is forbidden for live state assertions.
-                has_valid_match = False
+                        break
+
+                elif isinstance(rec, SourceReceipt):
+                    if active_execution_identity and rec.execution_identity != active_execution_identity:
+                        rejection_reason = f"SourceReceipt execution identity mismatch: expected '{active_execution_identity}', found '{rec.execution_identity}'."
+                        continue
+
+                    target_match = False
+                    if claim.target_resource:
+                        if claim.target_resource == rec.resource_id or claim.target_resource in rec.resource_id:
+                            target_match = True
+                    else:
+                        target_match = False
+
+                    src_match = False
+                    if claim.required_source_type:
+                        if claim.required_source_type == rec.source_type:
+                            src_match = True
+                    else:
+                        src_match = True
+
+                    if target_match and src_match:
+                        has_valid_match = True
+                        break
 
             if has_valid_match:
                 permitted.append(claim)
             else:
                 blocked.append(claim)
-                reason = f"Operational claim '{claim.statement}' BLOCKED: missing explicit target resource/fingerprint receipt match."
+                reason = rejection_reason or f"Operational claim '{claim.statement}' BLOCKED: missing explicit target resource/fingerprint receipt match."
                 violations.append(reason)
 
         is_permitted = len(blocked) == 0

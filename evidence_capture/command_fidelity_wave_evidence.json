@@ -1,6 +1,6 @@
 {
   "commit_sha": "70d1e798d5deee425a138e12ec070c8b10af2793",
-  "timestamp_utc": 1787624438.9908972,
+  "timestamp_utc": 1787637238.0946362,
   "flight_results": [
     {
       "flight_id": "Flight A",
@@ -62,7 +62,7 @@
       "flight_name": "Wave Reconvergence",
       "boundary_scope": "sage.c2.command_fidelity_wave",
       "status": "PASS",
-      "receipt_hash": "771e318755a6814ade14aeade2cd24aec53c9da53bcc8ef9bd486959eb7da4a2",
+      "receipt_hash": "41e272a000f158602d429a1868c9b93aacbdbc29f9c7261d56356987a050ba71",
       "commit_sha": "70d1e798d5deee425a138e12ec070c8b10af2793",
       "metrics": {
         "wave_reconverged": true,

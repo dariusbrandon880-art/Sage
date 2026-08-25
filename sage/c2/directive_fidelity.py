@@ -1,8 +1,8 @@
 """Flight A: Directive Fidelity & Exact-Order Sentinel for SAGE C2.
 
-Provides deterministic parsing, fingerprinting, and strict order validation
-for user instructions to prevent unauthorized plan additions, order shuffling,
-or paraphrasing into different missions.
+Provides deterministic parsing, fingerprinting, requirement origin tracking,
+and strict order validation for user instructions to prevent unauthorized plan
+additions, order shuffling, or paraphrasing into different missions.
 """
 
 from __future__ import annotations
@@ -14,11 +14,20 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 
 @dataclass(frozen=True)
+class RequirementOrigin:
+    source_type: str  # "user_directive", "repository_governance", "explicit_safety_constraint", "validated_dependency"
+    source_id: str
+    directive_position: int
+    authorization: str  # "authorized", "unauthorized"
+
+
+@dataclass(frozen=True)
 class ActionStep:
     step_number: int
     action: str
     target: str = ""
     parameters: Dict[str, Any] = field(default_factory=dict)
+    origin: Optional[RequirementOrigin] = None
 
 
 @dataclass(frozen=True)
@@ -51,7 +60,7 @@ class DirectiveFidelityValidationResult:
 
 
 class DirectiveFingerprint:
-    """Parses raw user instructions into a canonical DirectiveContract with SHA-256 fingerprinting."""
+    """Parses raw user instructions into a canonical DirectiveContract with SHA-256 fingerprinting and origin tracking."""
 
     @staticmethod
     def compute_hash(raw_text: str) -> str:
@@ -79,7 +88,13 @@ class DirectiveFingerprint:
                 forbidden_term = re.sub(r"^(do not|don't|never|must not)\s+", "", line, flags=re.IGNORECASE).strip().rstrip(".")
                 forbidden.append(forbidden_term)
             elif lower.startswith(("check live", "check github", "inspect", "run", "verify", "execute", "list", "read", "fetch")):
-                actions.append(ActionStep(step_number=step_counter, action=line))
+                origin = RequirementOrigin(
+                    source_type="user_directive",
+                    source_id=directive_id,
+                    directive_position=step_counter,
+                    authorization="authorized",
+                )
+                actions.append(ActionStep(step_number=step_counter, action=line, origin=origin))
                 step_counter += 1
                 if "github" in lower or "repo" in lower:
                     if "github" not in sources:
@@ -88,7 +103,13 @@ class DirectiveFingerprint:
                     if "filesystem" not in sources:
                         sources.append("filesystem")
             elif any(k in lower for k in ["check", "inspect", "run", "verify", "execute", "merge", "commit"]):
-                actions.append(ActionStep(step_number=step_counter, action=line))
+                origin = RequirementOrigin(
+                    source_type="user_directive",
+                    source_id=directive_id,
+                    directive_position=step_counter,
+                    authorization="authorized",
+                )
+                actions.append(ActionStep(step_number=step_counter, action=line, origin=origin))
                 step_counter += 1
 
         return DirectiveContract(
@@ -108,25 +129,33 @@ class ExactOrderSentinel:
     @staticmethod
     def validate_plan(
         contract: DirectiveContract,
-        proposed_plan_actions: Sequence[str],
+        proposed_plan_actions: Sequence[str | ActionStep],
     ) -> DirectiveFidelityValidationResult:
         violations: List[str] = []
 
         # 1. Check for forbidden additions in proposed actions
-        for action in proposed_plan_actions:
-            lower_action = action.lower().strip().rstrip(".")
+        for action_item in proposed_plan_actions:
+            action_str = action_item.action if isinstance(action_item, ActionStep) else str(action_item)
+            lower_action = action_str.lower().strip().rstrip(".")
+
+            # Origin check if passed as ActionStep
+            if isinstance(action_item, ActionStep) and action_item.origin:
+                if action_item.origin.authorization != "authorized":
+                    violations.append(f"Action '{action_str}' possesses unauthorized requirement origin: {action_item.origin}")
+
             for forbidden in contract.forbidden_additions:
                 forbidden_clean = forbidden.lower().strip().rstrip(".")
                 if forbidden_clean in lower_action:
                     violations.append(
-                        f"Forbidden action addition detected in plan: '{action}' violates constraint '{forbidden}'"
+                        f"Forbidden action addition detected in plan: '{action_str}' violates constraint '{forbidden}'"
                     )
 
         # 2. Check action sequence alignment & order
         contract_actions_clean = [a.action.lower().strip().rstrip(".") for a in contract.ordered_actions]
 
         contract_idx = 0
-        for proposed_action in proposed_plan_actions:
+        for proposed_item in proposed_plan_actions:
+            proposed_action = proposed_item.action if isinstance(proposed_item, ActionStep) else str(proposed_item)
             lower_prop = proposed_action.lower().strip().rstrip(".")
 
             # Check if this proposed action matches any forbidden additions

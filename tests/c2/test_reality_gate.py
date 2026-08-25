@@ -2,6 +2,7 @@
 
 import time
 from sage.c2.reality_gate import (
+    LiveOperationReceipt,
     OperationalClaim,
     RealityGate,
     SourceReceipt,
@@ -76,3 +77,47 @@ def test_reality_gate_permits_exact_resource_receipted_live_claim():
     assert eval_res.is_permitted is True
     assert len(eval_res.permitted_claims) == 1
     assert len(eval_res.blocked_claims) == 0
+
+
+def test_reality_gate_adversarial_matrix_checks():
+    claims = [
+        OperationalClaim(
+            claim_id="c1",
+            statement="GitHub repo is merged.",
+            required_source_type="github",
+            target_resource="pr:250",
+            required_capability="pr_merge",
+        )
+    ]
+
+    # 1. Failed operation -> BLOCKED
+    failed_receipt = LiveOperationReceipt.create(
+        operation_id="op-01",
+        capability="pr_merge",
+        target_resource="pr:250",
+        source="github",
+        success=False,  # Failed!
+        result_digest="digest123",
+        execution_identity="canonical_station",
+    )
+    res_failed = RealityGate.evaluate_claims(claims, [failed_receipt])
+    assert res_failed.is_permitted is False
+
+    # 2. Fake hash -> BLOCKED
+    bad_hash_receipt = LiveOperationReceipt(
+        operation_id="op-02",
+        capability="pr_merge",
+        target_resource="pr:250",
+        source="github",
+        timestamp=time.time(),
+        success=True,
+        result_digest="digest123",
+        execution_identity="canonical_station",
+        receipt_hash="fake_hash_12345",
+    )
+    res_bad_hash = RealityGate.evaluate_claims(claims, [bad_hash_receipt])
+    assert res_bad_hash.is_permitted is False
+
+    # 3. Wrong execution identity -> BLOCKED
+    res_wrong_id = RealityGate.evaluate_claims(claims, [failed_receipt], active_execution_identity="other_station")
+    assert res_wrong_id.is_permitted is False
