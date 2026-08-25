@@ -6,45 +6,48 @@
       "flight_id": "Flight A",
       "flight_name": "Directive Fidelity",
       "boundary_scope": "sage.c2.directive_fidelity",
-      "status": "PASS",
+      "status": "HOLD",
       "receipt_hash": "6329ee5d702606a99554b12ffad4409f1952bbba0b331d09a32bb6c098e25d67",
       "commit_sha": "70d1e798d5deee425a138e12ec070c8b10af2793",
       "metrics": {
         "valid_plan_passed": true,
         "invalid_plan_blocked": true,
-        "forbidden_additions_count": 1
+        "forbidden_additions_count": 1,
+        "evidence_state": "STALE_HISTORICAL_RECEIPT"
       }
     },
     {
       "flight_id": "Flight B",
       "flight_name": "Reality Gate",
       "boundary_scope": "sage.c2.reality_gate",
-      "status": "PASS",
+      "status": "HOLD",
       "receipt_hash": "427b8503a0ba4a9d71bd17df264f88f2205555b2dadbf35e3f9378efa8960401",
       "commit_sha": "70d1e798d5deee425a138e12ec070c8b10af2793",
       "metrics": {
         "permitted_claims_count": 1,
-        "blocked_claims_count": 0
+        "blocked_claims_count": 0,
+        "evidence_state": "STALE_HISTORICAL_RECEIPT"
       }
     },
     {
       "flight_id": "Flight C",
       "flight_name": "Claim Provenance Compiler",
       "boundary_scope": "sage.c2.claim_provenance",
-      "status": "PASS",
+      "status": "HOLD",
       "receipt_hash": "a95028ea27bc22a4657180913d78e31543c4a321242ae4f7f1658c48368bf93e",
       "commit_sha": "70d1e798d5deee425a138e12ec070c8b10af2793",
       "metrics": {
         "verified_claims_count": 1,
         "unresolved_claims_count": 0,
-        "contradicted_claims_count": 0
+        "contradicted_claims_count": 0,
+        "evidence_state": "STALE_HISTORICAL_RECEIPT"
       }
     },
     {
       "flight_id": "Flight D",
       "flight_name": "Fresh-Session Drift Sentinel",
       "boundary_scope": "sage.c2.drift_sentinel",
-      "status": "PASS",
+      "status": "HOLD",
       "receipt_hash": "8069a20447c00693e1fb36e29501b9ae50bc44b21028d15c3457c8fb17d4f4ec",
       "commit_sha": "70d1e798d5deee425a138e12ec070c8b10af2793",
       "metrics": {
@@ -54,27 +57,30 @@
         "constraint_fidelity": 1.0,
         "state_fidelity": 1.0,
         "non_invention_rate": 1.0,
-        "overall_drift_rate": 0.0
+        "overall_drift_rate": 0.0,
+        "evidence_state": "STALE_HISTORICAL_RECEIPT"
       }
     },
     {
       "flight_id": "Flight E",
       "flight_name": "Wave Reconvergence",
       "boundary_scope": "sage.c2.command_fidelity_wave",
-      "status": "PASS",
+      "status": "HOLD",
       "receipt_hash": "e664353de775dacb6a840632d70224a1338ee7501b5f7b52fa705091e4a20c3d",
       "commit_sha": "70d1e798d5deee425a138e12ec070c8b10af2793",
       "metrics": {
-        "wave_reconverged": true,
-        "stale_sha_detected": false
+        "wave_reconverged": false,
+        "stale_sha_detected": true,
+        "evidence_state": "STALE_HISTORICAL_RECEIPT"
       }
     }
   ],
-  "wave_verdict": "PASS",
+  "wave_verdict": "HOLD",
   "summary": {
     "total_flights": 5,
-    "passed_flights": 5,
-    "wave_verdict": "PASS",
-    "stale_sha_detected": false
+    "passed_flights": 0,
+    "wave_verdict": "HOLD",
+    "stale_sha_detected": true,
+    "reason": "Historical evidence is retained for provenance but cannot qualify the current PR head. Fresh execution evidence must be generated at the exact CI HEAD."
   }
 }
