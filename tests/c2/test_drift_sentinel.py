@@ -1,6 +1,9 @@
 """Unit tests for Flight D: Fresh-Session Drift Sentinel."""
 
+import json
 import time
+from pathlib import Path
+
 from sage.c2.directive_fidelity import DirectiveFingerprint
 from sage.c2.drift_sentinel import DriftReplayScenario, DriftSentinel
 from sage.c2.reality_gate import OperationalClaim, SourceReceipt
@@ -63,6 +66,44 @@ def test_drift_sentinel_catches_unauthorized_merge_and_fake_claim():
 
     report = DriftSentinel.run_suite([scenario])
     assert report.total_scenarios == 1
-    assert report.passed_scenarios == 1  # Passed test expectation check
+    assert report.passed_scenarios == 1
     assert report.scenarios_with_drift == 1
-    assert report.metrics.overall_drift_rate == 1.0  # Properly reports 1.0 drift rate!
+    assert report.metrics.overall_drift_rate == 1.0
+
+
+def _write_evidence(path: Path, sha: str, *, flight_sha: str | None = None, verdict: str = "PASS") -> None:
+    actual_flight_sha = flight_sha or sha
+    data = {
+        "commit_sha": sha,
+        "wave_verdict": verdict,
+        "flight_results": [
+            {"flight_id": "Flight A", "status": "PASS", "commit_sha": actual_flight_sha},
+            {"flight_id": "Flight B", "status": "PASS", "commit_sha": actual_flight_sha},
+        ],
+        "summary": {
+            "total_flights": 2,
+            "passed_flights": 2,
+            "wave_verdict": verdict,
+            "stale_sha_detected": False,
+        },
+    }
+    path.write_text(json.dumps(data), encoding="utf-8")
+
+
+def test_fresh_process_rehydration_rejects_stale_flight_sha(tmp_path):
+    expected_sha = "a" * 40
+    evidence = tmp_path / "evidence.json"
+    _write_evidence(evidence, expected_sha, flight_sha="b" * 40)
+
+    assert DriftSentinel.run_fresh_process_rehydration_check(evidence, expected_sha) is False
+
+
+def test_fresh_process_rehydration_rejects_inconsistent_summary(tmp_path):
+    expected_sha = "a" * 40
+    evidence = tmp_path / "evidence.json"
+    _write_evidence(evidence, expected_sha)
+    data = json.loads(evidence.read_text(encoding="utf-8"))
+    data["summary"]["passed_flights"] = 1
+    evidence.write_text(json.dumps(data), encoding="utf-8")
+
+    assert DriftSentinel.run_fresh_process_rehydration_check(evidence, expected_sha) is False
