@@ -14,6 +14,7 @@ from dataclasses import asdict, dataclass, field
 import hashlib
 import json
 import os
+from pathlib import Path
 import subprocess
 import time
 from typing import Any, Dict, List, Optional, Tuple
@@ -73,6 +74,35 @@ class CommandFidelityWaveDispatcher:
 
     def __init__(self, commit_sha: Optional[str] = None) -> None:
         self.commit_sha = commit_sha or _get_current_commit_sha()
+
+    @classmethod
+    def validate_persisted_evidence(
+        cls,
+        evidence_path: str | Path,
+        expected_commit_sha: Optional[str] = None,
+    ) -> bool:
+        """Fails closed if persisted evidence SHA differs from expected/active commit SHA."""
+        target_sha = expected_commit_sha or _get_current_commit_sha()
+        path = Path(evidence_path)
+        if not path.exists():
+            raise FileNotFoundError(f"Persisted evidence file not found: {path}")
+
+        data = json.loads(path.read_text(encoding="utf-8"))
+        top_level_sha = data.get("commit_sha", "")
+        verdict = data.get("wave_verdict", "")
+
+        if verdict != "PASS":
+            return False
+
+        if top_level_sha != target_sha:
+            return False
+
+        flights = data.get("flight_results", [])
+        for flight in flights:
+            if flight.get("commit_sha") != target_sha or flight.get("status") != "PASS":
+                return False
+
+        return True
 
     def dispatch_wave(self) -> CommandFidelityWaveReceipt:
         timestamp = time.time()

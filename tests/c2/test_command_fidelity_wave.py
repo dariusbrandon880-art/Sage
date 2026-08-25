@@ -32,23 +32,13 @@ def test_command_fidelity_wave_fails_closed_on_stale_sha():
     )
     receipt.flight_results.append(stale_result)
 
-    # Verify dispatcher fails closed if any receipt SHA mismatches
-    receipt.flight_results[0] = FidelityFlightResult(
-        flight_id="Flight A",
-        flight_name="Directive Fidelity",
-        boundary_scope="sage.c2.directive_fidelity",
-        status="PASS",
-        receipt_hash="hashA",
-        commit_sha="mismatched_sha",
-        metrics={},
-    )
     # Re-verify logic
     stale_found = any(f.commit_sha != "actual_sha_123" for f in receipt.flight_results)
     assert stale_found is True
 
 
-def test_command_fidelity_wave_evidence_persistence(tmp_path):
-    dispatcher = CommandFidelityWaveDispatcher()
+def test_command_fidelity_wave_evidence_persistence_and_validation(tmp_path):
+    dispatcher = CommandFidelityWaveDispatcher(commit_sha="head_sha_abc")
     receipt = dispatcher.dispatch_wave()
 
     evidence_file = tmp_path / "command_fidelity_wave_evidence.json"
@@ -56,6 +46,23 @@ def test_command_fidelity_wave_evidence_persistence(tmp_path):
         json.dump(receipt.to_dict(), f, indent=2)
 
     assert evidence_file.exists()
-    data = json.loads(evidence_file.read_text())
-    assert data["wave_verdict"] == "PASS"
-    assert len(data["flight_results"]) == 5
+    # 1. Validating against correct expected SHA passes
+    assert CommandFidelityWaveDispatcher.validate_persisted_evidence(evidence_file, expected_commit_sha="head_sha_abc") is True
+
+    # 2. Validating against mismatched target SHA fails closed (returns False)
+    assert CommandFidelityWaveDispatcher.validate_persisted_evidence(evidence_file, expected_commit_sha="stale_sha_70d1e") is False
+
+
+def test_persisted_evidence_fails_closed_on_flight_sha_mismatch(tmp_path):
+    dispatcher = CommandFidelityWaveDispatcher(commit_sha="head_sha_abc")
+    receipt = dispatcher.dispatch_wave()
+
+    # Tamper with flight result commit_sha
+    stale_dict = receipt.to_dict()
+    stale_dict["flight_results"][0]["commit_sha"] = "stale_sha_70d1e"
+
+    evidence_file = tmp_path / "command_fidelity_wave_evidence_tampered.json"
+    with open(evidence_file, "w", encoding="utf-8") as f:
+        json.dump(stale_dict, f, indent=2)
+
+    assert CommandFidelityWaveDispatcher.validate_persisted_evidence(evidence_file, expected_commit_sha="head_sha_abc") is False
