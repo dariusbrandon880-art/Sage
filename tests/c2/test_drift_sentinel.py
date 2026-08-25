@@ -15,6 +15,7 @@ def test_drift_sentinel_clean_scenario():
         resource_id="commit:70d1e798d5deee425a138e12ec070c8b10af2793",
         sha256_digest="70d1e798d5deee425a138e12ec070c8b10af2793",
         timestamp_utc=time.time(),
+        metadata={"origin": "operation_boundary", "operation": "github_commit_observation"},
     )
 
     scenario = DriftReplayScenario(
@@ -57,12 +58,12 @@ def test_drift_sentinel_catches_unauthorized_merge_and_fake_claim():
                 required_source_type="github",
             ),
         ),
-        available_receipts=(),  # No receipts!
+        available_receipts=(),
         expected_should_pass=False,
     )
 
     report = DriftSentinel.run_suite([scenario])
     assert report.total_scenarios == 1
-    assert report.passed_scenarios == 1  # Passed test expectation check
+    assert report.passed_scenarios == 1
     assert report.scenarios_with_drift == 1
-    assert report.metrics.overall_drift_rate == 1.0  # Properly reports 1.0 drift rate!
+    assert report.metrics.overall_drift_rate == 1.0
