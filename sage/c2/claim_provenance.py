@@ -1,14 +1,13 @@
 """Flight C: Claim-to-Receipt Compiler & Factual Claim Verification for SAGE C2.
 
 Classifies factual operational statements produced by C2 and checks whether
-the required source receipt exists and matches fingerprint, SHA, or timestamp.
+the required source receipt exists and matches the claim's exact resource.
 """
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
-import hashlib
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from dataclasses import dataclass
+from typing import List, Optional, Sequence, Tuple
 
 from sage.c2.reality_gate import OperationalClaim, RealityGate, SourceReceipt
 
@@ -32,7 +31,7 @@ class ClaimCompilationResult:
 
 
 class ClaimProvenanceCompiler:
-    """Compiles operational text claims against reality source receipts."""
+    """Compiles operational text claims against exact live-source receipts."""
 
     @classmethod
     def compile_claims(
@@ -45,80 +44,91 @@ class ClaimProvenanceCompiler:
         contradicted: List[VerifiedClaimReceipt] = []
 
         receipt_by_resource = {r.resource_id: r for r in receipts}
-        receipt_by_source = {r.source_type: r for r in receipts}
 
         for claim in claims:
-            if not RealityGate.is_live_state_claim(claim.statement) and not claim.required_source_type:
-                # Non-live state claim
-                rec = VerifiedClaimReceipt(
-                    claim_id=claim.claim_id,
-                    statement=claim.statement,
-                    receipt_hash="NONE",
-                    source_type="NONE",
-                    status="PERMITTED",
-                    reason="Conversational / non-operational claim requiring no reality receipt",
-                )
-                verified.append(rec)
-                continue
+            requires_receipt = RealityGate.is_live_state_claim(claim.statement) or bool(claim.required_source_type)
 
-            matching_receipt: Optional[SourceReceipt] = None
-            if claim.target_resource and claim.target_resource in receipt_by_resource:
-                matching_receipt = receipt_by_resource[claim.target_resource]
-            elif claim.required_source_type and claim.required_source_type in receipt_by_source:
-                # Same source type receipt exists, check if it contradicts the claimed resource/digest
-                candidate = receipt_by_source[claim.required_source_type]
-                if claim.target_resource and candidate.resource_id != claim.target_resource:
-                    rec = VerifiedClaimReceipt(
+            if not requires_receipt:
+                verified.append(
+                    VerifiedClaimReceipt(
                         claim_id=claim.claim_id,
                         statement=claim.statement,
-                        receipt_hash=candidate.sha256_digest,
-                        source_type=candidate.source_type,
-                        status="CONTRADICTED",
-                        reason=f"Resource mismatch: claimed '{claim.target_resource}', found '{candidate.resource_id}'",
+                        receipt_hash="NONE",
+                        source_type="NONE",
+                        status="PERMITTED",
+                        reason="Conversational / non-operational claim requiring no reality receipt",
                     )
-                    contradicted.append(rec)
-                    continue
+                )
+                continue
 
-            # Generic receipt fallback (receipts[0]) removed per Repair C: No match => UNRESOLVED.
-            if matching_receipt:
-                # Validate digest match if specified
-                if claim.target_resource and ":" in claim.target_resource:
-                    expected_digest = claim.target_resource.split(":")[-1]
-                    if expected_digest not in matching_receipt.resource_id and expected_digest != matching_receipt.sha256_digest:
-                        rec = VerifiedClaimReceipt(
+            if not claim.target_resource:
+                unresolved.append(
+                    VerifiedClaimReceipt(
+                        claim_id=claim.claim_id,
+                        statement=claim.statement,
+                        receipt_hash="UNRESOLVED",
+                        source_type=claim.required_source_type or "UNKNOWN",
+                        status="UNRESOLVED",
+                        reason="Operational claim has no explicit target resource; source-type-only matching is forbidden",
+                    )
+                )
+                continue
+
+            matching_receipt: Optional[SourceReceipt] = receipt_by_resource.get(claim.target_resource)
+            if matching_receipt is None:
+                unresolved.append(
+                    VerifiedClaimReceipt(
+                        claim_id=claim.claim_id,
+                        statement=claim.statement,
+                        receipt_hash="UNRESOLVED",
+                        source_type=claim.required_source_type or "UNKNOWN",
+                        status="UNRESOLVED",
+                        reason="No exact matching source receipt found for claim target resource",
+                    )
+                )
+                continue
+
+            if claim.required_source_type and claim.required_source_type != matching_receipt.source_type:
+                contradicted.append(
+                    VerifiedClaimReceipt(
+                        claim_id=claim.claim_id,
+                        statement=claim.statement,
+                        receipt_hash=matching_receipt.sha256_digest,
+                        source_type=matching_receipt.source_type,
+                        status="CONTRADICTED",
+                        reason=f"Source mismatch: required '{claim.required_source_type}', found '{matching_receipt.source_type}'",
+                    )
+                )
+                continue
+
+            if ":" in claim.target_resource:
+                expected_digest = claim.target_resource.split(":")[-1]
+                if expected_digest and expected_digest != matching_receipt.sha256_digest and expected_digest not in matching_receipt.resource_id:
+                    contradicted.append(
+                        VerifiedClaimReceipt(
                             claim_id=claim.claim_id,
                             statement=claim.statement,
                             receipt_hash=matching_receipt.sha256_digest,
                             source_type=matching_receipt.source_type,
                             status="CONTRADICTED",
-                            reason=f"Digest mismatch: expected '{expected_digest}', found '{matching_receipt.sha256_digest}'",
+                            reason=f"Fingerprint mismatch: expected '{expected_digest}', found '{matching_receipt.sha256_digest}'",
                         )
-                        contradicted.append(rec)
-                        continue
+                    )
+                    continue
 
-                rec = VerifiedClaimReceipt(
+            verified.append(
+                VerifiedClaimReceipt(
                     claim_id=claim.claim_id,
                     statement=claim.statement,
                     receipt_hash=matching_receipt.sha256_digest,
                     source_type=matching_receipt.source_type,
                     status="PERMITTED",
-                    reason="Verified against live source receipt",
+                    reason="Verified against exact live source receipt",
                 )
-                verified.append(rec)
-            else:
-                rec = VerifiedClaimReceipt(
-                    claim_id=claim.claim_id,
-                    statement=claim.statement,
-                    receipt_hash="UNRESOLVED",
-                    source_type=claim.required_source_type or "UNKNOWN",
-                    status="UNRESOLVED",
-                    reason="No exact matching source receipt found for claim target resource",
-                )
-                unresolved.append(rec)
+            )
 
-        is_valid = len(unresolved) == 0 and len(contradicted) == 0
         return ClaimCompilationResult(
-            is_valid=is_valid,
+            is_valid=len(unresolved) == 0 and len(contradicted) == 0,
             verified_claims=tuple(verified),
             unresolved_claims=tuple(unresolved),
             contradicted_claims=tuple(contradicted),
