@@ -5,6 +5,16 @@ import time
 from sage.c2.reality_gate import OperationalClaim, RealityGate, SourceReceipt
 
 
+def _receipt(resource_id: str, digest: str, source_type: str = "github", **metadata) -> SourceReceipt:
+    return SourceReceipt(
+        source_type=source_type,
+        resource_id=resource_id,
+        sha256_digest=digest,
+        timestamp_utc=time.time(),
+        metadata={"origin": "operation_boundary", "operation": "github_observation", **metadata},
+    )
+
+
 def test_is_live_state_claim_detection():
     assert RealityGate.is_live_state_claim("GitHub currently reports main at 70d1e7.") is True
     assert RealityGate.is_live_state_claim("The repo is clean.") is True
@@ -27,16 +37,10 @@ def test_reality_gate_blocks_unreceipted_live_claim():
 
 
 def test_reality_gate_blocks_generic_source_claim_without_resource():
-    claim = OperationalClaim(
-        claim_id="c1",
-        statement="GitHub repo is completely clean.",
-        required_source_type="github",
-    )
-    receipt = SourceReceipt(
-        source_type="github",
-        resource_id="commit:70d1e798d5deee425a138e12ec070c8b10af2793",
-        sha256_digest="70d1e798d5deee425a138e12ec070c8b10af2793",
-        timestamp_utc=time.time(),
+    claim = OperationalClaim("c1", "GitHub repo is completely clean.", "github")
+    receipt = _receipt(
+        "commit:70d1e798d5deee425a138e12ec070c8b10af2793",
+        "70d1e798d5deee425a138e12ec070c8b10af2793",
     )
 
     eval_res = RealityGate.evaluate_claims([claim], [receipt])
@@ -48,18 +52,8 @@ def test_reality_gate_blocks_generic_source_claim_without_resource():
 
 def test_reality_gate_permits_exact_resource_and_fingerprint():
     resource = "commit:70d1e798d5deee425a138e12ec070c8b10af2793"
-    claim = OperationalClaim(
-        claim_id="c1",
-        statement="GitHub currently reports main at 70d1e7.",
-        required_source_type="github",
-        target_resource=resource,
-    )
-    receipt = SourceReceipt(
-        source_type="github",
-        resource_id=resource,
-        sha256_digest="70d1e798d5deee425a138e12ec070c8b10af2793",
-        timestamp_utc=time.time(),
-    )
+    claim = OperationalClaim("c1", "GitHub currently reports main at 70d1e7.", "github", resource)
+    receipt = _receipt(resource, "70d1e798d5deee425a138e12ec070c8b10af2793")
 
     eval_res = RealityGate.evaluate_claims([claim], [receipt])
 
@@ -69,21 +63,21 @@ def test_reality_gate_permits_exact_resource_and_fingerprint():
 
 
 def test_reality_gate_blocks_exact_resource_with_wrong_fingerprint():
-    claim = OperationalClaim(
-        claim_id="c1",
-        statement="GitHub currently reports main at abc.",
-        required_source_type="github",
-        target_resource="commit:abc",
-    )
-    receipt = SourceReceipt(
-        source_type="github",
-        resource_id="commit:abc",
-        sha256_digest="def",
-        timestamp_utc=time.time(),
-    )
+    claim = OperationalClaim("c1", "GitHub currently reports main at abc.", "github", "commit:abc")
+    receipt = _receipt("commit:abc", "def")
 
     eval_res = RealityGate.evaluate_claims([claim], [receipt])
 
     assert eval_res.is_permitted is False
     assert len(eval_res.blocked_claims) == 1
     assert any("fingerprint mismatch" in v for v in eval_res.violations)
+
+
+def test_reality_gate_blocks_receipt_not_created_by_operation_boundary():
+    claim = OperationalClaim("c1", "GitHub currently reports main at abc.", "github", "commit:abc")
+    receipt = SourceReceipt("github", "commit:abc", "abc", time.time(), metadata={})
+
+    eval_res = RealityGate.evaluate_claims([claim], [receipt])
+
+    assert eval_res.is_permitted is False
+    assert any("operation boundary" in v for v in eval_res.violations)
