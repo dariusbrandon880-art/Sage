@@ -1,18 +1,39 @@
 #!/usr/bin/env python3
-"""Runner script to execute Five-Flight Command Fidelity Wave and persist structured evidence."""
+"""Execute the five-flight Command Fidelity wave and persist structured evidence.
+
+A live PASS requires an externally produced SourceReceipt supplied through
+SAGE_OPERATION_RECEIPT_JSON. The runner never manufactures live-operation proof.
+"""
 
 import json
+import os
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from sage.c2.command_fidelity_wave import CommandFidelityWaveDispatcher
+from sage.c2.reality_gate import SourceReceipt
+
+
+def _load_operation_receipt():
+    raw = os.environ.get("SAGE_OPERATION_RECEIPT_JSON")
+    if not raw:
+        return None
+    payload = json.loads(raw)
+    return SourceReceipt(
+        source_type=payload["source_type"],
+        resource_id=payload["resource_id"],
+        sha256_digest=payload["sha256_digest"],
+        timestamp_utc=float(payload["timestamp_utc"]),
+        metadata=dict(payload.get("metadata", {})),
+    )
 
 
 def main():
+    operation_receipt = _load_operation_receipt()
     dispatcher = CommandFidelityWaveDispatcher()
-    receipt = dispatcher.dispatch_wave()
+    receipt = dispatcher.dispatch_wave(operation_receipt=operation_receipt)
 
     out_dir = Path("evidence_capture")
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -27,7 +48,7 @@ def main():
     )
     if receipt.wave_verdict != "PASS" or not evidence_valid:
         print(
-            "Command Fidelity Wave HOLD: persisted evidence failed exact-head validation.",
+            "Command Fidelity Wave HOLD: live operation receipt or exact persisted evidence validation failed.",
             file=sys.stderr,
         )
         print(f"Evidence persisted to: {out_file}", file=sys.stderr)
