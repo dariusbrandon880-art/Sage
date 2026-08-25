@@ -1,0 +1,69 @@
+{
+  "receipt_type": "SUPPLY_CHAIN_ATTESTATION_RECEIPT",
+  "commit_sha": "407f7b52b161c520688bd8eef509146d86717c74",
+  "status": "VERIFIED",
+  "envelope": {
+    "payload_type": "application/vnd.in-toto+json",
+    "payload": {
+      "sbom": {
+        "bom_format": "CycloneDX",
+        "spec_version": "1.5",
+        "serial_number": "urn:uuid:sage-sbom-1787641918",
+        "timestamp": 1787641918.7057197,
+        "components": [
+          {
+            "name": "sage-runtime",
+            "version": "0.1.0",
+            "purl": "pkg:generic/sage-runtime@0.1.0",
+            "sha256": ""
+          },
+          {
+            "name": "pydantic",
+            "version": "2.13.4",
+            "purl": "pkg:pypi/pydantic@2.13.4",
+            "sha256": ""
+          },
+          {
+            "name": "fastapi",
+            "version": "0.139.2",
+            "purl": "pkg:pypi/fastapi@0.139.2",
+            "sha256": ""
+          },
+          {
+            "name": "openai",
+            "version": "1.109.1",
+            "purl": "pkg:pypi/openai@1.109.1",
+            "sha256": ""
+          },
+          {
+            "name": "uvicorn",
+            "version": "0.51.0",
+            "purl": "pkg:pypi/uvicorn@0.51.0",
+            "sha256": ""
+          }
+        ],
+        "manifest_hash": "b0d579a89f52a0ae0ec09166c238597442f2f070afe9a7c7598e886d8540f484"
+      },
+      "slsa": {
+        "type": "https://in-toto.io/Statement/v1",
+        "subject": [
+          {
+            "name": "sage-runtime",
+            "digest": {
+              "sha256": "b0d579a89f52a0ae0ec09166c238597442f2f070afe9a7c7598e886d8540f484"
+            }
+          }
+        ],
+        "predicate_type": "https://slsa.dev/provenance/v1",
+        "builder_id": "https://github.com/dariusbrandon880-art/Sage/actions/runs/builder",
+        "build_type": "https://sage.c2.dev/build_type/v1",
+        "commit_sha": "407f7b52b161c520688bd8eef509146d86717c74",
+        "provenance_hash": "ad105b8c28b51eefe03e95baee130be36ca16a016325b90ad28721340ff322e2"
+      },
+      "commit_sha": "407f7b52b161c520688bd8eef509146d86717c74"
+    },
+    "signature": "mock_attestation_0dd110b7a2d9c7be37af1775fe352b12208173fb472f52b660e31b9a4aba4f3d",
+    "key_id": "sage-c2-attestation-key",
+    "envelope_hash": "eba234cbd35cfda660ed89d9c78a24a6b3a5147ee51b87cb74d5d6ddac3778cb"
+  }
+}

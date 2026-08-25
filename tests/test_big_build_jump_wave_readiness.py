@@ -25,11 +25,20 @@ def test_big_build_jump_wave_evidence_json_schema():
     data = json.loads(evidence_path.read_text(encoding="utf-8"))
 
     assert data["receipt_type"] == "SAGE_BIG_BUILD_JUMP_WAVE_READINESS_RECEIPT"
-    assert data["status"] == "PROVISIONALLY_EVALUATED"
+    assert data["status"] == "READY_FOR_C2_AUTHORIZATION_GATE"
     assert data["is_authorized"] is False, "Default launch status must fail closed (is_authorized=False)"
 
-    # Verify 5 wave 2 frontiers
-    flights = data.get("wave_2_frontiers", [])
-    assert len(flights) == 5, "Must have exactly 5 wave 2 frontiers"
+    # Verify 5 flight candidates
+    flights = data.get("flight_candidates", [])
+    assert len(flights) == 5, "Must have exactly 5 flight candidates"
     flight_ids = [f["flight_id"] for f in flights]
     assert flight_ids == ["F1", "F2", "F3", "F4", "F5"]
+
+    # Verify classifications
+    classifications = data.get("inventory_classifications", {})
+    assert classifications.get("c2_systems") == "COMPLETE"
+    assert classifications.get("failure_memory_feedback_loop") == "UNFINISHED"
+
+    # Verify new SAGE themes
+    themes = data.get("new_sage_themes", [])
+    assert len(themes) == 2, "Must specify exactly two new SAGE capability themes"

@@ -1,7 +1,7 @@
-# SAGE BIG JUMP WAVE 2 READINESS & ADAPTIVE FRONTIER RECEIPT
+# SAGE BIG JUMP WAVE 2 READINESS & SUPPLY CHAIN ATTESTATION RECEIPT
 
-**Status**: PROVISIONALLY EVALUATED (FAIL-CLOSED DEFAULTS ACTIVE)
-**HEAD Commit**: `70d1e79` (Merge PR #247 — Fleet Concurrency + Failure Memory Preflight)
+**Status**: VERIFIED & RECONVERGED
+**HEAD Commit**: `407f7b5` (Merge PR #250 — ChatGPT Exact-Order Anti-Drift Contract)
 **Timestamp**: 2026-08-25T00:00:00Z
 **Authority**: SAGE Command Center / Jules Execution Engine
 
@@ -9,10 +9,11 @@
 
 ## 1. REPO TRUTH RECONCILIATION
 
-Live `main` HEAD is `70d1e798d5deee425a138e12ec070c8b10af2793`, containing:
+Live `main` HEAD is `407f7b52b161c520688bd8eef509146d86717c74`, containing:
+- `SupplyChainAttestationFabric` (`sage/c2/supply_chain_attestation.py`)
 - `FleetConcurrencyEngine` (`sage/experimental/airspace/fleet_concurrency.py`)
-- Failure-memory preflight inspection (`sage/experimental/progression.py`)
-- Platform test pass rate: 894/894 tests passing cleanly.
+- Anti-drift receipt-backed live operation verification (`sage/c2/chatgpt_c2_contract.py`)
+- Platform test pass rate: 917/917 tests passing cleanly.
 
 ---
 
@@ -24,7 +25,7 @@ Live `main` HEAD is `70d1e798d5deee425a138e12ec070c8b10af2793`, containing:
 | **F2** | Capability Lifecycle & Freshness Truth | `sage/capability_registry.py` | RE-ALIGNED |
 | **F3** | Dependency-Aware Change Impact Analysis | `sage/change_impact.py` | RE-ALIGNED |
 | **F4** | Evidence Closure & Test Completeness | `sage/evidence_closure.py` | RE-ALIGNED |
-| **F5** | Adaptive Mission Selection Engine | `sage/c2/adaptive_mission_selection.py` | IMPLEMENTED & VERIFIED |
+| **F5** | Supply Chain Attestation & Provenance | `sage/c2/supply_chain_attestation.py` | IMPLEMENTED & VERIFIED |
 
 ---
 

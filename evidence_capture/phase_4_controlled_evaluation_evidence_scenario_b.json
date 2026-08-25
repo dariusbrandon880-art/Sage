@@ -2,9 +2,9 @@
   "evaluation_id": "eval_phase4_scenario_b_001",
   "evaluation_identifier": "eval_phase4_scenario_b_001",
   "scenario_id": "scenario_b",
-  "timestamp": "2026-08-25T01:50:59.699693+00:00",
-  "run_identifier": "run_phase4_eval_44325ce1",
-  "run identifier": "run_phase4_eval_44325ce1",
+  "timestamp": "2026-08-25T07:14:13.040638+00:00",
+  "run_identifier": "run_phase4_eval_504af9de",
+  "run identifier": "run_phase4_eval_504af9de",
   "human objective": "Recover stateless session context and verify chronological invariants after a mock loop failure.",
   "human_objective": "Recover stateless session context and verify chronological invariants after a mock loop failure.",
   "input artifact references": [
@@ -18,28 +18,28 @@
   "workflow_trace": [
     {
       "step": 1,
-      "timestamp": "2026-08-25T01:50:59.699100+00:00",
+      "timestamp": "2026-08-25T07:14:13.040010+00:00",
       "actor_id": "agent_coord_chatgpt",
       "action": "EXECUTE_QUERY",
       "details": "Coordinator queries repository state. Encounters simulated model loop termination."
     },
     {
       "step": 2,
-      "timestamp": "2026-08-25T01:50:59.699113+00:00",
+      "timestamp": "2026-08-25T07:14:13.040025+00:00",
       "actor_id": "SYSTEM",
       "action": "TRAP_LOOP_FAILURE",
       "details": "SPEK intercepts loop failure and pauses active execution thread."
     },
     {
       "step": 3,
-      "timestamp": "2026-08-25T01:50:59.699117+00:00",
+      "timestamp": "2026-08-25T07:14:13.040028+00:00",
       "actor_id": "agent_exec_jules",
       "action": "REHYDRATE_CHECKPOINT",
       "details": "Jules loads the last signed recovery checkpoint and validates state.json checksum."
     },
     {
       "step": 4,
-      "timestamp": "2026-08-25T01:50:59.699120+00:00",
+      "timestamp": "2026-08-25T07:14:13.040036+00:00",
       "actor_id": "agent_analyst_claude",
       "action": "RECONSTRUCT_DECISIONS",
       "details": "Claude audits reconstructed decisions and verifies chronological order."
@@ -144,7 +144,7 @@
     ],
     "reproducibility_check": {
       "reproducible": true,
-      "timestamp": "2026-08-25T01:50:59.699737+00:00",
+      "timestamp": "2026-08-25T07:14:13.040682+00:00",
       "mismatches": [],
       "status": "PASSED"
     }
@@ -201,7 +201,7 @@
     ],
     "reproducibility_check": {
       "reproducible": true,
-      "timestamp": "2026-08-25T01:50:59.699737+00:00",
+      "timestamp": "2026-08-25T07:14:13.040682+00:00",
       "mismatches": [],
       "status": "PASSED"
     }
@@ -232,21 +232,21 @@
   ],
   "human checkpoint": {
     "checkpoint_id": "chk_phase_4_loop_recovery",
-    "timestamp": "2026-08-25T01:50:59.699682+00:00",
+    "timestamp": "2026-08-25T07:14:13.040626+00:00",
     "supervisor_id": "human_supervisor_01",
     "decision": "AUTHORIZED",
     "comments": "Stateless rollback and recovery observed result. Zero execution drift observed under estimated baseline."
   },
   "human_checkpoint": {
     "checkpoint_id": "chk_phase_4_loop_recovery",
-    "timestamp": "2026-08-25T01:50:59.699682+00:00",
+    "timestamp": "2026-08-25T07:14:13.040626+00:00",
     "supervisor_id": "human_supervisor_01",
     "decision": "AUTHORIZED",
     "comments": "Stateless rollback and recovery observed result. Zero execution drift observed under estimated baseline."
   },
   "human_decision_record": {
     "checkpoint_id": "chk_phase_4_loop_recovery",
-    "timestamp": "2026-08-25T01:50:59.699682+00:00",
+    "timestamp": "2026-08-25T07:14:13.040626+00:00",
     "supervisor_id": "human_supervisor_01",
     "decision": "AUTHORIZED",
     "comments": "Stateless rollback and recovery observed result. Zero execution drift observed under estimated baseline."

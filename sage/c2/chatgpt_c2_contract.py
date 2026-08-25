@@ -7,9 +7,9 @@ session that is not routed through the SAGE integration boundary.
 """
 from __future__ import annotations
 
-import hashlib
 from dataclasses import dataclass
-from typing import Iterable
+
+from sage.c2.live_operation_receipt import LiveOperationReceipt
 
 CONTRACT_ID = "CHATGPT_C2_EXACT_ORDER_ANTI_DRIFT"
 CONTRACT_VERSION = "1.0"
@@ -40,6 +40,7 @@ LIVE_CHECK_TRIGGERS: tuple[str, ...] = (
     "verify",
 )
 
+
 @dataclass(frozen=True)
 class C2DirectiveDecision:
     """Deterministic classification of whether a directive requires live verification."""
@@ -63,64 +64,39 @@ def render_system_contract() -> str:
         "Apply these laws to every turn:\n"
         f"{laws}\n"
         "AUTHORITY: user directive remains the requested task; model output is not authorization.\n"
-        "LIVE-VERIFICATION ORDER: preserve directive -> identify required live capability -> invoke it -> verify -> execute requested operation -> report supported facts.\n"
+        "LIVE-VERIFICATION ORDER: PRESERVE EXACTLY -> IDENTIFY REQUIRED LIVE CAPABILITY -> INVOKE CONNECTED CAPABILITY -> VERIFY -> EXECUTE REQUESTED OPERATION -> REPORT ONLY SUPPORTED FACTS.\n"
         "Do not replace the requested operation with an explanation about the operation."
     )
 
 
-@dataclass(frozen=True)
-class LiveOperationReceipt:
-    """Receipt proving a live operation was actually executed against repository/API truth."""
-    operation_type: str
-    target: str
-    success: bool
-    timestamp: float
-    receipt_hash: str
-
-    def verify_hash(self) -> bool:
-        """Verify that receipt_hash cryptographically matches the receipt payload parameters."""
-        expected = hashlib.sha256(
-            f"{self.operation_type}:{self.target}:{self.success}:{self.timestamp}".encode()
-        ).hexdigest()
-        return self.receipt_hash == expected
-
-
 def validate_report_claims(
     *,
+    receipt: LiveOperationReceipt | None,
     claim: str,
-    operation_receipt: LiveOperationReceipt | None = None,
-    expected_operation_type: str | None = None,
-    expected_target: str | None = None
+    expected_target_resource: str | None = None,
+    evidence_refs: tuple[str, ...] = (),
 ) -> None:
-    """Fail closed if a report claims live verification without an authoritative, hash-verified receipt.
-
-    COMPLETELY ELIMINATES BOOLEAN TRUST (live_operation_performed: bool parameter removed).
-    """
-    claims_live = any(
+    """Fail closed unless a live claim has an authentic operation receipt."""
+    live_claim = any(
         phrase in claim.lower()
-        for phrase in ("verified live", "checked live", "inspected live", "ran live", "merged")
+        for phrase in (
+            "verified live",
+            "checked live",
+            "inspected live",
+            "ran live",
+            "live repository",
+            "live github",
+        )
     )
-
-    if claims_live:
-        if operation_receipt is None:
-            raise ValueError(
-                "C2 anti-drift contract violation: live verification claim lacks an authoritative LiveOperationReceipt."
-            )
-        if not operation_receipt.success:
-            raise ValueError(
-                "C2 anti-drift contract violation: operation receipt indicates operation failure."
-            )
-        if not operation_receipt.verify_hash():
-            raise ValueError(
-                "C2 anti-drift contract violation: operation receipt cryptographic hash mismatch or tampered."
-            )
-        if expected_operation_type and operation_receipt.operation_type != expected_operation_type:
-            raise ValueError(
-                f"C2 anti-drift contract violation: receipt operation_type '{operation_receipt.operation_type}' "
-                f"does not match expected '{expected_operation_type}'."
-            )
-        if expected_target and operation_receipt.target != expected_target:
-            raise ValueError(
-                f"C2 anti-drift contract violation: receipt target '{operation_receipt.target}' "
-                f"does not match expected '{expected_target}'."
-            )
+    if not live_claim:
+        return
+    if not isinstance(receipt, LiveOperationReceipt):
+        raise ValueError("C2 anti-drift contract violation: live claim lacks a LiveOperationReceipt.")
+    if not receipt.verify() or not receipt.success:
+        raise ValueError("C2 anti-drift contract violation: live claim has invalid or failed receipt.")
+    if receipt.receipt_hash not in evidence_refs:
+        raise ValueError("C2 anti-drift contract violation: live claim receipt is not bound to response evidence.")
+    if expected_target_resource and receipt.target_resource != expected_target_resource:
+        raise ValueError(
+            "C2 anti-drift contract violation: live claim receipt target does not match requested resource."
+        )
