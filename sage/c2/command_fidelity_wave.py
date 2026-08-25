@@ -26,7 +26,7 @@ from sage.c2.reality_gate import OperationalClaim, RealityGate, SourceReceipt
 
 
 def _get_current_commit_sha() -> str:
-    """Retrieve active git commit SHA, falling back to HEAD environment if uncommitted."""
+    """Retrieve active git commit SHA, falling back to HEAD environment if unavailable."""
     try:
         res = subprocess.run(
             ["git", "rev-parse", "HEAD"],
@@ -72,6 +72,14 @@ class CommandFidelityWaveReceipt:
 class CommandFidelityWaveDispatcher:
     """Dispatches all 5 command fidelity flights and reconverges into a machine-readable verdict."""
 
+    REQUIRED_FLIGHTS = (
+        "Flight A",
+        "Flight B",
+        "Flight C",
+        "Flight D",
+        "Flight E",
+    )
+
     def __init__(self, commit_sha: Optional[str] = None) -> None:
         self.commit_sha = commit_sha or _get_current_commit_sha()
 
@@ -81,26 +89,59 @@ class CommandFidelityWaveDispatcher:
         evidence_path: str | Path,
         expected_commit_sha: Optional[str] = None,
     ) -> bool:
-        """Fails closed if persisted evidence SHA differs from expected/active commit SHA."""
+        """Fail closed unless persisted evidence is complete, internally consistent, and SHA-bound."""
         target_sha = expected_commit_sha or _get_current_commit_sha()
+        if not target_sha or target_sha == "UNKNOWN_COMMIT":
+            return False
+
         path = Path(evidence_path)
         if not path.exists():
             raise FileNotFoundError(f"Persisted evidence file not found: {path}")
 
-        data = json.loads(path.read_text(encoding="utf-8"))
-        top_level_sha = data.get("commit_sha", "")
-        verdict = data.get("wave_verdict", "")
-
-        if verdict != "PASS":
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
             return False
 
-        if top_level_sha != target_sha:
+        if data.get("commit_sha") != target_sha or data.get("wave_verdict") != "PASS":
             return False
 
-        flights = data.get("flight_results", [])
+        flights = data.get("flight_results")
+        if not isinstance(flights, list) or len(flights) != len(cls.REQUIRED_FLIGHTS):
+            return False
+
+        flight_ids = [flight.get("flight_id") for flight in flights]
+        if tuple(flight_ids) != cls.REQUIRED_FLIGHTS:
+            return False
+
         for flight in flights:
-            if flight.get("commit_sha") != target_sha or flight.get("status") != "PASS":
+            if flight.get("commit_sha") != target_sha:
                 return False
+            if flight.get("status") != "PASS":
+                return False
+            if not isinstance(flight.get("receipt_hash"), str) or not flight["receipt_hash"]:
+                return False
+            metrics = flight.get("metrics")
+            if not isinstance(metrics, dict):
+                return False
+            if metrics.get("stale_sha_detected") is True:
+                return False
+            if metrics.get("contradicted_claims_count", 0) != 0:
+                return False
+            if metrics.get("unresolved_claims_count", 0) != 0:
+                return False
+
+        summary = data.get("summary")
+        if not isinstance(summary, dict):
+            return False
+        if summary.get("total_flights") != len(cls.REQUIRED_FLIGHTS):
+            return False
+        if summary.get("passed_flights") != len(cls.REQUIRED_FLIGHTS):
+            return False
+        if summary.get("wave_verdict") != "PASS":
+            return False
+        if summary.get("stale_sha_detected") is True:
+            return False
 
         return True
 
@@ -115,7 +156,9 @@ class CommandFidelityWaveDispatcher:
         invalid_res = ExactOrderSentinel.validate_plan(contract, ["Check live repo", "Merge PR"])
 
         flight_a_status = "PASS" if valid_res.is_valid and not invalid_res.is_valid else "HOLD"
-        flight_a_hash = hashlib.sha256(f"FlightA:{contract.raw_instruction_hash}:{self.commit_sha}:{flight_a_status}".encode("utf-8")).hexdigest()
+        flight_a_hash = hashlib.sha256(
+            f"FlightA:{contract.raw_instruction_hash}:{self.commit_sha}:{flight_a_status}".encode("utf-8")
+        ).hexdigest()
         results.append(
             FidelityFlightResult(
                 flight_id="Flight A",
@@ -132,7 +175,8 @@ class CommandFidelityWaveDispatcher:
             )
         )
 
-        # Flight B — Reality Gate
+        # Flight B — Reality Gate. The receipt represents the operation boundary;
+        # the dispatcher never treats a boolean as proof of live execution.
         sample_receipt = SourceReceipt(
             source_type="github",
             resource_id=f"commit:{self.commit_sha}",
@@ -149,7 +193,9 @@ class CommandFidelityWaveDispatcher:
         ]
         gate_res = RealityGate.evaluate_claims(claims, [sample_receipt])
         flight_b_status = "PASS" if len(gate_res.permitted_claims) == 1 and len(gate_res.blocked_claims) == 0 else "HOLD"
-        flight_b_hash = hashlib.sha256(f"FlightB:{sample_receipt.sha256_digest}:{self.commit_sha}:{flight_b_status}".encode("utf-8")).hexdigest()
+        flight_b_hash = hashlib.sha256(
+            f"FlightB:{sample_receipt.sha256_digest}:{self.commit_sha}:{flight_b_status}".encode("utf-8")
+        ).hexdigest()
         results.append(
             FidelityFlightResult(
                 flight_id="Flight B",
@@ -168,7 +214,9 @@ class CommandFidelityWaveDispatcher:
         # Flight C — Claim Provenance Compiler
         compile_res = ClaimProvenanceCompiler.compile_claims(claims, [sample_receipt])
         flight_c_status = "PASS" if compile_res.is_valid else "HOLD"
-        flight_c_hash = hashlib.sha256(f"FlightC:{compile_res.is_valid}:{self.commit_sha}:{flight_c_status}".encode("utf-8")).hexdigest()
+        flight_c_hash = hashlib.sha256(
+            f"FlightC:{compile_res.is_valid}:{self.commit_sha}:{flight_c_status}".encode("utf-8")
+        ).hexdigest()
         results.append(
             FidelityFlightResult(
                 flight_id="Flight C",
@@ -197,7 +245,9 @@ class CommandFidelityWaveDispatcher:
         )
         drift_report = DriftSentinel.run_suite([scenario])
         flight_d_status = "PASS" if drift_report.metrics.overall_drift_rate == 0.0 else "HOLD"
-        flight_d_hash = hashlib.sha256(f"FlightD:{drift_report.metrics.overall_drift_rate}:{self.commit_sha}:{flight_d_status}".encode("utf-8")).hexdigest()
+        flight_d_hash = hashlib.sha256(
+            f"FlightD:{drift_report.metrics.overall_drift_rate}:{self.commit_sha}:{flight_d_status}".encode("utf-8")
+        ).hexdigest()
         results.append(
             FidelityFlightResult(
                 flight_id="Flight D",
@@ -214,7 +264,9 @@ class CommandFidelityWaveDispatcher:
         stale_sha_found = any(f.commit_sha != self.commit_sha for f in results)
         all_passed = all(f.status == "PASS" for f in results) and not stale_sha_found
         wave_verdict = "PASS" if all_passed else "HOLD"
-        flight_e_hash = hashlib.sha256(f"FlightE:{wave_verdict}:{self.commit_sha}:{timestamp}".encode("utf-8")).hexdigest()
+        flight_e_hash = hashlib.sha256(
+            f"FlightE:{wave_verdict}:{self.commit_sha}:{timestamp}".encode("utf-8")
+        ).hexdigest()
         results.append(
             FidelityFlightResult(
                 flight_id="Flight E",
