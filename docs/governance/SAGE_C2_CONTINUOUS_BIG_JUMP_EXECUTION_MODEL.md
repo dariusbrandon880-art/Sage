@@ -71,5 +71,49 @@ All iterations must preserve Director control, exact SHA provenance, verifiabili
 
 ---
 
+## Concurrent Big Jump Execution Governance Rules
+
+### Rule 1: Default Parallel Model
+Authorized engineering missions should use the Big Jump Wave model by default.
+
+### Rule 2: Concurrent Execution Condition
+Flights should execute concurrently whenever their boundaries are independent and the available execution surface permits it.
+
+### Rule 3: No False Concurrency Claims
+C2 and Jules MUST NOT claim that flights were concurrent merely because the architecture supports concurrency. Actual concurrency must be observable and verifiable.
+
+### Rule 4: Non-Overlapping Boundaries
+Parallel flights MUST have explicit non-overlapping file/work boundaries to prevent write collisions and cross-flight contamination.
+
+### Rule 5: Bounded Surface Inspection & Repair
+C2 may independently inspect, diagnose, verify, and repair bounded non-overlapping surfaces while Jules executes other flights.
+
+### Rule 6: Write Collision Lock
+Overlapping writes require coordination before modification; do not edit the same files/hunks concurrently without explicit lock resolution.
+
+### Rule 7: Reconvergence Gates
+Every flight remains subject to the same test, falsification, provenance, exact-HEAD evidence, and reconciliation gates.
+
+### Rule 8: Verified Capability Proof
+Activity, parallelism, commits, or passing local tests MUST NOT be represented as verified capability unless the capability is independently demonstrated.
+
+### Rule 9: Concurrency Status Classification
+Final wave status must explicitly distinguish between four stages:
+1. `architecture_supported`
+2. `concurrency_attempted`
+3. `concurrency_observed`
+4. `concurrency_verified`
+
+### Rule 10: Repository Truth Supremacy
+Repository/GitHub truth overrides agent reports.
+
+### Rule 11: Fail-Closed Evidence Boundary
+If exact-head CI/evidence is missing, stale, contradictory, or unverifiable: `HOLD` → reconcile → repair → re-test → re-verify.
+
+### Rule 12: Preserved Director Control
+Mission Director authority, pre-send review, fail-closed behavior, protected-runtime boundaries, and prohibition of autonomous authority expansion remain in full force.
+
+---
+
 ## Matrix Alignment
 Cross-referenced in `docs/governance/C2_FRAME.md` and `docs/governance/BIG_JUMP_WAVE_C2_5X4_OPERATING_FRAME.md`.

@@ -134,6 +134,9 @@ def test_sage_c2_continuous_big_jump_execution_model_exists_and_conforms():
     assert "Law 9: Exact-SHA Evidence Binding" in content
     assert "Law 11: Fail-Closed Contradiction Rule" in content
     assert "Law 13: Continuous Operating Loop" in content
+    assert "## Concurrent Big Jump Execution Governance Rules" in content
+    assert "Rule 4: Non-Overlapping Boundaries" in content
+    assert "Rule 9: Concurrency Status Classification" in content
 
     c2_frame = (root_dir / "docs" / "governance" / "C2_FRAME.md").read_text(encoding="utf-8")
     assert "SAGE_C2_CONTINUOUS_BIG_JUMP_EXECUTION_MODEL.md" in c2_frame
