@@ -18,6 +18,8 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from sage.experimental.airspace.fleet_qualification_ledger import FleetQualificationLedger
+
 
 class EvolutionCategory(str, Enum):
     """Evolution Metric Categories."""
@@ -212,3 +214,12 @@ class FleetEvolutionIntelligence:
             growth_signal=growth_signal,
             provenance_hash=provenance_hash,
         )
+
+    def evaluate_recovered_ledger_snapshot(
+        self, snapshot_json: str
+    ) -> EvolutionReceipt:
+        """Evaluates growth signal from a recovered FleetQualificationLedger snapshot."""
+        ledger = FleetQualificationLedger()
+        count = ledger.recover_from_snapshot(snapshot_json)
+        receipts = [{"receipt_id": f"snapshot_agent_{i}", "status": "PASS"} for i in range(count)]
+        return self.evaluate_growth_signal(receipts)

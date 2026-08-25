@@ -81,6 +81,21 @@ class FrontierAdmissionEngine:
 
         receipt_id = f"receipt-admission-{candidate.frontier_id}-{int(time.time() * 1000)}"
 
+        # 0. Protected namespace risk check
+        for ns in self.protected_namespaces:
+            if candidate.target.startswith(ns) and candidate.state != FrontierState.ACTIVE:
+                receipt = FrontierAdmissionReceipt(
+                    receipt_id=receipt_id,
+                    frontier_id=candidate.frontier_id,
+                    target=candidate.target,
+                    admitted=False,
+                    classified_state=FrontierState.RECONCILE,
+                    rejection_reason=f"Risk profile violation: target '{candidate.target}' impacts protected core namespace '{ns}' and requires RECONCILE classification.",
+                )
+                receipt.receipt_hash = receipt.compute_hash()
+                self.admission_ledger.append(receipt)
+                return receipt
+
         # 1. Collision check
         if candidate.collision_zone in active_zones:
             receipt = FrontierAdmissionReceipt(

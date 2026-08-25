@@ -64,6 +64,24 @@ def test_frontier_admission_collision_rejection():
     assert "Collision detected" in receipt2.rejection_reason
 
 
+def test_frontier_admission_protected_namespace_risk():
+    engine = FrontierAdmissionEngine()
+    candidate = FrontierCandidate(
+        frontier_id="F-CORE-001",
+        target="sage/core/spek.py",
+        source="C2",
+        state=FrontierState.UNSTARTED,
+        base_sha="sha123",
+        collision_zone="sage/core/spek.py",
+        stop_condition="Pass",
+    )
+
+    receipt = engine.classify_and_evaluate(candidate)
+    assert receipt.admitted is False
+    assert receipt.classified_state == FrontierState.RECONCILE
+    assert "impacts protected core namespace" in receipt.rejection_reason
+
+
 def test_frontier_admission_superseded_rejection():
     engine = FrontierAdmissionEngine()
 
