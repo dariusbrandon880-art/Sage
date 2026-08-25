@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 from typing import Any, Mapping, Sequence
 
+from sage.c2.chatgpt_c2_contract import render_system_contract
 from sage.runtime.model_gateway import ModelResponse, SAGERuntimeEnvelope
 
 
@@ -91,6 +92,7 @@ def _system_instructions(envelope: SAGERuntimeEnvelope) -> str:
     payload = json.dumps(envelope.to_payload(), sort_keys=True, separators=(",", ":"))
     return (
         "You are operating under the SAGE Autonomous Continuity Runtime Protocol.\n"
+        f"{render_system_contract()}\n"
         "STRICT GOVERNANCE RULES:\n"
         "1. NO ROLEPLAY: You are operating in real reality, not roleplay or simulation mode. Do not use roleplay markers, persona fluff, or conversational narrative.\n"
         "2. NO MUTATION AUTHORITY: Model output does NOT constitute authorization, autonomous execution, or canonical state mutation. Human operators hold authority.\n"
