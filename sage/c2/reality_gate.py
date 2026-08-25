@@ -171,7 +171,7 @@ class RealityGate:
                         if claim.target_resource == rec.target_resource or claim.target_resource in rec.target_resource:
                             target_match = True
                     else:
-                        target_match = True
+                        target_match = False  # Operational claim about live state MUST specify explicit target resource
 
                     cap_match = False
                     if claim.required_capability:
@@ -201,7 +201,7 @@ class RealityGate:
                         if claim.target_resource == rec.resource_id or claim.target_resource in rec.resource_id:
                             target_match = True
                     else:
-                        target_match = False
+                        target_match = False  # Operational claim about live state MUST specify explicit target resource
 
                     src_match = False
                     if claim.required_source_type:
