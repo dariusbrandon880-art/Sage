@@ -27,16 +27,26 @@ KNOWN_FAILURE_PATTERNS = frozenset(
 def normalize_failure(message: str) -> str:
     """Normalize incidental log noise while preserving the failure shape.
 
-    Known governance failure surfaces receive the compatibility marker consumed by
-    the read-only progression preflight boundary. Unknown failures remain ordinary
-    normalized strings and are never promoted to known patterns implicitly.
+    Known governance failure surfaces are detected as declared substrings, so a
+    contextual failure message such as ``"stop because of protected namespace
+    violation"`` remains tied to the immutable registry. Unknown failures remain
+    ordinary normalized strings and are never promoted to known patterns implicitly.
     """
     if not isinstance(message, str) or not message.strip():
         raise ValueError("failure message required")
     compact = _WS.sub(" ", message.strip())
     normalized = _NUM.sub("#", _HEX.sub("<sha>", compact)).lower()
-    if normalized in KNOWN_FAILURE_PATTERNS:
-        return f"known_failure_trigger:{normalized}"
+    declared_patterns = sorted(
+        pattern for pattern in KNOWN_FAILURE_PATTERNS if pattern != "known_failure_trigger"
+    )
+    matched_pattern = next(
+        (pattern for pattern in declared_patterns if pattern in normalized),
+        None,
+    )
+    if matched_pattern is not None:
+        return f"known_failure_trigger:{matched_pattern}"
+    if normalized == "known_failure_trigger":
+        return normalized
     return normalized
 
 
