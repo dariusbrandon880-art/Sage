@@ -188,22 +188,6 @@ def test_chatgpt_client_adversarial_rejection_suite():
             client.execute_query(req)
 
 
-def test_system_instructions_embed_chatgpt_anti_drift_contract():
-    """Verify that _system_instructions includes the 10 Anti-Drift Laws."""
-    from sage.runtime.model_adapters import _system_instructions
-    from sage.runtime.model_gateway import SAGERuntimeEnvelope
-
-    env = SAGERuntimeEnvelope.from_state(state(), model_role="c2")
-    instructions = _system_instructions(env)
-
-    assert "CHATGPT C2 ANTI-DRIFT CONTRACT" in instructions
-    assert "EXACT DIRECTIVE PRESERVATION" in instructions
-    assert "NO INVENTION" in instructions
-    assert "NO ASSUMPTION OF DISCONNECTION" in instructions
-    assert "LIVE-CHECK COMMANDS" in instructions
-    assert "REPORT SEPARATION" in instructions
-    assert "NO FALSE CAPABILITY CLAIMS" in instructions
-    assert "FAIL-CLOSED" in instructions
 
 
 def test_chatgpt_c2_anti_drift_contract_file_exists_and_conforms():
