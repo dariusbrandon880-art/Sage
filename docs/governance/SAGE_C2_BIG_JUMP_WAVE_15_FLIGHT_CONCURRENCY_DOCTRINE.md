@@ -200,7 +200,7 @@ A flight is not assigned only one function such as “research,” “coding,”
 
 The mission target determines what work is causally necessary.
 
-Super Search is an intelligence/reconnaissance sensor. Repository/Git truth and validated governance remain authoritative.
+Super Search is a reconnaissance sensor. Repository/Git truth and validated governance remain authoritative.
 
 ---
 

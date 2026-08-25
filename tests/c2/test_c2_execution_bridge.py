@@ -14,8 +14,8 @@ def test_execution_receipt_hash_integrity():
         request_id="req-001",
         command="READ",
         target_path="sage/c2/test.py",
-        starting_head_sha="b44b892",
-        resulting_head_sha="b44b892",
+        starting_head_sha="db2592167dba5eda4c024bba9202ff085d9c1d9b",
+        resulting_head_sha="db2592167dba5eda4c024bba9202ff085d9c1d9b",
         status="SUCCESS",
     )
     receipt.receipt_hash = receipt.compute_hash()
@@ -24,12 +24,12 @@ def test_execution_receipt_hash_integrity():
 
 
 def test_execution_bridge_invalid_command():
-    bridge = C2ExecutionBridge(current_head_sha="b44b892")
+    bridge = C2ExecutionBridge(current_head_sha="db2592167dba5eda4c024bba9202ff085d9c1d9b")
     req = C2ExecutionRequest(
         request_id="req-invalid",
         command="EXPLODE",
         target_path="sage/experimental/airspace",
-        expected_head_sha="b44b892",
+        expected_head_sha="db2592167dba5eda4c024bba9202ff085d9c1d9b",
     )
     receipt = bridge.execute(req)
     assert receipt.status == "REJECTED"
@@ -37,7 +37,7 @@ def test_execution_bridge_invalid_command():
 
 
 def test_execution_bridge_head_sha_drift():
-    bridge = C2ExecutionBridge(current_head_sha="b44b892")
+    bridge = C2ExecutionBridge(current_head_sha="db2592167dba5eda4c024bba9202ff085d9c1d9b")
     req = C2ExecutionRequest(
         request_id="req-drift",
         command="READ",
@@ -50,12 +50,12 @@ def test_execution_bridge_head_sha_drift():
 
 
 def test_execution_bridge_protected_namespace_rejects_without_auth():
-    bridge = C2ExecutionBridge(current_head_sha="b44b892")
+    bridge = C2ExecutionBridge(current_head_sha="db2592167dba5eda4c024bba9202ff085d9c1d9b")
     req = C2ExecutionRequest(
         request_id="req-prot",
         command="WRITE",
         target_path="sage/core/spek.py",
-        expected_head_sha="b44b892",
+        expected_head_sha="db2592167dba5eda4c024bba9202ff085d9c1d9b",
     )
     receipt = bridge.execute(req)
     assert receipt.status == "REJECTED"
@@ -63,12 +63,12 @@ def test_execution_bridge_protected_namespace_rejects_without_auth():
 
 
 def test_execution_bridge_protected_namespace_permits_with_auth():
-    bridge = C2ExecutionBridge(current_head_sha="b44b892")
+    bridge = C2ExecutionBridge(current_head_sha="db2592167dba5eda4c024bba9202ff085d9c1d9b")
     req = C2ExecutionRequest(
         request_id="req-prot-auth",
         command="WRITE",
         target_path="sage/core/spek.py",
-        expected_head_sha="b44b892",
+        expected_head_sha="db2592167dba5eda4c024bba9202ff085d9c1d9b",
         auth_token="SAGE_SYSTEM_AUTH_TOKEN",
     )
     receipt = bridge.execute(req)
@@ -76,15 +76,15 @@ def test_execution_bridge_protected_namespace_permits_with_auth():
 
 
 def test_execution_bridge_commit_advances_head():
-    bridge = C2ExecutionBridge(current_head_sha="b44b892")
+    bridge = C2ExecutionBridge(current_head_sha="db2592167dba5eda4c024bba9202ff085d9c1d9b")
     req = C2ExecutionRequest(
         request_id="req-commit",
         command="COMMIT",
         target_path="sage/experimental/test.py",
-        expected_head_sha="b44b892",
+        expected_head_sha="db2592167dba5eda4c024bba9202ff085d9c1d9b",
     )
     receipt = bridge.execute(req)
     assert receipt.status == "SUCCESS"
-    assert receipt.starting_head_sha == "b44b892"
-    assert receipt.resulting_head_sha != "b44b892"
+    assert receipt.starting_head_sha == "db2592167dba5eda4c024bba9202ff085d9c1d9b"
+    assert receipt.resulting_head_sha != "db2592167dba5eda4c024bba9202ff085d9c1d9b"
     assert bridge.current_head_sha == receipt.resulting_head_sha

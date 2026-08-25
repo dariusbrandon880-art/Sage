@@ -64,7 +64,7 @@ class C2ExecutionBridge:
 
     def __init__(
         self,
-        current_head_sha: str = "b44b892",
+        current_head_sha: str = "db2592167dba5eda4c024bba9202ff085d9c1d9b",
         system_token: str = "SAGE_SYSTEM_AUTH_TOKEN",
     ):
         self.current_head_sha = current_head_sha
@@ -91,7 +91,7 @@ class C2ExecutionBridge:
             return receipt
 
         # 2. Validate exact-HEAD locking
-        if request.expected_head_sha != starting_sha:
+        if request.expected_head_sha != starting_sha and request.expected_head_sha != starting_sha[:7]:
             receipt = C2ExecutionReceipt(
                 receipt_id=receipt_id,
                 request_id=request.request_id,
@@ -125,7 +125,7 @@ class C2ExecutionBridge:
         # Simulate execution success
         resulting_sha = starting_sha
         if request.command == "COMMIT":
-            resulting_sha = hashlib.sha256(f"{starting_sha}-{time.time_ns()}".encode()).hexdigest()[:7]
+            resulting_sha = hashlib.sha256(f"{starting_sha}-{time.time_ns()}".encode()).hexdigest()
             self.current_head_sha = resulting_sha
 
         receipt = C2ExecutionReceipt(

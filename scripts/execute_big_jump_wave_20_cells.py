@@ -41,7 +41,7 @@ def get_commit_sha() -> str:
         )
         return res.stdout.strip()
     except Exception:
-        return "b44b892012345678901234567890123456789012"
+        return "db2592167dba5eda4c024bba9202ff085d9c1d9b"
 
 
 def validate_20_cell_wave_payload(data: Dict[str, Any], current_head_sha: str) -> List[str]:
@@ -140,7 +140,7 @@ def main() -> int:
     # Instantiate engines
     mission_engine = AdaptiveMissionSelectionEngine()
     ledger_engine = FleetQualificationLedger()
-    execution_bridge = C2ExecutionBridge(current_head_sha=commit_sha[:7])
+    execution_bridge = C2ExecutionBridge(current_head_sha=commit_sha)
     ccl_bridge = CCLOutcomeFeedbackBridge(selection_engine=mission_engine)
     playbook_engine = C2WavePlaybookEngine()
 
@@ -168,7 +168,7 @@ def main() -> int:
                     request_id=f"req-{f_id}-build",
                     command="READ",
                     target_path=f_ns,
-                    expected_head_sha=commit_sha[:7],
+                    expected_head_sha=commit_sha,
                 )
                 rcpt = execution_bridge.execute(req)
                 ver_cmd = "C2ExecutionBridge.execute()"

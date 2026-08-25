@@ -1,4 +1,10 @@
-"""Fleet Qualification Ledger for Military Airspace Governance."""
+"""Fleet Qualification Ledger & State Recovery Engine.
+
+Maps verified evidence receipts, test proofs, and XP events to military fleet rank states,
+providing state persistence, snapshot exporting, and recovery capabilities.
+"""
+
+from __future__ import annotations
 
 import hashlib
 import json
@@ -35,8 +41,19 @@ class QualificationRecord(BaseModel):
         return hashlib.sha256(encoded).hexdigest()
 
 
+class FleetRankState(BaseModel):
+    """Military rank state of an airspace fleet agent."""
+    agent_id: str
+    rank_title: str = "Cadet"
+    total_xp: int = 0
+    cql_qualified: bool = False
+    sql_qualified: bool = False
+    verification_badges: List[str] = Field(default_factory=list)
+    last_updated: float = Field(default_factory=time.time)
+
+
 class FleetQualificationLedger:
-    """Manages and projects military fleet qualification states without mutating core airspace objects."""
+    """Ledger tracking fleet agent qualification states and supporting snapshot export/recovery."""
 
     RANK_THRESHOLDS = [
         (1000, "Fleet Admiral"),
@@ -47,7 +64,36 @@ class FleetQualificationLedger:
     ]
 
     def __init__(self):
+        self._states: Dict[str, FleetRankState] = {}
         self._records: Dict[str, QualificationRecord] = {}
+
+    def get_or_create_state(self, agent_id: str) -> FleetRankState:
+        """Retrieves or initializes rank state for an agent."""
+        if agent_id not in self._states:
+            self._states[agent_id] = FleetRankState(agent_id=agent_id)
+        return self._states[agent_id]
+
+    def record_xp_event(self, agent_id: str, xp_gained: int, badge: Optional[str] = None) -> FleetRankState:
+        """Records an XP gain event and updates rank state."""
+        state = self.get_or_create_state(agent_id)
+        state.total_xp += xp_gained
+
+        if badge and badge not in state.verification_badges:
+            state.verification_badges.append(badge)
+
+        # Update rank title based on total XP thresholds
+        if state.total_xp >= 1000:
+            state.rank_title = "Fleet Commander"
+            state.cql_qualified = True
+            state.sql_qualified = True
+        elif state.total_xp >= 500:
+            state.rank_title = "Squadron Leader"
+            state.cql_qualified = True
+        elif state.total_xp >= 100:
+            state.rank_title = "Flight Captain"
+
+        state.last_updated = time.time()
+        return state
 
     def issue_qualification(
         self,
@@ -60,7 +106,6 @@ class FleetQualificationLedger:
         """Issue a new qualification record for an agent based on verified evidence."""
         receipts = evidence_receipt_hashes or []
 
-        # Derive rank title from total XP
         rank_title = "Flight Officer"
         for threshold, title in self.RANK_THRESHOLDS:
             if xp_earned >= threshold:
@@ -80,6 +125,7 @@ class FleetQualificationLedger:
         record.record_hash = record.compute_hash()
 
         self._records[record_id] = record
+        self.record_xp_event(agent_id, xp_earned, badge=qualifications[0] if qualifications else None)
         return record
 
     def get_agent_summary(self, agent_id: str) -> Dict[str, Any]:
@@ -110,3 +156,25 @@ class FleetQualificationLedger:
             "qualifications": all_quals,
             "record_count": len(agent_records),
         }
+
+    def export_snapshot(self) -> str:
+        """Exports the complete ledger state as a JSON snapshot string."""
+        snapshot_data = {
+            "timestamp": time.time(),
+            "agents": {agent_id: state.model_dump() for agent_id, state in self._states.items()},
+            "records": {rec_id: record.model_dump() for rec_id, record in self._records.items()},
+        }
+        return json.dumps(snapshot_data, indent=2)
+
+    def recover_from_snapshot(self, snapshot_json: str) -> int:
+        """Restores ledger states from a JSON snapshot string."""
+        data = json.loads(snapshot_json)
+        agents_data = data.get("agents", {})
+        records_data = data.get("records", {})
+        restored_count = 0
+        for agent_id, agent_dict in agents_data.items():
+            self._states[agent_id] = FleetRankState(**agent_dict)
+            restored_count += 1
+        for rec_id, rec_dict in records_data.items():
+            self._records[rec_id] = QualificationRecord(**rec_dict)
+        return restored_count

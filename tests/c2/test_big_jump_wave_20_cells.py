@@ -40,7 +40,6 @@ def test_validator_rejects_non_20_cells():
 
 def test_validator_rejects_missing_gates():
     sha = get_commit_sha()
-    # Build 20 cells but leave F5 missing G4 and duplicate F1 G1
     valid_cells = []
     flights = ["F1", "F2", "F3", "F4", "F5"]
     gates = ["G1", "G2", "G3", "G4"]

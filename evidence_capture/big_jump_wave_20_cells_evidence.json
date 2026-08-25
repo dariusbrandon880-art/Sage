@@ -1,11 +1,11 @@
 {
-  "wave_id": "wave-5x4-hardened-b44b892",
-  "commit_sha": "b44b8927fb03698ba8b6c192caea6f721da6bd12",
-  "timestamp": 1787688501.6020658,
+  "wave_id": "wave-5x4-hardened-db25921",
+  "commit_sha": "db2592167dba5eda4c024bba9202ff085d9c1d9b",
+  "timestamp": 1787693929.3903046,
   "total_flights": 5,
   "total_lifecycle_gates": 4,
   "total_advancement_cells": 20,
-  "playbook_receipt_hash": "8a18e274de061592e9d31e992df976d7945ae6dab8d1e22951dba5fc0668cc26",
+  "playbook_receipt_hash": "f9728960ea70f63f1c094b5f5720c2cda606f17f22f357882de95fd80ad8f498",
   "cells": [
     {
       "cell_id": "Cell F1-G1",
@@ -13,12 +13,12 @@
       "path_name": "Execution & Mission Selection",
       "lifecycle_gate": "G1",
       "stage_description": "Stage 1: Intake & Recon",
-      "exact_head_sha": "b44b8927fb03698ba8b6c192caea6f721da6bd12",
+      "exact_head_sha": "db2592167dba5eda4c024bba9202ff085d9c1d9b",
       "source_target": "sage/c2/adaptive_mission_selection.py",
       "verification_command": "AdaptiveMissionSelectionEngine.evaluate_candidate()",
       "verification_result": "PASS",
       "provenance_ref": "ref-F1-g1-d4cc5bca",
-      "cell_digest": "d39f98e7b8cadfd284410c94bc9f4d379478338a4f2e94a3c896c8f38f94ce3d"
+      "cell_digest": "5d33bc0a0dc2da66ed824ddcbcbf34b0d2d85ce848c97cd0518a94268ab9f705"
     },
     {
       "cell_id": "Cell F1-G2",
@@ -26,12 +26,12 @@
       "path_name": "Execution & Mission Selection",
       "lifecycle_gate": "G2",
       "stage_description": "Stage 2: Bounded Build",
-      "exact_head_sha": "b44b8927fb03698ba8b6c192caea6f721da6bd12",
+      "exact_head_sha": "db2592167dba5eda4c024bba9202ff085d9c1d9b",
       "source_target": "sage/c2/adaptive_mission_selection.py",
       "verification_command": "C2ExecutionBridge.execute()",
       "verification_result": "PASS",
-      "provenance_ref": "ref-F1-g2-f9df663d",
-      "cell_digest": "72893c36394922905ff4ac5e6f65470daa9c5d3f594ed5893581bfe9f567e859"
+      "provenance_ref": "ref-F1-g2-83f797f4",
+      "cell_digest": "ebc02430afdc75a165279e64107351be880ed92152b65bdfb692a18bb5edfc45"
     },
     {
       "cell_id": "Cell F1-G3",
@@ -39,12 +39,12 @@
       "path_name": "Execution & Mission Selection",
       "lifecycle_gate": "G3",
       "stage_description": "Stage 3: Verify & Proof",
-      "exact_head_sha": "b44b8927fb03698ba8b6c192caea6f721da6bd12",
+      "exact_head_sha": "db2592167dba5eda4c024bba9202ff085d9c1d9b",
       "source_target": "sage/c2/adaptive_mission_selection.py",
       "verification_command": "CCLOutcomeFeedbackBridge.process_outcome()",
       "verification_result": "PASS",
-      "provenance_ref": "ref-F1-g3-7de6d409",
-      "cell_digest": "6e8ab80f5a67d217c45231c8d44b8d8175381d3e305b4168e3fb3898410e4e5c"
+      "provenance_ref": "ref-F1-g3-c297b0eb",
+      "cell_digest": "c8bea3d919292c9ab617513f8f007b7fb485442248dd606f78a794fee24181d7"
     },
     {
       "cell_id": "Cell F1-G4",
@@ -52,12 +52,12 @@
       "path_name": "Execution & Mission Selection",
       "lifecycle_gate": "G4",
       "stage_description": "Stage 4: Warehouse Promote",
-      "exact_head_sha": "b44b8927fb03698ba8b6c192caea6f721da6bd12",
+      "exact_head_sha": "db2592167dba5eda4c024bba9202ff085d9c1d9b",
       "source_target": "sage/c2/adaptive_mission_selection.py",
       "verification_command": "FleetQualificationLedger.issue_qualification()",
       "verification_result": "PASS",
-      "provenance_ref": "ref-F1-g4-738041ad",
-      "cell_digest": "02e70107a95f511ec6541e1f314ba28707b069a4a6c389cb7848343eb4a4ccd3"
+      "provenance_ref": "ref-F1-g4-76b73c93",
+      "cell_digest": "a297c6ac1d35aa3f5f1735b05ecba46935bded1f5137029ffa751422d091e7b0"
     },
     {
       "cell_id": "Cell F2-G1",
@@ -65,12 +65,12 @@
       "path_name": "Airspace Military Governance Ledger",
       "lifecycle_gate": "G1",
       "stage_description": "Stage 1: Intake & Recon",
-      "exact_head_sha": "b44b8927fb03698ba8b6c192caea6f721da6bd12",
+      "exact_head_sha": "db2592167dba5eda4c024bba9202ff085d9c1d9b",
       "source_target": "sage/experimental/airspace/fleet_qualification_ledger.py",
       "verification_command": "AdaptiveMissionSelectionEngine.evaluate_candidate()",
       "verification_result": "PASS",
       "provenance_ref": "ref-F2-g1-430d730f",
-      "cell_digest": "60bf154575cf9f4d3c0736516bb92c3058774263f79ddb20ed4f73df903d0664"
+      "cell_digest": "8d66f6c6fed1774528630a5320f7df446823c424b91f042bdc169bc628d9572b"
     },
     {
       "cell_id": "Cell F2-G2",
@@ -78,12 +78,12 @@
       "path_name": "Airspace Military Governance Ledger",
       "lifecycle_gate": "G2",
       "stage_description": "Stage 2: Bounded Build",
-      "exact_head_sha": "b44b8927fb03698ba8b6c192caea6f721da6bd12",
+      "exact_head_sha": "db2592167dba5eda4c024bba9202ff085d9c1d9b",
       "source_target": "sage/experimental/airspace/fleet_qualification_ledger.py",
       "verification_command": "C2ExecutionBridge.execute()",
       "verification_result": "PASS",
-      "provenance_ref": "ref-F2-g2-f666f20b",
-      "cell_digest": "0d9467ca7ed628da0d2c72fcb9f4efc3e07c1b5b2db56fd0da92e0eb39a98412"
+      "provenance_ref": "ref-F2-g2-31043ad1",
+      "cell_digest": "8a7dbd05ddcf587a478a8fc904a32449975d70162ff9e5762c6dab30498e688f"
     },
     {
       "cell_id": "Cell F2-G3",
@@ -91,12 +91,12 @@
       "path_name": "Airspace Military Governance Ledger",
       "lifecycle_gate": "G3",
       "stage_description": "Stage 3: Verify & Proof",
-      "exact_head_sha": "b44b8927fb03698ba8b6c192caea6f721da6bd12",
+      "exact_head_sha": "db2592167dba5eda4c024bba9202ff085d9c1d9b",
       "source_target": "sage/experimental/airspace/fleet_qualification_ledger.py",
       "verification_command": "CCLOutcomeFeedbackBridge.process_outcome()",
       "verification_result": "PASS",
-      "provenance_ref": "ref-F2-g3-f8f2d9d8",
-      "cell_digest": "d1053a34183b0bd68588103d56dfc1229f019776954e81fb2ee0432c8a8e95d9"
+      "provenance_ref": "ref-F2-g3-7abcd415",
+      "cell_digest": "87a17812540b68d11b95002c22f0ab11be19e58e30a10473fe0341a87592b410"
     },
     {
       "cell_id": "Cell F2-G4",
@@ -104,12 +104,12 @@
       "path_name": "Airspace Military Governance Ledger",
       "lifecycle_gate": "G4",
       "stage_description": "Stage 4: Warehouse Promote",
-      "exact_head_sha": "b44b8927fb03698ba8b6c192caea6f721da6bd12",
+      "exact_head_sha": "db2592167dba5eda4c024bba9202ff085d9c1d9b",
       "source_target": "sage/experimental/airspace/fleet_qualification_ledger.py",
       "verification_command": "FleetQualificationLedger.issue_qualification()",
       "verification_result": "PASS",
-      "provenance_ref": "ref-F2-g4-cec10ed4",
-      "cell_digest": "ba16b2b6c19769beab15ad3329bf9909aeba62f6b50b10c0800bb45437f103ed"
+      "provenance_ref": "ref-F2-g4-8d7c181b",
+      "cell_digest": "a56839f23fc294f6ca665e270436bb3c2681ddc7cf1ccb6461ed4f4e66cbd8ac"
     },
     {
       "cell_id": "Cell F3-G1",
@@ -117,12 +117,12 @@
       "path_name": "Governed Execution Bridge & Provenance",
       "lifecycle_gate": "G1",
       "stage_description": "Stage 1: Intake & Recon",
-      "exact_head_sha": "b44b8927fb03698ba8b6c192caea6f721da6bd12",
+      "exact_head_sha": "db2592167dba5eda4c024bba9202ff085d9c1d9b",
       "source_target": "sage/c2/c2_execution_bridge.py",
       "verification_command": "AdaptiveMissionSelectionEngine.evaluate_candidate()",
       "verification_result": "PASS",
       "provenance_ref": "ref-F3-g1-d44a2631",
-      "cell_digest": "19e47bc4bd3311be6922bea8bc2211fcfcce4c8cad0eba0b2c6fffea86755de0"
+      "cell_digest": "fe09743601e25a62a8a636b1e0651109653c3bdfe85b6ab7d5738e2640d8ed6d"
     },
     {
       "cell_id": "Cell F3-G2",
@@ -130,12 +130,12 @@
       "path_name": "Governed Execution Bridge & Provenance",
       "lifecycle_gate": "G2",
       "stage_description": "Stage 2: Bounded Build",
-      "exact_head_sha": "b44b8927fb03698ba8b6c192caea6f721da6bd12",
+      "exact_head_sha": "db2592167dba5eda4c024bba9202ff085d9c1d9b",
       "source_target": "sage/c2/c2_execution_bridge.py",
       "verification_command": "C2ExecutionBridge.execute()",
       "verification_result": "PASS",
-      "provenance_ref": "ref-F3-g2-4c799a7c",
-      "cell_digest": "cc4ed64da813b42c06957b991a17d040e0bf95e496955c10ef03f1687482e4ce"
+      "provenance_ref": "ref-F3-g2-cfeefcbd",
+      "cell_digest": "cc3520305d7931264ce77c37e0489ec3ad04545d21199c89c81c81a18f29a95b"
     },
     {
       "cell_id": "Cell F3-G3",
@@ -143,12 +143,12 @@
       "path_name": "Governed Execution Bridge & Provenance",
       "lifecycle_gate": "G3",
       "stage_description": "Stage 3: Verify & Proof",
-      "exact_head_sha": "b44b8927fb03698ba8b6c192caea6f721da6bd12",
+      "exact_head_sha": "db2592167dba5eda4c024bba9202ff085d9c1d9b",
       "source_target": "sage/c2/c2_execution_bridge.py",
       "verification_command": "CCLOutcomeFeedbackBridge.process_outcome()",
       "verification_result": "PASS",
-      "provenance_ref": "ref-F3-g3-11c29ff2",
-      "cell_digest": "e58b3d0159cabe47dedabb605ea6418838b6dd14e46f9d6efa5cbfd597d589e1"
+      "provenance_ref": "ref-F3-g3-768013b7",
+      "cell_digest": "9db7b9dd28053b288598e0dbdc7766a847446eb3504445d85dc43d42356f0e51"
     },
     {
       "cell_id": "Cell F3-G4",
@@ -156,12 +156,12 @@
       "path_name": "Governed Execution Bridge & Provenance",
       "lifecycle_gate": "G4",
       "stage_description": "Stage 4: Warehouse Promote",
-      "exact_head_sha": "b44b8927fb03698ba8b6c192caea6f721da6bd12",
+      "exact_head_sha": "db2592167dba5eda4c024bba9202ff085d9c1d9b",
       "source_target": "sage/c2/c2_execution_bridge.py",
       "verification_command": "FleetQualificationLedger.issue_qualification()",
       "verification_result": "PASS",
-      "provenance_ref": "ref-F3-g4-441f8089",
-      "cell_digest": "dbebd492bc8b142f1e009bc38e62957c855dd9c455b40b7e1c9f682a847da691"
+      "provenance_ref": "ref-F3-g4-74d62eb7",
+      "cell_digest": "3cb5f022fd11e2db1ec4928e3d1ca76c9f1877f0e43083a8db147875524ce3c2"
     },
     {
       "cell_id": "Cell F4-G1",
@@ -169,12 +169,12 @@
       "path_name": "Cognitive Causal Learning Outcome Feedback",
       "lifecycle_gate": "G1",
       "stage_description": "Stage 1: Intake & Recon",
-      "exact_head_sha": "b44b8927fb03698ba8b6c192caea6f721da6bd12",
+      "exact_head_sha": "db2592167dba5eda4c024bba9202ff085d9c1d9b",
       "source_target": "sage/experimental/cognitive/ccl_feedback_bridge.py",
       "verification_command": "AdaptiveMissionSelectionEngine.evaluate_candidate()",
       "verification_result": "PASS",
       "provenance_ref": "ref-F4-g1-1d19ec1a",
-      "cell_digest": "bdcf6920ae4321a90e90a949085f272f0ed5f70427021f5c4cfd7d687f1e619d"
+      "cell_digest": "908227ef3db02e94d83728797b3db5434264100feb9c511f0c2f50555868a056"
     },
     {
       "cell_id": "Cell F4-G2",
@@ -182,12 +182,12 @@
       "path_name": "Cognitive Causal Learning Outcome Feedback",
       "lifecycle_gate": "G2",
       "stage_description": "Stage 2: Bounded Build",
-      "exact_head_sha": "b44b8927fb03698ba8b6c192caea6f721da6bd12",
+      "exact_head_sha": "db2592167dba5eda4c024bba9202ff085d9c1d9b",
       "source_target": "sage/experimental/cognitive/ccl_feedback_bridge.py",
       "verification_command": "C2ExecutionBridge.execute()",
       "verification_result": "PASS",
-      "provenance_ref": "ref-F4-g2-132b2041",
-      "cell_digest": "22fbb82e0d782a956202d00e64c407e2125cf6d7c54a5931bb61251127db05ff"
+      "provenance_ref": "ref-F4-g2-c6ca30e5",
+      "cell_digest": "d2bf86a48ae214ee0e1b537ea00c05ec231411537b58eb5d46a8db51132f9211"
     },
     {
       "cell_id": "Cell F4-G3",
@@ -195,12 +195,12 @@
       "path_name": "Cognitive Causal Learning Outcome Feedback",
       "lifecycle_gate": "G3",
       "stage_description": "Stage 3: Verify & Proof",
-      "exact_head_sha": "b44b8927fb03698ba8b6c192caea6f721da6bd12",
+      "exact_head_sha": "db2592167dba5eda4c024bba9202ff085d9c1d9b",
       "source_target": "sage/experimental/cognitive/ccl_feedback_bridge.py",
       "verification_command": "CCLOutcomeFeedbackBridge.process_outcome()",
       "verification_result": "PASS",
-      "provenance_ref": "ref-F4-g3-a6b5807b",
-      "cell_digest": "352da44b27d7efa35cc29628c811ea2a479eb560ddbc5d7d43ea6bff99ca651f"
+      "provenance_ref": "ref-F4-g3-bdc64e4d",
+      "cell_digest": "e4692a9d61819df9a86538124c2464b95304d492f53954c072a33be71b80b711"
     },
     {
       "cell_id": "Cell F4-G4",
@@ -208,12 +208,12 @@
       "path_name": "Cognitive Causal Learning Outcome Feedback",
       "lifecycle_gate": "G4",
       "stage_description": "Stage 4: Warehouse Promote",
-      "exact_head_sha": "b44b8927fb03698ba8b6c192caea6f721da6bd12",
+      "exact_head_sha": "db2592167dba5eda4c024bba9202ff085d9c1d9b",
       "source_target": "sage/experimental/cognitive/ccl_feedback_bridge.py",
       "verification_command": "FleetQualificationLedger.issue_qualification()",
       "verification_result": "PASS",
-      "provenance_ref": "ref-F4-g4-63aeaacb",
-      "cell_digest": "a033a379e83f8bd82b92ee4a4c158ccdcc0589bceb0c78a16d5ffe8b983680d1"
+      "provenance_ref": "ref-F4-g4-989867b6",
+      "cell_digest": "e80060ee0ad7539c4c7fdd7eac913927782b717edd9579ad080fda4780e9c32a"
     },
     {
       "cell_id": "Cell F5-G1",
@@ -221,12 +221,12 @@
       "path_name": "Wave Playbook Optimization Engine",
       "lifecycle_gate": "G1",
       "stage_description": "Stage 1: Intake & Recon",
-      "exact_head_sha": "b44b8927fb03698ba8b6c192caea6f721da6bd12",
+      "exact_head_sha": "db2592167dba5eda4c024bba9202ff085d9c1d9b",
       "source_target": "sage/c2/c2_wave_playbook.py",
       "verification_command": "AdaptiveMissionSelectionEngine.evaluate_candidate()",
       "verification_result": "PASS",
       "provenance_ref": "ref-F5-g1-779a938f",
-      "cell_digest": "20dedb29f55899b46cdf656271c16150464549939155d50bc4cd444738a8f002"
+      "cell_digest": "9c2896f69a2a1138007f30453564773f7347f30e3c28d4c859b282a4f574eb6a"
     },
     {
       "cell_id": "Cell F5-G2",
@@ -234,12 +234,12 @@
       "path_name": "Wave Playbook Optimization Engine",
       "lifecycle_gate": "G2",
       "stage_description": "Stage 2: Bounded Build",
-      "exact_head_sha": "b44b8927fb03698ba8b6c192caea6f721da6bd12",
+      "exact_head_sha": "db2592167dba5eda4c024bba9202ff085d9c1d9b",
       "source_target": "sage/c2/c2_wave_playbook.py",
       "verification_command": "C2ExecutionBridge.execute()",
       "verification_result": "PASS",
-      "provenance_ref": "ref-F5-g2-6576f157",
-      "cell_digest": "6be886e91c02a66c1154894b95f8cd78192bd4cd67171ca54b8604e46f429144"
+      "provenance_ref": "ref-F5-g2-314383e1",
+      "cell_digest": "faba1153fb175ac25bdc94eab52c3e92a344bff4a6d1a32f10b3b6250275718e"
     },
     {
       "cell_id": "Cell F5-G3",
@@ -247,12 +247,12 @@
       "path_name": "Wave Playbook Optimization Engine",
       "lifecycle_gate": "G3",
       "stage_description": "Stage 3: Verify & Proof",
-      "exact_head_sha": "b44b8927fb03698ba8b6c192caea6f721da6bd12",
+      "exact_head_sha": "db2592167dba5eda4c024bba9202ff085d9c1d9b",
       "source_target": "sage/c2/c2_wave_playbook.py",
       "verification_command": "CCLOutcomeFeedbackBridge.process_outcome()",
       "verification_result": "PASS",
-      "provenance_ref": "ref-F5-g3-84dbb63c",
-      "cell_digest": "f94155dbcacb66f31bcddda71a1bfdafc55ece13b5aec0e6d93e57071bb11b89"
+      "provenance_ref": "ref-F5-g3-90ba0004",
+      "cell_digest": "56e05031ad24db3d99038c34b3dbbb481efb9e262b8171c622396d00a51da56f"
     },
     {
       "cell_id": "Cell F5-G4",
@@ -260,12 +260,12 @@
       "path_name": "Wave Playbook Optimization Engine",
       "lifecycle_gate": "G4",
       "stage_description": "Stage 4: Warehouse Promote",
-      "exact_head_sha": "b44b8927fb03698ba8b6c192caea6f721da6bd12",
+      "exact_head_sha": "db2592167dba5eda4c024bba9202ff085d9c1d9b",
       "source_target": "sage/c2/c2_wave_playbook.py",
       "verification_command": "FleetQualificationLedger.issue_qualification()",
       "verification_result": "PASS",
-      "provenance_ref": "ref-F5-g4-2fec6c7f",
-      "cell_digest": "ce95f49c61258f2b741f550a51cae898ce5aa8e3086ba05783c7e264ff4a91c8"
+      "provenance_ref": "ref-F5-g4-7b1ca31f",
+      "cell_digest": "6651c2a1e1637fa2a763992cefc18c6020f51b251485762d56a17aa7f7601c49"
     }
   ],
   "reconvergence_verdict": "PASS"

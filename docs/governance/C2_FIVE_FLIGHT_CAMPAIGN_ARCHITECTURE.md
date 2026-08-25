@@ -89,9 +89,11 @@ A flight **IS**:
 - its own evidence
 - its own milestone reporting back to C2 reconvergence
 
+# Big Strike Wave Definition
+
 # Big Jump Wave Definition
 
-A **Big Jump Wave** is the canonical SAGE execution unit:
+Big Jump Wave is the canonical SAGE execution unit:
 > **One coordinated wave where multiple independent flights hit separate consequential frontiers and reconverge.**
 
 It does **not** mean five flights building one single thing.

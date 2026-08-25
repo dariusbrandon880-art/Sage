@@ -13,7 +13,7 @@ def test_big_jump_wave_is_canonical_execution_workflow():
     assert "There is no Medium Flow operating mode." in content
     assert "**Retired operating mode:** Medium Flow." in content
     assert "# Big Jump Wave Definition" in content
-    assert "A **Big Jump Wave** is the canonical SAGE execution unit:" in content
+    assert "Big Jump Wave is the canonical SAGE execution unit" in content
 
 
 def test_five_flight_model_remains_locked():
