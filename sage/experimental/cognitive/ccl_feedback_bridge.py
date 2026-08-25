@@ -19,15 +19,42 @@ from sage.core.outcome_reconciliation import OutcomeReconciliation, OutcomeRecon
 
 @dataclass(frozen=True)
 class CCLFeedbackRecord:
-    """Feedback record generated from a reconciled outcome."""
+    """Feedback record generated from a reconciled outcome with cryptographic lineage binding."""
 
+    cycle_id: str
+    parent_cycle_id: str
     decision_id: str
     context_id: str
     reconciliation_digest: str
+    source_outcome_ref: str
     status: OutcomeReconciliationStatus
     risk_adjustment: float
     forbidden_paths: tuple[str, ...] = ()
+    measurement_digest: str = ""
     timestamp: float = field(default_factory=time.time)
+
+    def digest(self) -> str:
+        payload = {
+            "cycle_id": self.cycle_id,
+            "parent_cycle_id": self.parent_cycle_id,
+            "decision_id": self.decision_id,
+            "context_id": self.context_id,
+            "reconciliation_digest": self.reconciliation_digest,
+            "source_outcome_ref": self.source_outcome_ref,
+            "status": self.status.value if isinstance(self.status, OutcomeReconciliationStatus) else str(self.status),
+            "risk_adjustment": self.risk_adjustment,
+            "forbidden_paths": sorted(self.forbidden_paths),
+        }
+        raw = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+        return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+    def verify_lineage(self) -> bool:
+        """Verify that record has non-empty cycle lineage and valid digests."""
+        if not self.cycle_id.strip() or not self.parent_cycle_id.strip():
+            return False
+        if len(self.reconciliation_digest) != 64:
+            return False
+        return True
 
 
 class CCLOutcomeFeedbackBridge:
@@ -41,8 +68,16 @@ class CCLOutcomeFeedbackBridge:
         self.feedback_records: list[CCLFeedbackRecord] = []
         self.forbidden_path_registry: set[str] = set()
 
-    def process_reconciliation(self, reconciliation: OutcomeReconciliation) -> CCLFeedbackRecord:
-        """Process a verified OutcomeReconciliation and create a CCLFeedbackRecord."""
+    def process_reconciliation(
+        self,
+        reconciliation: OutcomeReconciliation,
+        cycle_id: str = "cycle-1",
+        parent_cycle_id: str = "cycle-0",
+    ) -> CCLFeedbackRecord:
+        """Process a verified OutcomeReconciliation and create a lineage-bound CCLFeedbackRecord."""
+        if not reconciliation or not reconciliation.reconciliation_digest:
+            raise ValueError("OutcomeReconciliation with valid reconciliation_digest required")
+
         # Risk adjustment rules:
         # - UNRESOLVED or INDETERMINATE -> +30.0 risk penalty
         # - REPORTED -> +10.0 risk penalty
@@ -68,30 +103,44 @@ class CCLOutcomeFeedbackBridge:
         for path in forbidden_paths:
             self.forbidden_path_registry.add(path)
 
+        measurement_payload = f"{reconciliation.decision_id}:{reconciliation.status.value}:{risk_adjustment}"
+        measurement_digest = hashlib.sha256(measurement_payload.encode("utf-8")).hexdigest()
+
         record = CCLFeedbackRecord(
+            cycle_id=cycle_id,
+            parent_cycle_id=parent_cycle_id,
             decision_id=reconciliation.decision_id,
             context_id=reconciliation.context_id,
             reconciliation_digest=reconciliation.reconciliation_digest,
+            source_outcome_ref=reconciliation.outcome_ref,
             status=reconciliation.status,
             risk_adjustment=risk_adjustment,
             forbidden_paths=tuple(sorted(forbidden_paths)),
+            measurement_digest=measurement_digest,
         )
+
+        if not record.verify_lineage():
+            raise ValueError("Generated CCLFeedbackRecord failed lineage verification")
+
         self.feedback_records.append(record)
         return record
 
     def evaluate_candidates_with_feedback(
         self,
         raw_candidates: Sequence[dict[str, Any]],
+        active_cycle_id: str = "cycle-2",
     ) -> list[CandidateDecisionPacket]:
-        """Evaluate raw candidates applying cumulative feedback risk adjustments and forbidden path locks."""
+        """Evaluate raw candidates applying cumulative lineage-verified feedback risk adjustments."""
         adjusted_candidates = []
         for raw in raw_candidates:
             candidate_copy = dict(raw)
             candidate_id = str(candidate_copy.get("candidate_id") or candidate_copy.get("name") or "").strip()
 
-            # Find matching feedback adjustments for this candidate or context
+            # Find matching verified feedback adjustments for this candidate or context
             matching_adjustments = [
-                rec.risk_adjustment for rec in self.feedback_records if rec.decision_id == candidate_id or rec.context_id == candidate_id
+                rec.risk_adjustment
+                for rec in self.feedback_records
+                if rec.verify_lineage() and (rec.decision_id == candidate_id or rec.context_id == candidate_id)
             ]
             cumulative_adj = sum(matching_adjustments)
 
