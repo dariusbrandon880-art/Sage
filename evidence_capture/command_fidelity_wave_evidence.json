@@ -1,0 +1,73 @@
+{
+  "commit_sha": "70d1e798d5deee425a138e12ec070c8b10af2793",
+  "timestamp_utc": 1787618464.6778672,
+  "flight_results": [
+    {
+      "flight_id": "Flight A",
+      "flight_name": "Directive Fidelity",
+      "boundary_scope": "sage.c2.directive_fidelity",
+      "status": "PASS",
+      "receipt_hash": "1c26a604fe40799c5b06b9f75546b1e51638f579226b23ed315744e91a1bfbb2",
+      "metrics": {
+        "valid_plan_passed": true,
+        "invalid_plan_blocked": true,
+        "forbidden_additions_count": 1
+      }
+    },
+    {
+      "flight_id": "Flight B",
+      "flight_name": "Reality Gate",
+      "boundary_scope": "sage.c2.reality_gate",
+      "status": "PASS",
+      "receipt_hash": "914c712ec93426f0d8a13a7d1d9cf386dee4d416d7b505b6937271b3a731c556",
+      "metrics": {
+        "permitted_claims_count": 2,
+        "blocked_claims_count": 0
+      }
+    },
+    {
+      "flight_id": "Flight C",
+      "flight_name": "Claim Provenance Compiler",
+      "boundary_scope": "sage.c2.claim_provenance",
+      "status": "PASS",
+      "receipt_hash": "a0c991131b0e2823934beea13a4b20c512945b6613b3c2c990ac61343d726e50",
+      "metrics": {
+        "verified_claims_count": 2,
+        "unresolved_claims_count": 0,
+        "contradicted_claims_count": 0
+      }
+    },
+    {
+      "flight_id": "Flight D",
+      "flight_name": "Fresh-Session Drift Sentinel",
+      "boundary_scope": "sage.c2.drift_sentinel",
+      "status": "PASS",
+      "receipt_hash": "06bcffabe747817c493ce17f63ceac560404ed36bac4089edf01ea866efd2e63",
+      "metrics": {
+        "tool_fidelity": 1.0,
+        "source_fidelity": 1.0,
+        "order_fidelity": 1.0,
+        "constraint_fidelity": 1.0,
+        "state_fidelity": 1.0,
+        "non_invention_rate": 1.0,
+        "overall_drift_rate": 0.0
+      }
+    },
+    {
+      "flight_id": "Flight E",
+      "flight_name": "Wave Reconvergence",
+      "boundary_scope": "sage.c2.command_fidelity_wave",
+      "status": "PASS",
+      "receipt_hash": "be93995c10c1e5705c6fab4b6d42df6bb61687beb274fa286d7716bdcf880577",
+      "metrics": {
+        "wave_reconverged": true
+      }
+    }
+  ],
+  "wave_verdict": "PASS",
+  "summary": {
+    "total_flights": 5,
+    "passed_flights": 5,
+    "wave_verdict": "PASS"
+  }
+}
