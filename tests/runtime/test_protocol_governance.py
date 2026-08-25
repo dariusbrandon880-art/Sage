@@ -186,3 +186,43 @@ def test_chatgpt_client_adversarial_rejection_suite():
         req = AIQueryRequest(prompt="Adversarial check", response_override=payload)
         with pytest.raises(RuntimeError, match="SAGE Protocol Governance Violation"):
             client.execute_query(req)
+
+
+def test_system_instructions_embed_chatgpt_anti_drift_contract():
+    """Verify that _system_instructions includes the 10 Anti-Drift Laws."""
+    from sage.runtime.model_adapters import _system_instructions
+    from sage.runtime.model_gateway import SAGERuntimeEnvelope
+
+    env = SAGERuntimeEnvelope.from_state(state(), model_role="c2")
+    instructions = _system_instructions(env)
+
+    assert "CHATGPT C2 ANTI-DRIFT CONTRACT" in instructions
+    assert "EXACT DIRECTIVE PRESERVATION" in instructions
+    assert "NO INVENTION" in instructions
+    assert "NO ASSUMPTION OF DISCONNECTION" in instructions
+    assert "LIVE-CHECK COMMANDS" in instructions
+    assert "REPORT SEPARATION" in instructions
+    assert "NO FALSE CAPABILITY CLAIMS" in instructions
+    assert "FAIL-CLOSED" in instructions
+
+
+def test_chatgpt_c2_anti_drift_contract_file_exists_and_conforms():
+    """Verify that CHATGPT_C2_EXACT_ORDER_ANTI_DRIFT_CONTRACT.md exists and contains all required anti-drift rules."""
+    from pathlib import Path
+
+    doc_path = Path(__file__).parent.parent.parent / "docs" / "governance" / "CHATGPT_C2_EXACT_ORDER_ANTI_DRIFT_CONTRACT.md"
+    assert doc_path.exists()
+
+    content = doc_path.read_text(encoding="utf-8")
+    assert "# SAGE CHATGPT C2 EXACT-ORDER / ANTI-DRIFT CONTRACT" in content
+    assert "THE 10 ANTI-DRIFT LAWS" in content
+    assert "1. EXACT DIRECTIVE PRESERVATION" in content
+    assert "2. NO INVENTION" in content
+    assert "3. NO ASSUMPTION OF DISCONNECTION" in content
+    assert "4. LIVE-CHECK COMMANDS" in content
+    assert "5. REPORT SEPARATION" in content
+    assert "6. NO DRIFT" in content
+    assert "7. NO FALSE CAPABILITY CLAIMS" in content
+    assert "8. CONFLICT HANDLING" in content
+    assert "9. AUTHORITY SEPARATION" in content
+    assert "10. FAIL-CLOSED" in content
