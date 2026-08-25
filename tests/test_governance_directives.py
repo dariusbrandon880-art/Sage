@@ -111,11 +111,11 @@ def test_c2_big_jump_wave_15_flight_concurrency_doctrine_is_canonical():
         "5 independent paths x 4 lifecycle stages = 20 advancement cells.",
         "3 Jules sessions x 5 flights per wave = 15 distinct flight missions",
         "Each flight may use the complete governed execution aperture",
-        "Multi-node is optional topology",
+        "MULTI-NODE = OPTIONAL TOPOLOGY",
         "True concurrency",
         "Rolling/batched execution",
         "Super Search is a reconnaissance sensor",
-        "Git / repository truth = authority",
+        "GIT / REPO TRUTH = AUTHORITY",
         "Medium Flow",
     ]
     for anchor in required_anchors:
@@ -136,5 +136,5 @@ def test_c2_exact_order_contract_binds_big_jump_wave_doctrine():
     assert "SAGE_C2_BIG_JUMP_WAVE_15_FLIGHT_CONCURRENCY_DOCTRINE.md" in content
     assert "Big Jump Wave is the normal SAGE execution workflow" in content
     assert "5x4 means five paths x four lifecycle milestone gates = 20 advancement cells" in content
-    assert "three concurrently executing Jules wave sessions can represent up to 15 distinct active flight missions" in content
+    assert "Three concurrently executing Jules wave sessions can represent up to 15 distinct active flight missions" in content
     assert "Multi-node is optional topology" in content
