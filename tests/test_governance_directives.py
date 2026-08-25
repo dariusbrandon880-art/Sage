@@ -116,3 +116,27 @@ def test_governance_cross_references():
     enhancement_doc = gov_dir / "JULES_C2_CAPABILITY_ENHANCEMENT_DIRECTIVE.md"
     assert enhancement_doc.exists()
     assert "JULES_FIVE_FLIGHT_C2_CAPABILITY_EXPANSION_DIRECTIVE.md" in enhancement_doc.read_text(encoding="utf-8")
+
+
+def test_sage_c2_continuous_big_jump_execution_model_exists_and_conforms():
+    """Verify that SAGE_C2_CONTINUOUS_BIG_JUMP_EXECUTION_MODEL.md exists and contains required laws."""
+    root_dir = Path(__file__).parent.parent
+    gov_file = root_dir / "docs" / "governance" / "SAGE_C2_CONTINUOUS_BIG_JUMP_EXECUTION_MODEL.md"
+
+    assert gov_file.exists(), "SAGE_C2_CONTINUOUS_BIG_JUMP_EXECUTION_MODEL.md must exist in docs/governance/"
+
+    content = gov_file.read_text(encoding="utf-8")
+
+    assert "# SAGE C2 Continuous Big-Jump Execution Model" in content
+    assert "Law 1: Mission Director Final Authority" in content
+    assert "Law 2: Coordinated C2 Components" in content
+    assert "Law 3: Default Big Jump Wave Model" in content
+    assert "Law 9: Exact-SHA Evidence Binding" in content
+    assert "Law 11: Fail-Closed Contradiction Rule" in content
+    assert "Law 13: Continuous Operating Loop" in content
+
+    c2_frame = (root_dir / "docs" / "governance" / "C2_FRAME.md").read_text(encoding="utf-8")
+    assert "SAGE_C2_CONTINUOUS_BIG_JUMP_EXECUTION_MODEL.md" in c2_frame
+
+    operating_frame = (root_dir / "docs" / "governance" / "BIG_JUMP_WAVE_C2_5X4_OPERATING_FRAME.md").read_text(encoding="utf-8")
+    assert "SAGE_C2_CONTINUOUS_BIG_JUMP_EXECUTION_MODEL.md" in operating_frame
