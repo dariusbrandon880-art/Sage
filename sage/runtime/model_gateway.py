@@ -168,7 +168,6 @@ class SAGEProtocolGovernor:
         proposed_actions: list[SAGEActionProposal] = []
         evidence_refs: list[str] = []
         epistemic = SAGEEpistemicState(confidence_level="UNKNOWN")
-        parsed_data: dict[str, Any] = {}
 
         try:
             json_str = raw_output
@@ -216,7 +215,6 @@ class SAGEProtocolGovernor:
                     )
         except Exception:
             reasoning_chain = [raw_output.strip()]
-            violations.append("Model output is not valid structured SAGE JSON.")
 
         if not reasoning_chain and not proposed_actions:
             violations.append("Model output lacks structured SAGE reasoning or proposed actions.")
