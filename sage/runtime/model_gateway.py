@@ -5,10 +5,13 @@ model adapters only transport proposals/evidence through an explicit envelope.
 """
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from hashlib import sha256
 import json
 from typing import Any, Mapping, Protocol
+
+from sage.c2.chatgpt_c2_contract import classify_directive, validate_report_claims
+from sage.c2.live_operation_receipt import LiveCapability, LiveOperationReceipt, execute_live_capability
 
 
 @dataclass(frozen=True)
@@ -246,6 +249,7 @@ class ModelResponse:
     output_state_digest: str | None = None
     raw_output: Any = None
     structured_response: SAGEStructuredResponse | None = None
+    live_operation_receipt: LiveOperationReceipt | None = None
 
 
 class ModelAdapter(Protocol):
@@ -287,8 +291,33 @@ class SAGERuntime:
         if response.input_state_digest != self.state.digest():
             raise ValueError("SAGE input state digest mismatch")
 
-    def invoke(self, adapter: ModelAdapter, task: str, *, model_role: str) -> ModelResponse:
-        """Invoke a replaceable model and reconcile its response before returning it."""
+    def invoke(
+        self,
+        adapter: ModelAdapter,
+        task: str,
+        *,
+        model_role: str,
+        live_capability: LiveCapability | None = None,
+    ) -> ModelResponse:
+        """Execute required live verification before model output can be trusted.
+
+        A live-check directive cannot be satisfied by a caller-supplied boolean.
+        The runtime must invoke a connected capability through the receipt
+        boundary, then bind that receipt to the returned model response.
+        """
+        decision = classify_directive(task)
+        receipt: LiveOperationReceipt | None = None
+        if decision.requires_live_verification:
+            if live_capability is None:
+                raise ValueError(
+                    "C2 live verification required, but no connected live capability was provided."
+                )
+            receipt = execute_live_capability(
+                live_capability,
+                operation="live_verification",
+                task=task,
+            )
+
         response = adapter.invoke(
             self.envelope(
                 model_role,
@@ -296,5 +325,20 @@ class SAGERuntime:
             ),
             task,
         )
+
+        if receipt is not None:
+            evidence_refs = tuple(dict.fromkeys((*response.evidence_refs, receipt.receipt_hash)))
+            response = replace(
+                response,
+                evidence_refs=evidence_refs,
+                live_operation_receipt=receipt,
+            )
+            validate_report_claims(
+                receipt=receipt,
+                claim=str(response.raw_output),
+                expected_target_resource=receipt.target_resource,
+                evidence_refs=evidence_refs,
+            )
+
         self.reconcile(response)
         return response
