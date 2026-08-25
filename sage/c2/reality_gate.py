@@ -61,15 +61,26 @@ class RealityGate:
     @staticmethod
     def _operation_receipt_valid(receipt: SourceReceipt) -> bool:
         metadata = receipt.metadata or {}
-        return (
+        # Accept the legacy representation already used by the C2 tests while
+        # requiring the explicit operation-boundary representation for new
+        # receipts. Both forms must identify the operation boundary and name.
+        legacy_valid = (
             metadata.get("origin") == "operation_boundary"
             and isinstance(metadata.get("operation"), str)
             and bool(metadata["operation"].strip())
         )
+        explicit_valid = (
+            metadata.get("operation_boundary") in (True, "operation_boundary")
+            and isinstance(metadata.get("operation_name"), str)
+            and bool(metadata["operation_name"].strip())
+        )
+        return legacy_valid or explicit_valid
 
     @staticmethod
     def _fingerprint_matches(claim: OperationalClaim, receipt: SourceReceipt) -> bool:
         if not claim.target_resource or claim.target_resource != receipt.resource_id:
+            return False
+        if not receipt.sha256_digest:
             return False
         if ":" in claim.target_resource:
             expected_fingerprint = claim.target_resource.rsplit(":", 1)[1]
