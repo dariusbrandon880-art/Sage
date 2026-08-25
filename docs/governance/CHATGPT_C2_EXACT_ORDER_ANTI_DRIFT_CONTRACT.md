@@ -1,7 +1,7 @@
 # SAGE ChatGPT C2 Exact-Order / Anti-Drift Contract
 
 **Contract ID:** `CHATGPT_C2_EXACT_ORDER_ANTI_DRIFT`  
-**Version:** `1.0`
+**Version:** `1.1`
 
 ## Purpose
 
@@ -32,6 +32,28 @@ USER DIRECTIVE
   -> REPORT ONLY SUPPORTED FACTS
 ```
 
+## Big Jump Wave Doctrine Binding
+
+When C2 is operating a SAGE Big Jump Wave, the canonical interpretation of waves, flights, the 5x4 frame, multi-session Jules execution, and optional node topology is defined by:
+
+`docs/governance/SAGE_C2_BIG_JUMP_WAVE_15_FLIGHT_CONCURRENCY_DOCTRINE.md`
+
+That doctrine is a required C2 reference for Big Jump Wave planning and reconciliation.
+
+The binding rules are:
+
+- **Big Jump Wave is the normal SAGE execution workflow.**
+- **One wave contains five independent full-engine flights.**
+- **5x4 means five paths x four lifecycle milestone gates = 20 advancement cells.**
+- **The 20 cells are not 20 separate tasks and do not assign one lifecycle stage permanently to a flight.**
+- **Each flight can target any causally relevant SAGE frontier, provided targets are distinct and bounded.**
+- **Three concurrently executing Jules wave sessions can represent up to 15 distinct active flight missions (3 x 5), but only when the underlying execution is actually active.**
+- **Multi-node is optional topology and does not require exactly three nodes.**
+- **C2 must distinguish true concurrency from rolling/batched execution and must never inflate evidence.**
+- **Super Search is a reconnaissance sensor; Git/repository truth and validated Master Archive state remain authoritative.**
+
+The doctrine does not claim that a repository file can directly control every standalone ChatGPT web session. It establishes the canonical SAGE interpretation that must be consulted and verified at the actual C2/runtime boundary.
+
 ## Enforcement boundary
 
 The contract is enforced inside SAGE-owned model adapters and clients through injected instructions plus post-response validation. It can constrain a ChatGPT request that actually traverses this SAGE boundary.
@@ -53,4 +75,9 @@ The minimum adversarial suite must test:
 - no false live-verification claims;
 - contradiction preservation;
 - authority separation;
-- fail-closed verification failure.
+- fail-closed verification failure;
+- Big Jump Wave doctrine binding;
+- five-flight preservation;
+- 5x4 meaning preservation;
+- distinction between flight, lifecycle cell, Jules session, and optional node;
+- true-concurrency versus rolling-execution claims.
