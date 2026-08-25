@@ -10,13 +10,44 @@ _WS = re.compile(r"\s+")
 _HEX = re.compile(r"\b[0-9a-f]{7,64}\b", re.I)
 _NUM = re.compile(r"\b\d+\b")
 
+# Explicit, immutable failure surfaces that the progression preflight may block.
+# These are governance hazards already represented by the repository's validation
+# suites; they are intentionally descriptive and never select or rewrite missions.
+KNOWN_FAILURE_PATTERNS = frozenset(
+    {
+        "known_failure_trigger",
+        "protected namespace violation",
+        "unauthorized state mutation",
+        "evidence bypass",
+        "roleplay execution",
+    }
+)
+
 
 def normalize_failure(message: str) -> str:
-    """Normalize incidental log noise while preserving the failure shape."""
+    """Normalize incidental log noise while preserving the failure shape.
+
+    Known governance failure surfaces are detected as declared substrings, so a
+    contextual failure message such as ``"stop because of protected namespace
+    violation"`` remains tied to the immutable registry. Unknown failures remain
+    ordinary normalized strings and are never promoted to known patterns implicitly.
+    """
     if not isinstance(message, str) or not message.strip():
         raise ValueError("failure message required")
     compact = _WS.sub(" ", message.strip())
-    return _NUM.sub("#", _HEX.sub("<sha>", compact)).lower()
+    normalized = _NUM.sub("#", _HEX.sub("<sha>", compact)).lower()
+    declared_patterns = sorted(
+        pattern for pattern in KNOWN_FAILURE_PATTERNS if pattern != "known_failure_trigger"
+    )
+    matched_pattern = next(
+        (pattern for pattern in declared_patterns if pattern in normalized),
+        None,
+    )
+    if matched_pattern is not None:
+        return f"known_failure_trigger:{matched_pattern}"
+    if normalized == "known_failure_trigger":
+        return normalized
+    return normalized
 
 
 def failure_fingerprint(command: str, message: str) -> str:

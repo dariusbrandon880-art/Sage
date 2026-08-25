@@ -2,6 +2,7 @@ import pytest
 
 from sage.failure_intelligence import (
     FailureObservation,
+    KNOWN_FAILURE_PATTERNS,
     RepairQualification,
     collapse,
     failure_fingerprint,
@@ -11,6 +12,12 @@ from sage.failure_intelligence import (
 
 def test_normalization_removes_sha_and_numeric_noise():
     assert normalize_failure(" Error 42 at abcdef1234567 ") == "error # at <sha>"
+
+
+def test_known_failure_registry_marks_only_declared_patterns():
+    assert "protected namespace violation" in KNOWN_FAILURE_PATTERNS
+    assert normalize_failure("protected namespace violation").startswith("known_failure_trigger:")
+    assert normalize_failure("new unrelated failure") == "new unrelated failure"
 
 
 def test_identical_normalized_failures_collapse():

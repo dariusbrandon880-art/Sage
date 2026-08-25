@@ -273,14 +273,26 @@ class MissionProgressionController:
         def validate_pfc():
             from sage.experimental.cognitive.prefrontal_cortex import DecisionGateOutcome
 
-            # Check failure intelligence for matching failure patterns
+            # Failure intelligence is a read-only boundary. Any unavailable intelligence
+            # is a fail-closed condition; it cannot be silently bypassed.
             try:
                 from sage.failure_intelligence import normalize_failure
-                obj_text = self.mission_data.get("objective", "")
-                if "known_failure_trigger" in obj_text.lower():
-                    return False, f"Preflight rejected due to failure memory pattern in objective: '{obj_text}'"
-            except Exception:
-                pass
+            except Exception as exc:
+                return False, {
+                    "status": "REJECTED",
+                    "reason": f"Failure intelligence unavailable; preflight failed closed: {exc!s}"
+                }
+
+            obj_text = self.mission_data.get("objective", "")
+            try:
+                normalized_objective = normalize_failure(obj_text)
+            except (TypeError, ValueError) as exc:
+                return False, {
+                    "status": "REJECTED",
+                    "reason": f"Failure intelligence normalization failed; preflight failed closed: {exc!s}"
+                }
+            if "known_failure_trigger" in normalized_objective:
+                return False, f"Preflight rejected due to failure memory pattern in objective: '{obj_text}'"
 
             # If a custom cognitive state is passed, we use it. Otherwise, we build one from self.mission_data.
             state = cognitive_state
@@ -491,9 +503,10 @@ class MissionProgressionController:
         is_valid, validation_result = validation_func()
         if not is_valid:
             # Rejected/failed transition MUST NOT advance state
+            reason_text = validation_result.get("reason", "Unknown error") if isinstance(validation_result, dict) else str(validation_result)
             raise ValueError(
                 f"Transition Rejected: Failed validation gate for target state '{target_state.value}'. "
-                f"Reason: {validation_result.get('reason', 'Unknown error')}"
+                f"Reason: {reason_text}"
             )
 
         # Zero-spawning rule enforcement check across all states

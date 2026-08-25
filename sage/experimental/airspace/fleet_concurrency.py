@@ -1,29 +1,38 @@
-"""Fleet Concurrency Engine for SAGE Airspace.
+"""Fleet concurrency substrate for bounded SAGE flight waves.
 
-Provides concurrent execution management for multi-flight operations,
-handling dependency DAG scheduling, namespace collision locks, and deterministic
-result aggregation.
+The engine coordinates independent work units without granting C2 authority. It
+validates dependency structure, rejects protected namespace claims and namespace
+collisions before execution, executes independent DAG levels concurrently, and
+emits deterministic receipts.
 """
 
-import time
+from __future__ import annotations
+
+from concurrent.futures import ThreadPoolExecutor
 import hashlib
 import json
-from typing import Dict, List, Any, Optional, Set
+import posixpath
+import threading
+import time
+from typing import Any, Dict, List, Set
+
 from pydantic import BaseModel, Field
 
 
 class FlightWorkUnit(BaseModel):
-    """Represents an individual flight work unit within a multi-flight wave."""
-    unit_id: str = Field(..., description="Unique ID for the work unit, e.g. 'UNIT-F1'")
-    flight_id: str = Field(..., description="Flight vector ID, e.g. 'F1', 'F2'")
-    target_path: str = Field(..., description="Namespace path bound to this unit")
-    dependencies: List[str] = Field(default_factory=list, description="Unit IDs this unit depends on")
-    action_type: str = Field("EXECUTE", description="Action type: EXECUTE, VERIFY, PROMOTIONAL")
-    payload: Dict[str, Any] = Field(default_factory=dict, description="Work unit operational payload")
+    """One bounded work unit in a multi-flight wave."""
+
+    unit_id: str = Field(..., description="Unique work-unit identifier")
+    flight_id: str = Field(..., description="Independent flight vector identifier")
+    target_path: str = Field(..., description="Repository namespace claimed by the unit")
+    dependencies: List[str] = Field(default_factory=list, description="Unit IDs that must complete first")
+    action_type: str = Field("EXECUTE", description="Bounded action classification")
+    payload: Dict[str, Any] = Field(default_factory=dict, description="Non-authorizing work payload")
 
 
 class FleetConcurrencyResult(BaseModel):
-    """Aggregate result of a fleet concurrency execution wave."""
+    """Immutable-style aggregate result for one fleet wave."""
+
     wave_id: str
     timestamp: float
     total_units: int
@@ -37,109 +46,168 @@ class FleetConcurrencyResult(BaseModel):
 
 
 class FleetConcurrencyEngine:
-    """Manages concurrent execution across independent flight units while preventing collisions."""
+    """Coordinate independent flight units while preserving bounded authority."""
 
-    def __init__(self):
+    _ALLOWED_ACTION_TYPES = {"EXECUTE", "VERIFY"}
+    _PROTECTED_PREFIXES = ("sage/core", "sage/runtime", "sage/acr", "sage/agents")
+
+    def __init__(self) -> None:
         self.active_locks: Set[str] = set()
+        self._lock_guard = threading.Lock()
+
+    @classmethod
+    def _validate_target_path(cls, target_path: str) -> None:
+        """Reject malformed, traversal, or protected repository namespace claims."""
+        if not target_path or target_path.startswith("/"):
+            raise ValueError("Fleet concurrency unit target_path must be a non-empty relative path.")
+        normalized = posixpath.normpath(target_path)
+        if normalized == ".." or normalized.startswith("../"):
+            raise ValueError(f"Fleet concurrency unit target_path escapes repository root: '{target_path}'")
+        if any(normalized == prefix or normalized.startswith(f"{prefix}/") for prefix in cls._PROTECTED_PREFIXES):
+            raise ValueError(f"Fleet concurrency unit targets protected namespace: '{target_path}'")
+
+    def _validate_units(self, units: List[FlightWorkUnit]) -> Dict[str, FlightWorkUnit]:
+        unit_map = {unit.unit_id: unit for unit in units}
+        if len(unit_map) != len(units):
+            raise ValueError("Fleet concurrency wave contains duplicate unit IDs.")
+        for unit in units:
+            self._validate_target_path(unit.target_path)
+            if unit.action_type not in self._ALLOWED_ACTION_TYPES:
+                raise ValueError(
+                    f"Unsupported action type '{unit.action_type}' for bounded fleet execution."
+                )
+            missing = [dep for dep in unit.dependencies if dep not in unit_map]
+            if missing:
+                raise ValueError(
+                    f"Fleet concurrency wave contains unknown dependencies for '{unit.unit_id}': {missing}"
+                )
+        return unit_map
 
     def validate_dag(self, units: List[FlightWorkUnit]) -> bool:
-        """Verify that the work units form a valid Directed Acyclic Graph (DAG)."""
-        unit_map = {u.unit_id: u for u in units}
+        """Return true only when unit IDs, dependencies, and cycles are valid."""
+        unit_map = self._validate_units(units)
+        visiting: Set[str] = set()
         visited: Set[str] = set()
-        rec_stack: Set[str] = set()
 
         def dfs(node_id: str) -> bool:
+            if node_id in visiting:
+                return False
+            if node_id in visited:
+                return True
+            visiting.add(node_id)
+            for dep in unit_map[node_id].dependencies:
+                if not dfs(dep):
+                    return False
+            visiting.remove(node_id)
             visited.add(node_id)
-            rec_stack.add(node_id)
-
-            unit = unit_map.get(node_id)
-            if unit:
-                for dep in unit.dependencies:
-                    if dep not in visited:
-                        if not dfs(dep):
-                            return False
-                    elif dep in rec_stack:
-                        return False  # Cycle detected
-
-            rec_stack.remove(node_id)
             return True
 
-        for u in units:
-            if u.unit_id not in visited:
-                if not dfs(u.unit_id):
-                    return False
-        return True
+        return all(dfs(unit_id) for unit_id in unit_map)
+
+    def _execution_levels(self, units: List[FlightWorkUnit]) -> List[List[FlightWorkUnit]]:
+        unit_map = {unit.unit_id: unit for unit in units}
+        remaining = {unit.unit_id: set(unit.dependencies) for unit in units}
+        levels: List[List[FlightWorkUnit]] = []
+
+        while remaining:
+            ready_ids = sorted(unit_id for unit_id, deps in remaining.items() if not deps)
+            if not ready_ids:
+                raise ValueError("Fleet concurrency wave contains a cyclic dependency in unit DAG.")
+            levels.append([unit_map[unit_id] for unit_id in ready_ids])
+            for unit_id in ready_ids:
+                remaining.pop(unit_id)
+            for deps in remaining.values():
+                deps.difference_update(ready_ids)
+        return levels
 
     def check_namespace_conflicts(self, units: List[FlightWorkUnit]) -> List[str]:
-        """Detect any namespace collisions where multiple concurrent units claim identical paths."""
+        """Detect duplicate repository namespace claims before any unit executes."""
         path_counts: Dict[str, List[str]] = {}
-        conflicts: List[str] = []
-
         for unit in units:
             path_counts.setdefault(unit.target_path, []).append(unit.unit_id)
+        return [
+            f"Namespace collision on path '{path}' claimed by units: {uids}"
+            for path, uids in sorted(path_counts.items())
+            if len(uids) > 1
+        ]
 
-        for path, uids in path_counts.items():
-            if len(uids) > 1:
-                conflicts.append(f"Namespace collision on path '{path}' claimed by units: {uids}")
+    @staticmethod
+    def _unit_receipt(unit: FlightWorkUnit) -> Dict[str, Any]:
+        canonical = {
+            "action_type": unit.action_type,
+            "dependencies": sorted(unit.dependencies),
+            "flight_id": unit.flight_id,
+            "payload": unit.payload,
+            "target_path": unit.target_path,
+            "unit_id": unit.unit_id,
+        }
+        fingerprint = hashlib.sha256(
+            json.dumps(canonical, sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest()
+        return {
+            "unit_id": unit.unit_id,
+            "flight_id": unit.flight_id,
+            "status": "SUCCESS",
+            "target_path": unit.target_path,
+            "unit_fingerprint": fingerprint,
+        }
 
-        return conflicts
+    def _execute_unit(self, unit: FlightWorkUnit) -> Dict[str, Any]:
+        with self._lock_guard:
+            if unit.target_path in self.active_locks:
+                raise RuntimeError(f"Namespace lock conflict on '{unit.target_path}'.")
+            self.active_locks.add(unit.target_path)
+        try:
+            return self._unit_receipt(unit)
+        finally:
+            with self._lock_guard:
+                self.active_locks.remove(unit.target_path)
 
     def execute_concurrent_wave(self, wave_id: str, units: List[FlightWorkUnit]) -> FleetConcurrencyResult:
-        """Execute a wave of flight work units concurrently with collision protection."""
-        ts = time.time()
-
-        # 1. Validate DAG
+        """Execute dependency-ready units concurrently and reconverge their receipts."""
+        timestamp = time.time()
+        unit_map = self._validate_units(units)
         if not self.validate_dag(units):
             raise ValueError(f"Fleet concurrency wave '{wave_id}' contains a cyclic dependency in unit DAG.")
 
-        # 2. Check namespace locks
         conflicts = self.check_namespace_conflicts(units)
         if conflicts:
+            fingerprint = hashlib.sha256(
+                json.dumps({"wave_id": wave_id, "conflicts": conflicts}, sort_keys=True).encode()
+            ).hexdigest()
             return FleetConcurrencyResult(
                 wave_id=wave_id,
-                timestamp=ts,
+                timestamp=timestamp,
                 total_units=len(units),
                 executed_units=0,
                 successful_units=0,
                 failed_units=len(units),
                 lock_conflicts=conflicts,
-                unit_receipts={},
-                wave_fingerprint=hashlib.sha256(wave_id.encode()).hexdigest(),
-                is_reconverged=False
+                wave_fingerprint=fingerprint,
+                is_reconverged=False,
             )
 
-        # 3. Simulate/Execute units in topological order
         receipts: Dict[str, Dict[str, Any]] = {}
-        executed = 0
-        successful = 0
+        for level in self._execution_levels(list(unit_map.values())):
+            with ThreadPoolExecutor(max_workers=len(level)) as executor:
+                results = list(executor.map(self._execute_unit, level))
+            receipts.update({receipt["unit_id"]: receipt for receipt in results})
 
-        for unit in units:
-            self.active_locks.add(unit.target_path)
-            unit_sha = hashlib.sha256(f"{unit.unit_id}:{unit.target_path}:{ts}".encode()).hexdigest()
-            receipts[unit.unit_id] = {
-                "unit_id": unit.unit_id,
-                "flight_id": unit.flight_id,
-                "status": "SUCCESS",
-                "target_path": unit.target_path,
-                "unit_fingerprint": unit_sha
-            }
-            executed += 1
-            successful += 1
-            self.active_locks.remove(unit.target_path)
-
-        # 4. Generate wave fingerprint
-        receipt_str = json.dumps(receipts, sort_keys=True)
-        wave_fp = hashlib.sha256(f"{wave_id}:{receipt_str}".encode()).hexdigest()
+        canonical_receipts = {key: receipts[key] for key in sorted(receipts)}
+        wave_payload = {"wave_id": wave_id, "unit_receipts": canonical_receipts}
+        wave_fingerprint = hashlib.sha256(
+            json.dumps(wave_payload, sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest()
 
         return FleetConcurrencyResult(
             wave_id=wave_id,
-            timestamp=ts,
+            timestamp=timestamp,
             total_units=len(units),
-            executed_units=executed,
-            successful_units=successful,
+            executed_units=len(receipts),
+            successful_units=len(receipts),
             failed_units=0,
             lock_conflicts=[],
-            unit_receipts=receipts,
-            wave_fingerprint=wave_fp,
-            is_reconverged=True
+            unit_receipts=canonical_receipts,
+            wave_fingerprint=wave_fingerprint,
+            is_reconverged=True,
         )
