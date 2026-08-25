@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Define how SAGE may organize large capability campaigns while preserving:
+Define how SAGE organizes capability execution through the canonical **Big Jump Wave** while preserving:
 
 - Master Archive authority
 - authorization boundaries
@@ -10,7 +10,7 @@ Define how SAGE may organize large capability campaigns while preserving:
 - continuity
 - fail-closed execution
 
-This document defines a coordination architecture only. It does not create active work items.
+This document defines coordination architecture. It does not create active work items.
 
 ---
 
@@ -35,7 +35,7 @@ A campaign architecture is not a backlog.
 
 ---
 
-# C2 Operating Loop
+# Canonical C2 Operating Loop
 
 ```text
 SENSE
@@ -44,11 +44,15 @@ SUPER SEARCH
 BOUND
 DECIDE
 AUTHORIZE
+BIG JUMP WAVE
 BUILD
 OBSERVE
 VERIFY
+RECONVERGE
 COMPOUND
 ```
+
+**Big Jump Wave is the normal SAGE execution workflow.** There is no Medium Flow operating mode.
 
 ---
 
@@ -57,7 +61,7 @@ COMPOUND
 ```text
                  C2 MISSION CONTROL
                          |
-        ┌────────┬────────┬────────┬────────┬────────┐
+        ┌────────┬────────┬────────┬────────┐
         ▼        ▼        ▼        ▼        ▼
 
      FLIGHT 1  FLIGHT 2  FLIGHT 3  FLIGHT 4  FLIGHT 5
@@ -85,30 +89,69 @@ A flight **IS**:
 - its own evidence
 - its own milestone reporting back to C2 reconvergence
 
-# Big Strike Wave Definition
+# Big Jump Wave Definition
 
-A **Big Strike Wave** means:
-> **One coordinated wave where multiple independent flights hit separate frontiers and reconverge.**
+A **Big Jump Wave** is the canonical SAGE execution unit:
+> **One coordinated wave where multiple independent flights hit separate consequential frontiers and reconverge.**
 
-It does **NOT** mean five flights building one single thing.
+It does **not** mean five flights building one single thing.
 
-Example Big Strike Wave:
-- Flight 1 → Fleet intelligence advancement
-- Flight 2 → HUD/immersion advancement
-- Flight 3 → Engineering capability advancement
-- Flight 4 → Governance/security advancement
-- Flight 5 → Evidence/archive advancement
+Example Big Jump Wave:
+- Flight 1 → intelligence/capability advancement
+- Flight 2 → product/runtime advancement
+- Flight 3 → engineering advancement
+- Flight 4 → governance/security advancement
+- Flight 5 → evidence/continuity advancement
 
-Each produces its own delta, then C2 evaluates the combined strike.
+Each produces its own bounded delta, then C2 evaluates the combined strike.
+
+---
+
+# Big Jump Wave Operating Doctrine
+
+Big Jump Wave is the **normal workflow**, not an escalation tier above Medium Flow.
+
+The canonical pattern is:
+
+```text
+MISSION INTAKE
+     ↓
+RECON + SUPER SEARCH
+     ↓
+FRONTIER IDENTIFICATION
+     ↓
+BOUND + AUTHORIZE
+     ↓
+BIG JUMP WAVE
+     ├── Flight 1
+     ├── Flight 2
+     ├── Flight 3
+     ├── Flight 4
+     └── Flight 5
+     ↓
+INDEPENDENT VERIFY
+     ↓
+C2 RECONVERGENCE
+     ↓
+EVIDENCE / RECEIPTS
+     ↓
+CAPABILITY COMPOUNDING
+     ↓
+NEXT BIG JUMP WAVE
+```
+
+The number of concurrent flights may scale when explicitly authorized, but scaling never removes bounded scope, independent verification, or evidence requirements.
+
+---
 
 # Campaign Model
 
-When authorized, C2 may coordinate parallel capability work through bounded execution paths.
+When authorized, C2 coordinates parallel capability work through bounded execution paths.
 
 Each active flight must have:
 
 - explicit objective
-- reused components
+- reused components where appropriate
 - invariants
 - required tests
 - evidence requirements
@@ -137,10 +180,10 @@ RECON REQUIRED
 FRONTIER IDENTIFIED
         |
         v
-AUTHORIZED BUILD
+AUTHORIZED BIG JUMP WAVE
         |
         v
-FLIGHT AIRBORNE
+FLIGHTS AIRBORNE
 ```
 
 No transition may be skipped.
@@ -156,16 +199,19 @@ Master Archive
 C2 Control Plane
       |
       v
-Campaign Architecture
+BIG JUMP WAVE
       |
       v
 Authorized Flights Only
       |
       v
 Validated Evidence
+      |
+      v
+Capability Compounding
 ```
 
-The three SAGE lanes remain authoritative. Campaign coordination does not create new lanes.
+The three SAGE lanes remain authoritative. Big Jump Wave coordination does not create new lanes.
 
 ---
 
@@ -194,16 +240,9 @@ Velocity begins after control, not before it.
 
 ## Big Build = Production Velocity + Large Jump Levels
 
-The **Big Build** is not just the build process itself.
+The **Big Build** represents the production law inside each flight: input → build → verify → next task.
 
-It represents the **velocity multiplier** created by:
-
-* parallel execution,
-* compounding capability,
-* increasing build scale,
-* moving into larger jump levels over time.
-
-So the hierarchy becomes:
+The **Big Jump Wave** represents the coordinated parallel execution of independent frontiers.
 
 ```text
 SAGI Brain
@@ -216,54 +255,41 @@ C2 / ChatGPT
 
         ↓
 
-Big Build Wave
-(parallel execution velocity)
+BIG JUMP WAVE
+(canonical execution workflow)
 
         ↓
 
-5 Concurrent Flights
+5+ Concurrent Flights
 (each running independent targets)
 
         ↓
 
-Big Build
+Big Build Loop
 (input → build → verify → next task)
 
         ↓
 
 Verified capability gain
         ↓
-Higher jump level
+
+Capability compounding
+        ↓
+
+Next Big Jump Wave
 ```
 
-The evolution of workflow scale:
-
-```text
-Small / Minimal
-        ↓
-Medium
-        ↓
-Big
-        ↓
-Large
-```
-
-Meaning:
-
-* **Small / Minimal** = focused execution and narrow changes
-* **Medium** = current expanded workflow with stronger coordination
-* **Big** = multiple connected builds increasing production velocity
-* **Large** = major capability jumps where parallel waves compound into a new operating level
+**Retired operating mode:** Medium Flow. It is not part of the current SAGE execution hierarchy and must not be described as the default, current, or recommended workflow.
 
 Important separation stays:
 
 * **SAGI Brain** finds possible next builds.
 * **C2/ChatGPT** coordinates and executes the selected wave.
-* **Big Build Wave** creates parallel velocity.
-* **Five Flights** are the concurrent execution units.
+* **Big Jump Wave** is the normal production execution workflow.
+* **Flights** are the concurrent execution units.
 * **Big Build** is the production law that each flight follows.
 
-No mixing the layers. This is the corrected architecture interpretation.
+No mixing the layers.
 
 ---
 
