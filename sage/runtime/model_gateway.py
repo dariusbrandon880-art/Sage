@@ -326,6 +326,7 @@ class SAGERuntime:
             task,
         )
 
+        evidence_refs = response.evidence_refs
         if receipt is not None:
             evidence_refs = tuple(dict.fromkeys((*response.evidence_refs, receipt.receipt_hash)))
             response = replace(
@@ -333,12 +334,13 @@ class SAGERuntime:
                 evidence_refs=evidence_refs,
                 live_operation_receipt=receipt,
             )
-            validate_report_claims(
-                receipt=receipt,
-                claim=str(response.raw_output),
-                expected_target_resource=receipt.target_resource,
-                evidence_refs=evidence_refs,
-            )
+
+        validate_report_claims(
+            receipt=receipt,
+            claim=str(response.raw_output),
+            expected_target_resource=receipt.target_resource if receipt else None,
+            evidence_refs=evidence_refs,
+        )
 
         self.reconcile(response)
         return response
