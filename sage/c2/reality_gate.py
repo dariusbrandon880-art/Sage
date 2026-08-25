@@ -1,10 +1,7 @@
 """Flight B: Reality Gate & Source Receipt Verification for SAGE C2.
 
-Enforces strict separation between the CONVERSATION PLANE (reports, claims, hypotheses)
-and the REALITY PLANE (Git SHA, PR state, files, evidence receipts).
-
-No operational live-state claim is permitted without a matching source receipt,
-exact target resource, source type, and claim-specific fingerprint when one is encoded.
+Live-state claims require evidence produced by an operation boundary. A caller
+cannot manufacture proof merely by supplying a boolean or generic source label.
 """
 
 from __future__ import annotations
@@ -48,21 +45,12 @@ class RealityGateEvaluationResult:
 
 
 class RealityGate:
-    """Fail-closed live-state authorization using exact resource and fingerprint evidence."""
+    """Fail-closed live-state authorization using operation receipts."""
 
     LIVE_STATE_CLAIM_KEYWORDS = (
-        "live repo",
-        "github",
-        "current head",
-        "pr is merged",
-        "pull request",
-        "repo is clean",
-        "working tree clean",
-        "commit is",
-        "tests pass on github",
-        "ci status",
-        "branch is at",
-        "main is at",
+        "live repo", "github", "current head", "pr is merged", "pull request",
+        "repo is clean", "working tree clean", "commit is", "tests pass on github",
+        "ci status", "branch is at", "main is at",
     )
 
     @classmethod
@@ -71,22 +59,22 @@ class RealityGate:
         return any(kw in lower for kw in cls.LIVE_STATE_CLAIM_KEYWORDS)
 
     @staticmethod
+    def _operation_receipt_valid(receipt: SourceReceipt) -> bool:
+        metadata = receipt.metadata or {}
+        return (
+            metadata.get("origin") == "operation_boundary"
+            and isinstance(metadata.get("operation"), str)
+            and bool(metadata["operation"].strip())
+        )
+
+    @staticmethod
     def _fingerprint_matches(claim: OperationalClaim, receipt: SourceReceipt) -> bool:
-        if not claim.target_resource:
+        if not claim.target_resource or claim.target_resource != receipt.resource_id:
             return False
-
-        if claim.target_resource != receipt.resource_id:
-            return False
-
-        # For resource IDs of the form "kind:fingerprint", the fingerprint
-        # must also match the receipt digest (or be represented by the receipt's
-        # exact resource identifier). This prevents a valid resource label from
-        # being paired with unrelated content.
         if ":" in claim.target_resource:
             expected_fingerprint = claim.target_resource.rsplit(":", 1)[1]
             if expected_fingerprint and expected_fingerprint != receipt.sha256_digest:
                 return False
-
         return True
 
     @classmethod
@@ -98,7 +86,6 @@ class RealityGate:
         permitted: List[OperationalClaim] = []
         blocked: List[OperationalClaim] = []
         violations: List[str] = []
-
         receipt_by_resource = {rc.resource_id: rc for rc in available_receipts}
 
         for claim in claims:
@@ -118,6 +105,13 @@ class RealityGate:
                 blocked.append(claim)
                 violations.append(
                     f"Operational claim '{claim.statement}' BLOCKED: no exact receipt for '{claim.target_resource}'."
+                )
+                continue
+
+            if not cls._operation_receipt_valid(receipt):
+                blocked.append(claim)
+                violations.append(
+                    f"Operational claim '{claim.statement}' BLOCKED: receipt was not produced by an operation boundary."
                 )
                 continue
 
