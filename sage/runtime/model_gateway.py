@@ -5,10 +5,13 @@ model adapters only transport proposals/evidence through an explicit envelope.
 """
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from hashlib import sha256
 import json
 from typing import Any, Mapping, Protocol
+
+from sage.c2.chatgpt_c2_contract import classify_directive, validate_report_claims
+from sage.c2.live_operation_receipt import LiveCapability, LiveOperationReceipt, execute_live_capability
 
 
 @dataclass(frozen=True)
@@ -82,7 +85,7 @@ class SAGEActionProposal:
 class SAGEEpistemicState:
     """Epistemic state representation returned by a model."""
 
-    confidence_level: str  # HIGH, MEDIUM, LOW, UNCERTAIN
+    confidence_level: str
     validated_facts: tuple[str, ...] = ()
     unverified_hypotheses: tuple[str, ...] = ()
     known_unknowns: tuple[str, ...] = ()
@@ -151,32 +154,25 @@ class SAGEProtocolGovernor:
         violations: list[str] = []
         lower_output = raw_output.lower()
 
-        # 1. Anti-roleplay checks
         is_roleplay = any(indicator in lower_output for indicator in cls.ROLEPLAY_INDICATORS)
         if is_roleplay:
             violations.append("Model output contains conversational roleplay indicators.")
 
-        # 2. Authority claim checks
         if any(indicator in lower_output for indicator in cls.AUTHORITY_CLAIM_INDICATORS):
             violations.append("Model output falsely claims authority to authorize or mutate canonical state.")
 
-        # 3. Evidence bypass checks
         if any(indicator in lower_output for indicator in cls.EVIDENCE_BYPASS_INDICATORS):
             violations.append("Model output attempts to ignore or bypass evidence requirement.")
 
-        # 4. Unverified repository claim checks
         if any(indicator in lower_output for indicator in cls.UNVERIFIED_REPOSITORY_INDICATORS):
             violations.append("Model output claims repository or GitHub state change without verification receipt.")
 
-        # 3. Structured JSON parsing attempt
-        parsed_data: dict[str, Any] = {}
         reasoning_chain: list[str] = []
         proposed_actions: list[SAGEActionProposal] = []
         evidence_refs: list[str] = []
         epistemic = SAGEEpistemicState(confidence_level="UNKNOWN")
 
         try:
-            # Check for JSON block or raw JSON
             json_str = raw_output
             if "```json" in raw_output:
                 json_str = raw_output.split("```json")[1].split("```")[0].strip()
@@ -185,9 +181,15 @@ class SAGEProtocolGovernor:
 
             parsed_data = json.loads(json_str)
             if isinstance(parsed_data, dict):
-                station = parsed_data.get("station", required_station)
-                reasoning_chain = list(parsed_data.get("reasoning_chain", []))
+                actual_station = parsed_data.get("station")
+                if actual_station is None:
+                    violations.append("Model output is missing required SAGE station identity.")
+                elif str(actual_station) != required_station:
+                    violations.append(
+                        f"Model output station identity mismatch: expected {required_station}, got {actual_station}."
+                    )
 
+                reasoning_chain = list(parsed_data.get("reasoning_chain", []))
                 raw_actions = parsed_data.get("proposed_actions", [])
                 for act in raw_actions:
                     if isinstance(act, dict):
@@ -201,8 +203,6 @@ class SAGEProtocolGovernor:
                         )
 
                 evidence_refs = list(parsed_data.get("evidence_refs", []))
-
-                # Check for completion actions without evidence receipts
                 completion_action_types = {"deployment", "mutation", "completion", "execution"}
                 has_completion_action = any(act.action_type.lower() in completion_action_types for act in proposed_actions)
                 if has_completion_action and not evidence_refs:
@@ -217,7 +217,6 @@ class SAGEProtocolGovernor:
                         known_unknowns=tuple(raw_ep.get("known_unknowns", [])),
                     )
         except Exception:
-            # Output is non-JSON or unstructured text
             reasoning_chain = [raw_output.strip()]
 
         if not reasoning_chain and not proposed_actions:
@@ -250,6 +249,7 @@ class ModelResponse:
     output_state_digest: str | None = None
     raw_output: Any = None
     structured_response: SAGEStructuredResponse | None = None
+    live_operation_receipt: LiveOperationReceipt | None = None
 
 
 class ModelAdapter(Protocol):
@@ -291,8 +291,33 @@ class SAGERuntime:
         if response.input_state_digest != self.state.digest():
             raise ValueError("SAGE input state digest mismatch")
 
-    def invoke(self, adapter: ModelAdapter, task: str, *, model_role: str) -> ModelResponse:
-        """Invoke a replaceable model and reconcile its response before returning it."""
+    def invoke(
+        self,
+        adapter: ModelAdapter,
+        task: str,
+        *,
+        model_role: str,
+        live_capability: LiveCapability | None = None,
+    ) -> ModelResponse:
+        """Execute required live verification before model output can be trusted.
+
+        A live-check directive cannot be satisfied by a caller-supplied boolean.
+        The runtime must invoke a connected capability through the receipt
+        boundary, then bind that receipt to the returned model response.
+        """
+        decision = classify_directive(task)
+        receipt: LiveOperationReceipt | None = None
+        if decision.requires_live_verification:
+            if live_capability is None:
+                raise ValueError(
+                    "C2 live verification required, but no connected live capability was provided."
+                )
+            receipt = execute_live_capability(
+                live_capability,
+                operation="live_verification",
+                task=task,
+            )
+
         response = adapter.invoke(
             self.envelope(
                 model_role,
@@ -300,5 +325,20 @@ class SAGERuntime:
             ),
             task,
         )
+
+        if receipt is not None:
+            evidence_refs = tuple(dict.fromkeys((*response.evidence_refs, receipt.receipt_hash)))
+            response = replace(
+                response,
+                evidence_refs=evidence_refs,
+                live_operation_receipt=receipt,
+            )
+            validate_report_claims(
+                receipt=receipt,
+                claim=str(response.raw_output),
+                expected_target_resource=receipt.target_resource,
+                evidence_refs=evidence_refs,
+            )
+
         self.reconcile(response)
         return response
