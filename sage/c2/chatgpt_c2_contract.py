@@ -8,7 +8,8 @@ session that is not routed through the SAGE integration boundary.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Iterable
+
+from sage.c2.live_operation_receipt import LiveOperationReceipt
 
 CONTRACT_ID = "CHATGPT_C2_EXACT_ORDER_ANTI_DRIFT"
 CONTRACT_VERSION = "1.0"
@@ -39,6 +40,7 @@ LIVE_CHECK_TRIGGERS: tuple[str, ...] = (
     "verify",
 )
 
+
 @dataclass(frozen=True)
 class C2DirectiveDecision:
     """Deterministic classification of whether a directive requires live verification."""
@@ -62,15 +64,36 @@ def render_system_contract() -> str:
         "Apply these laws to every turn:\n"
         f"{laws}\n"
         "AUTHORITY: user directive remains the requested task; model output is not authorization.\n"
-        "LIVE-VERIFICATION ORDER: preserve directive -> identify required live capability -> invoke it -> verify -> execute requested operation -> report supported facts.\n"
+        "LIVE-VERIFICATION ORDER: PRESERVE EXACTLY -> IDENTIFY REQUIRED LIVE CAPABILITY -> INVOKE CONNECTED CAPABILITY -> VERIFY -> EXECUTE REQUESTED OPERATION -> REPORT ONLY SUPPORTED FACTS.\n"
         "Do not replace the requested operation with an explanation about the operation."
     )
 
 
-def validate_report_claims(*, live_operation_performed: bool, claim: str) -> None:
-    """Fail closed if a report claims live verification without a live operation."""
-    if not live_operation_performed and any(
+def validate_report_claims(
+    *,
+    receipt: LiveOperationReceipt | None,
+    claim: str,
+    expected_target_resource: str | None = None,
+) -> None:
+    """Fail closed unless a live claim has an authentic operation receipt."""
+    live_claim = any(
         phrase in claim.lower()
-        for phrase in ("verified live", "checked live", "inspected live", "ran live", "merged")
-    ):
-        raise ValueError("C2 anti-drift contract violation: live verification claim lacks a live operation.")
+        for phrase in (
+            "verified live",
+            "checked live",
+            "inspected live",
+            "ran live",
+            "live repository",
+            "live github",
+        )
+    )
+    if not live_claim:
+        return
+    if not isinstance(receipt, LiveOperationReceipt):
+        raise ValueError("C2 anti-drift contract violation: live claim lacks a LiveOperationReceipt.")
+    if not receipt.verify() or not receipt.success:
+        raise ValueError("C2 anti-drift contract violation: live claim has invalid or failed receipt.")
+    if expected_target_resource and receipt.target_resource != expected_target_resource:
+        raise ValueError(
+            "C2 anti-drift contract violation: live claim receipt target does not match requested resource."
+        )
