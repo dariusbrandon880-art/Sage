@@ -44,6 +44,18 @@ class SAGECapability(BaseModel):
         "READY",
         description="Readiness state for canonical SAGE Archive promotion (e.g., READY, PROMOTED)"
     )
+    lifecycle_status: str = Field(
+        "VALIDATED",
+        description="Lifecycle status of the capability (e.g., VALIDATED, PARTIAL, DEPRECATED)"
+    )
+    dependencies: List[str] = Field(
+        default_factory=list,
+        description="List of capability IDs this capability depends upon"
+    )
+    incompletion_reason: Optional[str] = Field(
+        None,
+        description="Reason for incompletion if lifecycle_status is PARTIAL or incomplete"
+    )
 
 
 class SAGEOperationalCapabilityRegistry:

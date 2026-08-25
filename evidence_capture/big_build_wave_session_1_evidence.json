@@ -1,0 +1,122 @@
+{
+  "session_id": "SAGE_BIG_BUILD_WAVE_SESSION_1",
+  "commit_sha": "b44b8927fb03698ba8b6c192caea6f721da6bd12",
+  "timestamp_utc": 1787657232.3023202,
+  "total_flights": 5,
+  "total_cells": 20,
+  "verified_cells": 20,
+  "wave_verdict": "PASS",
+  "flights": {
+    "F1": {
+      "target": "PR #251 Receipt Replay Reconciliation",
+      "boundary_scope": "sage/c2/live_operation_receipt.py",
+      "gates": {
+        "RECON_BOUND": {
+          "status": "PASS",
+          "details": "Reconciled durable receipt replay requirements and removed governance churn."
+        },
+        "BUILD_REPAIR": {
+          "status": "PASS",
+          "details": "Implemented persist/rehydrate methods and source attestation in sage/c2/live_operation_receipt.py."
+        },
+        "TEST_OBSERVE_RERUN": {
+          "status": "PASS",
+          "details": "Passed 21 tests in tests/c2/test_chatgpt_c2_exact_order_anti_drift.py and tests/c2/test_live_operation_receipt_provenance.py."
+        },
+        "VERIFY_COMPOUND": {
+          "status": "PASS",
+          "details": "Verified fail-closed replay and signature attestation integrity."
+        }
+      }
+    },
+    "F2": {
+      "target": "PR #248 Command Fidelity / Reality Gate",
+      "boundary_scope": "sage/c2/reality_gate.py",
+      "gates": {
+        "RECON_BOUND": {
+          "status": "PASS",
+          "details": "Reconciled Command Fidelity & Reality Gate engine against active main."
+        },
+        "BUILD_REPAIR": {
+          "status": "PASS",
+          "details": "Integrated canonical LiveOperationReceipt and dynamic commit SHA derivation."
+        },
+        "TEST_OBSERVE_RERUN": {
+          "status": "PASS",
+          "details": "Passed 17 tests across Flight A-E test suites."
+        },
+        "VERIFY_COMPOUND": {
+          "status": "PASS",
+          "details": "Persisted evidence receipt at evidence_capture/command_fidelity_wave_evidence.json."
+        }
+      }
+    },
+    "F3": {
+      "target": "PR #252 Optional Topology Reconciliation",
+      "boundary_scope": "sage/c2/multi_node_wave.py",
+      "gates": {
+        "RECON_BOUND": {
+          "status": "PASS",
+          "details": "Reconciled multi-node topology with canonical Big Jump Wave doctrine."
+        },
+        "BUILD_REPAIR": {
+          "status": "PASS",
+          "details": "Retained 5-flight wave as mandatory unit while making multi-node topology optional."
+        },
+        "TEST_OBSERVE_RERUN": {
+          "status": "PASS",
+          "details": "Passed 6 unit/integration tests in tests/c2/test_multi_node_wave.py."
+        },
+        "VERIFY_COMPOUND": {
+          "status": "PASS",
+          "details": "Persisted evidence receipt at evidence_capture/multi_node_wave_evidence.json."
+        }
+      }
+    },
+    "F4": {
+      "target": "Capability Lifecycle Recovery (#203\u2013#209 Program)",
+      "boundary_scope": "sage/capability_registry.py",
+      "gates": {
+        "RECON_BOUND": {
+          "status": "PASS",
+          "details": "Analyzed #203-#209 program for explicit capability incompletion states."
+        },
+        "BUILD_REPAIR": {
+          "status": "PASS",
+          "details": "Added lifecycle_status, dependencies, and incompletion_reason fields to SAGECapability."
+        },
+        "TEST_OBSERVE_RERUN": {
+          "status": "PASS",
+          "details": "Passed 9 tests across lifecycle, registry, lineage, and differential suites."
+        },
+        "VERIFY_COMPOUND": {
+          "status": "PASS",
+          "details": "Verified persistence and lineage projection rehydration."
+        }
+      }
+    },
+    "F5": {
+      "target": "Current-Main Repo Hardening",
+      "boundary_scope": "tests/governance/",
+      "gates": {
+        "RECON_BOUND": {
+          "status": "PASS",
+          "details": "Inspected governance directives and contract assertion test suite."
+        },
+        "BUILD_REPAIR": {
+          "status": "PASS",
+          "details": "Aligned test assertions with canonical doctrine documents."
+        },
+        "TEST_OBSERVE_RERUN": {
+          "status": "PASS",
+          "details": "Passed all governance tests and complete platform test suite."
+        },
+        "VERIFY_COMPOUND": {
+          "status": "PASS",
+          "details": "Verified 20/20 advancement cells across all 5 flights and 4 gates."
+        }
+      }
+    }
+  },
+  "receipt_hash": "72369dd1941d0e3710d3c788ac8999c4eef3060f8b5110f8b85eaee052eec9d6"
+}

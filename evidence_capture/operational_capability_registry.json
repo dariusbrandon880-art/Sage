@@ -11,7 +11,10 @@
     "test_references": [
       "tests/test_continuity_persistence.py"
     ],
-    "archive_promotion_status": "READY"
+    "archive_promotion_status": "READY",
+    "lifecycle_status": "VALIDATED",
+    "dependencies": [],
+    "incompletion_reason": null
   },
   {
     "capability_id": "CAP-CHECKPOINTING",
@@ -25,7 +28,10 @@
     "test_references": [
       "tests/test_continuity_intelligence.py"
     ],
-    "archive_promotion_status": "READY"
+    "archive_promotion_status": "READY",
+    "lifecycle_status": "VALIDATED",
+    "dependencies": [],
+    "incompletion_reason": null
   },
   {
     "capability_id": "CAP-HANDOFF-GENERATION",
@@ -39,7 +45,10 @@
     "test_references": [
       "tests/test_new_systems.py"
     ],
-    "archive_promotion_status": "READY"
+    "archive_promotion_status": "READY",
+    "lifecycle_status": "VALIDATED",
+    "dependencies": [],
+    "incompletion_reason": null
   },
   {
     "capability_id": "CAP-WORKSPACE-SNAPSHOTS",
@@ -53,7 +62,10 @@
     "test_references": [
       "tests/test_continuity_intelligence.py"
     ],
-    "archive_promotion_status": "READY"
+    "archive_promotion_status": "READY",
+    "lifecycle_status": "VALIDATED",
+    "dependencies": [],
+    "incompletion_reason": null
   },
   {
     "capability_id": "CAP-CONTINUITY-BRIDGE",
@@ -67,7 +79,10 @@
     "test_references": [
       "tests/test_continuity_bridge.py"
     ],
-    "archive_promotion_status": "READY"
+    "archive_promotion_status": "READY",
+    "lifecycle_status": "VALIDATED",
+    "dependencies": [],
+    "incompletion_reason": null
   },
   {
     "capability_id": "CAP-COGNITIVE-KERNEL",
@@ -81,7 +96,10 @@
     "test_references": [
       "tests/experimental/test_cognitive_kernel.py"
     ],
-    "archive_promotion_status": "READY"
+    "archive_promotion_status": "READY",
+    "lifecycle_status": "VALIDATED",
+    "dependencies": [],
+    "incompletion_reason": null
   },
   {
     "capability_id": "CAP-PML-RELIABILITY",
@@ -95,6 +113,9 @@
     "test_references": [
       "tests/experimental/test_continuity_control.py"
     ],
-    "archive_promotion_status": "READY"
+    "archive_promotion_status": "READY",
+    "lifecycle_status": "VALIDATED",
+    "dependencies": [],
+    "incompletion_reason": null
   }
 ]
