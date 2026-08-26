@@ -1,5 +1,5 @@
 {
-  "wave_id": "wave-control-tower-handoff-1787760329",
+  "wave_id": "wave-control-tower-handoff-1787762151",
   "flight_summaries": [
     {
       "flight_id": "CAP-MAIN-STABILIZATION",
@@ -15,25 +15,25 @@
           "stage": "STAGE_1_INTAKE_RECON",
           "passed": true,
           "evidence_ref": "evidence_capture/main_stabilization_evidence.json",
-          "timestamp": 1787760329.5690937
+          "timestamp": 1787762151.0772216
         },
         {
           "stage": "STAGE_2_BOUNDED_BUILD",
           "passed": true,
           "evidence_ref": "sage/runtime/engine.py",
-          "timestamp": 1787760329.5690985
+          "timestamp": 1787762151.0772262
         },
         {
           "stage": "STAGE_3_VERIFY_PROOF",
           "passed": true,
           "evidence_ref": "tests/test_system_frame.py",
-          "timestamp": 1787760332.3693652
+          "timestamp": 1787762153.8816986
         },
         {
           "stage": "STAGE_4_WAREHOUSE_PROMOTE",
           "passed": true,
           "evidence_ref": "evidence_capture/main_stabilization_evidence.json",
-          "timestamp": 1787760332.369899
+          "timestamp": 1787762153.8834589
         }
       ],
       "blocker": null
@@ -52,25 +52,25 @@
           "stage": "STAGE_1_INTAKE_RECON",
           "passed": true,
           "evidence_ref": "sage/capability_registry.py",
-          "timestamp": 1787760332.3700626
+          "timestamp": 1787762153.8835752
         },
         {
           "stage": "STAGE_2_BOUNDED_BUILD",
           "passed": true,
           "evidence_ref": "sage/capability_registry.py",
-          "timestamp": 1787760332.3710232
+          "timestamp": 1787762153.886515
         },
         {
           "stage": "STAGE_3_VERIFY_PROOF",
           "passed": true,
           "evidence_ref": "tests/test_capability_registry.py",
-          "timestamp": 1787760334.3203187
+          "timestamp": 1787762155.6736417
         },
         {
           "stage": "STAGE_4_WAREHOUSE_PROMOTE",
           "passed": true,
           "evidence_ref": "evidence_capture/pr_266_reconciliation_evidence.json",
-          "timestamp": 1787760334.3206513
+          "timestamp": 1787762155.6743114
         }
       ],
       "blocker": null
@@ -89,25 +89,25 @@
           "stage": "STAGE_1_INTAKE_RECON",
           "passed": true,
           "evidence_ref": "sage/c2/flight_gps/engine.py",
-          "timestamp": 1787760334.320873
+          "timestamp": 1787762155.6744094
         },
         {
           "stage": "STAGE_2_BOUNDED_BUILD",
           "passed": true,
           "evidence_ref": "sage/c2/flight_gps/engine.py",
-          "timestamp": 1787760334.3208966
+          "timestamp": 1787762155.6744294
         },
         {
           "stage": "STAGE_3_VERIFY_PROOF",
           "passed": true,
           "evidence_ref": "tests/c2/test_flight_gps.py",
-          "timestamp": 1787760336.1292365
+          "timestamp": 1787762157.4256763
         },
         {
           "stage": "STAGE_4_WAREHOUSE_PROMOTE",
           "passed": true,
           "evidence_ref": "evidence_capture/flight_gps_observer_evidence.json",
-          "timestamp": 1787760336.129547
+          "timestamp": 1787762157.4264863
         }
       ],
       "blocker": null
@@ -126,25 +126,25 @@
           "stage": "STAGE_1_INTAKE_RECON",
           "passed": true,
           "evidence_ref": "sage/c2/frontier_admission.py",
-          "timestamp": 1787760336.1296647
+          "timestamp": 1787762157.4265966
         },
         {
           "stage": "STAGE_2_BOUNDED_BUILD",
           "passed": true,
           "evidence_ref": "sage/c2/frontier_admission.py",
-          "timestamp": 1787760336.129701
+          "timestamp": 1787762157.426634
         },
         {
           "stage": "STAGE_3_VERIFY_PROOF",
           "passed": true,
           "evidence_ref": "tests/c2/test_frontier_admission.py",
-          "timestamp": 1787760337.9130323
+          "timestamp": 1787762159.1481082
         },
         {
           "stage": "STAGE_4_WAREHOUSE_PROMOTE",
           "passed": true,
           "evidence_ref": "evidence_capture/wave_clearance_protocol_evidence.json",
-          "timestamp": 1787760337.9134073
+          "timestamp": 1787762159.1486967
         }
       ],
       "blocker": null
@@ -163,25 +163,25 @@
           "stage": "STAGE_1_INTAKE_RECON",
           "passed": true,
           "evidence_ref": "sage/c2/reconvergence_synthesizer.py",
-          "timestamp": 1787760337.9135184
+          "timestamp": 1787762159.1488018
         },
         {
           "stage": "STAGE_2_BOUNDED_BUILD",
           "passed": true,
           "evidence_ref": "sage/c2/reconvergence_synthesizer.py",
-          "timestamp": 1787760337.9135225
+          "timestamp": 1787762159.148805
         },
         {
           "stage": "STAGE_3_VERIFY_PROOF",
           "passed": true,
           "evidence_ref": "tests/c2/test_reconvergence_synthesizer.py",
-          "timestamp": 1787760339.684747
+          "timestamp": 1787762160.816865
         },
         {
           "stage": "STAGE_4_WAREHOUSE_PROMOTE",
           "passed": true,
           "evidence_ref": "evidence_capture/control_tower_handoff_wave_evidence.json",
-          "timestamp": 1787760339.6847577
+          "timestamp": 1787762160.8168755
         }
       ],
       "blocker": null
@@ -214,6 +214,6 @@
   },
   "first_pass_verification_rate": 100.0,
   "reconvergence_verdict": "PASS",
-  "timestamp": 1787760339.685221,
-  "package_hash": "fad17c5a84f14b25690974c4ba9b2a57e989622258f99efbab07b2b012581d23"
+  "timestamp": 1787762160.817299,
+  "package_hash": "0ae7649c4f500bf760cd69e76575b67d72f683f71780e2371008603737d9c7b4"
 }
