@@ -5,7 +5,7 @@ import json
 import pytest
 from pathlib import Path
 
-from sage.capability_registry import CapabilityDisposition, SAGECapability, SAGEOperationalCapabilityRegistry
+from sage.capability_registry import SAGECapability, SAGEOperationalCapabilityRegistry, CapabilityDisposition
 
 
 def test_capability_registry_defaults(tmp_path):
@@ -50,33 +50,6 @@ def test_capability_registry_lookup_by_name(tmp_path):
     assert registry.lookup_by_name("Non-existent Capability") is None
 
 
-def test_extract_pr_capability_and_disposition(tmp_path):
-    storage_path = os.path.join(tmp_path, "test_registry.json")
-    registry = SAGEOperationalCapabilityRegistry(storage_path=storage_path)
-
-    cap = registry.extract_pr_capability(
-        capability_id="CAP-PR-255-RECOVERY",
-        name="PR 255 Recovery Capability",
-        description="Extracted capability from historical PR 255",
-        pr_reference="PR #255",
-        disposition_status=CapabilityDisposition.RECOVERED,
-        disposition_reason="Reconstructed onto current main",
-        test_references=["tests/test_capability_registry.py"],
-    )
-
-    assert cap.capability_id == "CAP-PR-255-RECOVERY"
-    assert cap.pr_reference == "PR #255"
-    assert cap.disposition_status == CapabilityDisposition.RECOVERED
-    assert cap.disposition_reason == "Reconstructed onto current main"
-
-    # Verify reloading from disk preserves disposition
-    reloaded_registry = SAGEOperationalCapabilityRegistry(storage_path=storage_path)
-    fetched = reloaded_registry.get_capability("CAP-PR-255-RECOVERY")
-    assert fetched is not None
-    assert fetched.pr_reference == "PR #255"
-    assert fetched.disposition_status == CapabilityDisposition.RECOVERED
-
-
 def test_add_custom_capability(tmp_path):
     """Verify adding, updating, and saving new custom capabilities."""
     registry_file = tmp_path / "operational_capability_registry.json"
@@ -118,3 +91,33 @@ def test_corrupted_file_fallback(tmp_path):
     # Initialization should fall back gracefully and re-seed
     registry = SAGEOperationalCapabilityRegistry(storage_path=str(registry_file))
     assert len(registry.list_capabilities()) == 7
+
+
+def test_reconcile_pr_capability(tmp_path):
+    """Verify PR recovery lane reconciliation and capability persistence."""
+    registry_file = tmp_path / "operational_capability_registry.json"
+    registry = SAGEOperationalCapabilityRegistry(storage_path=str(registry_file))
+
+    # Reconcile PR #266 capability
+    reconciled = registry.reconcile_pr_capability(
+        capability_id="CAP-PR-266-RECOVERY",
+        name="PR #266 Active Recovery Lane",
+        description="Reconciled historical recovery capability against current main.",
+        pr_reference="PR #266",
+        evidence_references=["evidence_capture/pr_266_reconciliation_evidence.json"],
+        test_references=["tests/test_capability_registry.py"],
+        disposition=CapabilityDisposition.RECOVERED,
+        disposition_reason="Reconciled against current main with lineage preservation for PR #266."
+    )
+
+    assert reconciled.capability_id == "CAP-PR-266-RECOVERY"
+    assert reconciled.disposition == CapabilityDisposition.RECOVERED
+    assert reconciled.pr_reference == "PR #266"
+    assert "PR #266" in reconciled.disposition_reason
+
+    # Reload from disk to verify full persistence
+    fresh_registry = SAGEOperationalCapabilityRegistry(storage_path=str(registry_file))
+    reloaded = fresh_registry.get_capability("CAP-PR-266-RECOVERY")
+    assert reloaded is not None
+    assert reloaded.disposition == CapabilityDisposition.RECOVERED
+    assert reloaded.pr_reference == "PR #266"

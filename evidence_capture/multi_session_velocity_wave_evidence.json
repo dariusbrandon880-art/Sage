@@ -1,0 +1,37 @@
+{
+  "receipt_id": "rec_0eeecd28f278",
+  "wave_id": "multi_session_velocity_wave_001",
+  "active_sessions": [
+    "c2-control-tower-primary",
+    "jules-execution-session-01"
+  ],
+  "exact_git_head": "ffdc31d1d24458cfd15b1d365b3c2400be5c2540",
+  "total_flights": 5,
+  "successful_flights": 5,
+  "advancement_matrix_20_cells": {
+    "P1-S1": true,
+    "P1-S2": true,
+    "P1-S3": true,
+    "P1-S4": true,
+    "P2-S1": true,
+    "P2-S2": true,
+    "P2-S3": true,
+    "P2-S4": true,
+    "P3-S1": true,
+    "P3-S2": true,
+    "P3-S3": true,
+    "P3-S4": true,
+    "P4-S1": true,
+    "P4-S2": true,
+    "P4-S3": true,
+    "P4-S4": true,
+    "P5-S1": true,
+    "P5-S2": true,
+    "P5-S3": true,
+    "P5-S4": true
+  },
+  "rolls_royce_quality_passed": true,
+  "reconvergence_verdict": "PASS",
+  "timestamp": 1787760821.334977,
+  "receipt_hash": "d8fb23a35c98ad45e9e04a222d590a634e175cd7fadc3bf5b4498a55ddc17f62"
+}

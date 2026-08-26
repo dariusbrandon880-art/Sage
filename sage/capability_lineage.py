@@ -15,10 +15,10 @@ class CapabilityLineageRecord(BaseModel):
     capability_id: str
     name: str
     effective_lifecycle: Lifecycle
-    disposition_status: str = "INTEGRATED"
-    pr_reference: str | None = None
     missing_evidence: list[str] = Field(default_factory=list)
     missing_tests: list[str] = Field(default_factory=list)
+    disposition: str = "INTEGRATED"
+    pr_reference: str | None = None
 
 
 class CapabilityLineageProjection(BaseModel):
@@ -52,10 +52,10 @@ def project_capability_lineage(registry: SAGEOperationalCapabilityRegistry, root
                 capability_id=capability.capability_id,
                 name=capability.name,
                 effective_lifecycle=_status(capability, missing_evidence, missing_tests),
-                disposition_status=capability.disposition_status.value if hasattr(capability.disposition_status, "value") else str(capability.disposition_status),
-                pr_reference=capability.pr_reference,
                 missing_evidence=missing_evidence,
                 missing_tests=missing_tests,
+                disposition=capability.disposition.value if hasattr(capability.disposition, "value") else str(capability.disposition),
+                pr_reference=capability.pr_reference,
             )
         )
     return CapabilityLineageProjection(capabilities=records)

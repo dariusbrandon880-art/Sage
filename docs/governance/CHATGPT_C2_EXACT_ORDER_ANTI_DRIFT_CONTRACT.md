@@ -1,7 +1,7 @@
 # SAGE ChatGPT C2 Exact-Order / Anti-Drift Contract
 
 **Contract ID:** `CHATGPT_C2_EXACT_ORDER_ANTI_DRIFT`  
-**Version:** `1.1`
+**Version:** `1.2`
 
 ## Purpose
 
@@ -31,6 +31,14 @@ USER DIRECTIVE
   -> EXECUTE REQUESTED OPERATION
   -> REPORT ONLY SUPPORTED FACTS
 ```
+
+## Deep Reconnaissance & Velocity Binding
+
+Substantive engineering directives must also follow:
+
+`docs/governance/SAGE_DEEP_RECON_VELOCITY_POLICY.md`
+
+The operational rule is **repository-first, then targeted external intelligence, then bounded concurrent execution**. Super Search is a reconnaissance sensor and must not be treated as repository authority. Independent research and repository inspection should be parallelized after the initial reality lock when doing so reduces latency. Deep reconnaissance must accelerate execution rather than become a serial approval gate.
 
 ## Big Jump Wave Doctrine Binding
 
@@ -76,6 +84,8 @@ The minimum adversarial suite must test:
 - contradiction preservation;
 - authority separation;
 - fail-closed verification failure;
+- deep-recon repository-first ordering;
+- targeted external reconnaissance without serializing execution;
 - Big Jump Wave doctrine binding;
 - five-flight preservation;
 - 5x4 meaning preservation;
