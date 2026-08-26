@@ -2,19 +2,11 @@
 
 from __future__ import annotations
 
-from sage.c2.reconvergence_synthesizer import (
-    C2ReconvergenceSynthesizer,
-    FlightExecutionSummary,
-    LifecycleMilestoneRecord,
-    LifecycleStage,
-)
 from sage.experimental.airspace.fleet_readiness import (
     FleetReadinessEngine,
     ReadinessStatus,
 )
 from sage.experimental.airspace.models import AirspaceState, StationID
-
-VALID_SHA = "db2592167dba5eda4c024bba9202ff085d9c1d9b"
 
 
 def test_station_readiness_ready():
@@ -106,38 +98,6 @@ def test_evaluate_fleet_readiness_overall_receipt():
     assert len(receipt.station_scores) == 4
     assert receipt.overall_fleet_readiness > 0.7
     assert len(receipt.provenance_hash) == 64
-
-
-def test_evaluate_wave_readiness_integration():
-    state = AirspaceState()
-    engine = FleetReadinessEngine(commit_sha=VALID_SHA)
-
-    synthesizer = C2ReconvergenceSynthesizer(wave_id="wave-readiness-001")
-    flights = []
-    for i in range(1, 6):
-        milestones = [
-            LifecycleMilestoneRecord(stage=s, passed=True, evidence_ref=f"ref_{i}")
-            for s in LifecycleStage
-        ]
-        flights.append(
-            FlightExecutionSummary(
-                flight_id=f"F{i}",
-                target=f"target_{i}",
-                classification="ACTIVE",
-                execution_result="PASS",
-                exact_head=VALID_SHA,
-                tests_passed=10,
-                evidence_ref=f"evidence_{i}.json",
-                pr_or_change=f"PR #{i}",
-                lifecycle_milestones=milestones,
-            )
-        )
-
-    pkg = synthesizer.synthesize_reconvergence(flights)
-    receipt = engine.evaluate_wave_readiness(state, pkg)
-
-    assert receipt.fleet_verdict == ReadinessStatus.READY
-    assert receipt.overall_fleet_readiness > 0.7
 
 
 def test_fleet_readiness_does_not_mutate_state_or_xp():

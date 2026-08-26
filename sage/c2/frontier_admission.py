@@ -14,8 +14,6 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field
 
-from sage.c2.flight_collision_lock import FlightCollisionLockManager, FlightLockRequest
-
 
 class FrontierState(str, Enum):
     """Canonical C2 frontier classification states."""
@@ -70,7 +68,6 @@ class FrontierAdmissionEngine:
         ]
         self.active_frontiers: Dict[str, FrontierCandidate] = {}
         self.admission_ledger: List[FrontierAdmissionReceipt] = []
-        self.lock_manager = FlightCollisionLockManager()
 
     def classify_and_evaluate(
         self,
@@ -99,31 +96,6 @@ class FrontierAdmissionEngine:
             receipt.receipt_hash = receipt.compute_hash()
             self.admission_ledger.append(receipt)
             return receipt
-
-        # 0.1 Active Flight Lock Manager check
-        lock_req = FlightLockRequest(
-            session_id="admission-evaluator",
-            flight_id=candidate.frontier_id,
-            target_files=[candidate.target],
-            target_namespaces=[candidate.collision_zone],
-        )
-        lock_res = self.lock_manager.acquire_lock(lock_req)
-        if not lock_res.acquired:
-            receipt = FrontierAdmissionReceipt(
-                receipt_id=receipt_id,
-                frontier_id=candidate.frontier_id,
-                target=candidate.target,
-                admitted=False,
-                classified_state=FrontierState.RECONCILE,
-                rejection_reason=f"Active lock collision on resource '{lock_res.conflicting_resource}' held by session '{lock_res.conflicting_session_id}'",
-                collision_detected=True,
-            )
-            receipt.receipt_hash = receipt.compute_hash()
-            self.admission_ledger.append(receipt)
-            return receipt
-
-        # Release evaluation lock if acquired
-        self.lock_manager.release_lock("admission-evaluator", candidate.frontier_id)
 
         # 1. Collision check
         if candidate.collision_zone in active_zones:

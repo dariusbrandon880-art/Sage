@@ -1,14 +1,12 @@
-"""Continuous Compounding Wave Runner.
+"""Session 2 Reconvergence Wave Runner.
 
 Executes a 5-flight Big Jump Wave across 20-cell 5x4 lifecycle gates,
-binding exact commit HEAD SHA `90b93c1` and generating machine-readable evidence.
+binding exact commit HEAD SHA `bcb01b4` and generating machine-readable evidence.
 """
 
 from __future__ import annotations
 
 import json
-import os
-import sys
 from pathlib import Path
 
 from sage.c2.reconvergence_synthesizer import (
@@ -18,19 +16,19 @@ from sage.c2.reconvergence_synthesizer import (
     LifecycleStage,
 )
 
-EXACT_HEAD_SHA = "90b93c130386eefec60e50f3b46ca79aa5bd37eb"
+EXACT_HEAD_SHA = "bcb01b4c73087a38b556942f7c030d5ef855fa3e"
 
 
-def run_continuous_compounding_wave() -> dict:
-    wave_id = "continuous_compounding_wave_001"
+def run_session_2_reconvergence_wave() -> dict:
+    wave_id = "session_2_reconvergence_wave_001"
     synthesizer = C2ReconvergenceSynthesizer(wave_id=wave_id)
 
     flight_targets = [
-        ("F1", "sage/c2/frontier_admission.py", "PR #272 Collision Lock Admission Gate"),
-        ("F2", "sage/experimental/airspace/fleet_readiness.py", "PR #273 Fleet Readiness Reconvergence Coupling"),
-        ("F3", "sage/c2/workflow_velocity.py", "PR #274 Session Finalization Lock Purge"),
-        ("F4", "sage/experimental/airspace/fleet_concurrency.py", "PR #275 Fleet Concurrency Hierarchical Lock Check"),
-        ("F5", "scripts/execute_continuous_compounding_wave.py", "PR #276 20-Cell Wave Runner & Compounding Evidence"),
+        ("F1", "sage/c2/c2_execution_surface.py", "Governed C2 Execution Surface Engine"),
+        ("F2", "sage/experimental/cognitive/ccl_feedback_bridge.py", "Closed-Loop CCL Outcome Feedback Bridge"),
+        ("F3", "sage/c2/capability_warehouse.py", "Capability Warehouse Promotion Engine"),
+        ("F4", "sage/c2/capability_audit_bridge.py", "Capability Audit Bridge Sweep"),
+        ("F5", "scripts/execute_session_2_reconvergence_wave.py", "Session 2 Reconvergence Wave Runner & Evidence Suite"),
     ]
 
     flight_summaries = []
@@ -66,7 +64,7 @@ def run_continuous_compounding_wave() -> dict:
         "package_hash": pkg.package_hash,
     }
 
-    out_path = Path("evidence_capture/continuous_compounding_wave_evidence.json")
+    out_path = Path("evidence_capture/session_2_reconvergence_wave_evidence.json")
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(evidence_dict, f, indent=2)
@@ -75,5 +73,5 @@ def run_continuous_compounding_wave() -> dict:
 
 
 if __name__ == "__main__":
-    res = run_continuous_compounding_wave()
-    print(f"Continuous Compounding Wave Execution Verdict: {res['reconvergence_verdict']}")
+    res = run_session_2_reconvergence_wave()
+    print(f"Session 2 Reconvergence Wave Execution Verdict: {res['reconvergence_verdict']}")

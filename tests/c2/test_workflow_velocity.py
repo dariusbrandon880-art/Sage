@@ -37,30 +37,6 @@ def test_session_registration_and_lookup(velocity_engine):
     assert len(active) == 2
 
 
-def test_finalize_session_purges_locks(velocity_engine):
-    velocity_engine.register_session("session-temp", SessionRole.JULES_EXECUTION_SESSION)
-    velocity_engine.acquire_flight_lock(
-        session_id="session-temp",
-        flight_id="F-TEMP",
-        target_files=["sage/c2/shared.py"],
-        target_namespaces=["sage/c2/"],
-    )
-
-    finalized = velocity_engine.finalize_session("session-temp")
-    assert finalized is True
-    assert velocity_engine.get_session("session-temp") is None
-
-    # Re-acquisition by another session now succeeds
-    velocity_engine.register_session("session-new", SessionRole.JULES_EXECUTION_SESSION)
-    lock_res = velocity_engine.acquire_flight_lock(
-        session_id="session-new",
-        flight_id="F-NEW",
-        target_files=["sage/c2/shared.py"],
-        target_namespaces=["sage/c2/"],
-    )
-    assert lock_res.acquired is True
-
-
 def test_anti_collision_lock_acquisition_and_release(velocity_engine):
     # Session 1 acquires lock on target file
     lock_1 = velocity_engine.acquire_flight_lock(

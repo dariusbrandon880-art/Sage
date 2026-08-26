@@ -1,18 +1,18 @@
-"""Unit tests for Continuous Compounding Wave Runner & Evidence Suite."""
+"""Unit tests for Session 2 Reconvergence Wave Runner & Evidence Suite."""
 
 import json
 from pathlib import Path
 
-from scripts.execute_continuous_compounding_wave import (
+from scripts.execute_session_2_reconvergence_wave import (
     EXACT_HEAD_SHA,
-    run_continuous_compounding_wave,
+    run_session_2_reconvergence_wave,
 )
 
 
-def test_continuous_compounding_wave_runner():
-    res = run_continuous_compounding_wave()
+def test_session_2_reconvergence_wave_runner():
+    res = run_session_2_reconvergence_wave()
 
-    assert res["wave_id"] == "continuous_compounding_wave_001"
+    assert res["wave_id"] == "session_2_reconvergence_wave_001"
     assert res["exact_git_head"] == EXACT_HEAD_SHA
     assert res["total_flights"] == 5
     assert res["successful_flights"] == 5
@@ -24,7 +24,7 @@ def test_continuous_compounding_wave_runner():
     assert len(res["package_hash"]) == 64
 
     # Verify persisted evidence file
-    evidence_path = Path("evidence_capture/continuous_compounding_wave_evidence.json")
+    evidence_path = Path("evidence_capture/session_2_reconvergence_wave_evidence.json")
     assert evidence_path.exists()
     with open(evidence_path, "r", encoding="utf-8") as f:
         data = json.load(f)
