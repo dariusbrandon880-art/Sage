@@ -73,13 +73,29 @@ class FrontierAdmissionEngine:
         self,
         candidate: FrontierCandidate,
         current_active_collision_zones: Optional[List[str]] = None,
+        gps_airspace_status: Optional[str] = None,
     ) -> FrontierAdmissionReceipt:
-        """Evaluates candidate frontier against collision zones, dependencies, and protected boundaries."""
+        """Evaluates candidate frontier against collision zones, dependencies, protected boundaries, and Flight GPS clearance."""
         active_zones = current_active_collision_zones or [
             c.collision_zone for c in self.active_frontiers.values()
         ]
 
         receipt_id = f"receipt-admission-{candidate.frontier_id}-{int(time.time() * 1000)}"
+
+        # 0. Flight GPS Clearance check
+        if gps_airspace_status and gps_airspace_status.upper() not in ("CLEAR", "SHARED"):
+            receipt = FrontierAdmissionReceipt(
+                receipt_id=receipt_id,
+                frontier_id=candidate.frontier_id,
+                target=candidate.target,
+                admitted=False,
+                classified_state=FrontierState.RECONCILE,
+                rejection_reason=f"Flight GPS clearance check rejected target: Airspace status '{gps_airspace_status}' blocks admission.",
+                collision_detected=(gps_airspace_status.upper() == "OCCUPIED"),
+            )
+            receipt.receipt_hash = receipt.compute_hash()
+            self.admission_ledger.append(receipt)
+            return receipt
 
         # 1. Collision check
         if candidate.collision_zone in active_zones:

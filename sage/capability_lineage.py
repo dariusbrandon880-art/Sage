@@ -17,6 +17,8 @@ class CapabilityLineageRecord(BaseModel):
     effective_lifecycle: Lifecycle
     missing_evidence: list[str] = Field(default_factory=list)
     missing_tests: list[str] = Field(default_factory=list)
+    disposition: str = "INTEGRATED"
+    pr_reference: str | None = None
 
 
 class CapabilityLineageProjection(BaseModel):
@@ -45,5 +47,15 @@ def project_capability_lineage(registry: SAGEOperationalCapabilityRegistry, root
     for capability in registry.list_capabilities():
         missing_evidence = [ref for ref in capability.evidence_references if not (base / ref).is_file()]
         missing_tests = [ref for ref in capability.test_references if not (base / ref).is_file()]
-        records.append(CapabilityLineageRecord(capability_id=capability.capability_id, name=capability.name, effective_lifecycle=_status(capability, missing_evidence, missing_tests), missing_evidence=missing_evidence, missing_tests=missing_tests))
+        records.append(
+            CapabilityLineageRecord(
+                capability_id=capability.capability_id,
+                name=capability.name,
+                effective_lifecycle=_status(capability, missing_evidence, missing_tests),
+                missing_evidence=missing_evidence,
+                missing_tests=missing_tests,
+                disposition=capability.disposition.value if hasattr(capability.disposition, "value") else str(capability.disposition),
+                pr_reference=capability.pr_reference,
+            )
+        )
     return CapabilityLineageProjection(capabilities=records)
