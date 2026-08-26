@@ -5,7 +5,7 @@ import json
 import pytest
 from pathlib import Path
 
-from sage.capability_registry import SAGECapability, SAGEOperationalCapabilityRegistry
+from sage.capability_registry import CapabilityDisposition, SAGECapability, SAGEOperationalCapabilityRegistry
 
 
 def test_capability_registry_defaults(tmp_path):
@@ -48,6 +48,33 @@ def test_capability_registry_lookup_by_name(tmp_path):
 
     # Lookup non-existent name
     assert registry.lookup_by_name("Non-existent Capability") is None
+
+
+def test_extract_pr_capability_and_disposition(tmp_path):
+    storage_path = os.path.join(tmp_path, "test_registry.json")
+    registry = SAGEOperationalCapabilityRegistry(storage_path=storage_path)
+
+    cap = registry.extract_pr_capability(
+        capability_id="CAP-PR-255-RECOVERY",
+        name="PR 255 Recovery Capability",
+        description="Extracted capability from historical PR 255",
+        pr_reference="PR #255",
+        disposition_status=CapabilityDisposition.RECOVERED,
+        disposition_reason="Reconstructed onto current main",
+        test_references=["tests/test_capability_registry.py"],
+    )
+
+    assert cap.capability_id == "CAP-PR-255-RECOVERY"
+    assert cap.pr_reference == "PR #255"
+    assert cap.disposition_status == CapabilityDisposition.RECOVERED
+    assert cap.disposition_reason == "Reconstructed onto current main"
+
+    # Verify reloading from disk preserves disposition
+    reloaded_registry = SAGEOperationalCapabilityRegistry(storage_path=storage_path)
+    fetched = reloaded_registry.get_capability("CAP-PR-255-RECOVERY")
+    assert fetched is not None
+    assert fetched.pr_reference == "PR #255"
+    assert fetched.disposition_status == CapabilityDisposition.RECOVERED
 
 
 def test_add_custom_capability(tmp_path):

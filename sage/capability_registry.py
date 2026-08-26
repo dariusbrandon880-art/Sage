@@ -6,8 +6,18 @@ implementation status, validation status, test suites, and evidence files.
 
 import os
 import json
+from enum import Enum
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
+
+
+class CapabilityDisposition(str, Enum):
+    """Capability disposition status for historical PR capabilities."""
+    INTEGRATED = "INTEGRATED"
+    RECOVERED = "RECOVERED"
+    SUPERSEDED = "SUPERSEDED"
+    RETIRED = "RETIRED"
+    INVALIDATED = "INVALIDATED"
 
 
 class SAGECapability(BaseModel):
@@ -43,6 +53,18 @@ class SAGECapability(BaseModel):
     archive_promotion_status: str = Field(
         "READY",
         description="Readiness state for canonical SAGE Archive promotion (e.g., READY, PROMOTED)"
+    )
+    pr_reference: Optional[str] = Field(
+        None,
+        description="Source PR or branch reference (e.g., PR #255)"
+    )
+    disposition_status: CapabilityDisposition = Field(
+        CapabilityDisposition.INTEGRATED,
+        description="Capability disposition state (INTEGRATED, RECOVERED, SUPERSEDED, RETIRED, INVALIDATED)"
+    )
+    disposition_reason: Optional[str] = Field(
+        None,
+        description="Rationale for capability disposition state"
     )
 
 
@@ -175,3 +197,31 @@ class SAGEOperationalCapabilityRegistry:
     def list_capabilities(self) -> List[SAGECapability]:
         """Return a flat list of all registered capabilities."""
         return list(self.capabilities.values())
+
+    def extract_pr_capability(
+        self,
+        capability_id: str,
+        name: str,
+        description: str,
+        pr_reference: str,
+        disposition_status: CapabilityDisposition = CapabilityDisposition.RECOVERED,
+        disposition_reason: Optional[str] = None,
+        test_references: Optional[List[str]] = None,
+        evidence_references: Optional[List[str]] = None,
+    ) -> SAGECapability:
+        """Extracts and registers a capability from a historical or closed PR."""
+        cap = SAGECapability(
+            capability_id=capability_id,
+            name=name,
+            description=description,
+            implementation_status="IMPLEMENTED",
+            validation_status="VALIDATED",
+            evidence_references=evidence_references or [],
+            test_references=test_references or [],
+            archive_promotion_status="READY",
+            pr_reference=pr_reference,
+            disposition_status=disposition_status,
+            disposition_reason=disposition_reason or f"Extracted from {pr_reference}",
+        )
+        self.add_capability(cap)
+        return cap

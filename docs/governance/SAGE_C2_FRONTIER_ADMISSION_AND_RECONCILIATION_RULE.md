@@ -51,17 +51,21 @@ REPO TRUTH
 → VERIFY / EVIDENCE
 → RECONVERGE / COMPOUND
 
-## Historical Work Safety Rule
+## Historical Work Safety & Capability Preservation Rule
 
-> **No historical branch is resumed merely because it exists.**
+> **No historical branch is resumed merely because it exists, and closing a PR does not authorize capability deletion.**
+
+Every substantive PR is treated as a capability-bearing artifact. Before a capability can be considered lost or discarded, C2 must evaluate its disposition through the capability extraction pipeline:
+
+`PR → Capability Extraction → Capability Registry → Current-Main Reconciliation → Integration / Research / Retirement`
 
 Before resuming, merging, or extracting historical work, compare it with current canonical state and determine whether it should be:
 
-- adopted,
-- reconciled or rebuilt cleanly,
-- superseded,
+- adopted/integrated,
+- recovered or reconstructed cleanly against current `main`,
+- superseded by a stronger implementation,
 - preserved as research,
-- or archived.
+- or retired with documented rationale.
 
 Old base SHA, open status, or prior test success is not sufficient merge authority.
 

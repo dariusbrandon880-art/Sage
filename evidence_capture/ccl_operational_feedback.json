@@ -1,20 +1,20 @@
 {
-  "orchestrator_run_id": "orch_run_2638afab89c5",
-  "timestamp": "2026-08-25T20:04:43.073446Z",
+  "orchestrator_run_id": "orch_run_796612e775ca",
+  "timestamp": "2026-08-25T11:21:40.014361Z",
   "session_id": "session_non_reexec_001",
   "session_objectives": [
     "obj_autonomous_mission_continuity"
   ],
   "status": "VALIDATED",
   "ccl_record": {
-    "record_id": "CCL-REC-20260825-d650ae8d-4578-48e6-aa4b-9dd799a438c7",
+    "record_id": "CCL-REC-20260825-6e446b99-cca2-496d-a23f-23079869448c",
     "session_id": "session_non_reexec_001",
     "event_type": "state_transition",
-    "timestamp": 1787688283.0736487,
+    "timestamp": 1787656900.014535,
     "action_taken": "Successfully revalidated workspace capabilities for files: ['sage/experimental/act/continuity_control.py']",
     "decision_reasoning": "Governed workspace revalidation executed cleanly; capability status updated and promoted to Master Archive",
     "evidence_payload": {
-      "git_commit": "db2592167dba5eda4c024bba9202ff085d9c1d9b",
+      "git_commit": "b44b8927fb03698ba8b6c192caea6f721da6bd12",
       "protection_report": {
         "is_violation_found": false,
         "violations_found": 0,
@@ -22,7 +22,7 @@
         "violations": [],
         "status": "CLEAN_WORKSPACE"
       },
-      "cmaps_audit_id": "audit_a76523d722564e279e2084be861f58a7",
+      "cmaps_audit_id": "audit_76c32b39fe344bf68553d5a3b86fae6c",
       "revalidated_capabilities": [
         "CAP-PML-RELIABILITY"
       ],
@@ -31,12 +31,12 @@
       ],
       "session_completed_actions": [],
       "session_pending_actions": [],
-      "enrichment_timestamp": 1787688283.0736241,
+      "enrichment_timestamp": 1787656900.0145097,
       "human_approval_record": {
         "supervisor_id": "supervisor_jules",
-        "signature": "sig_jules_512cc401f350",
+        "signature": "sig_jules_3c4297303a09",
         "decision": "APPROVED",
-        "approved_at": 1787688283.0745876
+        "approved_at": 1787656900.0152893
       }
     },
     "failure_context": null,
@@ -46,8 +46,8 @@
     "improvement_opportunities": []
   },
   "cmaps_payload": {
-    "audit_id": "audit_a76523d722564e279e2084be861f58a7",
-    "timestamp": "2026-08-25T20:04:43.073446Z",
+    "audit_id": "audit_76c32b39fe344bf68553d5a3b86fae6c",
+    "timestamp": "2026-08-25T11:21:40.014361Z",
     "agent_identity": {
       "agent_id": "agent_jules_sage",
       "name": "Jules",
@@ -60,11 +60,11 @@
       "temperature": 0.2
     },
     "execution_state": {
-      "run_id": "run_9b5a819fecbf4deb8f58",
+      "run_id": "run_bbfe4dccba0744ebbb65",
       "status": "completed",
       "step_counter": 1,
-      "started_at": "2026-08-25T20:04:43.073446Z",
-      "updated_at": "2026-08-25T20:04:43.073446Z"
+      "started_at": "2026-08-25T11:21:40.014361Z",
+      "updated_at": "2026-08-25T11:21:40.014361Z"
     },
     "task_lineage": {
       "session_id": "session_effddef5",
@@ -74,7 +74,7 @@
     "decision_events": [
       {
         "decision_id": "decision_coordinate_dev_loop",
-        "timestamp": "2026-08-25T20:04:43.073446Z",
+        "timestamp": "2026-08-25T11:21:40.014361Z",
         "summary": "Successfully revalidated workspace capabilities for files: ['sage/experimental/act/continuity_control.py']",
         "reasoning": "Governed workspace revalidation executed cleanly; capability status updated and promoted to Master Archive",
         "confidence": 1.0
@@ -84,59 +84,64 @@
     "recovery_checkpoints": [],
     "evidence_relationships": [
       {
-        "artifact_path": "sage/c2/adaptive_mission_selection.py",
-        "git_commit": "db2592167dba5eda4c024bba9202ff085d9c1d9b",
-        "sha256_checksum": "0654d2193b173b1325c1e90334964c6cf3350c28c5ca17e8cf8a9dbc661ad21e"
+        "artifact_path": "docs/governance/C2_FIVE_FLIGHT_CAMPAIGN_ARCHITECTURE.md",
+        "git_commit": "b44b8927fb03698ba8b6c192caea6f721da6bd12",
+        "sha256_checksum": "c437a5a196965778fc4d70d4eab22ea58817b8b78c6e5e56900dba1efbd0309b"
       },
       {
-        "artifact_path": "sage/c2/c2_wave_playbook.py",
-        "git_commit": "db2592167dba5eda4c024bba9202ff085d9c1d9b",
-        "sha256_checksum": "c0c74896540fcc646981621e388bfdae53be4236a73d92f422ef1b683e374a73"
+        "artifact_path": "docs/governance/SAGE_C2_BIG_JUMP_WAVE_15_FLIGHT_CONCURRENCY_DOCTRINE.md",
+        "git_commit": "b44b8927fb03698ba8b6c192caea6f721da6bd12",
+        "sha256_checksum": "4f6946f0fd9974d59a17c1802ff4ce366e217afb60444dcdf1a599487920f619"
+      },
+      {
+        "artifact_path": "sage/c2/flight_collision_lock.py",
+        "git_commit": "b44b8927fb03698ba8b6c192caea6f721da6bd12",
+        "sha256_checksum": "2ea60bcfd1dd8975dc47e874c8f02cd65e4c2bb72728fc14411924486df0f8ee"
       },
       {
         "artifact_path": "sage/c2/frontier_admission.py",
-        "git_commit": "db2592167dba5eda4c024bba9202ff085d9c1d9b",
-        "sha256_checksum": "ecede77e7a4d57e3687f9c2a72bbf0ac7a7864da33a0192973d99ba7c0bbb4e4"
+        "git_commit": "b44b8927fb03698ba8b6c192caea6f721da6bd12",
+        "sha256_checksum": "cb10a3d5d907855078e057f15366abbdbfaf90cc4ffa3a9751fcc0e17762c70b"
       },
       {
-        "artifact_path": "sage/c2/multi_node_wave.py",
-        "git_commit": "db2592167dba5eda4c024bba9202ff085d9c1d9b",
-        "sha256_checksum": "ba1683d06eb9a2106b8ffe615fac54d87521eafc46e5a6f90ff539bea8a787d5"
+        "artifact_path": "sage/c2/reconvergence_synthesizer.py",
+        "git_commit": "b44b8927fb03698ba8b6c192caea6f721da6bd12",
+        "sha256_checksum": "79ba62c939bd93b6dae992d5904253e6a3202b3914864dc454accd54153b8557"
       },
       {
-        "artifact_path": "sage/experimental/airspace/fleet_evolution.py",
-        "git_commit": "db2592167dba5eda4c024bba9202ff085d9c1d9b",
-        "sha256_checksum": "1466560e7543230ec99ed908b85b921325c4786b48d8f90b51b6075e2288055b"
+        "artifact_path": "sage/experimental/airspace/fleet_qualification_ledger.py",
+        "git_commit": "b44b8927fb03698ba8b6c192caea6f721da6bd12",
+        "sha256_checksum": "f85d4bb89ee1fed6da05bac6591429af7df340e18f7ef6843f03998c0ca853fe"
       },
       {
-        "artifact_path": "tests/c2/test_adaptive_mission_selection.py",
-        "git_commit": "db2592167dba5eda4c024bba9202ff085d9c1d9b",
-        "sha256_checksum": "a25a7d9c94d21b73401869b841f2f0ae1348cda3cac4b93a5459b7339b78d352"
-      },
-      {
-        "artifact_path": "tests/c2/test_c2_wave_playbook.py",
-        "git_commit": "db2592167dba5eda4c024bba9202ff085d9c1d9b",
-        "sha256_checksum": "354ab0ef09a20ee9840a674dd8f0f95375524db1e264632ec66d1086588f24b1"
+        "artifact_path": "tests/c2/test_flight_collision_lock.py",
+        "git_commit": "b44b8927fb03698ba8b6c192caea6f721da6bd12",
+        "sha256_checksum": "2508d90f01d32528cc2b1e5d48444815b318d0ecc61033b4765bb4e20551685b"
       },
       {
         "artifact_path": "tests/c2/test_frontier_admission.py",
-        "git_commit": "db2592167dba5eda4c024bba9202ff085d9c1d9b",
-        "sha256_checksum": "201952c6b8b54a290fefce79d09bf1b510704de05619f69c8daf125bdcd9709e"
+        "git_commit": "b44b8927fb03698ba8b6c192caea6f721da6bd12",
+        "sha256_checksum": "b0034516f9b099eb5c4b20f44e54dbeb71f9cc3282b78160772272b91547fff0"
       },
       {
-        "artifact_path": "tests/c2/test_multi_node_wave.py",
-        "git_commit": "db2592167dba5eda4c024bba9202ff085d9c1d9b",
-        "sha256_checksum": "40c5142c3d7d6173fa87aa3f1d82d12771493197793385355849b2e649b2266a"
+        "artifact_path": "tests/c2/test_reconvergence_synthesizer.py",
+        "git_commit": "b44b8927fb03698ba8b6c192caea6f721da6bd12",
+        "sha256_checksum": "320bcbb080397e5ae6321c6e0a58faef85bc24643cfbdd59a5162d49b1b26e49"
       },
       {
-        "artifact_path": "tests/experimental/test_fleet_evolution.py",
-        "git_commit": "db2592167dba5eda4c024bba9202ff085d9c1d9b",
-        "sha256_checksum": "45c87d6f20988e4c2e8b4156000fcb9139d8cef4b6c8fb3fe0907f8416494179"
+        "artifact_path": "tests/experimental/test_fleet_qualification_ledger.py",
+        "git_commit": "b44b8927fb03698ba8b6c192caea6f721da6bd12",
+        "sha256_checksum": "5f31307596775ef1afd06b4749e5759f759b0eed362c22e85c5f7282022c156e"
+      },
+      {
+        "artifact_path": "tests/test_governance_directives.py",
+        "git_commit": "b44b8927fb03698ba8b6c192caea6f721da6bd12",
+        "sha256_checksum": "e95de918c76abc9bc6c132205ed1307c43b53d0e60c5778e9ebdaabfdca9db4c"
       }
     ],
     "attestation": {
-      "nonce": "83977f18ba494e1c",
-      "signature": "sig_jules_512cc401f350",
+      "nonce": "56220c3fb4754cb0",
+      "signature": "sig_jules_3c4297303a09",
       "signer_identity": "supervisor_jules"
     }
   },
@@ -151,7 +156,7 @@
       "evidence_completeness": 1.0,
       "decision_trace_completeness": 1.0,
       "workflow_state_accuracy": 1.0,
-      "execution_cycle_duration": 0.0943000316619873,
+      "execution_cycle_duration": 0.08557939529418945,
       "context_preservation_score": 1.0,
       "unnecessary_reassessment_events": 0,
       "repeated_execution_prevention": true,
