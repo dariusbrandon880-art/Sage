@@ -16,7 +16,7 @@ from sage.c2.reconvergence_synthesizer import (
     LifecycleStage,
 )
 
-EXACT_HEAD_SHA = "bcb01b4c73087a38b556942f7c030d5ef855fa3e"
+EXACT_HEAD_SHA = "7cdebce6e542ab5e8975194c6610f388e83942a9"
 
 
 def run_session_2_reconvergence_wave() -> dict:

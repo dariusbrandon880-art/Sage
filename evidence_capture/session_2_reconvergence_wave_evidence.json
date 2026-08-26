@@ -1,6 +1,6 @@
 {
   "wave_id": "session_2_reconvergence_wave_001",
-  "exact_git_head": "bcb01b4c73087a38b556942f7c030d5ef855fa3e",
+  "exact_git_head": "7cdebce6e542ab5e8975194c6610f388e83942a9",
   "total_flights": 5,
   "successful_flights": 5,
   "blocked_flights": 0,
@@ -28,5 +28,5 @@
     "P5-S4": true
   },
   "reconvergence_verdict": "PASS",
-  "package_hash": "b696bef4b0bd0f1a139cee09c7531ad5990998d11bdd7c408b27fb3b9c484bb3"
+  "package_hash": "d58ef612b3d26ade6a0560dea9d730a97e1d96ffc6d51504f96d3de9320e2daf"
 }
