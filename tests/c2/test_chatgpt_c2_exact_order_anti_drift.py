@@ -8,6 +8,8 @@ from sage.c2.chatgpt_c2_contract import (
     ANTI_DRIFT_LAWS,
     CONTRACT_ID,
     CONTRACT_VERSION,
+    DEEP_RECON_TRIGGERS,
+    RECON_POLICY_PATH,
     classify_directive,
     render_system_contract,
     validate_report_claims,
@@ -48,6 +50,33 @@ def structured_output(*, station="[SAGE::C2::CHATGPT]", claim="live repository v
 def test_contract_contains_all_ten_laws_and_identity():
     rendered = render_system_contract(); assert CONTRACT_ID in rendered; assert CONTRACT_VERSION in rendered; assert len(ANTI_DRIFT_LAWS) == 10
     for law in ANTI_DRIFT_LAWS: assert law in rendered
+
+
+def test_deep_recon_policy_is_bound_and_has_velocity_language():
+    rendered = render_system_contract()
+    assert RECON_POLICY_PATH in rendered
+    assert "REPOSITORY-FIRST REALITY LOCK" in rendered
+    assert "TARGETED PRIMARY EXTERNAL INTELLIGENCE" in rendered
+    assert "independent repository inspection and relevant external research may run concurrently" in rendered
+    assert DEEP_RECON_TRIGGERS
+
+
+def test_search_directive_requires_deep_recon_without_forcing_live_check():
+    decision = classify_directive("Use Super Search and research the relevant engineering patterns")
+    assert decision.requires_deep_recon is True
+    assert "super search" in decision.matched_recon_triggers
+    assert decision.requires_live_verification is False
+
+
+def test_audit_directive_requires_deep_recon():
+    decision = classify_directive("Perform a deep repo audit")
+    assert decision.requires_deep_recon is True
+    assert "audit" in decision.matched_recon_triggers
+
+
+def test_contract_contains_all_ten_laws_and_identity_legacy_behavior():
+    rendered = render_system_contract(); assert CONTRACT_ID in rendered; assert CONTRACT_VERSION in rendered; assert len(ANTI_DRIFT_LAWS) == 10
+
 
 def test_live_check_directive_requires_live_verification():
     decision = classify_directive("Check live repo and inspect PR"); assert decision.requires_live_verification is True; assert "check live repo" in decision.matched_triggers; assert "inspect pr" in decision.matched_triggers
@@ -106,8 +135,8 @@ def test_runtime_invokes_capability_before_model_and_binds_receipt():
     class FakeClient: responses = FakeResponses()
     response=SAGERuntime(state()).invoke(OpenAIResponsesAdapter(FakeClient(), model_id="test"), "check live repo", model_role="c2", live_capability=capability); call_order.append("complete"); assert call_order == ["model", "complete"]; assert response.live_operation_receipt is not None; assert response.live_operation_receipt.verify(); assert response.live_operation_receipt.receipt_hash in response.evidence_refs
 
-def test_openai_system_instructions_embed_exact_order_contract():
-    instructions = _system_instructions(SAGERuntime(state()).envelope("c2")); assert CONTRACT_ID in instructions; assert "PRESERVE EXACTLY" in instructions; assert "INVOKE CONNECTED CAPABILITY" in instructions; assert "REPORT ONLY SUPPORTED FACTS" in instructions
+def test_openai_system_instructions_embed_exact_order_and_recon_contract():
+    instructions = _system_instructions(SAGERuntime(state()).envelope("c2")); assert CONTRACT_ID in instructions; assert "PRESERVE EXACTLY" in instructions; assert "INVOKE CONNECTED CAPABILITY" in instructions; assert "REPORT ONLY SUPPORTED FACTS" in instructions; assert RECON_POLICY_PATH in instructions; assert "DEEP RECON WITHOUT DRAG" in instructions
 
 def test_station_spoof_is_rejected(): assert any("station identity mismatch" in v.lower() for v in SAGEProtocolGovernor.validate_and_parse(structured_output(station="[SAGE::FAKE::CHATGPT]")).violations)
 

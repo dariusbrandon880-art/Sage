@@ -12,7 +12,8 @@ from dataclasses import dataclass
 from sage.c2.live_operation_receipt import LiveOperationReceipt
 
 CONTRACT_ID = "CHATGPT_C2_EXACT_ORDER_ANTI_DRIFT"
-CONTRACT_VERSION = "1.0"
+CONTRACT_VERSION = "1.2"
+RECON_POLICY_PATH = "docs/governance/SAGE_DEEP_RECON_VELOCITY_POLICY.md"
 
 ANTI_DRIFT_LAWS: tuple[str, ...] = (
     "Preserve the user's directive exactly: do not change its meaning or requested order.",
@@ -40,20 +41,37 @@ LIVE_CHECK_TRIGGERS: tuple[str, ...] = (
     "verify",
 )
 
+DEEP_RECON_TRIGGERS: tuple[str, ...] = (
+    "search",
+    "super search",
+    "deep search",
+    "research",
+    "audit",
+    "recon",
+)
+
 
 @dataclass(frozen=True)
 class C2DirectiveDecision:
-    """Deterministic classification of whether a directive requires live verification."""
+    """Deterministic classification of whether a directive requires live verification or recon."""
 
     requires_live_verification: bool
     matched_triggers: tuple[str, ...]
+    requires_deep_recon: bool = False
+    matched_recon_triggers: tuple[str, ...] = ()
 
 
 def classify_directive(text: str) -> C2DirectiveDecision:
-    """Detect explicit live-verification directives without rewriting the directive."""
+    """Detect live-verification and reconnaissance directives without rewriting them."""
     normalized = " ".join(text.lower().split())
     matches = tuple(trigger for trigger in LIVE_CHECK_TRIGGERS if trigger in normalized)
-    return C2DirectiveDecision(bool(matches), matches)
+    recon_matches = tuple(trigger for trigger in DEEP_RECON_TRIGGERS if trigger in normalized)
+    return C2DirectiveDecision(
+        bool(matches),
+        matches,
+        bool(recon_matches),
+        recon_matches,
+    )
 
 
 def render_system_contract() -> str:
@@ -63,6 +81,9 @@ def render_system_contract() -> str:
         f"SAGE C2 CONTRACT: {CONTRACT_ID} v{CONTRACT_VERSION}\n"
         "Apply these laws to every turn:\n"
         f"{laws}\n"
+        f"DEEP RECON POLICY: {RECON_POLICY_PATH}\n"
+        "RECON ORDER: REPOSITORY-FIRST REALITY LOCK -> TARGETED PRIMARY EXTERNAL INTELLIGENCE -> SYNTHESIZE -> BOUNDED CONCURRENT EXECUTION -> EXACT-STATE VERIFICATION.\n"
+        "VELOCITY RULE: independent repository inspection and relevant external research may run concurrently after the initial reality lock; do not serialize unrelated research or use research as an unnecessary approval gate.\n"
         "AUTHORITY: user directive remains the requested task; model output is not authorization.\n"
         "LIVE-VERIFICATION ORDER: PRESERVE EXACTLY -> IDENTIFY REQUIRED LIVE CAPABILITY -> INVOKE CONNECTED CAPABILITY -> VERIFY -> EXECUTE REQUESTED OPERATION -> REPORT ONLY SUPPORTED FACTS.\n"
         "Do not replace the requested operation with an explanation about the operation."
