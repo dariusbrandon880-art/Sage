@@ -1,0 +1,148 @@
+{
+  "receipt_id": "audit_rec_3c909a3fc5cf",
+  "wave_id": "capability_audit_wave_001",
+  "exact_git_head": "0035e9e5977ff1bf8b0d12030789c39c7cf069d8",
+  "total_capabilities_audited": 9,
+  "verified_count": 9,
+  "drift_count": 0,
+  "audit_verdict": "PASS",
+  "audit_records": [
+    {
+      "capability_id": "CAP-STATE-PERSISTENCE",
+      "name": "State Persistence",
+      "evidence_references": [
+        "evidence_capture/ccl_operational_feedback.json"
+      ],
+      "test_references": [
+        "tests/test_continuity_persistence.py"
+      ],
+      "evidence_files_present": true,
+      "test_files_present": true,
+      "sha_valid": true,
+      "audit_status": "VERIFIED",
+      "details": "Evidence and test files verified on disk."
+    },
+    {
+      "capability_id": "CAP-CHECKPOINTING",
+      "name": "State Checkpointing",
+      "evidence_references": [
+        "evidence_capture/ccl_operational_feedback.json"
+      ],
+      "test_references": [
+        "tests/test_continuity_intelligence.py"
+      ],
+      "evidence_files_present": true,
+      "test_files_present": true,
+      "sha_valid": true,
+      "audit_status": "VERIFIED",
+      "details": "Evidence and test files verified on disk."
+    },
+    {
+      "capability_id": "CAP-HANDOFF-GENERATION",
+      "name": "Handoff Generation",
+      "evidence_references": [
+        "evidence_capture/ccl_operational_feedback.json"
+      ],
+      "test_references": [
+        "tests/test_new_systems.py"
+      ],
+      "evidence_files_present": true,
+      "test_files_present": true,
+      "sha_valid": true,
+      "audit_status": "VERIFIED",
+      "details": "Evidence and test files verified on disk."
+    },
+    {
+      "capability_id": "CAP-WORKSPACE-SNAPSHOTS",
+      "name": "Workspace Snapshots",
+      "evidence_references": [
+        "evidence_capture/ccl_operational_feedback.json"
+      ],
+      "test_references": [
+        "tests/test_continuity_intelligence.py"
+      ],
+      "evidence_files_present": true,
+      "test_files_present": true,
+      "sha_valid": true,
+      "audit_status": "VERIFIED",
+      "details": "Evidence and test files verified on disk."
+    },
+    {
+      "capability_id": "CAP-CONTINUITY-BRIDGE",
+      "name": "Continuity Bridge",
+      "evidence_references": [
+        "evidence_capture/ccl_operational_feedback.json"
+      ],
+      "test_references": [
+        "tests/test_continuity_bridge.py"
+      ],
+      "evidence_files_present": true,
+      "test_files_present": true,
+      "sha_valid": true,
+      "audit_status": "VERIFIED",
+      "details": "Evidence and test files verified on disk."
+    },
+    {
+      "capability_id": "CAP-COGNITIVE-KERNEL",
+      "name": "Cognitive Kernel Foundation",
+      "evidence_references": [
+        "evidence_capture/cognitive_kernel_foundation_report.json"
+      ],
+      "test_references": [
+        "tests/experimental/test_cognitive_kernel.py"
+      ],
+      "evidence_files_present": true,
+      "test_files_present": true,
+      "sha_valid": true,
+      "audit_status": "VERIFIED",
+      "details": "Evidence and test files verified on disk."
+    },
+    {
+      "capability_id": "CAP-PML-RELIABILITY",
+      "name": "PML Operational Reliability",
+      "evidence_references": [
+        "evidence_capture/ccl_orchestrator_evidence.json"
+      ],
+      "test_references": [
+        "tests/experimental/test_continuity_control.py"
+      ],
+      "evidence_files_present": true,
+      "test_files_present": true,
+      "sha_valid": true,
+      "audit_status": "VERIFIED",
+      "details": "Evidence and test files verified on disk."
+    },
+    {
+      "capability_id": "CAP-MULTI-SESSION-VELOCITY",
+      "name": "Multi-Session Velocity Engine",
+      "evidence_references": [
+        "evidence_capture/multi_session_velocity_wave_evidence.json"
+      ],
+      "test_references": [
+        "tests/c2/test_workflow_velocity.py"
+      ],
+      "evidence_files_present": true,
+      "test_files_present": true,
+      "sha_valid": true,
+      "audit_status": "VERIFIED",
+      "details": "Warehouse capability evidence verified."
+    },
+    {
+      "capability_id": "CAP-CAPABILITY-WAREHOUSE",
+      "name": "Capability Warehouse Auto-Promotion Engine",
+      "evidence_references": [
+        "evidence_capture/capability_warehouse_promotion_evidence.json"
+      ],
+      "test_references": [
+        "tests/c2/test_capability_warehouse.py"
+      ],
+      "evidence_files_present": true,
+      "test_files_present": true,
+      "sha_valid": true,
+      "audit_status": "VERIFIED",
+      "details": "Warehouse capability evidence verified."
+    }
+  ],
+  "timestamp": 1787775856.759963,
+  "receipt_hash": "b0326351eab2d6cc9ed472f85f54c95a27836bb104e4ab24f693e5ff29f26eae"
+}
