@@ -145,7 +145,7 @@ class SAGEOperationalCapabilityRegistry:
                 description="Cryptographic hash chains, sequence validation, and truncation/rollback tampering detection.",
                 implementation_status="IMPLEMENTED",
                 validation_status="VALIDATED",
-                evidence_references=["evidence_capture/ccl_orchestrator_evidence.json"],
+                evidence_references=["evidence_capture/ccl_orchestrator_evidence.json", "evidence_capture/ccl_operational_feedback.json"],
                 test_references=["tests/experimental/test_continuity_control.py"],
                 archive_promotion_status="READY"
             )

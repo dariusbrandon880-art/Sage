@@ -1,0 +1,10 @@
+{
+  "receipt_id": "gps-clearance-FLIGHT-AUTOMATION-CLEARANCE-1787767695388",
+  "flight_id": "FLIGHT-AUTOMATION-CLEARANCE",
+  "exact_head_sha": "4957c77f420145ede1801c6321a725dedba6d8db",
+  "airspace_status": "CLEAR",
+  "observability_state": "NOMINAL",
+  "cleared": true,
+  "receipt_hash": "0e4621d79703700af89abcb10cc7cfb6615410dcda7f0440c4ca5b70a88b41b7",
+  "timestamp": 1787767695.3881593
+}

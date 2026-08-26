@@ -1,0 +1,13 @@
+{
+  "flight_id": "FLIGHT-RECOVERY-LANE-HARDENING",
+  "total_capabilities": 8,
+  "stale_count": 0,
+  "recovered_capabilities": [
+    {
+      "id": "CAP-PR-266-RECOVERY-RECONCILIATION",
+      "disposition": "RECOVERED",
+      "pr_ref": "PR #266"
+    }
+  ],
+  "timestamp": 1787767695.387453
+}
