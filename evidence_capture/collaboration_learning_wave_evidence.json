@@ -1,0 +1,219 @@
+{
+  "wave_id": "wave-collaboration-learning-1787780852",
+  "flight_summaries": [
+    {
+      "flight_id": "FLIGHT-COLLAB-F1-RECON",
+      "target": "sage/memory/collaboration_learning.py",
+      "classification": "ACTIVE",
+      "execution_result": "PASS",
+      "exact_head": "4957c77f420145ede1801c6321a725dedba6d8db",
+      "tests_passed": 5,
+      "evidence_ref": "evidence_capture/collaboration_learning_wave_evidence.json",
+      "pr_or_change": "F1 Recon Scope Mapping",
+      "lifecycle_milestones": [
+        {
+          "stage": "STAGE_1_INTAKE_RECON",
+          "passed": true,
+          "evidence_ref": "sage/memory/collaboration_learning.py",
+          "timestamp": 1787780852.1932373
+        },
+        {
+          "stage": "STAGE_2_BOUNDED_BUILD",
+          "passed": true,
+          "evidence_ref": "sage/memory/collaboration_learning.py",
+          "timestamp": 1787780852.1932445
+        },
+        {
+          "stage": "STAGE_3_VERIFY_PROOF",
+          "passed": true,
+          "evidence_ref": "tests/test_collaboration_learning.py",
+          "timestamp": 1787780853.993926
+        },
+        {
+          "stage": "STAGE_4_WAREHOUSE_PROMOTE",
+          "passed": true,
+          "evidence_ref": "evidence_capture/collaboration_learning_wave_evidence.json",
+          "timestamp": 1787780853.9939382
+        }
+      ],
+      "blocker": null
+    },
+    {
+      "flight_id": "FLIGHT-COLLAB-F2-BOUND",
+      "target": "sage/memory/collaboration_learning.py",
+      "classification": "ACTIVE",
+      "execution_result": "PASS",
+      "exact_head": "4957c77f420145ede1801c6321a725dedba6d8db",
+      "tests_passed": 5,
+      "evidence_ref": "evidence_capture/collaboration_learning_wave_evidence.json",
+      "pr_or_change": "F2 Memory Safety Boundary",
+      "lifecycle_milestones": [
+        {
+          "stage": "STAGE_1_INTAKE_RECON",
+          "passed": true,
+          "evidence_ref": "sage/memory/collaboration_learning.py",
+          "timestamp": 1787780853.9941204
+        },
+        {
+          "stage": "STAGE_2_BOUNDED_BUILD",
+          "passed": true,
+          "evidence_ref": "sage/memory/collaboration_learning.py",
+          "timestamp": 1787780853.9942188
+        },
+        {
+          "stage": "STAGE_3_VERIFY_PROOF",
+          "passed": true,
+          "evidence_ref": "tests/test_collaboration_learning.py",
+          "timestamp": 1787780856.0934637
+        },
+        {
+          "stage": "STAGE_4_WAREHOUSE_PROMOTE",
+          "passed": true,
+          "evidence_ref": "evidence_capture/collaboration_learning_wave_evidence.json",
+          "timestamp": 1787780856.0934749
+        }
+      ],
+      "blocker": null
+    },
+    {
+      "flight_id": "FLIGHT-COLLAB-F3-BUILD",
+      "target": "sage/memory/collaboration_learning.py",
+      "classification": "ACTIVE",
+      "execution_result": "PASS",
+      "exact_head": "4957c77f420145ede1801c6321a725dedba6d8db",
+      "tests_passed": 5,
+      "evidence_ref": "evidence_capture/collaboration_learning_wave_evidence.json",
+      "pr_or_change": "F3 Engine & Directive Build",
+      "lifecycle_milestones": [
+        {
+          "stage": "STAGE_1_INTAKE_RECON",
+          "passed": true,
+          "evidence_ref": "sage/memory/collaboration_learning.py",
+          "timestamp": 1787780856.093591
+        },
+        {
+          "stage": "STAGE_2_BOUNDED_BUILD",
+          "passed": true,
+          "evidence_ref": "sage/memory/collaboration_learning.py",
+          "timestamp": 1787780856.093737
+        },
+        {
+          "stage": "STAGE_3_VERIFY_PROOF",
+          "passed": true,
+          "evidence_ref": "tests/test_collaboration_learning.py",
+          "timestamp": 1787780857.8280036
+        },
+        {
+          "stage": "STAGE_4_WAREHOUSE_PROMOTE",
+          "passed": true,
+          "evidence_ref": "evidence_capture/collaboration_learning_wave_evidence.json",
+          "timestamp": 1787780857.8280137
+        }
+      ],
+      "blocker": null
+    },
+    {
+      "flight_id": "FLIGHT-COLLAB-F4-TEST",
+      "target": "tests/test_collaboration_learning.py",
+      "classification": "ACTIVE",
+      "execution_result": "PASS",
+      "exact_head": "4957c77f420145ede1801c6321a725dedba6d8db",
+      "tests_passed": 5,
+      "evidence_ref": "evidence_capture/collaboration_learning_wave_evidence.json",
+      "pr_or_change": "F4 Falsification Test Suite",
+      "lifecycle_milestones": [
+        {
+          "stage": "STAGE_1_INTAKE_RECON",
+          "passed": true,
+          "evidence_ref": "tests/test_collaboration_learning.py",
+          "timestamp": 1787780857.8281107
+        },
+        {
+          "stage": "STAGE_2_BOUNDED_BUILD",
+          "passed": true,
+          "evidence_ref": "tests/test_collaboration_learning.py",
+          "timestamp": 1787780857.8281145
+        },
+        {
+          "stage": "STAGE_3_VERIFY_PROOF",
+          "passed": true,
+          "evidence_ref": "tests/test_collaboration_learning.py",
+          "timestamp": 1787780859.6658356
+        },
+        {
+          "stage": "STAGE_4_WAREHOUSE_PROMOTE",
+          "passed": true,
+          "evidence_ref": "evidence_capture/collaboration_learning_wave_evidence.json",
+          "timestamp": 1787780859.6658459
+        }
+      ],
+      "blocker": null
+    },
+    {
+      "flight_id": "FLIGHT-COLLAB-F5-COMPOUND",
+      "target": "sage/c2/reconvergence_synthesizer.py",
+      "classification": "ACTIVE",
+      "execution_result": "PASS",
+      "exact_head": "4957c77f420145ede1801c6321a725dedba6d8db",
+      "tests_passed": 2,
+      "evidence_ref": "evidence_capture/collaboration_learning_wave_evidence.json",
+      "pr_or_change": "F5 Reconvergence Synthesis",
+      "lifecycle_milestones": [
+        {
+          "stage": "STAGE_1_INTAKE_RECON",
+          "passed": true,
+          "evidence_ref": "sage/c2/reconvergence_synthesizer.py",
+          "timestamp": 1787780859.665952
+        },
+        {
+          "stage": "STAGE_2_BOUNDED_BUILD",
+          "passed": true,
+          "evidence_ref": "sage/c2/reconvergence_synthesizer.py",
+          "timestamp": 1787780859.6659555
+        },
+        {
+          "stage": "STAGE_3_VERIFY_PROOF",
+          "passed": true,
+          "evidence_ref": "tests/c2/test_reconvergence_synthesizer.py",
+          "timestamp": 1787780861.6235595
+        },
+        {
+          "stage": "STAGE_4_WAREHOUSE_PROMOTE",
+          "passed": true,
+          "evidence_ref": "evidence_capture/collaboration_learning_wave_evidence.json",
+          "timestamp": 1787780861.6235702
+        }
+      ],
+      "blocker": null
+    }
+  ],
+  "total_flights": 5,
+  "successful_flights": 5,
+  "blocked_flights": 0,
+  "advancement_matrix_20_cells": {
+    "P1-S1": true,
+    "P1-S2": true,
+    "P1-S3": true,
+    "P1-S4": true,
+    "P2-S1": true,
+    "P2-S2": true,
+    "P2-S3": true,
+    "P2-S4": true,
+    "P3-S1": true,
+    "P3-S2": true,
+    "P3-S3": true,
+    "P3-S4": true,
+    "P4-S1": true,
+    "P4-S2": true,
+    "P4-S3": true,
+    "P4-S4": true,
+    "P5-S1": true,
+    "P5-S2": true,
+    "P5-S3": true,
+    "P5-S4": true
+  },
+  "first_pass_verification_rate": 100.0,
+  "reconvergence_verdict": "PASS",
+  "timestamp": 1787780861.623889,
+  "package_hash": "b4d5a36676979405966e2729c475fa91c785471fea0dec76548738080361badc"
+}
