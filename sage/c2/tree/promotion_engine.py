@@ -126,9 +126,15 @@ class PromotionEngine:
                 logger.error("Promotion rejected: malformed evidence receipt.")
                 return {}
 
-            receipt_sha = self._validate_sha(
-                receipt.commit_sha, f"receipt {receipt.receipt_id} commit_sha"
-            )
+            try:
+                receipt_sha = self._validate_sha(
+                    receipt.commit_sha, f"receipt {receipt.receipt_id} commit_sha"
+                )
+            except ValueError as exc:
+                candidate.status = PromotionStatus.REJECTED
+                logger.error("Promotion rejected: %s", exc)
+                return {}
+
             if receipt.stage in seen_stages:
                 candidate.status = PromotionStatus.REJECTED
                 logger.error(
