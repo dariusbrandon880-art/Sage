@@ -108,8 +108,7 @@
     "implementation_status": "IMPLEMENTED",
     "validation_status": "VALIDATED",
     "evidence_references": [
-      "evidence_capture/ccl_orchestrator_evidence.json",
-      "evidence_capture/ccl_operational_feedback.json"
+      "evidence_capture/ccl_orchestrator_evidence.json"
     ],
     "test_references": [
       "tests/experimental/test_continuity_control.py"
@@ -135,6 +134,6 @@
     "archive_promotion_status": "READY",
     "disposition": "RECOVERED",
     "pr_reference": "PR #266",
-    "disposition_reason": "Hardened recovery lane lineage confirmed."
+    "disposition_reason": "Reconciled against current main with lineage and evidence provenance confirmed."
   }
 ]

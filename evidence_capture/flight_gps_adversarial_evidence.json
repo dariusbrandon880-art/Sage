@@ -1,6 +1,0 @@
-{
-  "flight_id": "FLIGHT-GPS-F4-TEST-ADVERSARIAL",
-  "exact_head_sha": "4957c77f420145ede1801c6321a725dedba6d8db",
-  "adversarial_tests_pass": true,
-  "timestamp": 1787775732.293757
-}

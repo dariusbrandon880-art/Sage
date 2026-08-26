@@ -1,16 +1,10 @@
 """Observer/recommender orchestration for Flight GPS v1.2."""
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Dict, Iterable, List
 
 from .classifier import classify_candidate
-from .models import (
-    AirspaceStatus,
-    FlightManifest,
-    GPSClearanceReceipt,
-    ObservabilityState,
-    generate_clearance_receipt,
-)
+from .models import AirspaceStatus, FlightManifest, ObservabilityState
 from .registry import FlightRegistry
 from .wave_planner import WavePlanner
 
@@ -22,7 +16,6 @@ class DispatchSnapshot:
     observability: ObservabilityState
     airspace: Dict[str, AirspaceStatus]
     recommended: List[FlightManifest]
-    clearances: Dict[str, GPSClearanceReceipt] = field(default_factory=dict)
 
 
 class FlightGPS:
@@ -45,21 +38,4 @@ class FlightGPS:
             for candidate in candidate_list
         }
         recommended = self.planner.plan(candidate_list, airspace, observability)
-
-        clearances = {
-            candidate.flight_id: generate_clearance_receipt(
-                flight_id=candidate.flight_id,
-                capability_target=candidate.capability_target,
-                exact_head_sha=self.canonical_head_sha,
-                airspace_status=airspace[candidate.flight_id],
-                observability_state=observability,
-            )
-            for candidate in candidate_list
-        }
-
-        return DispatchSnapshot(
-            observability=observability,
-            airspace=airspace,
-            recommended=recommended,
-            clearances=clearances,
-        )
+        return DispatchSnapshot(observability, airspace, recommended)
