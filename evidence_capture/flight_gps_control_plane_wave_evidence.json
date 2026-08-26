@@ -1,0 +1,219 @@
+{
+  "wave_id": "wave-flight-gps-control-plane-1787769188",
+  "flight_summaries": [
+    {
+      "flight_id": "FLIGHT-GPS-F1-RECON-BOUND",
+      "target": "sage/c2/flight_gps/engine.py",
+      "classification": "ACTIVE",
+      "execution_result": "PASS",
+      "exact_head": "4957c77f420145ede1801c6321a725dedba6d8db",
+      "tests_passed": 9,
+      "evidence_ref": "evidence_capture/flight_gps_calibration_evidence.json",
+      "pr_or_change": "F1 Recon / Bound",
+      "lifecycle_milestones": [
+        {
+          "stage": "STAGE_1_INTAKE_RECON",
+          "passed": true,
+          "evidence_ref": "sage/c2/flight_gps/engine.py",
+          "timestamp": 1787769188.3179295
+        },
+        {
+          "stage": "STAGE_2_BOUNDED_BUILD",
+          "passed": true,
+          "evidence_ref": "sage/c2/flight_gps/engine.py",
+          "timestamp": 1787769188.3179345
+        },
+        {
+          "stage": "STAGE_3_VERIFY_PROOF",
+          "passed": true,
+          "evidence_ref": "tests/c2/test_flight_gps.py",
+          "timestamp": 1787769190.1102114
+        },
+        {
+          "stage": "STAGE_4_WAREHOUSE_PROMOTE",
+          "passed": true,
+          "evidence_ref": "evidence_capture/flight_gps_calibration_evidence.json",
+          "timestamp": 1787769190.1109426
+        }
+      ],
+      "blocker": null
+    },
+    {
+      "flight_id": "FLIGHT-GPS-F2-TELEMETRY-RECEIPTS",
+      "target": "sage/c2/flight_gps/models.py",
+      "classification": "ACTIVE",
+      "execution_result": "PASS",
+      "exact_head": "4957c77f420145ede1801c6321a725dedba6d8db",
+      "tests_passed": 9,
+      "evidence_ref": "evidence_capture/automation_clearance_receipt_evidence.json",
+      "pr_or_change": "F2 Telemetry / Receipts",
+      "lifecycle_milestones": [
+        {
+          "stage": "STAGE_1_INTAKE_RECON",
+          "passed": true,
+          "evidence_ref": "sage/c2/flight_gps/models.py",
+          "timestamp": 1787769190.1111042
+        },
+        {
+          "stage": "STAGE_2_BOUNDED_BUILD",
+          "passed": true,
+          "evidence_ref": "sage/c2/flight_gps/models.py",
+          "timestamp": 1787769190.1111383
+        },
+        {
+          "stage": "STAGE_3_VERIFY_PROOF",
+          "passed": true,
+          "evidence_ref": "tests/c2/test_flight_gps.py",
+          "timestamp": 1787769191.9129229
+        },
+        {
+          "stage": "STAGE_4_WAREHOUSE_PROMOTE",
+          "passed": true,
+          "evidence_ref": "evidence_capture/automation_clearance_receipt_evidence.json",
+          "timestamp": 1787769191.9134462
+        }
+      ],
+      "blocker": null
+    },
+    {
+      "flight_id": "FLIGHT-GPS-F3-AIRSPACE-LIFECYCLE",
+      "target": "sage/c2/flight_gps/classifier.py",
+      "classification": "ACTIVE",
+      "execution_result": "PASS",
+      "exact_head": "4957c77f420145ede1801c6321a725dedba6d8db",
+      "tests_passed": 9,
+      "evidence_ref": "evidence_capture/flight_gps_observer_evidence.json",
+      "pr_or_change": "F3 Airspace / Lifecycle",
+      "lifecycle_milestones": [
+        {
+          "stage": "STAGE_1_INTAKE_RECON",
+          "passed": true,
+          "evidence_ref": "sage/c2/flight_gps/classifier.py",
+          "timestamp": 1787769191.9135578
+        },
+        {
+          "stage": "STAGE_2_BOUNDED_BUILD",
+          "passed": true,
+          "evidence_ref": "sage/c2/flight_gps/classifier.py",
+          "timestamp": 1787769191.9135616
+        },
+        {
+          "stage": "STAGE_3_VERIFY_PROOF",
+          "passed": true,
+          "evidence_ref": "tests/c2/test_flight_gps.py",
+          "timestamp": 1787769193.5810332
+        },
+        {
+          "stage": "STAGE_4_WAREHOUSE_PROMOTE",
+          "passed": true,
+          "evidence_ref": "evidence_capture/flight_gps_observer_evidence.json",
+          "timestamp": 1787769193.5826175
+        }
+      ],
+      "blocker": null
+    },
+    {
+      "flight_id": "FLIGHT-GPS-F4-TEST-ADVERSARIAL",
+      "target": "tests/c2/test_flight_gps.py",
+      "classification": "ACTIVE",
+      "execution_result": "PASS",
+      "exact_head": "4957c77f420145ede1801c6321a725dedba6d8db",
+      "tests_passed": 9,
+      "evidence_ref": "evidence_capture/flight_gps_adversarial_evidence.json",
+      "pr_or_change": "F4 Test / Adversarial",
+      "lifecycle_milestones": [
+        {
+          "stage": "STAGE_1_INTAKE_RECON",
+          "passed": true,
+          "evidence_ref": "tests/c2/test_flight_gps.py",
+          "timestamp": 1787769193.5827718
+        },
+        {
+          "stage": "STAGE_2_BOUNDED_BUILD",
+          "passed": true,
+          "evidence_ref": "tests/c2/test_flight_gps.py",
+          "timestamp": 1787769193.5827765
+        },
+        {
+          "stage": "STAGE_3_VERIFY_PROOF",
+          "passed": true,
+          "evidence_ref": "tests/c2/test_flight_gps.py",
+          "timestamp": 1787769195.5884635
+        },
+        {
+          "stage": "STAGE_4_WAREHOUSE_PROMOTE",
+          "passed": true,
+          "evidence_ref": "evidence_capture/flight_gps_adversarial_evidence.json",
+          "timestamp": 1787769195.5889027
+        }
+      ],
+      "blocker": null
+    },
+    {
+      "flight_id": "FLIGHT-GPS-F5-VERIFY-COMPOUND",
+      "target": "sage/c2/reconvergence_synthesizer.py",
+      "classification": "ACTIVE",
+      "execution_result": "PASS",
+      "exact_head": "4957c77f420145ede1801c6321a725dedba6d8db",
+      "tests_passed": 2,
+      "evidence_ref": "evidence_capture/flight_gps_control_plane_wave_evidence.json",
+      "pr_or_change": "F5 Verify / Compound",
+      "lifecycle_milestones": [
+        {
+          "stage": "STAGE_1_INTAKE_RECON",
+          "passed": true,
+          "evidence_ref": "sage/c2/reconvergence_synthesizer.py",
+          "timestamp": 1787769195.5890064
+        },
+        {
+          "stage": "STAGE_2_BOUNDED_BUILD",
+          "passed": true,
+          "evidence_ref": "sage/c2/reconvergence_synthesizer.py",
+          "timestamp": 1787769195.5890095
+        },
+        {
+          "stage": "STAGE_3_VERIFY_PROOF",
+          "passed": true,
+          "evidence_ref": "tests/c2/test_reconvergence_synthesizer.py",
+          "timestamp": 1787769197.3507528
+        },
+        {
+          "stage": "STAGE_4_WAREHOUSE_PROMOTE",
+          "passed": true,
+          "evidence_ref": "evidence_capture/flight_gps_control_plane_wave_evidence.json",
+          "timestamp": 1787769197.350765
+        }
+      ],
+      "blocker": null
+    }
+  ],
+  "total_flights": 5,
+  "successful_flights": 5,
+  "blocked_flights": 0,
+  "advancement_matrix_20_cells": {
+    "P1-S1": true,
+    "P1-S2": true,
+    "P1-S3": true,
+    "P1-S4": true,
+    "P2-S1": true,
+    "P2-S2": true,
+    "P2-S3": true,
+    "P2-S4": true,
+    "P3-S1": true,
+    "P3-S2": true,
+    "P3-S3": true,
+    "P3-S4": true,
+    "P4-S1": true,
+    "P4-S2": true,
+    "P4-S3": true,
+    "P4-S4": true,
+    "P5-S1": true,
+    "P5-S2": true,
+    "P5-S3": true,
+    "P5-S4": true
+  },
+  "first_pass_verification_rate": 100.0,
+  "reconvergence_verdict": "PASS",
+  "timestamp": 1787769197.3510964,
+  "package_hash": "f99d1f1299cdeaea51664fecd8f5d15f4865d48fd82bd9775f75bef2e876b0db"
+}

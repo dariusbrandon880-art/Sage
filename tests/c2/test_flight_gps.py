@@ -71,3 +71,31 @@ def test_engine_produces_observer_snapshot_without_git_writes():
     assert snapshot.observability == ObservabilityState.NOMINAL
     assert snapshot.airspace["C"] == AirspaceStatus.CLEAR
     assert [m.flight_id for m in snapshot.recommended] == ["C"]
+    assert "C" in snapshot.clearances
+    assert snapshot.clearances["C"].cleared is True
+    assert len(snapshot.clearances["C"].receipt_hash) == 64
+
+
+def test_gps_clearance_receipt_tampering_detection():
+    gps = FlightGPS("407f7b52b161c520688bd8eef509146d86717c74")
+    snapshot = gps.observe([manifest("C")])
+    receipt = snapshot.clearances["C"]
+    assert receipt.cleared is True
+    assert receipt.receipt_hash == receipt.compute_hash()
+
+    # Tamper with target
+    receipt.capability_target = "tampered/target.py"
+    assert receipt.receipt_hash != receipt.compute_hash(), "Tampered receipt hash must mismatch."
+
+
+def test_gps_clearance_fails_closed_on_occupied_or_offline():
+    gps = FlightGPS("407f7b52b161c520688bd8eef509146d86717c74")
+    active = manifest("A", ["sage/x.py"], lifecycle=FlightLifecycle.ACTIVE)
+    gps.registry.register(active)
+
+    candidate = manifest("C", ["sage/x.py"])
+    snapshot = gps.observe([candidate], observability=ObservabilityState.NOMINAL)
+
+    assert snapshot.airspace["C"] == AirspaceStatus.OCCUPIED
+    assert snapshot.clearances["C"].cleared is False
+    assert snapshot.recommended == []
