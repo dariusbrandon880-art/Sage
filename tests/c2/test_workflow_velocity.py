@@ -156,7 +156,7 @@ def test_lock_collision_fails_closed(velocity_engine, valid_git_head):
     assert receipt.reconvergence_verdict == "FAIL_CLOSED"
 
 
-def test_persisted_evidence_file_integrity():
+def test_persisted_evidence_file_integrity(valid_git_head):
     evidence_path = Path("evidence_capture/multi_session_velocity_wave_evidence.json")
     assert evidence_path.exists(), "Multi-session velocity evidence file must exist"
 
@@ -164,7 +164,7 @@ def test_persisted_evidence_file_integrity():
         data = json.load(f)
 
     assert data["wave_id"] == "multi_session_velocity_wave_001"
-    assert len(data["exact_git_head"]) == 40
+    assert data["exact_git_head"] == valid_git_head
     assert data["total_flights"] == 5
     assert data["successful_flights"] == 5
     assert len(data["advancement_matrix_20_cells"]) == 20

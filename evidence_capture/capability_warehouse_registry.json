@@ -5,7 +5,7 @@
     "name": "Multi-Session Velocity Engine",
     "description": "Governs multi-session parallel Big Jump Waves under Rolls-Royce Quality Standard",
     "wave_id": "capability_warehouse_promotion_wave_001",
-    "exact_commit_sha": "e0c7d3cee022a4b32a09b52982558ab65b599d5d",
+    "exact_commit_sha": "7cdebce6e542ab5e8975194c6610f388e83942a9",
     "promotion_status": "PROMOTED",
     "reusable_patterns": [
       "Pattern: Non-blocking Anti-Collision Locking",
@@ -17,7 +17,7 @@
     "test_references": [
       "tests/c2/test_workflow_velocity.py"
     ],
-    "promoted_at": 1787783122.003319
+    "promoted_at": 1787784908.78127
   },
   {
     "item_id": "wh_cap_capability_warehouse",
@@ -25,7 +25,7 @@
     "name": "Capability Warehouse Auto-Promotion Engine",
     "description": "Executes Stage 4 Warehouse Promotion with exact SHA binding and proof verification",
     "wave_id": "capability_warehouse_promotion_wave_001",
-    "exact_commit_sha": "e0c7d3cee022a4b32a09b52982558ab65b599d5d",
+    "exact_commit_sha": "7cdebce6e542ab5e8975194c6610f388e83942a9",
     "promotion_status": "PROMOTED",
     "reusable_patterns": [
       "Pattern: Stage 4 Warehouse Promotion",
@@ -37,6 +37,6 @@
     "test_references": [
       "tests/c2/test_capability_warehouse.py"
     ],
-    "promoted_at": 1787783122.0039015
+    "promoted_at": 1787784908.78172
   }
 ]

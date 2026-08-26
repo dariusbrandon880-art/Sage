@@ -1,7 +1,7 @@
 {
-  "receipt_id": "test_rec_7e4525ad6226",
+  "receipt_id": "test_rec_03397b6943bb",
   "wave_id": "targeted_test_wave_001",
-  "exact_git_head": "e0c7d3cee022a4b32a09b52982558ab65b599d5d",
+  "exact_git_head": "7cdebce6e542ab5e8975194c6610f388e83942a9",
   "modified_files": [
     "tests/test_continuity_persistence.py"
   ],
@@ -12,8 +12,8 @@
   "tests_executed": 3,
   "tests_passed": 3,
   "tests_failed": 0,
-  "execution_time_seconds": 1.895,
+  "execution_time_seconds": 1.973,
   "verdict": "PASS",
-  "timestamp": 1787783127.54144,
-  "receipt_hash": "f523a3dc004d9c5934010d936b1f155a97f554a40178711be4c0cf96f17494ea"
+  "timestamp": 1787785070.6620514,
+  "receipt_hash": "9bafdb9e1aa4ffecce458203b69c603a5c2fd88c819d3d54fb13d2add9f3dc8d"
 }

@@ -81,3 +81,23 @@ def test_frontier_admission_superseded_rejection():
     assert receipt.admitted is False
     assert receipt.classified_state == FrontierState.SUPERSEDED
     assert "cannot be admitted" in receipt.rejection_reason
+
+
+def test_frontier_admission_gps_clearance_rejection():
+    engine = FrontierAdmissionEngine()
+
+    candidate = FrontierCandidate(
+        frontier_id="F4-OCCUPIED",
+        target="target_occupied.py",
+        source="C2",
+        state=FrontierState.UNSTARTED,
+        base_sha="sha123",
+        collision_zone="sage/c2/occupied.py",
+        stop_condition="Pass",
+    )
+
+    receipt = engine.classify_and_evaluate(candidate, gps_airspace_status="OCCUPIED")
+    assert receipt.admitted is False
+    assert receipt.classified_state == FrontierState.RECONCILE
+    assert "Flight GPS clearance check rejected" in receipt.rejection_reason
+    assert receipt.collision_detected is True

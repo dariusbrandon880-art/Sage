@@ -1,9 +1,9 @@
 {
-  "receipt_id": "audit_rec_8240e1885734",
+  "receipt_id": "audit_rec_5e9d58cc23b2",
   "wave_id": "capability_audit_wave_001",
-  "exact_git_head": "e0c7d3cee022a4b32a09b52982558ab65b599d5d",
-  "total_capabilities_audited": 9,
-  "verified_count": 9,
+  "exact_git_head": "7cdebce6e542ab5e8975194c6610f388e83942a9",
+  "total_capabilities_audited": 10,
+  "verified_count": 10,
   "drift_count": 0,
   "audit_verdict": "PASS",
   "audit_records": [
@@ -113,6 +113,22 @@
       "details": "Evidence and test files verified on disk."
     },
     {
+      "capability_id": "CAP-PR-266-RECOVERY-RECONCILIATION",
+      "name": "PR #266 Active Recovery Lane",
+      "evidence_references": [
+        "evidence_capture/pr_266_reconciliation_evidence.json"
+      ],
+      "test_references": [
+        "tests/test_capability_registry.py",
+        "tests/test_capability_lineage.py"
+      ],
+      "evidence_files_present": true,
+      "test_files_present": true,
+      "sha_valid": true,
+      "audit_status": "VERIFIED",
+      "details": "Evidence and test files verified on disk."
+    },
+    {
       "capability_id": "CAP-MULTI-SESSION-VELOCITY",
       "name": "Multi-Session Velocity Engine",
       "evidence_references": [
@@ -125,7 +141,7 @@
       "test_files_present": true,
       "sha_valid": true,
       "audit_status": "VERIFIED",
-      "details": "Evidence and test files verified on disk."
+      "details": "Warehouse capability evidence verified."
     },
     {
       "capability_id": "CAP-CAPABILITY-WAREHOUSE",
@@ -140,9 +156,9 @@
       "test_files_present": true,
       "sha_valid": true,
       "audit_status": "VERIFIED",
-      "details": "Evidence and test files verified on disk."
+      "details": "Warehouse capability evidence verified."
     }
   ],
-  "timestamp": 1787783123.788919,
-  "receipt_hash": "77437bf80cd94dec69e963c11042b1bc6c34ed8374f67e26f7baa695b32f5c51"
+  "timestamp": 1787785027.76371,
+  "receipt_hash": "d00ec197230c0e09f89c3836c6c11192cb2b0abcc72228716e74df90d6525aa4"
 }

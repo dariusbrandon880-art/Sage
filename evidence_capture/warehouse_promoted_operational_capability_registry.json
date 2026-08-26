@@ -119,21 +119,37 @@
     "disposition_reason": null
   },
   {
-    "capability_id": "CAP-PR-266-RECOVERY-RECONCILIATION",
-    "name": "PR #266 Active Recovery Lane",
-    "description": "Reconciled historical recovery capability against current main, preserving lineage and provenance.",
+    "capability_id": "CAP-MULTI-SESSION-VELOCITY",
+    "name": "Multi-Session Velocity Engine",
+    "description": "Governs multi-session parallel Big Jump Waves under Rolls-Royce Quality Standard",
     "implementation_status": "IMPLEMENTED",
     "validation_status": "VALIDATED",
     "evidence_references": [
-      "evidence_capture/pr_266_reconciliation_evidence.json"
+      "evidence_capture/multi_session_velocity_wave_evidence.json"
     ],
     "test_references": [
-      "tests/test_capability_registry.py",
-      "tests/test_capability_lineage.py"
+      "tests/c2/test_workflow_velocity.py"
     ],
-    "archive_promotion_status": "READY",
-    "disposition": "RECOVERED",
-    "pr_reference": "PR #266",
-    "disposition_reason": "Reconciled against current main with lineage and evidence provenance confirmed."
+    "archive_promotion_status": "PROMOTED",
+    "disposition": "INTEGRATED",
+    "pr_reference": null,
+    "disposition_reason": null
+  },
+  {
+    "capability_id": "CAP-CAPABILITY-WAREHOUSE",
+    "name": "Capability Warehouse Auto-Promotion Engine",
+    "description": "Executes Stage 4 Warehouse Promotion with exact SHA binding and proof verification",
+    "implementation_status": "IMPLEMENTED",
+    "validation_status": "VALIDATED",
+    "evidence_references": [
+      "evidence_capture/capability_warehouse_promotion_evidence.json"
+    ],
+    "test_references": [
+      "tests/c2/test_capability_warehouse.py"
+    ],
+    "archive_promotion_status": "PROMOTED",
+    "disposition": "INTEGRATED",
+    "pr_reference": null,
+    "disposition_reason": null
   }
 ]

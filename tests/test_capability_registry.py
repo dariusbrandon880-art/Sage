@@ -5,7 +5,7 @@ import json
 import pytest
 from pathlib import Path
 
-from sage.capability_registry import SAGECapability, SAGEOperationalCapabilityRegistry
+from sage.capability_registry import SAGECapability, SAGEOperationalCapabilityRegistry, CapabilityDisposition
 
 
 def test_capability_registry_defaults(tmp_path):
@@ -91,3 +91,33 @@ def test_corrupted_file_fallback(tmp_path):
     # Initialization should fall back gracefully and re-seed
     registry = SAGEOperationalCapabilityRegistry(storage_path=str(registry_file))
     assert len(registry.list_capabilities()) == 7
+
+
+def test_reconcile_pr_capability(tmp_path):
+    """Verify PR recovery lane reconciliation and capability persistence."""
+    registry_file = tmp_path / "operational_capability_registry.json"
+    registry = SAGEOperationalCapabilityRegistry(storage_path=str(registry_file))
+
+    # Reconcile PR #266 capability
+    reconciled = registry.reconcile_pr_capability(
+        capability_id="CAP-PR-266-RECOVERY",
+        name="PR #266 Active Recovery Lane",
+        description="Reconciled historical recovery capability against current main.",
+        pr_reference="PR #266",
+        evidence_references=["evidence_capture/pr_266_reconciliation_evidence.json"],
+        test_references=["tests/test_capability_registry.py"],
+        disposition=CapabilityDisposition.RECOVERED,
+        disposition_reason="Reconciled against current main with lineage preservation for PR #266."
+    )
+
+    assert reconciled.capability_id == "CAP-PR-266-RECOVERY"
+    assert reconciled.disposition == CapabilityDisposition.RECOVERED
+    assert reconciled.pr_reference == "PR #266"
+    assert "PR #266" in reconciled.disposition_reason
+
+    # Reload from disk to verify full persistence
+    fresh_registry = SAGEOperationalCapabilityRegistry(storage_path=str(registry_file))
+    reloaded = fresh_registry.get_capability("CAP-PR-266-RECOVERY")
+    assert reloaded is not None
+    assert reloaded.disposition == CapabilityDisposition.RECOVERED
+    assert reloaded.pr_reference == "PR #266"

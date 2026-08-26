@@ -1,7 +1,7 @@
 {
-  "receipt_id": "wh_rec_1a1b56225aaf",
+  "receipt_id": "wh_rec_b8982a90b385",
   "wave_id": "capability_warehouse_promotion_wave_001",
-  "exact_git_head": "e0c7d3cee022a4b32a09b52982558ab65b599d5d",
+  "exact_git_head": "7cdebce6e542ab5e8975194c6610f388e83942a9",
   "promoted_items_count": 2,
   "promoted_capability_ids": [
     "CAP-MULTI-SESSION-VELOCITY",
@@ -9,6 +9,6 @@
   ],
   "reconvergence_verdict": "PASS",
   "rolls_royce_passed": true,
-  "timestamp": 1787783122.0053446,
-  "receipt_hash": "d00bea92e0ee52a069927758217e7e920d110e0fcf66aff8b4863d6f9f8a6dbd"
+  "timestamp": 1787784908.7830682,
+  "receipt_hash": "393a1c001ad81a5507bf75bcc6be5e177ea7af01ed149311fc026ea13d856a77"
 }
