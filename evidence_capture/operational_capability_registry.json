@@ -11,7 +11,10 @@
     "test_references": [
       "tests/test_continuity_persistence.py"
     ],
-    "archive_promotion_status": "READY"
+    "archive_promotion_status": "READY",
+    "disposition": "INTEGRATED",
+    "pr_reference": null,
+    "disposition_reason": null
   },
   {
     "capability_id": "CAP-CHECKPOINTING",
@@ -25,7 +28,10 @@
     "test_references": [
       "tests/test_continuity_intelligence.py"
     ],
-    "archive_promotion_status": "READY"
+    "archive_promotion_status": "READY",
+    "disposition": "INTEGRATED",
+    "pr_reference": null,
+    "disposition_reason": null
   },
   {
     "capability_id": "CAP-HANDOFF-GENERATION",
@@ -39,7 +45,10 @@
     "test_references": [
       "tests/test_new_systems.py"
     ],
-    "archive_promotion_status": "READY"
+    "archive_promotion_status": "READY",
+    "disposition": "INTEGRATED",
+    "pr_reference": null,
+    "disposition_reason": null
   },
   {
     "capability_id": "CAP-WORKSPACE-SNAPSHOTS",
@@ -53,7 +62,10 @@
     "test_references": [
       "tests/test_continuity_intelligence.py"
     ],
-    "archive_promotion_status": "READY"
+    "archive_promotion_status": "READY",
+    "disposition": "INTEGRATED",
+    "pr_reference": null,
+    "disposition_reason": null
   },
   {
     "capability_id": "CAP-CONTINUITY-BRIDGE",
@@ -67,7 +79,10 @@
     "test_references": [
       "tests/test_continuity_bridge.py"
     ],
-    "archive_promotion_status": "READY"
+    "archive_promotion_status": "READY",
+    "disposition": "INTEGRATED",
+    "pr_reference": null,
+    "disposition_reason": null
   },
   {
     "capability_id": "CAP-COGNITIVE-KERNEL",
@@ -81,7 +96,10 @@
     "test_references": [
       "tests/experimental/test_cognitive_kernel.py"
     ],
-    "archive_promotion_status": "READY"
+    "archive_promotion_status": "READY",
+    "disposition": "INTEGRATED",
+    "pr_reference": null,
+    "disposition_reason": null
   },
   {
     "capability_id": "CAP-PML-RELIABILITY",
@@ -95,6 +113,27 @@
     "test_references": [
       "tests/experimental/test_continuity_control.py"
     ],
-    "archive_promotion_status": "READY"
+    "archive_promotion_status": "READY",
+    "disposition": "INTEGRATED",
+    "pr_reference": null,
+    "disposition_reason": null
+  },
+  {
+    "capability_id": "CAP-PR-266-RECOVERY-RECONCILIATION",
+    "name": "PR #266 Active Recovery Lane",
+    "description": "Reconciled historical recovery capability against current main, preserving lineage and provenance.",
+    "implementation_status": "IMPLEMENTED",
+    "validation_status": "VALIDATED",
+    "evidence_references": [
+      "evidence_capture/pr_266_reconciliation_evidence.json"
+    ],
+    "test_references": [
+      "tests/test_capability_registry.py",
+      "tests/test_capability_lineage.py"
+    ],
+    "archive_promotion_status": "READY",
+    "disposition": "RECOVERED",
+    "pr_reference": "PR #266",
+    "disposition_reason": "Reconciled against current main with lineage and evidence provenance confirmed."
   }
 ]

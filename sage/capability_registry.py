@@ -6,8 +6,18 @@ implementation status, validation status, test suites, and evidence files.
 
 import os
 import json
+from enum import Enum
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
+
+
+class CapabilityDisposition(str, Enum):
+    """Governed lifecycle disposition for SAGE capabilities across PRs."""
+    INTEGRATED = "INTEGRATED"
+    RECOVERED = "RECOVERED"
+    SUPERSEDED = "SUPERSEDED"
+    RETIRED = "RETIRED"
+    INVALIDATED = "INVALIDATED"
 
 
 class SAGECapability(BaseModel):
@@ -43,6 +53,18 @@ class SAGECapability(BaseModel):
     archive_promotion_status: str = Field(
         "READY",
         description="Readiness state for canonical SAGE Archive promotion (e.g., READY, PROMOTED)"
+    )
+    disposition: CapabilityDisposition = Field(
+        CapabilityDisposition.INTEGRATED,
+        description="Governance disposition state for lineage preservation"
+    )
+    pr_reference: Optional[str] = Field(
+        None,
+        description="Originating pull request reference (e.g., PR #266)"
+    )
+    disposition_reason: Optional[str] = Field(
+        None,
+        description="Reasoning or evidence provenance behind the current capability disposition"
     )
 
 
@@ -175,3 +197,46 @@ class SAGEOperationalCapabilityRegistry:
     def list_capabilities(self) -> List[SAGECapability]:
         """Return a flat list of all registered capabilities."""
         return list(self.capabilities.values())
+
+    def reconcile_pr_capability(
+        self,
+        capability_id: str,
+        name: str,
+        description: str,
+        pr_reference: str,
+        evidence_references: Optional[List[str]] = None,
+        test_references: Optional[List[str]] = None,
+        disposition: CapabilityDisposition = CapabilityDisposition.RECOVERED,
+        disposition_reason: Optional[str] = None,
+    ) -> SAGECapability:
+        """Reconciles a historical or active recovery lane PR capability against current main."""
+        evidence_refs = evidence_references or []
+        test_refs = test_references or []
+
+        existing = self.get_capability(capability_id)
+        if existing:
+            existing.disposition = disposition
+            existing.pr_reference = pr_reference
+            existing.disposition_reason = disposition_reason or f"Reconciled against current main via {pr_reference}"
+            if evidence_refs:
+                existing.evidence_references = list(dict.fromkeys(existing.evidence_references + evidence_refs))
+            if test_refs:
+                existing.test_references = list(dict.fromkeys(existing.test_references + test_refs))
+            self.save()
+            return existing
+
+        cap = SAGECapability(
+            capability_id=capability_id,
+            name=name,
+            description=description,
+            implementation_status="IMPLEMENTED",
+            validation_status="VALIDATED" if evidence_refs else "UNVERIFIED",
+            evidence_references=evidence_refs,
+            test_references=test_refs,
+            archive_promotion_status="READY",
+            disposition=disposition,
+            pr_reference=pr_reference,
+            disposition_reason=disposition_reason or f"Reconciled from recovery lane {pr_reference}",
+        )
+        self.add_capability(cap)
+        return cap
