@@ -32,19 +32,13 @@ USER DIRECTIVE
   -> REPORT ONLY SUPPORTED FACTS
 ```
 
-## Rolls-Royce Engineering Standard Binding
+## Deep Reconnaissance & Velocity Binding
 
-SAGE's canonical engineering quality and completion bar is defined by:
+Substantive engineering directives must also follow:
 
-`docs/governance/SAGE_ROLLS_ROYCE_ENGINEERING_STANDARD.md`
+`docs/governance/SAGE_DEEP_RECON_VELOCITY_POLICY.md`
 
-The binding principles are:
-
-- Every consequential mission must be complete, precise, traceable, durable, cleanly integrated, fail-closed, adversarially verified, and velocity-preserving.
-- Historical PRs are capability assets until their implementation is proven integrated, superseded, research-only, recovered, or duplicate.
-- Closed or superseded does not mean preserved.
-- Configured does not mean executed; queued does not mean successful; ready for review does not mean merged; merged does not mean post-merge verified.
-- Completion requires implementation or explicit disposition, relevant tests, exact-state verification, requested integration, regression/historical-capability checks, and a clean reproducible result.
+The operational rule is **repository-first, then targeted external intelligence, then bounded concurrent execution**. Super Search is a reconnaissance sensor and must not be treated as repository authority. Independent research and repository inspection should be parallelized after the initial reality lock when doing so reduces latency. Deep reconnaissance must accelerate execution rather than become a serial approval gate.
 
 ## Big Jump Wave Doctrine Binding
 
@@ -90,7 +84,8 @@ The minimum adversarial suite must test:
 - contradiction preservation;
 - authority separation;
 - fail-closed verification failure;
-- Rolls-Royce completion and historical-capability preservation;
+- deep-recon repository-first ordering;
+- targeted external reconnaissance without serializing execution;
 - Big Jump Wave doctrine binding;
 - five-flight preservation;
 - 5x4 meaning preservation;
