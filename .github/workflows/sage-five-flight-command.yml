@@ -6,187 +6,101 @@ on:
   workflow_dispatch:
     inputs:
       commit_sha:
-        description: "Exact 40-character commit SHA to execute"
+        description: Exact 40-character commit SHA to execute
         required: true
-        type: string
-      target_ref:
-        description: "Optional ref containing the workflow definition"
-        required: false
-        default: "main"
         type: string
 
 permissions:
   contents: read
 
-env:
-  TARGET_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.commit_sha || github.sha }}
-
 jobs:
-  launch:
+  pin:
     if: >-
       github.event_name == 'workflow_dispatch' ||
-      (
-        github.event.issue.number == 196 &&
-        !github.event.issue.pull_request &&
-        github.actor == 'dariusbrandon880-art' &&
-        github.event.comment.body == '/sage launch five-flight'
-      )
+      (github.event.issue.number == 196 && !github.event.issue.pull_request && github.actor == 'dariusbrandon880-art' && github.event.comment.body == '/sage launch five-flight')
+    runs-on: ubuntu-latest
+    outputs:
+      exact_head_sha: ${{ steps.pin.outputs.exact_head_sha }}
+    steps:
+      - id: pin
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = workflow_dispatch ]; then sha="${{ inputs.commit_sha }}"; else sha="$(git ls-remote "https://github.com/${{ github.repository }}.git" refs/heads/main | awk '{print $1}')"; fi
+          [[ "$sha" =~ ^[0-9a-fA-F]{40}$ ]]
+          echo "exact_head_sha=$sha" >> "$GITHUB_OUTPUT"
+
+  launch:
+    needs: pin
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       max-parallel: 5
       matrix:
         include:
-          - flight: "003"
-            command: python scripts/run_longitudinal_flight_003.py
-          - flight: "004"
-            command: python scripts/run_longitudinal_campaign_flight.py --flight "004"
-          - flight: "005"
-            command: python scripts/run_longitudinal_campaign_flight.py --flight "005"
-          - flight: "006"
-            command: python scripts/run_longitudinal_campaign_flight.py --flight "006"
-          - flight: "007"
-            command: python scripts/run_longitudinal_campaign_flight.py --flight "007"
+          - {flight: '003', command: 'python scripts/run_longitudinal_flight_003.py'}
+          - {flight: '004', command: 'python scripts/run_longitudinal_campaign_flight.py --flight 004'}
+          - {flight: '005', command: 'python scripts/run_longitudinal_campaign_flight.py --flight 005'}
+          - {flight: '006', command: 'python scripts/run_longitudinal_campaign_flight.py --flight 006'}
+          - {flight: '007', command: 'python scripts/run_longitudinal_campaign_flight.py --flight 007'}
     steps:
-      - name: Validate exact target SHA
+      - uses: actions/checkout@v4
+        with: {ref: '${{ needs.pin.outputs.exact_head_sha }}', fetch-depth: 1}
+      - run: test "$(git rev-parse HEAD)" = "${{ needs.pin.outputs.exact_head_sha }}"
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: python -m pip install --upgrade pip && pip install -e '.[dev]'
+      - run: python scripts/sage_precommit_hook.py
+      - env: {FLIGHT: '${{ matrix.flight }}', TARGET_SHA: '${{ needs.pin.outputs.exact_head_sha }}'}
         run: |
-          test "${TARGET_SHA}" =~ ^[0-9a-fA-F]{40}$
-
-      - name: Checkout exact target commit
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ env.TARGET_SHA }}
-          fetch-depth: 1
-
-      - name: Assert exact checkout HEAD
-        run: |
-          test "$(git rev-parse HEAD)" = "${TARGET_SHA}"
-          test "${TARGET_SHA}" =~ ^[0-9a-fA-F]{40}$
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[dev]"
-
-      - name: Governance preflight
-        run: python scripts/sage_precommit_hook.py
-
-      - name: Execute commanded flight ${{ matrix.flight }}
-        run: |
-          set -o pipefail
-          ${{ matrix.command }} | tee "longitudinal_flight_${{ matrix.flight }}_stdout.json"
-          printf '%s\n' "${TARGET_SHA}" > "longitudinal_flight_${{ matrix.flight }}_head_sha.txt"
-
-      - name: Upload flight evidence
+          set -euo pipefail
+          ${{ matrix.command }} > raw.txt
+          python - <<'PY'
+          import json,os
+          from pathlib import Path
+          f=os.environ['FLIGHT']; sha=os.environ['TARGET_SHA']; out=Path(f'longitudinal_flight_{f}_stdout.json')
+          try:
+              p=json.loads(Path('raw.txt').read_text()); assert isinstance(p,dict); p['flight']=f; p['exact_head_sha']=sha
+          except Exception as e: p={'flight':f,'verdict':'HOLD','exact_head_sha':sha,'parse_error':str(e)}
+          out.write_text(json.dumps(p,indent=2)+'\n'); print(json.dumps(p,indent=2))
+          if p.get('verdict')=='HOLD': raise SystemExit(1)
+          PY
+      - uses: actions/upload-artifact@v4
         if: always()
-        uses: actions/upload-artifact@v4
         with:
-          name: sage-command-flight-${{ matrix.flight }}-${{ env.TARGET_SHA }}
-          path: |
-            longitudinal_flight_${{ matrix.flight }}_stdout.json
-            longitudinal_flight_${{ matrix.flight }}_head_sha.txt
-          if-no-files-found: ignore
+          name: sage-command-flight-${{ matrix.flight }}-${{ needs.pin.outputs.exact_head_sha }}
+          path: longitudinal_flight_${{ matrix.flight }}_stdout.json
+          if-no-files-found: error
 
   reconverge:
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (
-        github.event.issue.number == 196 &&
-        !github.event.issue.pull_request &&
-        github.actor == 'dariusbrandon880-art' &&
-        github.event.comment.body == '/sage launch five-flight'
-      )
-    needs: launch
+    needs: [pin, launch]
     runs-on: ubuntu-latest
     steps:
-      - name: Validate exact target SHA
-        run: |
-          test "${TARGET_SHA}" =~ ^[0-9a-fA-F]{40}$
-
-      - name: Checkout exact target commit
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with: {ref: '${{ needs.pin.outputs.exact_head_sha }}', fetch-depth: 1}
+      - run: test "$(git rev-parse HEAD)" = "${{ needs.pin.outputs.exact_head_sha }}"
+      - uses: actions/download-artifact@v4
         with:
-          ref: ${{ env.TARGET_SHA }}
-          fetch-depth: 1
-
-      - name: Assert exact reconvergence HEAD
-        run: |
-          test "$(git rev-parse HEAD)" = "${TARGET_SHA}"
-          test "${TARGET_SHA}" =~ ^[0-9a-fA-F]{40}$
-
-      - name: Download commanded flight evidence
-        uses: actions/download-artifact@v4
-        with:
-          pattern: sage-command-flight-*
+          pattern: sage-command-flight-*-${{ needs.pin.outputs.exact_head_sha }}
           path: five-flight-evidence
           merge-multiple: true
-
-      - name: Build exact-head compound command receipt
-        env:
-          EXACT_HEAD_SHA: ${{ env.TARGET_SHA }}
+      - env: {EXPECTED_SHA: '${{ needs.pin.outputs.exact_head_sha }}'}
         run: |
           python - <<'PY'
-          import json
-          import os
-          import re
+          import json,os
           from pathlib import Path
-
-          root = Path("five-flight-evidence")
-          expected = {"003", "004", "005", "006", "007"}
-          exact_head_sha = os.environ["EXACT_HEAD_SHA"]
-          if not re.fullmatch(r"[0-9a-fA-F]{40}", exact_head_sha):
-              raise SystemExit("invalid exact HEAD SHA: 40 hexadecimal characters required")
-
-          reports = []
-          for path in sorted(root.glob("longitudinal_flight_*_stdout.json")):
-              try:
-                  reports.append(json.loads(path.read_text()))
-              except Exception as exc:
-                  reports.append({"flight": path.stem, "verdict": "HOLD", "parse_error": str(exc)})
-
-          observed = {str(r.get("flight", "")).split("-")[-1] for r in reports}
-          head_files = sorted(root.glob("longitudinal_flight_*_head_sha.txt"))
-          head_shas = {p.read_text().strip() for p in head_files}
-          invalid_head_shas = sorted(
-              sha for sha in head_shas if not re.fullmatch(r"[0-9a-fA-F]{40}", sha)
-          )
-          head_match = head_shas == {exact_head_sha} and len(head_files) == len(expected)
-          missing = sorted(expected - observed)
-
-          verdict = (
-              "HOLD"
-              if missing or invalid_head_shas or not head_match
-              else "REQUIRES_INDEPENDENT_C2_VERIFICATION"
-          )
-          receipt = {
-              "wave": "SAGE-FIVE-FLIGHT-COMMAND",
-              "exact_head_sha": exact_head_sha,
-              "expected_flights": sorted(expected),
-              "observed_flights": sorted(observed),
-              "missing_flights": missing,
-              "flight_head_sha_count": len(head_files),
-              "flight_head_shas": sorted(head_shas),
-              "head_sha_consistent": head_match,
-              "invalid_head_shas": invalid_head_shas,
-              "wave_verdict": verdict,
-              "authority_boundary": "Observation aggregation only; no capability qualification.",
-          }
-          receipt_path = Path(os.environ.get("RUNNER_TEMP", "/tmp")) / "five_flight_command_receipt.json"
-          receipt_path.write_text(json.dumps(receipt, indent=2) + "\n")
-          print(json.dumps(receipt, indent=2))
-          if verdict == "HOLD":
-              raise SystemExit("five-flight reconvergence evidence failed exact-head validation")
+          sha=os.environ['EXPECTED_SHA']; expected={'003','004','005','006','007'}; reports=[]
+          for p in Path('five-flight-evidence').glob('longitudinal_flight_*_stdout.json'):
+              try: reports.append(json.loads(p.read_text()))
+              except Exception as e: reports.append({'verdict':'HOLD','parse_error':str(e)})
+          observed={str(r.get('flight','')) for r in reports}; bad=[r.get('exact_head_sha') for r in reports if r.get('exact_head_sha')!=sha]
+          receipt={'wave':'SAGE-FIVE-FLIGHT-COMMAND','exact_head_sha':sha,'expected_flights':sorted(expected),'observed_flights':sorted(observed),'flight_count':len(reports),'sha_mismatches':bad,'wave_verdict':'HOLD' if observed!=expected or len(reports)!=5 or bad else 'REQUIRES_INDEPENDENT_C2_VERIFICATION'}
+          Path('five_flight_command_receipt.json').write_text(json.dumps(receipt,indent=2)+'\n'); print(json.dumps(receipt,indent=2))
+          if receipt['wave_verdict']=='HOLD': raise SystemExit(1)
           PY
-
-      - name: Upload compound receipt
+      - uses: actions/upload-artifact@v4
         if: always()
-        uses: actions/upload-artifact@v4
         with:
-          name: sage-five-flight-command-receipt-${{ env.TARGET_SHA }}
-          path: ${{ runner.temp }}/five_flight_command_receipt.json
+          name: sage-five-flight-command-receipt-${{ needs.pin.outputs.exact_head_sha }}
+          path: five_flight_command_receipt.json
           if-no-files-found: error
