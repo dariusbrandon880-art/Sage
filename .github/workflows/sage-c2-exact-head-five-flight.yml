@@ -1,0 +1,56 @@
+name: SAGE C2 Exact-Head Five-Flight Attestation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - sage/c2/**
+      - scripts/execute_command_fidelity_wave.py
+      - .github/workflows/sage-c2-exact-head-five-flight.yml
+
+permissions:
+  contents: read
+
+jobs:
+  five-flight:
+    name: Five-Flight exact-head attestation
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        flight: [A, B, C, D, E]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Verify exact PR head
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+      - name: Run recovered five-flight dispatcher
+        env:
+          SAGE_EXPECTED_COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
+        run: python scripts/execute_command_fidelity_wave.py
+      - name: Verify exact-head evidence
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          expected=os.environ["EXPECTED_SHA"]
+          data=json.loads(Path("evidence_capture/command_fidelity_wave_evidence.json").read_text())
+          assert data["commit_sha"] == expected
+          assert data["wave_verdict"] == "PASS"
+          assert len(data["flight_results"]) == 5
+          assert all(f["status"] == "PASS" and f["commit_sha"] == expected for f in data["flight_results"])
+          print("EXACT_HEAD_FIVE_FLIGHT_PASS", expected)
+          PY
