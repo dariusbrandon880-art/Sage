@@ -75,10 +75,17 @@ def test_contract_contains_all_ten_laws_and_identity():
 
 
 def test_live_check_directive_requires_live_verification():
-    decision = classify_directive("Check live repo and inspect PR")
+    decision = classify_directive("Check live repo, inspect PR queue, and classify merged pr")
     assert decision.requires_live_verification is True
     assert "check live repo" in decision.matched_triggers
-    assert "inspect pr" in decision.matched_triggers
+    assert "pr queue" in decision.matched_triggers
+
+
+def test_pr_queue_classification_triggers_live_verification():
+    decision = classify_directive("Check PR classification and merge-ready status")
+    assert decision.requires_live_verification is True
+    assert "pr classification" in decision.matched_triggers
+    assert "merge-ready" in decision.matched_triggers
 
 
 def test_normal_directive_does_not_force_live_check():
@@ -194,6 +201,8 @@ def test_openai_system_instructions_embed_exact_order_contract():
     assert "PRESERVE EXACTLY" in instructions
     assert "INVOKE CONNECTED CAPABILITY" in instructions
     assert "REPORT ONLY SUPPORTED FACTS" in instructions
+    assert "PR QUEUE POLICY" in instructions
+    assert "PR QUEUE FRONTIER POLICY" in instructions
 
 
 def test_station_spoof_is_rejected():

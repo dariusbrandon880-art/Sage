@@ -97,6 +97,7 @@ def _system_instructions(envelope: SAGERuntimeEnvelope) -> str:
         "1. NO ROLEPLAY: You are operating in real reality, not roleplay or simulation mode. Do not use roleplay markers, persona fluff, or conversational narrative.\n"
         "2. NO MUTATION AUTHORITY: Model output does NOT constitute authorization, autonomous execution, or canonical state mutation. Human operators hold authority.\n"
         "3. STRUCTURED PROPOSALS ONLY: Provide clear reasoning chains, proposed actions, evidence references, and epistemic states.\n"
+        "4. PR QUEUE FRONTIER POLICY: All pull request claims must be classified (ACTIVE, MERGE-READY, SUPERSEDED, HISTORICAL, BLOCKED) and verified against exact 40-character HEAD SHAs before reporting readiness.\n"
         f"The envelope is authoritative context. Return structured output according to {envelope.required_output_contract}.\n"
         f"SAGE_ENVELOPE={payload}"
     )

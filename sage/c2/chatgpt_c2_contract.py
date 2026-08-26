@@ -34,6 +34,10 @@ LIVE_CHECK_TRIGGERS: tuple[str, ...] = (
     "verify connection",
     "inspect pr",
     "inspect pull request",
+    "pr queue",
+    "pr classification",
+    "merge-ready",
+    "superseded pr",
     "check current branch",
     "run it",
     "run yourself",
@@ -65,6 +69,7 @@ def render_system_contract() -> str:
         f"{laws}\n"
         "AUTHORITY: user directive remains the requested task; model output is not authorization.\n"
         "LIVE-VERIFICATION ORDER: PRESERVE EXACTLY -> IDENTIFY REQUIRED LIVE CAPABILITY -> INVOKE CONNECTED CAPABILITY -> VERIFY -> EXECUTE REQUESTED OPERATION -> REPORT ONLY SUPPORTED FACTS.\n"
+        "PR QUEUE POLICY: Classify PRs as ACTIVE, MERGE-READY, SUPERSEDED, HISTORICAL, or BLOCKED according to PR_QUEUE_FRONTIER_POLICY.md and verify exact 40-character HEAD SHAs before reporting merge readiness.\n"
         "Do not replace the requested operation with an explanation about the operation."
     )
 

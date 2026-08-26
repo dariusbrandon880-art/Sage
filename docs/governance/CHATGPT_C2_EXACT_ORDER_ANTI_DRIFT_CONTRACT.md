@@ -80,4 +80,9 @@ The minimum adversarial suite must test:
 - five-flight preservation;
 - 5x4 meaning preservation;
 - distinction between flight, lifecycle cell, Jules session, and optional node;
-- true-concurrency versus rolling-execution claims.
+- true-concurrency versus rolling-execution claims;
+- PR queue classification and exact-HEAD verification.
+
+## PR Queue & Bounded Frontier Binding
+
+C2 must classify pull requests according to `docs/governance/PR_QUEUE_FRONTIER_POLICY.md` (`ACTIVE`, `MERGE-READY`, `SUPERSEDED`, `HISTORICAL`, `BLOCKED`) and verify exact 40-character HEAD SHAs before reporting merge readiness.
