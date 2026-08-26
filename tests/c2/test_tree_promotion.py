@@ -49,7 +49,9 @@ def receipt(stage, sha=SHA_B, passed=True, receipt_id=None):
     )
 
 
-def candidate(*receipts, source=SHA_B, target=SHA_A, gates=None, branch="feature/promotion"):
+def candidate(
+    *receipts, source=SHA_B, target=SHA_A, gates=None, branch="feature/promotion"
+):
     return PromotionCandidate(
         branch,
         source,
@@ -80,7 +82,10 @@ def test_duplicate_evidence_stage_rejects_deterministically():
 
 def test_failed_duplicate_evidence_stage_also_rejects():
     engine = PromotionEngine(MockCASGitProvider(SHA_A, descendants=[SHA_B]))
-    item = candidate(receipt("tests", passed=False), receipt("tests", passed=True, receipt_id="receipt-tests-2"))
+    item = candidate(
+        receipt("tests", passed=False),
+        receipt("tests", passed=True, receipt_id="receipt-tests-2"),
+    )
 
     assert engine.verify_candidate(item) == {}
     assert item.status == PromotionStatus.REJECTED
@@ -114,8 +119,8 @@ def test_non_descendant_source_is_fail_closed():
 def test_second_cas_attempt_fails_closed_without_mutating_main():
     provider = MockCASGitProvider(SHA_A, descendants=[SHA_B, SHA_C])
     engine = PromotionEngine(provider)
-    first = candidate(receipt("tests", source=SHA_B), source=SHA_B)
-    second = candidate(receipt("tests", source=SHA_C), source=SHA_C)
+    first = candidate(receipt("tests", sha=SHA_B), source=SHA_B)
+    second = candidate(receipt("tests", sha=SHA_C), source=SHA_C)
 
     engine.execute_promotion(first)
     with pytest.raises(TargetDriftError):
