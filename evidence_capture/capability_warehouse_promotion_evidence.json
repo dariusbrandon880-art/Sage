@@ -1,0 +1,14 @@
+{
+  "receipt_id": "wh_rec_2883a4ec74ab",
+  "wave_id": "capability_warehouse_promotion_wave_001",
+  "exact_git_head": "56b41ede32bbf21f2a0dc59ec852667f8f4989e6",
+  "promoted_items_count": 2,
+  "promoted_capability_ids": [
+    "CAP-MULTI-SESSION-VELOCITY",
+    "CAP-CAPABILITY-WAREHOUSE"
+  ],
+  "reconvergence_verdict": "PASS",
+  "rolls_royce_passed": true,
+  "timestamp": 1787773933.763268,
+  "receipt_hash": "1af50a9340bc914c3009ef4d73faa2114a718b1c2798f8cbbcccae8ec69d2791"
+}

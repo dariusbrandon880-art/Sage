@@ -1,0 +1,42 @@
+[
+  {
+    "item_id": "wh_cap_multi_session_velocity",
+    "capability_id": "CAP-MULTI-SESSION-VELOCITY",
+    "name": "Multi-Session Velocity Engine",
+    "description": "Governs multi-session parallel Big Jump Waves under Rolls-Royce Quality Standard",
+    "wave_id": "capability_warehouse_promotion_wave_001",
+    "exact_commit_sha": "56b41ede32bbf21f2a0dc59ec852667f8f4989e6",
+    "promotion_status": "PROMOTED",
+    "reusable_patterns": [
+      "Pattern: Non-blocking Anti-Collision Locking",
+      "Pattern: 20-Cell Advancement Matrix Traversal"
+    ],
+    "evidence_references": [
+      "evidence_capture/multi_session_velocity_wave_evidence.json"
+    ],
+    "test_references": [
+      "tests/c2/test_workflow_velocity.py"
+    ],
+    "promoted_at": 1787773933.7616808
+  },
+  {
+    "item_id": "wh_cap_capability_warehouse",
+    "capability_id": "CAP-CAPABILITY-WAREHOUSE",
+    "name": "Capability Warehouse Auto-Promotion Engine",
+    "description": "Executes Stage 4 Warehouse Promotion with exact SHA binding and proof verification",
+    "wave_id": "capability_warehouse_promotion_wave_001",
+    "exact_commit_sha": "56b41ede32bbf21f2a0dc59ec852667f8f4989e6",
+    "promotion_status": "PROMOTED",
+    "reusable_patterns": [
+      "Pattern: Stage 4 Warehouse Promotion",
+      "Pattern: Operational Registry Synchronization"
+    ],
+    "evidence_references": [
+      "evidence_capture/capability_warehouse_promotion_evidence.json"
+    ],
+    "test_references": [
+      "tests/c2/test_capability_warehouse.py"
+    ],
+    "promoted_at": 1787773933.7621946
+  }
+]
