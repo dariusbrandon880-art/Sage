@@ -1,7 +1,7 @@
 # SAGE ChatGPT C2 Exact-Order / Anti-Drift Contract
 
 **Contract ID:** `CHATGPT_C2_EXACT_ORDER_ANTI_DRIFT`  
-**Version:** `1.1`
+**Version:** `1.2`
 
 ## Purpose
 
@@ -31,6 +31,20 @@ USER DIRECTIVE
   -> EXECUTE REQUESTED OPERATION
   -> REPORT ONLY SUPPORTED FACTS
 ```
+
+## Rolls-Royce Engineering Standard Binding
+
+SAGE's canonical engineering quality and completion bar is defined by:
+
+`docs/governance/SAGE_ROLLS_ROYCE_ENGINEERING_STANDARD.md`
+
+The binding principles are:
+
+- Every consequential mission must be complete, precise, traceable, durable, cleanly integrated, fail-closed, adversarially verified, and velocity-preserving.
+- Historical PRs are capability assets until their implementation is proven integrated, superseded, research-only, recovered, or duplicate.
+- Closed or superseded does not mean preserved.
+- Configured does not mean executed; queued does not mean successful; ready for review does not mean merged; merged does not mean post-merge verified.
+- Completion requires implementation or explicit disposition, relevant tests, exact-state verification, requested integration, regression/historical-capability checks, and a clean reproducible result.
 
 ## Big Jump Wave Doctrine Binding
 
@@ -76,6 +90,7 @@ The minimum adversarial suite must test:
 - contradiction preservation;
 - authority separation;
 - fail-closed verification failure;
+- Rolls-Royce completion and historical-capability preservation;
 - Big Jump Wave doctrine binding;
 - five-flight preservation;
 - 5x4 meaning preservation;
