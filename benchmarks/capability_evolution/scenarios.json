@@ -1,0 +1,15 @@
+{
+  "seed": 20260822,
+  "budget": {"work_units": 25, "human_interventions": 2},
+  "opportunities": [
+    {"id":"H1","kind":"historical_recovery","value":8,"dependency":null,"duplicate_of":null,"requires_evidence":true},
+    {"id":"H2","kind":"implementation_reconciliation","value":9,"dependency":"H1","duplicate_of":null,"requires_evidence":true},
+    {"id":"H3","kind":"impact_closure","value":10,"dependency":"H2","duplicate_of":null,"requires_evidence":true},
+    {"id":"H4","kind":"evidence_closure","value":11,"dependency":"H3","duplicate_of":null,"requires_evidence":true},
+    {"id":"H5","kind":"frontier_expansion","value":12,"dependency":"H4","duplicate_of":null,"requires_evidence":true},
+    {"id":"D1","kind":"duplicate_rebuild","value":6,"dependency":"H2","duplicate_of":"H1","requires_evidence":true},
+    {"id":"F1","kind":"failure_recovery","value":7,"dependency":"H3","duplicate_of":null,"requires_evidence":true,"failure_injection":true},
+    {"id":"R1","kind":"regression","value":-9,"dependency":"H4","duplicate_of":null,"requires_evidence":true,"regression":true}
+  ],
+  "flight_map":{"H1":"H1","H2":"H2","H3":"H3","H4":"H4","H5":"H5"}
+}
