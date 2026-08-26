@@ -7,9 +7,36 @@ Enforces non-overlapping target boundaries and prevents duplicate work across pa
 from __future__ import annotations
 
 import hashlib
+import os
 import time
 from typing import Dict, List, Optional, Set
 from pydantic import BaseModel, Field
+
+
+def normalize_path(path: str) -> str:
+    """Normalizes path by stripping trailing slashes, dot segments, and leading slashes."""
+    p = os.path.normpath(path.strip())
+    if p == ".":
+        return ""
+    return p.replace("\\", "/")
+
+
+def paths_overlap(path_a: str, path_b: str) -> bool:
+    """Returns True if path_a and path_b are identical or one is a parent/child directory of the other."""
+    norm_a = normalize_path(path_a)
+    norm_b = normalize_path(path_b)
+
+    if norm_a == norm_b:
+        return True
+
+    parts_a = [p for p in norm_a.split("/") if p]
+    parts_b = [p for p in norm_b.split("/") if p]
+
+    if not parts_a or not parts_b:
+        return True
+
+    min_len = min(len(parts_a), len(parts_b))
+    return parts_a[:min_len] == parts_b[:min_len]
 
 
 class FlightLockRequest(BaseModel):
@@ -46,24 +73,24 @@ class FlightCollisionLockManager:
         self._session_locks: Dict[tuple[str, str], Set[str]] = {}
 
     def acquire_lock(self, request: FlightLockRequest) -> LockCheckResult:
-        """Attempts to lock all resources for a flight request."""
+        """Attempts to lock all resources for a flight request with hierarchical path containment checking."""
         requested_resources = set(request.target_files + request.target_namespaces)
 
-        # Check for conflicts
-        for res in requested_resources:
-            if res in self._locked_resources:
-                conflict_session, conflict_flight = self._locked_resources[res]
+        # Check for conflicts against all currently locked resources
+        for req_res in requested_resources:
+            for locked_res, (conflict_session, conflict_flight) in self._locked_resources.items():
                 if (conflict_session, conflict_flight) != (request.session_id, request.flight_id):
-                    res_result = LockCheckResult(
-                        acquired=False,
-                        session_id=request.session_id,
-                        flight_id=request.flight_id,
-                        conflicting_session_id=conflict_session,
-                        conflicting_flight_id=conflict_flight,
-                        conflicting_resource=res,
-                    )
-                    res_result.lock_hash = res_result.compute_hash()
-                    return res_result
+                    if paths_overlap(req_res, locked_res):
+                        res_result = LockCheckResult(
+                            acquired=False,
+                            session_id=request.session_id,
+                            flight_id=request.flight_id,
+                            conflicting_session_id=conflict_session,
+                            conflicting_flight_id=conflict_flight,
+                            conflicting_resource=locked_res,
+                        )
+                        res_result.lock_hash = res_result.compute_hash()
+                        return res_result
 
         # Grant lock
         key = (request.session_id, request.flight_id)

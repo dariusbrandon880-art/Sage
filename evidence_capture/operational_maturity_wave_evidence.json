@@ -1,5 +1,5 @@
 {
-  "wave_id": "wave-operational-maturity-1787767691",
+  "wave_id": "wave-operational-maturity-1787775735",
   "flight_summaries": [
     {
       "flight_id": "FLIGHT-GPS-CALIBRATION",
@@ -15,25 +15,25 @@
           "stage": "STAGE_1_INTAKE_RECON",
           "passed": true,
           "evidence_ref": "sage/c2/flight_gps/engine.py",
-          "timestamp": 1787767691.5427828
+          "timestamp": 1787775735.9016876
         },
         {
           "stage": "STAGE_2_BOUNDED_BUILD",
           "passed": true,
           "evidence_ref": "sage/c2/flight_gps/engine.py",
-          "timestamp": 1787767691.542787
+          "timestamp": 1787775735.9016929
         },
         {
           "stage": "STAGE_3_VERIFY_PROOF",
           "passed": true,
           "evidence_ref": "tests/c2/test_flight_gps.py",
-          "timestamp": 1787767693.576473
+          "timestamp": 1787775737.6053264
         },
         {
           "stage": "STAGE_4_WAREHOUSE_PROMOTE",
           "passed": true,
           "evidence_ref": "evidence_capture/flight_gps_calibration_evidence.json",
-          "timestamp": 1787767693.576912
+          "timestamp": 1787775737.6057565
         }
       ],
       "blocker": null
@@ -52,25 +52,25 @@
           "stage": "STAGE_1_INTAKE_RECON",
           "passed": true,
           "evidence_ref": "sage/capability_registry.py",
-          "timestamp": 1787767693.5772264
+          "timestamp": 1787775737.6060205
         },
         {
           "stage": "STAGE_2_BOUNDED_BUILD",
           "passed": true,
           "evidence_ref": "sage/capability_registry.py",
-          "timestamp": 1787767693.5786552
+          "timestamp": 1787775737.6073992
         },
         {
           "stage": "STAGE_3_VERIFY_PROOF",
           "passed": true,
           "evidence_ref": "tests/test_capability_registry.py",
-          "timestamp": 1787767695.3874242
+          "timestamp": 1787775739.7383342
         },
         {
           "stage": "STAGE_4_WAREHOUSE_PROMOTE",
           "passed": true,
           "evidence_ref": "evidence_capture/recovery_lane_hardening_evidence.json",
-          "timestamp": 1787767695.3878698
+          "timestamp": 1787775739.7395716
         }
       ],
       "blocker": null
@@ -89,25 +89,25 @@
           "stage": "STAGE_1_INTAKE_RECON",
           "passed": true,
           "evidence_ref": "sage/c2/flight_gps/models.py",
-          "timestamp": 1787767695.388129
+          "timestamp": 1787775739.7398403
         },
         {
           "stage": "STAGE_2_BOUNDED_BUILD",
           "passed": true,
           "evidence_ref": "sage/c2/flight_gps/models.py",
-          "timestamp": 1787767695.3881779
+          "timestamp": 1787775739.7398787
         },
         {
           "stage": "STAGE_3_VERIFY_PROOF",
           "passed": true,
           "evidence_ref": "tests/c2/test_flight_gps.py",
-          "timestamp": 1787767697.061044
+          "timestamp": 1787775741.5785723
         },
         {
           "stage": "STAGE_4_WAREHOUSE_PROMOTE",
           "passed": true,
           "evidence_ref": "evidence_capture/automation_clearance_receipt_evidence.json",
-          "timestamp": 1787767697.0614269
+          "timestamp": 1787775741.578946
         }
       ],
       "blocker": null
@@ -126,25 +126,25 @@
           "stage": "STAGE_1_INTAKE_RECON",
           "passed": true,
           "evidence_ref": "tests/c2/",
-          "timestamp": 1787767697.0617414
+          "timestamp": 1787775741.5790856
         },
         {
           "stage": "STAGE_2_BOUNDED_BUILD",
           "passed": true,
           "evidence_ref": "tests/c2/",
-          "timestamp": 1787767697.0617476
+          "timestamp": 1787775741.579089
         },
         {
           "stage": "STAGE_3_VERIFY_PROOF",
           "passed": true,
           "evidence_ref": "tests/c2/",
-          "timestamp": 1787767698.886756
+          "timestamp": 1787775743.4212508
         },
         {
           "stage": "STAGE_4_WAREHOUSE_PROMOTE",
           "passed": true,
           "evidence_ref": "evidence_capture/operational_verification_evidence.json",
-          "timestamp": 1787767698.8871315
+          "timestamp": 1787775743.4226644
         }
       ],
       "blocker": null
@@ -163,25 +163,25 @@
           "stage": "STAGE_1_INTAKE_RECON",
           "passed": true,
           "evidence_ref": "sage/c2/reconvergence_synthesizer.py",
-          "timestamp": 1787767698.8873837
+          "timestamp": 1787775743.4228294
         },
         {
           "stage": "STAGE_2_BOUNDED_BUILD",
           "passed": true,
           "evidence_ref": "sage/c2/reconvergence_synthesizer.py",
-          "timestamp": 1787767698.8873892
+          "timestamp": 1787775743.4228556
         },
         {
           "stage": "STAGE_3_VERIFY_PROOF",
           "passed": true,
           "evidence_ref": "tests/c2/test_reconvergence_synthesizer.py",
-          "timestamp": 1787767700.6163082
+          "timestamp": 1787775745.159289
         },
         {
           "stage": "STAGE_4_WAREHOUSE_PROMOTE",
           "passed": true,
           "evidence_ref": "evidence_capture/operational_maturity_wave_evidence.json",
-          "timestamp": 1787767700.6163218
+          "timestamp": 1787775745.1592999
         }
       ],
       "blocker": null
@@ -214,6 +214,6 @@
   },
   "first_pass_verification_rate": 100.0,
   "reconvergence_verdict": "PASS",
-  "timestamp": 1787767700.6167684,
-  "package_hash": "61104a5ecc38759377e10ee306c36c6985b532c7ebb39ad4627a09134bd41fc1"
+  "timestamp": 1787775745.1597621,
+  "package_hash": "8dbaa079333375b7aab0fdadc24315c04b2483f7d7f02e0ec004f487e4562c3b"
 }

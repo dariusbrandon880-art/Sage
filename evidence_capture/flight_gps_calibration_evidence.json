@@ -1,6 +1,10 @@
 {
-  "flight_id": "FLIGHT-GPS-F1-RECON-BOUND",
+  "flight_id": "FLIGHT-GPS-CALIBRATION",
   "canonical_head_sha": "4957c77f420145ede1801c6321a725dedba6d8db",
   "observability": "NOMINAL",
-  "timestamp": 1787769190.110226
+  "airspace_classification": {
+    "FLIGHT-GPS-CALIBRATION": "CLEAR"
+  },
+  "recommended_count": 1,
+  "timestamp": 1787775737.6053464
 }

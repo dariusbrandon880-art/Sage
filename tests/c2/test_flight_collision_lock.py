@@ -3,6 +3,8 @@
 from sage.c2.flight_collision_lock import (
     FlightCollisionLockManager,
     FlightLockRequest,
+    normalize_path,
+    paths_overlap,
 )
 
 
@@ -74,3 +76,36 @@ def test_lock_release_and_reacquisition():
 
     result2 = manager.acquire_lock(request2)
     assert result2.acquired is True
+
+
+def test_paths_overlap_helper():
+    assert paths_overlap("sage/c2/", "sage/c2/flight_gps/engine.py") is True
+    assert paths_overlap("sage/c2/flight_gps/engine.py", "sage/c2") is True
+    assert paths_overlap("sage/c2", "sage/core") is False
+    assert paths_overlap("sage/c2_other", "sage/c2") is False
+
+
+def test_hierarchical_subpath_containment_collision_rejection():
+    manager = FlightCollisionLockManager()
+
+    # Session 1 locks parent namespace 'sage/c2/'
+    req1 = FlightLockRequest(
+        session_id="session-1",
+        flight_id="F1",
+        target_files=[],
+        target_namespaces=["sage/c2/"],
+    )
+    res1 = manager.acquire_lock(req1)
+    assert res1.acquired is True
+
+    # Session 2 attempts to lock child file 'sage/c2/flight_gps/engine.py'
+    req2 = FlightLockRequest(
+        session_id="session-2",
+        flight_id="F2",
+        target_files=["sage/c2/flight_gps/engine.py"],
+        target_namespaces=[],
+    )
+    res2 = manager.acquire_lock(req2)
+    assert res2.acquired is False, "Parent namespace lock must reject subpath file lock request."
+    assert res2.conflicting_session_id == "session-1"
+    assert res2.conflicting_flight_id == "F1"

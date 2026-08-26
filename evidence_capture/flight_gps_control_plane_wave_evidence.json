@@ -1,5 +1,5 @@
 {
-  "wave_id": "wave-flight-gps-control-plane-1787769188",
+  "wave_id": "wave-flight-gps-control-plane-1787775725",
   "flight_summaries": [
     {
       "flight_id": "FLIGHT-GPS-F1-RECON-BOUND",
@@ -15,25 +15,25 @@
           "stage": "STAGE_1_INTAKE_RECON",
           "passed": true,
           "evidence_ref": "sage/c2/flight_gps/engine.py",
-          "timestamp": 1787769188.3179295
+          "timestamp": 1787775725.3518167
         },
         {
           "stage": "STAGE_2_BOUNDED_BUILD",
           "passed": true,
           "evidence_ref": "sage/c2/flight_gps/engine.py",
-          "timestamp": 1787769188.3179345
+          "timestamp": 1787775725.3518636
         },
         {
           "stage": "STAGE_3_VERIFY_PROOF",
           "passed": true,
           "evidence_ref": "tests/c2/test_flight_gps.py",
-          "timestamp": 1787769190.1102114
+          "timestamp": 1787775727.046048
         },
         {
           "stage": "STAGE_4_WAREHOUSE_PROMOTE",
           "passed": true,
           "evidence_ref": "evidence_capture/flight_gps_calibration_evidence.json",
-          "timestamp": 1787769190.1109426
+          "timestamp": 1787775727.0472584
         }
       ],
       "blocker": null
@@ -52,25 +52,25 @@
           "stage": "STAGE_1_INTAKE_RECON",
           "passed": true,
           "evidence_ref": "sage/c2/flight_gps/models.py",
-          "timestamp": 1787769190.1111042
+          "timestamp": 1787775727.0473812
         },
         {
           "stage": "STAGE_2_BOUNDED_BUILD",
           "passed": true,
           "evidence_ref": "sage/c2/flight_gps/models.py",
-          "timestamp": 1787769190.1111383
+          "timestamp": 1787775727.0476382
         },
         {
           "stage": "STAGE_3_VERIFY_PROOF",
           "passed": true,
           "evidence_ref": "tests/c2/test_flight_gps.py",
-          "timestamp": 1787769191.9129229
+          "timestamp": 1787775728.7519474
         },
         {
           "stage": "STAGE_4_WAREHOUSE_PROMOTE",
           "passed": true,
           "evidence_ref": "evidence_capture/automation_clearance_receipt_evidence.json",
-          "timestamp": 1787769191.9134462
+          "timestamp": 1787775728.7527246
         }
       ],
       "blocker": null
@@ -89,25 +89,25 @@
           "stage": "STAGE_1_INTAKE_RECON",
           "passed": true,
           "evidence_ref": "sage/c2/flight_gps/classifier.py",
-          "timestamp": 1787769191.9135578
+          "timestamp": 1787775728.7529676
         },
         {
           "stage": "STAGE_2_BOUNDED_BUILD",
           "passed": true,
           "evidence_ref": "sage/c2/flight_gps/classifier.py",
-          "timestamp": 1787769191.9135616
+          "timestamp": 1787775728.752973
         },
         {
           "stage": "STAGE_3_VERIFY_PROOF",
           "passed": true,
           "evidence_ref": "tests/c2/test_flight_gps.py",
-          "timestamp": 1787769193.5810332
+          "timestamp": 1787775730.4635758
         },
         {
           "stage": "STAGE_4_WAREHOUSE_PROMOTE",
           "passed": true,
           "evidence_ref": "evidence_capture/flight_gps_observer_evidence.json",
-          "timestamp": 1787769193.5826175
+          "timestamp": 1787775730.46393
         }
       ],
       "blocker": null
@@ -126,25 +126,25 @@
           "stage": "STAGE_1_INTAKE_RECON",
           "passed": true,
           "evidence_ref": "tests/c2/test_flight_gps.py",
-          "timestamp": 1787769193.5827718
+          "timestamp": 1787775730.4640634
         },
         {
           "stage": "STAGE_2_BOUNDED_BUILD",
           "passed": true,
           "evidence_ref": "tests/c2/test_flight_gps.py",
-          "timestamp": 1787769193.5827765
+          "timestamp": 1787775730.46422
         },
         {
           "stage": "STAGE_3_VERIFY_PROOF",
           "passed": true,
           "evidence_ref": "tests/c2/test_flight_gps.py",
-          "timestamp": 1787769195.5884635
+          "timestamp": 1787775732.2937477
         },
         {
           "stage": "STAGE_4_WAREHOUSE_PROMOTE",
           "passed": true,
           "evidence_ref": "evidence_capture/flight_gps_adversarial_evidence.json",
-          "timestamp": 1787769195.5889027
+          "timestamp": 1787775732.29457
         }
       ],
       "blocker": null
@@ -163,25 +163,25 @@
           "stage": "STAGE_1_INTAKE_RECON",
           "passed": true,
           "evidence_ref": "sage/c2/reconvergence_synthesizer.py",
-          "timestamp": 1787769195.5890064
+          "timestamp": 1787775732.2946782
         },
         {
           "stage": "STAGE_2_BOUNDED_BUILD",
           "passed": true,
           "evidence_ref": "sage/c2/reconvergence_synthesizer.py",
-          "timestamp": 1787769195.5890095
+          "timestamp": 1787775732.2946813
         },
         {
           "stage": "STAGE_3_VERIFY_PROOF",
           "passed": true,
           "evidence_ref": "tests/c2/test_reconvergence_synthesizer.py",
-          "timestamp": 1787769197.3507528
+          "timestamp": 1787775734.037196
         },
         {
           "stage": "STAGE_4_WAREHOUSE_PROMOTE",
           "passed": true,
           "evidence_ref": "evidence_capture/flight_gps_control_plane_wave_evidence.json",
-          "timestamp": 1787769197.350765
+          "timestamp": 1787775734.0372076
         }
       ],
       "blocker": null
@@ -214,6 +214,6 @@
   },
   "first_pass_verification_rate": 100.0,
   "reconvergence_verdict": "PASS",
-  "timestamp": 1787769197.3510964,
-  "package_hash": "f99d1f1299cdeaea51664fecd8f5d15f4865d48fd82bd9775f75bef2e876b0db"
+  "timestamp": 1787775734.0375342,
+  "package_hash": "170630153554f7bca9879655a348f78254c583fdfaaf3f27bbb48b99971b82ec"
 }
