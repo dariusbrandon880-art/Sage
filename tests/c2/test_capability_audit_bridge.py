@@ -1,8 +1,8 @@
 """Unit and integration tests for SAGE C2 Capability Audit Bridge & Drift Sentinel."""
 
 import pytest
-import tempfile
 import shutil
+import subprocess
 from pathlib import Path
 
 from sage.c2.capability_audit_bridge import (
@@ -28,7 +28,13 @@ def temp_warehouse_path(tmp_path):
 
 @pytest.fixture
 def valid_sha():
-    return "0035e9e5977ff1bf8b0d12030789c39c7cf069d8"
+    res = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return res.stdout.strip()
 
 
 def test_capability_audit_success(temp_op_registry_path, temp_warehouse_path, valid_sha):

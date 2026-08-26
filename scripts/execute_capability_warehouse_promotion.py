@@ -24,7 +24,10 @@ def main() -> int:
     exact_head = get_git_head()
     print(f"[+] Active Git Commit HEAD: {exact_head}")
 
-    engine = CapabilityWarehouseEngine()
+    engine = CapabilityWarehouseEngine(
+        storage_path="evidence_capture/capability_warehouse_registry.json",
+        op_registry_path="evidence_capture/warehouse_promoted_operational_capability_registry.json",
+    )
 
     wave_id = "capability_warehouse_promotion_wave_001"
     items_to_promote = [

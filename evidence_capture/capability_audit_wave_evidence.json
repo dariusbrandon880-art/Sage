@@ -1,7 +1,7 @@
 {
-  "receipt_id": "audit_rec_3c909a3fc5cf",
+  "receipt_id": "audit_rec_8240e1885734",
   "wave_id": "capability_audit_wave_001",
-  "exact_git_head": "0035e9e5977ff1bf8b0d12030789c39c7cf069d8",
+  "exact_git_head": "e0c7d3cee022a4b32a09b52982558ab65b599d5d",
   "total_capabilities_audited": 9,
   "verified_count": 9,
   "drift_count": 0,
@@ -125,7 +125,7 @@
       "test_files_present": true,
       "sha_valid": true,
       "audit_status": "VERIFIED",
-      "details": "Warehouse capability evidence verified."
+      "details": "Evidence and test files verified on disk."
     },
     {
       "capability_id": "CAP-CAPABILITY-WAREHOUSE",
@@ -140,9 +140,9 @@
       "test_files_present": true,
       "sha_valid": true,
       "audit_status": "VERIFIED",
-      "details": "Warehouse capability evidence verified."
+      "details": "Evidence and test files verified on disk."
     }
   ],
-  "timestamp": 1787775856.759963,
-  "receipt_hash": "b0326351eab2d6cc9ed472f85f54c95a27836bb104e4ab24f693e5ff29f26eae"
+  "timestamp": 1787783123.788919,
+  "receipt_hash": "77437bf80cd94dec69e963c11042b1bc6c34ed8374f67e26f7baa695b32f5c51"
 }

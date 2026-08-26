@@ -2,6 +2,7 @@
 
 import pytest
 import shutil
+import subprocess
 from pathlib import Path
 
 from sage.c2.capability_warehouse import (
@@ -34,7 +35,13 @@ def warehouse_engine(temp_warehouse_path, temp_op_registry_path):
 
 @pytest.fixture
 def valid_sha():
-    return "56b41ede32bbf21f2a0dc59ec852667f8f4989e6"
+    res = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return res.stdout.strip()
 
 
 def test_warehouse_initialization(warehouse_engine):
