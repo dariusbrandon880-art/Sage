@@ -1,11 +1,11 @@
 {
   "wave_id": "wave-5x4-hardened-db25921",
   "commit_sha": "db2592167dba5eda4c024bba9202ff085d9c1d9b",
-  "timestamp": 1787716342.0849564,
+  "timestamp": 1787717462.2743037,
   "total_flights": 5,
   "total_lifecycle_gates": 4,
   "total_advancement_cells": 20,
-  "playbook_receipt_hash": "e935b26f974b8b1cf9664034ffaaa2efbc00f15917383ca8a255eb675e945deb",
+  "playbook_receipt_hash": "c8ac3deaf60fb416881aca95c4437ef0bb785be064af564ff4e8d1b965f5adce",
   "cells": [
     {
       "cell_id": "Cell F1-G1",
@@ -30,8 +30,8 @@
       "source_target": "sage/c2/adaptive_mission_selection.py",
       "verification_command": "C2ExecutionBridge.execute()",
       "verification_result": "PASS",
-      "provenance_ref": "ref-F1-g2-4233a35b",
-      "cell_digest": "8c94c9fe1277cd1a1594bcf9912e02a1d9ccb7bdba5ecba69a73c0a46c0a6e1b"
+      "provenance_ref": "ref-F1-g2-f33617f9",
+      "cell_digest": "dc373162a51329051aa1856c6fcce34a9d96ecb19538733e7228b130bfb3b5e9"
     },
     {
       "cell_id": "Cell F1-G3",
@@ -43,8 +43,8 @@
       "source_target": "sage/c2/adaptive_mission_selection.py",
       "verification_command": "CCLOutcomeFeedbackBridge.process_outcome()",
       "verification_result": "PASS",
-      "provenance_ref": "ref-F1-g3-d83d73ee",
-      "cell_digest": "61818fc1be5464badb88b337e1fb7351f93bb0cf5c2c10346dd88793eee5a349"
+      "provenance_ref": "ref-F1-g3-eac5c637",
+      "cell_digest": "83b06a65f49f7cb4b5bd37e5328375c7cad3b48705165d1e381e89b46db5f94d"
     },
     {
       "cell_id": "Cell F1-G4",
@@ -56,8 +56,8 @@
       "source_target": "sage/c2/adaptive_mission_selection.py",
       "verification_command": "FleetQualificationLedger.issue_qualification()",
       "verification_result": "PASS",
-      "provenance_ref": "ref-F1-g4-b8a405d7",
-      "cell_digest": "ae387d23f41c927692b78bbd3b02d40f2441baeb5b6da911205a85a2e835b9ae"
+      "provenance_ref": "ref-F1-g4-ec66f1fb",
+      "cell_digest": "3ab1335c7ff29860cd861b9a963f1865dd4250833870bdc7006e21fe9ebbec8f"
     },
     {
       "cell_id": "Cell F2-G1",
@@ -82,8 +82,8 @@
       "source_target": "sage/experimental/airspace/fleet_qualification_ledger.py",
       "verification_command": "C2ExecutionBridge.execute()",
       "verification_result": "PASS",
-      "provenance_ref": "ref-F2-g2-2a9f8f81",
-      "cell_digest": "cf5e51ce2d29fa207fa7a2f5522e98dd46c41377530a9ccd21f5d6303ba2432b"
+      "provenance_ref": "ref-F2-g2-d53c9b10",
+      "cell_digest": "710b88bb17392bb89388672043910c896cfe3db135226557ebfad87d8069d9a6"
     },
     {
       "cell_id": "Cell F2-G3",
@@ -95,8 +95,8 @@
       "source_target": "sage/experimental/airspace/fleet_qualification_ledger.py",
       "verification_command": "CCLOutcomeFeedbackBridge.process_outcome()",
       "verification_result": "PASS",
-      "provenance_ref": "ref-F2-g3-7c86ff19",
-      "cell_digest": "fc1e185c7a682d4a398e20afbf1e96425ce4533cf8570ffdd246c0170b1c3782"
+      "provenance_ref": "ref-F2-g3-25be43dc",
+      "cell_digest": "b1da676dbca94c7a06fba6a6e6eb2a8f672a62f71baddd40488cb83bdb4faf92"
     },
     {
       "cell_id": "Cell F2-G4",
@@ -108,8 +108,8 @@
       "source_target": "sage/experimental/airspace/fleet_qualification_ledger.py",
       "verification_command": "FleetQualificationLedger.issue_qualification()",
       "verification_result": "PASS",
-      "provenance_ref": "ref-F2-g4-cd29c302",
-      "cell_digest": "0eb3ba3567e549637213d7b12d811d5280993ef95b0b788b3452073181086916"
+      "provenance_ref": "ref-F2-g4-18d7d8ed",
+      "cell_digest": "179edc88e44565588587567fb3894dde4e241435253cf9b9876b42d81afec754"
     },
     {
       "cell_id": "Cell F3-G1",
@@ -134,8 +134,8 @@
       "source_target": "sage/c2/c2_execution_bridge.py",
       "verification_command": "C2ExecutionBridge.execute()",
       "verification_result": "PASS",
-      "provenance_ref": "ref-F3-g2-a2e5c0ca",
-      "cell_digest": "720b2384935e2b8fda81b75eaf371dff4bf7b5d0cb5120cfa6a481fd077d9e2e"
+      "provenance_ref": "ref-F3-g2-b0ff491e",
+      "cell_digest": "223325b7c4f286a8ddf1f564c3decb932edda62846fad3aeed6cec92a9a83a69"
     },
     {
       "cell_id": "Cell F3-G3",
@@ -147,8 +147,8 @@
       "source_target": "sage/c2/c2_execution_bridge.py",
       "verification_command": "CCLOutcomeFeedbackBridge.process_outcome()",
       "verification_result": "PASS",
-      "provenance_ref": "ref-F3-g3-1a3e42e9",
-      "cell_digest": "82969c8c7fd45c6123e9c2255a862fcacd652afc406d4a652cc69dac5766e1a9"
+      "provenance_ref": "ref-F3-g3-59517a67",
+      "cell_digest": "b7404b35a514caa0260207fa9e73779b2acfa938151e9347db85c28af00d26b4"
     },
     {
       "cell_id": "Cell F3-G4",
@@ -160,8 +160,8 @@
       "source_target": "sage/c2/c2_execution_bridge.py",
       "verification_command": "FleetQualificationLedger.issue_qualification()",
       "verification_result": "PASS",
-      "provenance_ref": "ref-F3-g4-dae1899c",
-      "cell_digest": "d85695922a583d6191a1f3bb57923eed37657061262bdfbc41754fc21557a8d0"
+      "provenance_ref": "ref-F3-g4-0a42678f",
+      "cell_digest": "31aed21060492a9454f3a5eb141e5be9a7f88a54efd15338ae47136d502ccc28"
     },
     {
       "cell_id": "Cell F4-G1",
@@ -186,8 +186,8 @@
       "source_target": "sage/experimental/cognitive/ccl_feedback_bridge.py",
       "verification_command": "C2ExecutionBridge.execute()",
       "verification_result": "PASS",
-      "provenance_ref": "ref-F4-g2-5403c602",
-      "cell_digest": "11db6593cd3f11619d74665dad11ef6fbb8c94b7c3c1adb174e3d50150952531"
+      "provenance_ref": "ref-F4-g2-6dc37786",
+      "cell_digest": "aacdc12ccb7e6080678f8c865fbf6b6610c79b7f2e4fbf7b57da11ee552dfb74"
     },
     {
       "cell_id": "Cell F4-G3",
@@ -199,8 +199,8 @@
       "source_target": "sage/experimental/cognitive/ccl_feedback_bridge.py",
       "verification_command": "CCLOutcomeFeedbackBridge.process_outcome()",
       "verification_result": "PASS",
-      "provenance_ref": "ref-F4-g3-6ff57f30",
-      "cell_digest": "10fcbb7eebd298b88efd026500c43f300fc923bad0810fa275ee384458e3d878"
+      "provenance_ref": "ref-F4-g3-2a2ac493",
+      "cell_digest": "8c88a3843dd01379009e8b9501c2cda38e38b2bf590be8eba29106df2ea22aae"
     },
     {
       "cell_id": "Cell F4-G4",
@@ -212,8 +212,8 @@
       "source_target": "sage/experimental/cognitive/ccl_feedback_bridge.py",
       "verification_command": "FleetQualificationLedger.issue_qualification()",
       "verification_result": "PASS",
-      "provenance_ref": "ref-F4-g4-2d7366b0",
-      "cell_digest": "3b159f0da82a2bfd1b4a64a7a49e214fac3453f5b2f27c5883b1f4bc91c79a07"
+      "provenance_ref": "ref-F4-g4-d28a7d5c",
+      "cell_digest": "0fdd625c5bd254591ee7080e880f81135066d5349fe72b2571e38f3159d55778"
     },
     {
       "cell_id": "Cell F5-G1",
@@ -238,8 +238,8 @@
       "source_target": "sage/c2/c2_wave_playbook.py",
       "verification_command": "C2ExecutionBridge.execute()",
       "verification_result": "PASS",
-      "provenance_ref": "ref-F5-g2-b0077223",
-      "cell_digest": "910dd11b8ba3b61152be8f8c1440e1a8561ca8517a77639921f0f2a6a5cb96ea"
+      "provenance_ref": "ref-F5-g2-56ce066d",
+      "cell_digest": "2eb72ee798baa55c5143d30894aad461a186e60ad550d6f58feae7b2609ab6db"
     },
     {
       "cell_id": "Cell F5-G3",
@@ -251,8 +251,8 @@
       "source_target": "sage/c2/c2_wave_playbook.py",
       "verification_command": "CCLOutcomeFeedbackBridge.process_outcome()",
       "verification_result": "PASS",
-      "provenance_ref": "ref-F5-g3-da7b458c",
-      "cell_digest": "5cc4787236fa7fdf201277f8301374c4c7a5b88469256096456820097cca1985"
+      "provenance_ref": "ref-F5-g3-ea344bde",
+      "cell_digest": "0a0f141ad6701a1906fd7b50f993dc981a21d4fd0b59dfbad9e27e58ca914ec9"
     },
     {
       "cell_id": "Cell F5-G4",
@@ -264,8 +264,8 @@
       "source_target": "sage/c2/c2_wave_playbook.py",
       "verification_command": "FleetQualificationLedger.issue_qualification()",
       "verification_result": "PASS",
-      "provenance_ref": "ref-F5-g4-48e33c5a",
-      "cell_digest": "2c407191db7bc105980d8f97aa07d98447b7481be1aa876ae3aee595a0fb2a88"
+      "provenance_ref": "ref-F5-g4-70438960",
+      "cell_digest": "6ded332e1f9f3bac3a84f33b82edf27ded714aa209c251620b6f87e7dc015c3e"
     }
   ],
   "reconvergence_verdict": "PASS"
