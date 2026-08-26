@@ -1,0 +1,120 @@
+name: SAGE Large Flight Wave
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  SAGE_CI_OPENAI_STUB: "1"
+
+jobs:
+  governance:
+    name: Governance and full regression gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: SAGE governance hook
+        run: python scripts/sage_precommit_hook.py
+      - name: Full regression suite
+        run: pytest -q
+
+  flight:
+    name: "Campaign ${{ matrix.campaign }} / Flight ${{ matrix.flight }}"
+    needs: governance
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix:
+        campaign: ["01", "02", "03", "04", "05"]
+        flight: ["004", "005", "006", "007"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Verify campaign flight runner exists
+        run: test -f scripts/run_longitudinal_campaign_flight.py
+      - name: Execute authentic flight cell
+        env:
+          SAGE_CAMPAIGN_ID: "${{ matrix.campaign }}"
+          SAGE_FLIGHT_CELL: "${{ matrix.flight }}"
+        run: |
+          set -o pipefail
+          python scripts/run_longitudinal_campaign_flight.py --flight "${{ matrix.flight }}" \
+            | tee "flight_${{ matrix.campaign }}_${{ matrix.flight }}.json"
+      - name: Attach campaign/cell identity to evidence
+        if: always()
+        env:
+          CAMPAIGN: "${{ matrix.campaign }}"
+          FLIGHT: "${{ matrix.flight }}"
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          path = Path(f"flight_{os.environ['CAMPAIGN']}_{os.environ['FLIGHT']}.json")
+          if not path.exists():
+              raise SystemExit("flight produced no telemetry artifact")
+          payload = json.loads(path.read_text())
+          payload["campaign_id"] = os.environ["CAMPAIGN"]
+          payload["flight_cell"] = os.environ["FLIGHT"]
+          payload["campaign_wave"] = "5x4"
+          path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+      - name: Upload cell evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sage-wave-${{ matrix.campaign }}-${{ matrix.flight }}-${{ github.sha }}
+          path: flight_${{ matrix.campaign }}_${{ matrix.flight }}.json
+          if-no-files-found: error
+
+  verify-wave:
+    name: Verify complete 5x4 wave
+    if: always()
+    needs: flight
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: sage-wave-*-${{ github.sha }}
+          path: wave-artifacts
+          merge-multiple: true
+      - name: Enforce complete wave observation
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          expected = {(c, flight) for c in ["01", "02", "03", "04", "05"]
+                      for flight in ["004", "005", "006", "007"]}
+          observed = set()
+          for path in Path("wave-artifacts").glob("*.json"):
+              payload = json.loads(path.read_text())
+              observed.add((payload.get("campaign_id"), payload.get("flight_cell")))
+
+          missing = sorted(expected - observed)
+          unexpected = sorted(observed - expected)
+          print(f"expected_cells={len(expected)} observed_cells={len(observed)}")
+          if missing:
+              print(f"MISSING={missing}")
+          if unexpected:
+              print(f"UNEXPECTED={unexpected}")
+          if missing or unexpected or len(observed) != 20:
+              raise SystemExit("INCOMPLETE_WAVE: campaign/wave verification must HOLD")
+          print("COMPLETE_WAVE: all 20 independently identified evidence cells observed")
+          PY
