@@ -20,8 +20,8 @@ def test_lock_acquisition_success():
 
 def test_lock_conflict_prevention():
     manager = FlightCollisionLockManager()
-    request1 = FlightLockRequest("jules-session-1", "F1", ["sage/c2/shared.py"], [])
-    request2 = FlightLockRequest("jules-session-2", "F2", ["sage/c2/shared.py"], [])
+    request1 = FlightLockRequest(session_id="jules-session-1", flight_id="F1", target_files=["sage/c2/shared.py"], target_namespaces=[])
+    request2 = FlightLockRequest(session_id="jules-session-2", flight_id="F2", target_files=["sage/c2/shared.py"], target_namespaces=[])
     assert manager.acquire_lock(request1).acquired is True
     result2 = manager.acquire_lock(request2)
     assert result2.acquired is False
@@ -32,8 +32,8 @@ def test_lock_conflict_prevention():
 
 def test_lock_release_and_reacquisition():
     manager = FlightCollisionLockManager()
-    request1 = FlightLockRequest("jules-session-1", "F1", ["sage/c2/shared.py"], [])
-    request2 = FlightLockRequest("jules-session-2", "F2", ["sage/c2/shared.py"], [])
+    request1 = FlightLockRequest(session_id="jules-session-1", flight_id="F1", target_files=["sage/c2/shared.py"], target_namespaces=[])
+    request2 = FlightLockRequest(session_id="jules-session-2", flight_id="F2", target_files=["sage/c2/shared.py"], target_namespaces=[])
     manager.acquire_lock(request1)
     assert manager.release_lock("jules-session-1", "F1") is True
     assert manager.acquire_lock(request2).acquired is True
@@ -54,8 +54,8 @@ def test_paths_overlap_parent_child_containment():
 
 def test_parent_namespace_blocks_child_file():
     manager = FlightCollisionLockManager()
-    parent = FlightLockRequest("jules-session-1", "F1", [], ["sage/c2/"])
-    child = FlightLockRequest("jules-session-2", "F2", ["sage/c2/flight_collision_lock.py"], [])
+    parent = FlightLockRequest(session_id="jules-session-1", flight_id="F1", target_files=[], target_namespaces=["sage/c2/"])
+    child = FlightLockRequest(session_id="jules-session-2", flight_id="F2", target_files=["sage/c2/flight_collision_lock.py"], target_namespaces=[])
     assert manager.acquire_lock(parent).acquired is True
     result = manager.acquire_lock(child)
     assert result.acquired is False
@@ -66,15 +66,15 @@ def test_parent_namespace_blocks_child_file():
 
 def test_child_namespace_blocks_parent_namespace():
     manager = FlightCollisionLockManager()
-    child = FlightLockRequest("jules-session-1", "F1", [], ["sage/c2/flight/"])
-    parent = FlightLockRequest("jules-session-2", "F2", [], ["sage/c2/"])
+    child = FlightLockRequest(session_id="jules-session-1", flight_id="F1", target_files=[], target_namespaces=["sage/c2/flight/"])
+    parent = FlightLockRequest(session_id="jules-session-2", flight_id="F2", target_files=[], target_namespaces=["sage/c2/"])
     assert manager.acquire_lock(child).acquired is True
     assert manager.acquire_lock(parent).acquired is False
 
 
 def test_normalized_equivalent_paths_collide():
     manager = FlightCollisionLockManager()
-    first = FlightLockRequest("jules-session-1", "F1", ["./sage/c2/shared.py/"], [])
-    second = FlightLockRequest("jules-session-2", "F2", [r"sage\\c2\\shared.py"], [])
+    first = FlightLockRequest(session_id="jules-session-1", flight_id="F1", target_files=["./sage/c2/shared.py/"], target_namespaces=[])
+    second = FlightLockRequest(session_id="jules-session-2", flight_id="F2", target_files=[r"sage\\c2\\shared.py"], target_namespaces=[])
     assert manager.acquire_lock(first).acquired is True
     assert manager.acquire_lock(second).acquired is False
