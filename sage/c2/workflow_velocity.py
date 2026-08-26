@@ -111,6 +111,20 @@ class MultiSessionVelocityEngine:
         """Releases locks held by a flight."""
         return self._lock_manager.release_lock(session_id, flight_id)
 
+    def finalize_session(self, session_id: str) -> bool:
+        """Finalizes an active session and purges all active locks held by the session."""
+        if session_id not in self._sessions:
+            return False
+
+        # Release all locks associated with this session
+        active_locks = self._lock_manager.get_active_locks()
+        for res, (lock_session, lock_flight) in list(active_locks.items()):
+            if lock_session == session_id:
+                self._lock_manager.release_lock(lock_session, lock_flight)
+
+        del self._sessions[session_id]
+        return True
+
     def execute_velocity_wave(
         self,
         wave_id: str,

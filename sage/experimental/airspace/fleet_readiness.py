@@ -21,6 +21,7 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from sage.c2.reconvergence_synthesizer import ReconvergenceEvidencePackage
 from sage.experimental.airspace.models import AirspaceState, StationID
 
 
@@ -216,3 +217,19 @@ class FleetReadinessEngine:
             overall_fleet_readiness=overall_fleet_readiness,
             provenance_hash=provenance_hash,
         )
+
+    def evaluate_wave_readiness(
+        self,
+        state: AirspaceState,
+        reconvergence_pkg: ReconvergenceEvidencePackage,
+    ) -> ReadinessReceipt:
+        """Evaluates readiness incorporating 20-cell wave reconvergence package evidence."""
+        evals = {}
+        for idx, sid in enumerate(StationID, start=1):
+            cell_pass = reconvergence_pkg.advancement_matrix_20_cells.get(f"P{idx}-S3", False)
+            evals[sid] = {
+                "test_pass_rate": 1.0 if cell_pass else 0.5,
+                "evidence_refs": [f"ref_wave_{reconvergence_pkg.wave_id}"],
+                "protected_path_violations": 0 if reconvergence_pkg.reconvergence_verdict == "PASS" else 1,
+            }
+        return self.evaluate_fleet_readiness(state, evals)

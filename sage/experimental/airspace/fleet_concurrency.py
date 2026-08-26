@@ -121,15 +121,25 @@ class FleetConcurrencyEngine:
         return levels
 
     def check_namespace_conflicts(self, units: List[FlightWorkUnit]) -> List[str]:
-        """Detect duplicate repository namespace claims before any unit executes."""
+        """Detect duplicate repository namespace claims or subpath containment collisions before any unit executes."""
+        conflicts = []
         path_counts: Dict[str, List[str]] = {}
         for unit in units:
             path_counts.setdefault(unit.target_path, []).append(unit.unit_id)
-        return [
-            f"Namespace collision on path '{path}' claimed by units: {uids}"
-            for path, uids in sorted(path_counts.items())
-            if len(uids) > 1
-        ]
+
+        for path, uids in sorted(path_counts.items()):
+            if len(uids) > 1:
+                conflicts.append(f"Namespace collision on path '{path}' claimed by units: {uids}")
+
+        # Subpath containment check
+        paths = list(path_counts.keys())
+        for i in range(len(paths)):
+            for j in range(i + 1, len(paths)):
+                p1, p2 = paths[i], paths[j]
+                if p1.startswith(p2 + "/") or p2.startswith(p1 + "/"):
+                    conflicts.append(f"Hierarchical collision between path '{p1}' and path '{p2}'")
+
+        return conflicts
 
     @staticmethod
     def _unit_receipt(unit: FlightWorkUnit) -> Dict[str, Any]:

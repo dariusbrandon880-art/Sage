@@ -58,6 +58,20 @@ def test_fleet_concurrency_duplicate_unit_id_fails_closed():
         engine.execute_concurrent_wave("WAVE-DUP", units)
 
 
+def test_fleet_concurrency_hierarchical_namespace_collision():
+    engine = FleetConcurrencyEngine()
+    units = [
+        FlightWorkUnit(unit_id="U1", flight_id="F1", target_path="sage/experimental/c2"),
+        FlightWorkUnit(unit_id="U2", flight_id="F2", target_path="sage/experimental/c2/submodule.py"),
+    ]
+
+    result = engine.execute_concurrent_wave("WAVE-HIERARCHICAL", units)
+    assert result.is_reconverged is False
+    assert result.failed_units == 2
+    assert len(result.lock_conflicts) == 1
+    assert "Hierarchical collision" in result.lock_conflicts[0]
+
+
 def test_fleet_concurrency_namespace_collision():
     engine = FleetConcurrencyEngine()
     units = [

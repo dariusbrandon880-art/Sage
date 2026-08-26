@@ -1,6 +1,7 @@
 """Unit tests for SAGE C2 Frontier Admission Engine & Classification Ledger."""
 
 import pytest
+from sage.c2.flight_collision_lock import FlightLockRequest
 from sage.c2.frontier_admission import (
     FrontierAdmissionEngine,
     FrontierCandidate,
@@ -81,6 +82,36 @@ def test_frontier_admission_superseded_rejection():
     assert receipt.admitted is False
     assert receipt.classified_state == FrontierState.SUPERSEDED
     assert "cannot be admitted" in receipt.rejection_reason
+
+
+def test_frontier_admission_active_lock_manager_collision():
+    engine = FrontierAdmissionEngine()
+
+    # Pre-register an active lock held by another session
+    engine.lock_manager.acquire_lock(
+        FlightLockRequest(
+            session_id="external-session",
+            flight_id="F-LOCKED",
+            target_files=["sage/c2/shared_module.py"],
+            target_namespaces=["sage/c2/"],
+        )
+    )
+
+    candidate = FrontierCandidate(
+        frontier_id="F-NEW",
+        target="sage/c2/shared_module.py",
+        source="C2",
+        state=FrontierState.UNSTARTED,
+        base_sha="sha123",
+        collision_zone="sage/c2/",
+        stop_condition="Pass",
+    )
+
+    receipt = engine.classify_and_evaluate(candidate)
+    assert receipt.admitted is False
+    assert receipt.collision_detected is True
+    assert receipt.classified_state == FrontierState.RECONCILE
+    assert "Active lock collision" in receipt.rejection_reason
 
 
 def test_frontier_admission_gps_clearance_rejection():
