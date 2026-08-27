@@ -1,20 +1,15 @@
-"""SAGE Big Jump Wave Engine.
-
-Coordinates 5 independent capability flight vectors operating across the canonical 5x4 lifecycle
-advancement matrix (20 cells total) with exact-HEAD SHA provenance, Flight GPS clearance,
-anti-collision locking, and fail-closed reconvergence synthesis.
-"""
+"""SAGE Big Jump Wave Engine with identity-addressed execution evidence."""
 
 from __future__ import annotations
 
-import hashlib
 import json
 import re
 import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
+
 from pydantic import BaseModel, Field
 
 from sage.c2.flight_collision_lock import FlightCollisionLockManager, FlightLockRequest
@@ -31,7 +26,6 @@ from sage.c2.reconvergence_synthesizer import (
 
 
 class FlightMissionSpec(BaseModel):
-    """Specification for an independent flight mission in a Big Jump Wave."""
     flight_id: str
     frontier_name: str
     target_path: str
@@ -51,7 +45,7 @@ CANONICAL_BIG_JUMP_MISSIONS: List[FlightMissionSpec] = [
 
 
 class BuildJumpWaveEngine:
-    """Engine executing authorized 5-flight Big Jump Waves under fail-closed standards."""
+    """Execute five bounded flights with fail-closed lifecycle evidence."""
 
     def __init__(self, storage_dir: str = "evidence_capture"):
         self.storage_dir = Path(storage_dir)
@@ -60,9 +54,9 @@ class BuildJumpWaveEngine:
         self.lock_manager = FlightCollisionLockManager()
 
     def get_current_head_sha(self) -> str:
-        res = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True)
-        sha = res.stdout.strip()
-        if len(sha) != 40 or not re.match(r"^[0-9a-fA-F]{40}$", sha):
+        result = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True)
+        sha = result.stdout.strip()
+        if not re.fullmatch(r"[0-9a-fA-F]{40}", sha):
             raise ValueError(f"Invalid git HEAD commit SHA: '{sha}'")
         return sha
 
@@ -101,56 +95,80 @@ class BuildJumpWaveEngine:
                 lifecycle=FlightLifecycle.ACTIVE,
             )
             gps.registry.register(manifest)
-            lock_req = FlightLockRequest(
-                session_id=w_id,
-                flight_id=spec.flight_id,
-                target_files=[spec.target_path],
-                target_namespaces=[spec.collision_zone],
+            lock_res = self.lock_manager.acquire_lock(
+                FlightLockRequest(
+                    session_id=w_id,
+                    flight_id=spec.flight_id,
+                    target_files=[spec.target_path],
+                    target_namespaces=[spec.collision_zone],
+                )
             )
-            lock_res = self.lock_manager.acquire_lock(lock_req)
 
-            m1 = LifecycleMilestoneRecord(stage=LifecycleStage.INTAKE_RECON, passed=admission.admitted and lock_res.acquired, evidence_ref=spec.evidence_ref)
-            m2 = LifecycleMilestoneRecord(stage=LifecycleStage.BOUNDED_BUILD, passed=lock_res.acquired, evidence_ref=spec.target_path)
+            try:
+                m1 = LifecycleMilestoneRecord(
+                    stage=LifecycleStage.INTAKE_RECON,
+                    passed=admission.admitted and lock_res.acquired,
+                    evidence_ref=spec.evidence_ref,
+                )
+                m2 = LifecycleMilestoneRecord(
+                    stage=LifecycleStage.BOUNDED_BUILD,
+                    passed=lock_res.acquired,
+                    evidence_ref=spec.target_path,
+                )
 
-            tests_passed = 0
-            all_tests_ok = True
-            if spec.test_references:
-                res = subprocess.run([sys.executable, "-m", "pytest", *spec.test_references], capture_output=True, text=True)
-                all_tests_ok = res.returncode == 0
-                match = re.search(r"(\d+)\s+passed", res.stdout)
-                if match:
-                    tests_passed = int(match.group(1))
+                tests_passed = 0
+                all_tests_ok = True
+                if spec.test_references:
+                    result = subprocess.run(
+                        [sys.executable, "-m", "pytest", *spec.test_references],
+                        capture_output=True,
+                        text=True,
+                    )
+                    all_tests_ok = result.returncode == 0
+                    match = re.search(r"(\d+)\s+passed", result.stdout)
+                    if match:
+                        tests_passed = int(match.group(1))
 
-            m3 = LifecycleMilestoneRecord(stage=LifecycleStage.VERIFY_PROOF, passed=all_tests_ok, evidence_ref=spec.test_references[0] if spec.test_references else spec.target_path)
-            evidence_file = self.storage_dir / Path(spec.evidence_ref).name
-            flight_proof = {
-                "flight_id": spec.flight_id,
-                "frontier_name": spec.frontier_name,
-                "target_path": spec.target_path,
-                "exact_head": head_sha,
-                "status": "PASS" if (admission.admitted and lock_res.acquired and all_tests_ok) else "FAIL",
-                "timestamp": time.time(),
-            }
-            evidence_file.write_text(json.dumps(flight_proof, indent=2), encoding="utf-8")
-            m4 = LifecycleMilestoneRecord(stage=LifecycleStage.WAREHOUSE_PROMOTE, passed=all_tests_ok, evidence_ref=str(evidence_file))
+                m3 = LifecycleMilestoneRecord(
+                    stage=LifecycleStage.VERIFY_PROOF,
+                    passed=all_tests_ok,
+                    evidence_ref=spec.test_references[0] if spec.test_references else spec.target_path,
+                )
 
-            summary = FlightExecutionSummary(
-                flight_id=spec.flight_id,
-                target=spec.target_path,
-                classification="ACTIVE",
-                execution_result="PASS" if (admission.admitted and lock_res.acquired and all_tests_ok) else "FAIL",
-                exact_head=head_sha,
-                tests_passed=tests_passed,
-                evidence_ref=str(evidence_file),
-                pr_or_change=spec.pr_or_change,
-                lifecycle_milestones=[m1, m2, m3, m4],
-            )
-            flight_summaries.append(summary)
+                evidence_dir = self.storage_dir / "waves" / w_id / head_sha
+                evidence_dir.mkdir(parents=True, exist_ok=True)
+                evidence_file = evidence_dir / f"{spec.flight_id}_receipt.json"
+                flight_proof = {
+                    "wave_id": w_id,
+                    "flight_id": spec.flight_id,
+                    "frontier_name": spec.frontier_name,
+                    "target_path": spec.target_path,
+                    "executed_head": head_sha,
+                    "status": "PASS" if (admission.admitted and lock_res.acquired and all_tests_ok) else "FAIL",
+                    "timestamp": time.time(),
+                }
+                evidence_file.write_text(json.dumps(flight_proof, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
-            # A flight lock is scoped to execution, not to the whole wave. Leaving it
-            # held creates false collisions for later fronts and later waves.
-            if lock_res.acquired:
-                self.lock_manager.release_lock(w_id, spec.flight_id)
+                m4 = LifecycleMilestoneRecord(
+                    stage=LifecycleStage.WAREHOUSE_PROMOTE,
+                    passed=all_tests_ok,
+                    evidence_ref=str(evidence_file),
+                )
+                flight_summaries.append(
+                    FlightExecutionSummary(
+                        flight_id=spec.flight_id,
+                        target=spec.target_path,
+                        classification="ACTIVE",
+                        execution_result="PASS" if (admission.admitted and lock_res.acquired and all_tests_ok) else "FAIL",
+                        exact_head=head_sha,
+                        tests_passed=tests_passed,
+                        evidence_ref=str(evidence_file),
+                        pr_or_change=spec.pr_or_change,
+                        lifecycle_milestones=[m1, m2, m3, m4],
+                    )
+                )
+            finally:
+                if lock_res.acquired:
+                    self.lock_manager.release_lock(w_id, spec.flight_id)
 
-        synthesizer = C2ReconvergenceSynthesizer(wave_id=w_id)
-        return synthesizer.synthesize_reconvergence(flight_summaries)
+        return C2ReconvergenceSynthesizer(wave_id=w_id).synthesize_reconvergence(flight_summaries)
