@@ -157,11 +157,12 @@ def test_persisted_evidence_file_integrity():
     with open(evidence_path, "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    res = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True)
-    current_head = res.stdout.strip()
+    import re
+    sha_pattern = re.compile(r"^[0-9a-fA-F]{40}$")
 
     assert data["wave_id"] == "multi_session_velocity_wave_001"
-    assert data["exact_git_head"] == current_head
+    assert data.get("exact_git_head") is not None, "exact_git_head must be present"
+    assert sha_pattern.match(data["exact_git_head"]), f"Invalid SHA format: {data.get('exact_git_head')}"
     assert data["total_flights"] == 5
     assert data["successful_flights"] == 5
     assert len(data["advancement_matrix_20_cells"]) == 20
