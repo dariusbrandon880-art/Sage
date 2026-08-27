@@ -33,6 +33,7 @@ jobs:
 
   five-front-full-engine:
     name: "C2 Full Engine / ${{ matrix.front }}"
+    if: ${{ always() }}
     needs: test
     strategy:
       fail-fast: false
