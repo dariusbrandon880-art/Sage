@@ -47,6 +47,14 @@ def test_build_jump_wave_runs_independent_flights_concurrently(build_jump_engine
 
     def fake_run_flight(spec, wave_id, head_sha):
         thread_ids.add(threading.get_ident())
+        lifecycle_milestones = [
+            LifecycleMilestoneRecord(
+                stage=stage,
+                passed=True,
+                evidence_ref=spec.evidence_ref,
+            )
+            for stage in LifecycleStage
+        ]
         return FlightExecutionSummary(
             flight_id=spec.flight_id,
             target=spec.target_path,
@@ -56,13 +64,7 @@ def test_build_jump_wave_runs_independent_flights_concurrently(build_jump_engine
             tests_passed=1,
             evidence_ref=spec.evidence_ref,
             pr_or_change=spec.pr_or_change,
-            lifecycle_milestones=[
-                LifecycleMilestoneRecord(
-                    stage=LifecycleStage.INTAKE_RECON,
-                    passed=True,
-                    evidence_ref=spec.evidence_ref,
-                )
-            ],
+            lifecycle_milestones=lifecycle_milestones,
         )
 
     monkeypatch.setattr(build_jump_engine, "_run_flight", fake_run_flight)
