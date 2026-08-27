@@ -124,6 +124,7 @@ def test_persisted_evidence_file_is_historical_not_live_gate():
     ).stdout.strip()
     assert re.fullmatch(r"[0-9a-fA-F]{40}", data["exact_git_head"])
     assert re.fullmatch(r"[0-9a-fA-F]{40}", current_head)
+    assert data["exact_git_head"] == current_head
     assert data["wave_id"] == "multi_session_velocity_wave_001"
     assert data["total_flights"] == 5
     assert data["successful_flights"] == 5
