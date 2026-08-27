@@ -36,11 +36,11 @@ class FlightMissionSpec(BaseModel):
 
 
 CANONICAL_BIG_JUMP_MISSIONS: List[FlightMissionSpec] = [
-    FlightMissionSpec("FLIGHT-F1-RESEARCH", "Research & Intelligence Frontier", "sage/c2/frontier_intelligence_bridge.py", "sage/c2/frontier_intelligence/", "evidence_capture/f1_research_evidence.json", "F1 Autonomous Research", ["tests/c2/test_frontier_admission.py"]),
-    FlightMissionSpec("FLIGHT-F2-CONTINUITY", "Continuity & Failure Memory Frontier", "sage/capability_registry.py", "sage/capability_registry.py", "evidence_capture/f2_continuity_evidence.json", "F2 Continuity Ledger", ["tests/test_capability_registry.py", "tests/test_capability_lineage.py"]),
-    FlightMissionSpec("FLIGHT-F3-EXECUTION", "Execution & Substrate Frontier", "sage/runtime/engine.py", "sage/runtime/", "evidence_capture/f3_execution_evidence.json", "F3 Runtime Acceleration", ["tests/test_system_frame.py"]),
-    FlightMissionSpec("FLIGHT-F4-GUARD", "Governance & Architecture Guard Frontier", "sage/c2/chatgpt_c2_contract.py", "sage/c2/contract/", "evidence_capture/f4_guard_evidence.json", "F4 Governance Sentinel", ["tests/c2/test_chatgpt_c2_exact_order_anti_drift.py"]),
-    FlightMissionSpec("FLIGHT-F5-WAREHOUSE", "Capability Warehouse & Reconvergence Frontier", "sage/c2/reconvergence_synthesizer.py", "sage/c2/reconvergence/", "evidence_capture/f5_warehouse_evidence.json", "F5 Reconvergence Warehouse", ["tests/c2/test_reconvergence_synthesizer.py"]),
+    FlightMissionSpec(flight_id="FLIGHT-F1-RESEARCH", frontier_name="Research & Intelligence Frontier", target_path="sage/c2/frontier_intelligence_bridge.py", collision_zone="sage/c2/frontier_intelligence/", evidence_ref="evidence_capture/f1_research_evidence.json", pr_or_change="F1 Autonomous Research", test_references=["tests/c2/test_frontier_admission.py"]),
+    FlightMissionSpec(flight_id="FLIGHT-F2-CONTINUITY", frontier_name="Continuity & Failure Memory Frontier", target_path="sage/capability_registry.py", collision_zone="sage/capability_registry.py", evidence_ref="evidence_capture/f2_continuity_evidence.json", pr_or_change="F2 Continuity Ledger", test_references=["tests/test_capability_registry.py", "tests/test_capability_lineage.py"]),
+    FlightMissionSpec(flight_id="FLIGHT-F3-EXECUTION", frontier_name="Execution & Substrate Frontier", target_path="sage/runtime/engine.py", collision_zone="sage/runtime/", evidence_ref="evidence_capture/f3_execution_evidence.json", pr_or_change="F3 Runtime Acceleration", test_references=["tests/test_system_frame.py"]),
+    FlightMissionSpec(flight_id="FLIGHT-F4-GUARD", frontier_name="Governance & Architecture Guard Frontier", target_path="sage/c2/chatgpt_c2_contract.py", collision_zone="sage/c2/contract/", evidence_ref="evidence_capture/f4_guard_evidence.json", pr_or_change="F4 Governance Sentinel", test_references=["tests/c2/test_chatgpt_c2_exact_order_anti_drift.py"]),
+    FlightMissionSpec(flight_id="FLIGHT-F5-WAREHOUSE", frontier_name="Capability Warehouse & Reconvergence Frontier", target_path="sage/c2/reconvergence_synthesizer.py", collision_zone="sage/c2/reconvergence/", evidence_ref="evidence_capture/f5_warehouse_evidence.json", pr_or_change="F5 Reconvergence Warehouse", test_references=["tests/c2/test_reconvergence_synthesizer.py"]),
 ]
 
 
