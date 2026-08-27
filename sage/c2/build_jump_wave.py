@@ -11,6 +11,7 @@ import hashlib
 import json
 import re
 import subprocess
+import sys
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -181,7 +182,7 @@ class BuildJumpWaveEngine:
             tests_passed = 0
             all_tests_ok = True
             if spec.test_references:
-                pytest_cmd = ["poetry", "run", "pytest"] + spec.test_references
+                pytest_cmd = [sys.executable, "-m", "pytest"] + spec.test_references
                 res = subprocess.run(pytest_cmd, capture_output=True, text=True)
                 all_tests_ok = (res.returncode == 0)
                 # Parse test count from stdout if available
