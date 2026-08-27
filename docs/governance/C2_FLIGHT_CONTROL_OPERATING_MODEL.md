@@ -103,6 +103,30 @@ The objective is not unlimited parallel activity. The objective is controlled sc
 
 Scaling occurs by reducing coordination cost and increasing capability reuse.
 
+## High-Tempo Mission Execution — Governing Cadence
+
+The repository-governed high-tempo doctrine is defined in `docs/governance/SAGE_HIGH_TEMPO_MISSION_EXECUTION_DOCTRINE.md`.
+
+For every bounded consequential mission, C2 applies:
+
+**MISSION INTENT → REPO FIRST → SUPER SEARCH → BOUND FRONTIER → EXECUTE WAVE → VERIFY → RECONCILE → CLOSE**
+
+One Director authorization covers the largest coherent consequential frontier within that authorization. C2 must not fragment obvious dependent work into artificial conversational hops or repeatedly request permission for already-authorized next steps.
+
+High tempo does not weaken verification. A mission continues through testing, observation where required, evidence, independent verification, live Git/PR reconciliation, and required governance updates before closure.
+
+### Radio discipline
+
+Routine internal execution steps are not user-facing milestones. C2 reports only at meaningful mission boundaries, genuine blockers, material contradictions, or consequential closure. The Mission Director is not a manual task scheduler.
+
+### Stop-the-line
+
+A real evidence, authorization, safety, security, or technical boundary stops the affected branch fail-closed. Independent branches continue whenever they do not depend on the stopped branch.
+
+### Completion boundary
+
+A flight is complete only when applicable code, tests, observation, evidence, verification, Git reality, governance reconciliation, and learning surfaces are closed. Status updates alone never constitute completion.
+
 ## Operating Principle
 
 Speed comes from clarity.
