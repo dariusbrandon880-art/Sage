@@ -2,10 +2,12 @@
 
 import json
 import re
+import threading
 from pathlib import Path
 import pytest
 
 from sage.c2.build_jump_wave import BuildJumpWaveEngine, FlightMissionSpec
+from sage.c2.reconvergence_synthesizer import FlightExecutionSummary, LifecycleMilestoneRecord, LifecycleStage
 
 
 @pytest.fixture
@@ -29,17 +31,49 @@ def test_build_jump_wave_execution_full(build_jump_engine):
     assert pkg.reconvergence_verdict == "PASS"
     assert pkg.first_pass_verification_rate == 100.0
 
-    # 20-cell advancement matrix verification
     matrix = pkg.advancement_matrix_20_cells
     assert len(matrix) == 20
     assert all(matrix.values())
 
-    # Check each flight summary
     for summary in pkg.flight_summaries:
         assert summary.execution_result == "PASS"
         assert len(summary.exact_head) == 40
         assert summary.completed_all_stages() is True
         assert summary.blocker is None
+
+
+def test_build_jump_wave_runs_independent_flights_concurrently(build_jump_engine, monkeypatch):
+    thread_ids = set()
+
+    def fake_run_flight(spec, wave_id, head_sha):
+        thread_ids.add(threading.get_ident())
+        lifecycle_milestones = [
+            LifecycleMilestoneRecord(
+                stage=stage,
+                passed=True,
+                evidence_ref=spec.evidence_ref,
+            )
+            for stage in LifecycleStage
+        ]
+        return FlightExecutionSummary(
+            flight_id=spec.flight_id,
+            target=spec.target_path,
+            classification="ACTIVE",
+            execution_result="PASS",
+            exact_head=head_sha,
+            tests_passed=1,
+            evidence_ref=spec.evidence_ref,
+            pr_or_change=spec.pr_or_change,
+            lifecycle_milestones=lifecycle_milestones,
+        )
+
+    monkeypatch.setattr(build_jump_engine, "_run_flight", fake_run_flight)
+    package = build_jump_engine.execute_wave(wave_id="parallel-wave-test")
+
+    assert package.reconvergence_verdict == "PASS"
+    assert package.total_flights == 5
+    assert package.successful_flights == 5
+    assert len(thread_ids) > 1
 
 
 def test_build_jump_wave_invalid_mission_count(build_jump_engine):
