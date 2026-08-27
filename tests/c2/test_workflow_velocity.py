@@ -19,7 +19,7 @@ def velocity_engine():
 
 @pytest.fixture
 def valid_git_head():
-    return "ffdc31d1d24458cfd15b1d365b3c2400be5c2540"
+    return "7cdebce6e542ab5e8975194c6610f388e83942a9"
 
 
 def test_session_registration_and_lookup(velocity_engine):
