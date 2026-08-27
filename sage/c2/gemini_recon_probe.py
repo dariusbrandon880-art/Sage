@@ -119,22 +119,28 @@ class GeminiReconProbe:
 
     def _check_gemini_cli_availability(self) -> tuple[bool, bool]:
         cli_installed = shutil.which("gemini") is not None
-        package_available = False
+        if cli_installed:
+            return True, True
 
-        if not cli_installed:
-            try:
-                res = subprocess.run(
-                    ["npm", "info", "@google/gemini-cli"],
-                    capture_output=True,
-                    text=True,
-                    timeout=10,
-                )
-                if res.returncode == 0 and "@google/gemini-cli" in res.stdout:
-                    package_available = True
-            except Exception:
-                package_available = False
-        else:
-            package_available = True
+        package_available = False
+        try:
+            res = subprocess.run(
+                ["npm", "info", "@google/gemini-cli"],
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+            if res.returncode == 0 and ("gemini" in res.stdout or "@google/gemini-cli" in res.stdout):
+                package_available = True
+        except Exception:
+            package_available = False
+
+        if not package_available:
+            # Fall back to checking whether npm / npx is present for provisioning
+            npm_path = shutil.which("npm")
+            npx_path = shutil.which("npx")
+            if npm_path or npx_path:
+                package_available = True
 
         return cli_installed, package_available
 
