@@ -1,0 +1,39 @@
+name: SAGE Cross-Model Audit
+
+on:
+  pull_request:
+    paths:
+      - 'sage/runtime/cross_model_audit.py'
+      - 'tests/runtime/test_cross_model_audit.py'
+      - '.github/workflows/cross-model-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cross-model-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact PR HEAD
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -e '.[dev]'
+
+      - name: Run cross-model audit regression suite
+        run: pytest -q tests/runtime/test_cross_model_audit.py
+
+      - name: Verify canonical HEAD binding
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          test "${#EXPECTED_SHA}" -eq 40
