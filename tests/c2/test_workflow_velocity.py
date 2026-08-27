@@ -1,7 +1,7 @@
 """Unit and integration tests for SAGE Multi-Session Velocity Engine & Rolls-Royce Workflow Protocol."""
 
 import json
-import re
+import subprocess
 import pytest
 from pathlib import Path
 
@@ -150,16 +150,18 @@ def test_lock_collision_fails_closed(velocity_engine, valid_git_head):
     assert receipt.reconvergence_verdict == "FAIL_CLOSED"
 
 
-def test_persisted_evidence_file_integrity(valid_git_head):
+def test_persisted_evidence_file_integrity():
     evidence_path = Path("evidence_capture/multi_session_velocity_wave_evidence.json")
     assert evidence_path.exists(), "Multi-session velocity evidence file must exist"
 
     with open(evidence_path, "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    sha_pattern = re.compile(r"^[0-9a-fA-F]{40}$")
+    res = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True)
+    current_head = res.stdout.strip()
+
     assert data["wave_id"] == "multi_session_velocity_wave_001"
-    assert sha_pattern.match(data["exact_git_head"])
+    assert data["exact_git_head"] == current_head
     assert data["total_flights"] == 5
     assert data["successful_flights"] == 5
     assert len(data["advancement_matrix_20_cells"]) == 20
