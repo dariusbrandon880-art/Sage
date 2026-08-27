@@ -1,11 +1,11 @@
 {
-  "receipt_id": "rec_0eeecd28f278",
+  "receipt_id": "rec_3f91b70f2558",
   "wave_id": "multi_session_velocity_wave_001",
   "active_sessions": [
     "c2-control-tower-primary",
     "jules-execution-session-01"
   ],
-  "exact_git_head": "ffdc31d1d24458cfd15b1d365b3c2400be5c2540",
+  "exact_git_head": "7cdebce6e542ab5e8975194c6610f388e83942a9",
   "total_flights": 5,
   "successful_flights": 5,
   "advancement_matrix_20_cells": {
@@ -32,6 +32,6 @@
   },
   "rolls_royce_quality_passed": true,
   "reconvergence_verdict": "PASS",
-  "timestamp": 1787760821.334977,
-  "receipt_hash": "d8fb23a35c98ad45e9e04a222d590a634e175cd7fadc3bf5b4498a55ddc17f62"
+  "timestamp": 1787792351.280557,
+  "receipt_hash": "276144dc738b5782e084426d7a4c58d391fd2f77ce2c60377f8d8ebdb1099437"
 }
