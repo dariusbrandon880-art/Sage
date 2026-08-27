@@ -1,0 +1,53 @@
+name: SAGE Gemini Recon Validation
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_sha:
+        description: 'Exact 40-character SAGE commit to validate'
+        required: true
+        type: string
+  pull_request:
+    paths:
+      - 'sage/runtime/cross_model_audit.py'
+      - 'sage/integrations.py'
+      - 'tests/runtime/test_cross_model_audit.py'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve exact target
+        id: target
+        env:
+          INPUT_SHA: ${{ inputs.target_sha }}
+          PR_SHA: ${{ github.event.pull_request.head.sha }}
+          GITHUB_SHA_VALUE: ${{ github.sha }}
+        run: |
+          target="${INPUT_SHA:-${PR_SHA:-$GITHUB_SHA_VALUE}}"
+          test "${#target}" -eq 40
+          echo "sha=$target" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout exact target
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ steps.target.outputs.sha }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -e '.[dev]'
+
+      - name: Validate governed external-model evidence
+        run: pytest -q tests/runtime/test_cross_model_audit.py
+
+      - name: Prove checkout binding
+        env:
+          TARGET_SHA: ${{ steps.target.outputs.sha }}
+        run: test "$(git rev-parse HEAD)" = "$TARGET_SHA"
