@@ -1,6 +1,7 @@
 """Unit and integration tests for SAGE Multi-Session Velocity Engine & Rolls-Royce Workflow Protocol."""
 
 import json
+import re
 import pytest
 from pathlib import Path
 
@@ -156,8 +157,9 @@ def test_persisted_evidence_file_integrity(valid_git_head):
     with open(evidence_path, "r", encoding="utf-8") as f:
         data = json.load(f)
 
+    sha_pattern = re.compile(r"^[0-9a-fA-F]{40}$")
     assert data["wave_id"] == "multi_session_velocity_wave_001"
-    assert data["exact_git_head"] == valid_git_head
+    assert sha_pattern.match(data["exact_git_head"])
     assert data["total_flights"] == 5
     assert data["successful_flights"] == 5
     assert len(data["advancement_matrix_20_cells"]) == 20

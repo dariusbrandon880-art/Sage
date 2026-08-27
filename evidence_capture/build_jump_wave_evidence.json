@@ -1,187 +1,187 @@
 {
-  "wave_id": "wave-control-tower-handoff-1787789877",
+  "wave_id": "wave-big-jump-1787790406",
   "flight_summaries": [
     {
-      "flight_id": "CAP-MAIN-STABILIZATION",
-      "target": "sage/runtime/engine.py",
+      "flight_id": "FLIGHT-F1-RESEARCH",
+      "target": "sage/c2/frontier_intelligence_bridge.py",
       "classification": "ACTIVE",
       "execution_result": "PASS",
       "exact_head": "7cdebce6e542ab5e8975194c6610f388e83942a9",
-      "tests_passed": 18,
-      "evidence_ref": "evidence_capture/main_stabilization_evidence.json",
-      "pr_or_change": "PR #268 Main Baseline",
+      "tests_passed": 4,
+      "evidence_ref": "/app/evidence_capture/f1_research_evidence.json",
+      "pr_or_change": "F1 Autonomous Research",
       "lifecycle_milestones": [
         {
           "stage": "STAGE_1_INTAKE_RECON",
           "passed": true,
-          "evidence_ref": "evidence_capture/main_stabilization_evidence.json",
-          "timestamp": 1787789877.5881078
+          "evidence_ref": "evidence_capture/f1_research_evidence.json",
+          "timestamp": 1787790406.4870553
         },
         {
           "stage": "STAGE_2_BOUNDED_BUILD",
           "passed": true,
-          "evidence_ref": "sage/runtime/engine.py",
-          "timestamp": 1787789877.5881124
-        },
-        {
-          "stage": "STAGE_3_VERIFY_PROOF",
-          "passed": true,
-          "evidence_ref": "tests/test_system_frame.py",
-          "timestamp": 1787789880.2337825
-        },
-        {
-          "stage": "STAGE_4_WAREHOUSE_PROMOTE",
-          "passed": true,
-          "evidence_ref": "evidence_capture/main_stabilization_evidence.json",
-          "timestamp": 1787789880.234211
-        }
-      ],
-      "blocker": null
-    },
-    {
-      "flight_id": "CAP-PR-266-RECOVERY-RECONCILIATION",
-      "target": "sage/capability_registry.py",
-      "classification": "ACTIVE",
-      "execution_result": "PASS",
-      "exact_head": "7cdebce6e542ab5e8975194c6610f388e83942a9",
-      "tests_passed": 7,
-      "evidence_ref": "evidence_capture/pr_266_reconciliation_evidence.json",
-      "pr_or_change": "PR #266 Recovery Lane",
-      "lifecycle_milestones": [
-        {
-          "stage": "STAGE_1_INTAKE_RECON",
-          "passed": true,
-          "evidence_ref": "sage/capability_registry.py",
-          "timestamp": 1787789880.2344134
-        },
-        {
-          "stage": "STAGE_2_BOUNDED_BUILD",
-          "passed": true,
-          "evidence_ref": "sage/capability_registry.py",
-          "timestamp": 1787789880.2353482
-        },
-        {
-          "stage": "STAGE_3_VERIFY_PROOF",
-          "passed": true,
-          "evidence_ref": "tests/test_capability_registry.py",
-          "timestamp": 1787789881.9562159
-        },
-        {
-          "stage": "STAGE_4_WAREHOUSE_PROMOTE",
-          "passed": true,
-          "evidence_ref": "evidence_capture/pr_266_reconciliation_evidence.json",
-          "timestamp": 1787789881.956604
-        }
-      ],
-      "blocker": null
-    },
-    {
-      "flight_id": "CAP-FLIGHT-GPS-V12-OBSERVER",
-      "target": "sage/c2/flight_gps/engine.py",
-      "classification": "ACTIVE",
-      "execution_result": "PASS",
-      "exact_head": "7cdebce6e542ab5e8975194c6610f388e83942a9",
-      "tests_passed": 10,
-      "evidence_ref": "evidence_capture/flight_gps_observer_evidence.json",
-      "pr_or_change": "Flight GPS v1.2 Foundation",
-      "lifecycle_milestones": [
-        {
-          "stage": "STAGE_1_INTAKE_RECON",
-          "passed": true,
-          "evidence_ref": "sage/c2/flight_gps/engine.py",
-          "timestamp": 1787789881.9567037
-        },
-        {
-          "stage": "STAGE_2_BOUNDED_BUILD",
-          "passed": true,
-          "evidence_ref": "sage/c2/flight_gps/engine.py",
-          "timestamp": 1787789881.956723
-        },
-        {
-          "stage": "STAGE_3_VERIFY_PROOF",
-          "passed": true,
-          "evidence_ref": "tests/c2/test_flight_gps.py",
-          "timestamp": 1787789883.719638
-        },
-        {
-          "stage": "STAGE_4_WAREHOUSE_PROMOTE",
-          "passed": true,
-          "evidence_ref": "evidence_capture/flight_gps_observer_evidence.json",
-          "timestamp": 1787789883.720058
-        }
-      ],
-      "blocker": null
-    },
-    {
-      "flight_id": "CAP-WAVE-CLEARANCE-PROTOCOL",
-      "target": "sage/c2/frontier_admission.py",
-      "classification": "ACTIVE",
-      "execution_result": "PASS",
-      "exact_head": "7cdebce6e542ab5e8975194c6610f388e83942a9",
-      "tests_passed": 7,
-      "evidence_ref": "evidence_capture/wave_clearance_protocol_evidence.json",
-      "pr_or_change": "Wave Clearance Protocol",
-      "lifecycle_milestones": [
-        {
-          "stage": "STAGE_1_INTAKE_RECON",
-          "passed": true,
-          "evidence_ref": "sage/c2/frontier_admission.py",
-          "timestamp": 1787789883.7201731
-        },
-        {
-          "stage": "STAGE_2_BOUNDED_BUILD",
-          "passed": true,
-          "evidence_ref": "sage/c2/frontier_admission.py",
-          "timestamp": 1787789883.720212
+          "evidence_ref": "sage/c2/frontier_intelligence_bridge.py",
+          "timestamp": 1787790406.4870605
         },
         {
           "stage": "STAGE_3_VERIFY_PROOF",
           "passed": true,
           "evidence_ref": "tests/c2/test_frontier_admission.py",
-          "timestamp": 1787789885.4503126
+          "timestamp": 1787790408.5643015
         },
         {
           "stage": "STAGE_4_WAREHOUSE_PROMOTE",
           "passed": true,
-          "evidence_ref": "evidence_capture/wave_clearance_protocol_evidence.json",
-          "timestamp": 1787789885.450705
+          "evidence_ref": "/app/evidence_capture/f1_research_evidence.json",
+          "timestamp": 1787790408.5651164
         }
       ],
       "blocker": null
     },
     {
-      "flight_id": "CAP-20-CELL-RECONVERGENCE-SYNTHESIS",
+      "flight_id": "FLIGHT-F2-CONTINUITY",
+      "target": "sage/capability_registry.py",
+      "classification": "ACTIVE",
+      "execution_result": "PASS",
+      "exact_head": "7cdebce6e542ab5e8975194c6610f388e83942a9",
+      "tests_passed": 7,
+      "evidence_ref": "/app/evidence_capture/f2_continuity_evidence.json",
+      "pr_or_change": "F2 Continuity Ledger",
+      "lifecycle_milestones": [
+        {
+          "stage": "STAGE_1_INTAKE_RECON",
+          "passed": true,
+          "evidence_ref": "evidence_capture/f2_continuity_evidence.json",
+          "timestamp": 1787790408.5653567
+        },
+        {
+          "stage": "STAGE_2_BOUNDED_BUILD",
+          "passed": true,
+          "evidence_ref": "sage/capability_registry.py",
+          "timestamp": 1787790408.5653598
+        },
+        {
+          "stage": "STAGE_3_VERIFY_PROOF",
+          "passed": true,
+          "evidence_ref": "tests/test_capability_registry.py",
+          "timestamp": 1787790410.6028352
+        },
+        {
+          "stage": "STAGE_4_WAREHOUSE_PROMOTE",
+          "passed": true,
+          "evidence_ref": "/app/evidence_capture/f2_continuity_evidence.json",
+          "timestamp": 1787790410.6035867
+        }
+      ],
+      "blocker": null
+    },
+    {
+      "flight_id": "FLIGHT-F3-EXECUTION",
+      "target": "sage/runtime/engine.py",
+      "classification": "ACTIVE",
+      "execution_result": "PASS",
+      "exact_head": "7cdebce6e542ab5e8975194c6610f388e83942a9",
+      "tests_passed": 36,
+      "evidence_ref": "/app/evidence_capture/f3_execution_evidence.json",
+      "pr_or_change": "F3 Runtime Acceleration",
+      "lifecycle_milestones": [
+        {
+          "stage": "STAGE_1_INTAKE_RECON",
+          "passed": true,
+          "evidence_ref": "evidence_capture/f3_execution_evidence.json",
+          "timestamp": 1787790410.6038203
+        },
+        {
+          "stage": "STAGE_2_BOUNDED_BUILD",
+          "passed": true,
+          "evidence_ref": "sage/runtime/engine.py",
+          "timestamp": 1787790410.6038234
+        },
+        {
+          "stage": "STAGE_3_VERIFY_PROOF",
+          "passed": true,
+          "evidence_ref": "tests/test_system_frame.py",
+          "timestamp": 1787790413.5035594
+        },
+        {
+          "stage": "STAGE_4_WAREHOUSE_PROMOTE",
+          "passed": true,
+          "evidence_ref": "/app/evidence_capture/f3_execution_evidence.json",
+          "timestamp": 1787790413.5040581
+        }
+      ],
+      "blocker": null
+    },
+    {
+      "flight_id": "FLIGHT-F4-GUARD",
+      "target": "sage/c2/chatgpt_c2_contract.py",
+      "classification": "ACTIVE",
+      "execution_result": "PASS",
+      "exact_head": "7cdebce6e542ab5e8975194c6610f388e83942a9",
+      "tests_passed": 24,
+      "evidence_ref": "/app/evidence_capture/f4_guard_evidence.json",
+      "pr_or_change": "F4 Governance Sentinel",
+      "lifecycle_milestones": [
+        {
+          "stage": "STAGE_1_INTAKE_RECON",
+          "passed": true,
+          "evidence_ref": "evidence_capture/f4_guard_evidence.json",
+          "timestamp": 1787790413.5042598
+        },
+        {
+          "stage": "STAGE_2_BOUNDED_BUILD",
+          "passed": true,
+          "evidence_ref": "sage/c2/chatgpt_c2_contract.py",
+          "timestamp": 1787790413.504263
+        },
+        {
+          "stage": "STAGE_3_VERIFY_PROOF",
+          "passed": true,
+          "evidence_ref": "tests/c2/test_chatgpt_c2_exact_order_anti_drift.py",
+          "timestamp": 1787790415.4250276
+        },
+        {
+          "stage": "STAGE_4_WAREHOUSE_PROMOTE",
+          "passed": true,
+          "evidence_ref": "/app/evidence_capture/f4_guard_evidence.json",
+          "timestamp": 1787790415.4254858
+        }
+      ],
+      "blocker": null
+    },
+    {
+      "flight_id": "FLIGHT-F5-WAREHOUSE",
       "target": "sage/c2/reconvergence_synthesizer.py",
       "classification": "ACTIVE",
       "execution_result": "PASS",
       "exact_head": "7cdebce6e542ab5e8975194c6610f388e83942a9",
       "tests_passed": 2,
-      "evidence_ref": "evidence_capture/control_tower_handoff_wave_evidence.json",
-      "pr_or_change": "5x4 20-Cell Reconvergence",
+      "evidence_ref": "/app/evidence_capture/f5_warehouse_evidence.json",
+      "pr_or_change": "F5 Reconvergence Warehouse",
       "lifecycle_milestones": [
         {
           "stage": "STAGE_1_INTAKE_RECON",
           "passed": true,
-          "evidence_ref": "sage/c2/reconvergence_synthesizer.py",
-          "timestamp": 1787789885.4510152
+          "evidence_ref": "evidence_capture/f5_warehouse_evidence.json",
+          "timestamp": 1787790415.4256904
         },
         {
           "stage": "STAGE_2_BOUNDED_BUILD",
           "passed": true,
           "evidence_ref": "sage/c2/reconvergence_synthesizer.py",
-          "timestamp": 1787789885.4510212
+          "timestamp": 1787790415.4256935
         },
         {
           "stage": "STAGE_3_VERIFY_PROOF",
           "passed": true,
           "evidence_ref": "tests/c2/test_reconvergence_synthesizer.py",
-          "timestamp": 1787789887.1118464
+          "timestamp": 1787790417.3967793
         },
         {
           "stage": "STAGE_4_WAREHOUSE_PROMOTE",
           "passed": true,
-          "evidence_ref": "evidence_capture/control_tower_handoff_wave_evidence.json",
-          "timestamp": 1787789887.1118588
+          "evidence_ref": "/app/evidence_capture/f5_warehouse_evidence.json",
+          "timestamp": 1787790417.3972735
         }
       ],
       "blocker": null
@@ -214,6 +214,6 @@
   },
   "first_pass_verification_rate": 100.0,
   "reconvergence_verdict": "PASS",
-  "timestamp": 1787789887.112166,
-  "package_hash": "daf02927d00f2de32a63f5b6394d2445c871efc1a0f134a9320ffa0590cc1b7f"
+  "timestamp": 1787790417.3974428,
+  "package_hash": "600f33150d1faba97ab09fccf2518cd1b3c684cc66ff76948ee90af9b8aebd61"
 }
