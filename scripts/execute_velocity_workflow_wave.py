@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
-"""Runner executing SAGE Multi-Session Velocity Wave and persisting Rolls-Royce evidence."""
+"""Run the SAGE Multi-Session Velocity Wave with identity-addressed evidence."""
+
+from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -10,30 +13,25 @@ from sage.c2.workflow_velocity import MultiSessionVelocityEngine, SessionRole
 
 
 def get_git_head() -> str:
-    """Returns exact 40-character commit SHA for active HEAD."""
-    res = subprocess.run(
+    """Return the exact commit SHA of the checkout executing this run."""
+    result = subprocess.run(
         ["git", "rev-parse", "HEAD"],
         capture_output=True,
         text=True,
         check=True,
     )
-    return res.stdout.strip()
+    return result.stdout.strip()
 
 
 def main() -> int:
     exact_head = get_git_head()
-    print(f"[+] Active Git Commit HEAD: {exact_head}")
+    run_id = os.environ.get("GITHUB_RUN_ID", "local-run")
+    job_id = os.environ.get("GITHUB_JOB", "local-job")
 
     engine = MultiSessionVelocityEngine()
+    engine.register_session("c2-control-tower-primary", SessionRole.C2_CONTROL_TOWER)
+    engine.register_session("jules-execution-session-01", SessionRole.JULES_EXECUTION_SESSION)
 
-    # Register execution sessions
-    c2_ctx = engine.register_session("c2-control-tower-primary", SessionRole.C2_CONTROL_TOWER)
-    jules_ctx = engine.register_session("jules-execution-session-01", SessionRole.JULES_EXECUTION_SESSION)
-
-    print(f"[+] Registered C2 Control Tower Session: {c2_ctx.session_id}")
-    print(f"[+] Registered Jules Execution Session: {jules_ctx.session_id}")
-
-    # Define 5 independent parallel flight frontiers with non-overlapping namespaces
     flight_payloads = [
         {
             "flight_id": "F1",
@@ -88,8 +86,6 @@ def main() -> int:
     ]
 
     wave_id = "multi_session_velocity_wave_001"
-    print(f"[+] Executing Multi-Session Velocity Wave: {wave_id}")
-
     receipt = engine.execute_velocity_wave(
         wave_id=wave_id,
         session_id="jules-execution-session-01",
@@ -97,23 +93,35 @@ def main() -> int:
         exact_git_head=exact_head,
     )
 
-    print(f"[+] Receipt Hash: {receipt.receipt_hash}")
-    print(f"[+] Total Flights: {receipt.total_flights}, Successful: {receipt.successful_flights}")
-    print(f"[+] 20-Cell Advancement Matrix Cell Count: {len(receipt.advancement_matrix_20_cells)}")
-    print(f"[+] Rolls-Royce Quality Passed: {receipt.rolls_royce_quality_passed}")
-    print(f"[+] Reconvergence Verdict: {receipt.reconvergence_verdict}")
-
     if not receipt.rolls_royce_quality_passed or receipt.reconvergence_verdict != "PASS":
-        print("[!] ERROR: Multi-Session Velocity Wave failed Rolls-Royce Quality Gate!")
+        print("[!] FAIL_CLOSED: velocity wave did not reconverge")
         return 1
 
-    # Persist evidence receipt
-    evidence_path = Path("evidence_capture/multi_session_velocity_wave_evidence.json")
-    evidence_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(evidence_path, "w", encoding="utf-8") as f:
-        json.dump(receipt.model_dump(), f, indent=2)
+    # The legacy flat JSON file is intentionally no longer a gate authority.
+    # It may remain as historical data, but live execution evidence is addressed
+    # by wave/head identity so concurrent waves cannot overwrite one another.
+    evidence_dir = Path("evidence_capture") / "waves" / wave_id / exact_head
+    evidence_dir.mkdir(parents=True, exist_ok=True)
+    receipt_path = evidence_dir / "wave_receipt.json"
+    receipt_path.write_text(
+        json.dumps(receipt.model_dump(), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
 
-    print(f"[+] Successfully persisted evidence receipt to {evidence_path}")
+    manifest = {
+        "wave_id": wave_id,
+        "executed_head": exact_head,
+        "workflow_run_id": run_id,
+        "job_id": job_id,
+        "receipt_path": str(receipt_path),
+        "gate_authority": "identity-addressed-receipt",
+        "legacy_flat_file_gate_authority": False,
+    }
+    (evidence_dir / "manifest.json").write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    print(f"[+] Persisted identity-addressed evidence to {evidence_dir}")
     return 0
 
 
