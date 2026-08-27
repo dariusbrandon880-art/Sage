@@ -1,0 +1,42 @@
+name: SAGE Executable Mission Contract Guard
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "sage/c2/mission_contract.py"
+      - "sage/c2/frontier_scanner.py"
+      - ".sage/contracts/**"
+      - "tests/governance/test_executable_mission_contracts.py"
+      - "docs/governance/SAGE_EXECUTABLE_MISSION_CONTRACT_SPEC_V1.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mission-contract:
+    name: Validate mission contracts and frontier controls
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install development dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Validate example contract
+        run: |
+          python - <<'PY'
+          from sage.c2.mission_contract import validate_contract_file
+          contract = validate_contract_file('.sage/contracts/mission_contract.example.json')
+          assert contract.mission_id
+          assert contract.intent
+          print('MISSION_CONTRACT_VALID')
+          PY
+      - name: Run executable mission contract tests
+        run: pytest -q tests/governance/test_executable_mission_contracts.py --tb=short
+      - name: Compile C2 mission controls
+        run: python -m compileall -q sage/c2/mission_contract.py sage/c2/frontier_scanner.py
