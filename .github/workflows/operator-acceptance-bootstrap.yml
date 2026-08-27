@@ -1,0 +1,30 @@
+name: SAGE Operator Acceptance Bootstrap
+
+on:
+  pull_request:
+    paths:
+      - 'docs/governance/OPERATOR_ACCEPTANCE_STATE.md'
+      - 'scripts/verify_operator_acceptance_state.py'
+      - '.github/workflows/operator-acceptance-bootstrap.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact PR HEAD
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+      - name: Verify canonical repository state
+        run: python scripts/verify_operator_acceptance_state.py
+      - name: Verify exact checkout binding
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          test "${#EXPECTED_SHA}" -eq 40
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
