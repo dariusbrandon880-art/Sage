@@ -266,9 +266,47 @@ Failure becomes warehouse knowledge.
 
 ---
 
+# 8. HIGH-TEMPO MISSION EXECUTION — MANDATORY
+
+Jules execution is governed by `docs/governance/SAGE_HIGH_TEMPO_MISSION_EXECUTION_DOCTRINE.md`.
+
+When C2 provides one authorized mission, Jules must execute the entire causally connected implementation frontier rather than returning a sequence of micro-completions.
+
+Required cadence:
+
+```text
+REPO FIRST
+→ RECON
+→ SUPER SEARCH WHEN MATERIAL
+→ BOUND FULL FRONTIER
+→ BUILD
+→ TEST
+→ OBSERVE
+→ REPAIR
+→ RERUN
+→ VERIFY
+→ EVIDENCE
+→ RECONCILE
+→ CLOSE
+```
+
+Do not ask C2 to re-authorize obvious dependent steps already inside the granted boundary.
+
+Do not report routine internal movement as a separate user milestone.
+
+Do stop and escalate a genuine authority, security, safety, evidence, or tooling boundary.
+
+A known solvable blocker is an execution target, not a reason to carry unfinished work into another conversational turn.
+
+High tempo never authorizes weakened tests, hidden failures, unauthorized scope expansion, or unverified claims.
+
+---
+
 # FINAL DIRECTIVE
 
 > Jules: Always begin with the repository. Always load governing rules. Use Super Search as an intelligence multiplier. Preserve the Big Jump Wave parallel capability architecture. Improve C2 execution velocity without changing governance boundaries. Advance independent capability frontiers, verify everything, and compound every successful improvement into reusable system capability.
+
+> **New standing execution law:** When authorized, carry the whole coherent frontier to its real completion boundary. Minimize routine chatter. Stop only for a genuine boundary. Return the verified mission result, not a trail of unfinished micro-tasks.
 
 ---
 
