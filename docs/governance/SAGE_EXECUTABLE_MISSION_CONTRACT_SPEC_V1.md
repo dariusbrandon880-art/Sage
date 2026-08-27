@@ -10,7 +10,7 @@ The High-Tempo Doctrine remains the governing intent layer. The executable Missi
 
 Existing SAGE authority remains authoritative. The contract can narrow an authorized mission; it cannot expand authority.
 
-This follows the repository's anti-regression rules against duplicate infrastructure, governance invention, premature architecture, and scope drift. Existing agent contracts remain the enforcement authority for agent permissions. fileciteturn104file0
+This follows the repository's anti-regression rules against duplicate infrastructure, governance invention, premature architecture, and scope drift. Existing agent contracts remain the enforcement authority for agent permissions.
 
 ## Contract shape
 
@@ -56,7 +56,7 @@ It is advisory until CI integration proves its precision. It does **not** claim 
 
 Gemini's audit identified four weaknesses: passive text-only enforcement, manual frontier mapping, context rehydration overhead, and missing dynamic tempo control. The first implementation targets the two most deterministic gaps—machine-readable boundaries and basic frontier overlap detection—without prematurely creating a full orchestration engine.
 
-The repository already contains an AgentExecutionContract and a change-impact analyzer. The new capability therefore remains narrowly scoped to C2 mission representation and frontier analysis instead of duplicating agent authorization or impact-analysis infrastructure. fileciteturn102file0 fileciteturn105file0
+The repository already contains an AgentExecutionContract and a change-impact analyzer. The new capability therefore remains narrowly scoped to C2 mission representation and frontier analysis instead of duplicating agent authorization or impact-analysis infrastructure.
 
 ## Evidence boundary
 
@@ -80,13 +80,13 @@ GIT RECONCILIATION
 MISSION CLOSE
 ```
 
-This preserves the doctrine's explicit separation between authorization/configuration and execution proof. fileciteturn98file0
+This preserves the doctrine's explicit separation between authorization/configuration and execution proof.
 
 ## Super Search synthesis
 
-External research supports the architectural direction but does not authorize it. Marine Corps MCDP 6 emphasizes durable intent so subordinate actions can adapt as circumstances change; this maps directly to SAGE's separation of intent from implementation steps. citeturn0search36turn0search5
+External research supports the architectural direction but does not authorize it. Marine Corps MCDP 6 emphasizes durable intent so subordinate actions can adapt as circumstances change; this maps directly to SAGE's separation of intent from implementation steps.
 
-Trunk-based development research reinforces short-lived, rapidly verified branches and speculative merge/build checks as throughput protections. citeturn0search0turn0search2turn0search7
+Trunk-based development research reinforces short-lived, rapidly verified branches and speculative merge/build checks as throughput protections.
 
 ## Research backlog
 
