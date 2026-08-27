@@ -3,6 +3,7 @@
 from pathlib import Path
 
 from sage.c2.build_jump_wave import BuildJumpWaveEngine, FlightMissionSpec
+from sage.c2.flight_collision_lock import FlightLockRequest
 
 
 def test_big_jump_wave_evidence_is_sha_namespaced(tmp_path, monkeypatch):
@@ -29,11 +30,12 @@ def test_big_jump_wave_evidence_is_sha_namespaced(tmp_path, monkeypatch):
         assert receipt.exists()
         assert "legacy" not in str(receipt)
 
-    # Locks are execution-scoped and must not leak into later work.
-    lock = engine.lock_manager.acquire_lock(
-        engine.lock_manager.__class__.__name__,
-        f"F1-retry",
-        ["sage/test_target_1.py"],
-        ["sage.test_1"],
+    retry = engine.lock_manager.acquire_lock(
+        FlightLockRequest(
+            session_id="retry-session",
+            flight_id="F1-retry",
+            target_files=["sage/test_target_1.py"],
+            target_namespaces=["sage.test_1"],
+        )
     )
-    assert lock.acquired is True
+    assert retry.acquired is True
