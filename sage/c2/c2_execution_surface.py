@@ -1,9 +1,15 @@
-"""Governed C2 Execution Surface Engine."""
+"""Governed C2 Execution Surface Engine.
+
+Execution receipts are admissible only when the request identity matches the
+actual repository HEAD. This keeps capability-level execution from claiming
+success for a stale or merely authorized commit.
+"""
 
 from __future__ import annotations
 
 import hashlib
 import re
+import subprocess
 import time
 from enum import Enum
 from typing import Any, Dict, List, Optional
@@ -57,39 +63,61 @@ class C2ExecutionSurfaceEngine:
         "sage/acr/",
         "sage/agents/",
     )
+    SHA_PATTERN = re.compile(r"^[0-9a-fA-F]{40}$")
 
     def __init__(self):
         self.receipts: List[C2ExecutionSurfaceReceipt] = []
 
-    def execute_request(self, request: C2ExecutionRequest) -> C2ExecutionSurfaceReceipt:
-        receipt_id = f"c2_exec_rcpt_{int(time.time() * 1000)}"
-        sha_pattern = re.compile(r"^[0-9a-fA-F]{40}$")
-        if not sha_pattern.fullmatch(request.starting_git_head):
-            rcpt = C2ExecutionSurfaceReceipt(
-                receipt_id=receipt_id, request_id=request.request_id,
-                command_type=request.command_type, target_path=request.target_path,
-                starting_git_head=request.starting_git_head,
-                resulting_git_head=request.starting_git_head,
-                status="REJECTED_INVALID_SHA",
-                rejection_reason=f"Invalid starting git HEAD SHA: '{request.starting_git_head}'",
-            )
-            rcpt.receipt_hash = rcpt.compute_hash(); self.receipts.append(rcpt); return rcpt
-        if request.command_type in (C2CommandType.WRITE, C2CommandType.COMMIT, C2CommandType.PUSH):
-            for ns in self.PROTECTED_NAMESPACES:
-                if request.target_path.startswith(ns):
-                    rcpt = C2ExecutionSurfaceReceipt(
-                        receipt_id=receipt_id, request_id=request.request_id,
-                        command_type=request.command_type, target_path=request.target_path,
-                        starting_git_head=request.starting_git_head,
-                        resulting_git_head=request.starting_git_head,
-                        status="REJECTED_PROTECTED_NAMESPACE",
-                        rejection_reason=f"Mutation command '{request.command_type.value}' forbidden on protected namespace '{ns}'",
-                    )
-                    rcpt.receipt_hash = rcpt.compute_hash(); self.receipts.append(rcpt); return rcpt
-        rcpt = C2ExecutionSurfaceReceipt(
-            receipt_id=receipt_id, request_id=request.request_id,
-            command_type=request.command_type, target_path=request.target_path,
+    @staticmethod
+    def resolve_runtime_head() -> str:
+        """Resolve the commit actually checked out by the executing process."""
+        try:
+            return subprocess.check_output(
+                ["git", "rev-parse", "HEAD"], text=True, stderr=subprocess.DEVNULL
+            ).strip()
+        except (OSError, subprocess.CalledProcessError):
+            return ""
+
+    def _receipt(self, request: C2ExecutionRequest, status: str, reason: Optional[str] = None) -> C2ExecutionSurfaceReceipt:
+        receipt = C2ExecutionSurfaceReceipt(
+            receipt_id=f"c2_exec_rcpt_{int(time.time() * 1000)}",
+            request_id=request.request_id,
+            command_type=request.command_type,
+            target_path=request.target_path,
             starting_git_head=request.starting_git_head,
-            resulting_git_head=request.starting_git_head, status="SUCCESS",
+            resulting_git_head=request.starting_git_head,
+            status=status,
+            rejection_reason=reason,
         )
-        rcpt.receipt_hash = rcpt.compute_hash(); self.receipts.append(rcpt); return rcpt
+        receipt.receipt_hash = receipt.compute_hash()
+        self.receipts.append(receipt)
+        return receipt
+
+    def execute_request(self, request: C2ExecutionRequest) -> C2ExecutionSurfaceReceipt:
+        if not self.SHA_PATTERN.fullmatch(request.starting_git_head):
+            return self._receipt(
+                request,
+                "REJECTED_INVALID_SHA",
+                f"Invalid starting git HEAD SHA: '{request.starting_git_head}'",
+            )
+
+        runtime_head = self.resolve_runtime_head()
+        if not self.SHA_PATTERN.fullmatch(runtime_head):
+            return self._receipt(request, "REJECTED_UNOBSERVED_HEAD", "Unable to resolve executing repository HEAD")
+        if request.starting_git_head.lower() != runtime_head.lower():
+            return self._receipt(
+                request,
+                "REJECTED_STALE_HEAD",
+                f"Requested HEAD '{request.starting_git_head}' does not equal runtime HEAD '{runtime_head}'",
+            )
+
+        if request.command_type in (C2CommandType.WRITE, C2CommandType.COMMIT, C2CommandType.PUSH):
+            for namespace in self.PROTECTED_NAMESPACES:
+                if request.target_path.startswith(namespace):
+                    return self._receipt(
+                        request,
+                        "REJECTED_PROTECTED_NAMESPACE",
+                        f"Mutation command '{request.command_type.value}' forbidden on protected namespace '{namespace}'",
+                    )
+
+        return self._receipt(request, "EXECUTED")
