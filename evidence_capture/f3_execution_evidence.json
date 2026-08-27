@@ -2,7 +2,7 @@
   "flight_id": "FLIGHT-F3-EXECUTION",
   "frontier_name": "Execution & Substrate Frontier",
   "target_path": "sage/runtime/engine.py",
-  "exact_head": "7cdebce6e542ab5e8975194c6610f388e83942a9",
+  "exact_head": "38d811fd1f93d70ed2b78682f8cd67405accfe16",
   "status": "PASS",
-  "timestamp": 1787792438.6141417
+  "timestamp": 1787797644.41063
 }
