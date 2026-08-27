@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0",
+  "mission_id": "FLIGHT-YYYY-MM-DD-NN",
+  "intent": "Describe the durable outcome this mission is authorized to achieve.",
+  "authority_boundary": {
+    "allowed_paths": ["sage/c2/**", "tests/governance/**"],
+    "prohibited_paths": ["docs/master/**", "sage/core/**", "sage/runtime/**", "sage/agents/**"]
+  },
+  "completion_criteria": {
+    "required_tests": [],
+    "min_coverage_pct": null,
+    "provenance_required": true
+  },
+  "stop_the_line_conditions": [
+    "CROSS_BOUNDARY_FILE_TOUCH",
+    "UNRESOLVED_IMPORT_ERROR",
+    "EVIDENCE_CONTRADICTION"
+  ],
+  "metadata": {
+    "owner": "c2",
+    "mode": "big_jump_wave"
+  }
+}
