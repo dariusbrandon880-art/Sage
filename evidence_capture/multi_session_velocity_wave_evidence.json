@@ -5,7 +5,7 @@
     "c2-control-tower-primary",
     "jules-execution-session-01"
   ],
-  "exact_git_head": "ffdc31d1d24458cfd15b1d365b3c2400be5c2540",
+  "exact_git_head": "5a05f9578653ca2b553bf944255d93ee714a1c1c",
   "total_flights": 5,
   "successful_flights": 5,
   "advancement_matrix_20_cells": {
