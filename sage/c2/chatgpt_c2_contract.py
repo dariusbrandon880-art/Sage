@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from sage.c2.live_operation_receipt import LiveOperationReceipt
 
 CONTRACT_ID = "CHATGPT_C2_EXACT_ORDER_ANTI_DRIFT"
-CONTRACT_VERSION = "1.2"
+CONTRACT_VERSION = "1.3"
 RECON_POLICY_PATH = "docs/governance/SAGE_DEEP_RECON_VELOCITY_POLICY.md"
 
 ANTI_DRIFT_LAWS: tuple[str, ...] = (
@@ -26,6 +26,8 @@ ANTI_DRIFT_LAWS: tuple[str, ...] = (
     "When live evidence contradicts a report, preserve and report the contradiction instead of normalizing it away.",
     "Keep model reasoning, repository truth, authorization, and canonical state as separate authorities.",
     "Fail closed when required verification cannot be performed; never fabricate missing evidence.",
+    "Five flights is concurrent mission ownership across independent vehicles, not a post-hoc reporting table slapped onto sequential work.",
+    "Execute the full canonical cycle: PREFLIGHT -> EXECUTE -> TEST -> EVIDENCE -> VERIFY -> RECONCILE -> REPORT.",
 )
 
 LIVE_CHECK_TRIGGERS: tuple[str, ...] = (
@@ -86,6 +88,7 @@ def render_system_contract() -> str:
         "VELOCITY RULE: independent repository inspection and relevant external research may run concurrently after the initial reality lock; do not serialize unrelated research or use research as an unnecessary approval gate.\n"
         "AUTHORITY: user directive remains the requested task; model output is not authorization.\n"
         "LIVE-VERIFICATION ORDER: PRESERVE EXACTLY -> IDENTIFY REQUIRED LIVE CAPABILITY -> INVOKE CONNECTED CAPABILITY -> VERIFY -> EXECUTE REQUESTED OPERATION -> REPORT ONLY SUPPORTED FACTS.\n"
+        "CANONICAL EXECUTION LOOP: PREFLIGHT -> EXECUTE -> TEST -> EVIDENCE -> VERIFY -> RECONCILE -> REPORT.\n"
         "Do not replace the requested operation with an explanation about the operation."
     )
 
