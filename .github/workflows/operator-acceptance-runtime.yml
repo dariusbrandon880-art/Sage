@@ -1,0 +1,44 @@
+name: SAGE Operator Acceptance Runtime
+
+on:
+  pull_request:
+    paths:
+      - 'sage/c2/operator_acceptance_bootstrap.py'
+      - 'scripts/run_operator_acceptance_bootstrap.py'
+      - 'tests/c2/test_operator_acceptance_bootstrap.py'
+      - '.github/workflows/operator-acceptance-runtime.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bootstrap-runtime:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install project
+        run: pip install -e '.[dev]'
+      - name: Cold-start and drift regression
+        run: pytest -q tests/c2/test_operator_acceptance_bootstrap.py
+      - name: Exercise single-command bootstrap
+        run: |
+          python scripts/run_operator_acceptance_bootstrap.py \
+            --mission-id ci-bootstrap \
+            --main-goal rehydrate \
+            --flight F1 \
+            --operator-interface ci \
+            --operator-verdict PASS \
+            --evidence-ref ci://operator-acceptance \
+            --output /tmp/operator_acceptance_receipt.json
+      - name: Exact HEAD binding
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          test "${#EXPECTED_SHA}" -eq 40
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
