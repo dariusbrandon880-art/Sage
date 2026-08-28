@@ -41,7 +41,7 @@ jobs:
             --required-interface jules
       - name: Verify materialized session rehydration contract
         run: python scripts/verify_session_rehydration_contract.py
-      - name: Exercise single-command bootstrap
+      - name: Exercise full multi-surface acceptance
         run: |
           python scripts/run_operator_acceptance_bootstrap.py \
             --mission-id ci-bootstrap \
@@ -51,9 +51,24 @@ jobs:
             --required-interface gemini \
             --required-interface jules \
             --operator-interface chatgpt \
+            --operator-interface gemini \
+            --operator-interface jules \
+            --operator-verdict PASS \
+            --operator-verdict PASS \
             --operator-verdict PASS \
             --evidence-ref ci://operator-acceptance/chatgpt \
+            --evidence-ref ci://operator-acceptance/gemini \
+            --evidence-ref ci://operator-acceptance/jules \
             --output /tmp/operator_acceptance_receipt.json
+          python - <<'PY'
+          import json
+          with open('/tmp/operator_acceptance_receipt.json', encoding='utf-8') as f:
+              receipt = json.load(f)
+          assert receipt['acceptance_status'] == 'ACCEPTED', receipt
+          assert all(v == 'PASS' for v in receipt['interface_verdicts'].values()), receipt
+          assert receipt['empirical_gate']['checks']['full_surface_convergence'] is True, receipt
+          print(json.dumps({'status': 'ACCEPTED', 'interfaces': receipt['interface_verdicts']}))
+          PY
       - name: Exact HEAD binding
         env:
           EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
