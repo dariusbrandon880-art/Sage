@@ -5,8 +5,10 @@ on:
     paths:
       - 'sage/c2/operator_acceptance_bootstrap.py'
       - 'scripts/run_operator_acceptance_bootstrap.py'
+      - 'scripts/build_session_manifest.py'
       - 'scripts/verify_session_rehydration_contract.py'
       - 'tests/c2/test_operator_acceptance_bootstrap.py'
+      - 'tests/c2/test_session_manifest.py'
       - '.github/workflows/operator-acceptance-runtime.yml'
       - 'docs/governance/SAGE_SESSION_REHYDRATION_CONTRACT.md'
       - 'docs/governance/SAGE_SESSION_STATE_MANIFEST.json'
@@ -28,8 +30,15 @@ jobs:
       - name: Install project
         run: pip install -e '.[dev]'
       - name: Cold-start and drift regression
-        run: pytest -q tests/c2/test_operator_acceptance_bootstrap.py
-      - name: Verify session rehydration contract
+        run: pytest -q tests/c2/test_operator_acceptance_bootstrap.py tests/c2/test_session_manifest.py
+      - name: Materialize live session manifest
+        run: |
+          python scripts/build_session_manifest.py \
+            --mission ci-bootstrap \
+            --required-interface chatgpt \
+            --required-interface gemini \
+            --required-interface jules
+      - name: Verify materialized session rehydration contract
         run: python scripts/verify_session_rehydration_contract.py
       - name: Exercise single-command bootstrap
         run: |
