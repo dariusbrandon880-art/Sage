@@ -44,9 +44,11 @@ def test_build_jump_wave_execution_full(build_jump_engine):
 
 def test_build_jump_wave_runs_independent_flights_concurrently(build_jump_engine, monkeypatch):
     thread_ids = set()
+    start_barrier = threading.Barrier(5)
 
     def fake_run_flight(spec, wave_id, head_sha):
         thread_ids.add(threading.get_ident())
+        start_barrier.wait(timeout=5)
         lifecycle_milestones = [
             LifecycleMilestoneRecord(
                 stage=stage,
@@ -73,7 +75,7 @@ def test_build_jump_wave_runs_independent_flights_concurrently(build_jump_engine
     assert package.reconvergence_verdict == "PASS"
     assert package.total_flights == 5
     assert package.successful_flights == 5
-    assert len(thread_ids) > 1
+    assert len(thread_ids) == 5
 
 
 def test_build_jump_wave_invalid_mission_count(build_jump_engine):
