@@ -19,9 +19,10 @@ def load_airspace_state() -> Any:
 
 
 def render_team_status() -> str:
-    """Render a compact roster using canonical coordination activity."""
+    """Render a compact roster using canonical nameplates and live activity."""
     models = importlib.import_module("sage.experimental.airspace.models")
     coordination = importlib.import_module("sage.agent_coordination")
+    nameplate_module = importlib.import_module("sage.experimental.airspace.nameplate")
     state = load_airspace_state()
     context = coordination.get_coordination_state()
     StationID = models.StationID
@@ -32,22 +33,19 @@ def render_team_status() -> str:
         StationID.INTEL_STATION,
         StationID.ENGINEERING_FLIGHT,
     )
-    labels = {
-        StationID.MISSION_DIRECTOR: "Director",
-        StationID.MISSION_CONTROL: "C2",
-        StationID.INTEL_STATION: "Intel",
-        StationID.ENGINEERING_FLIGHT: "Engineering",
-    }
 
     roster = []
     for station_id in ordered:
         station = state.stations[station_id]
-        xp = state.game_progression.get_total_xp_for_station(station_id)
         activity = context["stations"][station_id.value]["activity"]
         marker = "*" if activity != coordination.STANDBY else "-"
+        identity = nameplate_module.build_agent_identity(
+            state, station_id, state_label=activity
+        )
         roster.append(
-            f"{marker}{labels[station_id]}:{station.agent_name} "
-            f"CQL-{station.current_cql}/SQL-{station.current_sql} XP-{xp}"
+            f"{marker}{identity['nameplate']}:{station.agent_name} "
+            f"CQL-{identity['cql']}/SQL-{identity['sql']} XP-{identity['xp']} "
+            f"STATE={identity['state']}"
         )
 
     return f"TEAM {context['status']} | " + " | ".join(roster)
