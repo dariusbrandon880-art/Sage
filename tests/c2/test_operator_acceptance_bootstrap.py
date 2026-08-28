@@ -1,9 +1,11 @@
 import json
 import pytest
+from sage.c2.mission_continuity import CANONICAL_MAIN_GOALS
 from sage.c2.operator_acceptance_bootstrap import BootstrapFailure, OperatorAcceptanceBootstrap
 
 VALID_SHA = "a" * 40
 REQUIRED = ["chatgpt", "gemini", "jules"]
+CANONICAL_GOALS = list(CANONICAL_MAIN_GOALS)
 
 
 def fake_git(*args):
@@ -17,17 +19,18 @@ def bootstrap(tmp_path, provider=lambda: ([], [])):
 
 def state_for(tmp_path, provider=lambda: ([], [])):
     return bootstrap(tmp_path, provider).rehydrate(
-        "mission-001", ["complete main mission"], ["side goal"], ["F1", "F2", "F3"], REQUIRED
+        "mission-001", CANONICAL_GOALS, ["side goal"], ["F1", "F2", "F3"], REQUIRED
     )
 
 
 def test_cold_start_rehydrates_and_locks_execution(tmp_path):
     b = bootstrap(tmp_path, lambda: (["PR #286"], ["Issue #901"]))
-    state = b.rehydrate("mission-001", ["complete main mission"], ["side goal"], ["F1", "F2"], REQUIRED)
+    state = b.rehydrate("mission-001", CANONICAL_GOALS, ["side goal"], ["F1", "F2"], REQUIRED)
     b.require_execution_ready(state)
     assert state.canonical_git_sha == VALID_SHA
     assert state.active_prs == ["PR #286"] and state.active_issues == ["Issue #901"]
     assert state.interface_verdicts == {interface: "PENDING" for interface in REQUIRED}
+    assert state.deterministic_gate.checks["canonical_mission_hierarchy"] is True
     assert state.empirical_gate.status == "PENDING"
 
 
@@ -70,15 +73,21 @@ def test_unknown_interface_is_rejected(tmp_path):
 def test_required_interfaces_are_mandatory_and_unique(tmp_path):
     b = bootstrap(tmp_path)
     with pytest.raises(BootstrapFailure, match="at least one required"):
-        b.rehydrate("mission", ["goal"], [], [], [])
+        b.rehydrate("mission", CANONICAL_GOALS, [], [], [])
     with pytest.raises(BootstrapFailure, match="must be unique"):
-        b.rehydrate("mission", ["goal"], [], [], ["chatgpt", "chatgpt"])
+        b.rehydrate("mission", CANONICAL_GOALS, [], [], ["chatgpt", "chatgpt"])
+
+
+def test_noncanonical_main_goal_is_rejected(tmp_path):
+    b = bootstrap(tmp_path)
+    with pytest.raises(BootstrapFailure, match="first main goal must preserve canonical priority"):
+        b.rehydrate("mission-003", ["complete main mission"], [], [], REQUIRED)
 
 
 def test_cold_start_drift_fails_closed_on_invalid_head(tmp_path):
     b = OperatorAcceptanceBootstrap(repo_root=tmp_path, git_runner=lambda *args: "bad-head", state_provider=lambda: ([], []))
     with pytest.raises(BootstrapFailure, match="40-character SHA"):
-        b.rehydrate("mission-004", ["goal"], [], [], REQUIRED)
+        b.rehydrate("mission-004", CANONICAL_GOALS, [], [], REQUIRED)
 
 
 def test_missing_operator_evidence_fails_closed(tmp_path):
@@ -91,13 +100,13 @@ def test_missing_operator_evidence_fails_closed(tmp_path):
 def test_live_state_provider_failure_fails_closed(tmp_path):
     b = bootstrap(tmp_path, lambda: (_ for _ in ()).throw(RuntimeError("connector down")))
     with pytest.raises(BootstrapFailure, match="unable to reconcile live state"):
-        b.rehydrate("mission-006", ["goal"], [], ["F3"], REQUIRED)
+        b.rehydrate("mission-006", CANONICAL_GOALS, [], ["F3"], REQUIRED)
 
 
 def test_incomplete_live_state_fails_closed(tmp_path):
     b = bootstrap(tmp_path, lambda: (None, []))
     with pytest.raises(BootstrapFailure, match="incomplete state"):
-        b.rehydrate("mission-007", ["goal"], [], ["F3"], REQUIRED)
+        b.rehydrate("mission-007", CANONICAL_GOALS, [], ["F3"], REQUIRED)
 
 
 def test_evidence_receipt_preserves_multi_surface_state(tmp_path):

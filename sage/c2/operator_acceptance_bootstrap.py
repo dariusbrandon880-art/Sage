@@ -9,6 +9,8 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Callable
 
+from sage.c2.mission_continuity import MissionContinuityFailure, require_canonical_main_goal_alignment
+
 SHA_LEN = 40
 VALID_VERDICTS = {"PASS", "FAIL", "PENDING"}
 
@@ -96,6 +98,10 @@ class OperatorAcceptanceBootstrap:
     ) -> OperatorAcceptanceState:
         if not mission_id or not main_goals:
             raise BootstrapFailure("mission_id and at least one main goal are required")
+        try:
+            require_canonical_main_goal_alignment(main_goals)
+        except MissionContinuityFailure as exc:
+            raise BootstrapFailure(str(exc)) from exc
         if not required_interfaces:
             raise BootstrapFailure("at least one required interface is required")
         if len(set(required_interfaces)) != len(required_interfaces):
@@ -126,6 +132,7 @@ class OperatorAcceptanceBootstrap:
                     "exact_sha_anchored": True,
                     "repository_rehydrated": True,
                     "live_state_reconciled": True,
+                    "canonical_mission_hierarchy": True,
                 },
             ),
             empirical_gate=GateState(
@@ -147,6 +154,8 @@ class OperatorAcceptanceBootstrap:
             raise BootstrapFailure("FAIL_CLOSED: incomplete rehydrated mission state")
         if not state.deterministic_gate.checks.get("live_state_reconciled"):
             raise BootstrapFailure("FAIL_CLOSED: live repository state was not reconciled")
+        if not state.deterministic_gate.checks.get("canonical_mission_hierarchy"):
+            raise BootstrapFailure("FAIL_CLOSED: canonical mission hierarchy was not rehydrated")
 
     def _reconcile_empirical_gate(self, state: OperatorAcceptanceState) -> None:
         verdicts = [state.interface_verdicts.get(interface, "PENDING") for interface in state.required_interfaces]
