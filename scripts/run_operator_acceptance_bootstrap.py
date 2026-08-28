@@ -12,6 +12,7 @@ def main() -> int:
     p.add_argument("--main-goal", action="append", required=True)
     p.add_argument("--side-goal", action="append", default=[])
     p.add_argument("--flight", action="append", default=[])
+    p.add_argument("--required-interface", action="append", default=[])
     p.add_argument("--operator-interface")
     p.add_argument("--operator-verdict", choices=["PASS", "FAIL"])
     p.add_argument("--evidence-ref")
@@ -20,7 +21,13 @@ def main() -> int:
     args = p.parse_args()
     try:
         bootstrap = OperatorAcceptanceBootstrap()
-        state = bootstrap.rehydrate(args.mission_id, args.main_goal, args.side_goal, args.flight)
+        state = bootstrap.rehydrate(
+            args.mission_id,
+            args.main_goal,
+            args.side_goal,
+            args.flight,
+            args.required_interface,
+        )
         bootstrap.require_execution_ready(state)
         if any([args.operator_interface, args.operator_verdict, args.evidence_ref]):
             if not all([args.operator_interface, args.operator_verdict, args.evidence_ref]):

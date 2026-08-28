@@ -10,11 +10,14 @@ from pathlib import Path
 from typing import Callable
 
 SHA_LEN = 40
+VALID_VERDICTS = {"PASS", "FAIL", "PENDING"}
+
 
 @dataclass
 class GateState:
     status: str = "FAIL"
     checks: dict[str, bool] = field(default_factory=dict)
+
 
 @dataclass
 class OperatorAcceptanceState:
@@ -25,6 +28,9 @@ class OperatorAcceptanceState:
     active_flights: list[str] = field(default_factory=list)
     active_prs: list[str] = field(default_factory=list)
     active_issues: list[str] = field(default_factory=list)
+    required_interfaces: list[str] = field(default_factory=list)
+    interface_verdicts: dict[str, str] = field(default_factory=dict)
+    interface_evidence: dict[str, str] = field(default_factory=dict)
     deterministic_gate: GateState = field(default_factory=GateState)
     empirical_gate: GateState = field(default_factory=GateState)
     acceptance_status: str = "NOT_ACCEPTED"
@@ -37,19 +43,28 @@ class OperatorAcceptanceState:
         data["empirical_gate"] = asdict(self.empirical_gate)
         return data
 
+
 class BootstrapFailure(RuntimeError):
     pass
 
+
 class OperatorAcceptanceBootstrap:
     """Rehydrates canonical state before execution and fails closed on drift."""
-    def __init__(self, repo_root: str | Path = ".", git_runner: Callable[..., str] | None = None,
-                 state_provider: Callable[[], tuple[list[str], list[str]]] | None = None):
+
+    def __init__(
+        self,
+        repo_root: str | Path = ".",
+        git_runner: Callable[..., str] | None = None,
+        state_provider: Callable[[], tuple[list[str], list[str]]] | None = None,
+    ):
         self.repo_root = Path(repo_root)
         self._git_runner = git_runner or self._git
         self._state_provider = state_provider or self._local_state
 
     def _git(self, *args: str) -> str:
-        return subprocess.check_output(["git", *args], cwd=self.repo_root, text=True, stderr=subprocess.STDOUT).strip()
+        return subprocess.check_output(
+            ["git", *args], cwd=self.repo_root, text=True, stderr=subprocess.STDOUT
+        ).strip()
 
     def _resolve_head(self) -> str:
         head = self._git_runner("rev-parse", "HEAD")
@@ -58,23 +73,33 @@ class OperatorAcceptanceBootstrap:
         return head
 
     def _local_state(self) -> tuple[list[str], list[str]]:
-        """Read tracked active state from git refs without silently fabricating emptiness."""
         try:
-            branches = [line.strip() for line in self._git("for-each-ref", "--format=%(refname:short)", "refs/heads").splitlines() if line.strip()]
+            branches = [
+                line.strip()
+                for line in self._git(
+                    "for-each-ref", "--format=%(refname:short)", "refs/heads"
+                ).splitlines()
+                if line.strip()
+            ]
         except (subprocess.CalledProcessError, OSError) as exc:
             raise BootstrapFailure(f"unable to reconcile repository state: {exc}") from exc
         active_prs = [f"branch:{branch}" for branch in branches if branch != "main"]
         return active_prs, []
 
-    def _active_prs(self) -> list[str]:
-        return list(self._state_provider()[0])
-
-    def _active_issues(self) -> list[str]:
-        return list(self._state_provider()[1])
-
-    def rehydrate(self, mission_id: str, main_goals: list[str], side_goals: list[str], active_flights: list[str]) -> OperatorAcceptanceState:
+    def rehydrate(
+        self,
+        mission_id: str,
+        main_goals: list[str],
+        side_goals: list[str],
+        active_flights: list[str],
+        required_interfaces: list[str] | None = None,
+    ) -> OperatorAcceptanceState:
         if not mission_id or not main_goals:
             raise BootstrapFailure("mission_id and at least one main goal are required")
+        if not required_interfaces:
+            raise BootstrapFailure("at least one required interface is required")
+        if len(set(required_interfaces)) != len(required_interfaces):
+            raise BootstrapFailure("required interfaces must be unique")
         head = self._resolve_head()
         try:
             active_prs, active_issues = self._state_provider()
@@ -84,13 +109,33 @@ class OperatorAcceptanceBootstrap:
             raise BootstrapFailure(f"unable to reconcile live state: {exc}") from exc
         if active_prs is None or active_issues is None:
             raise BootstrapFailure("FAIL_CLOSED: live reconciliation returned incomplete state")
+        interface_verdicts = {interface: "PENDING" for interface in required_interfaces}
         state = OperatorAcceptanceState(
             mission_id=mission_id,
             canonical_git_sha=head,
-            main_goals=list(main_goals), side_goals=list(side_goals), active_flights=list(active_flights),
-            active_prs=list(active_prs), active_issues=list(active_issues),
-            deterministic_gate=GateState("PASS", {"exact_sha_anchored": True, "repository_rehydrated": True, "live_state_reconciled": True}),
-            empirical_gate=GateState("PENDING", {"operator_observation": False, "evidence_linked": False}),
+            main_goals=list(main_goals),
+            side_goals=list(side_goals),
+            active_flights=list(active_flights),
+            active_prs=list(active_prs),
+            active_issues=list(active_issues),
+            required_interfaces=list(required_interfaces),
+            interface_verdicts=interface_verdicts,
+            deterministic_gate=GateState(
+                "PASS",
+                {
+                    "exact_sha_anchored": True,
+                    "repository_rehydrated": True,
+                    "live_state_reconciled": True,
+                },
+            ),
+            empirical_gate=GateState(
+                "PENDING",
+                {
+                    "operator_observation": False,
+                    "evidence_linked": False,
+                    "full_surface_convergence": False,
+                },
+            ),
             acceptance_status="ENGINEERING_VERIFIED",
         )
         return state
@@ -103,23 +148,43 @@ class OperatorAcceptanceBootstrap:
         if not state.deterministic_gate.checks.get("live_state_reconciled"):
             raise BootstrapFailure("FAIL_CLOSED: live repository state was not reconciled")
 
-    def capture_operator_observation(self, state: OperatorAcceptanceState, interface: str, verdict: str, evidence_ref: str, defect_id: str | None = None) -> OperatorAcceptanceState:
+    def _reconcile_empirical_gate(self, state: OperatorAcceptanceState) -> None:
+        verdicts = [state.interface_verdicts.get(interface, "PENDING") for interface in state.required_interfaces]
+        if any(verdict == "FAIL" for verdict in verdicts):
+            state.empirical_gate.status = "FAIL"
+            state.empirical_gate.checks["full_surface_convergence"] = False
+            state.acceptance_status = "NOT_ACCEPTED"
+            return
+        complete = all(verdict == "PASS" for verdict in verdicts)
+        evidenced = all(bool(state.interface_evidence.get(interface)) for interface in state.required_interfaces)
+        state.empirical_gate.status = "PASS" if complete and evidenced else "PENDING"
+        state.empirical_gate.checks["full_surface_convergence"] = complete and evidenced
+        state.acceptance_status = "ACCEPTED" if state.empirical_gate.status == "PASS" else "ENGINEERING_VERIFIED"
+
+    def capture_operator_observation(
+        self,
+        state: OperatorAcceptanceState,
+        interface: str,
+        verdict: str,
+        evidence_ref: str,
+        defect_id: str | None = None,
+    ) -> OperatorAcceptanceState:
         if verdict not in {"PASS", "FAIL"}:
             raise BootstrapFailure("operator verdict must be PASS or FAIL")
-        if not interface or not evidence_ref:
-            raise BootstrapFailure("interface and evidence_ref are required")
-        state.evidence_refs.append(evidence_ref)
+        if interface not in state.required_interfaces:
+            raise BootstrapFailure("interface is not required for this mission")
+        if not evidence_ref:
+            raise BootstrapFailure("evidence_ref is required")
+        state.interface_verdicts[interface] = verdict
+        state.interface_evidence[interface] = evidence_ref
+        if evidence_ref not in state.evidence_refs:
+            state.evidence_refs.append(evidence_ref)
         state.empirical_gate.checks["operator_observation"] = True
         state.empirical_gate.checks["evidence_linked"] = True
         state.empirical_gate.checks[f"interface:{interface}"] = verdict == "PASS"
-        if verdict == "FAIL":
-            if defect_id:
-                state.open_defects.append(defect_id)
-            state.empirical_gate.status = "FAIL"
-            state.acceptance_status = "NOT_ACCEPTED"
-        else:
-            state.empirical_gate.status = "PASS"
-            state.acceptance_status = "ACCEPTED" if state.deterministic_gate.status == "PASS" else "OPERATOR_OBSERVED"
+        if verdict == "FAIL" and defect_id and defect_id not in state.open_defects:
+            state.open_defects.append(defect_id)
+        self._reconcile_empirical_gate(state)
         return state
 
     def evidence_receipt(self, state: OperatorAcceptanceState, path: str | Path) -> Path:

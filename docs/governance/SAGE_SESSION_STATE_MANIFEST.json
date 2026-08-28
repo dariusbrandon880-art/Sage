@@ -1,0 +1,25 @@
+{
+  "schema": "sage.session_state.v1",
+  "required": [
+    "canonical_git_sha",
+    "active_mission",
+    "required_interfaces",
+    "acceptance_status",
+    "identity_contract"
+  ],
+  "identity_contract": {
+    "nameplate": "sage/experimental/airspace/nameplate.py",
+    "hud": "sage/agent_hud_projection.py",
+    "immersion_doctrine": "docs/SAGE-INVENTOR-AGENT-IMMERSION-DOCTRINE.md",
+    "source_of_truth": "canonical_airspace_state"
+  },
+  "acceptance": {
+    "partial_convergence": "PENDING",
+    "full_convergence": "ACCEPTED",
+    "required_evidence": true
+  },
+  "binding": {
+    "sha_required": true,
+    "drift_policy": "FAIL_CLOSED"
+  }
+}
