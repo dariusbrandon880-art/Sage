@@ -47,9 +47,15 @@ def structured_output(*, station="[SAGE::C2::CHATGPT]", claim="live repository v
     return json.dumps({"station": station, "reasoning_chain": [claim], "proposed_actions": [], "epistemic_state": {"confidence_level": "HIGH"}, "evidence_refs": []})
 
 
-def test_contract_contains_all_ten_laws_and_identity():
-    rendered = render_system_contract(); assert CONTRACT_ID in rendered; assert CONTRACT_VERSION in rendered; assert len(ANTI_DRIFT_LAWS) == 10
-    for law in ANTI_DRIFT_LAWS: assert law in rendered
+def test_contract_contains_all_twelve_laws_and_identity():
+    rendered = render_system_contract()
+    assert CONTRACT_ID in rendered
+    assert CONTRACT_VERSION == "1.3"
+    assert len(ANTI_DRIFT_LAWS) == 12
+    for law in ANTI_DRIFT_LAWS:
+        assert law in rendered
+    assert "Five flights is concurrent mission ownership across independent vehicles" in rendered
+    assert "PREFLIGHT -> EXECUTE -> TEST -> EVIDENCE -> VERIFY -> RECONCILE -> REPORT" in rendered
 
 
 def test_deep_recon_policy_is_bound_and_has_velocity_language():
@@ -74,8 +80,11 @@ def test_audit_directive_requires_deep_recon():
     assert "audit" in decision.matched_recon_triggers
 
 
-def test_contract_contains_all_ten_laws_and_identity_legacy_behavior():
-    rendered = render_system_contract(); assert CONTRACT_ID in rendered; assert CONTRACT_VERSION in rendered; assert len(ANTI_DRIFT_LAWS) == 10
+def test_contract_contains_all_laws_and_identity_legacy_behavior():
+    rendered = render_system_contract()
+    assert CONTRACT_ID in rendered
+    assert CONTRACT_VERSION in rendered
+    assert len(ANTI_DRIFT_LAWS) == 12
 
 
 def test_live_check_directive_requires_live_verification():

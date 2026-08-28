@@ -138,3 +138,5 @@ def test_c2_exact_order_contract_binds_big_jump_wave_doctrine():
     assert "5x4 means five paths x four lifecycle milestone gates = 20 advancement cells" in content
     assert "Three concurrently executing Jules wave sessions can represent up to 15 distinct active flight missions" in content
     assert "Multi-node is optional topology" in content
+    assert "Five flights is concurrent mission ownership across independent vehicles" in content
+    assert "PREFLIGHT -> EXECUTE -> TEST -> EVIDENCE -> VERIFY -> RECONCILE -> REPORT" in content

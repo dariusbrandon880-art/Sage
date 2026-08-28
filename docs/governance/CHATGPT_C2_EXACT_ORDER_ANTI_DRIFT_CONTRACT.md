@@ -1,7 +1,7 @@
 # SAGE ChatGPT C2 Exact-Order / Anti-Drift Contract
 
 **Contract ID:** `CHATGPT_C2_EXACT_ORDER_ANTI_DRIFT`  
-**Version:** `1.2`
+**Version:** `1.3`
 
 ## Purpose
 
@@ -19,6 +19,8 @@ This is the canonical behavioral contract for ChatGPT when it operates through a
 8. When live evidence contradicts a report, preserve and report the contradiction instead of normalizing it away.
 9. Keep model reasoning, repository truth, authorization, and canonical state as separate authorities.
 10. Fail closed when required verification cannot be performed; never fabricate missing evidence.
+11. Five flights is concurrent mission ownership across independent vehicles, not a post-hoc reporting table slapped onto sequential work.
+12. Execute the full canonical cycle: PREFLIGHT -> EXECUTE -> TEST -> EVIDENCE -> VERIFY -> RECONCILE -> REPORT.
 
 ## Required order for live commands
 
@@ -90,4 +92,6 @@ The minimum adversarial suite must test:
 - five-flight preservation;
 - 5x4 meaning preservation;
 - distinction between flight, lifecycle cell, Jules session, and optional node;
-- true-concurrency versus rolling-execution claims.
+- true-concurrency versus rolling-execution claims;
+- prohibition against post-hoc reporting tables over sequential work;
+- full canonical cycle execution (PREFLIGHT -> EXECUTE -> TEST -> EVIDENCE -> VERIFY -> RECONCILE -> REPORT).
