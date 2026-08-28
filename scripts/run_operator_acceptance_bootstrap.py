@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Single-command SAGE session bootstrap and evidence capture."""
+"""Single-command SAGE session bootstrap and multi-surface evidence capture."""
 from __future__ import annotations
 import argparse
 import json
@@ -13,10 +13,10 @@ def main() -> int:
     p.add_argument("--side-goal", action="append", default=[])
     p.add_argument("--flight", action="append", default=[])
     p.add_argument("--required-interface", action="append", default=[])
-    p.add_argument("--operator-interface")
-    p.add_argument("--operator-verdict", choices=["PASS", "FAIL"])
-    p.add_argument("--evidence-ref")
-    p.add_argument("--defect-id")
+    p.add_argument("--operator-interface", action="append", default=[])
+    p.add_argument("--operator-verdict", action="append", choices=["PASS", "FAIL"], default=[])
+    p.add_argument("--evidence-ref", action="append", default=[])
+    p.add_argument("--defect-id", action="append", default=[])
     p.add_argument("--output", default="evidence_capture/operator_acceptance_receipt.json")
     args = p.parse_args()
     try:
@@ -29,10 +29,17 @@ def main() -> int:
             args.required_interface,
         )
         bootstrap.require_execution_ready(state)
-        if any([args.operator_interface, args.operator_verdict, args.evidence_ref]):
-            if not all([args.operator_interface, args.operator_verdict, args.evidence_ref]):
-                raise BootstrapFailure("operator interface, verdict, and evidence ref must be supplied together")
-            bootstrap.capture_operator_observation(state, args.operator_interface, args.operator_verdict, args.evidence_ref, args.defect_id)
+        counts = (len(args.operator_interface), len(args.operator_verdict), len(args.evidence_ref))
+        if any(counts):
+            if len(set(counts)) != 1:
+                raise BootstrapFailure("operator interface, verdict, and evidence refs must have equal counts")
+            if len(args.defect_id) not in (0, len(args.operator_interface)):
+                raise BootstrapFailure("defect ids must be omitted or supplied once per operator observation")
+            defects = args.defect_id or [None] * len(args.operator_interface)
+            for interface, verdict, evidence, defect in zip(
+                args.operator_interface, args.operator_verdict, args.evidence_ref, defects
+            ):
+                bootstrap.capture_operator_observation(state, interface, verdict, evidence, defect)
         path = bootstrap.evidence_receipt(state, args.output)
         print(json.dumps({"status": state.acceptance_status, "canonical_git_sha": state.canonical_git_sha, "receipt": str(path), "open_defects": state.open_defects}))
         return 0
