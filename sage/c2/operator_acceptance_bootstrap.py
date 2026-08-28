@@ -23,6 +23,8 @@ class OperatorAcceptanceState:
     main_goals: list[str] = field(default_factory=list)
     side_goals: list[str] = field(default_factory=list)
     active_flights: list[str] = field(default_factory=list)
+    active_prs: list[str] = field(default_factory=list)
+    active_issues: list[str] = field(default_factory=list)
     deterministic_gate: GateState = field(default_factory=GateState)
     empirical_gate: GateState = field(default_factory=GateState)
     acceptance_status: str = "NOT_ACCEPTED"
@@ -40,9 +42,11 @@ class BootstrapFailure(RuntimeError):
 
 class OperatorAcceptanceBootstrap:
     """Rehydrates canonical state before execution and fails closed on drift."""
-    def __init__(self, repo_root: str | Path = ".", git_runner: Callable[..., str] | None = None):
+    def __init__(self, repo_root: str | Path = ".", git_runner: Callable[..., str] | None = None,
+                 state_provider: Callable[[], tuple[list[str], list[str]]] | None = None):
         self.repo_root = Path(repo_root)
         self._git_runner = git_runner or self._git
+        self._state_provider = state_provider or self._local_state
 
     def _git(self, *args: str) -> str:
         return subprocess.check_output(["git", *args], cwd=self.repo_root, text=True, stderr=subprocess.STDOUT).strip()
@@ -53,21 +57,39 @@ class OperatorAcceptanceBootstrap:
             raise BootstrapFailure("canonical HEAD is not a valid 40-character SHA")
         return head
 
+    def _local_state(self) -> tuple[list[str], list[str]]:
+        """Read tracked active state from git refs without silently fabricating emptiness."""
+        try:
+            branches = [line.strip() for line in self._git("for-each-ref", "--format=%(refname:short)", "refs/heads").splitlines() if line.strip()]
+        except (subprocess.CalledProcessError, OSError) as exc:
+            raise BootstrapFailure(f"unable to reconcile repository state: {exc}") from exc
+        active_prs = [f"branch:{branch}" for branch in branches if branch != "main"]
+        return active_prs, []
+
     def _active_prs(self) -> list[str]:
-        return []
+        return list(self._state_provider()[0])
 
     def _active_issues(self) -> list[str]:
-        return []
+        return list(self._state_provider()[1])
 
     def rehydrate(self, mission_id: str, main_goals: list[str], side_goals: list[str], active_flights: list[str]) -> OperatorAcceptanceState:
         if not mission_id or not main_goals:
             raise BootstrapFailure("mission_id and at least one main goal are required")
         head = self._resolve_head()
+        try:
+            active_prs, active_issues = self._state_provider()
+        except Exception as exc:
+            if isinstance(exc, BootstrapFailure):
+                raise
+            raise BootstrapFailure(f"unable to reconcile live state: {exc}") from exc
+        if active_prs is None or active_issues is None:
+            raise BootstrapFailure("FAIL_CLOSED: live reconciliation returned incomplete state")
         state = OperatorAcceptanceState(
             mission_id=mission_id,
             canonical_git_sha=head,
             main_goals=list(main_goals), side_goals=list(side_goals), active_flights=list(active_flights),
-            deterministic_gate=GateState("PASS", {"exact_sha_anchored": True, "repository_rehydrated": True}),
+            active_prs=list(active_prs), active_issues=list(active_issues),
+            deterministic_gate=GateState("PASS", {"exact_sha_anchored": True, "repository_rehydrated": True, "live_state_reconciled": True}),
             empirical_gate=GateState("PENDING", {"operator_observation": False, "evidence_linked": False}),
             acceptance_status="ENGINEERING_VERIFIED",
         )
@@ -78,6 +100,8 @@ class OperatorAcceptanceBootstrap:
             raise BootstrapFailure("FAIL_CLOSED: deterministic bootstrap gate not passed")
         if not state.main_goals or not state.canonical_git_sha:
             raise BootstrapFailure("FAIL_CLOSED: incomplete rehydrated mission state")
+        if not state.deterministic_gate.checks.get("live_state_reconciled"):
+            raise BootstrapFailure("FAIL_CLOSED: live repository state was not reconciled")
 
     def capture_operator_observation(self, state: OperatorAcceptanceState, interface: str, verdict: str, evidence_ref: str, defect_id: str | None = None) -> OperatorAcceptanceState:
         if verdict not in {"PASS", "FAIL"}:
