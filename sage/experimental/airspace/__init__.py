@@ -18,6 +18,12 @@ from .models import (
     GameProgression,
     AirspaceState,
 )
+from .nameplate import (
+    build_agent_identity,
+    render_agent_identity,
+    render_agent_nameplate,
+    render_chat_nameplate,
+)
 
 __all__ = [
     "StationID",
@@ -36,4 +42,8 @@ __all__ = [
     "XPEvent",
     "GameProgression",
     "AirspaceState",
+    "build_agent_identity",
+    "render_agent_identity",
+    "render_agent_nameplate",
+    "render_chat_nameplate",
 ]
