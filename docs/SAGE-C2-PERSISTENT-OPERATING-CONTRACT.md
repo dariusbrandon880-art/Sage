@@ -266,3 +266,42 @@ The empirical question is:
 Locked flight sequence:
 
 **LOCK -> BASELINE -> SAGE -> REAL OBSERVATIONS -> FAILURE / RECOVERY -> RECEIPTS + EVIDENCE -> LONGITUDINAL EVALUATION -> INDEPENDENT C2 VERIFICATION -> PASS / HOLD / NEGATIVE_RESULT -> QUALIFICATION ONLY IF EARNED**
+
+## 15. Client-Useful Production Frontier — Locked
+
+SAGE is being built for eventual actuation by real organizations. Therefore **engineering-verified is not the commercial finish line**. A capability is not promoted as client-useful merely because code exists, tests pass, or a CI workflow is green.
+
+The production frontier is explicitly:
+
+**BUSINESS PROBLEM -> GOVERNED MISSION -> EXECUTION -> OBSERVED OUTCOME -> EVIDENCE -> INDEPENDENT EVALUATION -> REPEATABILITY -> COST / LATENCY / RELIABILITY MEASUREMENT -> CLIENT-USEFUL QUALIFICATION**
+
+A client-useful capability must demonstrate, for its declared use case:
+
+1. **Outcome value:** a measurable business or operational outcome, not merely model activity.
+2. **Repeatability:** the outcome survives repeated governed runs and reasonable perturbations.
+3. **Traceability:** consequential actions, tool use, evidence, provenance, and observed effects are auditable.
+4. **Governance:** authorization, identity, policy boundaries, fail-closed behavior, and human accountability remain intact during execution.
+5. **Observability:** operators can determine what happened, what evidence supported it, where it failed, and what it cost.
+6. **Recovery:** consequential failures produce bounded recovery behavior and durable negative knowledge rather than silent degradation.
+7. **Economic fitness:** measure material latency, resource/cost burden, and operational overhead for the target workflow.
+8. **Client boundary:** define what the system is qualified to do, what remains human-controlled, and what evidence is required before expanding authority.
+
+### Production acceptance law
+
+For each proposed client-facing capability, C2 must maintain separate proof for:
+
+- **ENGINEERING_VERIFIED** — implementation and automated tests pass.
+- **EMPIRICALLY_VALIDATED** — the capability produces the intended observed outcome under governed execution.
+- **CLIENT_USEFUL** — the validated outcome is materially useful for the declared workflow and survives repeatability/economic evaluation.
+
+These statuses must never be collapsed. A lower status cannot be reported as a higher one.
+
+### Enterprise reality check
+
+External industry evidence reinforces this boundary: production agent systems increasingly require orchestration, governance, observability, evaluation, identity/access controls, and measurable operational value rather than model access alone. NIST's current TEVV work explicitly targets real-world AI impact and agentic-system evaluation, while its agent-evaluation research emphasizes machine-readable audit trails and probes integrated into agent workflows. urlNIST TEVV-Athlon Frameworkhttps://www.nist.gov/artificial-intelligence/ai-research/tevv-athlon-framework-evaluating-ai-systems urlNIST Building Evaluation Probes into Agentic AIhttps://www.nist.gov/programs-projects/building-evaluation-probes-agentic-ai
+
+### Business-actuation rule
+
+The next consequential frontier after engineering repair is therefore **not another abstract architecture expansion**. It is to select a bounded client-useful workflow, run the full five-flight engine against it, measure observed outcomes and economics, preserve evidence, independently verify the result, and compound only what the evidence earns.
+
+No revenue claim, client-readiness claim, or production qualification may be inferred from internal test counts alone.
