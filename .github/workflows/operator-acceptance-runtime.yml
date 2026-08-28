@@ -14,6 +14,11 @@ on:
       - 'docs/governance/SAGE_SESSION_REHYDRATION_CONTRACT.md'
       - 'docs/governance/SAGE_SESSION_STATE_MANIFEST.json'
   workflow_dispatch:
+    inputs:
+      operator_evidence:
+        description: 'Verified operator evidence JSON; acceptance remains BLOCKED when absent.'
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -41,33 +46,31 @@ jobs:
             --required-interface jules
       - name: Verify materialized session rehydration contract
         run: python scripts/verify_session_rehydration_contract.py
-      - name: Exercise full multi-surface acceptance
+      - name: Evaluate operator acceptance honestly
+        env:
+          OPERATOR_EVIDENCE: ${{ inputs.operator_evidence }}
         run: |
-          python scripts/run_operator_acceptance_bootstrap.py \
-            --mission-id ci-bootstrap \
-            --main-goal "mission continuity" \
-            --flight F1 \
-            --required-interface chatgpt \
-            --required-interface gemini \
-            --required-interface jules \
-            --operator-interface chatgpt \
-            --operator-interface gemini \
-            --operator-interface jules \
-            --operator-verdict PASS \
-            --operator-verdict PASS \
-            --operator-verdict PASS \
-            --evidence-ref ci://operator-acceptance/chatgpt \
-            --evidence-ref ci://operator-acceptance/gemini \
-            --evidence-ref ci://operator-acceptance/jules \
-            --output /tmp/operator_acceptance_receipt.json
           python - <<'PY'
-          import json
-          with open('/tmp/operator_acceptance_receipt.json', encoding='utf-8') as f:
-              receipt = json.load(f)
-          assert receipt['acceptance_status'] == 'ACCEPTED', receipt
-          assert all(v == 'PASS' for v in receipt['interface_verdicts'].values()), receipt
-          assert receipt['empirical_gate']['checks']['full_surface_convergence'] is True, receipt
-          print(json.dumps({'status': 'ACCEPTED', 'interfaces': receipt['interface_verdicts']}))
+          import json, os, sys
+          raw = os.environ.get('OPERATOR_EVIDENCE', '').strip()
+          if not raw:
+              print('OPERATOR ACCEPTANCE: BLOCKED — no verified external operator evidence supplied')
+              sys.exit(0)
+          try:
+              evidence = json.loads(raw)
+          except json.JSONDecodeError as exc:
+              raise SystemExit(f'Invalid operator evidence JSON: {exc}')
+          required = {'chatgpt', 'gemini', 'jules'}
+          verdicts = evidence.get('interface_verdicts', {})
+          missing = required - set(verdicts)
+          if missing:
+              raise SystemExit(f'Incomplete operator evidence; missing: {sorted(missing)}')
+          if any(verdicts[name] != 'PASS' for name in required):
+              raise SystemExit(f'Operator acceptance not proven: {verdicts}')
+          refs = evidence.get('evidence_refs', {})
+          if any(not refs.get(name) or str(refs[name]).startswith('ci://') for name in required):
+              raise SystemExit('Synthetic or missing operator evidence refs are forbidden')
+          print(json.dumps({'status': 'ACCEPTED', 'interfaces': verdicts}, sort_keys=True))
           PY
       - name: Exact HEAD binding
         env:
