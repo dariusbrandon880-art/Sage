@@ -3,10 +3,10 @@ from sage.agent_presence import get_agent_identity, get_team_context, render_cha
 
 def test_team_status_exposes_all_station_progression():
     rendered = render_team_status()
-    assert "Director:" in rendered
-    assert "C2:GPT" in rendered
-    assert "Intel:Gemini" in rendered
-    assert "Engineering:Jules" in rendered
+    assert "[SAGE::DIRECTOR]" in rendered
+    assert "[SAGE::C2::CHATGPT]" in rendered
+    assert "[SAGE::INTEL::GEMINI]" in rendered
+    assert "[SAGE::ENGINEER::JULES]" in rendered
     assert "CQL-" in rendered
     assert "XP-" in rendered
 
