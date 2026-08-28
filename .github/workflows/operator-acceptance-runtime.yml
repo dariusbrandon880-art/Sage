@@ -32,9 +32,12 @@ jobs:
             --mission-id ci-bootstrap \
             --main-goal rehydrate \
             --flight F1 \
-            --operator-interface ci \
+            --required-interface chatgpt \
+            --required-interface gemini \
+            --required-interface jules \
+            --operator-interface chatgpt \
             --operator-verdict PASS \
-            --evidence-ref ci://operator-acceptance \
+            --evidence-ref ci://operator-acceptance/chatgpt \
             --output /tmp/operator_acceptance_receipt.json
       - name: Exact HEAD binding
         env:
