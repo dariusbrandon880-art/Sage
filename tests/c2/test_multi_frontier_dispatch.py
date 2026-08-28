@@ -1,96 +1,58 @@
-"""Unit and concurrency tests for sage.c2.multi_frontier_dispatch."""
-
-from __future__ import annotations
-
-import json
-import threading
-
-from sage.c2.multi_frontier_dispatch import FLIGHT_MISSIONS, MultiFrontierDispatcher, compute_receipt_hash
+from sage.c2.build_jump_wave import CANONICAL_BIG_JUMP_MISSIONS
+from sage.c2.multi_frontier_dispatch import MultiFrontierDispatcher, compute_receipt_hash
+from sage.c2.reconvergence_synthesizer import FlightExecutionSummary, LifecycleMilestoneRecord, LifecycleStage, ReconvergenceEvidencePackage
 
 
-def test_flight_missions_contract():
-    assert len(FLIGHT_MISSIONS) == 5
-    assert {m.flight_id for m in FLIGHT_MISSIONS} == {"Flight A", "Flight B", "Flight C", "Flight D", "Flight E"}
-    assert len({m.mission_id for m in FLIGHT_MISSIONS}) == 5
-    assert len({m.boundary_scope for m in FLIGHT_MISSIONS}) == 5
+def _summary(mission, sha="a" * 40, passed=True):
+    return FlightExecutionSummary(flight_id=mission.flight_id, target=mission.target_path, classification="ACTIVE", execution_result="PASS" if passed else "FAIL", exact_head=sha, tests_passed=3 if passed else 0, evidence_ref=mission.evidence_ref, pr_or_change=mission.pr_or_change, lifecycle_milestones=[LifecycleMilestoneRecord(stage=stage, passed=passed, evidence_ref=mission.evidence_ref) for stage in LifecycleStage])
 
 
-def test_multi_frontier_dispatch_success():
-    receipt = MultiFrontierDispatcher(commit_sha="test_commit_sha_123").dispatch_all()
-    assert receipt.commit_sha == "test_commit_sha_123"
-    assert receipt.collision_count == 0
-    assert not receipt.collisions_detected
+def _package(sha="a" * 40, passed=True):
+    summaries = [_summary(mission, sha, passed) for mission in CANONICAL_BIG_JUMP_MISSIONS]
+    return ReconvergenceEvidencePackage(wave_id="test-wave", flight_summaries=summaries, total_flights=5, successful_flights=5 if passed else 0, blocked_flights=0 if passed else 5, advancement_matrix_20_cells={f"P{i}-S{s}": passed for i in range(1, 6) for s in range(1, 5)}, first_pass_verification_rate=100.0 if passed else 0.0, reconvergence_verdict="PASS" if passed else "FAIL_CLOSED")
+
+
+class FakeEngine:
+    def __init__(self, package): self.package = package
+    def execute_wave(self, wave_id=None): assert wave_id == "multi-frontier-dispatch"; return self.package
+    def get_current_head_sha(self): return "a" * 40
+
+
+def test_dispatch_delegates_to_canonical_wave_engine():
+    receipt = MultiFrontierDispatcher(engine_factory=lambda: FakeEngine(_package())).dispatch_all()
     assert receipt.wave_verdict == "PASS"
+    assert receipt.summary["source"] == "BuildJumpWaveEngine"
+    assert receipt.summary["synthetic_receipts"] is False
     assert len(receipt.flight_receipts) == 5
-    assert receipt.summary["execution_mode"] == "concurrent"
-    assert receipt.summary["max_workers"] == 5
-
-    assert [fr.proof_type for fr in receipt.flight_receipts] == [
-        "mission_objective_output_receipt", "independent_execution_boundary",
-        "independent_capability_result", "architecture_guard_result",
-        "evidence_warehouse_receipt",
-    ]
-    for fr in receipt.flight_receipts:
-        assert fr.receipt_hash == compute_receipt_hash(
-            fr.flight_id, fr.mission_id, fr.boundary_scope, fr.proof_type, "test_commit_sha_123"
-        )
-        assert fr.status == "PASS"
+    assert all(r.status == "PASS" for r in receipt.flight_receipts)
 
 
-def test_five_flights_execute_concurrently(monkeypatch):
-    """Prove all five handlers overlap, rather than merely producing five receipts."""
-    dispatcher = MultiFrontierDispatcher(commit_sha="concurrency_test_sha")
-    barrier = threading.Barrier(5)
-    active = 0
-    max_active = 0
-    lock = threading.Lock()
+def test_dispatch_refuses_stale_execution_sha_per_flight():
+    receipt = MultiFrontierDispatcher(commit_sha="a" * 40, engine_factory=lambda: FakeEngine(_package(sha="b" * 40))).dispatch_all()
+    assert receipt.wave_verdict == "HOLD"
+    assert receipt.collision_count == 5
+    assert len(receipt.collisions_detected) == 5
+    assert all(r.status == "FAIL" for r in receipt.flight_receipts)
+    assert {r.flight_id for r in receipt.flight_receipts} == {m.flight_id for m in CANONICAL_BIG_JUMP_MISSIONS}
 
-    originals = {
-        "a": dispatcher._execute_flight_a,
-        "b": dispatcher._execute_flight_b,
-        "c": dispatcher._execute_flight_c,
-        "d": dispatcher._execute_flight_d,
-        "e": dispatcher._execute_flight_e,
-    }
 
-    def wrap(handler):
-        def wrapped(mission):
-            nonlocal active, max_active
-            with lock:
-                active += 1
-                max_active = max(max_active, active)
-            try:
-                barrier.wait(timeout=2)
-                return handler(mission)
-            finally:
-                with lock:
-                    active -= 1
-        return wrapped
-
-    for suffix, handler in originals.items():
-        monkeypatch.setattr(dispatcher, f"_execute_flight_{suffix}", wrap(handler))
-
-    receipt = dispatcher.dispatch_all()
-    assert receipt.wave_verdict == "PASS"
-    assert len(receipt.flight_receipts) == 5
-    assert max_active == 5
+def test_dispatch_refuses_failed_wave():
+    receipt = MultiFrontierDispatcher(engine_factory=lambda: FakeEngine(_package(passed=False))).dispatch_all()
+    assert receipt.wave_verdict == "HOLD"
+    assert all(r.status == "FAIL" for r in receipt.flight_receipts)
 
 
 def test_receipt_hash_determinism():
-    hash1 = compute_receipt_hash("Flight A", "mission_1", "scope.a", "proof_type_1", "sha_1")
-    hash2 = compute_receipt_hash("Flight A", "mission_1", "scope.a", "proof_type_1", "sha_1")
-    hash3 = compute_receipt_hash("Flight A", "mission_1", "scope.a", "proof_type_1", "sha_2")
-    assert hash1 == hash2
-    assert hash1 != hash3
-    assert len(hash1) == 64
+    h1 = compute_receipt_hash("Flight A", "mission_1", "scope.a", "proof_type_1", "sha_1")
+    h2 = compute_receipt_hash("Flight A", "mission_1", "scope.a", "proof_type_1", "sha_1")
+    h3 = compute_receipt_hash("Flight A", "mission_1", "scope.a", "proof_type_1", "sha_2")
+    assert h1 == h2 and h1 != h3 and len(h1) == 64
 
 
-def test_serialization():
-    receipt = MultiFrontierDispatcher(commit_sha="abc1234").dispatch_all()
-    as_dict = receipt.to_dict()
-    assert as_dict["commit_sha"] == "abc1234"
-    assert as_dict["wave_verdict"] == "PASS"
-    assert len(as_dict["flight_receipts"]) == 5
-    json_str = json.dumps(as_dict)
-    assert "Flight A" in json_str
-    assert "architecture_guard_result" in json_str
+def test_serialization_contains_real_execution_metadata():
+    receipt = MultiFrontierDispatcher(engine_factory=lambda: FakeEngine(_package())).dispatch_all()
+    data = receipt.to_dict()
+    assert data["wave_verdict"] == "PASS"
+    assert len(data["flight_receipts"]) == 5
+    assert all(item["proof_type"] == "governed_wave_execution_summary" for item in data["flight_receipts"])
+    assert data["summary"]["synthetic_receipts"] is False

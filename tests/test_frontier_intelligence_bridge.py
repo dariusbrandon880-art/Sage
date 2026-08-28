@@ -1,6 +1,8 @@
+import subprocess
+
 import pytest
 
-from sage.c2.frontier_intelligence_bridge import FrontierIntelligenceBridge, FrontierBridgeDispatchReceipt
+from sage.c2.frontier_intelligence_bridge import FrontierIntelligenceBridge
 from sage.experimental.sagi_discovery_flight_selector import (
     DiscoveryCandidate,
     FlightRole,
@@ -72,15 +74,20 @@ def sample_proposal():
     return selector.select(candidates, frontier_digest=frontier_digest)
 
 
+def _checked_out_head() -> str:
+    return subprocess.check_output(
+        ["git", "rev-parse", "HEAD"], text=True
+    ).strip()
+
+
 def test_bridge_dispatches_when_all_candidates_authorized(sample_proposal):
     bridge = FrontierIntelligenceBridge()
     authorized_ids = ("cand_a", "cand_b", "cand_c", "cand_d", "cand_e")
-    commit_sha = "2f29952931f7937d15711092da3faf1e28764135"
 
     receipt = bridge.bridge_and_dispatch(
         sample_proposal,
         authorized_candidate_ids=authorized_ids,
-        commit_sha=commit_sha,
+        commit_sha=_checked_out_head(),
     )
 
     assert receipt.is_authorized is True
@@ -95,12 +102,11 @@ def test_bridge_fails_closed_when_any_candidate_unauthorized(sample_proposal):
     bridge = FrontierIntelligenceBridge()
     # Missing cand_e
     authorized_ids = ("cand_a", "cand_b", "cand_c", "cand_d")
-    commit_sha = "2f29952931f7937d15711092da3faf1e28764135"
 
     receipt = bridge.bridge_and_dispatch(
         sample_proposal,
         authorized_candidate_ids=authorized_ids,
-        commit_sha=commit_sha,
+        commit_sha=_checked_out_head(),
     )
 
     assert receipt.is_authorized is False
