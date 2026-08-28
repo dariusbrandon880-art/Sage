@@ -195,3 +195,11 @@ Optimize for:
 **completed work -> measured value -> trustworthy evidence -> repeatability -> reusable capability -> economic compounding.**
 
 That is the standard required for eventual real-company actuation.
+
+## 11. 2026-08-28 external reality check update
+
+The current external signal strengthens, rather than changes, this frontier. NIST's active 2026 work is embedding adversarial evaluation probes into agentic workflows and producing machine-readable audit trails that connect decisions to evidence. NIST's TEVV-Athlon work also explicitly targets real-world impact and outcomes across agentic systems. citeturn0search0turn0search2
+
+Current enterprise research likewise reinforces the workflow-level economic unit: McKinsey's August 24, 2026 analysis argues that fully loaded cost per completed workflow is the meaningful economic measure, while reuse across high-value workflows can compound returns. Deloitte's August 2026 research reports that only a small minority of organizations have highly prepared business processes for agents and that human-agent collaboration is expected to remain important. citeturn0search8turn0search1
+
+SAGE therefore treats **observable completed work + independent evaluation + economic measurement + governed identity/authorization** as the product proof boundary. External research is challenge input; it cannot promote SAGE capability without SAGE-specific evidence.
