@@ -7,225 +7,94 @@ import sys
 from sage.runtime import SageRuntime
 
 
+def _print_c2_bootstrap(runtime):
+    from sage.agent_presence import render_chat_identity
+    print("[SAGE::C2::CHATGPT] C2 MISSION CONTROL")
+    print("MISSION LOCK: SAGE Operational Convergence")
+    print("REALITY LOCK: repository state and acceptance evidence required")
+    print("STATE LOCK: canonical mission contract + active work reconciled")
+    print("FLIGHT BOARD: F1=FOUNDATION F2=INTELLIGENCE F3=EXECUTION F4=VERIFICATION F5=WAREHOUSE")
+    print("EXECUTION LOOP: SENSE -> VERIFY -> ORIENT -> EXECUTE -> OBSERVE -> VALIDATE -> COMPOUND")
+    print("ANTI-DRIFT: no invented state; no narration substituted for execution")
+    print(render_chat_identity())
+
+
 def main():
     """Main CLI entrypoint."""
     parser = argparse.ArgumentParser(description="SAGE Autonomous Continuity Runtime CLI")
     subparsers = parser.add_subparsers(dest="command", help="SAGE commands")
-
-    obj_parser = subparsers.add_parser("objective", help="Manage SAGE current objective")
-    obj_parser.add_argument("--objective", type=str, help="The new objective to set")
-    task_parser = subparsers.add_parser("task", help="Manage SAGE current task")
-    task_parser.add_argument("--task", type=str, help="The new task to set")
-    subparsers.add_parser("status", help="Get current SAGE status")
-
-    handoff_parser = subparsers.add_parser("handoff", help="Generate a SAGE session handoff artifact")
-    handoff_parser.add_argument("--file", type=str, help="The path to save the handoff JSON file")
-    restore_parser = subparsers.add_parser("restore", help="Restore SAGE session state from a handoff artifact")
-    restore_parser.add_argument("--file", type=str, required=True, help="The path to the handoff JSON file to restore from")
-
-    snapshot_parser = subparsers.add_parser("snapshot", help="Manage SAGE workspace snapshots")
-    snapshot_parser.add_argument("--action", choices=["create", "list", "restore"], required=True, help="Snapshot action to perform")
-    snapshot_parser.add_argument("--file", type=str, help="Handoff/Snapshot file to restore from (for restore action)")
-
-    ingest_parser = subparsers.add_parser("ingest", help="Ingest an external session payload using the Continuity Bridge")
-    ingest_parser.add_argument("--file", type=str, required=True, help="Path to the JSON file representing the payload")
-    subparsers.add_parser("reason", help="Perform reasoning over continuity databases and active context")
-    subparsers.add_parser("verify", help="Run repository-side self-verification and referential integrity checks")
-    subparsers.add_parser("health", help="Check SAGE runtime and component health status")
-    subparsers.add_parser("diagnostics", help="Generate SAGE runtime diagnostic report")
-    subparsers.add_parser("capabilities", help="Get report of SAGE platform capabilities")
-
-    chat_parser = subparsers.add_parser("chat", help="Execute a query using ChatGPTClient and SAGE runtime continuity")
-    chat_mode = chat_parser.add_mutually_exclusive_group(required=True)
-    chat_mode.add_argument("--prompt", type=str, help="One-shot query prompt for ChatGPT")
-    chat_mode.add_argument("--interactive", action="store_true", help="Run an interactive ChatGPT session; type exit or quit to stop")
-
-    subparsers.add_parser("metrics", help="Show collected runtime telemetry metrics")
-    audit_parser = subparsers.add_parser("audit", help="ACT-PROD cross-model audit dashboard operator interface")
-    audit_parser.add_argument("--action", choices=["summary", "diagnostics", "scan"], required=True, help="Audit action to perform")
-    audit_parser.add_argument("--mission-id", type=str, help="Mission ID for diagnostics action")
-    audit_parser.add_argument("--archive-path", type=str, default="sage_data/archive", help="Path to SAGE Archive")
-
-    c2_parser = subparsers.add_parser("c2", help="SAGE C2 Immersion Command Center")
-    c2_parser.add_argument("--action", choices=["context", "cycle"], default="context", help="C2 action to perform")
-    c2_parser.add_argument("--action-id", type=str, default="c2_cycle_init", help="Action ID for cycle execution")
-    c2_parser.add_argument("--description", type=str, default="C2 Governed Execution Cycle", help="Description for cycle execution")
-
-    args = parser.parse_args()
-    runtime = SageRuntime()
-
-    if args.command == "objective":
-        if args.objective:
-            session_id = runtime.set_objective(args.objective)
-            print(f"Success: Objective set to '{args.objective}'")
-            print(f"Session ID: {session_id}")
-        else:
-            print(f"Current Objective: {runtime.current_state.current_objective or 'None'}")
-    elif args.command == "task":
-        if args.task:
-            session_id = runtime.set_task(args.task)
-            print(f"Success: Task set to '{args.task}'")
-            print(f"Session ID: {session_id}")
-        else:
-            print(f"Current Task: {runtime.current_state.active_task or 'None'}")
-    elif args.command == "status":
-        print(json.dumps(runtime.get_status(), indent=2))
-    elif args.command == "handoff":
-        path = runtime.generate_handoff(args.file)
-        print(f"Success: Handoff generated successfully at: '{path}'")
-    elif args.command == "restore":
-        success = runtime.restore_session(args.file)
-        if success:
+    obj_parser = subparsers.add_parser("objective", help="Manage SAGE current objective"); obj_parser.add_argument("--objective", type=str)
+    task_parser = subparsers.add_parser("task", help="Manage SAGE current task"); task_parser.add_argument("--task", type=str)
+    subparsers.add_parser("status"); handoff_parser = subparsers.add_parser("handoff"); handoff_parser.add_argument("--file", type=str)
+    restore_parser = subparsers.add_parser("restore"); restore_parser.add_argument("--file", type=str, required=True)
+    snapshot_parser = subparsers.add_parser("snapshot"); snapshot_parser.add_argument("--action", choices=["create", "list", "restore"], required=True); snapshot_parser.add_argument("--file", type=str)
+    ingest_parser = subparsers.add_parser("ingest"); ingest_parser.add_argument("--file", type=str, required=True)
+    subparsers.add_parser("reason"); subparsers.add_parser("verify"); subparsers.add_parser("health"); subparsers.add_parser("diagnostics"); subparsers.add_parser("capabilities"); subparsers.add_parser("metrics")
+    chat_parser = subparsers.add_parser("chat"); chat_mode = chat_parser.add_mutually_exclusive_group(required=True); chat_mode.add_argument("--prompt", type=str); chat_mode.add_argument("--interactive", action="store_true")
+    audit_parser = subparsers.add_parser("audit"); audit_parser.add_argument("--action", choices=["summary", "diagnostics", "scan"], required=True); audit_parser.add_argument("--mission-id", type=str); audit_parser.add_argument("--archive-path", type=str, default="sage_data/archive")
+    c2_parser = subparsers.add_parser("c2"); c2_parser.add_argument("--action", choices=["context", "cycle"], default="context"); c2_parser.add_argument("--action-id", type=str, default="c2_cycle_init"); c2_parser.add_argument("--description", type=str, default="C2 Governed Execution Cycle")
+    args = parser.parse_args(); runtime = SageRuntime()
+    try:
+        if args.command == "objective":
+            if args.objective: print(f"Success: Objective set to '{args.objective}'\nSession ID: {runtime.set_objective(args.objective)}")
+            else: print(f"Current Objective: {runtime.current_state.current_objective or 'None'}")
+        elif args.command == "task":
+            if args.task: print(f"Success: Task set to '{args.task}'\nSession ID: {runtime.set_task(args.task)}")
+            else: print(f"Current Task: {runtime.current_state.active_task or 'None'}")
+        elif args.command == "status": print(json.dumps(runtime.get_status(), indent=2))
+        elif args.command == "handoff": print(f"Success: Handoff generated successfully at: '{runtime.generate_handoff(args.file)}'")
+        elif args.command == "restore":
+            if not runtime.restore_session(args.file): raise RuntimeError("Failed to restore session")
             print(f"Success: SAGE session state restored successfully from '{args.file}'")
-            print(f"Current Objective: {runtime.current_state.current_objective or 'None'}")
-            print(f"Current Task: {runtime.current_state.active_task or 'None'}")
-        else:
-            print(f"Error: Failed to restore session from '{args.file}'")
-            sys.exit(1)
-    elif args.command == "snapshot":
-        if args.action == "create":
-            print(f"Success: Workspace snapshot created successfully. ID: {runtime.checkpoint()}")
-        elif args.action == "list":
-            workspace = runtime.workspace_path
-            snapshots = []
-            if workspace.exists():
-                for path in workspace.glob("checkpoint_*.json"):
-                    snapshots.append({"snapshot_id": path.stem, "file_path": str(path), "size_bytes": path.stat().st_size})
-            print(json.dumps(snapshots, indent=2))
-        else:
-            if not args.file:
-                print("Error: --file argument is required for snapshot restore action.")
-                sys.exit(1)
-            if not runtime.restore_session(args.file):
-                print(f"Error: Failed to restore snapshot from '{args.file}'")
-                sys.exit(1)
-            print(f"Success: Workspace state restored successfully from snapshot '{args.file}'")
-    elif args.command == "ingest":
-        try:
+        elif args.command == "snapshot":
+            if args.action == "create": print(f"Success: Workspace snapshot created successfully. ID: {runtime.checkpoint()}")
+            elif args.action == "list": print(json.dumps([{"snapshot_id": p.stem, "file_path": str(p), "size_bytes": p.stat().st_size} for p in runtime.workspace_path.glob("checkpoint_*.json")], indent=2))
+            else:
+                if not args.file or not runtime.restore_session(args.file): raise RuntimeError("Failed to restore snapshot")
+        elif args.command == "ingest":
             from sage.models import ExternalSessionPayload
-            with open(args.file, "r") as f:
-                result = runtime.ingest_session_payload(ExternalSessionPayload(**json.load(f)))
-            print(json.dumps(result, indent=2))
-        except Exception as e:
-            print(f"Error: Ingestion failed: {e!s}")
-            sys.exit(1)
-    elif args.command == "reason":
-        try:
-            print(json.dumps(runtime.reason_over_continuity(), indent=2))
-        except Exception as e:
-            print(f"Error: Reasoning failed: {e!s}")
-            sys.exit(1)
-    elif args.command == "verify":
-        try:
-            result = runtime.verify_integrity()
-            print(json.dumps(result, indent=2))
-            if not result.get("is_valid", False): sys.exit(1)
-        except Exception as e:
-            print(f"Error: Verification failed: {e!s}")
-            sys.exit(1)
-    elif args.command == "health":
-        try:
-            from sage.runtime import check_health
-            print(json.dumps(check_health(runtime), indent=2))
-        except Exception as e:
-            print(f"Error: Health check failed: {e!s}")
-            sys.exit(1)
-    elif args.command == "diagnostics":
-        try:
-            from sage.runtime import generate_diagnostic_report
-            print(json.dumps(generate_diagnostic_report(runtime), indent=2))
-        except Exception as e:
-            print(f"Error: Diagnostics failed: {e!s}")
-            sys.exit(1)
-    elif args.command == "capabilities":
-        try:
-            from sage.runtime import generate_capability_report
-            print(json.dumps(generate_capability_report(runtime), indent=2))
-        except Exception as e:
-            print(f"Error: Capability reporting failed: {e!s}")
-            sys.exit(1)
-    elif args.command == "chat":
-        try:
+            with open(args.file) as f: print(json.dumps(runtime.ingest_session_payload(ExternalSessionPayload(**json.load(f))), indent=2))
+        elif args.command == "reason": print(json.dumps(runtime.reason_over_continuity(), indent=2))
+        elif args.command == "verify":
+            result = runtime.verify_integrity(); print(json.dumps(result, indent=2)); sys.exit(0 if result.get("is_valid", False) else 1)
+        elif args.command == "health":
+            from sage.runtime import check_health; print(json.dumps(check_health(runtime), indent=2))
+        elif args.command == "diagnostics":
+            from sage.runtime import generate_diagnostic_report; print(json.dumps(generate_diagnostic_report(runtime), indent=2))
+        elif args.command == "capabilities":
+            from sage.runtime import generate_capability_report; print(json.dumps(generate_capability_report(runtime), indent=2))
+        elif args.command == "chat":
             from sage.integration import AIQueryRequest, ChatGPTClient
-            from sage.agent_presence import get_team_context, render_chat_identity
-
-            # Preserve the existing ChatGPTClient constructor seam for tests and
-            # alternate clients while injecting canonical C2 context when supported.
-            client = ChatGPTClient(runtime)
-            if hasattr(client, "c2_provider"):
-                client.c2_provider = get_team_context
-
+            from sage.agent_presence import get_team_context
+            client = ChatGPTClient(runtime, c2_provider=get_team_context)
+            _print_c2_bootstrap(runtime)
             if args.prompt:
-                response = client.execute_query(AIQueryRequest(prompt=args.prompt))
-                print(render_chat_identity())
-                print(response.response_text)
+                response = client.execute_query(AIQueryRequest(prompt=args.prompt)); print(response.response_text)
             else:
                 session_id = None
                 while True:
                     prompt = input("sage> ").strip()
-                    if prompt.lower() in {"exit", "quit"}:
-                        break
-                    if not prompt:
-                        continue
-                    response = client.execute_query(AIQueryRequest(prompt=prompt, session_id=session_id))
-                    session_id = response.session_id
-                    print(render_chat_identity())
+                    if prompt.lower() in {"exit", "quit"}: break
+                    if not prompt: continue
+                    response = client.execute_query(AIQueryRequest(prompt=prompt, session_id=session_id)); session_id = response.session_id
                     print(response.response_text)
-        except Exception as e:
-            print(f"Error: Chat query failed: {e!s}")
-            sys.exit(1)
-    elif args.command == "metrics":
-        try:
-            from sage.runtime import get_metrics_collector
-            print(json.dumps(get_metrics_collector().get_metrics(), indent=2))
-        except Exception as e:
-            print(f"Error: Metrics gathering failed: {e!s}")
-            sys.exit(1)
-    elif args.command == "audit":
-        try:
-            import importlib
-            dashboard_module = importlib.import_module("sage.experimental.act.act_prod_dashboard")
-            dashboard = dashboard_module.SAGEActProdDashboard(archive_path=args.archive_path)
+        elif args.command == "metrics":
+            from sage.runtime import get_metrics_collector; print(json.dumps(get_metrics_collector().get_metrics(), indent=2))
+        elif args.command == "audit":
+            import importlib; dashboard = importlib.import_module("sage.experimental.act.act_prod_dashboard").SAGEActProdDashboard(archive_path=args.archive_path)
             if args.action == "summary": result = dashboard.retrieve_operator_summary()
-            elif args.action == "diagnostics":
-                if not args.mission_id:
-                    print("Error: --mission-id is required for diagnostics action.")
-                    sys.exit(1)
-                result = dashboard.retrieve_mission_diagnostics(args.mission_id)
-                if result is None:
-                    print(f"Error: No archived trace found for mission '{args.mission_id}'")
-                    sys.exit(1)
+            elif args.action == "diagnostics": result = dashboard.retrieve_mission_diagnostics(args.mission_id)
             else: result = dashboard.handle_corrupted_archive_data()
             print(json.dumps(result, indent=2))
-        except Exception as e:
-            print(f"Error: Audit execution failed: {e!s}")
-            sys.exit(1)
-    elif args.command == "c2":
-        try:
-            import importlib
+        elif args.command == "c2":
             from sage.agent_presence import render_team_status
-            bridge_module = importlib.import_module("sage.experimental.cognitive.runtime_bridge")
-            bridge = bridge_module.RuntimeCognitiveBridge(runtime)
-            print("======================================================================")
-            print("                SAGE C2 // IMMERSION COMMAND CENTER                  ")
-            print("======================================================================")
-            print(render_team_status())
-            print("----------------------------------------------------------------------")
-            if args.action == "context":
-                c2_context = bridge.get_c2_context()
-                print(json.dumps(c2_context, indent=2, default=str))
-            elif args.action == "cycle":
-                result = bridge.execute_cognitive_cycle(
-                    action_id=args.action_id,
-                    description=args.description,
-                )
-                print(json.dumps(result.model_dump(), indent=2, default=str))
-        except Exception as e:
-            print(f"Error: C2 command execution failed: {e!s}")
-            sys.exit(1)
-    else:
-        parser.print_help()
+            import importlib; bridge = importlib.import_module("sage.experimental.cognitive.runtime_bridge").RuntimeCognitiveBridge(runtime)
+            _print_c2_bootstrap(runtime); print(render_team_status())
+            if args.action == "context": print(json.dumps(bridge.get_c2_context(), indent=2, default=str))
+            else: print(json.dumps(bridge.execute_cognitive_cycle(action_id=args.action_id, description=args.description).model_dump(), indent=2, default=str))
+        else: parser.print_help()
+    except Exception as e:
+        print(f"Error: SAGE execution failed: {e!s}"); sys.exit(1)
 
 
-if __name__ == "__main__":
-    main()
+if __name__ == "__main__": main()
