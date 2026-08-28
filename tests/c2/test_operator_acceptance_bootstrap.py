@@ -3,6 +3,7 @@ import pytest
 from sage.c2.operator_acceptance_bootstrap import BootstrapFailure, OperatorAcceptanceBootstrap
 
 VALID_SHA = "a" * 40
+REQUIRED = ["chatgpt", "gemini", "jules"]
 
 
 def fake_git(*args):
@@ -10,56 +11,101 @@ def fake_git(*args):
     return VALID_SHA
 
 
+def bootstrap(tmp_path, provider=lambda: ([], [])):
+    return OperatorAcceptanceBootstrap(repo_root=tmp_path, git_runner=fake_git, state_provider=provider)
+
+
+def state_for(tmp_path, provider=lambda: ([], [])):
+    return bootstrap(tmp_path, provider).rehydrate(
+        "mission-001", ["complete main mission"], ["side goal"], ["F1", "F2", "F3"], REQUIRED
+    )
+
+
 def test_cold_start_rehydrates_and_locks_execution(tmp_path):
-    b = OperatorAcceptanceBootstrap(repo_root=tmp_path, git_runner=fake_git, state_provider=lambda: (["PR #286"], ["Issue #901"]))
-    state = b.rehydrate("mission-001", ["complete main mission"], ["side goal"], ["F1", "F2"])
+    b = bootstrap(tmp_path, lambda: (["PR #286"], ["Issue #901"]))
+    state = b.rehydrate("mission-001", ["complete main mission"], ["side goal"], ["F1", "F2"], REQUIRED)
     b.require_execution_ready(state)
     assert state.canonical_git_sha == VALID_SHA
     assert state.active_prs == ["PR #286"] and state.active_issues == ["Issue #901"]
-    assert state.deterministic_gate.status == "PASS"
-    assert state.deterministic_gate.checks["live_state_reconciled"] is True
+    assert state.interface_verdicts == {interface: "PENDING" for interface in REQUIRED}
     assert state.empirical_gate.status == "PENDING"
 
 
-def test_operator_failure_elevates_defect_and_blocks_acceptance(tmp_path):
-    b = OperatorAcceptanceBootstrap(repo_root=tmp_path, git_runner=fake_git, state_provider=lambda: ([], []))
-    state = b.rehydrate("mission-002", ["goal"], [], ["F1"])
-    b.capture_operator_observation(state, "chatgpt", "FAIL", "evidence://ops-001", "C2-OPS-001")
+def test_partial_surface_pass_stays_pending(tmp_path):
+    b = bootstrap(tmp_path)
+    state = state_for(tmp_path)
+    b.capture_operator_observation(state, "gemini", "PASS", "evidence://gemini-pass")
+    assert state.interface_verdicts["gemini"] == "PASS"
+    assert state.empirical_gate.status == "PENDING"
+    assert state.acceptance_status == "ENGINEERING_VERIFIED"
+
+
+def test_full_multi_surface_pass_converges_to_accepted(tmp_path):
+    b = bootstrap(tmp_path)
+    state = state_for(tmp_path)
+    for interface in REQUIRED:
+        b.capture_operator_observation(state, interface, "PASS", f"evidence://{interface}-pass")
+    assert state.empirical_gate.status == "PASS"
+    assert state.empirical_gate.checks["full_surface_convergence"] is True
+    assert state.acceptance_status == "ACCEPTED"
+
+
+def test_any_required_surface_failure_blocks_acceptance_and_elevates_defect(tmp_path):
+    b = bootstrap(tmp_path)
+    state = state_for(tmp_path)
+    b.capture_operator_observation(state, "chatgpt", "PASS", "evidence://chatgpt-pass")
+    b.capture_operator_observation(state, "gemini", "FAIL", "evidence://gemini-fail", "C2-OPS-003")
     assert state.empirical_gate.status == "FAIL"
     assert state.acceptance_status == "NOT_ACCEPTED"
-    assert "C2-OPS-001" in state.open_defects
+    assert "C2-OPS-003" in state.open_defects
 
 
-def test_operator_pass_requires_evidence_and_produces_receipt(tmp_path):
-    b = OperatorAcceptanceBootstrap(repo_root=tmp_path, git_runner=fake_git, state_provider=lambda: ([], []))
-    state = b.rehydrate("mission-003", ["goal"], [], ["F1"])
-    b.capture_operator_observation(state, "gemini", "PASS", "evidence://ops-pass")
-    receipt = b.evidence_receipt(state, tmp_path / "receipt.json")
-    data = json.loads(receipt.read_text())
-    assert state.acceptance_status == "ACCEPTED"
-    assert data["receipt_hash"]
+def test_unknown_interface_is_rejected(tmp_path):
+    b = bootstrap(tmp_path)
+    state = state_for(tmp_path)
+    with pytest.raises(BootstrapFailure, match="not required"):
+        b.capture_operator_observation(state, "other", "PASS", "evidence://other")
+
+
+def test_required_interfaces_are_mandatory_and_unique(tmp_path):
+    b = bootstrap(tmp_path)
+    with pytest.raises(BootstrapFailure, match="at least one required"):
+        b.rehydrate("mission", ["goal"], [], [], [])
+    with pytest.raises(BootstrapFailure, match="must be unique"):
+        b.rehydrate("mission", ["goal"], [], [], ["chatgpt", "chatgpt"])
 
 
 def test_cold_start_drift_fails_closed_on_invalid_head(tmp_path):
     b = OperatorAcceptanceBootstrap(repo_root=tmp_path, git_runner=lambda *args: "bad-head", state_provider=lambda: ([], []))
     with pytest.raises(BootstrapFailure, match="40-character SHA"):
-        b.rehydrate("mission-004", ["goal"], [], [])
+        b.rehydrate("mission-004", ["goal"], [], [], REQUIRED)
 
 
 def test_missing_operator_evidence_fails_closed(tmp_path):
-    b = OperatorAcceptanceBootstrap(repo_root=tmp_path, git_runner=fake_git, state_provider=lambda: ([], []))
-    state = b.rehydrate("mission-005", ["goal"], [], [])
-    with pytest.raises(BootstrapFailure, match="interface and evidence_ref"):
-        b.capture_operator_observation(state, "", "PASS", "")
+    b = bootstrap(tmp_path)
+    state = state_for(tmp_path)
+    with pytest.raises(BootstrapFailure, match="evidence_ref is required"):
+        b.capture_operator_observation(state, "chatgpt", "PASS", "")
 
 
 def test_live_state_provider_failure_fails_closed(tmp_path):
-    b = OperatorAcceptanceBootstrap(repo_root=tmp_path, git_runner=fake_git, state_provider=lambda: (_ for _ in ()).throw(RuntimeError("connector down")))
+    b = bootstrap(tmp_path, lambda: (_ for _ in ()).throw(RuntimeError("connector down")))
     with pytest.raises(BootstrapFailure, match="unable to reconcile live state"):
-        b.rehydrate("mission-006", ["goal"], [], ["F3"])
+        b.rehydrate("mission-006", ["goal"], [], ["F3"], REQUIRED)
 
 
 def test_incomplete_live_state_fails_closed(tmp_path):
-    b = OperatorAcceptanceBootstrap(repo_root=tmp_path, git_runner=fake_git, state_provider=lambda: (None, []))
+    b = bootstrap(tmp_path, lambda: (None, []))
     with pytest.raises(BootstrapFailure, match="incomplete state"):
-        b.rehydrate("mission-007", ["goal"], [], ["F3"])
+        b.rehydrate("mission-007", ["goal"], [], ["F3"], REQUIRED)
+
+
+def test_evidence_receipt_preserves_multi_surface_state(tmp_path):
+    b = bootstrap(tmp_path)
+    state = state_for(tmp_path)
+    b.capture_operator_observation(state, "chatgpt", "PASS", "evidence://chatgpt-pass")
+    receipt = b.evidence_receipt(state, tmp_path / "receipt.json")
+    data = json.loads(receipt.read_text())
+    assert data["interface_verdicts"]["chatgpt"] == "PASS"
+    assert data["interface_verdicts"]["gemini"] == "PENDING"
+    assert data["receipt_hash"]
