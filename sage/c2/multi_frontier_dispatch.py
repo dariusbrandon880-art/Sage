@@ -73,8 +73,6 @@ class MultiFrontierDispatcher:
         collisions: List[str] = []
         if package.total_flights != 5:
             collisions.append(f"expected 5 flights, observed {package.total_flights}")
-        if any(f.exact_head != expected_sha for f in package.flight_summaries):
-            collisions.append("stale or mismatched flight commit SHA detected")
 
         receipts: List[FlightReceipt] = []
         for flight in package.flight_summaries:
@@ -82,9 +80,15 @@ class MultiFrontierDispatcher:
             if mission is None:
                 collisions.append(f"unknown flight returned: {flight.flight_id}")
                 continue
+            sha_matches = flight.exact_head == expected_sha
+            if not sha_matches:
+                # Preserve one independently attributable collision per affected flight.
+                collisions.append(
+                    f"stale or mismatched flight commit SHA detected: {flight.flight_id}"
+                )
             actual_pass = (
                 flight.execution_result == "PASS"
-                and flight.exact_head == expected_sha
+                and sha_matches
                 and flight.completed_all_stages()
                 and flight.blocker is None
             )
