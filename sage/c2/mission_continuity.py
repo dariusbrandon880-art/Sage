@@ -3,6 +3,17 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+CANONICAL_MAIN_GOALS = (
+    "mission continuity",
+    "high-tempo governed execution",
+    "external intelligence / super search",
+    "multi-surface coordination",
+    "deterministic plus empirical acceptance",
+    "identity, provenance, and attribution",
+    "immersive SAGE operator experience",
+    "potential-client usefulness",
+)
+
 
 class MissionContinuityFailure(RuntimeError):
     pass
@@ -30,6 +41,20 @@ class RehydrationSnapshot:
             if goal not in completed:
                 return goal
         raise MissionContinuityFailure("no unresolved main goal available")
+
+
+def require_canonical_main_goal_alignment(main_goals: list[str] | tuple[str, ...]) -> None:
+    supplied = tuple(goal.strip() for goal in main_goals if goal.strip())
+    if not supplied:
+        raise MissionContinuityFailure("at least one main goal is required")
+    if supplied[0] != CANONICAL_MAIN_GOALS[0]:
+        raise MissionContinuityFailure(
+            f"FAIL_CLOSED: first main goal must preserve canonical priority: {CANONICAL_MAIN_GOALS[0]}"
+        )
+    if len(set(supplied)) != len(supplied):
+        raise MissionContinuityFailure("main goals must be unique")
+    if any(goal not in CANONICAL_MAIN_GOALS for goal in supplied):
+        raise MissionContinuityFailure("FAIL_CLOSED: main goal is outside canonical mission hierarchy")
 
 
 def preserve_provenance(snapshot: RehydrationSnapshot, source: str, payload: str) -> None:
