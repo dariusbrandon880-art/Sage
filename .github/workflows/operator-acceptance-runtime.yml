@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'sage/c2/operator_acceptance_bootstrap.py'
+      - 'sage/c2/mission_continuity.py'
       - 'scripts/run_operator_acceptance_bootstrap.py'
       - 'scripts/build_session_manifest.py'
       - 'scripts/verify_session_rehydration_contract.py'
@@ -44,7 +45,7 @@ jobs:
         run: |
           python scripts/run_operator_acceptance_bootstrap.py \
             --mission-id ci-bootstrap \
-            --main-goal rehydrate \
+            --main-goal "mission continuity" \
             --flight F1 \
             --required-interface chatgpt \
             --required-interface gemini \
