@@ -16,6 +16,7 @@ from sage.experimental.observatory.view_model import (
     DifferentialProof,
     HomeostaticBalance,
     CapabilityNode,
+    CustomerAcceptanceSurface,
 )
 
 
@@ -200,11 +201,25 @@ class SAGEObservatoryAdapter:
             }
         ]
 
+        customer_surface = CustomerAcceptanceSurface(
+            customer_id="SAGE_INTERNAL_BUILDER",
+            customer_surface="CANONICAL_ACCEPTANCE_SURFACE",
+            agent_identity="MISSION_CONTROL",
+            mission_state="REHYDRATED",
+            acceptance_status="ENGINEERING_VERIFIED",
+            deterministic_gate_status="PASS",
+            empirical_gate_status="PENDING",
+            bound=True,
+            required_interfaces=["CHATGPT_C2", "GEMINI_RECON", "JULES_ENGINEER"],
+            open_defects=[],
+        )
+
         return SAGEObservatoryViewModel(
             causal_spine=causal_spine,
             differential_lens=DifferentialProof(),
             homeostatic_balance=balance,
             capability_tree=cap_tree,
+            customer_acceptance_surface=customer_surface,
             galaxy_nodes=galaxy_nodes,
             galaxy_edges=galaxy_edges,
             forensic_lineages=forensic_lineages,

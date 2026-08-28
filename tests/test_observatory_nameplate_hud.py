@@ -40,3 +40,15 @@ def test_observatory_dashboard_consumes_hud_and_renders_nameplate_surface():
     assert "LIVE AGENT NAMEPLATES" in body
     assert "canonical identity" in body
     assert "hud.team?.roster" in body
+
+
+def test_observatory_exposes_customer_acceptance_surface():
+    response = TestClient(server.app).get("/api/state")
+    assert response.status_code == 200
+    payload = response.json()
+    assert "customer_acceptance_surface" in payload
+    surface = payload["customer_acceptance_surface"]
+    assert surface["customer_id"] == "SAGE_INTERNAL_BUILDER"
+    assert surface["customer_surface"] == "CANONICAL_ACCEPTANCE_SURFACE"
+    assert surface["bound"] is True
+    assert surface["deterministic_gate_status"] == "PASS"
