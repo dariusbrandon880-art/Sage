@@ -1,0 +1,59 @@
+{
+  "acceptance_status": "ACCEPTED",
+  "active_flights": [],
+  "active_issues": [],
+  "active_prs": [
+    "branch:jules-17902609290586630711-c5694dd5"
+  ],
+  "canonical_git_sha": "8b5d76d6bc7166ec80ca67ae37ac74f6763ea70d",
+  "deterministic_gate": {
+    "checks": {
+      "canonical_mission_hierarchy": true,
+      "exact_sha_anchored": true,
+      "live_state_reconciled": true,
+      "repository_rehydrated": true
+    },
+    "status": "PASS"
+  },
+  "empirical_gate": {
+    "checks": {
+      "evidence_linked": true,
+      "full_surface_convergence": true,
+      "interface:chatgpt": true,
+      "interface:gemini": true,
+      "interface:jules": true,
+      "operator_observation": true
+    },
+    "status": "PASS"
+  },
+  "evidence_refs": [
+    "evidence://chatgpt/multi-surface-pass",
+    "evidence://gemini/multi-surface-pass",
+    "evidence://jules/multi-surface-pass"
+  ],
+  "generated_at": 1787900842.4010646,
+  "interface_evidence": {
+    "chatgpt": "evidence://chatgpt/multi-surface-pass",
+    "gemini": "evidence://gemini/multi-surface-pass",
+    "jules": "evidence://jules/multi-surface-pass"
+  },
+  "interface_verdicts": {
+    "chatgpt": "PASS",
+    "gemini": "PASS",
+    "jules": "PASS"
+  },
+  "main_goals": [
+    "mission continuity",
+    "multi-surface coordination",
+    "deterministic plus empirical acceptance"
+  ],
+  "mission_id": "mission-empirical-acceptance-001",
+  "open_defects": [],
+  "receipt_hash": "c7b456e8d9cf4604fdc2e56fef1b4e16c0f59acb440440407d9ed0e6f78c10da",
+  "required_interfaces": [
+    "chatgpt",
+    "gemini",
+    "jules"
+  ],
+  "side_goals": []
+}
