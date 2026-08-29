@@ -1,0 +1,373 @@
+{
+  "active_sessions": [
+    "jules-session-alpha",
+    "jules-session-beta",
+    "jules-session-gamma"
+  ],
+  "end_time": 1787976958.496234,
+  "exact_git_head": "151a79ed06d75a48ea25e384155f6f9473c7e706",
+  "is_truly_concurrent": true,
+  "receipt_hash": "f6f2a0bbc61fe2101b137cebae6d91e1247ea84f40ee4b0e231cba59be4ec54e",
+  "receipt_id": "rec_15f_d9f2c83edb67",
+  "reconvergence_verdict": "PASS",
+  "rolls_royce_quality_passed": true,
+  "session_summaries": {
+    "jules-session-alpha": {
+      "advancement_matrix_20_cells": {
+        "P1-S1": true,
+        "P1-S2": true,
+        "P1-S3": true,
+        "P1-S4": true,
+        "P2-S1": true,
+        "P2-S2": true,
+        "P2-S3": true,
+        "P2-S4": true,
+        "P3-S1": true,
+        "P3-S2": true,
+        "P3-S3": true,
+        "P3-S4": true,
+        "P4-S1": true,
+        "P4-S2": true,
+        "P4-S3": true,
+        "P4-S4": true,
+        "P5-S1": true,
+        "P5-S2": true,
+        "P5-S3": true,
+        "P5-S4": true
+      },
+      "end_time": 1787976957.8953934,
+      "flights": [
+        {
+          "candidate_id": "cand_s1_r1",
+          "collision_namespace": "sage.c2.frontier_intel_1",
+          "end_time": 1787976957.850946,
+          "execution_result": "PASS",
+          "flight_id": "F11",
+          "lock_acquired": true,
+          "role": "CONSEQUENT_FRONTIER",
+          "session_id": "jules-session-alpha",
+          "start_time": 1787976953.6903465,
+          "target_path": "sage/c2/frontier_intelligence_bridge.py",
+          "test_references": [
+            "tests/c2/test_frontier_admission.py"
+          ],
+          "tests_passed": 4,
+          "worker_thread": "sagi-flt_0"
+        },
+        {
+          "candidate_id": "cand_s1_r2",
+          "collision_namespace": "sage.experimental.selector_1",
+          "end_time": 1787976957.3519962,
+          "execution_result": "PASS",
+          "flight_id": "F12",
+          "lock_acquired": true,
+          "role": "INFORMATION_GAIN",
+          "session_id": "jules-session-alpha",
+          "start_time": 1787976953.6912112,
+          "target_path": "sage/experimental/sagi_discovery_flight_selector.py",
+          "test_references": [
+            "tests/experimental/test_sagi_discovery_flight_selector.py"
+          ],
+          "tests_passed": 7,
+          "worker_thread": "sagi-flt_1"
+        },
+        {
+          "candidate_id": "cand_s1_r3",
+          "collision_namespace": "sage.c2.collision_1",
+          "end_time": 1787976957.7710004,
+          "execution_result": "PASS",
+          "flight_id": "F13",
+          "lock_acquired": true,
+          "role": "FALSIFICATION",
+          "session_id": "jules-session-alpha",
+          "start_time": 1787976953.6918395,
+          "target_path": "sage/c2/flight_collision_lock.py",
+          "test_references": [
+            "tests/c2/test_flight_collision_lock.py"
+          ],
+          "tests_passed": 8,
+          "worker_thread": "sagi-flt_2"
+        },
+        {
+          "candidate_id": "cand_s1_r4",
+          "collision_namespace": "sage.capability_1",
+          "end_time": 1787976957.894984,
+          "execution_result": "PASS",
+          "flight_id": "F14",
+          "lock_acquired": true,
+          "role": "RECOVERY_REGRESSION",
+          "session_id": "jules-session-alpha",
+          "start_time": 1787976953.6924675,
+          "target_path": "sage/capability_registry.py",
+          "test_references": [
+            "tests/test_capability_registry.py"
+          ],
+          "tests_passed": 5,
+          "worker_thread": "sagi-flt_3"
+        },
+        {
+          "candidate_id": "cand_s1_r5",
+          "collision_namespace": "sage.c2.reconvergence_1",
+          "end_time": 1787976957.8618858,
+          "execution_result": "PASS",
+          "flight_id": "F15",
+          "lock_acquired": true,
+          "role": "INDEPENDENT_TRANSFER",
+          "session_id": "jules-session-alpha",
+          "start_time": 1787976953.6936486,
+          "target_path": "sage/c2/reconvergence_synthesizer.py",
+          "test_references": [
+            "tests/c2/test_reconvergence_synthesizer.py"
+          ],
+          "tests_passed": 2,
+          "worker_thread": "sagi-flt_4"
+        }
+      ],
+      "session_id": "jules-session-alpha",
+      "start_time": 1787976953.6885746,
+      "successful_flights": 5,
+      "total_flights": 5,
+      "worker_thread": "sagi-sess_0"
+    },
+    "jules-session-beta": {
+      "advancement_matrix_20_cells": {
+        "P1-S1": true,
+        "P1-S2": true,
+        "P1-S3": true,
+        "P1-S4": true,
+        "P2-S1": true,
+        "P2-S2": true,
+        "P2-S3": true,
+        "P2-S4": true,
+        "P3-S1": true,
+        "P3-S2": true,
+        "P3-S3": true,
+        "P3-S4": true,
+        "P4-S1": true,
+        "P4-S2": true,
+        "P4-S3": true,
+        "P4-S4": true,
+        "P5-S1": true,
+        "P5-S2": true,
+        "P5-S3": true,
+        "P5-S4": true
+      },
+      "end_time": 1787976957.9080243,
+      "flights": [
+        {
+          "candidate_id": "cand_s2_r1",
+          "collision_namespace": "sage.c2.velocity_2",
+          "end_time": 1787976957.6339643,
+          "execution_result": "PASS",
+          "flight_id": "F21",
+          "lock_acquired": true,
+          "role": "CONSEQUENT_FRONTIER",
+          "session_id": "jules-session-beta",
+          "start_time": 1787976953.6944294,
+          "target_path": "sage/c2/workflow_velocity.py",
+          "test_references": [
+            "tests/c2/test_workflow_velocity.py"
+          ],
+          "tests_passed": 6,
+          "worker_thread": "sagi-flt_5"
+        },
+        {
+          "candidate_id": "cand_s2_r2",
+          "collision_namespace": "sage.experimental.wave_2",
+          "end_time": 1787976957.8271823,
+          "execution_result": "PASS",
+          "flight_id": "F22",
+          "lock_acquired": true,
+          "role": "INFORMATION_GAIN",
+          "session_id": "jules-session-beta",
+          "start_time": 1787976953.706809,
+          "target_path": "sage/experimental/sagi_flight_wave.py",
+          "test_references": [
+            "tests/experimental/test_sagi_flight_wave.py"
+          ],
+          "tests_passed": 5,
+          "worker_thread": "sagi-flt_6"
+        },
+        {
+          "candidate_id": "cand_s2_r3",
+          "collision_namespace": "sage.c2.contract_2",
+          "end_time": 1787976957.9076807,
+          "execution_result": "PASS",
+          "flight_id": "F23",
+          "lock_acquired": true,
+          "role": "FALSIFICATION",
+          "session_id": "jules-session-beta",
+          "start_time": 1787976953.710822,
+          "target_path": "sage/c2/chatgpt_c2_contract.py",
+          "test_references": [
+            "tests/c2/test_chatgpt_c2_exact_order_anti_drift.py"
+          ],
+          "tests_passed": 24,
+          "worker_thread": "sagi-flt_7"
+        },
+        {
+          "candidate_id": "cand_s2_r4",
+          "collision_namespace": "sage.c2.gps_2",
+          "end_time": 1787976957.3071136,
+          "execution_result": "PASS",
+          "flight_id": "F24",
+          "lock_acquired": true,
+          "role": "RECOVERY_REGRESSION",
+          "session_id": "jules-session-beta",
+          "start_time": 1787976953.7149963,
+          "target_path": "sage/c2/flight_gps/engine.py",
+          "test_references": [
+            "tests/c2/test_flight_gps.py"
+          ],
+          "tests_passed": 7,
+          "worker_thread": "sagi-flt_8"
+        },
+        {
+          "candidate_id": "cand_s2_r5",
+          "collision_namespace": "sage.c2.jigsaw_2",
+          "end_time": 1787976957.6974497,
+          "execution_result": "PASS",
+          "flight_id": "F25",
+          "lock_acquired": true,
+          "role": "INDEPENDENT_TRANSFER",
+          "session_id": "jules-session-beta",
+          "start_time": 1787976953.7230036,
+          "target_path": "sage/c2/organism_jigsaw.py",
+          "test_references": [
+            "tests/c2/test_organism_jigsaw.py"
+          ],
+          "tests_passed": 5,
+          "worker_thread": "sagi-flt_9"
+        }
+      ],
+      "session_id": "jules-session-beta",
+      "start_time": 1787976953.6892223,
+      "successful_flights": 5,
+      "total_flights": 5,
+      "worker_thread": "sagi-sess_1"
+    },
+    "jules-session-gamma": {
+      "advancement_matrix_20_cells": {
+        "P1-S1": true,
+        "P1-S2": true,
+        "P1-S3": true,
+        "P1-S4": true,
+        "P2-S1": true,
+        "P2-S2": true,
+        "P2-S3": true,
+        "P2-S4": true,
+        "P3-S1": true,
+        "P3-S2": true,
+        "P3-S3": true,
+        "P3-S4": true,
+        "P4-S1": true,
+        "P4-S2": true,
+        "P4-S3": true,
+        "P4-S4": true,
+        "P5-S1": true,
+        "P5-S2": true,
+        "P5-S3": true,
+        "P5-S4": true
+      },
+      "end_time": 1787976958.493542,
+      "flights": [
+        {
+          "candidate_id": "cand_s3_r1",
+          "collision_namespace": "sage.runtime.engine_3",
+          "end_time": 1787976958.4929738,
+          "execution_result": "PASS",
+          "flight_id": "F31",
+          "lock_acquired": true,
+          "role": "CONSEQUENT_FRONTIER",
+          "session_id": "jules-session-gamma",
+          "start_time": 1787976953.734824,
+          "target_path": "sage/runtime/engine.py",
+          "test_references": [
+            "tests/test_system_frame.py"
+          ],
+          "tests_passed": 36,
+          "worker_thread": "sagi-flt_10"
+        },
+        {
+          "candidate_id": "cand_s3_r2",
+          "collision_namespace": "sage.experimental.sagi_3",
+          "end_time": 1787976957.4758565,
+          "execution_result": "PASS",
+          "flight_id": "F32",
+          "lock_acquired": true,
+          "role": "INFORMATION_GAIN",
+          "session_id": "jules-session-gamma",
+          "start_time": 1787976953.7428944,
+          "target_path": "sage/experimental/sagi/sagi.py",
+          "test_references": [
+            "tests/experimental/test_sagi_simulator.py"
+          ],
+          "tests_passed": 17,
+          "worker_thread": "sagi-flt_11"
+        },
+        {
+          "candidate_id": "cand_s3_r3",
+          "collision_namespace": "sage.c2.surface_3",
+          "end_time": 1787976957.8457556,
+          "execution_result": "PASS",
+          "flight_id": "F33",
+          "lock_acquired": true,
+          "role": "FALSIFICATION",
+          "session_id": "jules-session-gamma",
+          "start_time": 1787976953.7509856,
+          "target_path": "sage/c2/c2_execution_surface.py",
+          "test_references": [
+            "tests/c2/test_c2_execution_surface.py"
+          ],
+          "tests_passed": 4,
+          "worker_thread": "sagi-flt_12"
+        },
+        {
+          "candidate_id": "cand_s3_r4",
+          "collision_namespace": "sage.experimental.concurrency_3",
+          "end_time": 1787976957.857739,
+          "execution_result": "PASS",
+          "flight_id": "F34",
+          "lock_acquired": true,
+          "role": "RECOVERY_REGRESSION",
+          "session_id": "jules-session-gamma",
+          "start_time": 1787976953.7516565,
+          "target_path": "sage/experimental/airspace/fleet_concurrency.py",
+          "test_references": [
+            "tests/experimental/test_fleet_concurrency.py"
+          ],
+          "tests_passed": 9,
+          "worker_thread": "sagi-flt_13"
+        },
+        {
+          "candidate_id": "cand_s3_r5",
+          "collision_namespace": "sage.c2.warehouse_3",
+          "end_time": 1787976957.8982162,
+          "execution_result": "PASS",
+          "flight_id": "F35",
+          "lock_acquired": true,
+          "role": "INDEPENDENT_TRANSFER",
+          "session_id": "jules-session-gamma",
+          "start_time": 1787976953.7522304,
+          "target_path": "sage/c2/capability_warehouse.py",
+          "test_references": [
+            "tests/c2/test_capability_warehouse.py"
+          ],
+          "tests_passed": 1,
+          "worker_thread": "sagi-flt_14"
+        }
+      ],
+      "session_id": "jules-session-gamma",
+      "start_time": 1787976953.6896782,
+      "successful_flights": 5,
+      "total_flights": 5,
+      "worker_thread": "sagi-sess_2"
+    }
+  },
+  "start_time": 1787976953.6881588,
+  "successful_flights": 15,
+  "timestamp": 1787976958.4963248,
+  "total_advancement_cells": 60,
+  "total_flights": 15,
+  "wave_id": "sagi_15_flight_concurrency_wave_001"
+}
