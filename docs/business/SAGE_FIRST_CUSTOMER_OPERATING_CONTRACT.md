@@ -59,19 +59,19 @@ Measure the completed workflow, not model-token cost alone:
 
 The primary economic question is: **what did it cost to finish the job, what value did finishing the job create, and what reusable capability reduced the cost of the next job?**
 
-This follows current enterprise-agent economics research emphasizing fully loaded completed-workflow cost and reuse rather than token price alone. citeturn0search0turn0search12
+This follows current enterprise-agent economics research from McKinsey emphasizing fully loaded completed-workflow cost and reuse rather than token price alone.
 
 ## Identity, Authorization, and Auditability
 
-Every agent action must have attributable identity and an authorization boundary. SAGE must preserve enough evidence to connect action, intent, authority, result, and human authorization. This aligns with current NIST work emphasizing agent identity, authorization, auditing, non-repudiation, and human-agent delegation. citeturn0search1turn0search24
+Every agent action must have attributable identity and an authorization boundary. SAGE must preserve enough evidence to connect action, intent, authority, result, and human authorization. This aligns with current NIST work on agent identity, authorization, auditing, non-repudiation, and human-agent delegation.
 
 ## Evaluation
 
-Evaluation is part of the workflow rather than an afterthought. SAGE should use reproducible probes and structured audit trails that connect claims/results to supporting evidence, while treating post-deployment observation as distinct from pre-deployment testing. citeturn0search3turn0search2turn0search8
+Evaluation is part of the workflow rather than an afterthought. SAGE should use reproducible probes and structured audit trails that connect claims/results to supporting evidence, while treating post-deployment observation as distinct from pre-deployment testing.
 
 ## Anti-Gaming Rule
 
-A score, green test, or automated receipt cannot establish capability by itself. SAGE must preserve independent evidence and must detect cases where an agent optimizes for the evaluation rather than the intended customer outcome. This is consistent with NIST's current work on evaluation cheating and transcript analysis. citeturn0search6turn0search7
+A score, green test, or automated receipt cannot establish capability by itself. SAGE must preserve independent evidence and must detect cases where an agent optimizes for the evaluation rather than the intended customer outcome.
 
 ## Qualification Standard
 
@@ -84,3 +84,12 @@ exist at the declared acceptance boundary.
 ## Product Boundary
 
 The repository governs the SAGE runtime, customer workbench, evidence model, and acceptance protocol. The repository cannot alter the native ChatGPT application renderer. Therefore a repository-defined nameplate is a governed attribution stream; native UI rendering remains an empirical customer acceptance question.
+
+## External Research Basis
+
+- McKinsey, *Where AI agents pay off: A practical guide to the economics of agentic workflows*, August 24, 2026.
+- NIST NCCoE, *Accelerating the Adoption of Software and Artificial Intelligence Agent Identity and Authorization*, February 5, 2026.
+- NIST, *Building Evaluation Probes into Agentic AI*, 2026.
+- NIST, *The TEVV-Athlon Framework for Evaluating AI Systems*, August 7, 2026.
+- NIST CAISI, *Cheating On AI Agent Evaluations*, 2025/2026 research program.
+- NIST, *Challenges to the monitoring of deployed AI systems*, March 6, 2026.
