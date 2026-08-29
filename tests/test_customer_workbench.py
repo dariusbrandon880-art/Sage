@@ -20,18 +20,22 @@ def build_state():
     )
 
 
-def test_first_customer_workbench_preserves_governed_acceptance_boundary():
+def test_first_customer_workbench_preserves_governed_acceptance_boundary(tmp_path):
     state = build_state()
-    snapshot = CustomerWorkbench().snapshot(state, ["F1", "F2", "F3", "F4", "F5"])
+    snapshot = CustomerWorkbench(measurement_path=tmp_path / "workflows.jsonl").snapshot(
+        state, ["F1", "F2", "F3", "F4", "F5"]
+    )
     assert snapshot.customer_id == "SAGE_FIRST_CUSTOMER"
     assert snapshot.agent_identity == "[SAGE::C2::CHATGPT]"
+    assert snapshot.engineering_identity == "[SAGE::ENGINEER::JULES]"
+    assert snapshot.intelligence_identity == "[SAGE::INTEL::GEMINI]"
     assert snapshot.deterministic_status == "PASS"
     assert snapshot.empirical_status == "PENDING"
     assert snapshot.acceptance_status == "ENGINEERING_VERIFIED"
     assert snapshot.mission_goals[0] == "mission continuity"
 
 
-def test_workflow_measurement_computes_completed_workflow_value():
+def test_workflow_measurement_computes_and_persists_completed_workflow_value(tmp_path):
     measurement = CustomerWorkflowMeasurement(
         workflow_id="first_customer_mission_001",
         completed=True,
@@ -45,14 +49,19 @@ def test_workflow_measurement_computes_completed_workflow_value():
         evidence_refs=["evidence/receipt.json"],
     )
     assert measurement.net_value_usd == 20.5
-    workbench = CustomerWorkbench()
+    path = tmp_path / "workflows.jsonl"
+    workbench = CustomerWorkbench(measurement_path=path)
     workbench.record_workflow(measurement)
-    assert workbench.measurements[0].workflow_id == "first_customer_mission_001"
+    reloaded = CustomerWorkbench(measurement_path=path)
+    assert reloaded.measurements[0].workflow_id == "first_customer_mission_001"
+    assert reloaded.measurements[0].net_value_usd == 20.5
 
 
-def test_invalid_workflow_measurement_is_rejected():
+def test_invalid_workflow_measurement_is_rejected(tmp_path):
     try:
-        CustomerWorkbench().record_workflow(CustomerWorkflowMeasurement(workflow_id="", human_interventions=-1))
+        CustomerWorkbench(measurement_path=tmp_path / "workflows.jsonl").record_workflow(
+            CustomerWorkflowMeasurement(workflow_id="", human_interventions=-1)
+        )
     except ValueError as exc:
         assert "workflow_id" in str(exc)
     else:
