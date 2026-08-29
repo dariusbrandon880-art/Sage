@@ -1,0 +1,9 @@
+{
+  "executed_head": "fcf7d0c5f0345d9293bb8c15b402b7b20edf3bad",
+  "flight_id": "FLIGHT-F2-CONTINUITY",
+  "frontier_name": "Continuity & Failure Memory Frontier",
+  "status": "PASS",
+  "target_path": "sage/capability_registry.py",
+  "timestamp": 1787967879.6541622,
+  "wave_id": "multi-frontier-dispatch"
+}

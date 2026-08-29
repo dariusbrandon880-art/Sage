@@ -22,6 +22,15 @@ class GateState:
 
 
 @dataclass
+class CustomerSurfaceBinding:
+    customer_id: str = "SAGE_INTERNAL_BUILDER"
+    customer_surface: str = "CANONICAL_ACCEPTANCE_SURFACE"
+    agent_identity: str = "MISSION_CONTROL"
+    mission_state: str = "ACTIVE"
+    bound: bool = False
+
+
+@dataclass
 class OperatorAcceptanceState:
     mission_id: str
     canonical_git_sha: str
@@ -35,6 +44,7 @@ class OperatorAcceptanceState:
     interface_evidence: dict[str, str] = field(default_factory=dict)
     deterministic_gate: GateState = field(default_factory=GateState)
     empirical_gate: GateState = field(default_factory=GateState)
+    customer_surface: CustomerSurfaceBinding = field(default_factory=CustomerSurfaceBinding)
     acceptance_status: str = "NOT_ACCEPTED"
     open_defects: list[str] = field(default_factory=list)
     evidence_refs: list[str] = field(default_factory=list)
@@ -43,6 +53,7 @@ class OperatorAcceptanceState:
         data = asdict(self)
         data["deterministic_gate"] = asdict(self.deterministic_gate)
         data["empirical_gate"] = asdict(self.empirical_gate)
+        data["customer_surface"] = asdict(self.customer_surface)
         return data
 
 
@@ -116,6 +127,13 @@ class OperatorAcceptanceBootstrap:
         if active_prs is None or active_issues is None:
             raise BootstrapFailure("FAIL_CLOSED: live reconciliation returned incomplete state")
         interface_verdicts = {interface: "PENDING" for interface in required_interfaces}
+        customer_binding = CustomerSurfaceBinding(
+            customer_id="SAGE_INTERNAL_BUILDER",
+            customer_surface="CANONICAL_ACCEPTANCE_SURFACE",
+            agent_identity="MISSION_CONTROL",
+            mission_state="REHYDRATED",
+            bound=True,
+        )
         state = OperatorAcceptanceState(
             mission_id=mission_id,
             canonical_git_sha=head,
@@ -143,8 +161,25 @@ class OperatorAcceptanceBootstrap:
                     "full_surface_convergence": False,
                 },
             ),
+            customer_surface=customer_binding,
             acceptance_status="ENGINEERING_VERIFIED",
         )
+        return state
+
+    def bind_customer_surface(
+        self,
+        state: OperatorAcceptanceState,
+        customer_id: str,
+        customer_surface: str,
+        agent_identity: str = "MISSION_CONTROL",
+    ) -> OperatorAcceptanceState:
+        """Binds customer-visible surface identity to mission state and acceptance state."""
+        if not customer_id or not customer_surface:
+            raise BootstrapFailure("customer_id and customer_surface are required for binding")
+        state.customer_surface.customer_id = customer_id
+        state.customer_surface.customer_surface = customer_surface
+        state.customer_surface.agent_identity = agent_identity
+        state.customer_surface.bound = True
         return state
 
     def require_execution_ready(self, state: OperatorAcceptanceState) -> None:

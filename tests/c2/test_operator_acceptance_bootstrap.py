@@ -118,3 +118,19 @@ def test_evidence_receipt_preserves_multi_surface_state(tmp_path):
     assert data["interface_verdicts"]["chatgpt"] == "PASS"
     assert data["interface_verdicts"]["gemini"] == "PENDING"
     assert data["receipt_hash"]
+
+
+def test_customer_surface_identity_binding_and_reconciliation(tmp_path):
+    b = bootstrap(tmp_path)
+    state = state_for(tmp_path)
+    assert state.customer_surface.bound is True
+    assert state.customer_surface.customer_id == "SAGE_INTERNAL_BUILDER"
+
+    b.bind_customer_surface(state, "EXTERNAL_CUSTOMER_001", "CUSTOM_CLIENT_SURFACE", "DIRECTOR_AGENT")
+    assert state.customer_surface.customer_id == "EXTERNAL_CUSTOMER_001"
+    assert state.customer_surface.customer_surface == "CUSTOM_CLIENT_SURFACE"
+    assert state.customer_surface.agent_identity == "DIRECTOR_AGENT"
+    assert state.customer_surface.bound is True
+
+    with pytest.raises(BootstrapFailure, match="customer_id and customer_surface are required"):
+        b.bind_customer_surface(state, "", "CUSTOM_CLIENT_SURFACE")

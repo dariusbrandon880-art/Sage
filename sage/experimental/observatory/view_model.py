@@ -47,12 +47,27 @@ class CapabilityNode(BaseModel):
     evidence_references: List[str] = Field(default_factory=list)
 
 
+class CustomerAcceptanceSurface(BaseModel):
+    """Bound customer-visible identity, mission state, and dual-gate acceptance status."""
+    customer_id: str = "SAGE_INTERNAL_BUILDER"
+    customer_surface: str = "CANONICAL_ACCEPTANCE_SURFACE"
+    agent_identity: str = "MISSION_CONTROL"
+    mission_state: str = "REHYDRATED"
+    acceptance_status: str = "ENGINEERING_VERIFIED"
+    deterministic_gate_status: str = "PASS"
+    empirical_gate_status: str = "PENDING"
+    bound: bool = True
+    required_interfaces: List[str] = Field(default_factory=lambda: ["CHATGPT_C2", "GEMINI_RECON", "JULES_ENGINEER"])
+    open_defects: List[str] = Field(default_factory=list)
+
+
 class SAGEObservatoryViewModel(BaseModel):
     """The master forensic view model encapsulating all read-only windows."""
     causal_spine: List[CausalNode] = Field(default_factory=list)
     differential_lens: DifferentialProof = Field(default_factory=DifferentialProof)
     homeostatic_balance: HomeostaticBalance = Field(default_factory=HomeostaticBalance)
     capability_tree: List[CapabilityNode] = Field(default_factory=list)
+    customer_acceptance_surface: CustomerAcceptanceSurface = Field(default_factory=CustomerAcceptanceSurface)
     galaxy_nodes: List[Dict[str, Any]] = Field(default_factory=list)
     galaxy_edges: List[Dict[str, Any]] = Field(default_factory=list)
     forensic_lineages: Dict[str, List[Dict[str, Any]]] = Field(default_factory=dict)
