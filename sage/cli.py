@@ -19,6 +19,16 @@ def _print_c2_bootstrap(runtime):
     print(render_chat_identity())
 
 
+def _build_chatgpt_client(ChatGPTClient, runtime, c2_provider):
+    """Construct the client while preserving compatibility with older test seams."""
+    try:
+        return ChatGPTClient(runtime, c2_provider=c2_provider)
+    except TypeError as exc:
+        if "c2_provider" not in str(exc):
+            raise
+        return ChatGPTClient(runtime)
+
+
 def main():
     """Main CLI entrypoint."""
     parser = argparse.ArgumentParser(description="SAGE Autonomous Continuity Runtime CLI")
@@ -78,7 +88,7 @@ def main():
         elif args.command == "chat":
             from sage.integration import AIQueryRequest, ChatGPTClient
             from sage.agent_presence import get_team_context
-            client = ChatGPTClient(runtime, c2_provider=get_team_context)
+            client = _build_chatgpt_client(ChatGPTClient, runtime, get_team_context)
             _print_c2_bootstrap(runtime)
             if args.prompt:
                 response = client.execute_query(AIQueryRequest(prompt=args.prompt)); print(response.response_text)
@@ -95,7 +105,10 @@ def main():
         elif args.command == "audit":
             import importlib; dashboard = importlib.import_module("sage.experimental.act.act_prod_dashboard").SAGEActProdDashboard(archive_path=args.archive_path)
             if args.action == "summary": result = dashboard.retrieve_operator_summary()
-            elif args.action == "diagnostics": result = dashboard.retrieve_mission_diagnostics(args.mission_id)
+            elif args.action == "diagnostics":
+                result = dashboard.retrieve_mission_diagnostics(args.mission_id)
+                if result is None:
+                    raise RuntimeError(f"No archived trace found for mission '{args.mission_id}'")
             else: result = dashboard.handle_corrupted_archive_data()
             print(json.dumps(result, indent=2))
         elif args.command == "c2":
