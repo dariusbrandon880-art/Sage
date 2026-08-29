@@ -1,9 +1,9 @@
 {
   "metadata": {
-    "execution_id": "exec_shadow_beta_20260829_073928",
+    "execution_id": "exec_shadow_beta_20260829_113632",
     "commit_sha": "8a8172159fd616f27144e22fd1fac743d65692a7",
     "cycle_id": "cycle_shadow_beta_20260829",
-    "timestamp_utc": "2026-08-29T07:39:28.093914+00:00",
+    "timestamp_utc": "2026-08-29T11:36:32.509772+00:00",
     "governance_classification": "PROTECTED SPORTS/RCE RESEARCH LANE ONLY",
     "wagering_executed": false
   },
@@ -12,19 +12,19 @@
     "singles_count": 15,
     "parlays_count": 7,
     "event_coverage_count": 15,
-    "locked_records_persisted": 38,
-    "total_resolved_outcomes": 37,
-    "wins": 16,
-    "losses": 21,
+    "locked_records_persisted": 42,
+    "total_resolved_outcomes": 41,
+    "wins": 17,
+    "losses": 24,
     "pushes": 0,
-    "win_rate": 0.43243243243243246
+    "win_rate": 0.4146341463414634
   },
   "diagnostics": {
-    "brier_score": 0.22317316324324327,
-    "log_loss": 0.6364426202352714,
-    "mean_clv": -0.2805686190241553,
+    "brier_score": 0.2212837868292683,
+    "log_loss": 0.6332609737944261,
+    "mean_clv": -0.32206731345148687,
     "failure_attribution": {
-      "total_failures": 21,
+      "total_failures": 24,
       "failures": [
         {
           "prediction_id": "pred_real_mlb_822940",
@@ -193,13 +193,37 @@
           "failure_classification": "PARLAY_MULTILEG_FAILURE",
           "model_assumption_broken": "Failed on child leg(s): pred_single_mlb_game_824231",
           "actual_result": "PARLAY_RESULT: LOSS across 2 legs."
+        },
+        {
+          "prediction_id": "pred_parlay_parent_mlb_game_822935_mlb_game_823504",
+          "is_parlay": true,
+          "selected_prediction": "2-Leg Parlay (San Diego Padres Moneyline + Boston Red Sox Moneyline)",
+          "failure_classification": "PARLAY_MULTILEG_FAILURE",
+          "model_assumption_broken": "Failed on child leg(s): pred_single_mlb_game_822935, pred_single_mlb_game_823504",
+          "actual_result": "PARLAY_RESULT: LOSS across 2 legs."
+        },
+        {
+          "prediction_id": "pred_parlay_parent_mlb_game_824231_mlb_game_824638",
+          "is_parlay": true,
+          "selected_prediction": "2-Leg Parlay (Detroit Tigers Moneyline + Chicago Cubs Moneyline)",
+          "failure_classification": "PARLAY_MULTILEG_FAILURE",
+          "model_assumption_broken": "Failed on child leg(s): pred_single_mlb_game_824231, pred_single_mlb_game_824638",
+          "actual_result": "PARLAY_RESULT: LOSS across 2 legs."
+        },
+        {
+          "prediction_id": "pred_parlay_parent_mlb_game_822769_mlb_game_823744",
+          "is_parlay": true,
+          "selected_prediction": "2-Leg Parlay (Seattle Mariners Moneyline + Milwaukee Brewers Moneyline)",
+          "failure_classification": "PARLAY_MULTILEG_FAILURE",
+          "model_assumption_broken": "Failed on child leg(s): pred_single_mlb_game_822769",
+          "actual_result": "PARLAY_RESULT: LOSS across 2 legs."
         }
       ]
     },
     "signal_attribution": {
-      "total_external_signals_evaluated": 45,
-      "sage_win_rate": 0.28888888888888886,
-      "external_signal_win_rate": 0.7111111111111111,
+      "total_external_signals_evaluated": 53,
+      "sage_win_rate": 0.2830188679245283,
+      "external_signal_win_rate": 0.7169811320754716,
       "signal_evaluations": [
         {
           "prediction_id": "pred_single_mlb_game_824877",
@@ -650,14 +674,94 @@
           "external_matched_sage": false,
           "sage_win": true,
           "external_signal_win": false
+        },
+        {
+          "prediction_id": "pred_parlay_parent_mlb_game_822935_mlb_game_823504",
+          "signal_source": "Public Betting Consensus Feed (FanDuel/Action Split)",
+          "signal_type": "PUBLIC_CONSENSUS_SPLIT",
+          "external_selection": "Tampa Bay Rays Moneyline",
+          "sage_selection": "2-Leg Parlay (San Diego Padres Moneyline + Boston Red Sox Moneyline)",
+          "external_matched_sage": false,
+          "sage_win": false,
+          "external_signal_win": true
+        },
+        {
+          "prediction_id": "pred_parlay_parent_mlb_game_822935_mlb_game_823504",
+          "signal_source": "Public Betting Consensus Feed (FanDuel/Action Split)",
+          "signal_type": "PUBLIC_CONSENSUS_SPLIT",
+          "external_selection": "New York Yankees Moneyline",
+          "sage_selection": "2-Leg Parlay (San Diego Padres Moneyline + Boston Red Sox Moneyline)",
+          "external_matched_sage": false,
+          "sage_win": false,
+          "external_signal_win": true
+        },
+        {
+          "prediction_id": "pred_parlay_parent_mlb_game_824231_mlb_game_824638",
+          "signal_source": "Public Betting Consensus Feed (FanDuel/Action Split)",
+          "signal_type": "PUBLIC_CONSENSUS_SPLIT",
+          "external_selection": "Detroit Tigers Moneyline",
+          "sage_selection": "2-Leg Parlay (Detroit Tigers Moneyline + Chicago Cubs Moneyline)",
+          "external_matched_sage": false,
+          "sage_win": false,
+          "external_signal_win": true
+        },
+        {
+          "prediction_id": "pred_parlay_parent_mlb_game_824231_mlb_game_824638",
+          "signal_source": "Public Betting Consensus Feed (FanDuel/Action Split)",
+          "signal_type": "PUBLIC_CONSENSUS_SPLIT",
+          "external_selection": "Cincinnati Reds Moneyline",
+          "sage_selection": "2-Leg Parlay (Detroit Tigers Moneyline + Chicago Cubs Moneyline)",
+          "external_matched_sage": false,
+          "sage_win": false,
+          "external_signal_win": true
+        },
+        {
+          "prediction_id": "pred_parlay_parent_mlb_game_824396_mlb_game_822691",
+          "signal_source": "Public Betting Consensus Feed (FanDuel/Action Split)",
+          "signal_type": "PUBLIC_CONSENSUS_SPLIT",
+          "external_selection": "Kansas City Royals Moneyline",
+          "sage_selection": "2-Leg Parlay (Kansas City Royals Moneyline + Washington Nationals Moneyline)",
+          "external_matched_sage": false,
+          "sage_win": true,
+          "external_signal_win": false
+        },
+        {
+          "prediction_id": "pred_parlay_parent_mlb_game_824396_mlb_game_822691",
+          "signal_source": "Public Betting Consensus Feed (FanDuel/Action Split)",
+          "signal_type": "PUBLIC_CONSENSUS_SPLIT",
+          "external_selection": "Washington Nationals Moneyline",
+          "sage_selection": "2-Leg Parlay (Kansas City Royals Moneyline + Washington Nationals Moneyline)",
+          "external_matched_sage": false,
+          "sage_win": true,
+          "external_signal_win": false
+        },
+        {
+          "prediction_id": "pred_parlay_parent_mlb_game_822769_mlb_game_823744",
+          "signal_source": "Public Betting Consensus Feed (FanDuel/Action Split)",
+          "signal_type": "PUBLIC_CONSENSUS_SPLIT",
+          "external_selection": "Seattle Mariners Moneyline",
+          "sage_selection": "2-Leg Parlay (Seattle Mariners Moneyline + Milwaukee Brewers Moneyline)",
+          "external_matched_sage": false,
+          "sage_win": false,
+          "external_signal_win": true
+        },
+        {
+          "prediction_id": "pred_parlay_parent_mlb_game_822769_mlb_game_823744",
+          "signal_source": "Public Betting Consensus Feed (FanDuel/Action Split)",
+          "signal_type": "PUBLIC_CONSENSUS_SPLIT",
+          "external_selection": "Texas Rangers Moneyline",
+          "sage_selection": "2-Leg Parlay (Seattle Mariners Moneyline + Milwaukee Brewers Moneyline)",
+          "external_matched_sage": false,
+          "sage_win": false,
+          "external_signal_win": true
         }
       ]
     },
     "model_promotion_evaluation": {
       "promotion_eligible": true,
-      "resolved_sample_size": 37,
+      "resolved_sample_size": 41,
       "required_sample_size": 10,
-      "brier_score": 0.22317316324324327,
+      "brier_score": 0.2212837868292683,
       "brier_threshold": 0.25,
       "governance_decision": "APPROVED_FOR_PROMOTION",
       "reasons": []

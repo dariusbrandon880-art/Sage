@@ -1,9 +1,0 @@
-{
-  "executed_head": "8a8172159fd616f27144e22fd1fac743d65692a7",
-  "flight_id": "FLIGHT-F5-WAREHOUSE",
-  "frontier_name": "Capability Warehouse & Reconvergence Frontier",
-  "status": "PASS",
-  "target_path": "sage/c2/reconvergence_synthesizer.py",
-  "timestamp": 1787989231.196682,
-  "wave_id": "multi-frontier-dispatch"
-}

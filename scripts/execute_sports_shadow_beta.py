@@ -272,16 +272,7 @@ def main():
                     outcome_status = "LOSS"
                     actual_result_text = f"Defeated ({game_data['away_team']} {away_score} @ {game_data['home_team']} {home_score})"
 
-        # If live game is not completed yet, resolve using actual live scores or historical score state
-        if outcome_status == "PENDING" and (abstract_status == "Final" or idx < 10):
-            home_s = home_score if home_score is not None else (5 if idx % 2 == 0 else 2)
-            away_s = away_score if away_score is not None else (3 if idx % 2 == 0 else 6)
-            winner = game_data["home_team"] if home_s > away_s else game_data["away_team"]
-            if pred.selected_prediction.startswith(winner):
-                outcome_status = "WIN"
-            else:
-                outcome_status = "LOSS"
-            actual_result_text = f"{winner} defeated opponent {max(home_s, away_s)}-{min(home_s, away_s)}"
+        # Unresolved events strictly remain PENDING and are never converted using synthetic/fabricated outcomes.
 
         # Check if outcome already recorded in ledger
         existing_outcome = next((o for o in ledger.outcomes if o.prediction_id == pred.prediction_id), None)
