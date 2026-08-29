@@ -162,6 +162,25 @@ class SportsRCEResearchEngine:
 
         return file_path
 
+    def evaluate_daily_prediction_growth_delta(
+        self,
+        historical_brier: float,
+        current_brier: float,
+        calibration_slope: float = 1.0,
+    ) -> Dict[str, float]:
+        """Calculates out-of-sample prediction accuracy improvement and calibration score delta."""
+        brier_delta = max(0.0, historical_brier - current_brier)
+        accuracy_score = round(min(1.0, max(0.0, 1.0 - current_brier + (brier_delta * 0.5))), 4)
+        calibration_score = round(min(1.0, max(0.0, 1.0 - abs(1.0 - calibration_slope))), 4)
+
+        return {
+            "historical_brier": historical_brier,
+            "current_brier": current_brier,
+            "brier_delta": round(brier_delta, 4),
+            "prediction_accuracy_score": accuracy_score,
+            "calibration_score": calibration_score,
+        }
+
 
 # =====================================================================
 # RCE-003.1: TEMPORAL RESEARCH SNAPSHOT & LEAKAGE RECEIPT ENGINE
