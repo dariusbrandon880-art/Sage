@@ -1,9 +1,0 @@
-{
-  "executed_head": "c4292ef3e8199410f2bf1120928482f8b2d2e707",
-  "flight_id": "FLIGHT-F3-EXECUTION",
-  "frontier_name": "Execution & Substrate Frontier",
-  "status": "PASS",
-  "target_path": "sage/runtime/engine.py",
-  "timestamp": 1787987318.7871318,
-  "wave_id": "multi-frontier-dispatch"
-}

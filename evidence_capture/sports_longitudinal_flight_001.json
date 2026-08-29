@@ -17,7 +17,7 @@
         "home_team": "Chicago Cubs",
         "away_team": "Cincinnati Reds",
         "event_start_time_utc": "2026-08-28T18:20:00Z",
-        "observation_timestamp_utc": "2026-08-29T07:03:48.438539+00:00",
+        "observation_timestamp_utc": "2026-08-29T07:37:53.998156+00:00",
         "source_name": "Official MLB Stats API (statsapi.mlb.com)",
         "source_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1",
         "market_name": "Moneyline (Public Market)",
@@ -36,13 +36,13 @@
       "is_parlay": false,
       "parlay_legs": [],
       "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "a7ff7155f903e4ade501e07fa741a97527e79d28e13358f0b9ff978d6f8af3c9"
+      "sha256_receipt_hash": "e9d6260bcfd719b709eb3e6de9fefe01cc6211fc2e91bca61c142a36c17c236c"
     },
     "outcome_record": {
       "outcome_id": "out_pred_real_mlb_824638",
       "prediction_id": "pred_real_mlb_824638",
-      "prediction_hash": "a7ff7155f903e4ade501e07fa741a97527e79d28e13358f0b9ff978d6f8af3c9",
-      "verification_timestamp_utc": "2026-08-29T07:03:48.439346+00:00",
+      "prediction_hash": "e9d6260bcfd719b709eb3e6de9fefe01cc6211fc2e91bca61c142a36c17c236c",
+      "verification_timestamp_utc": "2026-08-29T07:37:53.998454+00:00",
       "verification_source_name": "Official MLB Stats API (statsapi.mlb.com)",
       "verification_source_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1",
       "actual_home_score": 8,
@@ -50,32 +50,32 @@
       "actual_result_text": "Cincinnati Reds defeated Chicago Cubs 10-8",
       "outcome_status": "LOSS",
       "classification": "REAL-WORLD OUTCOME",
-      "outcome_receipt_hash": "07bbcc5601623bbb45b20ecae613a167dc7e5ec4ba1d33739744f30d40bb20e5"
+      "outcome_receipt_hash": "56cfe8dad443315473bf9a2e0b8f29dd34a935ec37b3633cca25691df1a2070a"
     },
     "score_record": {
       "score_id": "score_pred_real_mlb_824638",
       "prediction_id": "pred_real_mlb_824638",
-      "prediction_hash": "a7ff7155f903e4ade501e07fa741a97527e79d28e13358f0b9ff978d6f8af3c9",
+      "prediction_hash": "e9d6260bcfd719b709eb3e6de9fefe01cc6211fc2e91bca61c142a36c17c236c",
       "outcome_id": "out_pred_real_mlb_824638",
-      "score_timestamp_utc": "2026-08-29T07:03:48.439346+00:00",
+      "score_timestamp_utc": "2026-08-29T07:37:53.998454+00:00",
       "model_predicted_probability": 0.55,
       "outcome_status": "LOSS",
       "brier_score_contribution": 0.30250000000000005,
       "classification": "REAL-WORLD SCORING",
-      "score_receipt_hash": "3915c075c0e03ca4a0c506bf4268d725d5eb4c142fb3fc9ca4229fe32433cd90"
+      "score_receipt_hash": "126216b922088447a506fc26a1565b862997be9899680e0e3a3f15d1719e25d4"
     },
     "learning_record": {
       "learning_id": "learn_pred_real_mlb_824638",
       "prediction_id": "pred_real_mlb_824638",
-      "prediction_hash": "a7ff7155f903e4ade501e07fa741a97527e79d28e13358f0b9ff978d6f8af3c9",
+      "prediction_hash": "e9d6260bcfd719b709eb3e6de9fefe01cc6211fc2e91bca61c142a36c17c236c",
       "outcome_id": "out_pred_real_mlb_824638",
       "score_id": "score_pred_real_mlb_824638",
-      "learning_timestamp_utc": "2026-08-29T07:03:48.439346+00:00",
+      "learning_timestamp_utc": "2026-08-29T07:37:53.998454+00:00",
       "failure_classification": "REAL_WORLD_PREDICTION_ERROR",
       "model_assumption_broken": "Model predicted probability exceeded actual empirical realization under market noise.",
       "lesson_recorded": "Incorporate market odds variance and opponent recent momentum into probability calibration model.",
       "classification": "REAL-WORLD LEARNING",
-      "learning_receipt_hash": "c92bed171bf79141cc4185b0cb8b6882f8bb63ca118fee8f67e5b7de53743eac"
+      "learning_receipt_hash": "b7dde0fd4090ba9850c8e0e5a4b9396e1d2a037bcabbb86267d4f306a4d926ae"
     }
   },
   "ledger_summary": {

@@ -1,9 +1,0 @@
-{
-  "executed_head": "c4292ef3e8199410f2bf1120928482f8b2d2e707",
-  "flight_id": "FLIGHT-F5-WAREHOUSE",
-  "frontier_name": "Capability Warehouse & Reconvergence Frontier",
-  "status": "PASS",
-  "target_path": "sage/c2/reconvergence_synthesizer.py",
-  "timestamp": 1787981252.4992602,
-  "wave_id": "wave-big-jump-1787981251"
-}

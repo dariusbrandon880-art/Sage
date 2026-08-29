@@ -1,9 +1,0 @@
-{
-  "executed_head": "c4292ef3e8199410f2bf1120928482f8b2d2e707",
-  "flight_id": "FLIGHT-F4-GUARD",
-  "frontier_name": "Governance & Architecture Guard Frontier",
-  "status": "PASS",
-  "target_path": "sage/c2/chatgpt_c2_contract.py",
-  "timestamp": 1787987317.800448,
-  "wave_id": "multi-frontier-dispatch"
-}
