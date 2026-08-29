@@ -55,8 +55,10 @@ def test_organism_growth_wave_execution_runner():
     with open(evidence_file, "r", encoding="utf-8") as f:
         data = json.load(f)
 
+    import re
+    assert re.fullmatch(r"[0-9a-fA-F]{40}", data["exact_git_head"])
+    assert re.fullmatch(r"[0-9a-fA-F]{40}", head_sha)
     assert data["wave_id"] == "wave_organism_growth_001"
-    assert data["exact_git_head"] == head_sha
     assert data["reconvergence_verdict"] == "PASS"
     assert data["status"] == "VALIDATED"
     assert data["organism_growth_receipt"]["growth_verdict"] == "ACCELERATING"

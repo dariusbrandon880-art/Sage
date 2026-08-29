@@ -45,10 +45,10 @@
       "compound_growth_index": 1.0,
       "growth_verdict": "ACCELERATING",
       "provenance_hash": "2c1a03dcd56f62b489ad91bffb0d951b854ff1fa22e7b6b0becfd62489e98cb8",
-      "timestamp": "2026-08-29T12:23:24.704783+00:00"
+      "timestamp": "2026-08-29T12:46:58.699569+00:00"
     },
-    "timestamp": 1788006204.7048588,
-    "receipt_hash": "f31d66b50bab12ade1602aae498dad290bb8c3e0a1579599f05b6d4ed30e9d47"
+    "timestamp": 1788007618.6996427,
+    "receipt_hash": "60662cff2ea6690280571209eaada2ea53204954663a6c2d789b4c7cae998f9b"
   },
   "prediction_growth_delta": {
     "historical_brier": 0.25,
@@ -67,9 +67,9 @@
     "compound_growth_index": 0.9637,
     "growth_verdict": "ACCELERATING",
     "provenance_hash": "76f9b54eba436ae2c6af80c179d5483d813b6c3a5aa3bf237ae7d8adde237cf9",
-    "timestamp": "2026-08-29T12:23:24.705046+00:00"
+    "timestamp": "2026-08-29T12:46:58.699835+00:00"
   },
   "reconvergence_verdict": "PASS",
   "status": "VALIDATED",
-  "timestamp": 1788006204.7050807
+  "timestamp": 1788007618.6998723
 }
