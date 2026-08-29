@@ -33,6 +33,18 @@ def main():
     chat_parser = subparsers.add_parser("chat"); chat_mode = chat_parser.add_mutually_exclusive_group(required=True); chat_mode.add_argument("--prompt", type=str); chat_mode.add_argument("--interactive", action="store_true")
     audit_parser = subparsers.add_parser("audit"); audit_parser.add_argument("--action", choices=["summary", "diagnostics", "scan"], required=True); audit_parser.add_argument("--mission-id", type=str); audit_parser.add_argument("--archive-path", type=str, default="sage_data/archive")
     c2_parser = subparsers.add_parser("c2"); c2_parser.add_argument("--action", choices=["context", "cycle"], default="context"); c2_parser.add_argument("--action-id", type=str, default="c2_cycle_init"); c2_parser.add_argument("--description", type=str, default="C2 Governed Execution Cycle")
+    business_parser = subparsers.add_parser("business", help="Expose the governed first-customer SAGE business surface")
+    business_parser.add_argument("--action", choices=["preflight", "measure"], default="preflight")
+    business_parser.add_argument("--workflow-id", type=str, default="")
+    business_parser.add_argument("--completed", action="store_true")
+    business_parser.add_argument("--human-interventions", type=int, default=0)
+    business_parser.add_argument("--execution-seconds", type=float)
+    business_parser.add_argument("--cost-usd", type=float)
+    business_parser.add_argument("--value-usd", type=float)
+    business_parser.add_argument("--failures", type=int, default=0)
+    business_parser.add_argument("--recoveries", type=int, default=0)
+    business_parser.add_argument("--reusable-capability", type=str)
+    business_parser.add_argument("--evidence-ref", action="append", default=[])
     args = parser.parse_args(); runtime = SageRuntime()
     try:
         if args.command == "objective":
@@ -92,6 +104,37 @@ def main():
             _print_c2_bootstrap(runtime); print(render_team_status())
             if args.action == "context": print(json.dumps(bridge.get_c2_context(), indent=2, default=str))
             else: print(json.dumps(bridge.execute_cognitive_cycle(action_id=args.action_id, description=args.description).model_dump(), indent=2, default=str))
+        elif args.command == "business":
+            from sage.business.customer_workbench import CustomerWorkflowMeasurement, CustomerWorkbench
+            from sage.c2.operator_acceptance_bootstrap import OperatorAcceptanceBootstrap
+            from sage.c2.mission_continuity import CANONICAL_MAIN_GOALS
+            bootstrap = OperatorAcceptanceBootstrap()
+            state = bootstrap.rehydrate(
+                mission_id="SAGE Operational Convergence",
+                main_goals=list(CANONICAL_MAIN_GOALS),
+                side_goals=[],
+                active_flights=["F1", "F2", "F3", "F4", "F5"],
+                required_interfaces=["chatgpt", "gemini", "jules", "observatory_hud"],
+            )
+            bootstrap.bind_customer_surface(state, "SAGE_FIRST_CUSTOMER", "FIRST_CUSTOMER_WORKBENCH", "[SAGE::C2::CHATGPT]")
+            workbench = CustomerWorkbench("SAGE_FIRST_CUSTOMER")
+            if args.action == "measure":
+                if not args.workflow_id:
+                    raise ValueError("--workflow-id is required for business --action measure")
+                workbench.record_workflow(CustomerWorkflowMeasurement(
+                    workflow_id=args.workflow_id,
+                    completed=args.completed,
+                    human_interventions=args.human_interventions,
+                    execution_seconds=args.execution_seconds,
+                    direct_cost_usd=args.cost_usd,
+                    value_usd=args.value_usd,
+                    reusable_capability=args.reusable_capability,
+                    failure_count=args.failures,
+                    recovery_count=args.recoveries,
+                    evidence_refs=args.evidence_ref,
+                ))
+            _print_c2_bootstrap(runtime)
+            print(json.dumps(workbench.snapshot(state, ["F1", "F2", "F3", "F4", "F5"]).to_dict(), indent=2))
         else: parser.print_help()
     except Exception as e:
         print(f"Error: SAGE execution failed: {e!s}"); sys.exit(1)
