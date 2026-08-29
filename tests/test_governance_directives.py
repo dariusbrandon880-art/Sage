@@ -140,3 +140,29 @@ def test_c2_exact_order_contract_binds_big_jump_wave_doctrine():
     assert "Multi-node is optional topology" in content
     assert "Five flights is concurrent mission ownership across independent vehicles" in content
     assert "PREFLIGHT -> EXECUTE -> TEST -> EVIDENCE -> VERIFY -> RECONCILE -> REPORT" in content
+    assert "SAGE is one governed organism with modular organs" in content
+
+
+def test_organism_jigsaw_architecture_directive_conforms():
+    """Verify that SAGE_ORGANISM_JIGSAW_ARCHITECTURE.md exists and contains required Sections."""
+    root_dir = Path(__file__).parent.parent
+    gov_dir = root_dir / "docs" / "governance"
+    doc = gov_dir / "SAGE_ORGANISM_JIGSAW_ARCHITECTURE.md"
+    assert doc.exists(), "The SAGE Organism & Jigsaw Architecture Directive must exist."
+    content = doc.read_text(encoding="utf-8")
+
+    required_anchors = [
+        "SAGE_ORGANISM_JIGSAW_ARCHITECTURE",
+        "Executive Summary: One Organism, Modular Organs",
+        "The Jigsaw Taxonomy: Subsystem Relationships",
+        "The 10 Connective Tissue Integration Gates",
+        "CORE",
+        "SERVICE",
+        "PROJECTION",
+        "EVIDENCE_LEARNING",
+        "Gate 1: Mission Intake → C2 Core",
+        "Gate 10: Capability Warehouse → Next Mission",
+        "Law 13",
+    ]
+    for anchor in required_anchors:
+        assert anchor in content, f"Missing required anchor in organism directive: '{anchor}'"
