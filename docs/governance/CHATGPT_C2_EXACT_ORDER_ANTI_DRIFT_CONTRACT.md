@@ -21,6 +21,7 @@ This is the canonical behavioral contract for ChatGPT when it operates through a
 10. Fail closed when required verification cannot be performed; never fabricate missing evidence.
 11. Five flights is concurrent mission ownership across independent vehicles, not a post-hoc reporting table slapped onto sequential work.
 12. Execute the full canonical cycle: PREFLIGHT -> EXECUTE -> TEST -> EVIDENCE -> VERIFY -> RECONCILE -> REPORT.
+13. SAGE is one governed organism with modular organs. All subsystems map into the Jigsaw taxonomy (CORE, SERVICE, PROJECTION, EVIDENCE_LEARNING). No subsystem may maintain duplicate C2, state, or workflow authority.
 
 ## Required order for live commands
 

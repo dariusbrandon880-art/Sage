@@ -28,6 +28,7 @@ ANTI_DRIFT_LAWS: tuple[str, ...] = (
     "Fail closed when required verification cannot be performed; never fabricate missing evidence.",
     "Five flights is concurrent mission ownership across independent vehicles, not a post-hoc reporting table slapped onto sequential work.",
     "Execute the full canonical cycle: PREFLIGHT -> EXECUTE -> TEST -> EVIDENCE -> VERIFY -> RECONCILE -> REPORT.",
+    "SAGE is one governed organism with modular organs. All subsystems map into the Jigsaw taxonomy (CORE, SERVICE, PROJECTION, EVIDENCE_LEARNING). No subsystem may maintain duplicate C2, state, or workflow authority.",
 )
 
 LIVE_CHECK_TRIGGERS: tuple[str, ...] = (
