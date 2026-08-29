@@ -35,6 +35,21 @@ class RealSportsEventObservation:
     observed_odds: Dict[str, Any]
     event_status: str
 
+@dataclass(frozen=True)
+class ExternalSignalInput:
+    signal_id: str
+    source_name: str
+    event_id: str
+    selection: str
+    signal_type: str
+    confidence_or_odds: Optional[str]
+    timestamp_utc: str
+    raw_payload: Dict[str, Any] = field(default_factory=dict)
+
+    def compute_sha256_hash(self) -> str:
+        serialized = json.dumps(asdict(self), sort_keys=True, default=str)
+        return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
 @dataclass
 class LockedResearchPrediction:
     prediction_id: str
@@ -48,6 +63,7 @@ class LockedResearchPrediction:
     model_state_rationale: str
     is_parlay: bool = False
     parlay_legs: List[Dict[str, Any]] = field(default_factory=list)
+    external_signals: List[Dict[str, Any]] = field(default_factory=list)
     classification: str = "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION"
     sha256_receipt_hash: str = ""
 
@@ -72,6 +88,7 @@ class LockedResearchPrediction:
             "model_state_rationale": self.model_state_rationale,
             "is_parlay": self.is_parlay,
             "parlay_legs": self.parlay_legs,
+            "external_signals": self.external_signals,
             "classification": self.classification
         }
         serialized = json.dumps(payload, sort_keys=True, default=str)
@@ -183,6 +200,8 @@ class SportsLearningRecord:
         self.learning_receipt_hash = self.compute_sha256_hash()
         return self.learning_receipt_hash
 
+import math
+
 def calculate_brier_score(predictions: List[Dict[str, Any]]) -> Optional[float]:
     """Calculates Brier Score BS = (1/N) * sum((predicted_prob - outcome_value)^2)."""
     valid_diffs = []
@@ -196,6 +215,106 @@ def calculate_brier_score(predictions: List[Dict[str, Any]]) -> Optional[float]:
     if not valid_diffs:
         return None
     return sum(valid_diffs) / len(valid_diffs)
+
+def calculate_log_loss(predictions: List[Dict[str, Any]]) -> Optional[float]:
+    """Calculates Log Loss LL = -(1/N) * sum(actual * log(p) + (1-actual) * log(1-p))."""
+    losses = []
+    for p in predictions:
+        status = p.get("outcome_status")
+        prob = p.get("model_predicted_probability")
+        if status in ["WIN", "LOSS"] and prob is not None:
+            p_clamped = max(min(float(prob), 0.999999), 0.000001)
+            actual = 1.0 if status == "WIN" else 0.0
+            ll = -(actual * math.log(p_clamped) + (1.0 - actual) * math.log(1.0 - p_clamped))
+            losses.append(ll)
+    if not losses:
+        return None
+    return sum(losses) / len(losses)
+
+def calculate_clv(odds_at_lock_prob: float, closing_odds_prob: float) -> float:
+    """Calculates Closing Line Value (CLV) ratio log(p_lock / p_closing)."""
+    if closing_odds_prob <= 0 or odds_at_lock_prob <= 0:
+        return 0.0
+    return math.log(odds_at_lock_prob / closing_odds_prob)
+
+def attribute_prediction_failures(ledger: "SportsLongitudinalLedger") -> Dict[str, Any]:
+    """Classifies root causes and failure attributions across resolved prediction losses."""
+    failures = []
+    for outcome in ledger.outcomes:
+        if outcome.outcome_status == "LOSS":
+            pred = next((p for p in ledger.predictions if p.prediction_id == outcome.prediction_id), None)
+            learning = next((l for l in ledger.learnings if l.prediction_id == outcome.prediction_id), None)
+            failures.append({
+                "prediction_id": outcome.prediction_id,
+                "is_parlay": pred.is_parlay if pred else False,
+                "selected_prediction": pred.selected_prediction if pred else "UNKNOWN",
+                "failure_classification": learning.failure_classification if learning else "UNCLASSIFIED_LOSS",
+                "model_assumption_broken": learning.model_assumption_broken if learning else "PROBABILITY_OVERESTIMATION",
+                "actual_result": outcome.actual_result_text
+            })
+    return {
+        "total_failures": len(failures),
+        "failures": failures
+    }
+
+def attribute_signal_performance(ledger: "SportsLongitudinalLedger") -> Dict[str, Any]:
+    """Compares SAGE model prediction outcomes against separate external intelligence inputs."""
+    signal_evals = []
+    for pred in ledger.predictions:
+        outcome = next((o for o in ledger.outcomes if o.prediction_id == pred.prediction_id), None)
+        if outcome and outcome.outcome_status in ["WIN", "LOSS"]:
+            sage_win = (outcome.outcome_status == "WIN")
+            for sig in pred.external_signals:
+                ext_match_sage = (sig.get("selection") == pred.selected_prediction)
+                ext_win = sage_win if ext_match_sage else (not sage_win)
+                signal_evals.append({
+                    "prediction_id": pred.prediction_id,
+                    "signal_source": sig.get("source_name"),
+                    "signal_type": sig.get("signal_type"),
+                    "external_selection": sig.get("selection"),
+                    "sage_selection": pred.selected_prediction,
+                    "external_matched_sage": ext_match_sage,
+                    "sage_win": sage_win,
+                    "external_signal_win": ext_win
+                })
+
+    total_signals = len(signal_evals)
+    sage_wins = sum(1 for e in signal_evals if e["sage_win"])
+    ext_wins = sum(1 for e in signal_evals if e["external_signal_win"])
+
+    return {
+        "total_external_signals_evaluated": total_signals,
+        "sage_win_rate": (sage_wins / total_signals) if total_signals > 0 else 0.0,
+        "external_signal_win_rate": (ext_wins / total_signals) if total_signals > 0 else 0.0,
+        "signal_evaluations": signal_evals
+    }
+
+def evaluate_model_promotion_eligibility(
+    ledger: "SportsLongitudinalLedger",
+    min_sample_size: int = 10,
+    max_brier_threshold: float = 0.25
+) -> Dict[str, Any]:
+    """Governed evaluation preventing model promotion based on short-term win batches."""
+    summary = ledger.generate_summary_report()
+    resolved_count = summary.get("resolved_outcomes", 0)
+    brier = summary.get("brier_score")
+
+    reasons = []
+    if resolved_count < min_sample_size:
+        reasons.append(f"INSUFFICIENT_SAMPLE_SIZE: Resolved sample count ({resolved_count}) is below minimum requirement ({min_sample_size}). Short-term win batches are ineligible for promotion.")
+    if brier is None or brier > max_brier_threshold:
+        reasons.append(f"CALIBRATION_THRESHOLD_FAIL: Brier score ({brier}) exceeds maximum threshold ({max_brier_threshold}).")
+
+    eligible = len(reasons) == 0
+    return {
+        "promotion_eligible": eligible,
+        "resolved_sample_size": resolved_count,
+        "required_sample_size": min_sample_size,
+        "brier_score": brier,
+        "brier_threshold": max_brier_threshold,
+        "governance_decision": "APPROVED_FOR_PROMOTION" if eligible else "PROMOTION_DENIED_SHORT_TERM_OR_UNCALIBRATED",
+        "reasons": reasons
+    }
 
 def resolve_sports_prediction(
     prediction: LockedResearchPrediction,
@@ -432,6 +551,12 @@ class SportsLongitudinalLedger:
         if score:
             self.add_score(score)
         if learning:
+            # Enhance learning record if parlay failed to record leg decomposition
+            if parlay_status == "LOSS":
+                failed_leg_ids = [leg_o.prediction_id for leg_o in leg_outcomes if leg_o.outcome_status == "LOSS"]
+                learning.failure_classification = "PARLAY_MULTILEG_FAILURE"
+                learning.model_assumption_broken = f"Failed on child leg(s): {', '.join(failed_leg_ids)}"
+                learning.lesson_recorded = f"Decomposed parlay loss across {len(failed_leg_ids)} failed leg(s) out of {len(leg_ids)} total legs."
             self.add_learning(learning)
 
         return outcome, score, learning
@@ -665,3 +790,116 @@ class ReplayableObservationStream:
                 "verified_hash": event.event_hash,
             })
         return replayed_state
+
+
+import concurrent.futures
+
+class ConcurrentSportsPredictionEngine:
+    """Runs single and parlay prediction workloads concurrently via ThreadPoolExecutor."""
+
+    def __init__(self, max_workers: int = 4):
+        self.max_workers = max_workers
+
+    def predict_singles_and_parlays_parallel(
+        self,
+        event_observations: List[RealSportsEventObservation],
+        model_prediction_func,
+        external_signals_map: Optional[Dict[str, List[Dict[str, Any]]]] = None,
+        cycle_id: str = "cycle_shadow_beta"
+    ) -> Dict[str, Any]:
+        """Executes single game prediction generation and parlay synthesis in parallel."""
+        external_signals_map = external_signals_map or {}
+        single_predictions: List[LockedResearchPrediction] = []
+        parlay_predictions: List[LockedResearchPrediction] = []
+
+        def _generate_single_prediction(obs: RealSportsEventObservation) -> LockedResearchPrediction:
+            # Model prediction function call
+            pred_choice, pred_prob, rationale, odds_lock, implied_prob = model_prediction_func(obs)
+            ext_signals = external_signals_map.get(obs.event_id, [])
+
+            pred_id = f"pred_single_{obs.event_id}"
+            prediction = LockedResearchPrediction(
+                prediction_id=pred_id,
+                cycle_id=cycle_id,
+                event_observation=obs,
+                selected_prediction=pred_choice,
+                odds_at_lock=odds_lock,
+                implied_probability=implied_prob,
+                model_predicted_probability=pred_prob,
+                lock_timestamp_utc=obs.observation_timestamp_utc,
+                model_state_rationale=rationale,
+                is_parlay=False,
+                external_signals=ext_signals
+            )
+            prediction.lock_and_sign()
+            return prediction
+
+        def _generate_parlay_workload(singles: List[LockedResearchPrediction]) -> List[LockedResearchPrediction]:
+            if len(singles) < 2:
+                return []
+
+            parlays = []
+            # Group pairs of singles into 2-leg parlay predictions
+            for i in range(0, len(singles) - 1, 2):
+                leg1 = singles[i]
+                leg2 = singles[i + 1]
+
+                parlay_id = f"pred_parlay_parent_{leg1.event_observation.event_id}_{leg2.event_observation.event_id}"
+                combined_prob = round(leg1.model_predicted_probability * leg2.model_predicted_probability, 4)
+                combined_implied = round(leg1.implied_probability * leg2.implied_probability, 4)
+
+                parlay_obs = RealSportsEventObservation(
+                    event_id=f"parlay_event_{leg1.event_observation.event_id}_{leg2.event_observation.event_id}",
+                    sport=leg1.event_observation.sport,
+                    league=leg1.event_observation.league,
+                    home_team=f"{leg1.event_observation.home_team} / {leg2.event_observation.home_team}",
+                    away_team=f"{leg1.event_observation.away_team} / {leg2.event_observation.away_team}",
+                    event_start_time_utc=max(leg1.event_observation.event_start_time_utc, leg2.event_observation.event_start_time_utc),
+                    observation_timestamp_utc=max(leg1.event_observation.observation_timestamp_utc, leg2.event_observation.observation_timestamp_utc),
+                    source_name=leg1.event_observation.source_name,
+                    source_url=leg1.event_observation.source_url,
+                    market_name="Multi-Leg Parlay Market",
+                    observed_odds={"leg1_odds": leg1.odds_at_lock, "leg2_odds": leg2.odds_at_lock},
+                    event_status="Scheduled"
+                )
+
+                parlay_pred = LockedResearchPrediction(
+                    prediction_id=parlay_id,
+                    cycle_id=cycle_id,
+                    event_observation=parlay_obs,
+                    selected_prediction=f"2-Leg Parlay ({leg1.selected_prediction} + {leg2.selected_prediction})",
+                    odds_at_lock="ODDS_PARLAY_COMBINED",
+                    implied_probability=combined_implied,
+                    model_predicted_probability=combined_prob,
+                    lock_timestamp_utc=parlay_obs.observation_timestamp_utc,
+                    model_state_rationale=f"Combined independent model prediction for {leg1.selected_prediction} and {leg2.selected_prediction}",
+                    is_parlay=True,
+                    parlay_legs=[
+                        {"prediction_id": leg1.prediction_id, "selected": leg1.selected_prediction},
+                        {"prediction_id": leg2.prediction_id, "selected": leg2.selected_prediction}
+                    ],
+                    external_signals=leg1.external_signals + leg2.external_signals
+                )
+                parlay_pred.lock_and_sign()
+                parlays.append(parlay_pred)
+
+            return parlays
+
+        # Step A: Execute single game prediction tasks in parallel
+        with concurrent.futures.ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+            future_to_obs = {executor.submit(_generate_single_prediction, obs): obs for obs in event_observations}
+            for future in concurrent.futures.as_completed(future_to_obs):
+                single_predictions.append(future.result())
+
+        # Step B: Execute parlay generation workload in parallel executor
+        with concurrent.futures.ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+            parlay_future = executor.submit(_generate_parlay_workload, single_predictions)
+            parlay_predictions = parlay_future.result()
+
+        return {
+            "single_predictions": single_predictions,
+            "parlay_predictions": parlay_predictions,
+            "total_single_count": len(single_predictions),
+            "total_parlay_count": len(parlay_predictions),
+            "execution_mode": "CONCURRENT_PARALLEL_THREADPOOL"
+        }

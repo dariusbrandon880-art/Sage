@@ -527,3 +527,54 @@ class OddsPapiObservationAdapter:
         obs_payload["observation_id"] = f"obs_oddspapi_{hashlib.sha256(serialized.encode('utf-8')).hexdigest()[:16]}"
 
         return obs_payload
+
+
+class FanDuelMarketAdapter:
+    """Adapter for FanDuel-shaped live/market structures (moneyline, runline/spread, totals)."""
+
+    @staticmethod
+    def american_to_implied_prob(american_odds: int) -> float:
+        """Converts American odds (e.g., -110, +150) to implied probability (0.0 to 1.0)."""
+        if american_odds == 0:
+            return 0.5
+        if american_odds < 0:
+            return abs(american_odds) / (abs(american_odds) + 100.0)
+        else:
+            return 100.0 / (american_odds + 100.0)
+
+    @classmethod
+    def parse_fanduel_market_event(cls, event_dict: Dict[str, Any], timestamp_utc: str) -> Dict[str, Any]:
+        """Parses a FanDuel-shaped event/market dictionary into a SAGE standardized observation."""
+        event_id = str(event_dict.get("id") or event_dict.get("eventId") or "fd_unknown")
+        home_team = event_dict.get("homeTeam") or event_dict.get("home_team", "Home Team")
+        away_team = event_dict.get("awayTeam") or event_dict.get("away_team", "Away Team")
+        start_time = event_dict.get("startTime") or event_dict.get("event_start_time_utc") or timestamp_utc
+
+        markets = event_dict.get("markets", {})
+        moneyline_home = markets.get("moneyline", {}).get("home", -110)
+        moneyline_away = markets.get("moneyline", {}).get("away", -110)
+
+        home_implied = cls.american_to_implied_prob(moneyline_home)
+        away_implied = cls.american_to_implied_prob(moneyline_away)
+
+        return {
+            "source_name": "FanDuel Sportsbook Public Structure",
+            "source_url": "https://sportsbook.fanduel.com",
+            "event_id": f"fd_game_{event_id}",
+            "sport": event_dict.get("sport", "baseball").lower(),
+            "league": event_dict.get("league", "mlb").lower(),
+            "home_team": home_team,
+            "away_team": away_team,
+            "event_start_time_utc": start_time,
+            "observation_timestamp_utc": timestamp_utc,
+            "market_name": "FanDuel Moneyline & Spread Market",
+            "observed_odds": {
+                "moneyline_home_american": moneyline_home,
+                "moneyline_away_american": moneyline_away,
+                "home_implied_prob": round(home_implied, 4),
+                "away_implied_prob": round(away_implied, 4),
+                "spread_line": markets.get("spread", {}).get("line", -1.5),
+                "total_over_under": markets.get("totals", {}).get("total", 8.5)
+            },
+            "event_status": event_dict.get("status", "Scheduled")
+        }
