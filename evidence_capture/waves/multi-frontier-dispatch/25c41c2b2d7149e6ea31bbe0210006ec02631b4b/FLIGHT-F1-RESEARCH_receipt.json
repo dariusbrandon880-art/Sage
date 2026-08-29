@@ -1,0 +1,13 @@
+{
+  "executed_head": "25c41c2b2d7149e6ea31bbe0210006ec02631b4b",
+  "flight_id": "FLIGHT-F1-RESEARCH",
+  "frontier_name": "Research & Intelligence Frontier",
+  "status": "PASS",
+  "target_path": "sage/c2/frontier_intelligence_bridge.py",
+<<<<<<< HEAD
+  "timestamp": 1787999772.791448,
+=======
+  "timestamp": 1787996683.6578126,
+>>>>>>> 9c21fa3 (c2: execute big jump wave and multi-session velocity wave)
+  "wave_id": "multi-frontier-dispatch"
+}

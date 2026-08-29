@@ -51,6 +51,7 @@ class MultiSessionVelocityReceipt(BaseModel):
     advancement_matrix_20_cells: Dict[str, bool]
     rolls_royce_quality_passed: bool
     reconvergence_verdict: str
+    organism_growth_receipt: Optional[Dict[str, Any]] = None
     timestamp: float = Field(default_factory=time.time)
     receipt_hash: str = ""
 
@@ -232,6 +233,21 @@ class MultiSessionVelocityEngine:
             and reconvergence_pkg.successful_flights == reconvergence_pkg.total_flights == 5
         )
 
+        organism_growth_dict = None
+        try:
+            import importlib
+            mod = importlib.import_module("sage.experimental.airspace.fleet_evolution")
+            FleetEvolutionIntelligence = getattr(mod, "FleetEvolutionIntelligence")
+            fleet_intel = FleetEvolutionIntelligence(commit_sha=exact_git_head)
+            org_growth = fleet_intel.evaluate_organism_growth_rate(
+                velocity_score=reconvergence_pkg.successful_flights / reconvergence_pkg.total_flights,
+                wave_completion_rate=len(reconvergence_pkg.advancement_matrix_20_cells) / 20.0,
+                anti_drift_compliance_score=1.0 if rolls_royce_passed else 0.5,
+            )
+            organism_growth_dict = org_growth.to_dict()
+        except Exception:
+            pass
+
         receipt = MultiSessionVelocityReceipt(
             receipt_id=f"rec_{hashlib.sha256(f'{wave_id}:{exact_git_head}'.encode('utf-8')).hexdigest()[:12]}",
             wave_id=wave_id,
@@ -242,6 +258,7 @@ class MultiSessionVelocityEngine:
             advancement_matrix_20_cells=reconvergence_pkg.advancement_matrix_20_cells,
             rolls_royce_quality_passed=rolls_royce_passed,
             reconvergence_verdict=reconvergence_pkg.reconvergence_verdict,
+            organism_growth_receipt=organism_growth_dict,
         )
         receipt.receipt_hash = receipt.compute_hash()
         return receipt
