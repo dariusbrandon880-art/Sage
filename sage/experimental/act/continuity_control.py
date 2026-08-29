@@ -2009,8 +2009,16 @@ class DeveloperWorkflowOrchestrator:
         keywords = [w.lower() for w in re.findall(r"\w+", query) if len(w) > 2]
         results = []
 
-        # Search within storage path or predefined records
-        for filepath in self.ccl.storage_path.glob("*.json"):
+        search_paths = list(self.ccl.storage_path.glob("*.json"))
+        evidence_dir = Path("evidence_capture")
+        if evidence_dir.exists():
+            search_paths.extend(evidence_dir.glob("*.json"))
+
+        seen_sources = set()
+        for filepath in search_paths:
+            if filepath.name in seen_sources:
+                continue
+            seen_sources.add(filepath.name)
             try:
                 with open(filepath, "r", encoding="utf-8") as f:
                     data = json.load(f)
@@ -2018,22 +2026,40 @@ class DeveloperWorkflowOrchestrator:
                     overlap = sum(1 for kw in keywords if kw in text_content)
                     if overlap > 0:
                         confidence = min(1.0, 0.2 + (overlap * 0.15))
+                        rec_id = (
+                            data.get("record_id")
+                            or data.get("receipt_id")
+                            or data.get("wave_id")
+                            or filepath.name
+                        )
+                        action = (
+                            data.get("action_taken")
+                            or data.get("reconvergence_verdict")
+                            or data.get("growth_signal")
+                            or data.get("status")
+                        )
+                        reasoning = (
+                            data.get("decision_reasoning")
+                            or data.get("exact_git_head")
+                            or data.get("commit_sha")
+                        )
                         results.append(
                             {
-                                "source": f"CCL Record: {data.get('record_id')}",
+                                "source": f"Evidence/Record: {rec_id}",
                                 "content": {
-                                    "action_taken": data.get("action_taken"),
-                                    "decision_reasoning": data.get("decision_reasoning"),
+                                    "action_taken": action,
+                                    "decision_reasoning": reasoning,
+                                    "filepath": str(filepath),
                                 },
                                 "confidence": confidence,
-                                "lineage_reference": data.get("record_id"),
+                                "lineage_reference": str(rec_id),
                             }
                         )
             except Exception:
                 pass
 
         results = sorted(results, key=lambda x: x["confidence"], reverse=True)
-        return results[:5]
+        return results[:10]
 
     def request_agent_context_package(
         self, agent_id: str, session_id: str, query: str
