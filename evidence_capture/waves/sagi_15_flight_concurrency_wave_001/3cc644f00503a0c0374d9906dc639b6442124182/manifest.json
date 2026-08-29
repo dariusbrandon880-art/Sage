@@ -1,0 +1,10 @@
+{
+  "executed_head": "3cc644f00503a0c0374d9906dc639b6442124182",
+  "gate_authority": "identity-addressed-receipt",
+  "job_id": "local-job",
+  "receipt_path": "evidence_capture/waves/sagi_15_flight_concurrency_wave_001/3cc644f00503a0c0374d9906dc639b6442124182/wave_receipt.json",
+  "total_cells": 60,
+  "total_flights": 15,
+  "wave_id": "sagi_15_flight_concurrency_wave_001",
+  "workflow_run_id": "local-run"
+}

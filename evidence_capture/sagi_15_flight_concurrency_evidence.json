@@ -1,0 +1,133 @@
+{
+  "active_sessions": [
+    "jules-session-alpha",
+    "jules-session-beta",
+    "jules-session-gamma"
+  ],
+  "exact_git_head": "3cc644f00503a0c0374d9906dc639b6442124182",
+  "receipt_hash": "02057bc95b4b5e8bfe13858cbfeaa5238d6b2c10c0d11c7f8c748288a5e87d5f",
+  "receipt_id": "rec_15f_b5c9208f8dc5",
+  "reconvergence_verdict": "PASS",
+  "rolls_royce_quality_passed": true,
+  "session_receipts": {
+    "jules-session-alpha": {
+      "active_sessions": [
+        "jules-session-alpha",
+        "c2-control-tower-primary"
+      ],
+      "advancement_matrix_20_cells": {
+        "P1-S1": true,
+        "P1-S2": true,
+        "P1-S3": true,
+        "P1-S4": true,
+        "P2-S1": true,
+        "P2-S2": true,
+        "P2-S3": true,
+        "P2-S4": true,
+        "P3-S1": true,
+        "P3-S2": true,
+        "P3-S3": true,
+        "P3-S4": true,
+        "P4-S1": true,
+        "P4-S2": true,
+        "P4-S3": true,
+        "P4-S4": true,
+        "P5-S1": true,
+        "P5-S2": true,
+        "P5-S3": true,
+        "P5-S4": true
+      },
+      "exact_git_head": "3cc644f00503a0c0374d9906dc639b6442124182",
+      "receipt_hash": "36a26ac2c85165bb5c38c484a90316504782eb52d8a1869e3c6cc73b002b1911",
+      "receipt_id": "rec_ed10374f4237",
+      "reconvergence_verdict": "PASS",
+      "rolls_royce_quality_passed": true,
+      "successful_flights": 5,
+      "timestamp": 1787971813.0931287,
+      "total_flights": 5,
+      "wave_id": "sagi_15_flight_concurrency_wave_001_jules-session-alpha"
+    },
+    "jules-session-beta": {
+      "active_sessions": [
+        "jules-session-alpha",
+        "c2-control-tower-primary",
+        "jules-session-beta"
+      ],
+      "advancement_matrix_20_cells": {
+        "P1-S1": true,
+        "P1-S2": true,
+        "P1-S3": true,
+        "P1-S4": true,
+        "P2-S1": true,
+        "P2-S2": true,
+        "P2-S3": true,
+        "P2-S4": true,
+        "P3-S1": true,
+        "P3-S2": true,
+        "P3-S3": true,
+        "P3-S4": true,
+        "P4-S1": true,
+        "P4-S2": true,
+        "P4-S3": true,
+        "P4-S4": true,
+        "P5-S1": true,
+        "P5-S2": true,
+        "P5-S3": true,
+        "P5-S4": true
+      },
+      "exact_git_head": "3cc644f00503a0c0374d9906dc639b6442124182",
+      "receipt_hash": "672300aca609ae90aeee93f21bbb52df611be373f0472d7a903385c1b1649d57",
+      "receipt_id": "rec_bc22b6e917ef",
+      "reconvergence_verdict": "PASS",
+      "rolls_royce_quality_passed": true,
+      "successful_flights": 5,
+      "timestamp": 1787971813.0938208,
+      "total_flights": 5,
+      "wave_id": "sagi_15_flight_concurrency_wave_001_jules-session-beta"
+    },
+    "jules-session-gamma": {
+      "active_sessions": [
+        "jules-session-alpha",
+        "c2-control-tower-primary",
+        "jules-session-beta",
+        "jules-session-gamma"
+      ],
+      "advancement_matrix_20_cells": {
+        "P1-S1": true,
+        "P1-S2": true,
+        "P1-S3": true,
+        "P1-S4": true,
+        "P2-S1": true,
+        "P2-S2": true,
+        "P2-S3": true,
+        "P2-S4": true,
+        "P3-S1": true,
+        "P3-S2": true,
+        "P3-S3": true,
+        "P3-S4": true,
+        "P4-S1": true,
+        "P4-S2": true,
+        "P4-S3": true,
+        "P4-S4": true,
+        "P5-S1": true,
+        "P5-S2": true,
+        "P5-S3": true,
+        "P5-S4": true
+      },
+      "exact_git_head": "3cc644f00503a0c0374d9906dc639b6442124182",
+      "receipt_hash": "4fe6dd47b6f0860795a7373d954f69324816a49933554553395909f6e1faaea5",
+      "receipt_id": "rec_937a8c0595d3",
+      "reconvergence_verdict": "PASS",
+      "rolls_royce_quality_passed": true,
+      "successful_flights": 5,
+      "timestamp": 1787971813.094528,
+      "total_flights": 5,
+      "wave_id": "sagi_15_flight_concurrency_wave_001_jules-session-gamma"
+    }
+  },
+  "successful_flights": 15,
+  "timestamp": 1787971813.0945885,
+  "total_advancement_cells": 60,
+  "total_flights": 15,
+  "wave_id": "sagi_15_flight_concurrency_wave_001"
+}
