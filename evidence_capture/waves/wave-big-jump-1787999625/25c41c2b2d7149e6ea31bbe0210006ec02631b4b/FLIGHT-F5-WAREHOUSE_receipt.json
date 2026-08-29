@@ -4,10 +4,6 @@
   "frontier_name": "Capability Warehouse & Reconvergence Frontier",
   "status": "PASS",
   "target_path": "sage/c2/reconvergence_synthesizer.py",
-<<<<<<< HEAD
-  "timestamp": 1787999772.7086406,
-=======
-  "timestamp": 1787996683.5929153,
->>>>>>> 9c21fa3 (c2: execute big jump wave and multi-session velocity wave)
-  "wave_id": "multi-frontier-dispatch"
+  "timestamp": 1787999627.0369735,
+  "wave_id": "wave-big-jump-1787999625"
 }

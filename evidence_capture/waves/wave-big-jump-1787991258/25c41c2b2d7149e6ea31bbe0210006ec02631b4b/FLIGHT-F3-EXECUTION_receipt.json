@@ -4,10 +4,6 @@
   "frontier_name": "Execution & Substrate Frontier",
   "status": "PASS",
   "target_path": "sage/runtime/engine.py",
-<<<<<<< HEAD
-  "timestamp": 1787999773.470204,
-=======
-  "timestamp": 1787996684.2063298,
->>>>>>> 9c21fa3 (c2: execute big jump wave and multi-session velocity wave)
-  "wave_id": "multi-frontier-dispatch"
+  "timestamp": 1787991261.2345488,
+  "wave_id": "wave-big-jump-1787991258"
 }

@@ -1,9 +1,9 @@
 {
-  "executed_head": "9c21fa3b806401c0feb883d787bebb6490c6ff20",
+  "executed_head": "88e406b007b570c165122df9790de05b47407e59",
   "flight_id": "FLIGHT-F1-RESEARCH",
   "frontier_name": "Research & Intelligence Frontier",
   "status": "PASS",
   "target_path": "sage/c2/frontier_intelligence_bridge.py",
-  "timestamp": 1787999486.8469872,
-  "wave_id": "multi-frontier-dispatch"
+  "timestamp": 1788003308.7373836,
+  "wave_id": "wave-big-jump-1788003307"
 }

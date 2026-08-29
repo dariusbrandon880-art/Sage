@@ -1,9 +1,9 @@
 {
-  "executed_head": "9c21fa3b806401c0feb883d787bebb6490c6ff20",
+  "executed_head": "88e406b007b570c165122df9790de05b47407e59",
   "gate_authority": "identity-addressed-receipt",
   "job_id": "local-job",
   "legacy_flat_file_gate_authority": false,
-  "receipt_path": "evidence_capture/waves/multi_session_velocity_wave_001/9c21fa3b806401c0feb883d787bebb6490c6ff20/wave_receipt.json",
+  "receipt_path": "evidence_capture/waves/multi_session_velocity_wave_001/88e406b007b570c165122df9790de05b47407e59/wave_receipt.json",
   "wave_id": "multi_session_velocity_wave_001",
   "workflow_run_id": "local-run"
 }
