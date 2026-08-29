@@ -6,8 +6,10 @@ identity, acceptance, evidence, and economic-measurement state for the customer.
 """
 from __future__ import annotations
 
+import json
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 
 from sage.c2.mission_continuity import CANONICAL_MAIN_GOALS
@@ -42,6 +44,8 @@ class CustomerWorkbenchSnapshot:
     customer_id: str
     customer_role: str
     agent_identity: str
+    engineering_identity: str
+    intelligence_identity: str
     mission_id: str
     mission_goals: tuple[str, ...]
     active_flights: tuple[str, ...]
@@ -67,16 +71,33 @@ class CustomerWorkbenchSnapshot:
 class CustomerWorkbench:
     """Projects governed state without weakening any acceptance gate."""
 
-    def __init__(self, customer_id: str = "SAGE_FIRST_CUSTOMER"):
+    def __init__(self, customer_id: str = "SAGE_FIRST_CUSTOMER", measurement_path: str | Path = "evidence_capture/customer_workflows.jsonl"):
         self.customer_id = customer_id
+        self.measurement_path = Path(measurement_path)
         self.measurements: list[CustomerWorkflowMeasurement] = []
+        self._load_measurements()
+
+    def _load_measurements(self) -> None:
+        if not self.measurement_path.exists():
+            return
+        for line in self.measurement_path.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            payload = json.loads(line)
+            self.measurements.append(CustomerWorkflowMeasurement(**payload))
+
+    def _persist_measurement(self, measurement: CustomerWorkflowMeasurement) -> None:
+        self.measurement_path.parent.mkdir(parents=True, exist_ok=True)
+        with self.measurement_path.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(asdict(measurement), sort_keys=True) + "\n")
 
     def snapshot(self, acceptance_state: Any, active_flights: list[str] | tuple[str, ...]) -> CustomerWorkbenchSnapshot:
-        binding = acceptance_state.customer_surface
         return CustomerWorkbenchSnapshot(
             customer_id=self.customer_id,
             customer_role="FIRST_CUSTOMER",
             agent_identity="[SAGE::C2::CHATGPT]",
+            engineering_identity="[SAGE::ENGINEER::JULES]",
+            intelligence_identity="[SAGE::INTEL::GEMINI]",
             mission_id=acceptance_state.mission_id,
             mission_goals=tuple(CANONICAL_MAIN_GOALS),
             active_flights=tuple(active_flights),
@@ -95,4 +116,5 @@ class CustomerWorkbench:
         if measurement.human_interventions < 0 or measurement.failure_count < 0 or measurement.recovery_count < 0:
             raise ValueError("workflow counters cannot be negative")
         self.measurements.append(measurement)
+        self._persist_measurement(measurement)
         return measurement
