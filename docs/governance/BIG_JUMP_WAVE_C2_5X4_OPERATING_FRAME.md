@@ -227,6 +227,113 @@ REUSE
 
 exist.
 
+## Capability Advancement Gate — Non-Negotiable
+
+A Big Jump Wave is **not complete merely because its 20-cell matrix is green, receipts exist, or the test suite passes**.
+
+For every flight, C2/Jules must establish a **NET CAPABILITY DELTA** against the authoritative pre-wave baseline:
+
+```
+BASELINE CAPABILITY
+    -> TARGET FRONTIER
+    -> CONCRETE CODE / BEHAVIOR CHANGE
+    -> DEDICATED VERIFICATION
+    -> EVIDENCE BOUND TO RESULT
+    -> REUSABLE OUTPUT
+    -> RECONVERGENCE
+    -> PROMOTION
+```
+
+### Evidence-only prohibition
+
+Evidence, receipts, reports, hashes, matrices, documentation, or test-only changes **do not count as capability advancement by themselves**. They may prove an advancement, but cannot substitute for one.
+
+If a flight produces no concrete capability delta, its advancement status MUST be recorded as `NO_NET_CAPABILITY_DELTA` and the target must be returned to target selection rather than inflated into velocity.
+
+### Baseline and duplicate gate
+
+Before BUILD, every flight must record:
+
+- authoritative baseline SHA;
+- exact target files / collision zone;
+- existing capability already present;
+- reason the target is uncovered and higher leverage than the next candidate.
+
+A target already present on the baseline MUST NOT be reopened or relabeled as new advancement. It must be replaced by the next-highest-leverage uncovered target.
+
+### Verification gate
+
+A green test establishes that the tested behavior passes. It does not establish that the behavior is newly capable. C2 must separately verify the before/after capability delta and persistent/reusable output.
+
+### Wave promotion gate
+
+A wave may be promoted only when every claimed capability cell has:
+
+`BUILD + TEST + VERIFY + EVIDENCE + REUSE`
+
+and the wave-level report distinguishes:
+
+- execution/evidence throughput;
+- net verified capability added;
+- rework/conflicts;
+- human intervention;
+- blocked or no-delta flights.
+
+## Deep Recon / Super Search Gate
+
+Super Search is a reconnaissance sensor, not repository authority.
+
+For substantive engineering work, C2 MUST:
+
+1. establish repository-first reality lock;
+2. determine whether external intelligence can materially change target selection, implementation, security, validation, or verification;
+3. use targeted primary/current external intelligence when it can change the decision;
+4. synthesize external findings with repository truth before mutation;
+5. reuse verified findings instead of repeating identical searches;
+6. avoid turning research into a serial approval gate when sufficient evidence already exists.
+
+Super Search may be omitted only when external information cannot materially change the implementation or verification decision. Its omission must not be used to justify speculative work.
+
+## Velocity Measurement Contract
+
+SAGE measures velocity as **verified reusable capability added per scarce execution capacity**, not as task count, receipt count, elapsed time, or green-cell count alone.
+
+Every Big Jump Wave should therefore record, where available:
+
+```
+External Sessions Consumed:
+Active Flights Actually Executed:
+Net Capability Deltas:
+Capability Deltas Verified:
+Reusable Outputs Promoted:
+Rework / Conflicts:
+Human Intervention:
+No-Net-Delta Flights:
+Targeted External Recon Used:
+Execution Duration:
+Verification Duration:
+```
+
+Do not claim a multiplier from one wave. Velocity claims require repeated observations over comparable waves with the same completion boundary.
+
+## C2 Stop/Continue Rule
+
+C2 must continue authorized work through the complete bounded workflow. It must not stop at:
+
+- target identification;
+- a plan;
+- a green evidence matrix;
+- a local test result;
+- a pasted agent report;
+- or a successful workflow configuration.
+
+C2 may stop only when:
+
+1. the authorized completion boundary is satisfied;
+2. a real external blocker prevents continuation;
+3. a governance/authorization boundary requires human action; or
+4. repository evidence proves that no safe implementation is justified, in which case the mission must record the decision and select the next highest-value path.
+
 ## Operating Principle
 
 Big Jump Wave leads execution.

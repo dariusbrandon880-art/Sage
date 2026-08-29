@@ -75,6 +75,33 @@ It does **not** claim that a repository file can directly control every standalo
 
 A pasted Jules/agent report is evidence to inspect, not repository truth. A live GitHub/tool result is the verification source. Conflicts remain visible until reconciled.
 
+## Net Capability Delta Rule
+
+A green matrix, passing test suite, receipt, hash, report, documentation change, or evidence artifact is **proof infrastructure**, not capability advancement by itself.
+
+For a Big Jump Wave claim to count as real SAGE advancement, C2 must establish against the authoritative pre-wave baseline:
+
+`BASELINE -> DISTINCT TARGET -> CONCRETE BEHAVIOR/CODE DELTA -> DEDICATED VERIFICATION -> EVIDENCE -> REUSABLE OUTPUT -> RECONVERGENCE -> PROMOTION`
+
+If the baseline already contains the claimed capability, the flight must not be relabeled as new advancement. Select the next-highest-value uncovered frontier instead.
+
+If no concrete capability delta was produced, record `NO_NET_CAPABILITY_DELTA`; do not include that flight in net capability velocity.
+
+Velocity is measured as **verified reusable capability added per scarce execution capacity**, not by number of tasks, cells, commits, receipts, or elapsed time. A multiplier claim requires repeated comparable observations.
+
+## Deep Recon Execution Rule
+
+For substantive engineering work:
+
+1. Establish repository-first reality lock.
+2. Identify whether external information can materially alter target selection, implementation, security, or verification.
+3. Use targeted current/primary external intelligence when it can alter the decision.
+4. Synthesize external intelligence with repository truth before mutation.
+5. Execute bounded independent work without unnecessary serial research gates.
+6. Reuse verified findings rather than repeating identical searches.
+
+Super Search may be omitted only when external information cannot materially change the decision. It never overrides repository truth.
+
 ## Drift test
 
 The minimum adversarial suite must test:
@@ -95,4 +122,8 @@ The minimum adversarial suite must test:
 - distinction between flight, lifecycle cell, Jules session, and optional node;
 - true-concurrency versus rolling-execution claims;
 - prohibition against post-hoc reporting tables over sequential work;
-- full canonical cycle execution (PREFLIGHT -> EXECUTE -> TEST -> EVIDENCE -> VERIFY -> RECONCILE -> REPORT).
+- full canonical cycle execution (PREFLIGHT -> EXECUTE -> TEST -> EVIDENCE -> VERIFY -> RECONCILE -> REPORT);
+- distinction between evidence throughput and net capability advancement;
+- rejection of evidence-only work as capability gain;
+- baseline duplicate detection before claiming advancement;
+- recording of no-net-delta, rework, conflict, and human-intervention outcomes.
