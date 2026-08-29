@@ -1,12 +1,12 @@
 {
-  "receipt_id": "organism_jigsaw_fcf7d0c5",
-  "commit_sha": "fcf7d0c5f0345d9293bb8c15b402b7b20edf3bad",
+  "receipt_id": "organism_jigsaw_5a642010",
+  "commit_sha": "5a64201017234e5ec2b7813e1e58c0740eb808a4",
   "subsystem_count": 11,
   "duplicate_authorities_detected": 0,
   "gates_evaluated": 10,
   "gates_passed": 10,
   "all_gates_passed": true,
-  "receipt_hash": "ad2a2f727c195bda5be6924df60b644fbd2b39e7c14f94a3586f39f8fc591963",
+  "receipt_hash": "61aa8ebf06956d1d7a7559be6ba283a7bb37e8478c0235ccea91903fd42f8501",
   "subsystems": [
     {
       "subsystem_id": "sage_runtime",
@@ -93,7 +93,7 @@
       "source_organ": "Mission Intake",
       "target_organ": "C2 Core",
       "passed": true,
-      "evidence_ref": "SHA256:fcf7d0c5:GATE-1",
+      "evidence_ref": "SHA256:5a642010:GATE-1",
       "details": {
         "status": "VERIFIED",
         "contract": "SAGE_EXECUTABLE_MISSION_CONTRACT_SPEC_V1"
@@ -105,7 +105,7 @@
       "source_organ": "C2 Core",
       "target_organ": "Super Search / Recon",
       "passed": true,
-      "evidence_ref": "SHA256:fcf7d0c5:GATE-2",
+      "evidence_ref": "SHA256:5a642010:GATE-2",
       "details": {
         "status": "VERIFIED",
         "contract": "SAGE_DEEP_RECON_VELOCITY_POLICY"
@@ -117,7 +117,7 @@
       "source_organ": "Super Search / Recon",
       "target_organ": "Frontier Planner",
       "passed": true,
-      "evidence_ref": "SHA256:fcf7d0c5:GATE-3",
+      "evidence_ref": "SHA256:5a642010:GATE-3",
       "details": {
         "status": "VERIFIED",
         "bridge": "FrontierIntelligenceBridge"
@@ -129,7 +129,7 @@
       "source_organ": "Frontier Planner",
       "target_organ": "Five Flights",
       "passed": true,
-      "evidence_ref": "SHA256:fcf7d0c5:GATE-4",
+      "evidence_ref": "SHA256:5a642010:GATE-4",
       "details": {
         "status": "VERIFIED",
         "dispatcher": "MultiFrontierDispatcher"
@@ -141,7 +141,7 @@
       "source_organ": "Five Flights",
       "target_organ": "Evidence Capture",
       "passed": true,
-      "evidence_ref": "SHA256:fcf7d0c5:GATE-5",
+      "evidence_ref": "SHA256:5a642010:GATE-5",
       "details": {
         "status": "VERIFIED",
         "receipt_schema": "LiveOperationReceipt"
@@ -153,7 +153,7 @@
       "source_organ": "Evidence Capture",
       "target_organ": "Independent Verification",
       "passed": true,
-      "evidence_ref": "SHA256:fcf7d0c5:GATE-6",
+      "evidence_ref": "SHA256:5a642010:GATE-6",
       "details": {
         "status": "VERIFIED",
         "synthesizer": "C2ReconvergenceSynthesizer"
@@ -165,7 +165,7 @@
       "source_organ": "Independent Verification",
       "target_organ": "Observatory HUD",
       "passed": true,
-      "evidence_ref": "SHA256:fcf7d0c5:GATE-7",
+      "evidence_ref": "SHA256:5a642010:GATE-7",
       "details": {
         "status": "VERIFIED",
         "hud": "CustomerAcceptanceSurface"
@@ -177,7 +177,7 @@
       "source_organ": "Observatory HUD",
       "target_organ": "Economic Measurement",
       "passed": true,
-      "evidence_ref": "SHA256:fcf7d0c5:GATE-8",
+      "evidence_ref": "SHA256:5a642010:GATE-8",
       "details": {
         "status": "VERIFIED",
         "workbench": "CustomerWorkbench"
@@ -189,7 +189,7 @@
       "source_organ": "Economic Measurement",
       "target_organ": "Capability Warehouse",
       "passed": true,
-      "evidence_ref": "SHA256:fcf7d0c5:GATE-9",
+      "evidence_ref": "SHA256:5a642010:GATE-9",
       "details": {
         "status": "VERIFIED",
         "engine": "CapabilityWarehouseEngine"
@@ -201,7 +201,7 @@
       "source_organ": "Capability Warehouse",
       "target_organ": "Next Mission Intake",
       "passed": true,
-      "evidence_ref": "SHA256:fcf7d0c5:GATE-10",
+      "evidence_ref": "SHA256:5a642010:GATE-10",
       "details": {
         "status": "VERIFIED",
         "rehydration": "RuntimeCognitiveBridge"
