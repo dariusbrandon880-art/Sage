@@ -66,6 +66,8 @@ class GeminiInteractionsAdapter:
         self.tools = tuple(tools)
 
     def invoke(self, envelope: SAGERuntimeEnvelope, task: str) -> ModelResponse:
+        from sage.runtime.model_gateway import SAGEProtocolGovernor
+
         request: dict[str, Any] = {
             "model": self.model_id,
             "input": _gemini_input(envelope, task),
@@ -76,15 +78,21 @@ class GeminiInteractionsAdapter:
         text = getattr(interaction, "output_text", None)
         if text is None:
             raise ValueError("Gemini interaction did not contain output_text")
-        evidence_refs = _extract_url_citations(interaction)
+
+        structured = SAGEProtocolGovernor.validate_and_parse(text, required_station=self.station)
+        if structured.violations:
+            raise ValueError(f"SAGE Protocol Governance Violation: {'; '.join(structured.violations)}")
+
+        evidence_refs = tuple(dict.fromkeys((*_extract_url_citations(interaction), *structured.evidence_refs)))
         return ModelResponse(
             model_id=self.model_id,
             instance_id=envelope.state.instance_id,
             mission_id=envelope.state.mission_id,
             session_id=envelope.state.session_id,
             input_state_digest=envelope.state_digest,
-            evidence_refs=tuple(evidence_refs),
+            evidence_refs=evidence_refs,
             raw_output=text,
+            structured_response=structured,
         )
 
 

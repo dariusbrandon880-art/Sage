@@ -5,6 +5,7 @@ from pathlib import Path
 
 from sage.agents.models import AgentIdentity, PermissionBoundary, AgentTask
 from sage.core.boundary import BoundaryEnforcer
+from sage.c2.immersion_state import ImmersionState
 
 
 class AgentExecutionContract:
@@ -103,3 +104,8 @@ class AgentExecutionContract:
                 f"Agent Contract Violation: Missing context credentials. SAGE tasks must specify "
                 f"either 'session_id' or 'objective_id' for operational continuity tracking."
             )
+
+        immersion = inputs.get("immersion_state")
+        if immersion is not None and isinstance(immersion, ImmersionState):
+            if not immersion.validate():
+                raise ValueError("Agent Contract Violation: Invalid canonical ImmersionState provided in task inputs.")
