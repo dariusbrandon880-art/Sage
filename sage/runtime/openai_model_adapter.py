@@ -1,6 +1,6 @@
 """SAGE-governed OpenAI model adapter.
 
-The adapter is deliberately downstream of ``SAGERuntime``.  It receives a
+The adapter is deliberately downstream of ``SAGERuntime``. It receives a
 canonical runtime envelope, calls the OpenAI Responses API, parses the model
 proposal through ``SAGEProtocolGovernor``, and returns a ``ModelResponse``.
 The model never becomes canonical authority and cannot bypass the runtime
@@ -13,11 +13,7 @@ from typing import Any
 
 from openai import OpenAI
 
-from sage.runtime.model_gateway import (
-    ModelResponse,
-    SAGEProtocolGovernor,
-    SAGERuntimeEnvelope,
-)
+from sage.runtime.model_gateway import ModelResponse, SAGEProtocolGovernor, SAGERuntimeEnvelope
 
 
 class OpenAIModelAdapter:
@@ -26,12 +22,7 @@ class OpenAIModelAdapter:
     model_id: str
     station: str = "[SAGE::C2::CHATGPT]"
 
-    def __init__(
-        self,
-        *,
-        client: Any | None = None,
-        model_id: str | None = None,
-    ) -> None:
+    def __init__(self, *, client: Any | None = None, model_id: str | None = None) -> None:
         self.model_id = model_id or os.getenv("SAGE_OPENAI_MODEL", "gpt-5.6-luna")
         self._client = client or OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
@@ -54,12 +45,9 @@ class OpenAIModelAdapter:
             input=task,
         )
         raw_output = response.output_text
-        structured = SAGEProtocolGovernor.validate_and_parse(raw_output)
+        structured = SAGEProtocolGovernor.validate_and_parse(raw_output, required_station=self.station)
         if structured.violations:
-            raise ValueError(
-                "SAGE model-output governance rejection: "
-                + " | ".join(structured.violations)
-            )
+            raise ValueError("SAGE model-output governance rejection: " + " | ".join(structured.violations))
 
         evidence_refs = tuple(structured.evidence_refs)
         proposed_actions = tuple(
@@ -77,6 +65,10 @@ class OpenAIModelAdapter:
             mission_id=envelope.state.mission_id,
             session_id=envelope.state.session_id,
             input_state_digest=envelope.state_digest,
+            station=envelope.station,
+            policy_version=envelope.policy_version,
+            policy_digest=envelope.policy_digest,
+            provenance_digest=envelope.provenance_digest,
             proposed_actions=proposed_actions,
             evidence_refs=evidence_refs,
             raw_output=raw_output,

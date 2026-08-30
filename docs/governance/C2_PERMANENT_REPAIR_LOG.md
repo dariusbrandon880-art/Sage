@@ -84,6 +84,32 @@ See `docs/governance/C2_HISTORICAL_REPAIR_AND_RUNTIME_GOVERNANCE.md` for the con
 
 **Search/research input:** External agent-governance research supported runtime-boundary enforcement, fail-closed mediation, and separation of model proposal from trusted runtime authority; external research remains non-canonical.
 
+## 2026-08-30 — Unified Agent Runtime Context Drift
+
+**Issue / PR:** Big Jump Wave `feat/c2-unified-agent-control-plane-wave`
+
+**Detection:** Live repo reconciliation showed the merged transition hardening was present, but the model-facing runtime still returned model responses without binding station identity, pinned policy context, or provenance digest. Gemini transport also lacked the same `SAGEProtocolGovernor` output validation already applied to OpenAI.
+
+**Root cause:** Governance had been strengthened at the capability transition boundary without fully propagating the same identity/context contract through every model adapter. This created a cross-agent and policy-context seam between transport and runtime reconciliation.
+
+**Affected boundary:** Model adapter → SAGE runtime envelope → protocol governor → response reconciliation; specifically Gemini and cross-station response paths.
+
+**Repair:** Added immutable `agent_identity`, `policy_digest`, and `provenance_digest` to `SAGERuntimeEnvelope`; bound those values to canonical state and station/model-role/policy context; added corresponding fields to `ModelResponse`; required governed adapters to declare a station; strengthened `SAGERuntime.reconcile()` with station, policy, policy-digest, provenance, and structured-response identity checks; and routed Gemini output through `SAGEProtocolGovernor` before returning a response.
+
+**Why this repair:** It strengthens the existing SAGE runtime control plane rather than creating a second authorization framework. Model outputs remain proposals/evidence only; the runtime owns identity and governance context.
+
+**Regression proof:** Expanded `tests/runtime/test_model_gateway.py` for station, policy-context, provenance, and state-drift rejection. Expanded `tests/runtime/test_model_adapters.py` for Gemini governance and forged cross-station output rejection. Full-suite execution remains a promotion gate until remote CI observes this branch.
+
+**Evidence:** Implementation commits on branch `feat/c2-unified-agent-control-plane-wave`: `fac0b548f183a73fe40d364a73d2b9f07f3e529e`, `07c4cdc59ba73f56af03ba267492f492eb37c33b`, `20b18bc6b07660c19d128a672748923887bd651f`, `31d2a888c2feca0dd08ec7c46f1c31704d2f5678`.
+
+**Verification:** Branch-level code has been reconciled through GitHub. Local/full test execution and exact-head CI remain required before promotion; no green result is claimed here.
+
+**Reusable invariant:** Every governed model response must carry and reconcile the exact station identity, canonical state digest, pinned policy context, and provenance context that were supplied to the adapter. A model cannot redefine any of them.
+
+**Follow-on risk:** Extend the same contract to every direct runtime/tool/CLI entry point and verify that legacy `ChatGPTClient` execution cannot bypass `render_governed_chatgpt_turn`.
+
+**Search/research input:** NIST's 2026 agent identity/authorization work emphasizes explicit identification, authorization, auditing, non-repudiation, and prompt-injection controls. Microsoft's current agent-governance work independently emphasizes session policy pinning, fail-closed evaluation, complete snapshots, and action-bound execution-time revalidation. These are external threat-model inputs, not SAGE canonical authority.
+
 ### Template
 
 ```text
