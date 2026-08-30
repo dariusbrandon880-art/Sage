@@ -5,11 +5,12 @@
 ## Read first
 
 1. `docs/SAGE-C2-PERSISTENT-OPERATING-CONTRACT.md`
-2. `docs/SAGE-STATE-INVENTION-LARGE-BUILD-HANDOFF.md`
-3. `docs/SAGE-INVENTOR-AGENT-IMMERSION-DOCTRINE.md`
-4. `docs/SAGE-LARGE-BUILD-ONE-SHOT-MILESTONE-PROTOCOL.md`
-5. canonical `main`
-6. validated Master Archive / continuity state when available
+2. `docs/governance/SAGE_UNIFIED_IMMERSION_OPERATING_ARCHITECTURE.md`
+3. `docs/SAGE-STATE-INVENTION-LARGE-BUILD-HANDOFF.md`
+4. `docs/SAGE-INVENTOR-AGENT-IMMERSION-DOCTRINE.md`
+5. `docs/SAGE-LARGE-BUILD-ONE-SHOT-MILESTONE-PROTOCOL.md`
+6. canonical `main`
+7. validated Master Archive / continuity state when available
 
 ## Permanent station identity
 
