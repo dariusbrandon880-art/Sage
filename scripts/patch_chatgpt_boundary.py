@@ -18,10 +18,10 @@ REPLACEMENT = '''        # 2. The model call MUST traverse the SAGE C2 boundary 
                 c2_context=c2_context,
                 response_override=request.response_override,
             )
-            response_text = bound.raw_output
+            response_text = bound.rendered_output
             reasoning = (
-                f"ChatGPT traversed SAGE C2 runtime boundary for prompt: "
-                f"'{request.prompt[:50]}...'"
+                f"real OpenAI Responses API / test seam traversed SAGE C2 runtime boundary "
+                f"for prompt: '{request.prompt[:50]}...'"
             )
             self.reasoning_history.append(reasoning)
         except Exception as e:
