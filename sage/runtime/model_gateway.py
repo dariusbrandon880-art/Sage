@@ -123,7 +123,7 @@ class SAGEStructuredResponse:
 class SAGEProtocolGovernor:
     """Enforces SAGE protocol compliance and anti-roleplay governance on model outputs."""
     ROLEPLAY_INDICATORS = ("as an ai", "in roleplay mode", "pretend that", "pretend you", "let's pretend", "imagine i am", "i will act as", "simulation mode", "virtual assistant persona", "character mode", "*nods*", "*smiles*", "*chuckles*")
-    AUTHORITY_CLAIM_INDICATORS = ("i hereby authorize", "i have updated canonical state", "update canonical state", "state mutated directly", "granting execution permissions", "bypassing preflight check", "overriding spek governance")
+    AUTHORITY_CLAIM_INDICATORS = ("i hereby authorize", "i authorize", "i have updated canonical state", "update canonical state", "state mutated directly", "granting execution permissions", "bypassing preflight check", "overriding spek governance")
     EVIDENCE_BYPASS_INDICATORS = ("ignore the evidence requirement", "ignore evidence requirement", "bypass evidence requirement", "without evidence requirement", "skip evidence validation")
     UNVERIFIED_REPOSITORY_INDICATORS = ("claim a github change happened", "commit pushed to origin", "pushed commit to github", "github change happened")
 
