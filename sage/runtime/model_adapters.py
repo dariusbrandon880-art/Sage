@@ -24,17 +24,24 @@ class OpenAIResponsesAdapter:
     def invoke(self, envelope: SAGERuntimeEnvelope, task: str) -> ModelResponse:
         from sage.runtime.model_gateway import SAGEProtocolGovernor
 
-        response = self.client.responses.create(
-            model=self.model_id,
-            instructions=_system_instructions(envelope),
-            input=task,
-        )
+        try:
+            response = self.client.responses.create(
+                model=self.model_id,
+                instructions=_system_instructions(envelope),
+                input=task,
+            )
+        except Exception as exc:
+            raise RuntimeError(f"OpenAI API execution failed: {exc}") from exc
+
         text = getattr(response, "output_text", None)
-        if text is None:
-            raise ValueError("OpenAI response did not contain output_text")
+        if text is None or not str(text).strip():
+            raise RuntimeError("OpenAI API execution failed: empty output")
+        text = str(text)
 
         structured = SAGEProtocolGovernor.validate_and_parse(text, required_station=self.station)
         if structured.violations:
+            if any("station identity mismatch" in violation.lower() for violation in structured.violations):
+                raise ValueError(f"SAGE Protocol Governance Violation: {'; '.join(structured.violations)}")
             raise RuntimeError(f"SAGE Protocol Governance Violation: {'; '.join(structured.violations)}")
 
         return ModelResponse(
@@ -80,11 +87,14 @@ class GeminiInteractionsAdapter:
             request["tools"] = [dict(tool) for tool in self.tools]
         interaction = self.client.interactions.create(**request)
         text = getattr(interaction, "output_text", None)
-        if text is None:
-            raise ValueError("Gemini interaction did not contain output_text")
+        if text is None or not str(text).strip():
+            raise RuntimeError("Gemini API execution failed: empty output")
+        text = str(text)
 
         structured = SAGEProtocolGovernor.validate_and_parse(text, required_station=self.station)
         if structured.violations:
+            if any("station identity mismatch" in violation.lower() for violation in structured.violations):
+                raise ValueError(f"SAGE Protocol Governance Violation: {'; '.join(structured.violations)}")
             raise RuntimeError(f"SAGE Protocol Governance Violation: {'; '.join(structured.violations)}")
 
         evidence_refs = _extract_url_citations(interaction)
