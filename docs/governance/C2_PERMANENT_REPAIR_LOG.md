@@ -56,7 +56,31 @@ A repair is not considered historically complete until the learning is logged al
 
 See `docs/governance/C2_HISTORICAL_REPAIR_AND_RUNTIME_GOVERNANCE.md` for the consolidated historical failure → repair patterns.
 
-## Repair entries
+## 2026-08-30 — Unified Agent Control Plane Boundary
+
+**Issue / PR:** Big Jump Wave from substrate `6e80b642c24782f3421ceee017aa19eb05f559b9`.
+
+**Detection:** Repository recon found provider asymmetry: OpenAI output passed through `SAGEProtocolGovernor`, while Gemini returned model output after citation extraction. Agent task input validation also accepted operational context without requiring canonical, verified immersion state.
+
+**Root cause:** Governance existed at individual adapter seams instead of being uniformly enforced at the shared model/runtime and agent-task boundaries.
+
+**Affected boundary:** Agent identity → runtime envelope → model adapter → protocol governor → agent task contract → state transition boundary.
+
+**Repair:** Routed Gemini output through the same `SAGEProtocolGovernor`; bound accepted `ModelResponse` values to station, policy version/digest, and provenance digest; strengthened `AgentExecutionContract` with canonical `ImmersionState`, verified trust, provenance, agent identity, objective identity, and permission-boundary identity checks.
+
+**Why this repair:** Agent role remains contextual policy input, never authority. Every provider uses the same runtime/governor path and state-changing execution remains downstream of explicit authorization controls.
+
+**Regression proof:** Added shared adapter governance tests covering Gemini station spoofing and model authority claims, plus task-contract adversarial tests for forged/unverified state, missing provenance, agent identity mismatch, and cross-bound permission boundaries. Local results are recorded only when actually executed; repository commits do not substitute for execution evidence.
+
+**Evidence:** Unified repair branch begins at exact substrate `6e80b642c24782f3421ceee017aa19eb05f559b9`; implementation sequence currently reaches `77b656041007352a29b50a554d9c263079d1174f`.
+
+**Verification:** Remote exact-head CI is not yet green for this branch. Promotion remains HOLD until focused tests, full platform tests, pre-commit, exact-head CI, and SHA reconciliation are completed.
+
+**Reusable invariant:** Every governed agent enters the same canonical control plane; agent identity selects role and policy context, never an alternate authority path.
+
+**Follow-on risk:** Direct CLI/tool/runtime entry points, authorization artifact provenance, concurrent authorization consumption, and alternate promotion/evolution routes require dedicated adversarial coverage.
+
+**Search/research input:** External governance research may inform threat models, but repository truth and validated tests remain canonical.
 
 ## 2026-08-30 — Legacy ChatGPT Boundary Compatibility Seam
 
