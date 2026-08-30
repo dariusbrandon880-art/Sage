@@ -26,7 +26,11 @@ def test_build_jump_wave_execution_full(build_jump_engine):
 
     assert pkg.wave_id == "test-wave-unit"
     assert pkg.total_flights == 5
-    assert pkg.successful_flights == 5
+    assert pkg.successful_flights == 5, [
+        {"flight_id": summary.flight_id, "blocker": summary.blocker}
+        for summary in pkg.flight_summaries
+        if summary.blocker
+    ]
     assert pkg.blocked_flights == 0
     assert pkg.reconvergence_verdict == "PASS"
     assert pkg.first_pass_verification_rate == 100.0
