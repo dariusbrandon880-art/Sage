@@ -3,6 +3,8 @@
 **Contract ID:** `CHATGPT_C2_EXACT_ORDER_ANTI_DRIFT`  
 **Version:** `1.5`
 
+Contract ID: `CHATGPT_C2_EXACT_ORDER_ANTI_DRIFT`
+
 ## Purpose
 
 This is the canonical behavioral contract for ChatGPT when it operates through a SAGE-owned C2 integration boundary. It is a runtime constraint, not conversational guidance.
