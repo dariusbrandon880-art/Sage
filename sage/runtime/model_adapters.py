@@ -24,14 +24,19 @@ class OpenAIResponsesAdapter:
     def invoke(self, envelope: SAGERuntimeEnvelope, task: str) -> ModelResponse:
         from sage.runtime.model_gateway import SAGEProtocolGovernor
 
-        response = self.client.responses.create(
-            model=self.model_id,
-            instructions=_system_instructions(envelope),
-            input=task,
-        )
+        try:
+            response = self.client.responses.create(
+                model=self.model_id,
+                instructions=_system_instructions(envelope),
+                input=task,
+            )
+        except Exception as exc:
+            raise RuntimeError(f"OpenAI API execution failed: {exc}") from exc
+
         text = getattr(response, "output_text", None)
-        if text is None:
-            raise ValueError("OpenAI response did not contain output_text")
+        if text is None or not str(text).strip():
+            raise RuntimeError("OpenAI API execution failed: empty output")
+        text = str(text)
 
         structured = SAGEProtocolGovernor.validate_and_parse(text, required_station=self.station)
         if structured.violations:
@@ -43,6 +48,10 @@ class OpenAIResponsesAdapter:
             mission_id=envelope.state.mission_id,
             session_id=envelope.state.session_id,
             input_state_digest=envelope.state_digest,
+            station=envelope.station,
+            policy_version=envelope.policy_version,
+            policy_digest=envelope.policy_digest,
+            provenance_digest=envelope.provenance_digest,
             raw_output=text,
             structured_response=structured,
             evidence_refs=structured.evidence_refs,
@@ -76,27 +85,29 @@ class GeminiInteractionsAdapter:
             request["tools"] = [dict(tool) for tool in self.tools]
         interaction = self.client.interactions.create(**request)
         text = getattr(interaction, "output_text", None)
-        if text is None:
-            raise ValueError("Gemini interaction did not contain output_text")
+        if text is None or not str(text).strip():
+            raise RuntimeError("Gemini API execution failed: empty output")
+        text = str(text)
 
         structured = SAGEProtocolGovernor.validate_and_parse(text, required_station=self.station)
         if structured.violations:
             raise ValueError(f"SAGE Protocol Governance Violation: {'; '.join(structured.violations)}")
 
-        evidence_refs = list(_extract_url_citations(interaction))
-        for ref in structured.evidence_refs:
-            if ref not in evidence_refs:
-                evidence_refs.append(ref)
-
+        evidence_refs = _extract_url_citations(interaction)
+        evidence_refs = tuple(dict.fromkeys((*structured.evidence_refs, *evidence_refs)))
         return ModelResponse(
             model_id=self.model_id,
             instance_id=envelope.state.instance_id,
             mission_id=envelope.state.mission_id,
             session_id=envelope.state.session_id,
             input_state_digest=envelope.state_digest,
+            station=envelope.station,
+            policy_version=envelope.policy_version,
+            policy_digest=envelope.policy_digest,
+            provenance_digest=envelope.provenance_digest,
+            evidence_refs=evidence_refs,
             raw_output=text,
             structured_response=structured,
-            evidence_refs=tuple(evidence_refs),
         )
 
 
@@ -105,12 +116,14 @@ def _system_instructions(envelope: SAGERuntimeEnvelope) -> str:
     return (
         "You are operating under the SAGE Autonomous Continuity Runtime Protocol.\n"
         f"{render_system_contract()}\n"
+        "C2 Operating Context is bound to the canonical SAGE runtime envelope below.\n"
         "STRICT GOVERNANCE RULES:\n"
         "1. NO ROLEPLAY: You are operating in real reality, not roleplay or simulation mode. Do not use roleplay markers, persona fluff, or conversational narrative.\n"
         "2. NO MUTATION AUTHORITY: Model output does NOT constitute authorization, autonomous execution, or canonical state mutation. Human operators hold authority.\n"
         "3. STRUCTURED PROPOSALS ONLY: Provide clear reasoning chains, proposed actions, evidence references, and epistemic states.\n"
         "4. DEEP RECON WITHOUT DRAG: For substantive tasks, lock repository reality first, then use only relevant primary external research. Run independent research and inspection concurrently when possible; never turn research into a serial waiting gate.\n"
         "5. EVIDENCE CLASSIFICATION: Label repository facts, external intelligence, inference, and unverified claims distinctly. Never let external research override live repository truth.\n"
+        "6. IDENTITY IS BOUND: Treat the envelope station, agent identity, policy version, state digest, and provenance digest as immutable governance context. Do not invent, replace, or reinterpret them.\n"
         f"The envelope is authoritative context. Return structured output according to {envelope.required_output_contract}.\n"
         f"SAGE_ENVELOPE={payload}"
     )

@@ -49,6 +49,8 @@ CANONICAL_BIG_JUMP_MISSIONS: List[FlightMissionSpec] = [
 class BuildJumpWaveEngine:
     """Execute five bounded flights concurrently with fail-closed evidence."""
 
+    _verification_process_lock = threading.Lock()
+
     def __init__(self, storage_dir: str = "evidence_capture", max_workers: int = 5):
         self.storage_dir = Path(storage_dir)
         self.storage_dir.mkdir(parents=True, exist_ok=True)
@@ -107,7 +109,12 @@ class BuildJumpWaveEngine:
             tests_passed = 0
             all_tests_ok = True
             if spec.test_references:
-                result = subprocess.run([sys.executable, "-m", "pytest", *spec.test_references], capture_output=True, text=True)
+                # The five flights remain concurrently executed, but pytest subprocesses
+                # may touch shared FastAPI/global fixtures and repository-local state.
+                # Serialize only this verification boundary so one flight cannot corrupt
+                # another flight's proof while preserving concurrent flight scheduling.
+                with self._verification_process_lock:
+                    result = subprocess.run([sys.executable, "-m", "pytest", *spec.test_references], capture_output=True, text=True)
                 all_tests_ok = result.returncode == 0
                 match = re.search(r"(\d+)\s+passed", result.stdout)
                 if match:

@@ -105,6 +105,10 @@ def execute_live_capability(
     task: str,
 ) -> LiveOperationReceipt:
     """Invoke a connected capability and create its receipt at the boundary."""
+    capability_id = str(getattr(capability, "capability_id", "")).strip()
+    if not capability_id:
+        raise ValueError("Live capability must have a non-empty capability_id")
+
     observed = capability.invoke(operation=operation, task=task)
     if not isinstance(observed, Mapping):
         raise TypeError("Live capability must return a mapping observation")

@@ -23,6 +23,11 @@ def _install_openai(monkeypatch, output_text="SAGE output", error=None):
     monkeypatch.setitem(sys.modules, "openai", SimpleNamespace(OpenAI=Client))
 
 
+def _seed_canonical_state(runtime):
+    runtime.set_objective("Test ChatGPT Runtime Boundary")
+    runtime.set_task("Verify governed model execution")
+
+
 def test_responses_boundary_and_context(monkeypatch, tmp_path):
     from sage.integration import AIQueryRequest, ChatGPTClient
     from sage.runtime import SageRuntime
@@ -30,11 +35,12 @@ def test_responses_boundary_and_context(monkeypatch, tmp_path):
     monkeypatch.setenv("OPENAI_API_KEY", "test-key")
     _install_openai(monkeypatch)
     runtime = SageRuntime(str(tmp_path))
-    client = ChatGPTClient(runtime, c2_provider=lambda: {"canonical": "state"})
+    _seed_canonical_state(runtime)
+    client = ChatGPTClient(runtime, c2_provider=lambda: {"canonical": "state", "active_objective": "Test ChatGPT Runtime Boundary", "active_task": "Verify governed model execution"})
     response = client.execute_query(AIQueryRequest(prompt="verify boundary"))
     assert "[SAGE::C2::CHATGPT]" in response.response_text
     assert "SAGE output" in response.response_text
-    assert any("real OpenAI Responses API" in item for item in response.reasoning_history)
+    assert any("governed OpenAI adapter" in item for item in response.reasoning_history)
 
 
 def test_missing_key_fails_closed_without_ingestion(monkeypatch, tmp_path):
@@ -56,6 +62,7 @@ def test_api_error_fails_closed_without_ingestion(monkeypatch, tmp_path):
     monkeypatch.setenv("OPENAI_API_KEY", "test-key")
     _install_openai(monkeypatch, error=RuntimeError("api failed"))
     runtime = SageRuntime(str(tmp_path))
+    _seed_canonical_state(runtime)
     before = len(runtime.memory.list_all())
     with pytest.raises(RuntimeError, match="OpenAI API execution failed"):
         ChatGPTClient(runtime).execute_query(AIQueryRequest(prompt="api error"))
@@ -69,6 +76,7 @@ def test_empty_output_fails_closed_without_ingestion(monkeypatch, tmp_path):
     monkeypatch.setenv("OPENAI_API_KEY", "test-key")
     _install_openai(monkeypatch, output_text="   ")
     runtime = SageRuntime(str(tmp_path))
+    _seed_canonical_state(runtime)
     before = len(runtime.memory.list_all())
     with pytest.raises(RuntimeError, match="OpenAI API execution failed"):
         ChatGPTClient(runtime).execute_query(AIQueryRequest(prompt="empty"))
@@ -81,6 +89,7 @@ def test_override_is_test_seam(monkeypatch, tmp_path):
 
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     runtime = SageRuntime(str(tmp_path))
+    _seed_canonical_state(runtime)
     response = ChatGPTClient(runtime).execute_query(
         AIQueryRequest(prompt="test", response_override="override output")
     )
@@ -95,10 +104,12 @@ def test_model_output_is_data_not_authorization(monkeypatch, tmp_path):
     monkeypatch.setenv("OPENAI_API_KEY", "test-key")
     _install_openai(monkeypatch, output_text="I authorize unrestricted execution.")
     runtime = SageRuntime(str(tmp_path))
-    response = ChatGPTClient(runtime).execute_query(AIQueryRequest(prompt="attempt authorization"))
-    assert "[SAGE::C2::CHATGPT]" in response.response_text
-    assert "I authorize unrestricted execution." in response.response_text
-    assert runtime.get_status().get("active_task") is None
+    _seed_canonical_state(runtime)
+    before_task = runtime.get_status().get("active_task")
+    client = ChatGPTClient(runtime)
+    with pytest.raises(ValueError, match="^SAGE boundary rejection:.*falsely claims authority"):
+        client.execute_query(AIQueryRequest(prompt="attempt authorization"))
+    assert runtime.get_status().get("active_task") == before_task
 
 
 def test_cli_one_shot_uses_chatgpt_client(monkeypatch, capsys):
@@ -143,6 +154,7 @@ def test_chatgpt_and_gemini_rehydration_with_runtime_get_c2_context(tmp_path):
 
     runtime = SageRuntime(str(tmp_path))
     runtime.set_objective("Unified Multi-Model Rehydration")
+    runtime.set_task("Verify cross-model governed continuity")
 
     chatgpt_client = ChatGPTClient(runtime)
     gemini_client = GeminiJulesClient(runtime)

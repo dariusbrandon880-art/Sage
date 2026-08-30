@@ -16,7 +16,7 @@ The wave is not complete because an implementation exists. It is complete only w
 
 ## Marine-style execution discipline
 
-Use the five-flight structure as a bounded operating pattern, not as theater:
+Use the five-flight structure as a bounded operating pattern, not as theater. “Marine-style” means decisive execution against the actual failure surface, disciplined sequencing, explicit objectives, independent verification, and no premature victory declaration.
 
 - **F1 — Recon / Architecture Guard:** establish exact repository truth, ownership, dependencies, prior failures, and blast radius.
 - **F2 — Intelligence / Falsification:** use Super Search and external sources to challenge assumptions and locate stronger patterns or known failure modes.
@@ -26,15 +26,44 @@ Use the five-flight structure as a bounded operating pattern, not as theater:
 
 Flights may run in parallel only when their ownership boundaries do not collide. Shared canonical files and state transitions require explicit sequencing.
 
+## Repair-as-learning doctrine
+
+A consequential repair is itself a reusable capability. SAGE must learn the **repair method**, not only retain the repaired code.
+
+For every consequential failure, C2 must extract and persist:
+
+`FAILURE → SIGNAL → ROOT CAUSE → ATTACK VECTOR → DECISIVE REPAIR → PROOF QUALITY → REGRESSION → EVIDENCE → INVARIANT → REUSABLE REPAIR PATTERN → NEXT ATTACK`
+
+The reusable pattern must describe **how the system should reason and act the next time the failure class appears**. Examples include:
+
+- inspect live repository truth before trusting a completion report;
+- consult prior repair history before designing a new fix;
+- attack the proof itself for vacuous or non-binding assertions;
+- repair the canonical enforcement boundary instead of patching a downstream symptom;
+- verify precondition → attempted violation → rejection → unchanged postcondition;
+- reconcile implementation, evidence, and exact SHA before promotion;
+- preserve the failure as negative evidence when the attack is rejected;
+- convert every newly discovered seam into the next bounded attack surface.
+
+A future C2 session should be able to reuse these patterns without reconstructing them from chat history.
+
+### Autonomous repair-learning loop
+
+When a consequential repair completes, the runtime/process should treat the resulting record as candidate repair intelligence and route it through the existing validation/archive pathway. It must not silently rewrite canonical state or authorize itself. Learning is durable only after evidence and validation requirements are satisfied.
+
+`OBSERVE → RETRIEVE PRIOR REPAIRS → FORM REPAIR HYPOTHESIS → ATTACK → REPAIR → VERIFY → EXTRACT PATTERN → VALIDATE LEARNING → ARCHIVE → REUSE`
+
+This is a pathway guide: existing canonical ledgers, evidence stores, validators, and archives remain authoritative.
+
 ## Runtime governance lessons incorporated
 
 External research is used as falsification input, not authority. Recent runtime-governance work reinforces several controls already aligned with SAGE:
 
-1. **Model proposes; trusted runtime decides.** Prompt instructions are not an execution boundary. See current runtime-governance research on action-boundary control and policies-on-paths.
-2. **Authorization must be bound to current state.** A previously valid authorization can become stale before an effect occurs; dispatch-time revalidation is therefore a critical control. See current research on stateful governance and state-aware long-horizon agents.
-3. **Evidence must prove authority and outcome, not merely log activity.** Authority receipts, provenance, policy context, and observable outcomes make a governance decision reconstructable. See current work on authority receipts and auditable autonomy.
-4. **Single enforcement points are risky.** Independent or layered checks are needed because configured controls can silently fail. See current 2026 agent-governance field surveys.
-5. **Graduated autonomy is preferable to binary trust.** Expanded authority should be earned through sustained verified reliability and contractually bounded state, with degradation when reliability falls. See current AWS guidance on graduated autonomy.
+1. **Model proposes; trusted runtime decides.** Prompt instructions are not an execution boundary.
+2. **Authorization must be bound to current state.** A previously valid authorization can become stale before an effect occurs; dispatch-time revalidation is therefore a critical control.
+3. **Evidence must prove authority and outcome, not merely log activity.** Authority receipts, provenance, policy context, and observable outcomes make a governance decision reconstructable.
+4. **Single enforcement points are risky.** Independent or layered checks are needed because configured controls can silently fail.
+5. **Graduated autonomy is preferable to binary trust.** Expanded authority should be earned through sustained verified reliability and bounded state, with degradation when reliability falls.
 
 These findings do not authorize importing another framework. They strengthen the SAGE requirement to make existing governance boundaries enforceable, state-aware, provenance-bound, and observable.
 
@@ -80,6 +109,10 @@ Critical invariants should have more than one detection/protection point where p
 
 Rehydration must reconstruct from durable canonical state and evidence, not from chat history or model memory. Recovery must preserve provenance and reject contradictory state.
 
+### 11. Repair-learning integrity
+
+Repair intelligence is derived from verified failures and repairs. It cannot be promoted from narrative claims, a green test without proof-quality review, or model-generated self-attestation.
+
 ## Required adversarial matrix
 
 Every consequential hardening wave should attempt at least:
@@ -100,7 +133,9 @@ Every consequential hardening wave should attempt at least:
 - duplicate execution / idempotency failure;
 - conflicting concurrent state;
 - recovery from persisted state;
-- bypass through an alternate adapter or integration path.
+- bypass through an alternate adapter or integration path;
+- vacuous security assertions that can pass without establishing the protected precondition or postcondition;
+- repair-learning records that claim a lesson without linking failure, repair, regression, and evidence.
 
 The matrix is a minimum. A wave must add domain-specific attacks discovered during recon.
 
@@ -124,6 +159,7 @@ A Big Jump Wave is **HOLD** unless all applicable gates are satisfied:
 - full platform verification passes;
 - exact head SHA reconciled;
 - evidence is durable and traceable;
+- repair learning is recorded with proof-quality evidence;
 - remaining limitations are explicit;
 - no new authority duplication was introduced.
 
@@ -131,4 +167,4 @@ A Big Jump Wave is **HOLD** unless all applicable gates are satisfied:
 
 The system should become harder to break in the same way twice.
 
-> **Every wave must leave SAGE more capable, more governable, more observable, and harder to regress than the wave before it.**
+> **Every wave must leave SAGE more capable, more governable, more observable, and harder to regress than the wave before it—and every consequential repair must improve the system's future ability to perform the next repair.**
