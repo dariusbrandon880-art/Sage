@@ -1,8 +1,7 @@
 """Canonical SAGE immersion rehydration for model-facing interfaces.
 
-The interface must never invent mission state. When no mission/task is active,
-the canonical runtime projects an explicit standby state rather than falling
-back to a synthetic flight or conversation-local state.
+The interface must never invent mission state. Missing canonical mission/task
+is a fail-closed condition rather than a synthetic standby substitution.
 """
 
 from __future__ import annotations
@@ -24,12 +23,7 @@ def build_chatgpt_immersion_state(
     c2_context: dict[str, Any] | None = None,
     evidence_refs: tuple[str, ...] = (),
 ) -> ImmersionState:
-    """Rehydrate a read-only immersion state from canonical runtime state.
-
-    Missing mission/task is represented as canonical standby state. No model
-    output, prompt text, or legacy hard-coded flight is allowed to fill the
-    gap.
-    """
+    """Rehydrate a read-only immersion state from canonical runtime state."""
     if not session_id or not session_id.strip():
         raise ValueError("SAGE immersion rehydration requires a session_id")
 
@@ -40,9 +34,12 @@ def build_chatgpt_immersion_state(
     context = dict(c2_context or {})
     raw_mission = context.get("active_objective") or getattr(current_state, "current_objective", None)
     raw_task = context.get("active_task") or getattr(current_state, "active_task", None)
-    has_active_mission = bool(raw_mission and str(raw_mission).strip() and raw_task and str(raw_task).strip())
-    mission = str(raw_mission).strip() if raw_mission and str(raw_mission).strip() else "SAGE Runtime Standby"
-    task = str(raw_task).strip() if raw_task and str(raw_task).strip() else "Awaiting canonical mission assignment"
+    if not raw_mission or not str(raw_mission).strip():
+        raise ValueError("SAGE immersion rehydration requires canonical active objective")
+    if not raw_task or not str(raw_task).strip():
+        raise ValueError("SAGE immersion rehydration requires canonical active task")
+    mission = str(raw_mission).strip()
+    task = str(raw_task).strip()
 
     status = {}
     if hasattr(runtime, "get_status") and callable(runtime.get_status):
@@ -66,7 +63,6 @@ def build_chatgpt_immersion_state(
 
     frontier = context.get("active_frontier") or context.get("frontier") or "c2-runtime-boundary"
     gate = context.get("gate") or "GOVERNED_EXECUTION"
-    flight_status = FlightStatus.ACTIVE if has_active_mission else FlightStatus.STANDBY
     trust_status = TrustStatus.VERIFIED if c2_status.get("rehydrated", True) else TrustStatus.HOLD
 
     state = ImmersionState(
@@ -74,7 +70,7 @@ def build_chatgpt_immersion_state(
         mission=mission,
         phase=ExecutionPhase.EXECUTE,
         flight_id=f"C2:{session_id}",
-        flight_status=flight_status,
+        flight_status=FlightStatus.ACTIVE,
         trust_status=trust_status,
         frontier=str(frontier),
         gate=str(gate),
