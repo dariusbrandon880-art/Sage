@@ -14,6 +14,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
+from sage.c2.experiment_ledger import ExperimentLedger
 from sage.c2.flight_collision_lock import FlightCollisionLockManager, FlightLockRequest
 from sage.c2.flight_gps.engine import FlightGPS
 from sage.c2.flight_gps.models import FlightLifecycle, FlightManifest, OwnershipFingerprint
@@ -49,12 +50,20 @@ CANONICAL_BIG_JUMP_MISSIONS: List[FlightMissionSpec] = [
 class BuildJumpWaveEngine:
     """Execute five bounded flights concurrently with fail-closed evidence."""
 
-    def __init__(self, storage_dir: str = "evidence_capture", max_workers: int = 5):
+    def __init__(
+        self,
+        storage_dir: str = "evidence_capture",
+        max_workers: int = 5,
+        experiment_ledger: Optional[ExperimentLedger] = None,
+    ):
         self.storage_dir = Path(storage_dir)
         self.storage_dir.mkdir(parents=True, exist_ok=True)
         self.admission_engine = FrontierAdmissionEngine()
         self.lock_manager = FlightCollisionLockManager()
         self.max_workers = max(1, min(max_workers, 5))
+        self.experiment_ledger = experiment_ledger or ExperimentLedger(
+            ledger_path=str(self.storage_dir / "experiment_ledger.json")
+        )
         self._lock_manager_guard = threading.Lock()
 
     def get_current_head_sha(self) -> str:
@@ -120,6 +129,23 @@ class BuildJumpWaveEngine:
             flight_passed = admission.admitted and lock_res.acquired and all_tests_ok
             flight_proof = {"wave_id": wave_id, "flight_id": spec.flight_id, "frontier_name": spec.frontier_name, "target_path": spec.target_path, "executed_head": head_sha, "status": "PASS" if flight_passed else "FAIL", "timestamp": time.time()}
             evidence_file.write_text(json.dumps(flight_proof, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+            # Record flight receipt into ExperimentLedger concurrently/non-intrusively
+            if self.experiment_ledger:
+                try:
+                    self.experiment_ledger.record_flight_receipt(
+                        wave_id=wave_id,
+                        flight_id=spec.flight_id,
+                        commit_sha=head_sha,
+                        receipt_data={
+                            "evidence_ref": str(evidence_file),
+                            "target_path": spec.target_path,
+                            "status": "PASS" if flight_passed else "FAIL",
+                        },
+                    )
+                except Exception:
+                    pass
+
             m4 = LifecycleMilestoneRecord(stage=LifecycleStage.WAREHOUSE_PROMOTE, passed=all_tests_ok, evidence_ref=str(evidence_file))
             return FlightExecutionSummary(flight_id=spec.flight_id, target=spec.target_path, classification="ACTIVE", execution_result="PASS" if flight_passed else "FAIL", exact_head=head_sha, tests_passed=tests_passed, evidence_ref=str(evidence_file), pr_or_change=spec.pr_or_change, lifecycle_milestones=[m1, m2, m3, m4])
         finally:
