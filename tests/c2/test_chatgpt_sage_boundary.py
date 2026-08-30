@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 import pytest
 
@@ -77,23 +78,22 @@ def test_missing_station_fails_before_render(states):
         )
 
 
-def test_invalid_immersion_state_blocks_model_output(states):
-    runtime_state, immersion_state = states
-    invalid = ImmersionState(
-        station_identity="[SAGE::C2::CHATGPT]",
-        mission="GPT-SAGE Boundary",
-        phase=ExecutionPhase.EXECUTE,
-        flight_id="F1",
-        flight_status=FlightStatus.ACTIVE,
-        trust_status=TrustStatus.UNVERIFIED,
-        frontier="GPT-SAGE BOUNDARY",
-        gate="response contract",
-        next_move="verify",
-    )
-    result = execute_sage_bound_chatgpt(
-        runtime_state=runtime_state,
-        immersion_state=invalid,
-        task="valid state fixture",
-        response_override=structured_output(),
-    )
-    assert result.rendered_output
+def test_invalid_immersion_state_cannot_be_constructed():
+    with pytest.raises(ValueError, match="mission cannot be empty"):
+        ImmersionState(
+            station_identity="[SAGE::C2::CHATGPT]",
+            mission="",
+            phase=ExecutionPhase.EXECUTE,
+            flight_id="F1",
+            flight_status=FlightStatus.ACTIVE,
+            trust_status=TrustStatus.UNVERIFIED,
+            frontier="GPT-SAGE BOUNDARY",
+            gate="response contract",
+            next_move="verify",
+        )
+
+
+def test_legacy_chatgpt_integration_contains_no_provider_call():
+    source = Path("sage/integration.py").read_text()
+    assert "openai.OpenAI" not in source
+    assert "execute_sage_bound_chatgpt_from_legacy_runtime" in source
