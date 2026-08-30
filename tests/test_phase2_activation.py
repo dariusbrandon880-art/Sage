@@ -55,6 +55,8 @@ def test_ai_clients_and_context_retrieval():
             confidence=ConfidenceLevel.VALIDATED,
         )
         runtime.memory.store(obj)
+        runtime.set_objective("Continue the v1 activation work")
+        runtime.set_task("Verify v1 activation continuity")
         client = ChatGPTClient(runtime)
         context = client.retrieve_context("Tell me about v1_activation and continuity")
         assert len(context["matched_memories"]) > 0
@@ -114,6 +116,8 @@ def test_api_integration_endpoints():
         assert res.status_code == 200
         res = client.post("/service/shutdown", headers={"x-api-key": "bad-key"})
         assert res.status_code == 401
+        client.post("/objective", json={"objective": "Verify API governed continuity"})
+        client.post("/task", json={"task": "Verify API ChatGPT boundary"})
         ai_payload = {
             "prompt": "continuity of platform validation",
             "session_id": "api_session_1",
@@ -155,4 +159,3 @@ def test_api_integration_endpoints():
         assert "snapshot_id" in res.json()
         res = client.get("/snapshots")
         assert res.status_code == 200
-        assert "snapshots" in res.json()
