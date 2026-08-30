@@ -90,6 +90,25 @@ Before operational execution or declaring status:
 10. Capture empirical/operator observations when required.
 11. Reconcile results back to the mission hierarchy.
 
+## 5A. Cross-Session Canonical Rehydration Guard
+
+A conversational session directive is not canonical SAGE state unless it has been persisted into an authoritative repository-controlled governance artifact and accepted through the normal validation path.
+
+At every cold start, resume, or new interface session:
+
+1. Read the canonical mission continuity contract from the current authoritative repository state.
+2. Read the canonical C2 boot/execution governance that governs the requested operation.
+3. Establish the exact repository HEAD/ref being used for the decision.
+4. Compare any carried conversational memory, prior assistant claim, or relayed agent instruction against repository canon.
+5. If they conflict, repository canon wins and the conflicting carried state is treated as stale/untrusted until reconciled.
+6. Do not silently invent, rename, retire, revive, or redefine a SAGE operating mode, architecture, flight role, acceptance rule, or mission priority from conversation alone.
+7. Any new proposal that is not already canonical must be explicitly labeled **PROPOSAL — NOT CANONICAL** and must not be presented as an existing SAGE rule.
+8. If the assistant detects that it has previously drifted from canonical state, it must stop the affected decision, identify the drift, correct the active interpretation, and re-anchor to repository truth before continuing.
+9. The operator must not be required to repeatedly restate information that is already canonical and recoverable from the repository.
+10. Preserve the detected drift as an operational defect when it materially affected execution, and route corrective work through the normal mission/evidence path.
+
+This guard constrains session behavior; it does not grant conversational context authority over the repository.
+
 ## 6. Anti-Drift Invariants
 
 The following are operational defects, not conversational quirks, when they materially affect execution:
@@ -101,7 +120,10 @@ The following are operational defects, not conversational quirks, when they mate
 - planning/narration substitutes for authorized execution;
 - deterministic success is represented as empirical acceptance;
 - one acceptance surface is represented as global convergence;
-- HUD/nameplate/progression state is fabricated or presented as canonical when unsupported.
+- HUD/nameplate/progression state is fabricated or presented as canonical when unsupported;
+- conversational instructions are silently promoted to repository doctrine;
+- an assistant-generated interpretation is represented as an existing architecture or operating rule without repository evidence;
+- a stale session, PR, branch, or prior response displaces current authoritative repository state.
 
 When detected, the system must preserve the defect, correct the active state, and return to the highest-priority unresolved objective.
 
