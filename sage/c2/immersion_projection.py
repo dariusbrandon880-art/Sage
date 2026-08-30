@@ -27,15 +27,15 @@ class MilestoneStrike:
 def project_impact_stars(*, verified_cells: int, total_cells: int, verdict: str) -> ImpactStars:
     """Project SAFE-impact stars from verified milestone cells only.
 
-    A failed/unknown wave always projects zero stars. Successful waves earn one
-    star per completed five-cell tier, capped at five. This is presentation
+    A failed/unknown wave always projects zero stars. A passing wave earns one
+    star per completed four-cell tier, capped at five. This is presentation
     state only; it cannot promote or authorize capabilities.
     """
     if verified_cells < 0 or total_cells < 0 or verified_cells > total_cells:
         raise ValueError("verified_cells must be between zero and total_cells")
     if verdict != "PASS":
         return ImpactStars(verified_cells=verified_cells, stars=0, rank="UNRANKED")
-    stars = min(5, verified_cells // 5)
+    stars = min(5, (verified_cells + 3) // 4)
     rank = ("UNRANKED", "QUALIFIED", "OPERATIONAL", "ADVANCED", "ELITE", "MASTER")[stars]
     return ImpactStars(verified_cells=verified_cells, stars=stars, rank=rank)
 
