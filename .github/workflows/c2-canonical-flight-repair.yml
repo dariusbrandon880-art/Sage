@@ -1,0 +1,156 @@
+name: C2 Canonical Flight Identity Repair
+
+on:
+  push:
+    branches:
+      - feat/c2-continuous-exchange-immersion-lock
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    if: github.actor == 'dariusbrandon880-art'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply canonical C2 flight binding
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('sage/integration.py')
+          text = p.read_text()
+          old = '''        from sage.c2.chatgpt_immersion import project_chatgpt_immersion_response\n        from sage.c2.immersion_state import ExecutionPhase, FlightStatus, ImmersionState, TrustStatus\n'''
+          new = '''        from sage.c2.chatgpt_immersion import project_chatgpt_immersion_response\n        from sage.c2.immersion_rehydration import build_chatgpt_immersion_state\n'''
+          if old not in text:
+              raise SystemExit('expected ChatGPT immersion import block not found')
+          text = text.replace(old, new, 1)
+          old_state = '''        imm_state = ImmersionState(\n            station_identity="[SAGE::C2::CHATGPT]",\n            mission=active_obj,\n            phase=ExecutionPhase.EXECUTE,\n            flight_id="FLIGHT_001",\n            flight_status=FlightStatus.ACTIVE,\n            trust_status=TrustStatus.VERIFIED if referenced_ids else TrustStatus.HOLD,\n            frontier="gpt-c2-boundary",\n            gate="GOVERNED_EXECUTION",\n            next_move=active_tsk,\n            evidence_refs=tuple(referenced_ids),\n        )\n'''
+          new_state = '''        # Canonical C2 immersion is rehydrated from runtime-owned state.\n        # The interface boundary never manufactures a flight identifier.\n        imm_state = build_chatgpt_immersion_state(\n            self.runtime,\n            session_id=session_id,\n            c2_context={\n                **c2_context,\n                "active_objective": active_obj,\n                "active_task": active_tsk,\n            },\n            evidence_refs=tuple(referenced_ids),\n        )\n'''
+          if old_state not in text:
+              raise SystemExit('expected synthetic ImmersionState block not found')
+          text = text.replace(old_state, new_state, 1)
+          p.write_text(text)
+          PY
+
+          mkdir -p sage/c2
+          cat > sage/c2/immersion_rehydration.py <<'PY'
+          """Canonical SAGE immersion rehydration for model-facing interfaces."""
+
+          from __future__ import annotations
+
+          from hashlib import sha256
+          import json
+          from typing import Any
+
+          from sage.c2.immersion_state import ExecutionPhase, FlightStatus, ImmersionState, TrustStatus
+
+          STATION = "[SAGE::C2::CHATGPT]"
+
+          def build_chatgpt_immersion_state(
+              runtime: Any,
+              *,
+              session_id: str,
+              c2_context: dict[str, Any] | None = None,
+              evidence_refs: tuple[str, ...] = (),
+          ) -> ImmersionState:
+              """Rehydrate read-only immersion state from canonical runtime state."""
+              if not session_id or not session_id.strip():
+                  raise ValueError("SAGE immersion rehydration requires a session_id")
+              current_state = getattr(runtime, "current_state", None)
+              if current_state is None:
+                  raise ValueError("SAGE immersion rehydration requires canonical runtime state")
+              context = dict(c2_context or {})
+              raw_mission = context.get("active_objective") or getattr(current_state, "current_objective", None)
+              raw_task = context.get("active_task") or getattr(current_state, "active_task", None)
+              if not raw_mission or not str(raw_mission).strip():
+                  raise ValueError("SAGE immersion rehydration requires canonical active objective")
+              if not raw_task or not str(raw_task).strip():
+                  raise ValueError("SAGE immersion rehydration requires canonical active task")
+              mission = str(raw_mission).strip()
+              task = str(raw_task).strip()
+              status = {}
+              if hasattr(runtime, "get_status") and callable(runtime.get_status):
+                  try:
+                      status = dict(runtime.get_status() or {})
+                  except Exception:
+                      status = {}
+              c2_status = status.get("c2_status") if isinstance(status.get("c2_status"), dict) else {}
+              if c2_status and c2_status.get("rehydrated") is False:
+                  raise ValueError("SAGE immersion rehydration blocked: C2 runtime is not rehydrated")
+              canonical_payload = {
+                  "session_id": session_id,
+                  "objective": mission,
+                  "task": task,
+                  "blockers": list(getattr(current_state, "blockers", []) or []),
+                  "dependencies": list(getattr(current_state, "dependencies", []) or []),
+              }
+              provenance_head = sha256(json.dumps(canonical_payload, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
+              frontier = context.get("active_frontier") or context.get("frontier") or "c2-runtime-boundary"
+              gate = context.get("gate") or "GOVERNED_EXECUTION"
+              trust_status = TrustStatus.VERIFIED if c2_status.get("rehydrated", True) else TrustStatus.HOLD
+              state = ImmersionState(
+                  station_identity=STATION,
+                  mission=mission,
+                  phase=ExecutionPhase.EXECUTE,
+                  flight_id=f"C2:{session_id}",
+                  flight_status=FlightStatus.ACTIVE,
+                  trust_status=trust_status,
+                  frontier=str(frontier),
+                  gate=str(gate),
+                  next_move=task,
+                  evidence_refs=tuple(evidence_refs),
+                  provenance_head=provenance_head,
+              )
+              if not state.validate():
+                  raise ValueError("SAGE immersion rehydration produced invalid canonical state")
+              return state
+          PY
+
+          cat > tests/c2/test_chatgpt_canonical_flight_identity.py <<'PY'
+          from types import SimpleNamespace
+
+          import pytest
+
+          from sage.c2.immersion_rehydration import build_chatgpt_immersion_state
+
+          def test_chatgpt_flight_identity_is_runtime_bound_not_synthetic():
+              runtime = SimpleNamespace(
+                  current_state=SimpleNamespace(
+                      current_objective="objective",
+                      active_task="task",
+                      blockers=[],
+                      dependencies=[],
+                  ),
+                  get_status=lambda: {"c2_status": {"rehydrated": True}},
+              )
+              state = build_chatgpt_immersion_state(runtime, session_id="session_123")
+              assert state.flight_id == "C2:session_123"
+              assert state.flight_id != "FLIGHT_001"
+              assert state.provenance_head
+
+          def test_chatgpt_immersion_fails_closed_without_canonical_runtime_state():
+              with pytest.raises(ValueError, match="canonical runtime state"):
+                  build_chatgpt_immersion_state(SimpleNamespace(), session_id="session_123")
+          PY
+
+          if grep -R 'flight_id="FLIGHT_001"' -n sage/integration.py; then
+            echo 'synthetic flight binding still present'
+            exit 1
+          fi
+
+      - name: Commit repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "dariusbrandon880-art"
+          git config user.email "244106230+dariusbrandon880-art@users.noreply.github.com"
+          git add sage/integration.py sage/c2/immersion_rehydration.py tests/c2/test_chatgpt_canonical_flight_identity.py
+          git diff --cached --quiet && exit 0
+          git commit -m "fix(c2): bind ChatGPT immersion to canonical runtime flight"
+          git push
