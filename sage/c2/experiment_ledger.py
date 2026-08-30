@@ -52,6 +52,16 @@ class CandidateComparison(BaseModel):
     verdict: str = "INCONCLUSIVE"  # WIN, LOSS, INCONCLUSIVE
 
 
+class AuthorizationRecord(BaseModel):
+    """Explicit human/authority approval record required for promotion state transitions."""
+
+    authorizer_id: str
+    permission_scope: str
+    evidence_hash: str
+    notes: str = ""
+    authorized_at: float = Field(default_factory=time.time)
+
+
 class ExperimentRecord(BaseModel):
     """State-aware persistent experiment record binding hypothesis to evidence and decision."""
 
@@ -66,6 +76,7 @@ class ExperimentRecord(BaseModel):
     evidence_refs: List[str] = Field(default_factory=list)
     counterexamples: List[CounterexampleRecord] = Field(default_factory=list)
     candidate_comparisons: List[CandidateComparison] = Field(default_factory=list)
+    authorization: Optional[AuthorizationRecord] = None
     created_at: float = Field(default_factory=time.time)
     updated_at: float = Field(default_factory=time.time)
     validation_notes: str = ""
@@ -183,16 +194,44 @@ class ExperimentLedger:
             self._save_ledger()
             return rec
 
+    def attach_authorization(
+        self, experiment_id: str, authorization: AuthorizationRecord
+    ) -> ExperimentRecord:
+        with self._lock:
+            if experiment_id not in self._records:
+                raise KeyError(f"Experiment {experiment_id} not found in ledger.")
+            rec = self._records[experiment_id]
+            rec.authorization = authorization
+            rec.updated_at = time.time()
+            self._save_ledger()
+            return rec
+
     def update_validation_decision(
-        self, experiment_id: str, status: ValidationStatus, notes: str = ""
+        self,
+        experiment_id: str,
+        status: ValidationStatus,
+        notes: str = "",
+        authorization: Optional[AuthorizationRecord] = None,
     ) -> ExperimentRecord:
         with self._lock:
             if experiment_id not in self._records:
                 raise KeyError(f"Experiment {experiment_id} not found in ledger.")
             rec = self._records[experiment_id]
 
-            # Fail-closed evidence verification for PROMOTED status
+            if authorization:
+                rec.authorization = authorization
+
+            # Fail-closed evidence & explicit authorization verification for PROMOTED status
             if status == ValidationStatus.PROMOTED:
+                if not rec.authorization:
+                    rec.status = ValidationStatus.HOLD
+                    rec.validation_notes = (
+                        f"PROMOTION REJECTED: Missing explicit AuthorizationRecord. Defaulting to HOLD. {notes}".strip()
+                    )
+                    rec.updated_at = time.time()
+                    self._save_ledger()
+                    return rec
+
                 if not rec.evidence_refs:
                     rec.status = ValidationStatus.HOLD
                     rec.validation_notes = (
@@ -245,10 +284,11 @@ class ExperimentLedger:
                 rec.evidence_refs.append(evidence_ref)
             rec.updated_at = time.time()
 
-            # Fail-closed governance: Receipts attach evidence and observations, but maintain ValidationStatus.HOLD.
-            # Formal promotion requires explicit update_validation_decision call with verified evidence.
+            # Fail-closed governance invariant:
+            # EXECUTION -> EVIDENCE -> VERIFY -> VALIDATE -> AUTHORIZATION -> PROMOTE -> IMMERSION
+            # Receipts attach evidence/observations but MUST maintain ValidationStatus.HOLD.
             rec.status = ValidationStatus.HOLD
-            rec.validation_notes = "Receipt recorded. Awaiting formal validation decision."
+            rec.validation_notes = "Receipt recorded. Awaiting formal validation & explicit authorization."
 
             self._save_ledger()
             return rec
