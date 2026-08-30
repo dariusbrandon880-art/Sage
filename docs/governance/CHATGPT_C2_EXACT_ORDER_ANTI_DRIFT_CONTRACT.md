@@ -42,7 +42,7 @@ The canonical doctrine is:
 
 `docs/governance/SAGE_CONTINUOUS_EXCHANGE_IMMERSION_DOCTRINE.md`
 
-CONTINUITY RULE: each governed exchange is a new verification boundary. Every governed exchange is a fresh verification boundary. Conversation history is context, never authority. When a task depends on live/repository truth, rehydrate the current repository state, canonical identity, governance contract, mission, and active frontier before relying on prior turns.
+CONTINUITY RULE: each governed exchange is a new verification boundary. Every governed exchange is a fresh verification boundary. IMMERSION RULE: station identity, governance mode, and presentation must derive from the governed runtime projection. Conversation history is context, never authority. When a task depends on live/repository truth, rehydrate the current repository state, canonical identity, governance contract, mission, and active frontier before relying on prior turns.
 
 The continuity frame is:
 
