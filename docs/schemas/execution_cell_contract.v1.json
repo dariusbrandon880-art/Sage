@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sage.internal/schemas/execution_cell_contract.v1.json",
+  "title": "SAGE Execution Cell Interface Contract",
+  "type": "object",
+  "required": ["contract_version", "mission_package", "execution_result"],
+  "properties": {
+    "contract_version": {"const": "1.0.0"},
+    "mission_package": {
+      "type": "object",
+      "required": ["mission_id", "target_repo", "canonical_head_sha", "allowed_paths", "allowed_commands", "flight_allocation", "collision_lock"],
+      "properties": {
+        "mission_id": {"type": "string", "minLength": 1},
+        "target_repo": {"type": "string", "pattern": "^[^/\\s]+/[^/\\s]+$"},
+        "canonical_head_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "allowed_paths": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "allowed_commands": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "flight_allocation": {
+          "type": "object",
+          "required": ["f1_recon", "f2_build", "f3_test", "f4_evidence", "f5_converge"],
+          "additionalProperties": false,
+          "properties": {
+            "f1_recon": {"type": "string"},
+            "f2_build": {"type": "string"},
+            "f3_test": {"type": "string"},
+            "f4_evidence": {"type": "string"},
+            "f5_converge": {"type": "string"}
+          }
+        },
+        "collision_lock": {
+          "type": "object",
+          "required": ["resource", "lock_acquired"],
+          "additionalProperties": false,
+          "properties": {
+            "resource": {"type": "string", "minLength": 1},
+            "lock_acquired": {"type": "boolean"}
+          }
+        },
+        "wagering_executed": {"const": false},
+        "signature": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "execution_result": {
+      "type": "object",
+      "required": ["substrate", "status", "exit_code", "executed_head_sha", "produced_head_sha", "receipt_path", "exact_head_verified", "test_pass_rate", "collision_detected"],
+      "properties": {
+        "substrate": {"type": "string", "enum": ["github_actions", "local_mcp_daemon", "authorized_runner"]},
+        "status": {"type": "string", "enum": ["PASS", "FAIL", "EXECUTION_UNAVAILABLE"]},
+        "exit_code": {"type": "integer"},
+        "executed_head_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "produced_head_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "receipt_path": {"type": "string", "minLength": 1},
+        "exact_head_verified": {"type": "boolean"},
+        "test_pass_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "collision_detected": {"type": "boolean"},
+        "wagering_executed": {"const": false},
+        "stderr_digest": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
