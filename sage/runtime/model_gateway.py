@@ -12,6 +12,8 @@ from typing import Any, Mapping, Protocol
 
 from sage.c2.chatgpt_c2_contract import classify_directive, validate_report_claims
 from sage.c2.live_operation_receipt import LiveCapability, LiveOperationReceipt, execute_live_capability
+from sage.c2.immersion_state import ImmersionState, ExecutionPhase, TrustStatus, FlightStatus
+from sage.c2.immersion_projection import project_c2_response_contract, C2ResponseContract
 
 
 @dataclass(frozen=True)
@@ -29,6 +31,7 @@ class SAGEStateSnapshot:
     known_state_refs: tuple[str, ...] = ()
     candidate_state_refs: tuple[str, ...] = ()
     negative_memory_refs: tuple[str, ...] = ()
+    immersion_state: ImmersionState | None = None
 
     def digest(self) -> str:
         payload = json.dumps(asdict(self), sort_keys=True, separators=(",", ":"))
@@ -56,6 +59,8 @@ class SAGERuntimeEnvelope:
         required_output_contract: str = "structured_sage_response_v1",
         policy_version: str = "sage-runtime-v1",
     ) -> "SAGERuntimeEnvelope":
+        if state.immersion_state is not None and not state.immersion_state.validate():
+            raise ValueError("Invalid immersion state provided in SAGEStateSnapshot.")
         return cls(
             station=station,
             model_role=model_role,
@@ -65,9 +70,22 @@ class SAGERuntimeEnvelope:
             state_digest=state.digest(),
         )
 
+    def get_c2_response_contract(self) -> C2ResponseContract | None:
+        if self.state.immersion_state is None:
+            return None
+        return project_c2_response_contract(self.state.immersion_state)
+
     def to_payload(self) -> dict[str, Any]:
         payload = asdict(self)
         payload["state_digest"] = self.state.digest()
+        if self.state.immersion_state is not None:
+            payload["immersion_state"] = self.state.immersion_state.to_dict()
+            contract = self.get_c2_response_contract()
+            if contract is not None:
+                payload["c2_response_contract"] = {
+                    "nameplate": contract.nameplate.render(),
+                    "hud": contract.hud.render(),
+                }
         return payload
 
 
@@ -148,6 +166,13 @@ class SAGEProtocolGovernor:
         "github change happened",
     )
 
+    STATE_MUTATION_INDICATORS = (
+        "mutating canonical state directly",
+        "i have promoted this capability",
+        "autonomous promotion granted",
+        "bypassing canonical projection",
+    )
+
     @classmethod
     def validate_and_parse(cls, raw_output: str, required_station: str = "[SAGE::C2::CHATGPT]") -> SAGEStructuredResponse:
         """Parse raw model output and enforce anti-roleplay + authority boundaries."""
@@ -166,6 +191,9 @@ class SAGEProtocolGovernor:
 
         if any(indicator in lower_output for indicator in cls.UNVERIFIED_REPOSITORY_INDICATORS):
             violations.append("Model output claims repository or GitHub state change without verification receipt.")
+
+        if any(indicator in lower_output for indicator in cls.STATE_MUTATION_INDICATORS):
+            violations.append("Model output attempts unauthorized direct state mutation or projection bypass.")
 
         reasoning_chain: list[str] = []
         proposed_actions: list[SAGEActionProposal] = []

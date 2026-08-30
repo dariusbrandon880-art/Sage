@@ -90,9 +90,19 @@ class GeminiInteractionsAdapter:
 
 def _system_instructions(envelope: SAGERuntimeEnvelope) -> str:
     payload = json.dumps(envelope.to_payload(), sort_keys=True, separators=(",", ":"))
+    contract = envelope.get_c2_response_contract()
+    immersion_block = ""
+    if contract is not None:
+        immersion_block = (
+            "CANONICAL IMMERSION PROJECTION BOUNDARY (MANDATORY):\n"
+            f"{contract.render_full_envelope()}\n"
+            "You MUST present responses inside this canonical C2 Response Contract frame.\n"
+        )
+
     return (
         "You are operating under the SAGE Autonomous Continuity Runtime Protocol.\n"
         f"{render_system_contract()}\n"
+        f"{immersion_block}"
         "STRICT GOVERNANCE RULES:\n"
         "1. NO ROLEPLAY: You are operating in real reality, not roleplay or simulation mode. Do not use roleplay markers, persona fluff, or conversational narrative.\n"
         "2. NO MUTATION AUTHORITY: Model output does NOT constitute authorization, autonomous execution, or canonical state mutation. Human operators hold authority.\n"
