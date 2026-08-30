@@ -40,9 +40,7 @@ class OpenAIResponsesAdapter:
 
         structured = SAGEProtocolGovernor.validate_and_parse(text, required_station=self.station)
         if structured.violations:
-            if any("station identity mismatch" in violation.lower() for violation in structured.violations):
-                raise ValueError(f"SAGE Protocol Governance Violation: {'; '.join(structured.violations)}")
-            raise RuntimeError(f"SAGE Protocol Governance Violation: {'; '.join(structured.violations)}")
+            raise ValueError(f"SAGE Protocol Governance Violation: {'; '.join(structured.violations)}")
 
         return ModelResponse(
             model_id=self.model_id,
@@ -93,9 +91,7 @@ class GeminiInteractionsAdapter:
 
         structured = SAGEProtocolGovernor.validate_and_parse(text, required_station=self.station)
         if structured.violations:
-            if any("station identity mismatch" in violation.lower() for violation in structured.violations):
-                raise ValueError(f"SAGE Protocol Governance Violation: {'; '.join(structured.violations)}")
-            raise RuntimeError(f"SAGE Protocol Governance Violation: {'; '.join(structured.violations)}")
+            raise ValueError(f"SAGE Protocol Governance Violation: {'; '.join(structured.violations)}")
 
         evidence_refs = _extract_url_citations(interaction)
         evidence_refs = tuple(dict.fromkeys((*structured.evidence_refs, *evidence_refs)))
