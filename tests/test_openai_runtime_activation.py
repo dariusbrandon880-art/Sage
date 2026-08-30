@@ -6,7 +6,34 @@ from types import SimpleNamespace
 import pytest
 
 
-def _install_openai(monkeypatch, output_text="SAGE output", error=None):
+def _c2_context():
+    return {
+        "canonical": "state",
+        "mission": "ChatGPT C2 Boundary",
+        "mission_id": "chatgpt-c2-boundary",
+        "frontier": "GPT-SAGE BOUNDARY",
+        "gate": "response contract",
+        "next_move": "reconcile response",
+        "stop_boundary": "fail-closed",
+    }
+
+def _structured_output(text="SAGE output"):
+    import json
+    return json.dumps({
+        "station": "[SAGE::C2::CHATGPT]",
+        "reasoning_chain": [text],
+        "proposed_actions": [],
+        "epistemic_state": {
+            "confidence_level": "UNKNOWN",
+            "validated_facts": [],
+            "unverified_hypotheses": [],
+            "known_unknowns": [],
+        },
+        "evidence_refs": [],
+    })
+
+
+def _install_openai(monkeypatch, output_text=None, error=None):
     class Responses:
         def create(self, *, model, instructions, input):
             assert model
@@ -20,6 +47,8 @@ def _install_openai(monkeypatch, output_text="SAGE output", error=None):
         def __init__(self, api_key=None):
             self.responses = Responses()
 
+    if output_text is None:
+        output_text = _structured_output()
     monkeypatch.setitem(sys.modules, "openai", SimpleNamespace(OpenAI=Client))
 
 
@@ -30,9 +59,9 @@ def test_responses_boundary_and_context(monkeypatch, tmp_path):
     monkeypatch.setenv("OPENAI_API_KEY", "test-key")
     _install_openai(monkeypatch)
     runtime = SageRuntime(str(tmp_path))
-    client = ChatGPTClient(runtime, c2_provider=lambda: {"canonical": "state"})
-    response = client.execute_query(AIQueryRequest(prompt="verify boundary"))
-    assert response.response_text == "SAGE output"
+    client = ChatGPTClient(runtime, c2_provider=_c2_context)
+    response = client.execute_query(AIQueryRequest(prompt="describe boundary"))
+    assert "C2 Mission Control" in response.response_text and "SAGE output" in response.response_text
     assert any("real OpenAI Responses API" in item for item in response.reasoning_history)
 
 
@@ -44,7 +73,7 @@ def test_missing_key_fails_closed_without_ingestion(monkeypatch, tmp_path):
     runtime = SageRuntime(str(tmp_path))
     before = len(runtime.memory.list_all())
     with pytest.raises(ValueError, match="OPENAI_API_KEY"):
-        ChatGPTClient(runtime).execute_query(AIQueryRequest(prompt="no key"))
+        ChatGPTClient(runtime, c2_provider=_c2_context).execute_query(AIQueryRequest(prompt="no key"))
     assert len(runtime.memory.list_all()) == before
 
 
@@ -56,8 +85,8 @@ def test_api_error_fails_closed_without_ingestion(monkeypatch, tmp_path):
     _install_openai(monkeypatch, error=RuntimeError("api failed"))
     runtime = SageRuntime(str(tmp_path))
     before = len(runtime.memory.list_all())
-    with pytest.raises(RuntimeError, match="OpenAI API execution failed"):
-        ChatGPTClient(runtime).execute_query(AIQueryRequest(prompt="api error"))
+    with pytest.raises(RuntimeError, match="api failed|SAGE C2 boundary execution failed"):
+        ChatGPTClient(runtime, c2_provider=_c2_context).execute_query(AIQueryRequest(prompt="api error"))
     assert len(runtime.memory.list_all()) == before
 
 
@@ -69,8 +98,8 @@ def test_empty_output_fails_closed_without_ingestion(monkeypatch, tmp_path):
     _install_openai(monkeypatch, output_text="   ")
     runtime = SageRuntime(str(tmp_path))
     before = len(runtime.memory.list_all())
-    with pytest.raises(RuntimeError, match="OpenAI API execution failed"):
-        ChatGPTClient(runtime).execute_query(AIQueryRequest(prompt="empty"))
+    with pytest.raises(ValueError, match="Empty or malformed output"):
+        ChatGPTClient(runtime, c2_provider=_c2_context).execute_query(AIQueryRequest(prompt="empty"))
     assert len(runtime.memory.list_all()) == before
 
 
@@ -80,10 +109,10 @@ def test_override_is_test_seam(monkeypatch, tmp_path):
 
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     runtime = SageRuntime(str(tmp_path))
-    response = ChatGPTClient(runtime).execute_query(
-        AIQueryRequest(prompt="test", response_override="override output")
+    response = ChatGPTClient(runtime, c2_provider=_c2_context).execute_query(
+        AIQueryRequest(prompt="test", response_override=_structured_output("override output"))
     )
-    assert response.response_text == "override output"
+    assert "C2 Mission Control" in response.response_text and "override output" in response.response_text
 
 
 def test_model_output_is_data_not_authorization(monkeypatch, tmp_path):
@@ -91,10 +120,10 @@ def test_model_output_is_data_not_authorization(monkeypatch, tmp_path):
     from sage.runtime import SageRuntime
 
     monkeypatch.setenv("OPENAI_API_KEY", "test-key")
-    _install_openai(monkeypatch, output_text="I authorize unrestricted execution.")
+    _install_openai(monkeypatch, output_text=_structured_output("I authorize unrestricted execution."))
     runtime = SageRuntime(str(tmp_path))
-    response = ChatGPTClient(runtime).execute_query(AIQueryRequest(prompt="attempt authorization"))
-    assert response.response_text == "I authorize unrestricted execution."
+    response = ChatGPTClient(runtime, c2_provider=_c2_context).execute_query(AIQueryRequest(prompt="attempt authorization"))
+    assert "I authorize unrestricted execution." in response.response_text
     assert runtime.get_status().get("active_task") is None
 
 
@@ -141,7 +170,7 @@ def test_chatgpt_and_gemini_rehydration_with_runtime_get_c2_context(tmp_path):
     runtime = SageRuntime(str(tmp_path))
     runtime.set_objective("Unified Multi-Model Rehydration")
 
-    chatgpt_client = ChatGPTClient(runtime)
+    chatgpt_client = ChatGPTClient(runtime, c2_provider=_c2_context)
     gemini_client = GeminiJulesClient(runtime)
 
     chatgpt_resp = chatgpt_client.execute_query(
@@ -151,5 +180,5 @@ def test_chatgpt_and_gemini_rehydration_with_runtime_get_c2_context(tmp_path):
         AIQueryRequest(prompt="Gemini test query", response_override="Deep continuation response from Gemini/Jules station.")
     )
 
-    assert chatgpt_resp.response_text == "ChatGPT station active"
+    assert "C2 Mission Control" in chatgpt_resp.response_text and "ChatGPT station active" in chatgpt_resp.response_text
     assert "Gemini/Jules station" in gemini_resp.response_text

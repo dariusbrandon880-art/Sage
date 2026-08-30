@@ -114,43 +114,27 @@ class ChatGPTClient(BaseAIClient):
             a["id"] for a in context["matched_archives"]
         ]
 
-        # 2. Failure Ordering: API Key Check -> API Call -> Successful Output -> Ingestion
-        if request.response_override:
-            response_text = request.response_override
-            reasoning = f"ChatGPT analyzed prompt: '{request.prompt}' and retrieved {len(referenced_ids)} relevant engineering artifacts (override response applied)."
-            self.reasoning_history.append(reasoning)
-        else:
-            api_key = os.environ.get("OPENAI_API_KEY", "").strip()
-            if not api_key:
-                raise ValueError("OPENAI_API_KEY environment variable not set")
+        # 2. The model call MUST traverse the SAGE C2 boundary before output is returned.
+        from sage.c2.chatgpt_sage_boundary import execute_sage_bound_chatgpt_from_legacy_runtime
 
-            instructions = (
-                "You are ChatGPT operating as C2 Mission Control for SAGE.\n"
-                "STRICT PROTOCOL LAW:\n"
-                "1. REALITY ONLY: Zero conversational roleplay, persona markers (*smiles*, *nods*), or simulation framing.\n"
-                "2. NO MUTATION AUTHORITY: Model output does NOT constitute authorization, autonomous execution, or canonical state mutation.\n"
-                "3. HARD EPISTEMIC BOUNDARIES: Validate facts before claiming knowledge.\n"
-                f"C2 Operating Context: {json.dumps(c2_context, default=str)}\n"
-                f"SAGE Knowledge Context: {json.dumps(context, default=str)}\n"
-                "Human operators hold authorization authority."
+        try:
+            bound = execute_sage_bound_chatgpt_from_legacy_runtime(
+                runtime=self.runtime,
+                session_id=session_id,
+                task=request.prompt,
+                c2_context=c2_context,
+                response_override=request.response_override,
             )
-
-            try:
-                import openai
-                client = openai.OpenAI(api_key=api_key)
-                response = client.responses.create(
-                    model="gpt-4o-mini",
-                    instructions=instructions,
-                    input=request.prompt,
-                )
-                response_text = response.output_text
-                if not response_text or not str(response_text).strip():
-                    raise ValueError("Empty or malformed output received from OpenAI Responses API")
-
-                reasoning = f"ChatGPT executed real OpenAI Responses API completion for prompt: '{request.prompt[:50]}...'"
-                self.reasoning_history.append(reasoning)
-            except Exception as e:
-                raise RuntimeError(f"OpenAI API execution failed: {e}") from e
+            response_text = bound.rendered_output
+            reasoning = (
+                f"real OpenAI Responses API / test seam traversed SAGE C2 runtime boundary "
+                f"for prompt: '{request.prompt[:50]}...'"
+            )
+            self.reasoning_history.append(reasoning)
+        except Exception as e:
+            if isinstance(e, (ValueError, RuntimeError)):
+                raise
+            raise RuntimeError(f"SAGE C2 boundary execution failed: {e}") from e
 
         # Protocol Governance validation on response_text
         from sage.runtime.model_gateway import SAGEProtocolGovernor
