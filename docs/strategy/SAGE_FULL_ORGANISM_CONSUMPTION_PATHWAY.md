@@ -18,6 +18,8 @@ For consequential engineering or repair work, use the stronger repair loop:
 
 `RECON → ROOT CAUSE → REPAIR → REGRESSION → FULL VERIFY → EXACT-SHA RECONCILIATION → PERMANENT LOG → COMPOUND → NEXT ATTACK SURFACE`
 
+The execution discipline for that loop is defined by `docs/governance/SAGE_BIG_JUMP_WAVE_HARDENING_PROTOCOL.md`.
+
 ## Full Organism Consumption rule
 
 For every consequential new concept, C2 must determine:
@@ -105,6 +107,16 @@ Strategic trajectory:
 
 `STABILIZE → COMPOUND → OPEN FRONTIER → INVENT → VERIFY → EVOLVE`
 
+## Big Jump Wave operating rule
+
+A Big Jump Wave is a capability-hardening cycle, not a PR-counting mechanism. Start from exact repository truth, consult historical failures, use external intelligence to falsify assumptions, map bypass surfaces, make the smallest high-leverage canonical change, attack it adversarially, run full verification, reconcile the exact SHA, permanently log the learning, and immediately identify the next attack surface.
+
+The five-flight operating pattern is:
+
+`F1 RECON → F2 FALSIFY → F3 REPAIR → F4 RED TEAM → F5 EVIDENCE/COMPOUND`
+
+Parallel work is permitted only where ownership boundaries do not collide. Shared canonical state and transitions are sequenced.
+
 ## Historical learning requirement
 
 Before consequential repair or architecture work, inspect prior repair logs, relevant evidence, rejected hypotheses, and previous implementation patterns when available.
@@ -126,6 +138,8 @@ A repair that is not converted into reusable learning is incomplete from an orga
 - Do not erase negative evidence or rejected hypotheses.
 - Do not optimize for feature count, points, badges, or PR count over verified capability.
 - Do not stop at implementation; trace the change through evidence, validation, business value, and reuse.
+- Do not accept stale authorization for a state-changing effect.
+- Do not rely on a single enforcement point for critical governance invariants when layered checks are practical.
 
 ## Success condition
 
