@@ -102,10 +102,13 @@ def test_hud_rejects_unbounded_or_writable_sources():
 
 
 def test_render_is_human_readable_and_provenance_preserving():
-    projection = build_agent_hud_projection(context_view=_context())
+    ctx = _context()
+    ctx["self"]["milestone_strike"] = "⚡ 3/5"
+    ctx["self"]["safe_impact_stars"] = 3
+    projection = build_agent_hud_projection(context_view=ctx)
     rendered = render_agent_hud(projection)
 
     assert "[SAGE::C2::CHATGPT]" in rendered
-    assert "CQL-1/SQL-1 XP-100 STATE=WORKING" in rendered
+    assert "CQL-1/SQL-1 XP-100 STRIKE=⚡ 3/5 STARS=⭐⭐⭐ STATE=WORKING" in rendered
     assert "[SAGE::INTEL::GEMINI]:RECON" in rendered
     assert "PENDING=1" in rendered

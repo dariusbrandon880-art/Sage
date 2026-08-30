@@ -62,6 +62,8 @@ def build_agent_hud_projection(
             "sql": self_view.get("sql"),
             "xp": self_view.get("xp"),
             "state": self_view.get("state"),
+            "milestone_strike": self_view.get("milestone_strike"),
+            "safe_impact_stars": self_view.get("safe_impact_stars"),
         },
         "team": {
             "coordination_status": team_view.get("coordination", {}).get("status"),
@@ -92,12 +94,17 @@ def render_agent_hud(projection: Mapping[str, Any]) -> str:
     sql = self_view.get("sql")
     xp = self_view.get("xp")
     state = self_view.get("state") or "UNKNOWN"
+    strike = self_view.get("milestone_strike")
+    stars = self_view.get("safe_impact_stars")
     roster_states = ", ".join(
         f"{item.get('nameplate')}:{item.get('state')}" for item in roster
     )
 
+    strike_str = f" STRIKE={strike}" if strike else ""
+    stars_str = f" STARS={'⭐' * stars}" if isinstance(stars, int) and stars > 0 else ""
+
     return (
-        f"{nameplate} CQL-{cql}/SQL-{sql} XP-{xp} STATE={state} | "
+        f"{nameplate} CQL-{cql}/SQL-{sql} XP-{xp}{strike_str}{stars_str} STATE={state} | "
         f"TEAM={team_view.get('coordination_status')} | "
         f"PENDING={pending} | {roster_states}"
     )

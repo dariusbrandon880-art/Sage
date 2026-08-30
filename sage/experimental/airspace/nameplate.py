@@ -32,6 +32,8 @@ def render_agent_nameplate(
     station_id: StationID,
     *,
     compact: bool = True,
+    milestone_strike: str | None = None,
+    safe_impact_stars: int | None = None,
 ) -> str:
     """Render stable progression data from canonical state."""
     station = state.stations[station_id]
@@ -39,8 +41,15 @@ def render_agent_nameplate(
     icon = STATION_ICONS.get(station_id, "▪")
     sql = f" SQL-{station.current_sql}" if station.current_sql > 0 else ""
 
+    strike_suffix = f" // STRIKE {milestone_strike}" if milestone_strike else ""
+    stars_suffix = f" // STARS {'⭐' * safe_impact_stars}" if safe_impact_stars and safe_impact_stars > 0 else ""
+
     if compact:
-        return f"{icon} {station.agent_name} // CQL-{station.current_cql}{sql} // XP {xp}"
+        return f"{icon} {station.agent_name} // CQL-{station.current_cql}{sql} // XP {xp}{strike_suffix}{stars_suffix}"
+
+    strike_line = f"\n  STRIKE  : {milestone_strike}" if milestone_strike else ""
+    stars = '⭐' * safe_impact_stars if safe_impact_stars and safe_impact_stars > 0 else ""
+    stars_line = f"\n  STARS   : {stars}" if stars else ""
 
     return (
         f"{icon} {station.agent_name}\n"
@@ -48,6 +57,8 @@ def render_agent_nameplate(
         f"  CQL     : CQL-{station.current_cql}\n"
         f"  SQL     : SQL-{station.current_sql}\n"
         f"  XP      : {xp}"
+        f"{strike_line}"
+        f"{stars_line}"
     )
 
 
