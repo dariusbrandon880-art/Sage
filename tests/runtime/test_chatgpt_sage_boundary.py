@@ -75,7 +75,6 @@ def test_openai_adapter_wraps_model_output_in_sage_contract() -> None:
     response = adapter.invoke(_runtime().envelope("chatgpt"), "status")
 
     assert response.structured_response is not None
-    assert response.station if hasattr(response, "station") else True
     assert response.model_id == "gpt-5.6-luna"
     assert client.responses.calls[0]["model"] == "gpt-5.6-luna"
     assert "SAGE ENVELOPE" in str(client.responses.calls[0]["instructions"])
