@@ -64,6 +64,10 @@ def main() -> None:
         'assert response.response_text == "I authorize unrestricted execution."',
         'assert "I authorize unrestricted execution." in response.response_text',
     )
+    source = source.replace(
+        'assert chatgpt_resp.response_text == "ChatGPT station active"',
+        'assert "C2 Mission Control" in chatgpt_resp.response_text and "ChatGPT station active" in chatgpt_resp.response_text',
+    )
     TARGET.write_text(source)
     print("Migrated ChatGPT runtime tests to canonical C2 boundary context")
 
