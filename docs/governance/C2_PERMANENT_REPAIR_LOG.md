@@ -1,0 +1,136 @@
+# C2 Permanent Repair Log
+
+**Status:** Governing repair-history ledger
+**Authority:** Repository implementation truth and validated SAGE governance
+**Owner:** `[SAGE::C2::CHATGPT]`
+
+## Purpose
+
+Every consequential repair is permanently logged so future C2 sessions and Big Jump Waves can reuse prior failure analysis instead of rediscovering the same defect.
+
+This is a repair-history ledger, not a second source of truth. Code, tests, validated evidence, and canonical project state remain authoritative.
+
+## Required repair record
+
+Every consequential repair must record:
+
+- **Issue / PR:** stable GitHub reference
+- **Detection:** exact failure, symptom, or adversarial finding
+- **Root cause:** technical cause, not the surface symptom
+- **Affected boundary:** component, interface, or trust boundary
+- **Repair:** exact implementation change
+- **Why this repair:** why the fix preserves or strengthens governance
+- **Regression proof:** tests added/updated and result
+- **Evidence:** exact commit SHA / workflow evidence when available
+- **Verification:** exact remote HEAD and CI result when available
+- **Reusable invariant:** rule future waves must preserve
+- **Follow-on risk:** known remaining limitation or next attack surface
+- **Search/research input:** external findings used to challenge or strengthen the repair, clearly marked non-canonical
+
+## Permanent repair workflow
+
+**SENSE → RECON → ROOT-CAUSE → REPAIR → REGRESSION → FULL VERIFY → EXACT-SHA RECONCILIATION → LOG → COMPOUND**
+
+A repair is not considered historically complete until the learning is logged alongside its implementation/evidence trail.
+
+## Mandatory pre-repair questions
+
+1. Has this failure class happened before?
+2. Which prior repair pattern applies?
+3. Does the proposed fix strengthen the canonical boundary or weaken it?
+4. Can the fix introduce a new compatibility seam or bypass?
+5. What regression test prevents recurrence?
+6. What evidence proves the repair landed on the intended SHA?
+7. What new invariant should future waves inherit?
+
+## Mandatory post-repair questions
+
+1. What actually failed?
+2. Why did the existing controls miss it?
+3. What changed?
+4. What test now catches it?
+5. What adjacent bypass should be attacked next?
+6. What should C2/Jules do differently next time?
+
+## Historical index
+
+See `docs/governance/C2_HISTORICAL_REPAIR_AND_RUNTIME_GOVERNANCE.md` for the consolidated historical failure → repair patterns.
+
+## Repair entries
+
+## 2026-08-30 — Weak Test Assertion Proof Seam (Stale Authorization Verification)
+
+**Issue / PR:** PR #342
+
+**Detection:** Adversarial C2 review of `test_stale_authorization_is_rejected_at_commit_boundary` in `tests/core/test_transition_engine.py` revealed a weak conditional assertion (`assert state["agent-1:flight"] == "UNQUALIFIED" if "agent-1:flight" in state else True`) that evaluated to `True` even if `agent-1:flight` was entirely missing, masking potential state mutation regressions.
+
+**Root cause:** Test logic used a non-strict conditional fallback rather than an explicit pre/post state dictionary equality comparison (`assert state == expected_unmutated_state`).
+
+**Affected boundary:** Verification / Adversarial test layer for `TransitionAuthorityEngine` commit-time authorization state-digest checks.
+
+**Repair:** Replaced weak conditional assertion with strict dictionary snapshot comparison (`assert state == expected_state` and `assert "agent-1:flight" not in state`). Added 3 new adversarial test cases covering capability digest mismatch, policy version drift, and concurrent mutation under `commit_lock`.
+
+**Why this repair:** Eliminates false-positive test confidence risk and guarantees state immutability when transition requests are rejected due to stale authorization.
+
+**Regression proof:** 13/13 tests passing in `tests/core/test_transition_engine.py` with 1122 total platform tests passing cleanly.
+
+**Evidence:** Repair commit SHA `e8dd0af2bafd7dd8700c799345866e8cc2fef656`.
+
+**Verification:** Local pytest run verified 0 regressions; pending remote exact-head CI run.
+
+**Reusable invariant:** Attack the proof itself. Never use conditional short-circuiting (`x if x in dict else True`) in state-mutation tests; always assert strict dictionary equality against pre-execution state snapshots.
+
+**Follow-on risk:** Audit all core state transition tests for equivalent vacuous assertion patterns.
+
+**Search/research input:** Internal C2 proof-attack directive; external research non-canonical.
+
+## 2026-08-30 — Legacy ChatGPT Boundary Compatibility Seam
+
+**Issue / PR:** PR #338 / Issue #340
+
+**Detection:** Exact-head CI on the hardened GPT/SAGE runtime boundary produced six regressions in legacy ChatGPT, continuity, client, and API integration paths. The hardened boundary correctly required `frontier`, `gate`, and `next_move`, while older callers supplied an incomplete context shape.
+
+**Root cause:** The compatibility seam had not yet translated legacy runtime context into the newer canonical C2 response contract before entering the governed boundary.
+
+**Affected boundary:** Legacy ChatGPT integration → SAGE runtime envelope → governed immersion boundary.
+
+**Repair:** Rehydrate missing presentation fields from canonical runtime status/current objective/task context in the legacy adapter; preserve explicitly supplied C2 fields as authoritative; keep the direct boundary fail-closed. Added a regression proving legacy callers are hydrated without bypassing governance.
+
+**Why this repair:** It strengthens the canonical boundary instead of weakening its contract. Compatibility code translates canonical state; it does not invent authority or relax validation.
+
+**Regression proof:** Added regression coverage for legacy-boundary hydration; prior boundary and runtime tests remained part of the verification surface.
+
+**Evidence:** Repair SHA `07648c5955e292a70a34b79601a75bf56c9b7e9d`; regression SHA `c3cb224fc1bf2bff1b70ef8378b691a937d0ed87`.
+
+**Verification:** Exact-head remote CI remained the next gate after the repair; do not treat the repair commit itself as proof of full-suite/CI completion.
+
+**Reusable invariant:** When hardening breaks an older caller, repair the adapter seam from canonical state; never weaken the hardened governor to preserve legacy behavior.
+
+**Follow-on risk:** Audit every remaining ChatGPT-facing adapter and alternate entry point for equivalent contract-shape drift.
+
+**Search/research input:** External agent-governance research supported runtime-boundary enforcement, fail-closed mediation, and separation of model proposal from trusted runtime authority; external research remains non-canonical.
+
+### Template
+
+```text
+## [DATE] — [SHORT FAILURE CLASS]
+
+Issue / PR:
+Detection:
+Root cause:
+Affected boundary:
+Repair:
+Why this repair:
+Regression proof:
+Evidence:
+Verification:
+Reusable invariant:
+Follow-on risk:
+Search/research input:
+```
+
+## Operating rule
+
+**No consequential repair disappears into chat.**
+
+The conversation may discover, coordinate, and explain the repair. The repository must retain the durable learning needed to reproduce, verify, and improve the repair in future sessions.
