@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from sage.c2.live_operation_receipt import LiveOperationReceipt
 
 CONTRACT_ID = "CHATGPT_C2_EXACT_ORDER_ANTI_DRIFT"
-CONTRACT_VERSION = "1.3"
+CONTRACT_VERSION = "1.4"
 RECON_POLICY_PATH = "docs/governance/SAGE_DEEP_RECON_VELOCITY_POLICY.md"
 LOCKED_EXECUTION_UPDATE_PATH = "docs/governance/CHATGPT_C2_LOCKED_EXECUTION_UPDATE_2026-08-29.md"
 TECHNIQUE_LEARNING_PATH = "sage/core/technique_learning.py"
@@ -29,6 +29,13 @@ ANTI_DRIFT_LAWS: tuple[str, ...] = (
 LIVE_CHECK_TRIGGERS: tuple[str, ...] = ("check live repo", "check github", "check live connection", "verify connection", "inspect pr", "inspect pull request", "check current branch", "run it", "run yourself", "verify")
 DEEP_RECON_TRIGGERS: tuple[str, ...] = ("search", "super search", "deep search", "research", "audit", "recon", "full repo", "whole repo", "full sweep")
 MARATHON_TRIGGERS: tuple[str, ...] = ("go", "fly", "advance", "run it", "keep going", "finish", "handle all", "full marathon", "compound")
+REHYDRATION_TRIGGERS: tuple[str, ...] = (
+    "lock onto repo", "lock onto the repo", "lock onto sage", "lock onto the sage repo",
+    "whole repo truth", "whole repo", "repo truth", "rehydrate", "re-hydrate", "c2 rehydration",
+)
+REHYDRATION_SEQUENCE: tuple[str, ...] = (
+    "REHYDRATE", "REALITY LOCK", "MISSION LOCK", "IDENTITY LOCK", "ACTIVE-FRONTIER LOCK",
+)
 
 @dataclass(frozen=True)
 class C2DirectiveDecision:
@@ -38,22 +45,34 @@ class C2DirectiveDecision:
     matched_recon_triggers: tuple[str, ...] = ()
     requires_marathon_execution: bool = False
     matched_marathon_triggers: tuple[str, ...] = ()
+    requires_rehydration: bool = False
+    matched_rehydration_triggers: tuple[str, ...] = ()
+
 
 def classify_directive(text: str) -> C2DirectiveDecision:
     normalized = " ".join(text.lower().split())
     matches = tuple(t for t in LIVE_CHECK_TRIGGERS if t in normalized)
     recon_matches = tuple(t for t in DEEP_RECON_TRIGGERS if t in normalized)
     marathon_matches = tuple(t for t in MARATHON_TRIGGERS if t in normalized)
-    return C2DirectiveDecision(bool(matches), matches, bool(recon_matches), recon_matches, bool(marathon_matches), marathon_matches)
+    rehydration_matches = tuple(t for t in REHYDRATION_TRIGGERS if t in normalized)
+    return C2DirectiveDecision(
+        bool(matches), matches, bool(recon_matches), recon_matches,
+        bool(marathon_matches), marathon_matches, bool(rehydration_matches), rehydration_matches,
+    )
+
 
 def render_system_contract() -> str:
     laws = "\n".join(f"{i}. {law}" for i, law in enumerate(ANTI_DRIFT_LAWS, 1))
+    sequence = " -> ".join(REHYDRATION_SEQUENCE)
     return (
         f"SAGE C2 CONTRACT: {CONTRACT_ID} v{CONTRACT_VERSION}\n"
         "Apply these laws to every turn:\n" f"{laws}\n"
         f"DEEP RECON POLICY: {RECON_POLICY_PATH}\n"
         f"LOCKED EXECUTION UPDATE: {LOCKED_EXECUTION_UPDATE_PATH}\n"
         f"TECHNIQUE LEARNING BOUNDARY: {TECHNIQUE_LEARNING_PATH}\n"
+        f"REHYDRATION TRIGGERS: {', '.join(REHYDRATION_TRIGGERS)}\n"
+        f"MANDATORY REHYDRATION SEQUENCE: {sequence}\n"
+        "A repo/SAGE truth-lock directive MUST execute the mandatory rehydration sequence before ordinary task execution; merely looking up a file does not satisfy rehydration.\n"
         "RECON ORDER: REPOSITORY-FIRST REALITY LOCK -> TARGETED PRIMARY EXTERNAL INTELLIGENCE -> SYNTHESIZE -> BOUNDED CONCURRENT EXECUTION -> EXACT-STATE VERIFICATION.\n"
         "VELOCITY RULE: independent repository inspection and relevant external research may run concurrently after the initial reality lock; do not serialize unrelated research or use research as an unnecessary approval gate.\n"
         "MARATHON RULE: when the user authorizes continuation, execute the largest coherent consequential frontier available within scope; do not return a planning-loop response while causally connected executable work remains.\n"
@@ -71,6 +90,7 @@ def render_system_contract() -> str:
         "Do not replace the requested operation with an explanation about the operation."
     )
 
+
 def validate_report_claims(*, receipt: LiveOperationReceipt | None, claim: str, expected_target_resource: str | None = None, evidence_refs: tuple[str, ...] = ()) -> None:
     live_claim = any(p in claim.lower() for p in ("verified live", "checked live", "inspected live", "ran live", "live repository", "live github"))
     if not live_claim:
@@ -83,6 +103,7 @@ def validate_report_claims(*, receipt: LiveOperationReceipt | None, claim: str, 
         raise ValueError("C2 anti-drift contract violation: live claim receipt is not bound to response evidence.")
     if expected_target_resource and receipt.target_resource != expected_target_resource:
         raise ValueError("C2 anti-drift contract violation: live claim receipt target does not match requested resource.")
+
 
 def validate_directive_compliance(directive_text: str) -> C2DirectiveDecision:
     """Classify C2 directive text and verify contract law alignment."""
