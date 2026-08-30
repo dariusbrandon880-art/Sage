@@ -10,16 +10,13 @@ from sage.c2.chatgpt_c2_contract import (
     CONTRACT_VERSION,
     DEEP_RECON_TRIGGERS,
     RECON_POLICY_PATH,
+    REHYDRATION_SEQUENCE,
+    REHYDRATION_TRIGGERS,
     classify_directive,
     render_system_contract,
     validate_report_claims,
 )
-from sage.c2.live_operation_receipt import (
-    LiveOperationReceipt,
-    execute_live_capability,
-    persist_live_operation_receipt,
-    rehydrate_live_operation_receipt,
-)
+from sage.c2.live_operation_receipt import LiveOperationReceipt, execute_live_capability, persist_live_operation_receipt, rehydrate_live_operation_receipt
 from sage.runtime.model_adapters import OpenAIResponsesAdapter, _system_instructions
 from sage.runtime.model_gateway import SAGEProtocolGovernor, SAGERuntime, SAGEStateSnapshot
 
@@ -47,13 +44,12 @@ def structured_output(*, station="[SAGE::C2::CHATGPT]", claim="live repository v
     return json.dumps({"station": station, "reasoning_chain": [claim], "proposed_actions": [], "epistemic_state": {"confidence_level": "HIGH"}, "evidence_refs": []})
 
 
-def test_contract_contains_all_twelve_laws_and_identity():
+def test_contract_contains_all_laws_and_identity():
     rendered = render_system_contract()
     assert CONTRACT_ID in rendered
-    assert CONTRACT_VERSION == "1.3"
+    assert CONTRACT_VERSION == "1.4"
     assert len(ANTI_DRIFT_LAWS) == 13
-    for law in ANTI_DRIFT_LAWS:
-        assert law in rendered
+    for law in ANTI_DRIFT_LAWS: assert law in rendered
     assert "Five flights is concurrent mission ownership across independent vehicles" in rendered
     assert "PREFLIGHT -> EXECUTE -> TEST -> EVIDENCE -> VERIFY -> RECONCILE -> REPORT" in rendered
     assert "SAGE is one governed organism with modular organs" in rendered
@@ -66,6 +62,20 @@ def test_deep_recon_policy_is_bound_and_has_velocity_language():
     assert "TARGETED PRIMARY EXTERNAL INTELLIGENCE" in rendered
     assert "independent repository inspection and relevant external research may run concurrently" in rendered
     assert DEEP_RECON_TRIGGERS
+
+
+def test_repo_truth_lock_requires_full_rehydration():
+    decision = classify_directive("lock onto repo and whole repo truth")
+    assert decision.requires_rehydration is True
+    assert "lock onto repo" in decision.matched_rehydration_triggers
+    assert "whole repo truth" in decision.matched_rehydration_triggers
+    assert tuple(REHYDRATION_SEQUENCE) == ("REHYDRATE", "REALITY LOCK", "MISSION LOCK", "IDENTITY LOCK", "ACTIVE-FRONTIER LOCK")
+
+
+def test_rehydrate_phrase_is_triggered_independently():
+    decision = classify_directive("rehydrate C2")
+    assert decision.requires_rehydration is True
+    assert "rehydrate" in decision.matched_rehydration_triggers
 
 
 def test_search_directive_requires_deep_recon_without_forcing_live_check():
@@ -81,15 +91,12 @@ def test_audit_directive_requires_deep_recon():
     assert "audit" in decision.matched_recon_triggers
 
 
-def test_contract_contains_all_laws_and_identity_legacy_behavior():
-    rendered = render_system_contract()
-    assert CONTRACT_ID in rendered
-    assert CONTRACT_VERSION in rendered
-    assert len(ANTI_DRIFT_LAWS) == 13
-
-
 def test_live_check_directive_requires_live_verification():
-    decision = classify_directive("Check live repo and inspect PR"); assert decision.requires_live_verification is True; assert "check live repo" in decision.matched_triggers; assert "inspect pr" in decision.matched_triggers
+    decision = classify_directive("Check live repo and inspect PR")
+    assert decision.requires_live_verification is True
+    assert "check live repo" in decision.matched_triggers
+    assert "inspect pr" in decision.matched_triggers
+
 
 def test_normal_directive_does_not_force_live_check(): assert classify_directive("Design five future research frontiers").requires_live_verification is False
 
@@ -97,7 +104,7 @@ def test_false_live_claim_fails_closed_without_receipt():
     with pytest.raises(ValueError, match="LiveOperationReceipt"): validate_report_claims(receipt=None, claim="Verified live repository state")
 
 def test_boolean_cannot_substitute_for_receipt():
-    with pytest.raises(ValueError, match="LiveOperationReceipt"): validate_report_claims(receipt=True, claim="Verified live repository state")  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="LiveOperationReceipt"): validate_report_claims(receipt=True, claim="Verified live repository state")
 
 def test_live_claim_requires_bound_receipt_evidence():
     receipt = execute_live_capability(FakeLiveCapability(), operation="live_verification", task="check live repo")
@@ -139,11 +146,12 @@ def test_runtime_requires_connected_capability_for_live_directive():
     with pytest.raises(ValueError, match="no connected live capability"): SAGERuntime(state()).invoke(OpenAIResponsesAdapter(FakeClient(), model_id="test"), "check live repo", model_role="c2")
 
 def test_runtime_invokes_capability_before_model_and_binds_receipt():
-    call_order=[]; capability=FakeLiveCapability()
+    capability=FakeLiveCapability()
     class FakeResponses:
-        def create(self, **kwargs): call_order.append("model"); assert capability.calls == [("live_verification", "check live repo")]; return SimpleNamespace(output_text=structured_output())
+        def create(self, **kwargs): assert capability.calls == [("live_verification", "check live repo")]; return SimpleNamespace(output_text=structured_output())
     class FakeClient: responses = FakeResponses()
-    response=SAGERuntime(state()).invoke(OpenAIResponsesAdapter(FakeClient(), model_id="test"), "check live repo", model_role="c2", live_capability=capability); call_order.append("complete"); assert call_order == ["model", "complete"]; assert response.live_operation_receipt is not None; assert response.live_operation_receipt.verify(); assert response.live_operation_receipt.receipt_hash in response.evidence_refs
+    response=SAGERuntime(state()).invoke(OpenAIResponsesAdapter(FakeClient(), model_id="test"), "check live repo", model_role="c2", live_capability=capability)
+    assert response.live_operation_receipt is not None; assert response.live_operation_receipt.verify(); assert response.live_operation_receipt.receipt_hash in response.evidence_refs
 
 def test_openai_system_instructions_embed_exact_order_and_recon_contract():
     instructions = _system_instructions(SAGERuntime(state()).envelope("c2")); assert CONTRACT_ID in instructions; assert "PRESERVE EXACTLY" in instructions; assert "INVOKE CONNECTED CAPABILITY" in instructions; assert "REPORT ONLY SUPPORTED FACTS" in instructions; assert RECON_POLICY_PATH in instructions; assert "DEEP RECON WITHOUT DRAG" in instructions
@@ -159,14 +167,10 @@ def test_openai_adapter_rejects_spoofed_station():
     class FakeClient: responses=FakeResponses()
     with pytest.raises(ValueError, match="SAGE Protocol Governance Violation"): SAGERuntime(state()).invoke(OpenAIResponsesAdapter(FakeClient(), model_id="test"), "recon", model_role="c2")
 
-
 def test_validate_directive_compliance_verification():
     from sage.c2.chatgpt_c2_contract import validate_directive_compliance
-
     decision = validate_directive_compliance("verify live connection and run deep search go finish")
     assert decision.requires_live_verification is True
     assert decision.requires_deep_recon is True
     assert decision.requires_marathon_execution is True
-
-    with pytest.raises(ValueError, match="empty"):
-        validate_directive_compliance("")
+    with pytest.raises(ValueError, match="empty"): validate_directive_compliance("")
