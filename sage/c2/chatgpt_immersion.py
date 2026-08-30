@@ -33,7 +33,10 @@ class ChatGPTImmersionResponse:
     def render(self) -> str:
         """Render the complete response without creating canonical state."""
         body = self.immersion_envelope.render_full_envelope(self.body)
-        return render_station_response(body, c2_chatgpt_presentation())
+        return render_station_response(
+            f"{self.station_header}\n\n{body}",
+            c2_chatgpt_presentation(),
+        )
 
 
 def project_chatgpt_immersion_response(
