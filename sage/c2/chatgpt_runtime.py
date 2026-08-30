@@ -23,13 +23,48 @@ from sage.runtime.model_gateway import ModelResponse, SAGERuntime, SAGEStateSnap
 
 
 def render_chatgpt_c2_response(
-    state: ImmersionState,
+    state: ImmersionState | object,
     body: str = "",
     milestone: MilestoneStrike | None = None,
+    **kwargs: object,
 ) -> str:
     """Render one canonical C2 response through the ChatGPT immersion surface."""
-    if not isinstance(state, ImmersionState) or not state.validate():
-        raise ValueError("Cannot render response: canonical ImmersionState is invalid or missing.")
+    if not isinstance(state, ImmersionState):
+        runtime = state
+        if hasattr(runtime, "current_immersion_state") and callable(getattr(runtime, "current_immersion_state")):
+            state = runtime.current_immersion_state()
+        elif hasattr(runtime, "immersion_state") and isinstance(getattr(runtime, "immersion_state"), ImmersionState):
+            state = getattr(runtime, "immersion_state")
+        elif hasattr(runtime, "current_state"):
+            from sage.c2.immersion_state import ExecutionPhase, FlightStatus, TrustStatus
+            c2_context = kwargs.get("c2_context", {})
+            referenced_ids = kwargs.get("referenced_ids", ())
+            prompt = kwargs.get("prompt", "")
+            active_obj = (
+                c2_context.get("active_objective")
+                or getattr(runtime.current_state, "current_objective", None)
+                or "AI Query Execution"
+            )
+            active_tsk = (
+                c2_context.get("active_task")
+                or getattr(runtime.current_state, "active_task", None)
+                or (f"ChatGPT Query: {str(prompt)[:30]}..." if prompt else "Governed Execution")
+            )
+            state = ImmersionState(
+                station_identity="[SAGE::C2::CHATGPT]",
+                mission=active_obj,
+                phase=ExecutionPhase.EXECUTE,
+                flight_id=getattr(runtime.current_state, "flight_id", "FLIGHT_001"),
+                flight_status=FlightStatus.ACTIVE,
+                trust_status=TrustStatus.VERIFIED if referenced_ids else TrustStatus.HOLD,
+                frontier=getattr(runtime.current_state, "active_frontier", "gpt-c2-boundary"),
+                gate=getattr(runtime.current_state, "stop_boundary", "GOVERNED_EXECUTION"),
+                next_move=active_tsk,
+                evidence_refs=tuple(referenced_ids),
+            )
+        else:
+            raise ValueError("Canonical ImmersionState unavailable on runtime context.")
+
     response: ChatGPTImmersionResponse = project_chatgpt_immersion_response(
         state,
         body=body,

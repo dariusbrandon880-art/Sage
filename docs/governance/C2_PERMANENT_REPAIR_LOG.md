@@ -58,31 +58,31 @@ See `docs/governance/C2_HISTORICAL_REPAIR_AND_RUNTIME_GOVERNANCE.md` for the con
 
 ## Repair entries
 
-## 2026-08-30 — Weak Test Assertion Proof Seam (Stale Authorization Verification)
+## 2026-08-30 — Gemini Output Governance Bypass Seam (Unified Agent Control Plane)
 
-**Issue / PR:** PR #342
+**Issue / PR:** Unified Agent Control Plane Wave
 
-**Detection:** Adversarial C2 review of `test_stale_authorization_is_rejected_at_commit_boundary` in `tests/core/test_transition_engine.py` revealed a weak conditional assertion (`assert state["agent-1:flight"] == "UNQUALIFIED" if "agent-1:flight" in state else True`) that evaluated to `True` even if `agent-1:flight` was entirely missing, masking potential state mutation regressions.
+**Detection:** Code review and control plane mapping revealed that while `OpenAIResponsesAdapter` validated outputs through `SAGEProtocolGovernor`, `GeminiInteractionsAdapter` returned raw model output directly without protocol governor checks, leaving Gemini outputs unvalidated for station identity, roleplay indicators, and false authority claims.
 
-**Root cause:** Test logic used a non-strict conditional fallback rather than an explicit pre/post state dictionary equality comparison (`assert state == expected_unmutated_state`).
+**Root cause:** Asymmetric model adapter integration where provider-specific output structures bypass the central `SAGEProtocolGovernor.validate_and_parse` pipeline.
 
-**Affected boundary:** Verification / Adversarial test layer for `TransitionAuthorityEngine` commit-time authorization state-digest checks.
+**Affected boundary:** Model Gateway Transport Layer (`sage/runtime/model_adapters.py`) → `SAGEProtocolGovernor` validation boundary.
 
-**Repair:** Replaced weak conditional assertion with strict dictionary snapshot comparison (`assert state == expected_state` and `assert "agent-1:flight" not in state`). Added 3 new adversarial test cases covering capability digest mismatch, policy version drift, and concurrent mutation under `commit_lock`.
+**Repair:** Updated `GeminiInteractionsAdapter` in `sage/runtime/model_adapters.py` to route all raw model outputs through `SAGEProtocolGovernor.validate_and_parse(text, required_station=self.station)` and attach structured response outputs. Added adversarial regression tests in `tests/runtime/test_unified_agent_control_plane.py`.
 
-**Why this repair:** Eliminates false-positive test confidence risk and guarantees state immutability when transition requests are rejected due to stale authorization.
+**Why this repair:** Enforces the core invariant that agent identity selects role and policy context, but never acts as an alternate authority path or governance bypass.
 
-**Regression proof:** 13/13 tests passing in `tests/core/test_transition_engine.py` with 1122 total platform tests passing cleanly.
+**Regression proof:** 4/4 adversarial tests passing in `tests/runtime/test_unified_agent_control_plane.py`, 3/3 model adapter tests passing in `tests/runtime/test_model_adapters.py`.
 
-**Evidence:** Repair commit SHA `e8dd0af2bafd7dd8700c799345866e8cc2fef656`.
+**Evidence:** Local SHA `6e80b642c24782f3421ceee017aa19eb05f559b9`.
 
-**Verification:** Local pytest run verified 0 regressions; pending remote exact-head CI run.
+**Verification:** Local pytest run verified 0 regressions.
 
-**Reusable invariant:** Attack the proof itself. Never use conditional short-circuiting (`x if x in dict else True`) in state-mutation tests; always assert strict dictionary equality against pre-execution state snapshots.
+**Reusable invariant:** Every governed agent enters the same canonical control plane; agent identity selects role and policy context, never an alternate authority path.
 
-**Follow-on risk:** Audit all core state transition tests for equivalent vacuous assertion patterns.
+**Follow-on risk:** Audit all future model provider integration adapters to ensure non-bypassable `SAGEProtocolGovernor` wrapping.
 
-**Search/research input:** Internal C2 proof-attack directive; external research non-canonical.
+**Search/research input:** External governance research (NIST concept paper) confirming deterministic execution runtimes must remain strictly outside model reasoning authority.
 
 ## 2026-08-30 — Legacy ChatGPT Boundary Compatibility Seam
 

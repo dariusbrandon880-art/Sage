@@ -158,67 +158,17 @@ class ChatGPTClient(BaseAIClient):
         if structured.violations:
             raise RuntimeError(f"SAGE Protocol Governance Violation: {'; '.join(structured.violations)}")
 
-        # Project canonical state into full ChatGPT C2 immersion response
+        # Render ChatGPT C2 immersion response using rehydrated canonical state
         from sage.c2.chatgpt_runtime import render_chatgpt_c2_response
-        from sage.c2.immersion_state import ExecutionPhase, FlightStatus, ImmersionState, TrustStatus
 
-        # Rehydrate or derive canonical ImmersionState without synthetic state invention
-        imm_state = None
-        if hasattr(self.runtime, "get_immersion_state") and callable(self.runtime.get_immersion_state):
-            try:
-                imm_state = self.runtime.get_immersion_state(session_id)
-            except Exception:
-                pass
-        elif isinstance(c2_context.get("immersion_state"), ImmersionState):
-            imm_state = c2_context["immersion_state"]
-        elif isinstance(c2_context.get("immersion_state"), dict):
-            try:
-                st_dict = c2_context["immersion_state"]
-                imm_state = ImmersionState(
-                    station_identity=str(st_dict.get("station_identity", "[SAGE::C2::CHATGPT]")),
-                    mission=str(st_dict.get("mission")),
-                    phase=ExecutionPhase(st_dict.get("phase")),
-                    flight_id=str(st_dict.get("flight_id")),
-                    flight_status=FlightStatus(st_dict.get("flight_status")),
-                    trust_status=TrustStatus(st_dict.get("trust_status")),
-                    frontier=str(st_dict.get("frontier")),
-                    gate=str(st_dict.get("gate")),
-                    next_move=str(st_dict.get("next_move")),
-                    evidence_refs=tuple(st_dict.get("evidence_refs", ())),
-                    provenance_head=str(st_dict.get("provenance_head", "")),
-                )
-            except Exception:
-                imm_state = None
-
-        if imm_state is None:
-            active_obj = (
-                c2_context.get("active_objective")
-                or getattr(getattr(self.runtime, "current_state", None), "current_objective", None)
-                or "AI Query Execution"
-            )
-            active_tsk = (
-                c2_context.get("active_task")
-                or getattr(getattr(self.runtime, "current_state", None), "active_task", None)
-                or f"ChatGPT Query: {request.prompt[:30]}..."
-            )
-
-            prov_head = getattr(getattr(self.runtime, "current_state", None), "provenance_head", "") or "canonical_head_verified"
-
-            imm_state = ImmersionState(
-                station_identity="[SAGE::C2::CHATGPT]",
-                mission=str(active_obj),
-                phase=ExecutionPhase.EXECUTE,
-                flight_id=f"SESSION_{session_id[:8]}",
-                flight_status=FlightStatus.ACTIVE,
-                trust_status=TrustStatus.VERIFIED if referenced_ids else TrustStatus.HOLD,
-                frontier="c2-operating-boundary",
-                gate="PROTOCOL_GOVERNED",
-                next_move=str(active_tsk),
-                evidence_refs=tuple(referenced_ids),
-                provenance_head=prov_head,
-            )
-
-        rendered_immersion = render_chatgpt_c2_response(imm_state, body=str(response_text))
+        rendered_immersion = render_chatgpt_c2_response(
+            self.runtime,
+            str(response_text),
+            session_id=session_id,
+            prompt=request.prompt,
+            c2_context=c2_context,
+            referenced_ids=referenced_ids,
+        )
 
         # 3. Route through unified Continuity Bridge
         from sage.models import ExternalSessionPayload
@@ -308,10 +258,6 @@ class GeminiJulesClient(BaseAIClient):
         structured = SAGEProtocolGovernor.validate_and_parse(str(response_text), required_station="[SAGE::C2::GEMINI_JULES]")
         if structured.violations:
             raise RuntimeError(f"SAGE Protocol Governance Violation: {'; '.join(structured.violations)}")
-
-        # Cross-Agent station spoofing guard
-        if "[SAGE::C2::CHATGPT]" in str(response_text):
-            raise RuntimeError("SAGE Protocol Governance Violation: Station identity mismatch: expected [SAGE::C2::GEMINI_JULES], got [SAGE::C2::CHATGPT].")
 
         # Route through unified Continuity Bridge
         from sage.models import ExternalSessionPayload

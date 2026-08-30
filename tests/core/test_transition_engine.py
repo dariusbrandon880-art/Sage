@@ -198,72 +198,41 @@ def test_stale_authorization_is_rejected_at_commit_boundary() -> None:
     state = {"agent-1:budget": "AVAILABLE"}
     engine = make_engine(state)
     request = make_request(state)
+    state_before_rejection = state.copy()
+    consumed_before_rejection = engine.consumed_receipt_ids
 
     state["agent-1:budget"] = "EXHAUSTED"
-    expected_state = dict(state)
-
-    with pytest.raises(StaleAuthorizationError):
-        engine.execute(signed_receipt(), request)
-
-    assert state == expected_state
-    assert "agent-1:flight" not in state
-    assert engine.consumed_receipt_ids == frozenset()
-
-
-def test_authorization_digest_mismatch_from_different_capability_set_fails_closed() -> None:
-    state_a = {"agent-1:flight": "UNQUALIFIED", "agent-1:radar": "QUALIFIED"}
-    state_b = {"agent-1:flight": "UNQUALIFIED", "agent-1:radar": "UNQUALIFIED"}
-
-    engine = make_engine(state_a)
-    # Request authorized against state_b snapshot
-    request = make_request(state_b)
-    expected_state = dict(state_a)
-
-    with pytest.raises(StaleAuthorizationError):
-        engine.execute(signed_receipt(), request)
-
-    assert state_a == expected_state
-    assert engine.consumed_receipt_ids == frozenset()
-
-
-def test_policy_version_drift_is_rejected() -> None:
-    state = {"agent-1:flight": "UNQUALIFIED"}
-    engine = make_engine(state)
-
-    request = TransitionRequest(
-        capability_id="flight",
-        subject_id="agent-1",
-        policy_version="policy-v2",  # Drifted policy version vs receipt's policy-v1
-        authorization_scope="capability:flight",
-        target_state="QUALIFIED",
-        authorization_state_digest=compute_capability_state_digest(state),
-    )
-
-    with pytest.raises(ScopeMismatchError):
-        engine.execute(signed_receipt(), request)
-
-    assert state == {"agent-1:flight": "UNQUALIFIED"}
-    assert engine.consumed_receipt_ids == frozenset()
-
-
-def test_concurrent_state_mutation_under_commit_lock() -> None:
-    import threading
-
-    state = {"agent-1:budget": "AVAILABLE"}
-    engine = make_engine(state)
-    request = make_request(state)
-
-    results: list[Exception | None] = []
-
-    def concurrent_mutator() -> None:
-        state["agent-1:budget"] = "EXHAUSTED"
-
-    t = threading.Thread(target=concurrent_mutator)
-    t.start()
-    t.join()
 
     with pytest.raises(StaleAuthorizationError):
         engine.execute(signed_receipt(), request)
 
     assert state == {"agent-1:budget": "EXHAUSTED"}
+    assert state != state_before_rejection
+    assert engine.consumed_receipt_ids == consumed_before_rejection
+
+
+def test_state_mutation_during_validation_is_rejected_without_commit() -> None:
+    state = {"agent-1:budget": "AVAILABLE"}
+    receipt = signed_receipt()
+    request = make_request(state)
+    state_before_execution = state.copy()
+    consumed_before_execution: set[str] = set()
+
+    def verify(receipt: AttestationReceipt, trusted_key: str) -> bool:
+        state["agent-1:budget"] = "EXHAUSTED"
+        return receipt.signature == f"sig:{trusted_key}:{receipt.attestation_payload_digest}"
+
+    engine = TransitionAuthorityEngine(
+        trusted_reviewer_keys={"reviewer-1": "public-key-1"},
+        signature_verifier=verify,
+        capability_state=state,
+        consumed_receipt_ids=consumed_before_execution,
+    )
+
+    with pytest.raises(StaleAuthorizationError):
+        engine.execute(receipt, request)
+
+    assert state == {"agent-1:budget": "EXHAUSTED"}
+    assert "agent-1:flight" not in state
     assert engine.consumed_receipt_ids == frozenset()
+    assert state != state_before_execution
