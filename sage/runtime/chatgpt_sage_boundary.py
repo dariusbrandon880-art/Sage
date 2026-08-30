@@ -35,9 +35,9 @@ class SAGEChatGPTBoundary:
         return "SAGE-governed model response accepted."
 
     @staticmethod
-    def _reject(message: str, *, governance: bool = False) -> None:
-        error_type = RuntimeError if governance else ValueError
-        raise error_type(f"SAGE boundary rejection: {message}")
+    def _reject(message: str) -> None:
+        """Expose one stable fail-closed contract at the ChatGPT boundary."""
+        raise ValueError(f"SAGE boundary rejection: {message}")
 
     def respond(
         self,
@@ -56,18 +56,14 @@ class SAGEChatGPTBoundary:
                 live_capability=live_capability,
             )
         except ValueError as exc:
-            message = str(exc)
-            self._reject(
-                message,
-                governance=message.startswith("SAGE Protocol Governance Violation:"),
-            )
+            self._reject(str(exc))
 
         raw_output = response.raw_output if isinstance(response.raw_output, str) else ""
         structured = SAGEProtocolGovernor.validate_and_parse(raw_output)
         if structured.violations:
-            self._reject("; ".join(structured.violations), governance=True)
+            self._reject("; ".join(structured.violations))
         if structured.station != "[SAGE::C2::CHATGPT]":
-            self._reject("station identity mismatch", governance=True)
+            self._reject("station identity mismatch")
 
         rendered = render_chatgpt_c2_response(
             immersion_state,
