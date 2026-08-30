@@ -4,6 +4,7 @@ from sage.runtime.model_gateway import (
     ModelResponse,
     SAGERuntime,
     SAGEStateSnapshot,
+    SAGERuntimeEnvelope,
 )
 
 
@@ -35,13 +36,19 @@ def response(runtime: SAGERuntime, **overrides) -> ModelResponse:
     return ModelResponse(**data)
 
 
-def test_envelope_binds_identity_state_and_policy():
+def test_envelope_binds_identity_state_policy_and_provenance():
     runtime = SAGERuntime(state())
     envelope = runtime.envelope("recon")
     assert envelope.station == "[SAGE::C2::CHATGPT]"
-    assert envelope.state.instance_id == "sage-instance"
+    assert envelope.agent_identity == envelope.station
     assert envelope.state_digest == envelope.state.digest()
     assert envelope.policy_version == "sage-runtime-v1"
+    assert envelope.policy_digest == SAGERuntimeEnvelope._policy_digest(
+        station=envelope.station,
+        model_role="recon",
+        policy_version=envelope.policy_version,
+    )
+    assert envelope.provenance_digest == SAGERuntimeEnvelope._provenance_digest(envelope.state)
 
 
 def test_reconcile_accepts_matching_response():
@@ -64,9 +71,63 @@ def test_reconcile_rejects_cross_boundary_response(field, value):
         runtime.reconcile(response(runtime, **{field: value}))
 
 
+def test_reconcile_rejects_station_identity_drift():
+    runtime = SAGERuntime(state())
+    with pytest.raises(ValueError, match="station identity"):
+        runtime.reconcile(
+            response(
+                runtime,
+                station="[SAGE::INTEL::GEMINI]",
+                policy_version="sage-runtime-v1",
+                policy_digest=SAGERuntimeEnvelope._policy_digest(
+                    station="[SAGE::INTEL::GEMINI]",
+                    model_role="recon",
+                    policy_version="sage-runtime-v1",
+                ),
+                provenance_digest=SAGERuntimeEnvelope._provenance_digest(runtime.state),
+            ),
+            expected_station="[SAGE::C2::CHATGPT]",
+            model_role="recon",
+        )
+
+
+def test_reconcile_rejects_policy_context_drift():
+    runtime = SAGERuntime(state())
+    with pytest.raises(ValueError, match="policy context"):
+        runtime.reconcile(
+            response(
+                runtime,
+                station="[SAGE::C2::CHATGPT]",
+                policy_version="sage-runtime-v1",
+                policy_digest="stale-policy-digest",
+                provenance_digest=SAGERuntimeEnvelope._provenance_digest(runtime.state),
+            ),
+            expected_station="[SAGE::C2::CHATGPT]",
+            model_role="recon",
+        )
+
+
+def test_reconcile_rejects_provenance_drift():
+    runtime = SAGERuntime(state())
+    with pytest.raises(ValueError, match="provenance"):
+        runtime.reconcile(
+            response(
+                runtime,
+                station="[SAGE::C2::CHATGPT]",
+                policy_version="sage-runtime-v1",
+                policy_digest=SAGERuntimeEnvelope._policy_digest(
+                    station="[SAGE::C2::CHATGPT]",
+                    model_role="recon",
+                    policy_version="sage-runtime-v1",
+                ),
+                provenance_digest="stale-provenance-digest",
+            ),
+            expected_station="[SAGE::C2::CHATGPT]",
+            model_role="recon",
+        )
+
+
 def test_state_digest_changes_when_canonical_state_changes():
     first = state()
-    second = SAGEStateSnapshot(
-        **{**first.__dict__, "active_frontier": "different-frontier"}
-    )
+    second = SAGEStateSnapshot(**{**first.__dict__, "active_frontier": "different-frontier"})
     assert first.digest() != second.digest()
