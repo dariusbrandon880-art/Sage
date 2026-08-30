@@ -199,6 +199,9 @@ class SAGEProtocolGovernor:
                     )
 
                 reasoning_chain = list(parsed_data.get("reasoning_chain", []))
+                resp_text = parsed_data.get("response_text")
+                if resp_text and not reasoning_chain:
+                    reasoning_chain = [str(resp_text)]
                 raw_actions = parsed_data.get("proposed_actions", [])
                 for act in raw_actions:
                     if isinstance(act, dict):
