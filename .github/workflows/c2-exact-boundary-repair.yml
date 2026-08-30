@@ -1,4 +1,4 @@
-name: C2 Exact Boundary Repair
+name: C2 Exact Boundary Repair v2
 
 on:
   pull_request:
@@ -17,8 +17,6 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
       - name: Apply exact canonical flight binding repair
-        env:
-          EXPECTED_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           python - <<'PY'
           from pathlib import Path
