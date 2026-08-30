@@ -1,9 +1,0 @@
-{
-  "executed_head": "63f50350d3a8e6401d16d9bda76103e7dc2a5b1a",
-  "flight_id": "FLIGHT-F2-CONTINUITY",
-  "frontier_name": "Continuity & Failure Memory Frontier",
-  "status": "PASS",
-  "target_path": "sage/capability_registry.py",
-  "timestamp": 1788044443.9380946,
-  "wave_id": "wave-big-jump-1788044442"
-}
