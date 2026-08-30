@@ -309,6 +309,10 @@ class GeminiJulesClient(BaseAIClient):
         if structured.violations:
             raise RuntimeError(f"SAGE Protocol Governance Violation: {'; '.join(structured.violations)}")
 
+        # Cross-Agent station spoofing guard
+        if "[SAGE::C2::CHATGPT]" in str(response_text):
+            raise RuntimeError("SAGE Protocol Governance Violation: Station identity mismatch: expected [SAGE::C2::GEMINI_JULES], got [SAGE::C2::CHATGPT].")
+
         # Route through unified Continuity Bridge
         from sage.models import ExternalSessionPayload
 
