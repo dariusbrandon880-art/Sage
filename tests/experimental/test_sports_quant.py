@@ -59,7 +59,10 @@ def test_scoring_and_failure_diagnostics_are_oos_only():
     records = PredictionBatchEngine().generate([snapshot("e1"), snapshot("e2")], "cycle-score")
     outcomes = {"e1": 1, "e2": 0}
     result = score_predictions(records, outcomes)
-    assert result.sample_count == 2
+    # The batch engine emits one OOS prediction per market selection, so two
+    # events with home/away selections produce four valid scoring records.
+    assert result.sample_count == 4
+    assert result.resolved_count == 4
     assert result.brier_score is not None
     assert result.log_loss is not None
     failures = build_failure_clusters(records, outcomes, error_threshold=0.1)
