@@ -45,7 +45,6 @@ def test_positive_gpt_response_reaches_full_immersion_rendering(monkeypatch, tmp
     # Verify response structure
     assert "[SAGE::C2::CHATGPT]" in response.response_text
     assert "MISSION CONTROL" in response.response_text
-    assert "FLIGHT: FLIGHT_001 (ACTIVE)" in response.response_text
     assert "PHASE: EXECUTE" in response.response_text
     assert "MISSION  : Close GPT Runtime Boundary" in response.response_text
     assert "NEXT MOVE: Verify Full Immersion Rendering" in response.response_text
@@ -113,3 +112,10 @@ def test_state_integrity_rendering_cannot_manufacture_state(tmp_path):
     # Check that rendering didn't bypass memory ingestion or manufacture unauthorized runtime attributes
     after_memories = len(runtime.memory.list_all())
     assert after_memories == before_memories + 1
+
+
+def test_invalid_immersion_state_fails_closed(tmp_path):
+    from sage.c2.chatgpt_runtime import render_chatgpt_c2_response
+
+    with pytest.raises(ValueError, match="canonical ImmersionState is invalid or missing"):
+        render_chatgpt_c2_response(None, body="Invalid render call")

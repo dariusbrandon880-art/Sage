@@ -28,6 +28,8 @@ def render_chatgpt_c2_response(
     milestone: MilestoneStrike | None = None,
 ) -> str:
     """Render one canonical C2 response through the ChatGPT immersion surface."""
+    if not isinstance(state, ImmersionState) or not state.validate():
+        raise ValueError("Cannot render response: canonical ImmersionState is invalid or missing.")
     response: ChatGPTImmersionResponse = project_chatgpt_immersion_response(
         state,
         body=body,
