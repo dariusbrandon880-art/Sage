@@ -19,6 +19,13 @@ def _print_c2_bootstrap(runtime):
     print(render_chat_identity())
 
 
+def _print_c2_response(response_text, runtime):
+    """Render every C2 response under the canonical read-only identity nameplate."""
+    from sage.agent_presence import render_chat_identity
+    print(render_chat_identity())
+    print(response_text)
+
+
 def _build_chatgpt_client(ChatGPTClient, runtime, c2_provider):
     """Construct the client while preserving compatibility with older test seams."""
     try:
@@ -91,7 +98,7 @@ def main():
             client = _build_chatgpt_client(ChatGPTClient, runtime, get_team_context)
             _print_c2_bootstrap(runtime)
             if args.prompt:
-                response = client.execute_query(AIQueryRequest(prompt=args.prompt)); print(response.response_text)
+                response = client.execute_query(AIQueryRequest(prompt=args.prompt)); _print_c2_response(response.response_text, runtime)
             else:
                 session_id = None
                 while True:
@@ -99,7 +106,7 @@ def main():
                     if prompt.lower() in {"exit", "quit"}: break
                     if not prompt: continue
                     response = client.execute_query(AIQueryRequest(prompt=prompt, session_id=session_id)); session_id = response.session_id
-                    print(response.response_text)
+                    _print_c2_response(response.response_text, runtime)
         elif args.command == "metrics":
             from sage.runtime import get_metrics_collector; print(json.dumps(get_metrics_collector().get_metrics(), indent=2))
         elif args.command == "audit":
@@ -153,4 +160,5 @@ def main():
         print(f"Error: SAGE execution failed: {e!s}"); sys.exit(1)
 
 
-if __name__ == "__main__": main()
+if __name__ == "__main__":
+    main()

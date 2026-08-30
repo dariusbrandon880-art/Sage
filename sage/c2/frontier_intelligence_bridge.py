@@ -95,3 +95,13 @@ class FrontierIntelligenceBridge:
         )
         object.__setattr__(receipt, "bridge_digest", receipt.digest())
         return receipt
+
+    def get_bridge_telemetry(self, receipt: FrontierBridgeDispatchReceipt) -> Mapping[str, Any]:
+        """Synthesize operational bridge telemetry from a dispatch receipt."""
+        return {
+            "is_authorized": receipt.is_authorized,
+            "authorized_count": len(receipt.authorized_candidate_ids),
+            "unauthorized_count": len(receipt.unauthorized_candidate_ids),
+            "bridge_digest": receipt.bridge_digest,
+            "dispatch_verdict": receipt.dispatch_result.wave_verdict if receipt.dispatch_result else "UNAUTHORIZED",
+        }

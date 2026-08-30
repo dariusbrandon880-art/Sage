@@ -3,6 +3,10 @@
 The nameplate is a read-only projection over canonical AirspaceState. It never
 creates, promotes, or infers qualification. Rank/XP values come only from the
 persisted progression state already maintained by the Airspace subsystem.
+
+Milestone Strikes are likewise presentation-only: a validated upstream impact
+level is rendered as earned stars. This module never decides whether an impact
+is safe, validated, or promotion-worthy.
 """
 
 from __future__ import annotations
@@ -25,6 +29,26 @@ STATION_NAMEPLATES = {
     StationID.INTEL_STATION: "[SAGE::INTEL::GEMINI]",
     StationID.ENGINEERING_FLIGHT: "[SAGE::ENGINEER::JULES]",
 }
+
+MAX_MILESTONE_STRIKE_STARS = 5
+
+
+def render_milestone_strike(stars: int) -> str:
+    """Render an earned Milestone Strike from a validated impact level.
+
+    ``stars`` must already be produced by the governed evidence/validation
+    layer. This projection deliberately performs no scoring or qualification.
+    Zero stars renders an explicit unearned state; one through five stars show
+    increasing validated progress.
+    """
+    if not isinstance(stars, int) or isinstance(stars, bool):
+        raise TypeError("milestone strike stars must be an integer")
+    if not 0 <= stars <= MAX_MILESTONE_STRIKE_STARS:
+        raise ValueError(
+            f"milestone strike stars must be between 0 and {MAX_MILESTONE_STRIKE_STARS}"
+        )
+    earned = "⭐" * stars
+    return f"MILESTONE STRIKE: {earned or '—'}"
 
 
 def render_agent_nameplate(

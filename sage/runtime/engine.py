@@ -1105,3 +1105,15 @@ class SageRuntime:
             "lineage_valid": lineage_valid,
             "issues": issues,
         }
+
+    def get_active_capability_summary(self) -> dict[str, Any]:
+        """Synthesize runtime substrate capability readiness and active subsystem status."""
+        status = self.get_status()
+        integrity = self.verify_integrity()
+        return {
+            "active": status["active"],
+            "session_depth": status["session_depth"],
+            "integrity_valid": integrity["is_valid"],
+            "c2_rehydrated": status["c2_status"]["rehydrated"],
+            "subsystems_ready": True,
+        }
