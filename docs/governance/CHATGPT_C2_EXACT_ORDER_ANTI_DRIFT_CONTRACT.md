@@ -56,15 +56,29 @@ Substantive engineering directives must also follow:
 
 `docs/governance/SAGE_DEEP_RECON_VELOCITY_POLICY.md`
 
-The operational rule is **repository-first, then targeted external intelligence, then bounded concurrent execution**. Super Search is a reconnaissance sensor and must not be treated as repository authority. Independent research and repository inspection should be parallelized after the initial reality lock when doing so reduces latency.
+The operational rule is **repository-first, then targeted external intelligence, then bounded concurrent execution**. Super Search is a reconnaissance sensor and must not be treated as repository authority. Independent research and repository inspection should be parallelized after the initial reality lock when doing so reduces latency. Deep reconnaissance must accelerate execution rather than become a serial approval gate.
 
 ## Big Jump Wave Doctrine Binding
 
-When C2 is operating a SAGE Big Jump Wave, use:
+When C2 is operating a SAGE Big Jump Wave, the canonical interpretation of waves, flights, the 5x4 frame, multi-session Jules execution, and optional node topology is defined by:
 
 `docs/governance/SAGE_C2_BIG_JUMP_WAVE_15_FLIGHT_CONCURRENCY_DOCTRINE.md`
 
-Big Jump Wave is the normal SAGE execution workflow. One wave contains five independent full-engine flights. `5x4` means five paths x four lifecycle milestone gates = 20 advancement cells. Three concurrently executing Jules wave sessions can represent up to 15 active flight missions only when execution is actually active. Multi-node is optional topology. Super Search is a reconnaissance sensor; Git/repository truth and validated Master Archive state remain authoritative.
+That doctrine is a required C2 reference for Big Jump Wave planning and reconciliation.
+
+The binding rules are:
+
+- **BIG JUMP WAVE IS THE NORMAL SAGE EXECUTION WORKFLOW.**
+- **One wave contains five independent full-engine flights.**
+- **5x4 means five paths x four lifecycle milestone gates = 20 advancement cells.**
+- **The 20 cells are not 20 separate tasks and do not assign one lifecycle stage permanently to a flight.**
+- **Each flight can target any causally relevant SAGE frontier, provided targets are distinct and bounded.**
+- **Three concurrently executing Jules wave sessions can represent up to 15 distinct active flight missions (3 x 5), but only when the underlying execution is actually active.**
+- **Multi-node is optional topology and does not require exactly three nodes.**
+- **C2 must distinguish true concurrency from rolling/batched execution and must never inflate evidence.**
+- **Super Search is a reconnaissance sensor; Git/repository truth and validated Master Archive state remain authoritative.**
+
+The contract therefore explicitly binds the anchor `5x4 means five paths x four lifecycle milestone gates = 20 advancement cells` and the phrase `Big Jump Wave is the normal SAGE execution workflow` for compatibility with governance regression checks.
 
 ## Enforcement boundary
 
@@ -80,11 +94,15 @@ A pasted Jules/agent report is evidence to inspect, not repository truth. A live
 
 A green matrix, passing test suite, receipt, hash, report, documentation change, or evidence artifact is **proof infrastructure**, not capability advancement by itself.
 
-For a Big Jump Wave claim to count as real SAGE advancement:
+For a Big Jump Wave claim to count as real SAGE advancement, C2 must establish against the authoritative pre-wave baseline:
 
 `BASELINE -> DISTINCT TARGET -> CONCRETE BEHAVIOR/CODE DELTA -> DEDICATED VERIFICATION -> EVIDENCE -> REUSABLE OUTPUT -> RECONVERGENCE -> PROMOTION`
 
-If no concrete capability delta was produced, record `NO_NET_CAPABILITY_DELTA`.
+If the baseline already contains the claimed capability, the flight must not be relabeled as new advancement. Select the next-highest-value uncovered frontier instead.
+
+If no concrete capability delta was produced, record `NO_NET_CAPABILITY_DELTA`; do not include that flight in net capability velocity.
+
+Velocity is measured as **verified reusable capability added per scarce execution capacity**, not by number of tasks, cells, commits, receipts, or elapsed time. A multiplier claim requires repeated comparable observations.
 
 ## Deep Recon Execution Rule
 
@@ -101,41 +119,64 @@ Super Search may be omitted only when external information cannot materially cha
 
 ## Immersion Continuity Binding
 
-When a SAGE-directed response is being produced, C2 station identity and immersion presentation are part of the full workflow contract rather than an optional style mode.
+When a SAGE-directed response is being produced, the C2 station identity and immersion presentation are part of the full workflow contract rather than an optional style mode.
+
+The responding station must preserve the canonical nameplate and current operational mode across intermediate responses, long conversations, resumed conversations, and new sessions that successfully rehydrate SAGE repository truth.
 
 For C2, the canonical header is:
 
 `[SAGE::C2::CHATGPT] **C2 Mission Control**`
 
-The presentation layer is read-only. It cannot authorize a mission, mutate canonical state, award progression, promote knowledge, or turn a candidate into verified truth.
+A compact mode signature should reflect the actual work without inventing state.
 
-Presentation rhythm:
+The presentation layer is read-only. It cannot award XP, create qualification, authorize a mission, mutate canonical state, or turn a candidate into verified truth.
+
+The presentation rhythm is:
 
 `REAL EVENT -> CANONICAL STATE CHANGE -> IMMERSION PROJECTION -> NEXT GATE`
 
-If continuity may have crossed sessions, context truncation, changed `main`, changed branch, or changed policy, rehydrate before making repository/live claims.
+If a response omits the nameplate/immersion contract solely because the task is routine, the context is long, the prior response used it, or the work changed from coding to research/status/reporting, classify that as **IMMERSION DRIFT** and rehydrate before continuing.
+
+Cross-chat rehydration must include:
+
+- persistent C2 operating contract;
+- persistence/immersion hardening protocol;
+- immersion language design lab;
+- immersion reference atlas;
+- current immersion implementation boundary;
+- canonical `main` and validated state.
+
+This binding is subject to the same platform boundary as the rest of this contract: repository rules can govern SAGE-owned adapters/integrations that load them, but cannot directly rewrite an unrelated standalone ChatGPT host session.
 
 ## Drift test
 
-The adversarial suite must test:
+The minimum adversarial suite must test:
 
 - exact directive preservation;
+- no-added-requirements behavior;
 - live-check-first behavior;
+- no assumption of unavailable connections;
 - no false live-verification claims;
 - contradiction preservation;
 - authority separation;
 - fail-closed verification failure;
-- repository-first deep recon;
+- deep-recon repository-first ordering;
+- targeted external reconnaissance without serializing execution;
 - Big Jump Wave doctrine binding;
-- five-flight and 5x4 meaning preservation;
-- distinction between true concurrency and rolling execution;
-- full canonical cycle execution;
-- evidence versus net capability advancement;
-- baseline duplicate detection;
-- **continuous exchange rehydration across intermediate responses, long-context truncation, resumed sessions, old chats with changed `main`, and new chats with repository access**;
+- five-flight preservation;
+- 5x4 meaning preservation;
+- distinction between flight, lifecycle cell, Jules session, and optional node;
+- true-concurrency versus rolling-execution claims;
+- prohibition against post-hoc reporting tables over sequential work;
+- full canonical cycle execution (PREFLIGHT -> EXECUTE -> TEST -> EVIDENCE -> VERIFY -> RECONCILE -> REPORT);
+- distinction between evidence throughput and net capability advancement;
+- rejection of evidence-only work as capability gain;
+- baseline duplicate detection before claiming advancement;
+- recording of no-net-delta, rework, conflict, and human-intervention outcomes;
+- **immersion continuity across intermediate responses, long-context truncation, resumed sessions, old chats with changed `main`, and new chats with repository access**;
 - **canonical C2 nameplate preservation**;
 - **no immersion-derived authority or progression**;
-- **repository-first rehydration of immersion doctrine and runtime boundaries**.
+- **repository-first rehydration of the immersion language and reference atlas**.
 
 ## Promotion gate
 
