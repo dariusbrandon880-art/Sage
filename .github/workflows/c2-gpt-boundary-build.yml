@@ -31,6 +31,9 @@ jobs:
       - name: Apply GPT -> SAGE integration boundary
         run: python scripts/patch_chatgpt_boundary.py
 
+      - name: Migrate ChatGPT regression fixtures
+        run: python scripts/patch_chatgpt_boundary_tests.py
+
       - name: Run focused boundary tests
         run: |
           pytest -q tests/c2/test_chatgpt_sage_boundary.py tests/c2/test_chatgpt_runtime.py
@@ -48,7 +51,7 @@ jobs:
           fi
           git config user.name "SAGE C2 Build"
           git config user.email "sage-c2-build@users.noreply.github.com"
-          git add sage/integration.py
+          git add sage/integration.py tests/test_openai_runtime_activation.py
           git commit -m "feat(c2): bind ChatGPTClient to SAGE runtime boundary"
           git push origin HEAD:${GITHUB_REF_NAME}
 
