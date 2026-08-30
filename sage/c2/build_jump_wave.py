@@ -67,66 +67,37 @@ class BuildJumpWaveEngine:
         return sha
 
     def _run_flight(self, spec: FlightMissionSpec, wave_id: str, head_sha: str) -> FlightExecutionSummary:
-        candidate = FrontierCandidate(
-            frontier_id=spec.flight_id,
-            target=spec.target_path,
-            source=f"Big Jump Wave {wave_id}",
-            state=FrontierState.UNSTARTED,
-            base_sha=head_sha,
-            dependencies=[],
-            collision_zone=spec.collision_zone,
-            evidence_required=[spec.evidence_ref],
-            stop_condition="Milestone proof verified",
-        )
+        candidate = FrontierCandidate(frontier_id=spec.flight_id, target=spec.target_path, source=f"Big Jump Wave {wave_id}", state=FrontierState.UNSTARTED, base_sha=head_sha, dependencies=[], collision_zone=spec.collision_zone, evidence_required=[spec.evidence_ref], stop_condition="Milestone proof verified")
         admission = self.admission_engine.classify_and_evaluate(candidate)
-        manifest = FlightManifest(
-            flight_id=spec.flight_id,
-            capability_target=spec.target_path,
-            base_sha=head_sha,
-            ownership=OwnershipFingerprint(
-                files={spec.target_path},
-                modules={spec.collision_zone.replace('/', '.')},
-                artifacts={spec.evidence_ref},
-            ),
-            lifecycle=FlightLifecycle.ACTIVE,
-        )
+        manifest = FlightManifest(flight_id=spec.flight_id, capability_target=spec.target_path, base_sha=head_sha, ownership=OwnershipFingerprint(files={spec.target_path}, modules={spec.collision_zone.replace('/', '.')}, artifacts={spec.evidence_ref}), lifecycle=FlightLifecycle.ACTIVE)
         with self._lock_manager_guard:
             gps = FlightGPS(canonical_head_sha=head_sha)
             gps.registry.register(manifest)
-            lock_res = self.lock_manager.acquire_lock(
-                FlightLockRequest(
-                    session_id=wave_id,
-                    flight_id=spec.flight_id,
-                    target_files=[spec.target_path],
-                    target_namespaces=[spec.collision_zone],
-                )
-            )
-
+            lock_res = self.lock_manager.acquire_lock(FlightLockRequest(session_id=wave_id, flight_id=spec.flight_id, target_files=[spec.target_path], target_namespaces=[spec.collision_zone]))
         try:
             m1 = LifecycleMilestoneRecord(stage=LifecycleStage.INTAKE_RECON, passed=admission.admitted and lock_res.acquired, evidence_ref=spec.evidence_ref)
             m2 = LifecycleMilestoneRecord(stage=LifecycleStage.BOUNDED_BUILD, passed=lock_res.acquired, evidence_ref=spec.target_path)
-
             tests_passed = 0
             all_tests_ok = True
             if spec.test_references:
-                # Flights remain concurrently scheduled, but verification subprocesses
-                # are serialized because selected integration tests touch shared
-                # FastAPI/global process state. This protects proof integrity without
-                # weakening the five-flight execution model.
+                # The five flights remain concurrently executed, but pytest subprocesses
+                # may touch shared FastAPI/global fixtures and repository-local state.
+                # Serialize only this verification boundary so one flight cannot corrupt
+                # another flight's proof while preserving concurrent flight scheduling.
                 with self._verification_process_lock:
                     result = subprocess.run([sys.executable, "-m", "pytest", *spec.test_references], capture_output=True, text=True)
                 all_tests_ok = result.returncode == 0
                 match = re.search(r"(\d+)\s+passed", result.stdout)
                 if match:
                     tests_passed = int(match.group(1))
-
             m3 = LifecycleMilestoneRecord(stage=LifecycleStage.VERIFY_PROOF, passed=all_tests_ok, evidence_ref=spec.test_references[0] if spec.test_references else spec.target_path)
             evidence_dir = self.storage_dir / "waves" / wave_id / head_sha
             evidence_dir.mkdir(parents=True, exist_ok=True)
             evidence_file = evidence_dir / f"{spec.flight_id}_receipt.json"
-            evidence_file.write_text(json.dumps({"wave_id": wave_id, "flight_id": spec.flight_id, "frontier_name": spec.frontier_name, "target_path": spec.target_path, "executed_head": head_sha, "status": "PASS" if admission.admitted and lock_res.acquired and all_tests_ok else "FAIL", "timestamp": time.time()}, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-            m4 = LifecycleMilestoneRecord(stage=LifecycleStage.WAREHOUSE_PROMOTE, passed=all_tests_ok, evidence_ref=str(evidence_file))
             flight_passed = admission.admitted and lock_res.acquired and all_tests_ok
+            flight_proof = {"wave_id": wave_id, "flight_id": spec.flight_id, "frontier_name": spec.frontier_name, "target_path": spec.target_path, "executed_head": head_sha, "status": "PASS" if flight_passed else "FAIL", "timestamp": time.time()}
+            evidence_file.write_text(json.dumps(flight_proof, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+            m4 = LifecycleMilestoneRecord(stage=LifecycleStage.WAREHOUSE_PROMOTE, passed=all_tests_ok, evidence_ref=str(evidence_file))
             return FlightExecutionSummary(flight_id=spec.flight_id, target=spec.target_path, classification="ACTIVE", execution_result="PASS" if flight_passed else "FAIL", exact_head=head_sha, tests_passed=tests_passed, evidence_ref=str(evidence_file), pr_or_change=spec.pr_or_change, lifecycle_milestones=[m1, m2, m3, m4])
         finally:
             if lock_res.acquired:
@@ -139,7 +110,6 @@ class BuildJumpWaveEngine:
         active_missions = missions or CANONICAL_BIG_JUMP_MISSIONS
         if len(active_missions) != 5:
             raise ValueError(f"Big Jump Wave requires exactly 5 flight missions, got {len(active_missions)}")
-
         summaries: dict[str, FlightExecutionSummary] = {}
         with ThreadPoolExecutor(max_workers=self.max_workers, thread_name_prefix="sage-flight") as executor:
             futures = {executor.submit(self._run_flight, spec, w_id, head_sha): spec for spec in active_missions}
@@ -148,11 +118,6 @@ class BuildJumpWaveEngine:
                 try:
                     summaries[spec.flight_id] = future.result()
                 except Exception:
-                    summaries[spec.flight_id] = FlightExecutionSummary(
-                        flight_id=spec.flight_id, target=spec.target_path, classification="ACTIVE", execution_result="FAIL",
-                        exact_head=head_sha, tests_passed=0, evidence_ref=spec.evidence_ref, pr_or_change=spec.pr_or_change,
-                        lifecycle_milestones=[LifecycleMilestoneRecord(stage=LifecycleStage.VERIFY_PROOF, passed=False, evidence_ref=spec.evidence_ref)],
-                    )
-
+                    summaries[spec.flight_id] = FlightExecutionSummary(flight_id=spec.flight_id, target=spec.target_path, classification="ACTIVE", execution_result="FAIL", exact_head=head_sha, tests_passed=0, evidence_ref=spec.evidence_ref, pr_or_change=spec.pr_or_change, lifecycle_milestones=[LifecycleMilestoneRecord(stage=LifecycleStage.VERIFY_PROOF, passed=False, evidence_ref=spec.evidence_ref)])
         ordered_summaries = [summaries[spec.flight_id] for spec in active_missions]
         return C2ReconvergenceSynthesizer(wave_id=w_id).synthesize_reconvergence(ordered_summaries)
