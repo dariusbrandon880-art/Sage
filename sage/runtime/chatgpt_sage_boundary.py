@@ -9,10 +9,9 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from sage.c2.chatgpt_c2_contract import SAGEProtocolGovernor
 from sage.c2.chatgpt_runtime import render_chatgpt_c2_response
 from sage.c2.immersion_state import ImmersionState
-from sage.runtime.model_gateway import ModelAdapter, ModelResponse, SAGERuntime
+from sage.runtime.model_gateway import ModelAdapter, ModelResponse, SAGERuntime, SAGEProtocolGovernor
 
 
 class SAGEChatGPTBoundary:
