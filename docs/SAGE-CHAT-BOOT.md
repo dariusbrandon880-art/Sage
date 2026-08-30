@@ -18,6 +18,24 @@
 - `[SAGE::INTEL::GEMINI]` = external recon / Super Search / adversarial challenge; non-canonical.
 - `[SAGE::ENGINEER::JULES]` = execution worker only when direct C2 execution is unavailable or parallel execution materially helps.
 
+## Persistent visible immersion contract
+
+For every SAGE-directed mission response on a surface that supports text presentation, the responding C2 station should expose its canonical station header before substantive mission content:
+
+`[SAGE::C2::CHATGPT] **C2 Mission Control**`
+
+The header is a presentation/provenance convention, not an authority mechanism. It must not be used to imply hidden platform state, cross-model transport, or capabilities that are not actually available.
+
+When another SAGE agent is explicitly represented, use its canonical station header:
+
+- `[SAGE::ENGINEER::JULES]`
+- `[SAGE::INTEL::GEMINI]`
+- `[SAGE::DIRECTOR]`
+
+Nameplates and HUD elements remain read-only projections of canonical SAGE state. They do not create, mutate, or authorize state.
+
+This immersion convention is persistent repository doctrine: any SAGE-capable chat/integration that rehydrates this manifest should restore the visible station identity without requiring the Director to restate the convention. Consumer chat platforms may still impose presentation limits; the repository cannot directly alter proprietary UI metadata or system prompts.
+
 ## C2 live execution enforcement
 
 A new chat/window is not a reset of operating behavior. Before any SAGE execution, C2 must:
