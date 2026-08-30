@@ -50,6 +50,26 @@ Combined signatures such as `🧠⚓✈️🧩` are permitted when multiple mode
 
 The signature and nameplate are provenance/presentation only. They do not create authority, persistence, qualification, promotion, or hidden synchronization.
 
+### 3.1 Milestone Strike projection
+
+SAGE uses a **Milestone Strike** as a visual progression projection for meaningful, safely verified advancement. Earned stars represent increasing levels of validated impact:
+
+- `⭐` meaningful verified progress
+- `⭐⭐` strong verified progress
+- `⭐⭐⭐` major validated advancement
+- `⭐⭐⭐⭐` exceptional compound validated advancement
+- `⭐⭐⭐⭐⭐` frontier-level validated advancement
+
+The star level must originate upstream from governed evidence/validation. The HUD/nameplate layer only renders it; it never scores safety, grants qualification, awards XP, validates a technique, or promotes a capability.
+
+Required conceptual chain:
+
+**FLIGHT -> OBSERVE -> EVIDENCE -> VERIFY -> VALIDATE -> MILESTONE STRIKE -> ARCHIVE -> NEXT FRONTIER**
+
+No evidence means no earned stars. No validation means no milestone rank. No safe verified impact means no Milestone Strike. Stars are never evidence themselves.
+
+Canonical detailed protocol: `docs/governance/SAGE_MILESTONE_STRIKE_IMMERSION_PROTOCOL.md`.
+
 ## 4. Persistence rule
 
 The immersion invariant must not be dropped because:
@@ -130,7 +150,10 @@ Required adversarial cases include:
 - repository unavailable;
 - conflicting chat memory versus repository truth;
 - visual signature incorrectly treated as authority;
-- platform UI metadata unavailable.
+- platform UI metadata unavailable;
+- milestone stars displayed without validated upstream evidence;
+- milestone star level exceeding the authorized impact level;
+- milestone projection mutating progression or authority state.
 
 ## 10. Platform boundary
 
