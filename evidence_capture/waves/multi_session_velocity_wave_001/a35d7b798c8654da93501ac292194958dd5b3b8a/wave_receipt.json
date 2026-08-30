@@ -34,16 +34,16 @@
     "prediction_accuracy_score": 1.0,
     "provenance_hash": "075865366ce4fceb7f57922d021fc70ba389f40233e4e8b19ed1291e7f674842",
     "receipt_id": "org_growth_075865366ce4",
-    "timestamp": "2026-08-30T01:27:23.157407+00:00",
+    "timestamp": "2026-08-30T02:26:01.808146+00:00",
     "velocity_score": 1.0,
     "wave_completion_rate": 1.0
   },
-  "receipt_hash": "66470fa0b6122c48fc13b9ad57d348cf451d66b8ab78d963daec0d6fe7748b90",
+  "receipt_hash": "5bd922d2795a7d92c8a2bd6d16ea2608b8c439235c75048052affe9a637c292f",
   "receipt_id": "rec_c99292e8abf7",
   "reconvergence_verdict": "PASS",
   "rolls_royce_quality_passed": true,
   "successful_flights": 5,
-  "timestamp": 1788053243.1574848,
+  "timestamp": 1788056761.8082418,
   "total_flights": 5,
   "wave_id": "multi_session_velocity_wave_001"
 }
