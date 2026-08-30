@@ -9,7 +9,7 @@ import json
 from typing import Any, Mapping, Sequence
 
 from sage.c2.chatgpt_c2_contract import render_system_contract
-from sage.runtime.model_gateway import ModelResponse, SAGERuntimeEnvelope
+from sage.runtime.model_gateway import ModelResponse, SAGERuntimeEnvelope, SAGEProtocolGovernor
 
 
 class OpenAIResponsesAdapter:
@@ -22,8 +22,6 @@ class OpenAIResponsesAdapter:
         self.model_id = model_id
 
     def invoke(self, envelope: SAGERuntimeEnvelope, task: str) -> ModelResponse:
-        from sage.runtime.model_gateway import SAGEProtocolGovernor
-
         response = self.client.responses.create(
             model=self.model_id,
             instructions=_system_instructions(envelope),
@@ -46,6 +44,10 @@ class OpenAIResponsesAdapter:
             raw_output=text,
             structured_response=structured,
             evidence_refs=structured.evidence_refs,
+            station=self.station,
+            policy_version=envelope.policy_version,
+            policy_digest=envelope.policy_digest,
+            provenance_digest=envelope.provenance_digest,
         )
 
 
@@ -76,15 +78,28 @@ class GeminiInteractionsAdapter:
         text = getattr(interaction, "output_text", None)
         if text is None:
             raise ValueError("Gemini interaction did not contain output_text")
-        evidence_refs = _extract_url_citations(interaction)
+
+        # Gemini is transport only: every provider output enters the same
+        # protocol-governance gate before SAGE accepts evidence or proposals.
+        structured = SAGEProtocolGovernor.validate_and_parse(text, required_station=self.station)
+        if structured.violations:
+            raise ValueError(f"SAGE Protocol Governance Violation: {'; '.join(structured.violations)}")
+
+        provider_refs = _extract_url_citations(interaction)
+        evidence_refs = tuple(dict.fromkeys((*structured.evidence_refs, *provider_refs)))
         return ModelResponse(
             model_id=self.model_id,
             instance_id=envelope.state.instance_id,
             mission_id=envelope.state.mission_id,
             session_id=envelope.state.session_id,
             input_state_digest=envelope.state_digest,
-            evidence_refs=tuple(evidence_refs),
+            evidence_refs=evidence_refs,
             raw_output=text,
+            structured_response=structured,
+            station=self.station,
+            policy_version=envelope.policy_version,
+            policy_digest=envelope.policy_digest,
+            provenance_digest=envelope.provenance_digest,
         )
 
 
