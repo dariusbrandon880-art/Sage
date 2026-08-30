@@ -170,3 +170,12 @@ def test_validate_directive_compliance_verification():
 
     with pytest.raises(ValueError, match="empty"):
         validate_directive_compliance("")
+
+
+def test_rehydration_triggers_detection():
+    from sage.c2.chatgpt_c2_contract import validate_directive_compliance
+
+    decision = validate_directive_compliance("lock onto repo and whole repo truth")
+    assert decision.requires_full_rehydration is True
+    assert "lock onto repo" in decision.matched_rehydration_triggers
+    assert "whole repo truth" in decision.matched_rehydration_triggers
