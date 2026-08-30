@@ -11,8 +11,10 @@ from sage.core.transition_engine import (
     InvalidAttestationError,
     ReplayAttestationError,
     ScopeMismatchError,
+    StaleAuthorizationError,
     TransitionAuthorityEngine,
     TransitionRequest,
+    compute_capability_state_digest,
 )
 
 
@@ -36,13 +38,16 @@ def make_receipt(
     )
 
 
-def make_request(*, scope: str = "capability:flight") -> TransitionRequest:
+def make_request(
+    state: dict[str, str], *, scope: str = "capability:flight"
+) -> TransitionRequest:
     return TransitionRequest(
         capability_id="flight",
         subject_id="agent-1",
         policy_version="policy-v1",
         authorization_scope=scope,
         target_state="QUALIFIED",
+        authorization_state_digest=compute_capability_state_digest(state),
     )
 
 
@@ -50,7 +55,6 @@ def make_engine(state: dict[str, str] | None = None) -> TransitionAuthorityEngin
     def verify(receipt: AttestationReceipt, trusted_key: str) -> bool:
         return receipt.signature == f"sig:{trusted_key}:{receipt.attestation_payload_digest}"
 
-    receipt = make_receipt()
     return TransitionAuthorityEngine(
         trusted_reviewer_keys={"reviewer-1": "public-key-1"},
         signature_verifier=verify,
@@ -78,7 +82,7 @@ def test_approved_authentic_receipt_applies_exactly_one_transition() -> None:
     state = {"agent-1:other": "QUALIFIED"}
     engine = make_engine(state)
 
-    result = engine.execute(signed_receipt(), make_request())
+    result = engine.execute(signed_receipt(), make_request(state))
 
     assert result.previous_state == "UNQUALIFIED"
     assert result.new_state == "QUALIFIED"
@@ -92,7 +96,7 @@ def test_invalid_signature_cannot_mutate_state() -> None:
     engine = make_engine(state)
 
     with pytest.raises(InvalidAttestationError):
-        engine.execute(make_receipt(), make_request())
+        engine.execute(make_receipt(), make_request(state))
 
     assert state == {}
     assert engine.consumed_receipt_ids == frozenset()
@@ -116,7 +120,7 @@ def test_untrusted_reviewer_cannot_mutate_state() -> None:
     )
 
     with pytest.raises(InvalidAttestationError):
-        engine.execute(receipt, make_request())
+        engine.execute(receipt, make_request(state))
 
     assert state == {}
 
@@ -127,7 +131,7 @@ def test_non_approved_decision_cannot_mutate_state() -> None:
     receipt = make_receipt(decision=AttestationDecision.DEFERRED)
 
     with pytest.raises(InvalidAttestationError):
-        engine.execute(receipt, make_request())
+        engine.execute(receipt, make_request(state))
 
     assert state == {}
 
@@ -137,7 +141,7 @@ def test_scope_mismatch_cannot_mutate_state() -> None:
     engine = make_engine(state)
 
     with pytest.raises(ScopeMismatchError):
-        engine.execute(signed_receipt(), make_request(scope="capability:other"))
+        engine.execute(signed_receipt(), make_request(state, scope="capability:other"))
 
     assert state == {}
     assert engine.consumed_receipt_ids == frozenset()
@@ -147,10 +151,11 @@ def test_replay_is_rejected_before_second_mutation() -> None:
     state: dict[str, str] = {}
     engine = make_engine(state)
     receipt = signed_receipt()
+    request = make_request(state)
 
-    engine.execute(receipt, make_request())
+    engine.execute(receipt, request)
     with pytest.raises(ReplayAttestationError):
-        engine.execute(receipt, make_request())
+        engine.execute(receipt, request)
 
     assert state["agent-1:flight"] == "QUALIFIED"
     assert len(engine.consumed_receipt_ids) == 1
@@ -163,7 +168,7 @@ def test_mutated_receipt_is_rejected() -> None:
     object.__setattr__(receipt, "state_mutated", True)
 
     with pytest.raises(InvalidAttestationError):
-        engine.execute(receipt, make_request())
+        engine.execute(receipt, make_request(state))
 
     assert state == {}
 
@@ -171,7 +176,7 @@ def test_mutated_receipt_is_rejected() -> None:
 def test_execution_record_is_immutable() -> None:
     state = {"agent-1:flight": "UNQUALIFIED"}
     engine = make_engine(state)
-    result = engine.execute(signed_receipt(), make_request())
+    result = engine.execute(signed_receipt(), make_request(state))
 
     with pytest.raises(FrozenInstanceError):
         result.new_state = "ADMIN"
@@ -185,4 +190,49 @@ def test_transition_request_requires_explicit_scope() -> None:
             policy_version="policy-v1",
             authorization_scope="",
             target_state="QUALIFIED",
+            authorization_state_digest="digest",
         )
+
+
+def test_stale_authorization_is_rejected_at_commit_boundary() -> None:
+    state = {"agent-1:budget": "AVAILABLE"}
+    engine = make_engine(state)
+    request = make_request(state)
+    state_before_rejection = state.copy()
+    consumed_before_rejection = engine.consumed_receipt_ids
+
+    state["agent-1:budget"] = "EXHAUSTED"
+
+    with pytest.raises(StaleAuthorizationError):
+        engine.execute(signed_receipt(), request)
+
+    assert state == {"agent-1:budget": "EXHAUSTED"}
+    assert state != state_before_rejection
+    assert engine.consumed_receipt_ids == consumed_before_rejection
+
+
+def test_state_mutation_during_validation_is_rejected_without_commit() -> None:
+    state = {"agent-1:budget": "AVAILABLE"}
+    receipt = signed_receipt()
+    request = make_request(state)
+    state_before_execution = state.copy()
+    consumed_before_execution: set[str] = set()
+
+    def verify(receipt: AttestationReceipt, trusted_key: str) -> bool:
+        state["agent-1:budget"] = "EXHAUSTED"
+        return receipt.signature == f"sig:{trusted_key}:{receipt.attestation_payload_digest}"
+
+    engine = TransitionAuthorityEngine(
+        trusted_reviewer_keys={"reviewer-1": "public-key-1"},
+        signature_verifier=verify,
+        capability_state=state,
+        consumed_receipt_ids=consumed_before_execution,
+    )
+
+    with pytest.raises(StaleAuthorizationError):
+        engine.execute(receipt, request)
+
+    assert state == {"agent-1:budget": "EXHAUSTED"}
+    assert "agent-1:flight" not in state
+    assert engine.consumed_receipt_ids == frozenset()
+    assert state != state_before_execution
