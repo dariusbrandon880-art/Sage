@@ -83,3 +83,9 @@ def validate_report_claims(*, receipt: LiveOperationReceipt | None, claim: str, 
         raise ValueError("C2 anti-drift contract violation: live claim receipt is not bound to response evidence.")
     if expected_target_resource and receipt.target_resource != expected_target_resource:
         raise ValueError("C2 anti-drift contract violation: live claim receipt target does not match requested resource.")
+
+def validate_directive_compliance(directive_text: str) -> C2DirectiveDecision:
+    """Classify C2 directive text and verify contract law alignment."""
+    if not directive_text or not directive_text.strip():
+        raise ValueError("C2 directive text cannot be empty.")
+    return classify_directive(directive_text)

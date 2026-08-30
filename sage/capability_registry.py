@@ -240,3 +240,20 @@ class SAGEOperationalCapabilityRegistry:
         )
         self.add_capability(cap)
         return cap
+
+    def get_capabilities_by_disposition(self, disposition: CapabilityDisposition) -> List[SAGECapability]:
+        """Filter and return capabilities by their governed disposition state."""
+        return [cap for cap in self.capabilities.values() if cap.disposition == disposition]
+
+    def audit_registry_health(self) -> Dict[str, Any]:
+        """Perform diagnostic audit over operational capability registry health."""
+        all_caps = self.list_capabilities()
+        return {
+            "total_capabilities": len(all_caps),
+            "validated_count": sum(1 for c in all_caps if c.validation_status == "VALIDATED"),
+            "ready_count": sum(1 for c in all_caps if c.archive_promotion_status == "READY"),
+            "dispositions": {
+                disp.value: sum(1 for c in all_caps if c.disposition == disp)
+                for disp in CapabilityDisposition
+            },
+        }
