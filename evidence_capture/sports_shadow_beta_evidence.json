@@ -1,9 +1,9 @@
 {
   "metadata": {
-    "execution_id": "exec_shadow_beta_20260830_024431",
+    "execution_id": "exec_shadow_beta_20260830_025535",
     "commit_sha": "8a713faa94bf7a7b055694eea2842ce1f4c83123",
     "cycle_id": "cycle_shadow_beta_20260830",
-    "timestamp_utc": "2026-08-30T02:44:31.831746+00:00",
+    "timestamp_utc": "2026-08-30T02:55:35.649603+00:00",
     "governance_classification": "PROTECTED SPORTS/RCE RESEARCH LANE ONLY",
     "wagering_executed": false
   },
@@ -12,19 +12,19 @@
     "singles_count": 17,
     "parlays_count": 8,
     "event_coverage_count": 17,
-    "locked_records_persisted": 47,
-    "total_resolved_outcomes": 37,
+    "locked_records_persisted": 50,
+    "total_resolved_outcomes": 38,
     "wins": 22,
-    "losses": 15,
+    "losses": 16,
     "pushes": 0,
-    "win_rate": 0.5945945945945946
+    "win_rate": 0.5789473684210527
   },
   "diagnostics": {
-    "brier_score": 0.23765288864864864,
-    "log_loss": 0.6699000702488362,
-    "mean_clv": -0.2801618050652921,
+    "brier_score": 0.23304360210526315,
+    "log_loss": 0.6598417018857559,
+    "mean_clv": -0.2920619652928693,
     "failure_attribution": {
-      "total_failures": 15,
+      "total_failures": 16,
       "failures": [
         {
           "prediction_id": "pred_real_mlb_822940",
@@ -145,13 +145,21 @@
           "failure_classification": "PARLAY_MULTILEG_FAILURE",
           "model_assumption_broken": "Failed on child leg(s): pred_single_mlb_game_823177",
           "actual_result": "PARLAY_RESULT: LOSS across 2 legs."
+        },
+        {
+          "prediction_id": "pred_parlay_parent_mlb_game_823177_mlb_game_822690",
+          "is_parlay": true,
+          "selected_prediction": "2-Leg Parlay (San Francisco Giants Moneyline + Washington Nationals Moneyline)",
+          "failure_classification": "PARLAY_MULTILEG_FAILURE",
+          "model_assumption_broken": "Failed on child leg(s): pred_single_mlb_game_823177",
+          "actual_result": "PARLAY_RESULT: LOSS across 2 legs."
         }
       ]
     },
     "signal_attribution": {
-      "total_external_signals_evaluated": 40,
-      "sage_win_rate": 0.45,
-      "external_signal_win_rate": 0.6,
+      "total_external_signals_evaluated": 42,
+      "sage_win_rate": 0.42857142857142855,
+      "external_signal_win_rate": 0.6190476190476191,
       "signal_evaluations": [
         {
           "prediction_id": "pred_single_mlb_game_822770",
@@ -552,14 +560,34 @@
           "external_matched_sage": false,
           "sage_win": true,
           "external_signal_win": false
+        },
+        {
+          "prediction_id": "pred_parlay_parent_mlb_game_823177_mlb_game_822690",
+          "signal_source": "Public Betting Consensus Feed (FanDuel/Action Split)",
+          "signal_type": "PUBLIC_CONSENSUS_SPLIT",
+          "external_selection": "San Francisco Giants Moneyline",
+          "sage_selection": "2-Leg Parlay (San Francisco Giants Moneyline + Washington Nationals Moneyline)",
+          "external_matched_sage": false,
+          "sage_win": false,
+          "external_signal_win": true
+        },
+        {
+          "prediction_id": "pred_parlay_parent_mlb_game_823177_mlb_game_822690",
+          "signal_source": "Public Betting Consensus Feed (FanDuel/Action Split)",
+          "signal_type": "PUBLIC_CONSENSUS_SPLIT",
+          "external_selection": "Miami Marlins Moneyline",
+          "sage_selection": "2-Leg Parlay (San Francisco Giants Moneyline + Washington Nationals Moneyline)",
+          "external_matched_sage": false,
+          "sage_win": false,
+          "external_signal_win": true
         }
       ]
     },
     "model_promotion_evaluation": {
       "promotion_eligible": true,
-      "resolved_sample_size": 37,
+      "resolved_sample_size": 38,
       "required_sample_size": 10,
-      "brier_score": 0.23765288864864864,
+      "brier_score": 0.23304360210526315,
       "brier_threshold": 0.25,
       "governance_decision": "APPROVED_FOR_PROMOTION",
       "reasons": []
