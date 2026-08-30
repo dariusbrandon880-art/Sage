@@ -51,6 +51,23 @@ class EvolutionReceipt(BaseModel):
         return self.model_dump()
 
 
+class OrganismGrowthReceipt(BaseModel):
+    """Cryptographic evidence receipt capturing multi-vector organism capability growth."""
+    receipt_id: str
+    commit_sha: str
+    velocity_score: float = Field(ge=0.0, le=1.0)
+    prediction_accuracy_score: float = Field(ge=0.0, le=1.0)
+    wave_completion_rate: float = Field(ge=0.0, le=1.0)
+    anti_drift_compliance_score: float = Field(ge=0.0, le=1.0)
+    compound_growth_index: float = Field(ge=0.0, le=1.0)
+    growth_verdict: str  # ACCELERATING, STABLE, DEGRADED, BLOCKED
+    provenance_hash: str
+    timestamp: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+    def to_dict(self) -> Dict[str, Any]:
+        return self.model_dump()
+
+
 def _get_current_commit_sha() -> str:
     try:
         res = subprocess.run(
@@ -211,4 +228,47 @@ class FleetEvolutionIntelligence:
             growth_index=growth_index,
             growth_signal=growth_signal,
             provenance_hash=provenance_hash,
+        )
+
+    def evaluate_organism_growth_rate(
+        self,
+        *,
+        velocity_score: float = 1.0,
+        prediction_accuracy_score: float = 1.0,
+        wave_completion_rate: float = 1.0,
+        anti_drift_compliance_score: float = 1.0,
+        protected_path_violations: int = 0,
+    ) -> OrganismGrowthReceipt:
+        """Calculates a unified compound growth index across multi-session velocity, prediction accuracy, wave completion, and anti-drift compliance."""
+        if protected_path_violations > 0:
+            growth_verdict = "BLOCKED"
+            compound_index = 0.0
+        else:
+            compound_index = round(
+                (velocity_score * 0.25)
+                + (prediction_accuracy_score * 0.25)
+                + (wave_completion_rate * 0.25)
+                + (anti_drift_compliance_score * 0.25),
+                4,
+            )
+            if compound_index >= 0.85:
+                growth_verdict = "ACCELERATING"
+            elif compound_index >= 0.6:
+                growth_verdict = "STABLE"
+            else:
+                growth_verdict = "DEGRADED"
+
+        payload = f"{self.commit_sha}:{growth_verdict}:{compound_index:.4f}:{velocity_score:.4f}:{prediction_accuracy_score:.4f}:{wave_completion_rate:.4f}:{anti_drift_compliance_score:.4f}".encode("utf-8")
+        prov_hash = hashlib.sha256(payload).hexdigest()
+
+        return OrganismGrowthReceipt(
+            receipt_id=f"org_growth_{prov_hash[:12]}",
+            commit_sha=self.commit_sha,
+            velocity_score=velocity_score,
+            prediction_accuracy_score=prediction_accuracy_score,
+            wave_completion_rate=wave_completion_rate,
+            anti_drift_compliance_score=anti_drift_compliance_score,
+            compound_growth_index=compound_index,
+            growth_verdict=growth_verdict,
+            provenance_hash=prov_hash,
         )
