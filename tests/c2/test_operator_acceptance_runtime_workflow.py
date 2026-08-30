@@ -1,7 +1,5 @@
 from pathlib import Path
 
-import yaml
-
 
 WORKFLOW = Path('.github/workflows/operator-acceptance-runtime.yml')
 
