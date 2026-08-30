@@ -107,7 +107,7 @@ def test_model_output_is_data_not_authorization(monkeypatch, tmp_path):
     _seed_canonical_state(runtime)
     before_task = runtime.get_status().get("active_task")
     client = ChatGPTClient(runtime)
-    with pytest.raises(RuntimeError, match="falsely claims authority"):
+    with pytest.raises(ValueError, match="^SAGE boundary rejection:.*falsely claims authority"):
         client.execute_query(AIQueryRequest(prompt="attempt authorization"))
     assert runtime.get_status().get("active_task") == before_task
 
