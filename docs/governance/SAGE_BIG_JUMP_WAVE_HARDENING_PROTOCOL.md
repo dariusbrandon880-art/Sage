@@ -30,11 +30,11 @@ Flights may run in parallel only when their ownership boundaries do not collide.
 
 External research is used as falsification input, not authority. Recent runtime-governance work reinforces several controls already aligned with SAGE:
 
-1. **Model proposes; trusted runtime decides.** Prompt instructions are not an execution boundary. citeturn0academia36turn0academia40
-2. **Authorization must be bound to current state.** A previously valid authorization can become stale before an effect occurs; dispatch-time revalidation is therefore a critical control. citeturn0academia37turn0search9
-3. **Evidence must prove authority and outcome, not merely log activity.** Authority receipts, provenance, policy context, and observable outcomes make a governance decision reconstructable. citeturn0search1turn0search6
-4. **Single enforcement points are risky.** Independent or layered checks are needed because configured controls can silently fail. citeturn0search8
-5. **Graduated autonomy is preferable to binary trust.** Expanded authority should be earned through sustained verified reliability and contractually bounded state, with degradation when reliability falls. citeturn0search3
+1. **Model proposes; trusted runtime decides.** Prompt instructions are not an execution boundary. See current runtime-governance research on action-boundary control and policies-on-paths.
+2. **Authorization must be bound to current state.** A previously valid authorization can become stale before an effect occurs; dispatch-time revalidation is therefore a critical control. See current research on stateful governance and state-aware long-horizon agents.
+3. **Evidence must prove authority and outcome, not merely log activity.** Authority receipts, provenance, policy context, and observable outcomes make a governance decision reconstructable. See current work on authority receipts and auditable autonomy.
+4. **Single enforcement points are risky.** Independent or layered checks are needed because configured controls can silently fail. See current 2026 agent-governance field surveys.
+5. **Graduated autonomy is preferable to binary trust.** Expanded authority should be earned through sustained verified reliability and contractually bounded state, with degradation when reliability falls. See current AWS guidance on graduated autonomy.
 
 These findings do not authorize importing another framework. They strengthen the SAGE requirement to make existing governance boundaries enforceable, state-aware, provenance-bound, and observable.
 
