@@ -58,6 +58,32 @@ See `docs/governance/C2_HISTORICAL_REPAIR_AND_RUNTIME_GOVERNANCE.md` for the con
 
 ## Repair entries
 
+## 2026-08-30 — Legacy ChatGPT Boundary Compatibility Seam
+
+**Issue / PR:** PR #338 / Issue #340
+
+**Detection:** Exact-head CI on the hardened GPT/SAGE runtime boundary produced six regressions in legacy ChatGPT, continuity, client, and API integration paths. The hardened boundary correctly required `frontier`, `gate`, and `next_move`, while older callers supplied an incomplete context shape.
+
+**Root cause:** The compatibility seam had not yet translated legacy runtime context into the newer canonical C2 response contract before entering the governed boundary.
+
+**Affected boundary:** Legacy ChatGPT integration → SAGE runtime envelope → governed immersion boundary.
+
+**Repair:** Rehydrate missing presentation fields from canonical runtime status/current objective/task context in the legacy adapter; preserve explicitly supplied C2 fields as authoritative; keep the direct boundary fail-closed. Added a regression proving legacy callers are hydrated without bypassing governance.
+
+**Why this repair:** It strengthens the canonical boundary instead of weakening its contract. Compatibility code translates canonical state; it does not invent authority or relax validation.
+
+**Regression proof:** Added regression coverage for legacy-boundary hydration; prior boundary and runtime tests remained part of the verification surface.
+
+**Evidence:** Repair SHA `07648c5955e292a70a34b79601a75bf56c9b7e9d`; regression SHA `c3cb224fc1bf2bff1b70ef8378b691a937d0ed87`.
+
+**Verification:** Exact-head remote CI remained the next gate after the repair; do not treat the repair commit itself as proof of full-suite/CI completion.
+
+**Reusable invariant:** When hardening breaks an older caller, repair the adapter seam from canonical state; never weaken the hardened governor to preserve legacy behavior.
+
+**Follow-on risk:** Audit every remaining ChatGPT-facing adapter and alternate entry point for equivalent contract-shape drift.
+
+**Search/research input:** External agent-governance research supported runtime-boundary enforcement, fail-closed mediation, and separation of model proposal from trusted runtime authority; external research remains non-canonical.
+
 ### Template
 
 ```text
