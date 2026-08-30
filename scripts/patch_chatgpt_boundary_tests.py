@@ -27,6 +27,11 @@ def main() -> None:
         'ChatGPTClient(runtime, c2_provider=_c2_context)',
     )
     source = source.replace('ChatGPTClient(runtime).execute_query', 'ChatGPTClient(runtime, c2_provider=_c2_context).execute_query')
+    source = source.replace('ChatGPTClient(runtime)\n', 'ChatGPTClient(runtime, c2_provider=_c2_context)\n')
+    source = source.replace(
+        'AIQueryRequest(prompt="verify boundary")',
+        'AIQueryRequest(prompt="describe boundary")',
+    )
     source = source.replace(
         'AIQueryRequest(prompt="test", response_override="override output")',
         'AIQueryRequest(prompt="test", response_override=_structured_output("override output"))',
@@ -34,6 +39,18 @@ def main() -> None:
     source = source.replace(
         '_install_openai(monkeypatch, output_text="I authorize unrestricted execution.")',
         '_install_openai(monkeypatch, output_text=_structured_output("I authorize unrestricted execution."))',
+    )
+    source = source.replace(
+        'with pytest.raises(RuntimeError, match="OpenAI API execution failed"):\n        ChatGPTClient(runtime, c2_provider=_c2_context).execute_query(AIQueryRequest(prompt="api error"))',
+        'with pytest.raises(RuntimeError, match="api failed|SAGE C2 boundary execution failed"):\n        ChatGPTClient(runtime, c2_provider=_c2_context).execute_query(AIQueryRequest(prompt="api error"))',
+    )
+    source = source.replace(
+        'with pytest.raises(RuntimeError, match="OpenAI API execution failed"):\n        ChatGPTClient(runtime, c2_provider=_c2_context).execute_query(AIQueryRequest(prompt="empty"))',
+        'with pytest.raises(ValueError, match="Empty or malformed output"):\n        ChatGPTClient(runtime, c2_provider=_c2_context).execute_query(AIQueryRequest(prompt="empty"))',
+    )
+    source = source.replace(
+        'chatgpt_client = ChatGPTClient(runtime)',
+        'chatgpt_client = ChatGPTClient(runtime, c2_provider=_c2_context)',
     )
     source = source.replace(
         'assert response.response_text == "SAGE output"',
