@@ -1,7 +1,7 @@
 {
   "wave_id": "MEDIA_PERCEPTION_TEMPORAL_SUPER_SEARCH_WAVE_001",
-  "head_sha": "c3839cc41e1b2c46b50a7649271b7e72524b1538",
-  "timestamp_utc": "2026-08-30T00:25:33Z",
+  "head_sha": "a35d7b798c8654da93501ac292194958dd5b3b8a",
+  "timestamp_utc": "2026-08-30T01:55:55Z",
   "wave_verdict": "PASS",
   "governance_invariant": "ARCHITECTURE READY != LIVE SENSOR CONNECTED != CONTINUOUS COVERAGE VERIFIED",
   "flights": [
@@ -53,5 +53,5 @@
     "governance_notice": "SAGE GOVERNANCE INVARIANT ENFORCED: ARCHITECTURE READY != LIVE SENSOR CONNECTED != CONTINUOUS COVERAGE VERIFIED. Active status: live_sensor_connected=True, continuous_coverage_verified=True.",
     "receipt_sha256": "e5265bee367a02ce8b5ce94c20b931484e4add923f27546e42e37e794ccacbdc"
   },
-  "evidence_digest": "9e79be8e5315bb8c1d01845db76d323afa8083f145f05db1bb2a7614f3e94da2"
+  "evidence_digest": "d9d20d38fb1e1300b7b62d3b56e60bc5e13d5cc1ccea5e75192304a031783f53"
 }
