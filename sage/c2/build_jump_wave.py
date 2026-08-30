@@ -49,6 +49,8 @@ CANONICAL_BIG_JUMP_MISSIONS: List[FlightMissionSpec] = [
 class BuildJumpWaveEngine:
     """Execute five bounded flights concurrently with fail-closed evidence."""
 
+    _verification_process_lock = threading.Lock()
+
     def __init__(self, storage_dir: str = "evidence_capture", max_workers: int = 5):
         self.storage_dir = Path(storage_dir)
         self.storage_dir.mkdir(parents=True, exist_ok=True)
@@ -107,7 +109,12 @@ class BuildJumpWaveEngine:
             tests_passed = 0
             all_tests_ok = True
             if spec.test_references:
-                result = subprocess.run([sys.executable, "-m", "pytest", *spec.test_references], capture_output=True, text=True)
+                # Flights remain concurrently scheduled, but verification subprocesses
+                # are serialized because selected integration tests touch shared
+                # FastAPI/global process state. This protects proof integrity without
+                # weakening the five-flight execution model.
+                with self._verification_process_lock:
+                    result = subprocess.run([sys.executable, "-m", "pytest", *spec.test_references], capture_output=True, text=True)
                 all_tests_ok = result.returncode == 0
                 match = re.search(r"(\d+)\s+passed", result.stdout)
                 if match:
@@ -117,10 +124,9 @@ class BuildJumpWaveEngine:
             evidence_dir = self.storage_dir / "waves" / wave_id / head_sha
             evidence_dir.mkdir(parents=True, exist_ok=True)
             evidence_file = evidence_dir / f"{spec.flight_id}_receipt.json"
-            flight_passed = admission.admitted and lock_res.acquired and all_tests_ok
-            flight_proof = {"wave_id": wave_id, "flight_id": spec.flight_id, "frontier_name": spec.frontier_name, "target_path": spec.target_path, "executed_head": head_sha, "status": "PASS" if flight_passed else "FAIL", "timestamp": time.time()}
-            evidence_file.write_text(json.dumps(flight_proof, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+            evidence_file.write_text(json.dumps({"wave_id": wave_id, "flight_id": spec.flight_id, "frontier_name": spec.frontier_name, "target_path": spec.target_path, "executed_head": head_sha, "status": "PASS" if admission.admitted and lock_res.acquired and all_tests_ok else "FAIL", "timestamp": time.time()}, indent=2, sort_keys=True) + "\n", encoding="utf-8")
             m4 = LifecycleMilestoneRecord(stage=LifecycleStage.WAREHOUSE_PROMOTE, passed=all_tests_ok, evidence_ref=str(evidence_file))
+            flight_passed = admission.admitted and lock_res.acquired and all_tests_ok
             return FlightExecutionSummary(flight_id=spec.flight_id, target=spec.target_path, classification="ACTIVE", execution_result="PASS" if flight_passed else "FAIL", exact_head=head_sha, tests_passed=tests_passed, evidence_ref=str(evidence_file), pr_or_change=spec.pr_or_change, lifecycle_milestones=[m1, m2, m3, m4])
         finally:
             if lock_res.acquired:
