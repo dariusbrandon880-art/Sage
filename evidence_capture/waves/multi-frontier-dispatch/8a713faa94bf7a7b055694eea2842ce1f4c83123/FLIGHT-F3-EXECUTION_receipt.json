@@ -4,6 +4,6 @@
   "frontier_name": "Execution & Substrate Frontier",
   "status": "PASS",
   "target_path": "sage/runtime/engine.py",
-  "timestamp": 1788058681.1397884,
+  "timestamp": 1788060645.0918856,
   "wave_id": "multi-frontier-dispatch"
 }

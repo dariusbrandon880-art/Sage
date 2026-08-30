@@ -34,16 +34,19 @@ class RealSportsEventObservation:
     market_name: str
     observed_odds: Dict[str, Any]
     event_status: str
+    pre_event: bool = True
 
 @dataclass(frozen=True)
 class ExternalSignalInput:
     signal_id: str
     source_name: str
+    source_url: str
     event_id: str
     selection: str
     signal_type: str
     confidence_or_odds: Optional[str]
     timestamp_utc: str
+    payload_hash: str
     raw_payload: Dict[str, Any] = field(default_factory=dict)
 
     def compute_sha256_hash(self) -> str:
@@ -57,10 +60,11 @@ class LockedResearchPrediction:
     event_observation: RealSportsEventObservation
     selected_prediction: str
     odds_at_lock: str
-    implied_probability: float
+    implied_probability: Optional[float]
     model_predicted_probability: float
     lock_timestamp_utc: str
     model_state_rationale: str
+    pre_event: bool = True
     is_parlay: bool = False
     parlay_legs: List[Dict[str, Any]] = field(default_factory=list)
     external_signals: List[Dict[str, Any]] = field(default_factory=list)
@@ -73,6 +77,8 @@ class LockedResearchPrediction:
         start_dt = parse_iso_utc(self.event_observation.event_start_time_utc)
         if lock_dt >= start_dt:
             raise ValueError(f"TEMPORAL_LOCK_VIOLATION: Lock timestamp {self.lock_timestamp_utc} is at or after event start time {self.event_observation.event_start_time_utc}.")
+        if not self.pre_event:
+            raise ValueError("PRE_EVENT_LOCK_VIOLATION: Predictions must strictly be pre-event (pre_event=True).")
 
     def compute_sha256_hash(self) -> str:
         """Computes canonical SHA-256 HMAC digest covering ALL pre-event locked prediction fields."""
@@ -86,6 +92,7 @@ class LockedResearchPrediction:
             "model_predicted_probability": self.model_predicted_probability,
             "lock_timestamp_utc": self.lock_timestamp_utc,
             "model_state_rationale": self.model_state_rationale,
+            "pre_event": self.pre_event,
             "is_parlay": self.is_parlay,
             "parlay_legs": self.parlay_legs,
             "external_signals": self.external_signals,
@@ -231,10 +238,10 @@ def calculate_log_loss(predictions: List[Dict[str, Any]]) -> Optional[float]:
         return None
     return sum(losses) / len(losses)
 
-def calculate_clv(odds_at_lock_prob: float, closing_odds_prob: float) -> float:
-    """Calculates Closing Line Value (CLV) ratio log(p_lock / p_closing)."""
-    if closing_odds_prob <= 0 or odds_at_lock_prob <= 0:
-        return 0.0
+def calculate_clv(odds_at_lock_prob: float, closing_odds_prob: Optional[float]) -> Optional[float]:
+    """Calculates Closing Line Value (CLV) ratio log(p_lock / p_closing) strictly when both lock-time and closing line observations exist with source provenance."""
+    if closing_odds_prob is None or closing_odds_prob <= 0 or odds_at_lock_prob <= 0:
+        return None
     return math.log(odds_at_lock_prob / closing_odds_prob)
 
 def attribute_prediction_failures(ledger: "SportsLongitudinalLedger") -> Dict[str, Any]:
@@ -294,24 +301,55 @@ def evaluate_model_promotion_eligibility(
     min_sample_size: int = 10,
     max_brier_threshold: float = 0.25
 ) -> Dict[str, Any]:
-    """Governed evaluation preventing model promotion based on short-term win batches."""
-    summary = ledger.generate_summary_report()
-    resolved_count = summary.get("resolved_outcomes", 0)
-    brier = summary.get("brier_score")
+    """Governed walk-forward OOS evaluation preventing model promotion on short-term win batches."""
+    # Chronological sorting by lock_timestamp_utc for walk-forward OOS evaluation
+    sorted_preds = sorted(ledger.predictions, key=lambda p: parse_iso_utc(p.lock_timestamp_utc))
+    resolved_preds = []
+    for pred in sorted_preds:
+        outcome = next((o for o in ledger.outcomes if o.prediction_id == pred.prediction_id), None)
+        if outcome and outcome.outcome_status in ["WIN", "LOSS"]:
+            resolved_preds.append({
+                "prediction_id": pred.prediction_id,
+                "lock_timestamp_utc": pred.lock_timestamp_utc,
+                "outcome_status": outcome.outcome_status,
+                "model_predicted_probability": pred.model_predicted_probability
+            })
+
+    resolved_count = len(resolved_preds)
+    brier = calculate_brier_score(resolved_preds)
+    log_loss = calculate_log_loss(resolved_preds)
+
+    # Baseline comparison (equal probability 0.5 baseline has Brier score 0.25)
+    baseline_brier = 0.2500
+    brier_skill_score = ((baseline_brier - brier) / baseline_brier) if (brier is not None and baseline_brier > 0) else 0.0
+
+    # Calibration error calculation across probability bins
+    bin_diffs = []
+    if resolved_preds:
+        for p in resolved_preds:
+            actual = 1.0 if p["outcome_status"] == "WIN" else 0.0
+            bin_diffs.append(abs(p["model_predicted_probability"] - actual))
+    mean_calibration_error = (sum(bin_diffs) / len(bin_diffs)) if bin_diffs else None
 
     reasons = []
     if resolved_count < min_sample_size:
         reasons.append(f"INSUFFICIENT_SAMPLE_SIZE: Resolved sample count ({resolved_count}) is below minimum requirement ({min_sample_size}). Short-term win batches are ineligible for promotion.")
     if brier is None or brier > max_brier_threshold:
         reasons.append(f"CALIBRATION_THRESHOLD_FAIL: Brier score ({brier}) exceeds maximum threshold ({max_brier_threshold}).")
+    if brier_skill_score <= 0.0:
+        reasons.append(f"BASELINE_COMPARISON_FAIL: Model Brier skill score ({brier_skill_score:.4f}) does not outperform uninformed baseline.")
 
     eligible = len(reasons) == 0
     return {
         "promotion_eligible": eligible,
+        "walk_forward_evaluation": True,
         "resolved_sample_size": resolved_count,
         "required_sample_size": min_sample_size,
         "brier_score": brier,
-        "brier_threshold": max_brier_threshold,
+        "log_loss": log_loss,
+        "baseline_brier": baseline_brier,
+        "brier_skill_score": brier_skill_score,
+        "mean_calibration_error": mean_calibration_error,
         "governance_decision": "APPROVED_FOR_PROMOTION" if eligible else "PROMOTION_DENIED_SHORT_TERM_OR_UNCALIBRATED",
         "reasons": reasons
     }
@@ -846,7 +884,10 @@ class ConcurrentSportsPredictionEngine:
 
                 parlay_id = f"pred_parlay_parent_{leg1.event_observation.event_id}_{leg2.event_observation.event_id}"
                 combined_prob = round(leg1.model_predicted_probability * leg2.model_predicted_probability, 4)
-                combined_implied = round(leg1.implied_probability * leg2.implied_probability, 4)
+                if leg1.implied_probability is not None and leg2.implied_probability is not None:
+                    combined_implied = round(leg1.implied_probability * leg2.implied_probability, 4)
+                else:
+                    combined_implied = None
 
                 parlay_obs = RealSportsEventObservation(
                     event_id=f"parlay_event_{leg1.event_observation.event_id}_{leg2.event_observation.event_id}",

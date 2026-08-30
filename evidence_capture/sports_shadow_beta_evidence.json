@@ -1,17 +1,17 @@
 {
   "metadata": {
-    "execution_id": "exec_shadow_beta_20260830_025535",
+    "execution_id": "exec_shadow_beta_20260830_032844",
     "commit_sha": "8a713faa94bf7a7b055694eea2842ce1f4c83123",
     "cycle_id": "cycle_shadow_beta_20260830",
-    "timestamp_utc": "2026-08-30T02:55:35.649603+00:00",
+    "timestamp_utc": "2026-08-30T03:28:44.155038+00:00",
     "governance_classification": "PROTECTED SPORTS/RCE RESEARCH LANE ONLY",
     "wagering_executed": false
   },
   "workload_summary": {
-    "total_prediction_count": 25,
-    "singles_count": 17,
-    "parlays_count": 8,
-    "event_coverage_count": 17,
+    "total_prediction_count": 50,
+    "singles_count": 26,
+    "parlays_count": 24,
+    "event_coverage_count": 0,
     "locked_records_persisted": 50,
     "total_resolved_outcomes": 38,
     "wins": 22,
@@ -22,7 +22,7 @@
   "diagnostics": {
     "brier_score": 0.23304360210526315,
     "log_loss": 0.6598417018857559,
-    "mean_clv": -0.2920619652928693,
+    "mean_clv": null,
     "failure_attribution": {
       "total_failures": 16,
       "failures": [
@@ -585,10 +585,14 @@
     },
     "model_promotion_evaluation": {
       "promotion_eligible": true,
+      "walk_forward_evaluation": true,
       "resolved_sample_size": 38,
       "required_sample_size": 10,
       "brier_score": 0.23304360210526315,
-      "brier_threshold": 0.25,
+      "log_loss": 0.6598417018857559,
+      "baseline_brier": 0.25,
+      "brier_skill_score": 0.06782559157894741,
+      "mean_calibration_error": 0.45342105263157895,
       "governance_decision": "APPROVED_FOR_PROMOTION",
       "reasons": []
     }

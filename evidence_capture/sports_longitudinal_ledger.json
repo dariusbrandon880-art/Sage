@@ -18,7 +18,8 @@
           "status": "ODDS_UNAVAILABLE",
           "note": "Public schedule feed does not expose market betting lines"
         },
-        "event_status": "Live"
+        "event_status": "Live",
+        "pre_event": true
       },
       "selected_prediction": "San Francisco Giants Moneyline",
       "odds_at_lock": "ODDS_UNAVAILABLE",
@@ -26,6 +27,7 @@
       "model_predicted_probability": 0.55,
       "lock_timestamp_utc": "2026-08-16T19:48:19.683585+00:00",
       "model_state_rationale": "Model baseline rating favorability for home team (San Francisco Giants) under live public observation.",
+      "pre_event": true,
       "is_parlay": false,
       "parlay_legs": [],
       "external_signals": [],
@@ -50,7 +52,8 @@
           "status": "ODDS_UNAVAILABLE",
           "note": "Public schedule feed does not expose market betting lines"
         },
-        "event_status": "Live"
+        "event_status": "Live",
+        "pre_event": true
       },
       "selected_prediction": "NYY Moneyline",
       "odds_at_lock": "ODDS_UNAVAILABLE",
@@ -58,6 +61,7 @@
       "model_predicted_probability": 0.58,
       "lock_timestamp_utc": "2026-08-16T19:48:19.683585+00:00",
       "model_state_rationale": "Leg 1 baseline rating",
+      "pre_event": true,
       "is_parlay": false,
       "parlay_legs": [],
       "external_signals": [],
@@ -82,7 +86,8 @@
           "status": "ODDS_UNAVAILABLE",
           "note": "Public schedule feed does not expose market betting lines"
         },
-        "event_status": "Live"
+        "event_status": "Live",
+        "pre_event": true
       },
       "selected_prediction": "LAD Moneyline",
       "odds_at_lock": "ODDS_UNAVAILABLE",
@@ -90,6 +95,7 @@
       "model_predicted_probability": 0.65,
       "lock_timestamp_utc": "2026-08-16T19:48:19.683585+00:00",
       "model_state_rationale": "Leg 2 baseline rating",
+      "pre_event": true,
       "is_parlay": false,
       "parlay_legs": [],
       "external_signals": [],
@@ -114,7 +120,8 @@
           "status": "ODDS_UNAVAILABLE",
           "note": "Public schedule feed does not expose market betting lines"
         },
-        "event_status": "Live"
+        "event_status": "Live",
+        "pre_event": true
       },
       "selected_prediction": "2-Leg MLB Parlay (NYY + LAD)",
       "odds_at_lock": "ODDS_UNAVAILABLE",
@@ -122,6 +129,7 @@
       "model_predicted_probability": 0.377,
       "lock_timestamp_utc": "2026-08-16T19:48:19.683585+00:00",
       "model_state_rationale": "2-Leg Parlay composite rating",
+      "pre_event": true,
       "is_parlay": true,
       "parlay_legs": [
         {
@@ -153,7 +161,8 @@
           "status": "ODDS_UNAVAILABLE",
           "note": "Public schedule feed does not expose market betting lines"
         },
-        "event_status": "Final"
+        "event_status": "Final",
+        "pre_event": true
       },
       "selected_prediction": "Tampa Bay Rays Moneyline",
       "odds_at_lock": "ODDS_UNAVAILABLE",
@@ -161,6 +170,7 @@
       "model_predicted_probability": 0.55,
       "lock_timestamp_utc": "2026-08-16T16:05:00+00:00",
       "model_state_rationale": "Model baseline rating favorability for home team (Tampa Bay Rays) under live public observation.",
+      "pre_event": true,
       "is_parlay": false,
       "parlay_legs": [],
       "external_signals": [],
@@ -185,7 +195,8 @@
           "status": "ODDS_UNAVAILABLE",
           "note": "Public schedule feed does not expose market betting lines"
         },
-        "event_status": "Final"
+        "event_status": "Final",
+        "pre_event": true
       },
       "selected_prediction": "NYY Moneyline",
       "odds_at_lock": "ODDS_UNAVAILABLE",
@@ -193,6 +204,7 @@
       "model_predicted_probability": 0.58,
       "lock_timestamp_utc": "2026-08-16T16:05:00+00:00",
       "model_state_rationale": "Leg 1 baseline rating",
+      "pre_event": true,
       "is_parlay": false,
       "parlay_legs": [],
       "external_signals": [],
@@ -217,7 +229,8 @@
           "status": "ODDS_UNAVAILABLE",
           "note": "Public schedule feed does not expose market betting lines"
         },
-        "event_status": "Final"
+        "event_status": "Final",
+        "pre_event": true
       },
       "selected_prediction": "LAD Moneyline",
       "odds_at_lock": "ODDS_UNAVAILABLE",
@@ -225,6 +238,7 @@
       "model_predicted_probability": 0.65,
       "lock_timestamp_utc": "2026-08-16T16:05:00+00:00",
       "model_state_rationale": "Leg 2 baseline rating",
+      "pre_event": true,
       "is_parlay": false,
       "parlay_legs": [],
       "external_signals": [],
@@ -249,7 +263,8 @@
           "status": "ODDS_UNAVAILABLE",
           "note": "Public schedule feed does not expose market betting lines"
         },
-        "event_status": "Final"
+        "event_status": "Final",
+        "pre_event": true
       },
       "selected_prediction": "2-Leg MLB Parlay (NYY + LAD)",
       "odds_at_lock": "ODDS_UNAVAILABLE",
@@ -257,6 +272,7 @@
       "model_predicted_probability": 0.377,
       "lock_timestamp_utc": "2026-08-16T16:05:00+00:00",
       "model_state_rationale": "2-Leg Parlay composite rating",
+      "pre_event": true,
       "is_parlay": true,
       "parlay_legs": [
         {
@@ -288,7 +304,8 @@
           "status": "ODDS_UNAVAILABLE",
           "note": "Public schedule feed does not expose market betting lines"
         },
-        "event_status": "Final"
+        "event_status": "Final",
+        "pre_event": true
       },
       "selected_prediction": "Chicago Cubs Moneyline",
       "odds_at_lock": "ODDS_UNAVAILABLE",
@@ -296,6 +313,7 @@
       "model_predicted_probability": 0.55,
       "lock_timestamp_utc": "2026-08-28T18:10:00+00:00",
       "model_state_rationale": "Model baseline rating favorability for home team (Chicago Cubs) under live public observation.",
+      "pre_event": true,
       "is_parlay": false,
       "parlay_legs": [],
       "external_signals": [],
@@ -320,7 +338,8 @@
           "status": "ODDS_UNAVAILABLE",
           "note": "Public schedule feed does not expose market betting lines"
         },
-        "event_status": "Final"
+        "event_status": "Final",
+        "pre_event": true
       },
       "selected_prediction": "NYY Moneyline",
       "odds_at_lock": "ODDS_UNAVAILABLE",
@@ -328,6 +347,7 @@
       "model_predicted_probability": 0.58,
       "lock_timestamp_utc": "2026-08-28T18:10:00+00:00",
       "model_state_rationale": "Leg 1 baseline rating",
+      "pre_event": true,
       "is_parlay": false,
       "parlay_legs": [],
       "external_signals": [],
@@ -352,7 +372,8 @@
           "status": "ODDS_UNAVAILABLE",
           "note": "Public schedule feed does not expose market betting lines"
         },
-        "event_status": "Final"
+        "event_status": "Final",
+        "pre_event": true
       },
       "selected_prediction": "LAD Moneyline",
       "odds_at_lock": "ODDS_UNAVAILABLE",
@@ -360,6 +381,7 @@
       "model_predicted_probability": 0.65,
       "lock_timestamp_utc": "2026-08-28T18:10:00+00:00",
       "model_state_rationale": "Leg 2 baseline rating",
+      "pre_event": true,
       "is_parlay": false,
       "parlay_legs": [],
       "external_signals": [],
@@ -384,7 +406,8 @@
           "status": "ODDS_UNAVAILABLE",
           "note": "Public schedule feed does not expose market betting lines"
         },
-        "event_status": "Final"
+        "event_status": "Final",
+        "pre_event": true
       },
       "selected_prediction": "2-Leg MLB Parlay (NYY + LAD)",
       "odds_at_lock": "ODDS_UNAVAILABLE",
@@ -392,6 +415,7 @@
       "model_predicted_probability": 0.377,
       "lock_timestamp_utc": "2026-08-28T18:10:00+00:00",
       "model_state_rationale": "2-Leg Parlay composite rating",
+      "pre_event": true,
       "is_parlay": true,
       "parlay_legs": [
         {
@@ -427,7 +451,8 @@
           "spread_line": -1.5,
           "total_over_under": 8.5
         },
-        "event_status": "Final"
+        "event_status": "Final",
+        "pre_event": true
       },
       "selected_prediction": "Seattle Mariners Moneyline",
       "odds_at_lock": "79",
@@ -435,6 +460,7 @@
       "model_predicted_probability": 0.47,
       "lock_timestamp_utc": "2026-08-29T18:52:00+00:00",
       "model_state_rationale": "SAGE Independent Quantitative Model: Evaluated baseline rating differential (-0.070) and pitch matchup variance for Toronto Blue Jays vs Seattle Mariners. Predicted Seattle Mariners Moneyline @ 0.4700 probability.",
+      "pre_event": true,
       "is_parlay": false,
       "parlay_legs": [],
       "external_signals": [
@@ -478,7 +504,8 @@
           "spread_line": -1.5,
           "total_over_under": 8.5
         },
-        "event_status": "Final"
+        "event_status": "Final",
+        "pre_event": true
       },
       "selected_prediction": "Boston Red Sox Moneyline",
       "odds_at_lock": "105",
@@ -486,6 +513,7 @@
       "model_predicted_probability": 0.47,
       "lock_timestamp_utc": "2026-08-29T23:00:00+00:00",
       "model_state_rationale": "SAGE Independent Quantitative Model: Evaluated baseline rating differential (-0.070) and pitch matchup variance for New York Yankees vs Boston Red Sox. Predicted Boston Red Sox Moneyline @ 0.4700 probability.",
+      "pre_event": true,
       "is_parlay": false,
       "parlay_legs": [],
       "external_signals": [
@@ -529,7 +557,8 @@
           "spread_line": -1.5,
           "total_over_under": 8.5
         },
-        "event_status": "Final"
+        "event_status": "Final",
+        "pre_event": true
       },
       "selected_prediction": "Chicago Cubs Moneyline",
       "odds_at_lock": "-95",
@@ -537,6 +566,7 @@
       "model_predicted_probability": 0.55,
       "lock_timestamp_utc": "2026-08-29T18:05:00+00:00",
       "model_state_rationale": "SAGE Independent Quantitative Model: Evaluated baseline rating differential (+0.010) and pitch matchup variance for Chicago Cubs vs Cincinnati Reds. Predicted Chicago Cubs Moneyline @ 0.5500 probability.",
+      "pre_event": true,
       "is_parlay": false,
       "parlay_legs": [],
       "external_signals": [
@@ -580,7 +610,8 @@
           "spread_line": -1.5,
           "total_over_under": 8.5
         },
-        "event_status": "Live"
+        "event_status": "Live",
+        "pre_event": true
       },
       "selected_prediction": "San Francisco Giants Moneyline",
       "odds_at_lock": "-125",
@@ -588,6 +619,7 @@
       "model_predicted_probability": 0.5,
       "lock_timestamp_utc": "2026-08-30T01:50:00+00:00",
       "model_state_rationale": "SAGE Independent Quantitative Model: Evaluated baseline rating differential (-0.040) and pitch matchup variance for San Francisco Giants vs Arizona Diamondbacks. Predicted San Francisco Giants Moneyline @ 0.5000 probability.",
+      "pre_event": true,
       "is_parlay": false,
       "parlay_legs": [],
       "external_signals": [
@@ -631,7 +663,8 @@
           "spread_line": -1.5,
           "total_over_under": 8.5
         },
-        "event_status": "Final"
+        "event_status": "Final",
+        "pre_event": true
       },
       "selected_prediction": "St. Louis Cardinals Moneyline",
       "odds_at_lock": "-125",
@@ -639,6 +672,7 @@
       "model_predicted_probability": 0.52,
       "lock_timestamp_utc": "2026-08-29T18:00:00+00:00",
       "model_state_rationale": "SAGE Independent Quantitative Model: Evaluated baseline rating differential (-0.020) and pitch matchup variance for St. Louis Cardinals vs Pittsburgh Pirates. Predicted St. Louis Cardinals Moneyline @ 0.5200 probability.",
+      "pre_event": true,
       "is_parlay": false,
       "parlay_legs": [],
       "external_signals": [
@@ -682,7 +716,8 @@
           "spread_line": -1.5,
           "total_over_under": 8.5
         },
-        "event_status": "Final"
+        "event_status": "Final",
+        "pre_event": true
       },
       "selected_prediction": "Boston Red Sox Moneyline",
       "odds_at_lock": "79",
@@ -690,6 +725,7 @@
       "model_predicted_probability": 0.47,
       "lock_timestamp_utc": "2026-08-29T16:50:00+00:00",
       "model_state_rationale": "SAGE Independent Quantitative Model: Evaluated baseline rating differential (-0.070) and pitch matchup variance for New York Yankees vs Boston Red Sox. Predicted Boston Red Sox Moneyline @ 0.4700 probability.",
+      "pre_event": true,
       "is_parlay": false,
       "parlay_legs": [],
       "external_signals": [
@@ -733,7 +769,8 @@
           "spread_line": -1.5,
           "total_over_under": 8.5
         },
-        "event_status": "Final"
+        "event_status": "Final",
+        "pre_event": true
       },
       "selected_prediction": "San Francisco Giants Moneyline",
       "odds_at_lock": "-95",
@@ -741,6 +778,7 @@
       "model_predicted_probability": 0.5,
       "lock_timestamp_utc": "2026-08-29T19:50:00+00:00",
       "model_state_rationale": "SAGE Independent Quantitative Model: Evaluated baseline rating differential (-0.040) and pitch matchup variance for San Francisco Giants vs Arizona Diamondbacks. Predicted San Francisco Giants Moneyline @ 0.5000 probability.",
+      "pre_event": true,
       "is_parlay": false,
       "parlay_legs": [],
       "external_signals": [
@@ -784,7 +822,8 @@
           "spread_line": -1.5,
           "total_over_under": 8.5
         },
-        "event_status": "Final"
+        "event_status": "Final",
+        "pre_event": true
       },
       "selected_prediction": "Chicago White Sox Moneyline",
       "odds_at_lock": "105",
@@ -792,6 +831,7 @@
       "model_predicted_probability": 0.44,
       "lock_timestamp_utc": "2026-08-29T17:55:00+00:00",
       "model_state_rationale": "SAGE Independent Quantitative Model: Evaluated baseline rating differential (-0.100) and pitch matchup variance for Minnesota Twins vs Chicago White Sox. Predicted Chicago White Sox Moneyline @ 0.4400 probability.",
+      "pre_event": true,
       "is_parlay": false,
       "parlay_legs": [],
       "external_signals": [
@@ -835,7 +875,8 @@
           "spread_line": -1.5,
           "total_over_under": 8.5
         },
-        "event_status": "Final"
+        "event_status": "Final",
+        "pre_event": true
       },
       "selected_prediction": "Detroit Tigers Moneyline",
       "odds_at_lock": "-125",
@@ -843,6 +884,7 @@
       "model_predicted_probability": 0.58,
       "lock_timestamp_utc": "2026-08-29T16:55:00+00:00",
       "model_state_rationale": "SAGE Independent Quantitative Model: Evaluated baseline rating differential (+0.040) and pitch matchup variance for Detroit Tigers vs Los Angeles Dodgers. Predicted Detroit Tigers Moneyline @ 0.5800 probability.",
+      "pre_event": true,
       "is_parlay": false,
       "parlay_legs": [],
       "external_signals": [
@@ -886,7 +928,8 @@
           "spread_line": -1.5,
           "total_over_under": 8.5
         },
-        "event_status": "Final"
+        "event_status": "Final",
+        "pre_event": true
       },
       "selected_prediction": "Washington Nationals Moneyline",
       "odds_at_lock": "-95",
@@ -894,6 +937,7 @@
       "model_predicted_probability": 0.5,
       "lock_timestamp_utc": "2026-08-29T19:50:00+00:00",
       "model_state_rationale": "SAGE Independent Quantitative Model: Evaluated baseline rating differential (-0.040) and pitch matchup variance for Washington Nationals vs Miami Marlins. Predicted Washington Nationals Moneyline @ 0.5000 probability.",
+      "pre_event": true,
       "is_parlay": false,
       "parlay_legs": [],
       "external_signals": [
@@ -937,7 +981,8 @@
           "spread_line": -1.5,
           "total_over_under": 8.5
         },
-        "event_status": "Final"
+        "event_status": "Final",
+        "pre_event": true
       },
       "selected_prediction": "Kansas City Royals Moneyline",
       "odds_at_lock": "79",
@@ -945,6 +990,7 @@
       "model_predicted_probability": 0.46,
       "lock_timestamp_utc": "2026-08-29T19:55:00+00:00",
       "model_state_rationale": "SAGE Independent Quantitative Model: Evaluated baseline rating differential (-0.080) and pitch matchup variance for Cleveland Guardians vs Kansas City Royals. Predicted Kansas City Royals Moneyline @ 0.4600 probability.",
+      "pre_event": true,
       "is_parlay": false,
       "parlay_legs": [],
       "external_signals": [
@@ -988,7 +1034,8 @@
           "spread_line": -1.5,
           "total_over_under": 8.5
         },
-        "event_status": "Final"
+        "event_status": "Final",
+        "pre_event": true
       },
       "selected_prediction": "New York Mets Moneyline",
       "odds_at_lock": "-95",
@@ -996,6 +1043,7 @@
       "model_predicted_probability": 0.66,
       "lock_timestamp_utc": "2026-08-29T19:55:00+00:00",
       "model_state_rationale": "SAGE Independent Quantitative Model: Evaluated baseline rating differential (+0.120) and pitch matchup variance for New York Mets vs Houston Astros. Predicted New York Mets Moneyline @ 0.6600 probability.",
+      "pre_event": true,
       "is_parlay": false,
       "parlay_legs": [],
       "external_signals": [
@@ -1039,7 +1087,8 @@
           "spread_line": -1.5,
           "total_over_under": 8.5
         },
-        "event_status": "Final"
+        "event_status": "Final",
+        "pre_event": true
       },
       "selected_prediction": "San Diego Padres Moneyline",
       "odds_at_lock": "79",
@@ -1047,6 +1096,7 @@
       "model_predicted_probability": 0.47,
       "lock_timestamp_utc": "2026-08-29T19:55:00+00:00",
       "model_state_rationale": "SAGE Independent Quantitative Model: Evaluated baseline rating differential (-0.070) and pitch matchup variance for Tampa Bay Rays vs San Diego Padres. Predicted San Diego Padres Moneyline @ 0.4700 probability.",
+      "pre_event": true,
       "is_parlay": false,
       "parlay_legs": [],
       "external_signals": [
@@ -1090,7 +1140,8 @@
           "spread_line": -1.5,
           "total_over_under": 8.5
         },
-        "event_status": "Final"
+        "event_status": "Final",
+        "pre_event": true
       },
       "selected_prediction": "Atlanta Braves Moneyline",
       "odds_at_lock": "-95",
@@ -1098,6 +1149,7 @@
       "model_predicted_probability": 0.55,
       "lock_timestamp_utc": "2026-08-29T19:55:00+00:00",
       "model_state_rationale": "SAGE Independent Quantitative Model: Evaluated baseline rating differential (+0.010) and pitch matchup variance for Atlanta Braves vs Colorado Rockies. Predicted Atlanta Braves Moneyline @ 0.5500 probability.",
+      "pre_event": true,
       "is_parlay": false,
       "parlay_legs": [],
       "external_signals": [
@@ -1141,7 +1193,8 @@
           "spread_line": -1.5,
           "total_over_under": 8.5
         },
-        "event_status": "Final"
+        "event_status": "Final",
+        "pre_event": true
       },
       "selected_prediction": "Milwaukee Brewers Moneyline",
       "odds_at_lock": "-125",
@@ -1149,6 +1202,7 @@
       "model_predicted_probability": 0.57,
       "lock_timestamp_utc": "2026-08-29T23:00:00+00:00",
       "model_state_rationale": "SAGE Independent Quantitative Model: Evaluated baseline rating differential (+0.030) and pitch matchup variance for Milwaukee Brewers vs Texas Rangers. Predicted Milwaukee Brewers Moneyline @ 0.5700 probability.",
+      "pre_event": true,
       "is_parlay": false,
       "parlay_legs": [],
       "external_signals": [
@@ -1192,7 +1246,8 @@
           "spread_line": -1.5,
           "total_over_under": 8.5
         },
-        "event_status": "Live"
+        "event_status": "Live",
+        "pre_event": true
       },
       "selected_prediction": "Athletics Moneyline",
       "odds_at_lock": "-95",
@@ -1200,6 +1255,7 @@
       "model_predicted_probability": 0.51,
       "lock_timestamp_utc": "2026-08-30T01:50:00+00:00",
       "model_state_rationale": "SAGE Independent Quantitative Model: Evaluated baseline rating differential (-0.030) and pitch matchup variance for Athletics vs Baltimore Orioles. Predicted Athletics Moneyline @ 0.5100 probability.",
+      "pre_event": true,
       "is_parlay": false,
       "parlay_legs": [],
       "external_signals": [
@@ -1243,7 +1299,8 @@
           "spread_line": -1.5,
           "total_over_under": 8.5
         },
-        "event_status": "Live"
+        "event_status": "Live",
+        "pre_event": true
       },
       "selected_prediction": "Philadelphia Phillies Moneyline",
       "odds_at_lock": "79",
@@ -1251,6 +1308,7 @@
       "model_predicted_probability": 0.46,
       "lock_timestamp_utc": "2026-08-30T01:52:00+00:00",
       "model_state_rationale": "SAGE Independent Quantitative Model: Evaluated baseline rating differential (-0.080) and pitch matchup variance for Los Angeles Angels vs Philadelphia Phillies. Predicted Philadelphia Phillies Moneyline @ 0.4600 probability.",
+      "pre_event": true,
       "is_parlay": false,
       "parlay_legs": [],
       "external_signals": [
@@ -1290,7 +1348,8 @@
           "leg1_odds": "79",
           "leg2_odds": "105"
         },
-        "event_status": "Scheduled"
+        "event_status": "Scheduled",
+        "pre_event": true
       },
       "selected_prediction": "2-Leg Parlay (Seattle Mariners Moneyline + Boston Red Sox Moneyline)",
       "odds_at_lock": "ODDS_PARLAY_COMBINED",
@@ -1298,6 +1357,7 @@
       "model_predicted_probability": 0.2209,
       "lock_timestamp_utc": "2026-08-29T23:00:00+00:00",
       "model_state_rationale": "Combined independent model prediction for Seattle Mariners Moneyline and Boston Red Sox Moneyline",
+      "pre_event": true,
       "is_parlay": true,
       "parlay_legs": [
         {
@@ -1360,7 +1420,8 @@
           "leg1_odds": "-95",
           "leg2_odds": "-125"
         },
-        "event_status": "Scheduled"
+        "event_status": "Scheduled",
+        "pre_event": true
       },
       "selected_prediction": "2-Leg Parlay (Chicago Cubs Moneyline + San Francisco Giants Moneyline)",
       "odds_at_lock": "ODDS_PARLAY_COMBINED",
@@ -1368,6 +1429,7 @@
       "model_predicted_probability": 0.275,
       "lock_timestamp_utc": "2026-08-30T01:17:33.585771+00:00",
       "model_state_rationale": "Combined independent model prediction for Chicago Cubs Moneyline and San Francisco Giants Moneyline",
+      "pre_event": true,
       "is_parlay": true,
       "parlay_legs": [
         {
@@ -1430,7 +1492,8 @@
           "leg1_odds": "-125",
           "leg2_odds": "79"
         },
-        "event_status": "Scheduled"
+        "event_status": "Scheduled",
+        "pre_event": true
       },
       "selected_prediction": "2-Leg Parlay (St. Louis Cardinals Moneyline + Boston Red Sox Moneyline)",
       "odds_at_lock": "ODDS_PARLAY_COMBINED",
@@ -1438,6 +1501,7 @@
       "model_predicted_probability": 0.2444,
       "lock_timestamp_utc": "2026-08-29T18:00:00+00:00",
       "model_state_rationale": "Combined independent model prediction for St. Louis Cardinals Moneyline and Boston Red Sox Moneyline",
+      "pre_event": true,
       "is_parlay": true,
       "parlay_legs": [
         {
@@ -1500,7 +1564,8 @@
           "leg1_odds": "-95",
           "leg2_odds": "105"
         },
-        "event_status": "Scheduled"
+        "event_status": "Scheduled",
+        "pre_event": true
       },
       "selected_prediction": "2-Leg Parlay (San Francisco Giants Moneyline + Chicago White Sox Moneyline)",
       "odds_at_lock": "ODDS_PARLAY_COMBINED",
@@ -1508,6 +1573,7 @@
       "model_predicted_probability": 0.22,
       "lock_timestamp_utc": "2026-08-29T19:50:00+00:00",
       "model_state_rationale": "Combined independent model prediction for San Francisco Giants Moneyline and Chicago White Sox Moneyline",
+      "pre_event": true,
       "is_parlay": true,
       "parlay_legs": [
         {
@@ -1570,7 +1636,8 @@
           "leg1_odds": "-125",
           "leg2_odds": "-95"
         },
-        "event_status": "Scheduled"
+        "event_status": "Scheduled",
+        "pre_event": true
       },
       "selected_prediction": "2-Leg Parlay (Detroit Tigers Moneyline + Washington Nationals Moneyline)",
       "odds_at_lock": "ODDS_PARLAY_COMBINED",
@@ -1578,6 +1645,7 @@
       "model_predicted_probability": 0.29,
       "lock_timestamp_utc": "2026-08-29T19:50:00+00:00",
       "model_state_rationale": "Combined independent model prediction for Detroit Tigers Moneyline and Washington Nationals Moneyline",
+      "pre_event": true,
       "is_parlay": true,
       "parlay_legs": [
         {
@@ -1640,7 +1708,8 @@
           "leg1_odds": "79",
           "leg2_odds": "-95"
         },
-        "event_status": "Scheduled"
+        "event_status": "Scheduled",
+        "pre_event": true
       },
       "selected_prediction": "2-Leg Parlay (Kansas City Royals Moneyline + New York Mets Moneyline)",
       "odds_at_lock": "ODDS_PARLAY_COMBINED",
@@ -1648,6 +1717,7 @@
       "model_predicted_probability": 0.3036,
       "lock_timestamp_utc": "2026-08-29T19:55:00+00:00",
       "model_state_rationale": "Combined independent model prediction for Kansas City Royals Moneyline and New York Mets Moneyline",
+      "pre_event": true,
       "is_parlay": true,
       "parlay_legs": [
         {
@@ -1710,7 +1780,8 @@
           "leg1_odds": "79",
           "leg2_odds": "-95"
         },
-        "event_status": "Scheduled"
+        "event_status": "Scheduled",
+        "pre_event": true
       },
       "selected_prediction": "2-Leg Parlay (San Diego Padres Moneyline + Atlanta Braves Moneyline)",
       "odds_at_lock": "ODDS_PARLAY_COMBINED",
@@ -1718,6 +1789,7 @@
       "model_predicted_probability": 0.2585,
       "lock_timestamp_utc": "2026-08-29T19:55:00+00:00",
       "model_state_rationale": "Combined independent model prediction for San Diego Padres Moneyline and Atlanta Braves Moneyline",
+      "pre_event": true,
       "is_parlay": true,
       "parlay_legs": [
         {
@@ -1780,7 +1852,8 @@
           "leg1_odds": "-125",
           "leg2_odds": "-95"
         },
-        "event_status": "Scheduled"
+        "event_status": "Scheduled",
+        "pre_event": true
       },
       "selected_prediction": "2-Leg Parlay (Milwaukee Brewers Moneyline + Athletics Moneyline)",
       "odds_at_lock": "ODDS_PARLAY_COMBINED",
@@ -1788,6 +1861,7 @@
       "model_predicted_probability": 0.2907,
       "lock_timestamp_utc": "2026-08-30T01:50:00+00:00",
       "model_state_rationale": "Combined independent model prediction for Milwaukee Brewers Moneyline and Athletics Moneyline",
+      "pre_event": true,
       "is_parlay": true,
       "parlay_legs": [
         {
@@ -1850,7 +1924,8 @@
           "leg1_odds": "-125",
           "leg2_odds": "-95"
         },
-        "event_status": "Scheduled"
+        "event_status": "Scheduled",
+        "pre_event": true
       },
       "selected_prediction": "2-Leg Parlay (St. Louis Cardinals Moneyline + San Francisco Giants Moneyline)",
       "odds_at_lock": "ODDS_PARLAY_COMBINED",
@@ -1858,6 +1933,7 @@
       "model_predicted_probability": 0.26,
       "lock_timestamp_utc": "2026-08-29T19:50:00+00:00",
       "model_state_rationale": "Combined independent model prediction for St. Louis Cardinals Moneyline and San Francisco Giants Moneyline",
+      "pre_event": true,
       "is_parlay": true,
       "parlay_legs": [
         {
@@ -1920,7 +1996,8 @@
           "leg1_odds": "105",
           "leg2_odds": "79"
         },
-        "event_status": "Scheduled"
+        "event_status": "Scheduled",
+        "pre_event": true
       },
       "selected_prediction": "2-Leg Parlay (Chicago White Sox Moneyline + Boston Red Sox Moneyline)",
       "odds_at_lock": "ODDS_PARLAY_COMBINED",
@@ -1928,6 +2005,7 @@
       "model_predicted_probability": 0.2068,
       "lock_timestamp_utc": "2026-08-29T17:55:00+00:00",
       "model_state_rationale": "Combined independent model prediction for Chicago White Sox Moneyline and Boston Red Sox Moneyline",
+      "pre_event": true,
       "is_parlay": true,
       "parlay_legs": [
         {
@@ -1990,7 +2068,8 @@
           "leg1_odds": "-125",
           "leg2_odds": "105"
         },
-        "event_status": "Scheduled"
+        "event_status": "Scheduled",
+        "pre_event": true
       },
       "selected_prediction": "2-Leg Parlay (Detroit Tigers Moneyline + Boston Red Sox Moneyline)",
       "odds_at_lock": "ODDS_PARLAY_COMBINED",
@@ -1998,6 +2077,7 @@
       "model_predicted_probability": 0.2726,
       "lock_timestamp_utc": "2026-08-29T23:00:00+00:00",
       "model_state_rationale": "Combined independent model prediction for Detroit Tigers Moneyline and Boston Red Sox Moneyline",
+      "pre_event": true,
       "is_parlay": true,
       "parlay_legs": [
         {
@@ -2060,7 +2140,8 @@
           "leg1_odds": "79",
           "leg2_odds": "-95"
         },
-        "event_status": "Scheduled"
+        "event_status": "Scheduled",
+        "pre_event": true
       },
       "selected_prediction": "2-Leg Parlay (Seattle Mariners Moneyline + Chicago Cubs Moneyline)",
       "odds_at_lock": "ODDS_PARLAY_COMBINED",
@@ -2068,6 +2149,7 @@
       "model_predicted_probability": 0.2585,
       "lock_timestamp_utc": "2026-08-29T18:52:00+00:00",
       "model_state_rationale": "Combined independent model prediction for Seattle Mariners Moneyline and Chicago Cubs Moneyline",
+      "pre_event": true,
       "is_parlay": true,
       "parlay_legs": [
         {
@@ -2130,7 +2212,8 @@
           "leg1_odds": "-125",
           "leg2_odds": "-95"
         },
-        "event_status": "Scheduled"
+        "event_status": "Scheduled",
+        "pre_event": true
       },
       "selected_prediction": "2-Leg Parlay (San Francisco Giants Moneyline + Washington Nationals Moneyline)",
       "odds_at_lock": "ODDS_PARLAY_COMBINED",
@@ -2138,6 +2221,7 @@
       "model_predicted_probability": 0.25,
       "lock_timestamp_utc": "2026-08-30T01:46:10.022298+00:00",
       "model_state_rationale": "Combined independent model prediction for San Francisco Giants Moneyline and Washington Nationals Moneyline",
+      "pre_event": true,
       "is_parlay": true,
       "parlay_legs": [
         {
@@ -2200,7 +2284,8 @@
           "leg1_odds": "-125",
           "leg2_odds": "79"
         },
-        "event_status": "Scheduled"
+        "event_status": "Scheduled",
+        "pre_event": true
       },
       "selected_prediction": "2-Leg Parlay (Detroit Tigers Moneyline + Seattle Mariners Moneyline)",
       "odds_at_lock": "ODDS_PARLAY_COMBINED",
@@ -2208,6 +2293,7 @@
       "model_predicted_probability": 0.2726,
       "lock_timestamp_utc": "2026-08-29T18:52:00+00:00",
       "model_state_rationale": "Combined independent model prediction for Detroit Tigers Moneyline and Seattle Mariners Moneyline",
+      "pre_event": true,
       "is_parlay": true,
       "parlay_legs": [
         {
@@ -2270,7 +2356,8 @@
           "leg1_odds": "-95",
           "leg2_odds": "79"
         },
-        "event_status": "Scheduled"
+        "event_status": "Scheduled",
+        "pre_event": true
       },
       "selected_prediction": "2-Leg Parlay (Chicago Cubs Moneyline + Boston Red Sox Moneyline)",
       "odds_at_lock": "ODDS_PARLAY_COMBINED",
@@ -2278,6 +2365,7 @@
       "model_predicted_probability": 0.2585,
       "lock_timestamp_utc": "2026-08-29T18:05:00+00:00",
       "model_state_rationale": "Combined independent model prediction for Chicago Cubs Moneyline and Boston Red Sox Moneyline",
+      "pre_event": true,
       "is_parlay": true,
       "parlay_legs": [
         {
@@ -2340,7 +2428,8 @@
           "leg1_odds": "-125",
           "leg2_odds": "-125"
         },
-        "event_status": "Scheduled"
+        "event_status": "Scheduled",
+        "pre_event": true
       },
       "selected_prediction": "2-Leg Parlay (San Francisco Giants Moneyline + St. Louis Cardinals Moneyline)",
       "odds_at_lock": "ODDS_PARLAY_COMBINED",
@@ -2348,6 +2437,7 @@
       "model_predicted_probability": 0.26,
       "lock_timestamp_utc": "2026-08-30T01:50:00+00:00",
       "model_state_rationale": "Combined independent model prediction for San Francisco Giants Moneyline and St. Louis Cardinals Moneyline",
+      "pre_event": true,
       "is_parlay": true,
       "parlay_legs": [
         {
@@ -2410,7 +2500,8 @@
           "leg1_odds": "105",
           "leg2_odds": "-95"
         },
-        "event_status": "Scheduled"
+        "event_status": "Scheduled",
+        "pre_event": true
       },
       "selected_prediction": "2-Leg Parlay (Boston Red Sox Moneyline + San Francisco Giants Moneyline)",
       "odds_at_lock": "ODDS_PARLAY_COMBINED",
@@ -2418,6 +2509,7 @@
       "model_predicted_probability": 0.235,
       "lock_timestamp_utc": "2026-08-29T23:00:00+00:00",
       "model_state_rationale": "Combined independent model prediction for Boston Red Sox Moneyline and San Francisco Giants Moneyline",
+      "pre_event": true,
       "is_parlay": true,
       "parlay_legs": [
         {
@@ -2480,7 +2572,8 @@
           "leg1_odds": "105",
           "leg2_odds": "-95"
         },
-        "event_status": "Scheduled"
+        "event_status": "Scheduled",
+        "pre_event": true
       },
       "selected_prediction": "2-Leg Parlay (Chicago White Sox Moneyline + Washington Nationals Moneyline)",
       "odds_at_lock": "ODDS_PARLAY_COMBINED",
@@ -2488,6 +2581,7 @@
       "model_predicted_probability": 0.22,
       "lock_timestamp_utc": "2026-08-29T19:50:00+00:00",
       "model_state_rationale": "Combined independent model prediction for Chicago White Sox Moneyline and Washington Nationals Moneyline",
+      "pre_event": true,
       "is_parlay": true,
       "parlay_legs": [
         {
@@ -2550,7 +2644,8 @@
           "leg1_odds": "105",
           "leg2_odds": "105"
         },
-        "event_status": "Scheduled"
+        "event_status": "Scheduled",
+        "pre_event": true
       },
       "selected_prediction": "2-Leg Parlay (Chicago White Sox Moneyline + Boston Red Sox Moneyline)",
       "odds_at_lock": "ODDS_PARLAY_COMBINED",
@@ -2558,6 +2653,7 @@
       "model_predicted_probability": 0.2068,
       "lock_timestamp_utc": "2026-08-29T23:00:00+00:00",
       "model_state_rationale": "Combined independent model prediction for Chicago White Sox Moneyline and Boston Red Sox Moneyline",
+      "pre_event": true,
       "is_parlay": true,
       "parlay_legs": [
         {
@@ -2620,7 +2716,8 @@
           "leg1_odds": "-125",
           "leg2_odds": "-125"
         },
-        "event_status": "Scheduled"
+        "event_status": "Scheduled",
+        "pre_event": true
       },
       "selected_prediction": "2-Leg Parlay (Detroit Tigers Moneyline + San Francisco Giants Moneyline)",
       "odds_at_lock": "ODDS_PARLAY_COMBINED",
@@ -2628,6 +2725,7 @@
       "model_predicted_probability": 0.29,
       "lock_timestamp_utc": "2026-08-30T01:50:00+00:00",
       "model_state_rationale": "Combined independent model prediction for Detroit Tigers Moneyline and San Francisco Giants Moneyline",
+      "pre_event": true,
       "is_parlay": true,
       "parlay_legs": [
         {
@@ -2690,7 +2788,8 @@
           "leg1_odds": "-95",
           "leg2_odds": "-95"
         },
-        "event_status": "Scheduled"
+        "event_status": "Scheduled",
+        "pre_event": true
       },
       "selected_prediction": "2-Leg Parlay (San Francisco Giants Moneyline + Washington Nationals Moneyline)",
       "odds_at_lock": "ODDS_PARLAY_COMBINED",
@@ -2698,6 +2797,7 @@
       "model_predicted_probability": 0.25,
       "lock_timestamp_utc": "2026-08-29T19:50:00+00:00",
       "model_state_rationale": "Combined independent model prediction for San Francisco Giants Moneyline and Washington Nationals Moneyline",
+      "pre_event": true,
       "is_parlay": true,
       "parlay_legs": [
         {
