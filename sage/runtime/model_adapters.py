@@ -35,7 +35,7 @@ class OpenAIResponsesAdapter:
 
         structured = SAGEProtocolGovernor.validate_and_parse(text, required_station=self.station)
         if structured.violations:
-            raise ValueError(f"SAGE Protocol Governance Violation: {'; '.join(structured.violations)}")
+            raise RuntimeError(f"SAGE Protocol Governance Violation: {'; '.join(structured.violations)}")
 
         return ModelResponse(
             model_id=self.model_id,
@@ -85,7 +85,7 @@ class GeminiInteractionsAdapter:
 
         structured = SAGEProtocolGovernor.validate_and_parse(text, required_station=self.station)
         if structured.violations:
-            raise ValueError(f"SAGE Protocol Governance Violation: {'; '.join(structured.violations)}")
+            raise RuntimeError(f"SAGE Protocol Governance Violation: {'; '.join(structured.violations)}")
 
         evidence_refs = _extract_url_citations(interaction)
         evidence_refs = tuple(dict.fromkeys((*structured.evidence_refs, *evidence_refs)))
@@ -110,6 +110,7 @@ def _system_instructions(envelope: SAGERuntimeEnvelope) -> str:
     return (
         "You are operating under the SAGE Autonomous Continuity Runtime Protocol.\n"
         f"{render_system_contract()}\n"
+        "C2 Operating Context is bound to the canonical SAGE runtime envelope below.\n"
         "STRICT GOVERNANCE RULES:\n"
         "1. NO ROLEPLAY: You are operating in real reality, not roleplay or simulation mode. Do not use roleplay markers, persona fluff, or conversational narrative.\n"
         "2. NO MUTATION AUTHORITY: Model output does NOT constitute authorization, autonomous execution, or canonical state mutation. Human operators hold authority.\n"
