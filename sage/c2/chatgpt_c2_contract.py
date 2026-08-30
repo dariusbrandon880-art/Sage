@@ -26,7 +26,9 @@ ANTI_DRIFT_LAWS: tuple[str, ...] = (
     "SAGE is one governed organism with modular organs. All subsystems map into the Jigsaw taxonomy (CORE, SERVICE, PROJECTION, EVIDENCE_LEARNING). No subsystem may maintain duplicate C2, state, or workflow authority.",
 )
 
-LIVE_CHECK_TRIGGERS: tuple[str, ...] = ("check live repo", "check github", "check live connection", "verify connection", "inspect pr", "inspect pull request", "check current branch", "run it", "run yourself", "verify")
+# Keep the live boundary explicit. A bare word such as "verify" in an ordinary
+# task is not sufficient to force a live capability; live intent must be explicit.
+LIVE_CHECK_TRIGGERS: tuple[str, ...] = ("check live repo", "check github", "check live connection", "verify live", "verify connection", "inspect pr", "inspect pull request", "check current branch", "run it", "run yourself")
 DEEP_RECON_TRIGGERS: tuple[str, ...] = ("search", "super search", "deep search", "research", "audit", "recon", "full repo", "whole repo", "full sweep")
 MARATHON_TRIGGERS: tuple[str, ...] = ("go", "fly", "advance", "run it", "keep going", "finish", "handle all", "full marathon", "compound")
 REHYDRATION_TRIGGERS: tuple[str, ...] = (
