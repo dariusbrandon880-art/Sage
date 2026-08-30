@@ -5,10 +5,11 @@ from dataclasses import dataclass
 from sage.c2.live_operation_receipt import LiveOperationReceipt
 
 CONTRACT_ID = "CHATGPT_C2_EXACT_ORDER_ANTI_DRIFT"
-CONTRACT_VERSION = "1.4"
+CONTRACT_VERSION = "1.6"
 RECON_POLICY_PATH = "docs/governance/SAGE_DEEP_RECON_VELOCITY_POLICY.md"
 LOCKED_EXECUTION_UPDATE_PATH = "docs/governance/CHATGPT_C2_LOCKED_EXECUTION_UPDATE_2026-08-29.md"
 TECHNIQUE_LEARNING_PATH = "sage/core/technique_learning.py"
+CONTINUITY_DOCTRINE_PATH = "docs/governance/SAGE_CONTINUOUS_EXCHANGE_IMMERSION_DOCTRINE.md"
 
 ANTI_DRIFT_LAWS: tuple[str, ...] = (
     "Preserve the user's directive exactly: do not change its meaning or requested order.",
@@ -24,19 +25,25 @@ ANTI_DRIFT_LAWS: tuple[str, ...] = (
     "Five flights is concurrent mission ownership across independent vehicles, not a post-hoc reporting table slapped onto sequential work.",
     "Execute the full canonical cycle: PREFLIGHT -> EXECUTE -> TEST -> EVIDENCE -> VERIFY -> RECONCILE -> REPORT.",
     "SAGE is one governed organism with modular organs. All subsystems map into the Jigsaw taxonomy (CORE, SERVICE, PROJECTION, EVIDENCE_LEARNING). No subsystem may maintain duplicate C2, state, or workflow authority.",
+    "Every governed exchange must remain bound to rehydrated SAGE repository truth, canonical station identity, current governance contract, and the active continuity frame; missing or stale binding is a fail-closed condition at a SAGE-owned runtime boundary.",
+    "Marine operational language is execution shorthand only; it never grants authority, expands scope, overrides safety, or substitutes for evidence.",
+    "Marine deep-repair posture follows RECON -> ATTACK -> REPAIR -> VERIFY -> RECONCILE -> COMPOUND -> NEXT TARGET, with HOLD whenever proof is incomplete or contradictory.",
+    "Kill-the-target language means resolve all identified in-scope technical failure targets; it never authorizes destructive data operations or control bypasses.",
 )
 
-# Keep the live boundary explicit. A bare word such as "verify" in an ordinary
-# task is not sufficient to force a live capability; live intent must be explicit.
-LIVE_CHECK_TRIGGERS: tuple[str, ...] = ("check live repo", "check github", "check live connection", "verify live", "verify connection", "inspect pr", "inspect pull request", "check current branch", "run it", "run yourself")
+LIVE_CHECK_TRIGGERS: tuple[str, ...] = ("check live repo", "check github", "check live connection", "verify connection", "inspect pr", "inspect pull request", "check current branch", "run it", "run yourself", "verify")
 DEEP_RECON_TRIGGERS: tuple[str, ...] = ("search", "super search", "deep search", "research", "audit", "recon", "full repo", "whole repo", "full sweep")
 MARATHON_TRIGGERS: tuple[str, ...] = ("go", "fly", "advance", "run it", "keep going", "finish", "handle all", "full marathon", "compound")
+MARINE_TRIGGERS: tuple[str, ...] = ("go marine mode", "marine mode", "marine", "kill the target", "kill all targets", "clean state", "no victory lap")
 REHYDRATION_TRIGGERS: tuple[str, ...] = (
     "lock onto repo", "lock onto the repo", "lock onto sage", "lock onto the sage repo",
     "whole repo truth", "whole repo", "repo truth", "rehydrate", "re-hydrate", "c2 rehydration",
 )
 REHYDRATION_SEQUENCE: tuple[str, ...] = (
     "REHYDRATE", "REALITY LOCK", "MISSION LOCK", "IDENTITY LOCK", "ACTIVE-FRONTIER LOCK",
+)
+MARINE_SEQUENCE: tuple[str, ...] = (
+    "RECON", "ATTACK", "REPAIR", "VERIFY", "RECONCILE", "COMPOUND", "NEXT TARGET",
 )
 
 @dataclass(frozen=True)
@@ -49,6 +56,8 @@ class C2DirectiveDecision:
     matched_marathon_triggers: tuple[str, ...] = ()
     requires_rehydration: bool = False
     matched_rehydration_triggers: tuple[str, ...] = ()
+    requires_marine_mode: bool = False
+    matched_marine_triggers: tuple[str, ...] = ()
 
 
 def classify_directive(text: str) -> C2DirectiveDecision:
@@ -57,28 +66,38 @@ def classify_directive(text: str) -> C2DirectiveDecision:
     recon_matches = tuple(t for t in DEEP_RECON_TRIGGERS if t in normalized)
     marathon_matches = tuple(t for t in MARATHON_TRIGGERS if t in normalized)
     rehydration_matches = tuple(t for t in REHYDRATION_TRIGGERS if t in normalized)
+    marine_matches = tuple(t for t in MARINE_TRIGGERS if t in normalized)
     return C2DirectiveDecision(
         bool(matches), matches, bool(recon_matches), recon_matches,
         bool(marathon_matches), marathon_matches, bool(rehydration_matches), rehydration_matches,
+        bool(marine_matches), marine_matches,
     )
 
 
 def render_system_contract() -> str:
     laws = "\n".join(f"{i}. {law}" for i, law in enumerate(ANTI_DRIFT_LAWS, 1))
     sequence = " -> ".join(REHYDRATION_SEQUENCE)
+    marine_sequence = " -> ".join(MARINE_SEQUENCE)
     return (
         f"SAGE C2 CONTRACT: {CONTRACT_ID} v{CONTRACT_VERSION}\n"
         "Apply these laws to every turn:\n" f"{laws}\n"
         f"DEEP RECON POLICY: {RECON_POLICY_PATH}\n"
         f"LOCKED EXECUTION UPDATE: {LOCKED_EXECUTION_UPDATE_PATH}\n"
         f"TECHNIQUE LEARNING BOUNDARY: {TECHNIQUE_LEARNING_PATH}\n"
+        f"CONTINUOUS EXCHANGE DOCTRINE: {CONTINUITY_DOCTRINE_PATH}\n"
         f"REHYDRATION TRIGGERS: {', '.join(REHYDRATION_TRIGGERS)}\n"
+        f"MARINE TRIGGERS: {', '.join(MARINE_TRIGGERS)}\n"
         f"MANDATORY REHYDRATION SEQUENCE: {sequence}\n"
+        f"MARINE DEEP-REPAIR SEQUENCE: {marine_sequence}\n"
         "A repo/SAGE truth-lock directive MUST execute the mandatory rehydration sequence before ordinary task execution; merely looking up a file does not satisfy rehydration.\n"
+        "CONTINUITY RULE: each governed exchange is a new verification boundary, not permission to trust prior conversational state. Rehydrate canonical repository truth when the exchange requires live/repo claims or when continuity may have crossed a session, context, branch, or main-head change.\n"
+        "IMMERSION RULE: station identity, governance mode, and presentation must derive from the governed runtime projection; presentation cannot create authority or canonical state.\n"
         "RECON ORDER: REPOSITORY-FIRST REALITY LOCK -> TARGETED PRIMARY EXTERNAL INTELLIGENCE -> SYNTHESIZE -> BOUNDED CONCURRENT EXECUTION -> EXACT-STATE VERIFICATION.\n"
         "VELOCITY RULE: independent repository inspection and relevant external research may run concurrently after the initial reality lock; do not serialize unrelated research or use research as an unnecessary approval gate.\n"
         "MARATHON RULE: when the user authorizes continuation, execute the largest coherent consequential frontier available within scope; do not return a planning-loop response while causally connected executable work remains.\n"
-        "MARINE RULE: for deep consequential boundaries, inspect the full causally connected system surface, not merely the visible defect.\n"
+        "MARINE RULE: for deep consequential boundaries, inspect the full causally connected system surface, not merely the visible defect; use RECON -> ATTACK -> REPAIR -> VERIFY -> RECONCILE -> COMPOUND -> NEXT TARGET. Marine vocabulary is shorthand, not authority.\n"
+        "TARGET RULE: 'kill the target' means resolve the identified in-scope technical failure target; it does not authorize destructive data operations, control bypass, or unbounded scope expansion.\n"
+        "PROOF RULE: no victory lap before exact evidence. A commit, receipt, local pass, remote report, or agent claim is not sufficient unless it proves the intended exact state and required acceptance criteria.\n"
         "COMPOUND RULE: advance independent executable branches in the same governed campaign and feed validated reusable results into the next causally relevant stage.\n"
         "PRESERVATION RULE: locate and reuse validated SAGE substrate before creating new authority, state, workflow, prediction, persistence, or evidence primitives.\n"
         "DELEGATION RULE: Jules and other stations are execution multipliers; delegation never transfers C2 mission framing, independent verification, evidence judgment, reconciliation, or closure ownership.\n"

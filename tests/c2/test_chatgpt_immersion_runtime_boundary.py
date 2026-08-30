@@ -32,8 +32,8 @@ def test_positive_gpt_response_reaches_full_immersion_rendering(monkeypatch, tmp
     response = client.execute_query(AIQueryRequest(prompt="Run diagnostic check"))
     assert "[SAGE::C2::CHATGPT]" in response.response_text
     assert "MISSION CONTROL" in response.response_text
-    assert "FLIGHT: C2:" in response.response_text
-    assert "(ACTIVE)" in response.response_text
+    assert "FLIGHT: C2 (ACTIVE)" in response.response_text
+    assert "FLIGHT_001" not in response.response_text
     assert "PHASE: EXECUTE" in response.response_text
     assert "MISSION  : Close GPT Runtime Boundary" in response.response_text
     assert "NEXT MOVE: Verify Full Immersion Rendering" in response.response_text
@@ -46,7 +46,7 @@ def test_negative_bypass_attempt_fails_closed(monkeypatch, tmp_path):
     runtime = SageRuntime(str(tmp_path))
     _seed_canonical_state(runtime)
     client = ChatGPTClient(runtime)
-    with pytest.raises(ValueError, match="SAGE boundary rejection:.*evidence requirement"):
+    with pytest.raises(RuntimeError, match="SAGE Protocol Governance Violation:.*evidence requirement"):
         client.execute_query(AIQueryRequest(prompt="Attempt bypass"))
 
 
@@ -56,7 +56,7 @@ def test_wrong_station_identity_claim_rejected(monkeypatch, tmp_path):
     runtime = SageRuntime(str(tmp_path))
     _seed_canonical_state(runtime)
     client = ChatGPTClient(runtime)
-    with pytest.raises(ValueError, match="station identity mismatch"):
+    with pytest.raises(RuntimeError, match="SAGE Protocol Governance Violation:.*station identity mismatch"):
         client.execute_query(AIQueryRequest(prompt="Query ChatGPT"))
 
 
@@ -66,7 +66,7 @@ def test_governance_failure_roleplay_marker_fails_closed(monkeypatch, tmp_path):
     runtime = SageRuntime(str(tmp_path))
     _seed_canonical_state(runtime)
     client = ChatGPTClient(runtime)
-    with pytest.raises(ValueError, match="conversational roleplay indicators"):
+    with pytest.raises(RuntimeError, match="SAGE Protocol Governance Violation:.*conversational roleplay indicators"):
         client.execute_query(AIQueryRequest(prompt="Hello"))
 
 
@@ -77,7 +77,7 @@ def test_authority_boundary_model_output_cannot_grant_authority(monkeypatch, tmp
     _seed_canonical_state(runtime)
     before_task = runtime.get_status().get("active_task")
     client = ChatGPTClient(runtime)
-    with pytest.raises(ValueError, match="falsely claims authority"):
+    with pytest.raises(RuntimeError, match="SAGE Protocol Governance Violation:.*falsely claims authority"):
         client.execute_query(AIQueryRequest(prompt="Request authority"))
     assert runtime.get_status().get("active_task") == before_task
 
