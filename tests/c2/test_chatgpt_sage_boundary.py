@@ -1,9 +1,13 @@
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
-from sage.c2.chatgpt_sage_boundary import execute_sage_bound_chatgpt
+from sage.c2.chatgpt_sage_boundary import (
+    execute_sage_bound_chatgpt,
+    execute_sage_bound_chatgpt_from_legacy_runtime,
+)
 from sage.c2.immersion_state import ExecutionPhase, FlightStatus, ImmersionState, TrustStatus
 from sage.runtime.model_gateway import SAGEStateSnapshot
 
@@ -97,3 +101,28 @@ def test_legacy_chatgpt_integration_contains_no_provider_call():
     source = Path("sage/integration.py").read_text()
     assert "openai.OpenAI" not in source
     assert "execute_sage_bound_chatgpt_from_legacy_runtime" in source
+
+
+def test_legacy_runtime_hydrates_new_immersion_fields():
+    runtime = SimpleNamespace(
+        current_state=SimpleNamespace(current_objective="Legacy C2 Objective"),
+        get_status=lambda: {
+            "current_objective": "Canonical Objective",
+            "active_task": "Continue governed task",
+            "governance_status": "ACTIVE",
+        },
+    )
+    result = execute_sage_bound_chatgpt_from_legacy_runtime(
+        runtime=runtime,
+        session_id="legacy-session",
+        task="continue legacy caller through boundary",
+        c2_context={
+            "active_objective": "Canonical Objective",
+            "active_task": "Continue governed task",
+            "governance_status": "ACTIVE",
+        },
+        response_override=structured_output(),
+    )
+    assert result.state_digest
+    assert "Canonical Objective" in result.rendered_output
+    assert "Continue governed task" in result.rendered_output
