@@ -1,0 +1,11 @@
+{
+  "head_sha": "47bb765e03f1d07358ba783ce6ae69b1c8579167",
+  "hold_count": 5,
+  "ledger_file": "evidence_capture/experiment_ledger.json",
+  "overall_verdict": "PASS",
+  "promoted_count": 5,
+  "rejected_count": 0,
+  "timestamp": 1788085579.5842834,
+  "total_experiments_recorded": 10,
+  "wave_id": "wave-experiment-ledger-1788085577"
+}

@@ -36,7 +36,7 @@ class CounterexampleRecord(BaseModel):
     counterexample_id: str
     description: str
     discovered_at: float = Field(default_factory=time.time)
-    impact_severity: str = "MEDIUM"
+    impact_severity: str = "MEDIUM"  # LOW, MEDIUM, HIGH, CRITICAL
     evidence_ref: str = ""
 
 
@@ -49,7 +49,7 @@ class CandidateComparison(BaseModel):
     baseline_metric: float
     candidate_metric: float
     delta: float
-    verdict: str = "INCONCLUSIVE"
+    verdict: str = "INCONCLUSIVE"  # WIN, LOSS, INCONCLUSIVE
 
 
 class ExperimentRecord(BaseModel):
@@ -98,20 +98,37 @@ class ExperimentLedger:
             encoding="utf-8",
         )
 
-    def register_experiment(self, experiment_id: str, hypothesis: str, wave_id: str, flight_id: str, commit_sha: str, baselines: Optional[List[ExperimentBaseline]] = None, evidence_refs: Optional[List[str]] = None) -> ExperimentRecord:
+    def register_experiment(
+        self,
+        experiment_id: str,
+        hypothesis: str,
+        wave_id: str,
+        flight_id: str,
+        commit_sha: str,
+        baselines: Optional[List[ExperimentBaseline]] = None,
+        evidence_refs: Optional[List[str]] = None,
+    ) -> ExperimentRecord:
         with self._lock:
             now = time.time()
             record = ExperimentRecord(
-                experiment_id=experiment_id, hypothesis=hypothesis, wave_id=wave_id,
-                flight_id=flight_id, commit_sha=commit_sha, status=ValidationStatus.HOLD,
-                baselines=baselines or [], evidence_refs=evidence_refs or [],
-                created_at=now, updated_at=now,
+                experiment_id=experiment_id,
+                hypothesis=hypothesis,
+                wave_id=wave_id,
+                flight_id=flight_id,
+                commit_sha=commit_sha,
+                status=ValidationStatus.HOLD,
+                baselines=baselines or [],
+                evidence_refs=evidence_refs or [],
+                created_at=now,
+                updated_at=now,
             )
             self._records[experiment_id] = record
             self._save_ledger()
             return record
 
-    def bind_baseline(self, experiment_id: str, baseline: ExperimentBaseline) -> ExperimentRecord:
+    def bind_baseline(
+        self, experiment_id: str, baseline: ExperimentBaseline
+    ) -> ExperimentRecord:
         with self._lock:
             if experiment_id not in self._records:
                 raise KeyError(f"Experiment {experiment_id} not found in ledger.")
@@ -142,7 +159,9 @@ class ExperimentLedger:
             self._save_ledger()
             return rec
 
-    def add_counterexample(self, experiment_id: str, counterexample: CounterexampleRecord) -> ExperimentRecord:
+    def add_counterexample(
+        self, experiment_id: str, counterexample: CounterexampleRecord
+    ) -> ExperimentRecord:
         with self._lock:
             if experiment_id not in self._records:
                 raise KeyError(f"Experiment {experiment_id} not found in ledger.")
@@ -152,7 +171,9 @@ class ExperimentLedger:
             self._save_ledger()
             return rec
 
-    def add_candidate_comparison(self, experiment_id: str, comparison: CandidateComparison) -> ExperimentRecord:
+    def add_candidate_comparison(
+        self, experiment_id: str, comparison: CandidateComparison
+    ) -> ExperimentRecord:
         with self._lock:
             if experiment_id not in self._records:
                 raise KeyError(f"Experiment {experiment_id} not found in ledger.")
@@ -162,24 +183,31 @@ class ExperimentLedger:
             self._save_ledger()
             return rec
 
-    def update_validation_decision(self, experiment_id: str, status: ValidationStatus, notes: str = "") -> ExperimentRecord:
-        """Apply an explicit validation decision; execution receipts never promote records."""
+    def update_validation_decision(
+        self, experiment_id: str, status: ValidationStatus, notes: str = ""
+    ) -> ExperimentRecord:
         with self._lock:
             if experiment_id not in self._records:
                 raise KeyError(f"Experiment {experiment_id} not found in ledger.")
             rec = self._records[experiment_id]
 
+            # Fail-closed evidence verification for PROMOTED status
             if status == ValidationStatus.PROMOTED:
                 if not rec.evidence_refs:
                     rec.status = ValidationStatus.HOLD
-                    rec.validation_notes = f"PROMOTION REJECTED: Zero evidence refs attached. Defaulting to HOLD. {notes}".strip()
+                    rec.validation_notes = (
+                        f"PROMOTION REJECTED: Zero evidence refs attached. Defaulting to HOLD. {notes}".strip()
+                    )
                     rec.updated_at = time.time()
                     self._save_ledger()
                     return rec
+
                 for ref in rec.evidence_refs:
                     if not Path(ref).exists():
                         rec.status = ValidationStatus.HOLD
-                        rec.validation_notes = f"PROMOTION REJECTED: Evidence ref {ref} missing on disk. Defaulting to HOLD. {notes}".strip()
+                        rec.validation_notes = (
+                            f"PROMOTION REJECTED: Evidence ref {ref} missing on disk. Defaulting to HOLD. {notes}".strip()
+                        )
                         rec.updated_at = time.time()
                         self._save_ledger()
                         return rec
@@ -190,8 +218,9 @@ class ExperimentLedger:
             self._save_ledger()
             return rec
 
-    def record_flight_receipt(self, wave_id: str, flight_id: str, commit_sha: str, receipt_data: dict) -> ExperimentRecord:
-        """Record execution evidence only; leave validation/promotion to the explicit validation gate."""
+    def record_flight_receipt(
+        self, wave_id: str, flight_id: str, commit_sha: str, receipt_data: dict
+    ) -> ExperimentRecord:
         exp_id = f"exp_{wave_id}_{flight_id}"
         with self._lock:
             evidence_ref = receipt_data.get("evidence_ref", "")
@@ -204,7 +233,9 @@ class ExperimentLedger:
                 rec = ExperimentRecord(
                     experiment_id=exp_id,
                     hypothesis=f"Flight {flight_id} target {target_path} achieves verified execution proof.",
-                    wave_id=wave_id, flight_id=flight_id, commit_sha=commit_sha,
+                    wave_id=wave_id,
+                    flight_id=flight_id,
+                    commit_sha=commit_sha,
                     status=ValidationStatus.HOLD,
                 )
                 self._records[exp_id] = rec
@@ -214,12 +245,10 @@ class ExperimentLedger:
                 rec.evidence_refs.append(evidence_ref)
             rec.updated_at = time.time()
 
-            # A flight receipt is execution evidence, not an independent validation decision.
-            # Both PASS and FAIL remain downstream inputs to the explicit validation gate.
+            # Fail-closed governance: Receipts attach evidence and observations, but maintain ValidationStatus.HOLD.
+            # Formal promotion requires explicit update_validation_decision call with verified evidence.
             rec.status = ValidationStatus.HOLD
-            rec.validation_notes = "Execution receipt recorded; awaiting explicit validation decision."
-            if status_str != "PASS":
-                rec.validation_notes = f"Execution receipt reported failure: {status_str}; awaiting explicit validation decision."
+            rec.validation_notes = "Receipt recorded. Awaiting formal validation decision."
 
             self._save_ledger()
             return rec

@@ -1,0 +1,202 @@
+[
+  {
+    "baselines": [],
+    "candidate_comparisons": [],
+    "commit_sha": "47bb765e03f1d07358ba783ce6ae69b1c8579167",
+    "counterexamples": [],
+    "created_at": 1788085427.24434,
+    "evidence_refs": [
+      "evidence_capture/waves/wave-experiment-ledger-1788085425/47bb765e03f1d07358ba783ce6ae69b1c8579167/FLIGHT-F1-RESEARCH_receipt.json"
+    ],
+    "experiment_id": "exp_wave-experiment-ledger-1788085425_FLIGHT-F1-RESEARCH",
+    "flight_id": "FLIGHT-F1-RESEARCH",
+    "hypothesis": "Flight FLIGHT-F1-RESEARCH target sage/c2/frontier_intelligence_bridge.py achieves verified execution proof.",
+    "observations": [
+      "Flight status: PASS at head 47bb765e03f1d07358ba783ce6ae69b1c8579167"
+    ],
+    "status": "PROMOTED",
+    "updated_at": 1788085427.2443554,
+    "validation_notes": "Execution receipt verified on disk with status PASS.",
+    "wave_id": "wave-experiment-ledger-1788085425"
+  },
+  {
+    "baselines": [],
+    "candidate_comparisons": [],
+    "commit_sha": "47bb765e03f1d07358ba783ce6ae69b1c8579167",
+    "counterexamples": [],
+    "created_at": 1788085427.5145218,
+    "evidence_refs": [
+      "evidence_capture/waves/wave-experiment-ledger-1788085425/47bb765e03f1d07358ba783ce6ae69b1c8579167/FLIGHT-F5-WAREHOUSE_receipt.json"
+    ],
+    "experiment_id": "exp_wave-experiment-ledger-1788085425_FLIGHT-F5-WAREHOUSE",
+    "flight_id": "FLIGHT-F5-WAREHOUSE",
+    "hypothesis": "Flight FLIGHT-F5-WAREHOUSE target sage/c2/reconvergence_synthesizer.py achieves verified execution proof.",
+    "observations": [
+      "Flight status: PASS at head 47bb765e03f1d07358ba783ce6ae69b1c8579167"
+    ],
+    "status": "PROMOTED",
+    "updated_at": 1788085427.5145347,
+    "validation_notes": "Execution receipt verified on disk with status PASS.",
+    "wave_id": "wave-experiment-ledger-1788085425"
+  },
+  {
+    "baselines": [],
+    "candidate_comparisons": [],
+    "commit_sha": "47bb765e03f1d07358ba783ce6ae69b1c8579167",
+    "counterexamples": [],
+    "created_at": 1788085427.8577197,
+    "evidence_refs": [
+      "evidence_capture/waves/wave-experiment-ledger-1788085425/47bb765e03f1d07358ba783ce6ae69b1c8579167/FLIGHT-F2-CONTINUITY_receipt.json"
+    ],
+    "experiment_id": "exp_wave-experiment-ledger-1788085425_FLIGHT-F2-CONTINUITY",
+    "flight_id": "FLIGHT-F2-CONTINUITY",
+    "hypothesis": "Flight FLIGHT-F2-CONTINUITY target sage/capability_registry.py achieves verified execution proof.",
+    "observations": [
+      "Flight status: PASS at head 47bb765e03f1d07358ba783ce6ae69b1c8579167"
+    ],
+    "status": "PROMOTED",
+    "updated_at": 1788085427.8577278,
+    "validation_notes": "Execution receipt verified on disk with status PASS.",
+    "wave_id": "wave-experiment-ledger-1788085425"
+  },
+  {
+    "baselines": [],
+    "candidate_comparisons": [],
+    "commit_sha": "47bb765e03f1d07358ba783ce6ae69b1c8579167",
+    "counterexamples": [],
+    "created_at": 1788085427.8612363,
+    "evidence_refs": [
+      "evidence_capture/waves/wave-experiment-ledger-1788085425/47bb765e03f1d07358ba783ce6ae69b1c8579167/FLIGHT-F4-GUARD_receipt.json"
+    ],
+    "experiment_id": "exp_wave-experiment-ledger-1788085425_FLIGHT-F4-GUARD",
+    "flight_id": "FLIGHT-F4-GUARD",
+    "hypothesis": "Flight FLIGHT-F4-GUARD target sage/c2/chatgpt_c2_contract.py achieves verified execution proof.",
+    "observations": [
+      "Flight status: PASS at head 47bb765e03f1d07358ba783ce6ae69b1c8579167"
+    ],
+    "status": "PROMOTED",
+    "updated_at": 1788085427.8612442,
+    "validation_notes": "Execution receipt verified on disk with status PASS.",
+    "wave_id": "wave-experiment-ledger-1788085425"
+  },
+  {
+    "baselines": [],
+    "candidate_comparisons": [],
+    "commit_sha": "47bb765e03f1d07358ba783ce6ae69b1c8579167",
+    "counterexamples": [],
+    "created_at": 1788085428.3517244,
+    "evidence_refs": [
+      "evidence_capture/waves/wave-experiment-ledger-1788085425/47bb765e03f1d07358ba783ce6ae69b1c8579167/FLIGHT-F3-EXECUTION_receipt.json"
+    ],
+    "experiment_id": "exp_wave-experiment-ledger-1788085425_FLIGHT-F3-EXECUTION",
+    "flight_id": "FLIGHT-F3-EXECUTION",
+    "hypothesis": "Flight FLIGHT-F3-EXECUTION target sage/runtime/engine.py achieves verified execution proof.",
+    "observations": [
+      "Flight status: PASS at head 47bb765e03f1d07358ba783ce6ae69b1c8579167"
+    ],
+    "status": "PROMOTED",
+    "updated_at": 1788085428.3517327,
+    "validation_notes": "Execution receipt verified on disk with status PASS.",
+    "wave_id": "wave-experiment-ledger-1788085425"
+  },
+  {
+    "baselines": [],
+    "candidate_comparisons": [],
+    "commit_sha": "47bb765e03f1d07358ba783ce6ae69b1c8579167",
+    "counterexamples": [],
+    "created_at": 1788085578.8067045,
+    "evidence_refs": [
+      "evidence_capture/waves/wave-experiment-ledger-1788085577/47bb765e03f1d07358ba783ce6ae69b1c8579167/FLIGHT-F5-WAREHOUSE_receipt.json"
+    ],
+    "experiment_id": "exp_wave-experiment-ledger-1788085577_FLIGHT-F5-WAREHOUSE",
+    "flight_id": "FLIGHT-F5-WAREHOUSE",
+    "hypothesis": "Flight FLIGHT-F5-WAREHOUSE target sage/c2/reconvergence_synthesizer.py achieves verified execution proof.",
+    "observations": [
+      "Flight status: PASS at head 47bb765e03f1d07358ba783ce6ae69b1c8579167"
+    ],
+    "status": "HOLD",
+    "updated_at": 1788085578.8067214,
+    "validation_notes": "Receipt recorded. Awaiting formal validation decision.",
+    "wave_id": "wave-experiment-ledger-1788085577"
+  },
+  {
+    "baselines": [],
+    "candidate_comparisons": [],
+    "commit_sha": "47bb765e03f1d07358ba783ce6ae69b1c8579167",
+    "counterexamples": [],
+    "created_at": 1788085578.8888783,
+    "evidence_refs": [
+      "evidence_capture/waves/wave-experiment-ledger-1788085577/47bb765e03f1d07358ba783ce6ae69b1c8579167/FLIGHT-F2-CONTINUITY_receipt.json"
+    ],
+    "experiment_id": "exp_wave-experiment-ledger-1788085577_FLIGHT-F2-CONTINUITY",
+    "flight_id": "FLIGHT-F2-CONTINUITY",
+    "hypothesis": "Flight FLIGHT-F2-CONTINUITY target sage/capability_registry.py achieves verified execution proof.",
+    "observations": [
+      "Flight status: PASS at head 47bb765e03f1d07358ba783ce6ae69b1c8579167"
+    ],
+    "status": "HOLD",
+    "updated_at": 1788085578.8888888,
+    "validation_notes": "Receipt recorded. Awaiting formal validation decision.",
+    "wave_id": "wave-experiment-ledger-1788085577"
+  },
+  {
+    "baselines": [],
+    "candidate_comparisons": [],
+    "commit_sha": "47bb765e03f1d07358ba783ce6ae69b1c8579167",
+    "counterexamples": [],
+    "created_at": 1788085578.9091456,
+    "evidence_refs": [
+      "evidence_capture/waves/wave-experiment-ledger-1788085577/47bb765e03f1d07358ba783ce6ae69b1c8579167/FLIGHT-F4-GUARD_receipt.json"
+    ],
+    "experiment_id": "exp_wave-experiment-ledger-1788085577_FLIGHT-F4-GUARD",
+    "flight_id": "FLIGHT-F4-GUARD",
+    "hypothesis": "Flight FLIGHT-F4-GUARD target sage/c2/chatgpt_c2_contract.py achieves verified execution proof.",
+    "observations": [
+      "Flight status: PASS at head 47bb765e03f1d07358ba783ce6ae69b1c8579167"
+    ],
+    "status": "HOLD",
+    "updated_at": 1788085578.9091558,
+    "validation_notes": "Receipt recorded. Awaiting formal validation decision.",
+    "wave_id": "wave-experiment-ledger-1788085577"
+  },
+  {
+    "baselines": [],
+    "candidate_comparisons": [],
+    "commit_sha": "47bb765e03f1d07358ba783ce6ae69b1c8579167",
+    "counterexamples": [],
+    "created_at": 1788085578.9410417,
+    "evidence_refs": [
+      "evidence_capture/waves/wave-experiment-ledger-1788085577/47bb765e03f1d07358ba783ce6ae69b1c8579167/FLIGHT-F1-RESEARCH_receipt.json"
+    ],
+    "experiment_id": "exp_wave-experiment-ledger-1788085577_FLIGHT-F1-RESEARCH",
+    "flight_id": "FLIGHT-F1-RESEARCH",
+    "hypothesis": "Flight FLIGHT-F1-RESEARCH target sage/c2/frontier_intelligence_bridge.py achieves verified execution proof.",
+    "observations": [
+      "Flight status: PASS at head 47bb765e03f1d07358ba783ce6ae69b1c8579167"
+    ],
+    "status": "HOLD",
+    "updated_at": 1788085578.94105,
+    "validation_notes": "Receipt recorded. Awaiting formal validation decision.",
+    "wave_id": "wave-experiment-ledger-1788085577"
+  },
+  {
+    "baselines": [],
+    "candidate_comparisons": [],
+    "commit_sha": "47bb765e03f1d07358ba783ce6ae69b1c8579167",
+    "counterexamples": [],
+    "created_at": 1788085579.5818558,
+    "evidence_refs": [
+      "evidence_capture/waves/wave-experiment-ledger-1788085577/47bb765e03f1d07358ba783ce6ae69b1c8579167/FLIGHT-F3-EXECUTION_receipt.json"
+    ],
+    "experiment_id": "exp_wave-experiment-ledger-1788085577_FLIGHT-F3-EXECUTION",
+    "flight_id": "FLIGHT-F3-EXECUTION",
+    "hypothesis": "Flight FLIGHT-F3-EXECUTION target sage/runtime/engine.py achieves verified execution proof.",
+    "observations": [
+      "Flight status: PASS at head 47bb765e03f1d07358ba783ce6ae69b1c8579167"
+    ],
+    "status": "HOLD",
+    "updated_at": 1788085579.5818655,
+    "validation_notes": "Receipt recorded. Awaiting formal validation decision.",
+    "wave_id": "wave-experiment-ledger-1788085577"
+  }
+]
