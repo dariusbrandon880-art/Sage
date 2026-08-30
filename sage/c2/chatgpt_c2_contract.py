@@ -2,11 +2,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-
 from sage.c2.live_operation_receipt import LiveOperationReceipt
 
 CONTRACT_ID = "CHATGPT_C2_EXACT_ORDER_ANTI_DRIFT"
-CONTRACT_VERSION = "1.4"
+CONTRACT_VERSION = "1.3"
 RECON_POLICY_PATH = "docs/governance/SAGE_DEEP_RECON_VELOCITY_POLICY.md"
 LOCKED_EXECUTION_UPDATE_PATH = "docs/governance/CHATGPT_C2_LOCKED_EXECUTION_UPDATE_2026-08-29.md"
 TECHNIQUE_LEARNING_PATH = "sage/core/technique_learning.py"
