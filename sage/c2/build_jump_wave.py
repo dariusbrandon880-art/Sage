@@ -78,20 +78,23 @@ class BuildJumpWaveEngine:
             evidence_required=[spec.evidence_ref],
             stop_condition="Milestone proof verified",
         )
-        admission = self.admission_engine.classify_and_evaluate(candidate)
-        manifest = FlightManifest(
-            flight_id=spec.flight_id,
-            capability_target=spec.target_path,
-            base_sha=head_sha,
-            ownership=OwnershipFingerprint(
-                files={spec.target_path},
-                modules={spec.collision_zone.replace('/', '.')},
-                artifacts={spec.evidence_ref},
-            ),
-            lifecycle=FlightLifecycle.ACTIVE,
-        )
+        # FrontierAdmissionEngine owns mutable shared admission state. Serialize
+        # only the admission mutation/read boundary so concurrent flights cannot
+        # race on active_frontiers while preserving concurrent flight execution.
         with self._lock_manager_guard:
+            admission = self.admission_engine.classify_and_evaluate(candidate)
             gps = FlightGPS(canonical_head_sha=head_sha)
+            manifest = FlightManifest(
+                flight_id=spec.flight_id,
+                capability_target=spec.target_path,
+                base_sha=head_sha,
+                ownership=OwnershipFingerprint(
+                    files={spec.target_path},
+                    modules={spec.collision_zone.replace('/', '.')},
+                    artifacts={spec.evidence_ref},
+                ),
+                lifecycle=FlightLifecycle.ACTIVE,
+            )
             gps.registry.register(manifest)
             lock_res = self.lock_manager.acquire_lock(
                 FlightLockRequest(
