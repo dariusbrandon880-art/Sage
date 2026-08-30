@@ -1,78 +1,66 @@
 # SAGE Immersion Language — Design Lab Expansion
 
-**Status:** DESIGN LAB / NOT CANONICAL
+**Status:** DESIGN LAB / FIRST PROJECTION PROTOTYPE IMPLEMENTED / NOT CANONICAL
 
-**Purpose:** Capture the expanded immersion direction before implementation or promotion into canonical governance. This document records inspiration and design possibilities; it does not create authority, progression, XP, qualification, or mission state.
+**Purpose:** Capture and prototype the expanded immersion direction before promotion into canonical governance. Casino and video-game references are inspiration only. The implementation is a read-only projection over existing SAGE state and does not create authority, progression, XP, qualification, or mission state.
 
 ## 1. Core Direction
 
-SAGE remains a governed mission-control system. ChatGPT is the interface. Military / aerospace / NASA-style operational language is the native visual and tonal frame.
+SAGE remains a governed mission-control system. **ChatGPT is the interface.** Military / aerospace / NASA-style operational language is the native visual and tonal frame.
 
-Casino and video-game references are **design references only**. Borrow interaction and feedback patterns, not branding, identities, gambling behavior, or authority.
+Casino-machine and video-game references supply interaction and feedback patterns only. Borrow mechanics, not identities; feedback patterns, not branding; progression feel, not gambling behavior.
 
-The central rule is:
+The governing rule is:
 
 > **Real SAGE event → canonical state change → immersion projection. Never immersion → assumed achievement → canonical state.**
 
 The immersion layer must remain read-only with respect to truth-bearing state.
 
-## 2. What We Are Borrowing From Slot Machines
+## 2. Reference Mechanics → SAGE Possibilities
 
-The useful reference class is the actual progression behavior of machines such as Wolf Run, Buffalo, and Panda-family games—not a casino skin.
+The reference class is actual progression behavior from machines such as Wolf Run, Buffalo, and Panda-family games. The implementation translates those patterns into SAGE mission-control semantics.
 
 ### Wolf Run — stacking
 
 Borrow: repeated / stacked symbols that make accumulation immediately visible.
 
-SAGE possibility:
-- verified capability tags can visually stack on a nameplate or mission card;
-- repeated verified work makes the stack visibly grow;
-- the stack is derived from canonical progression records;
+SAGE translation:
+- verified qualification levels render as compact stacked capability glyphs;
+- the stack visibly grows as canonical qualification grows;
 - no visual stack can imply an unearned qualification.
 
 ### Buffalo — collect → threshold → transformation
 
 Borrow: collected symbols accumulate until a threshold causes a visible transformation.
 
-SAGE possibility:
-- evidence, verified actions, recoveries, or reusable capabilities accumulate;
-- a governed threshold converts a temporary progress marker into a persistent qualification/tag;
-- the transformation is an effect of verified state, not the source of it.
-
-Example:
-
-`BUILD  ███` → verified threshold → `ENGINEERING QUALIFIED`
+SAGE translation:
+- evidence-backed progress can accumulate in existing canonical progression;
+- governed qualification thresholds transform ordinary progression into persistent qualification marks;
+- the transformation is an effect of verified state, never its source.
 
 ### Panda — completion / trigger / expansion
 
 Borrow: visible collection toward a named trigger and an expanded state after the trigger.
 
 SAGE possibility:
-- a capability name can visibly assemble as its real gates are completed;
-- completion can trigger a new mission-control presentation state;
-- the available visual field can expand when a capability is actually qualified.
+- a capability can expose real gates as a completion sequence;
+- completion can trigger a higher-salience mission-control presentation;
+- a newly qualified capability can expose additional bounded frontier space.
 
-Example:
+### Panda-family — sticky / expanding behavior
 
-`R E H Y D R A T I O N`
+Borrow: earned symbols persist and the visual field becomes richer.
 
-Each completed gate fills a real position. Completion reveals the qualified capability.
-
-### Panda-family sticky / expanding behavior
-
-Borrow: earned symbols persist and the playfield can become visually richer.
-
-SAGE possibility:
-- verified tags remain visible across later turns/sessions;
-- newly qualified capabilities join an expanding visual capability collection;
-- persistence comes from SAGE's existing durable state, not client-side decoration.
+SAGE translation:
+- canonical qualification marks remain visible;
+- later sessions can project the same earned marks from durable state;
+- no client-side decoration becomes persistent truth.
 
 ## 3. Military / Aerospace / NASA Translation
 
-The casino mechanics supply **how progression feels**. The existing SAGE military/aerospace language supplies **what the experience looks and sounds like**.
+The reference mechanics supply **how progression feels**. Existing SAGE military/aerospace language supplies **what the experience looks and sounds like**.
 
-### Operational visual primitives
-
+Operational primitives:
 - mission patches / qualification marks
 - aircraft / spacecraft / station glyphs
 - sortie and flight indicators
@@ -88,40 +76,43 @@ The casino mechanics supply **how progression feels**. The existing SAGE militar
 - command-center panels
 - small persistent operational icons
 
-These should remain consistent with existing SAGE terminology and architecture.
+These remain consistent with existing SAGE terminology and architecture.
 
-## 4. Living Nameplates
+## 4. First Implemented Projection Layer
 
-The nameplate is the primary candidate surface for lightweight immersion.
+**Implementation:** `sage/experimental/airspace/immersion.py`
+
+The first prototype is deliberately thin and read-only. It consumes `AirspaceState` and projects:
+
+- canonical CQL/SQL progression as stacked capability glyphs;
+- qualification labels as persistent capability tags;
+- sortie states as live mission-control glyphs;
+- an immersion nameplate combining existing identity, XP, qualification, stack, and live sortie state.
+
+No new persistence or authority is introduced.
+
+## 5. Living Nameplates
+
+The nameplate is the primary lightweight immersion surface.
 
 A nameplate can show, from canonical state:
 
 - station / agent identity
 - role
-- CQL / SQL where applicable
-- XP where canonical
-- active mission / frontier
+- CQL / SQL
+- XP
+- active mission / frontier when available
 - current operational state
 - earned capability tags
 - qualification marks
 - Milestone Strike stars when legitimately earned
 - small persistent mission glyphs
 
-The visual state can evolve as verified progression changes.
+The first implementation adds the capability stack and live sortie strip without changing the existing canonical identity API.
 
-Example:
+## 6. Capability Collection
 
-`[🧠 C2] CHATGPT`
-
-`CQL-7 | SQL-4 | XP 2,480`
-
-`[🛰️] [🔧] [🛡️] [⭐]`
-
-The icons are semantic state projections, not decorative claims.
-
-## 5. Capability Collection
-
-Create the concept of a visual collection of **already-earned** SAGE capabilities.
+Create the concept of a visual collection of already-earned SAGE capabilities.
 
 Candidate categories:
 
@@ -137,27 +128,21 @@ Candidate categories:
 - Frontier Exploration
 - Warehouse Contribution
 
-The collection can grow visually over time and can support persistent identity without becoming a second ledger.
+The collection can grow visually over time and support persistent identity without becoming a second ledger.
 
-## 6. Capability Completion / Spelling
+## 7. Capability Completion / Spelling
 
-A capability can expose its real progression as a sequence of gates.
+A later projection can expose a capability's real progression as a sequence of governed gates.
 
 Example:
 
 `R E H Y D R A T I O N`
 
-Each character / slot is a visual placeholder for a governed requirement. A gate becomes filled only when its corresponding evidence-backed condition is satisfied.
+Each position is filled only by a real evidence-backed condition. Completion reveals the qualified capability.
 
-When the final condition is verified:
+This remains a candidate until the relevant canonical gate source is wired explicitly.
 
-`REHYDRATION — QUALIFIED`
-
-This should feel like a satisfying completion event while remaining epistemically honest.
-
-## 7. Sticky Progression
-
-Certain verified visual elements should remain present rather than resetting after each response.
+## 8. Sticky Progression
 
 Candidate sticky elements:
 
@@ -168,27 +153,21 @@ Candidate sticky elements:
 - Milestone Strike stars
 - persistent station distinctions
 
-Persistence must be sourced from the existing canonical state / archive mechanisms.
+Persistence must come from existing canonical state / archive mechanisms.
 
-## 8. Stacked Progression
+## 9. Stacked Progression
 
-A compact visual stack can communicate repeated verified progress without requiring prose.
+The first implementation makes stacked progression concrete through `render_capability_stack()`.
 
 Example:
 
-`🛰️ 🛰️ 🛰️` Recon contributions
+`CQL ⚙️⚙️⚙️⚙️  SQL 🛰️🛰️🛰️`
 
-`🔧 🔧` Engineering contributions
+The stack is derived from current canonical qualification levels. It cannot award XP or qualification.
 
-`🛡️ 🛡️ 🛡️ 🛡️` Verification contributions
+## 10. Transformation Events
 
-A governed threshold may convert the stack into a qualification mark.
-
-The stack should not become a vanity counter disconnected from actual events.
-
-## 9. Transformation Events
-
-A particularly strong immersion moment occurs when an ordinary marker transforms after verified completion.
+A later projection can render high-salience transformations after verified completion.
 
 Examples:
 
@@ -197,11 +176,11 @@ Examples:
 - `🛡️ VERIFY` → `🏅 VALIDATION QUALIFIED`
 - `✈️ SORTIE` → `⭐ MILESTONE STRIKE`
 
-The transformation is triggered only by canonical state.
+The transformation must be triggered only by canonical state.
 
-## 10. Expanding Frontier
+## 11. Expanding Frontier
 
-Borrow the feeling of a playfield opening up as progression occurs.
+Borrow the feeling of a playfield opening as progression occurs.
 
 SAGE possibility:
 
@@ -214,11 +193,9 @@ CORE
  └─ NEXT FRONTIER      🔒
 ```
 
-When a capability is verified, the next bounded frontier becomes visible.
+The visual expansion represents newly visible capability space; it does not authorize work by itself.
 
-The visual expansion represents newly available capability space; it does not authorize work by itself.
-
-## 11. Ribbons / Patches / Distinctions
+## 12. Ribbons / Patches / Distinctions
 
 Borrow military-game recognition systems.
 
@@ -234,23 +211,21 @@ Candidate earned distinctions:
 - Provenance Guardian
 - Rehydration Qualified
 
-These should be derived from real qualification criteria and existing progression mechanisms rather than free-form achievements.
+These must be derived from real qualification criteria and existing progression mechanisms.
 
-## 12. Live Mission-State Feedback
+## 13. Live Mission-State Feedback
 
-Borrow the immediate feedback of modern games while preserving mission-control semantics.
+The first implementation provides sortie-state glyphs:
 
-A real event can produce a compact sequence:
+`CREATED → BRIEFED → CLEARED → ✈️ ACTIVE → 🛡️ EVIDENCE_CAPTURE → ⭐ VERIFIED`
 
-`BUILDING → VERIFYING → VERIFIED`
+Interrupted states remain explicit:
 
-or
+`⛔ BLOCKED` / `⚠️ FAILED` / `↩ ABORTED`
 
-`FLIGHT ACTIVE → EVIDENCE CAPTURE → VALIDATION → QUALIFIED`
+The interface can acknowledge meaningful transitions quickly while preserving mission-control semantics.
 
-The interface should acknowledge meaningful state transitions quickly so the user feels the system is alive.
-
-## 13. Failure Can Be Visually Meaningful
+## 14. Failure Can Be Visually Meaningful
 
 Failure should not look like a generic dead end.
 
@@ -264,9 +239,9 @@ Candidate presentation:
 
 `REPAIR FRONTIER CREATED`
 
-The failure remains truthful and can become a visible repair target without awarding progression.
+The failure receives no progression award merely because it was displayed.
 
-## 14. Milestone Strike as the Major Reveal
+## 15. Milestone Strike as the Major Reveal
 
 A Milestone Strike can serve as the strongest visual reward because it already represents verified advancement.
 
@@ -281,15 +256,13 @@ Candidate presentation:
 `VALIDATION ✓`
 `PROMOTION ✓`
 
-Then the earned star / rank / ribbon changes persistently.
+The presentation remains downstream of the verified progression system.
 
-The presentation must remain downstream of the verified progression system.
+## 16. Live World Feeling
 
-## 15. Live World Feeling
+The central immersion property is visible environmental consequence.
 
-The most important immersion property is not animation. It is **visible environmental consequence**.
-
-A real event should be able to update several already-existing views at once:
+A real event can update several already-existing views:
 
 `real event`
 
@@ -301,9 +274,9 @@ A real event should be able to update several already-existing views at once:
 → flight / station status changes
 → next objective becomes visible
 
-This creates the feeling that SAGE is a living operational world because the underlying state actually changed.
+The implementation should grow this incrementally rather than introduce a separate game engine.
 
-## 16. Design Boundaries
+## 17. Design Boundaries
 
 Do not add:
 
@@ -317,9 +290,7 @@ Do not add:
 - unnecessary game-engine architecture;
 - progression that can be manipulated by presentation code.
 
-## 17. Candidate Architecture
-
-The likely implementation should remain a thin projection layer over existing SAGE state:
+## 18. Candidate Architecture
 
 ```text
 CANONICAL SAGE STATE
@@ -341,39 +312,28 @@ CHATGPT INTERFACE
 
 The immersion layer must not write truth-bearing state.
 
-## 18. Design-Lab Validation Plan
+## 19. Current Prototype Boundary
 
-Before implementation, test candidate primitives against four questions:
+Implemented now:
 
-1. **Does it make real progression easier to perceive?**
-2. **Does it reinforce SAGE's existing mission-control tone?**
-3. **Does it use existing canonical state instead of inventing a parallel ledger?**
-4. **Would a user understand what actually changed without being misled?**
+- stacked CQL/SQL progression glyphs;
+- canonical qualification tags;
+- sortie-state glyphs;
+- live sortie strip;
+- composite immersion nameplate;
+- read-only tests proving the projection does not mutate AirspaceState.
 
-Promote only ideas that survive those checks.
+Next implementation candidates:
 
-## 19. Working Vocabulary
-
-**Stack** — repeated verified contribution markers.
-
-**Collect** — accumulation of evidence-backed progress toward a governed threshold.
-
-**Transform** — visual conversion after qualification.
-
-**Sticky** — earned state that persists.
-
-**Expand** — newly visible capability/frontier space after verified advancement.
-
-**Reveal** — high-salience presentation of a validated result.
-
-**Mission Glyph** — small operational icon representing canonical state.
-
-**Qualification Mark** — persistent visual representation of an earned capability.
-
-**Immersion Projection** — presentation derived from canonical state without authority to mutate it.
+1. capability completion / spelling sequence driven by explicit canonical gates;
+2. sticky qualification collection from promotion history;
+3. verified transformation events;
+4. military-style ribbons / patches derived from governed qualification events;
+5. frontier expansion projection from existing frontier state;
+6. Milestone Strike reveal integration using the existing validated impact source.
 
 ## 20. Promotion Gate
 
-This document remains a design-lab artifact until the candidate mechanics are reviewed against the existing immersion, progression, persistence, Airspace, mission-control, and governance contracts.
+This document remains a design-lab artifact until the candidate mechanics and prototype are reviewed against the existing immersion, progression, persistence, Airspace, mission-control, and governance contracts.
 
-No item in this document should be treated as canonical merely because it appears here.
+The prototype demonstrates presentation behavior only. It does not make any item canonical merely because it appears here.
