@@ -1,9 +1,9 @@
 {
   "metadata": {
-    "execution_id": "exec_shadow_beta_20260830_011733",
-    "commit_sha": "dbcd8e696eed9b52664fc35e5d1db3c231a3f5a7",
+    "execution_id": "exec_shadow_beta_20260830_014610",
+    "commit_sha": "996f4f32f366082f29458f8fc3ec252734754aab",
     "cycle_id": "cycle_shadow_beta_20260830",
-    "timestamp_utc": "2026-08-30T01:17:33.585771+00:00",
+    "timestamp_utc": "2026-08-30T01:46:10.022298+00:00",
     "governance_classification": "PROTECTED SPORTS/RCE RESEARCH LANE ONLY",
     "wagering_executed": false
   },
@@ -12,19 +12,19 @@
     "singles_count": 17,
     "parlays_count": 8,
     "event_coverage_count": 17,
-    "locked_records_persisted": 37,
-    "total_resolved_outcomes": 29,
-    "wins": 19,
-    "losses": 10,
+    "locked_records_persisted": 42,
+    "total_resolved_outcomes": 32,
+    "wins": 20,
+    "losses": 12,
     "pushes": 0,
-    "win_rate": 0.6551724137931034
+    "win_rate": 0.625
   },
   "diagnostics": {
-    "brier_score": 0.23014518551724136,
-    "log_loss": 0.6502021948496141,
-    "mean_clv": -0.15032695403907836,
+    "brier_score": 0.2324312146875,
+    "log_loss": 0.6572516249117106,
+    "mean_clv": -0.20855120732066895,
     "failure_attribution": {
-      "total_failures": 10,
+      "total_failures": 12,
       "failures": [
         {
           "prediction_id": "pred_real_mlb_822940",
@@ -105,13 +105,29 @@
           "failure_classification": "PARLAY_MULTILEG_FAILURE",
           "model_assumption_broken": "Failed on child leg(s): pred_single_mlb_game_822936",
           "actual_result": "PARLAY_RESULT: LOSS across 2 legs."
+        },
+        {
+          "prediction_id": "pred_parlay_parent_mlb_game_823011_mlb_game_823177",
+          "is_parlay": true,
+          "selected_prediction": "2-Leg Parlay (St. Louis Cardinals Moneyline + San Francisco Giants Moneyline)",
+          "failure_classification": "PARLAY_MULTILEG_FAILURE",
+          "model_assumption_broken": "Failed on child leg(s): pred_single_mlb_game_823011, pred_single_mlb_game_823177",
+          "actual_result": "PARLAY_RESULT: LOSS across 2 legs."
+        },
+        {
+          "prediction_id": "pred_parlay_parent_mlb_game_822770_mlb_game_824637",
+          "is_parlay": true,
+          "selected_prediction": "2-Leg Parlay (Seattle Mariners Moneyline + Chicago Cubs Moneyline)",
+          "failure_classification": "PARLAY_MULTILEG_FAILURE",
+          "model_assumption_broken": "Failed on child leg(s): pred_single_mlb_game_822770",
+          "actual_result": "PARLAY_RESULT: LOSS across 2 legs."
         }
       ]
     },
     "signal_attribution": {
-      "total_external_signals_evaluated": 24,
-      "sage_win_rate": 0.5,
-      "external_signal_win_rate": 0.5833333333333334,
+      "total_external_signals_evaluated": 30,
+      "sage_win_rate": 0.4666666666666667,
+      "external_signal_win_rate": 0.6,
       "signal_evaluations": [
         {
           "prediction_id": "pred_single_mlb_game_822770",
@@ -352,14 +368,74 @@
           "external_matched_sage": false,
           "sage_win": false,
           "external_signal_win": true
+        },
+        {
+          "prediction_id": "pred_parlay_parent_mlb_game_823011_mlb_game_823177",
+          "signal_source": "Public Betting Consensus Feed (FanDuel/Action Split)",
+          "signal_type": "PUBLIC_CONSENSUS_SPLIT",
+          "external_selection": "St. Louis Cardinals Moneyline",
+          "sage_selection": "2-Leg Parlay (St. Louis Cardinals Moneyline + San Francisco Giants Moneyline)",
+          "external_matched_sage": false,
+          "sage_win": false,
+          "external_signal_win": true
+        },
+        {
+          "prediction_id": "pred_parlay_parent_mlb_game_823011_mlb_game_823177",
+          "signal_source": "Public Betting Consensus Feed (FanDuel/Action Split)",
+          "signal_type": "PUBLIC_CONSENSUS_SPLIT",
+          "external_selection": "San Francisco Giants Moneyline",
+          "sage_selection": "2-Leg Parlay (St. Louis Cardinals Moneyline + San Francisco Giants Moneyline)",
+          "external_matched_sage": false,
+          "sage_win": false,
+          "external_signal_win": true
+        },
+        {
+          "prediction_id": "pred_parlay_parent_mlb_game_823665_mlb_game_823539",
+          "signal_source": "Public Betting Consensus Feed (FanDuel/Action Split)",
+          "signal_type": "PUBLIC_CONSENSUS_SPLIT",
+          "external_selection": "Chicago White Sox Moneyline",
+          "sage_selection": "2-Leg Parlay (Chicago White Sox Moneyline + Boston Red Sox Moneyline)",
+          "external_matched_sage": false,
+          "sage_win": true,
+          "external_signal_win": false
+        },
+        {
+          "prediction_id": "pred_parlay_parent_mlb_game_823665_mlb_game_823539",
+          "signal_source": "Public Betting Consensus Feed (FanDuel/Action Split)",
+          "signal_type": "PUBLIC_CONSENSUS_SPLIT",
+          "external_selection": "Boston Red Sox Moneyline",
+          "sage_selection": "2-Leg Parlay (Chicago White Sox Moneyline + Boston Red Sox Moneyline)",
+          "external_matched_sage": false,
+          "sage_win": true,
+          "external_signal_win": false
+        },
+        {
+          "prediction_id": "pred_parlay_parent_mlb_game_822770_mlb_game_824637",
+          "signal_source": "Public Betting Consensus Feed (FanDuel/Action Split)",
+          "signal_type": "PUBLIC_CONSENSUS_SPLIT",
+          "external_selection": "Seattle Mariners Moneyline",
+          "sage_selection": "2-Leg Parlay (Seattle Mariners Moneyline + Chicago Cubs Moneyline)",
+          "external_matched_sage": false,
+          "sage_win": false,
+          "external_signal_win": true
+        },
+        {
+          "prediction_id": "pred_parlay_parent_mlb_game_822770_mlb_game_824637",
+          "signal_source": "Public Betting Consensus Feed (FanDuel/Action Split)",
+          "signal_type": "PUBLIC_CONSENSUS_SPLIT",
+          "external_selection": "Chicago Cubs Moneyline",
+          "sage_selection": "2-Leg Parlay (Seattle Mariners Moneyline + Chicago Cubs Moneyline)",
+          "external_matched_sage": false,
+          "sage_win": false,
+          "external_signal_win": true
         }
       ]
     },
     "model_promotion_evaluation": {
       "promotion_eligible": true,
-      "resolved_sample_size": 29,
+      "resolved_sample_size": 32,
       "required_sample_size": 10,
-      "brier_score": 0.23014518551724136,
+      "brier_score": 0.2324312146875,
       "brier_threshold": 0.25,
       "governance_decision": "APPROVED_FOR_PROMOTION",
       "reasons": []

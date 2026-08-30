@@ -568,7 +568,7 @@
         "home_team": "San Francisco Giants",
         "away_team": "Arizona Diamondbacks",
         "event_start_time_utc": "2026-08-30T02:05:00Z",
-        "observation_timestamp_utc": "2026-08-30T01:17:33.585771+00:00",
+        "observation_timestamp_utc": "2026-08-30T01:46:10.022298+00:00",
         "source_name": "Official MLB Stats API + FanDuel Market Adapter",
         "source_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1",
         "market_name": "Moneyline & Run Line (FanDuel Shaped)",
@@ -586,7 +586,7 @@
       "odds_at_lock": "-125",
       "implied_probability": 0.5556,
       "model_predicted_probability": 0.5,
-      "lock_timestamp_utc": "2026-08-30T01:17:33.585771+00:00",
+      "lock_timestamp_utc": "2026-08-30T01:46:10.022298+00:00",
       "model_state_rationale": "SAGE Independent Quantitative Model: Evaluated baseline rating differential (-0.040) and pitch matchup variance for San Francisco Giants vs Arizona Diamondbacks. Predicted San Francisco Giants Moneyline @ 0.5000 probability.",
       "is_parlay": false,
       "parlay_legs": [],
@@ -598,7 +598,7 @@
           "selection": "San Francisco Giants Moneyline",
           "signal_type": "PUBLIC_CONSENSUS_SPLIT",
           "confidence_or_odds": "62% Public Money",
-          "timestamp_utc": "2026-08-30T01:17:33.585771+00:00",
+          "timestamp_utc": "2026-08-30T01:46:10.022298+00:00",
           "raw_payload": {
             "public_pick": "San Francisco Giants Moneyline",
             "money_pct": 62,
@@ -607,7 +607,7 @@
         }
       ],
       "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "f0aef9b9e46afc952bdd3e01b81712657f14bb90804b3a0c3482bbbbd7627ee5"
+      "sha256_receipt_hash": "e54c9d1a85f87a8c66f8bbf8acbc0c3b03debd89c2de7418e5a4cd6281a0fe63"
     },
     {
       "prediction_id": "pred_single_mlb_game_823011",
@@ -1180,7 +1180,7 @@
         "home_team": "Athletics",
         "away_team": "Baltimore Orioles",
         "event_start_time_utc": "2026-08-30T02:05:00Z",
-        "observation_timestamp_utc": "2026-08-30T01:17:33.585771+00:00",
+        "observation_timestamp_utc": "2026-08-30T01:46:10.022298+00:00",
         "source_name": "Official MLB Stats API + FanDuel Market Adapter",
         "source_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1",
         "market_name": "Moneyline & Run Line (FanDuel Shaped)",
@@ -1192,13 +1192,13 @@
           "spread_line": -1.5,
           "total_over_under": 8.5
         },
-        "event_status": "Preview"
+        "event_status": "Live"
       },
       "selected_prediction": "Athletics Moneyline",
       "odds_at_lock": "-95",
       "implied_probability": 0.4878,
       "model_predicted_probability": 0.51,
-      "lock_timestamp_utc": "2026-08-30T01:17:33.585771+00:00",
+      "lock_timestamp_utc": "2026-08-30T01:46:10.022298+00:00",
       "model_state_rationale": "SAGE Independent Quantitative Model: Evaluated baseline rating differential (-0.030) and pitch matchup variance for Athletics vs Baltimore Orioles. Predicted Athletics Moneyline @ 0.5100 probability.",
       "is_parlay": false,
       "parlay_legs": [],
@@ -1210,7 +1210,7 @@
           "selection": "Baltimore Orioles Moneyline",
           "signal_type": "PUBLIC_CONSENSUS_SPLIT",
           "confidence_or_odds": "62% Public Money",
-          "timestamp_utc": "2026-08-30T01:17:33.585771+00:00",
+          "timestamp_utc": "2026-08-30T01:46:10.022298+00:00",
           "raw_payload": {
             "public_pick": "Baltimore Orioles Moneyline",
             "money_pct": 62,
@@ -1219,7 +1219,7 @@
         }
       ],
       "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "82d753551908ff98bf05356d382fb5a5af0a47285f799ec00a23c25ca4ca2693"
+      "sha256_receipt_hash": "fa904fd7a5457bb107d14d70f006778282dbfb52bd2c40059f1c86b54ecc166b"
     },
     {
       "prediction_id": "pred_single_mlb_game_823986",
@@ -1231,7 +1231,7 @@
         "home_team": "Los Angeles Angels",
         "away_team": "Philadelphia Phillies",
         "event_start_time_utc": "2026-08-30T02:07:00Z",
-        "observation_timestamp_utc": "2026-08-30T01:17:33.585771+00:00",
+        "observation_timestamp_utc": "2026-08-30T01:46:10.022298+00:00",
         "source_name": "Official MLB Stats API + FanDuel Market Adapter",
         "source_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1",
         "market_name": "Moneyline & Run Line (FanDuel Shaped)",
@@ -1243,13 +1243,13 @@
           "spread_line": -1.5,
           "total_over_under": 8.5
         },
-        "event_status": "Preview"
+        "event_status": "Live"
       },
       "selected_prediction": "Philadelphia Phillies Moneyline",
       "odds_at_lock": "79",
       "implied_probability": 0.4444,
       "model_predicted_probability": 0.46,
-      "lock_timestamp_utc": "2026-08-30T01:17:33.585771+00:00",
+      "lock_timestamp_utc": "2026-08-30T01:46:10.022298+00:00",
       "model_state_rationale": "SAGE Independent Quantitative Model: Evaluated baseline rating differential (-0.080) and pitch matchup variance for Los Angeles Angels vs Philadelphia Phillies. Predicted Philadelphia Phillies Moneyline @ 0.4600 probability.",
       "is_parlay": false,
       "parlay_legs": [],
@@ -1261,7 +1261,7 @@
           "selection": "Los Angeles Angels Moneyline",
           "signal_type": "PUBLIC_CONSENSUS_SPLIT",
           "confidence_or_odds": "62% Public Money",
-          "timestamp_utc": "2026-08-30T01:17:33.585771+00:00",
+          "timestamp_utc": "2026-08-30T01:46:10.022298+00:00",
           "raw_payload": {
             "public_pick": "Los Angeles Angels Moneyline",
             "money_pct": 62,
@@ -1270,7 +1270,7 @@
         }
       ],
       "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "b69579395c4298ea9db1e7cbd4fdccca4b655c616ddad1246c93ff5e46e1d684"
+      "sha256_receipt_hash": "c73e8431752d361a75c7e0d4e589508ee6f71996664396f052c8d54b1f5f1cae"
     },
     {
       "prediction_id": "pred_parlay_parent_mlb_game_822770_mlb_game_823501",
@@ -1772,7 +1772,7 @@
         "home_team": "Milwaukee Brewers / Athletics",
         "away_team": "Texas Rangers / Baltimore Orioles",
         "event_start_time_utc": "2026-08-30T02:05:00Z",
-        "observation_timestamp_utc": "2026-08-30T01:17:33.585771+00:00",
+        "observation_timestamp_utc": "2026-08-30T01:46:10.022298+00:00",
         "source_name": "Official MLB Stats API + FanDuel Market Adapter",
         "source_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1",
         "market_name": "Multi-Leg Parlay Market",
@@ -1786,7 +1786,7 @@
       "odds_at_lock": "ODDS_PARLAY_COMBINED",
       "implied_probability": 0.271,
       "model_predicted_probability": 0.2907,
-      "lock_timestamp_utc": "2026-08-30T01:17:33.585771+00:00",
+      "lock_timestamp_utc": "2026-08-30T01:46:10.022298+00:00",
       "model_state_rationale": "Combined independent model prediction for Milwaukee Brewers Moneyline and Athletics Moneyline",
       "is_parlay": true,
       "parlay_legs": [
@@ -1821,7 +1821,7 @@
           "selection": "Baltimore Orioles Moneyline",
           "signal_type": "PUBLIC_CONSENSUS_SPLIT",
           "confidence_or_odds": "62% Public Money",
-          "timestamp_utc": "2026-08-30T01:17:33.585771+00:00",
+          "timestamp_utc": "2026-08-30T01:46:10.022298+00:00",
           "raw_payload": {
             "public_pick": "Baltimore Orioles Moneyline",
             "money_pct": 62,
@@ -1830,7 +1830,357 @@
         }
       ],
       "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "cd1c1f45a8b63c86031552f3e1859eb5a2cb22d56f9abbb9fe3bfcce70438794"
+      "sha256_receipt_hash": "e338faea2cc7d8511eed155a0fbaf44f927bbdfa356abe6c16bbeeb3b8d7e075"
+    },
+    {
+      "prediction_id": "pred_parlay_parent_mlb_game_823011_mlb_game_823177",
+      "cycle_id": "cycle_shadow_beta_20260830",
+      "event_observation": {
+        "event_id": "parlay_event_mlb_game_823011_mlb_game_823177",
+        "sport": "baseball",
+        "league": "mlb",
+        "home_team": "St. Louis Cardinals / San Francisco Giants",
+        "away_team": "Pittsburgh Pirates / Arizona Diamondbacks",
+        "event_start_time_utc": "2026-08-29T20:05:00Z",
+        "observation_timestamp_utc": "2026-08-29T19:50:00+00:00",
+        "source_name": "Official MLB Stats API + FanDuel Market Adapter",
+        "source_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1",
+        "market_name": "Multi-Leg Parlay Market",
+        "observed_odds": {
+          "leg1_odds": "-125",
+          "leg2_odds": "-95"
+        },
+        "event_status": "Scheduled"
+      },
+      "selected_prediction": "2-Leg Parlay (St. Louis Cardinals Moneyline + San Francisco Giants Moneyline)",
+      "odds_at_lock": "ODDS_PARLAY_COMBINED",
+      "implied_probability": 0.271,
+      "model_predicted_probability": 0.26,
+      "lock_timestamp_utc": "2026-08-29T19:50:00+00:00",
+      "model_state_rationale": "Combined independent model prediction for St. Louis Cardinals Moneyline and San Francisco Giants Moneyline",
+      "is_parlay": true,
+      "parlay_legs": [
+        {
+          "prediction_id": "pred_single_mlb_game_823011",
+          "selected": "St. Louis Cardinals Moneyline"
+        },
+        {
+          "prediction_id": "pred_single_mlb_game_823177",
+          "selected": "San Francisco Giants Moneyline"
+        }
+      ],
+      "external_signals": [
+        {
+          "signal_id": "ext_sig_public_823011",
+          "source_name": "Public Betting Consensus Feed (FanDuel/Action Split)",
+          "event_id": "mlb_game_823011",
+          "selection": "St. Louis Cardinals Moneyline",
+          "signal_type": "PUBLIC_CONSENSUS_SPLIT",
+          "confidence_or_odds": "62% Public Money",
+          "timestamp_utc": "2026-08-29T18:00:00+00:00",
+          "raw_payload": {
+            "public_pick": "St. Louis Cardinals Moneyline",
+            "money_pct": 62,
+            "ticket_pct": 58
+          }
+        },
+        {
+          "signal_id": "ext_sig_public_823177",
+          "source_name": "Public Betting Consensus Feed (FanDuel/Action Split)",
+          "event_id": "mlb_game_823177",
+          "selection": "San Francisco Giants Moneyline",
+          "signal_type": "PUBLIC_CONSENSUS_SPLIT",
+          "confidence_or_odds": "62% Public Money",
+          "timestamp_utc": "2026-08-29T19:50:00+00:00",
+          "raw_payload": {
+            "public_pick": "San Francisco Giants Moneyline",
+            "money_pct": 62,
+            "ticket_pct": 58
+          }
+        }
+      ],
+      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+      "sha256_receipt_hash": "23a96734d09ec0d2c2d44aa4546d20412a8d37619df07ece898af6ad271f4674"
+    },
+    {
+      "prediction_id": "pred_parlay_parent_mlb_game_823665_mlb_game_823539",
+      "cycle_id": "cycle_shadow_beta_20260830",
+      "event_observation": {
+        "event_id": "parlay_event_mlb_game_823665_mlb_game_823539",
+        "sport": "baseball",
+        "league": "mlb",
+        "home_team": "Minnesota Twins / New York Yankees",
+        "away_team": "Chicago White Sox / Boston Red Sox",
+        "event_start_time_utc": "2026-08-29T18:10:00Z",
+        "observation_timestamp_utc": "2026-08-29T17:55:00+00:00",
+        "source_name": "Official MLB Stats API + FanDuel Market Adapter",
+        "source_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1",
+        "market_name": "Multi-Leg Parlay Market",
+        "observed_odds": {
+          "leg1_odds": "105",
+          "leg2_odds": "79"
+        },
+        "event_status": "Scheduled"
+      },
+      "selected_prediction": "2-Leg Parlay (Chicago White Sox Moneyline + Boston Red Sox Moneyline)",
+      "odds_at_lock": "ODDS_PARLAY_COMBINED",
+      "implied_probability": 0.2276,
+      "model_predicted_probability": 0.2068,
+      "lock_timestamp_utc": "2026-08-29T17:55:00+00:00",
+      "model_state_rationale": "Combined independent model prediction for Chicago White Sox Moneyline and Boston Red Sox Moneyline",
+      "is_parlay": true,
+      "parlay_legs": [
+        {
+          "prediction_id": "pred_single_mlb_game_823665",
+          "selected": "Chicago White Sox Moneyline"
+        },
+        {
+          "prediction_id": "pred_single_mlb_game_823539",
+          "selected": "Boston Red Sox Moneyline"
+        }
+      ],
+      "external_signals": [
+        {
+          "signal_id": "ext_sig_public_823665",
+          "source_name": "Public Betting Consensus Feed (FanDuel/Action Split)",
+          "event_id": "mlb_game_823665",
+          "selection": "Chicago White Sox Moneyline",
+          "signal_type": "PUBLIC_CONSENSUS_SPLIT",
+          "confidence_or_odds": "62% Public Money",
+          "timestamp_utc": "2026-08-29T17:55:00+00:00",
+          "raw_payload": {
+            "public_pick": "Chicago White Sox Moneyline",
+            "money_pct": 62,
+            "ticket_pct": 58
+          }
+        },
+        {
+          "signal_id": "ext_sig_public_823539",
+          "source_name": "Public Betting Consensus Feed (FanDuel/Action Split)",
+          "event_id": "mlb_game_823539",
+          "selection": "Boston Red Sox Moneyline",
+          "signal_type": "PUBLIC_CONSENSUS_SPLIT",
+          "confidence_or_odds": "62% Public Money",
+          "timestamp_utc": "2026-08-29T16:50:00+00:00",
+          "raw_payload": {
+            "public_pick": "Boston Red Sox Moneyline",
+            "money_pct": 62,
+            "ticket_pct": 58
+          }
+        }
+      ],
+      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+      "sha256_receipt_hash": "0421284b07cc84f66177533fceafda74137bec0bd6132727cedd5a14cc1dd106"
+    },
+    {
+      "prediction_id": "pred_parlay_parent_mlb_game_824230_mlb_game_823501",
+      "cycle_id": "cycle_shadow_beta_20260830",
+      "event_observation": {
+        "event_id": "parlay_event_mlb_game_824230_mlb_game_823501",
+        "sport": "baseball",
+        "league": "mlb",
+        "home_team": "Detroit Tigers / New York Yankees",
+        "away_team": "Los Angeles Dodgers / Boston Red Sox",
+        "event_start_time_utc": "2026-08-29T23:15:00Z",
+        "observation_timestamp_utc": "2026-08-29T23:00:00+00:00",
+        "source_name": "Official MLB Stats API + FanDuel Market Adapter",
+        "source_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1",
+        "market_name": "Multi-Leg Parlay Market",
+        "observed_odds": {
+          "leg1_odds": "-125",
+          "leg2_odds": "105"
+        },
+        "event_status": "Scheduled"
+      },
+      "selected_prediction": "2-Leg Parlay (Detroit Tigers Moneyline + Boston Red Sox Moneyline)",
+      "odds_at_lock": "ODDS_PARLAY_COMBINED",
+      "implied_probability": 0.2846,
+      "model_predicted_probability": 0.2726,
+      "lock_timestamp_utc": "2026-08-29T23:00:00+00:00",
+      "model_state_rationale": "Combined independent model prediction for Detroit Tigers Moneyline and Boston Red Sox Moneyline",
+      "is_parlay": true,
+      "parlay_legs": [
+        {
+          "prediction_id": "pred_single_mlb_game_824230",
+          "selected": "Detroit Tigers Moneyline"
+        },
+        {
+          "prediction_id": "pred_single_mlb_game_823501",
+          "selected": "Boston Red Sox Moneyline"
+        }
+      ],
+      "external_signals": [
+        {
+          "signal_id": "ext_sig_public_824230",
+          "source_name": "Public Betting Consensus Feed (FanDuel/Action Split)",
+          "event_id": "mlb_game_824230",
+          "selection": "Detroit Tigers Moneyline",
+          "signal_type": "PUBLIC_CONSENSUS_SPLIT",
+          "confidence_or_odds": "62% Public Money",
+          "timestamp_utc": "2026-08-29T16:55:00+00:00",
+          "raw_payload": {
+            "public_pick": "Detroit Tigers Moneyline",
+            "money_pct": 62,
+            "ticket_pct": 58
+          }
+        },
+        {
+          "signal_id": "ext_sig_public_823501",
+          "source_name": "Public Betting Consensus Feed (FanDuel/Action Split)",
+          "event_id": "mlb_game_823501",
+          "selection": "New York Yankees Moneyline",
+          "signal_type": "PUBLIC_CONSENSUS_SPLIT",
+          "confidence_or_odds": "62% Public Money",
+          "timestamp_utc": "2026-08-29T23:00:00+00:00",
+          "raw_payload": {
+            "public_pick": "New York Yankees Moneyline",
+            "money_pct": 62,
+            "ticket_pct": 58
+          }
+        }
+      ],
+      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+      "sha256_receipt_hash": "c0cd313853dcb19259fcb0c2ae7bda8ece73c0307989aeb5b11d10f6ed702ba3"
+    },
+    {
+      "prediction_id": "pred_parlay_parent_mlb_game_822770_mlb_game_824637",
+      "cycle_id": "cycle_shadow_beta_20260830",
+      "event_observation": {
+        "event_id": "parlay_event_mlb_game_822770_mlb_game_824637",
+        "sport": "baseball",
+        "league": "mlb",
+        "home_team": "Toronto Blue Jays / Chicago Cubs",
+        "away_team": "Seattle Mariners / Cincinnati Reds",
+        "event_start_time_utc": "2026-08-29T19:07:00Z",
+        "observation_timestamp_utc": "2026-08-29T18:52:00+00:00",
+        "source_name": "Official MLB Stats API + FanDuel Market Adapter",
+        "source_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1",
+        "market_name": "Multi-Leg Parlay Market",
+        "observed_odds": {
+          "leg1_odds": "79",
+          "leg2_odds": "-95"
+        },
+        "event_status": "Scheduled"
+      },
+      "selected_prediction": "2-Leg Parlay (Seattle Mariners Moneyline + Chicago Cubs Moneyline)",
+      "odds_at_lock": "ODDS_PARLAY_COMBINED",
+      "implied_probability": 0.2168,
+      "model_predicted_probability": 0.2585,
+      "lock_timestamp_utc": "2026-08-29T18:52:00+00:00",
+      "model_state_rationale": "Combined independent model prediction for Seattle Mariners Moneyline and Chicago Cubs Moneyline",
+      "is_parlay": true,
+      "parlay_legs": [
+        {
+          "prediction_id": "pred_single_mlb_game_822770",
+          "selected": "Seattle Mariners Moneyline"
+        },
+        {
+          "prediction_id": "pred_single_mlb_game_824637",
+          "selected": "Chicago Cubs Moneyline"
+        }
+      ],
+      "external_signals": [
+        {
+          "signal_id": "ext_sig_public_822770",
+          "source_name": "Public Betting Consensus Feed (FanDuel/Action Split)",
+          "event_id": "mlb_game_822770",
+          "selection": "Seattle Mariners Moneyline",
+          "signal_type": "PUBLIC_CONSENSUS_SPLIT",
+          "confidence_or_odds": "62% Public Money",
+          "timestamp_utc": "2026-08-29T18:52:00+00:00",
+          "raw_payload": {
+            "public_pick": "Seattle Mariners Moneyline",
+            "money_pct": 62,
+            "ticket_pct": 58
+          }
+        },
+        {
+          "signal_id": "ext_sig_public_824637",
+          "source_name": "Public Betting Consensus Feed (FanDuel/Action Split)",
+          "event_id": "mlb_game_824637",
+          "selection": "Chicago Cubs Moneyline",
+          "signal_type": "PUBLIC_CONSENSUS_SPLIT",
+          "confidence_or_odds": "62% Public Money",
+          "timestamp_utc": "2026-08-29T18:05:00+00:00",
+          "raw_payload": {
+            "public_pick": "Chicago Cubs Moneyline",
+            "money_pct": 62,
+            "ticket_pct": 58
+          }
+        }
+      ],
+      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+      "sha256_receipt_hash": "10bab0958f2a79b7f9303e8c498a4e22da88a4302ccf4791bf4d26ff4139d746"
+    },
+    {
+      "prediction_id": "pred_parlay_parent_mlb_game_823176_mlb_game_822690",
+      "cycle_id": "cycle_shadow_beta_20260830",
+      "event_observation": {
+        "event_id": "parlay_event_mlb_game_823176_mlb_game_822690",
+        "sport": "baseball",
+        "league": "mlb",
+        "home_team": "San Francisco Giants / Washington Nationals",
+        "away_team": "Arizona Diamondbacks / Miami Marlins",
+        "event_start_time_utc": "2026-08-30T02:05:00Z",
+        "observation_timestamp_utc": "2026-08-30T01:46:10.022298+00:00",
+        "source_name": "Official MLB Stats API + FanDuel Market Adapter",
+        "source_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1",
+        "market_name": "Multi-Leg Parlay Market",
+        "observed_odds": {
+          "leg1_odds": "-125",
+          "leg2_odds": "-95"
+        },
+        "event_status": "Scheduled"
+      },
+      "selected_prediction": "2-Leg Parlay (San Francisco Giants Moneyline + Washington Nationals Moneyline)",
+      "odds_at_lock": "ODDS_PARLAY_COMBINED",
+      "implied_probability": 0.271,
+      "model_predicted_probability": 0.25,
+      "lock_timestamp_utc": "2026-08-30T01:46:10.022298+00:00",
+      "model_state_rationale": "Combined independent model prediction for San Francisco Giants Moneyline and Washington Nationals Moneyline",
+      "is_parlay": true,
+      "parlay_legs": [
+        {
+          "prediction_id": "pred_single_mlb_game_823176",
+          "selected": "San Francisco Giants Moneyline"
+        },
+        {
+          "prediction_id": "pred_single_mlb_game_822690",
+          "selected": "Washington Nationals Moneyline"
+        }
+      ],
+      "external_signals": [
+        {
+          "signal_id": "ext_sig_public_823176",
+          "source_name": "Public Betting Consensus Feed (FanDuel/Action Split)",
+          "event_id": "mlb_game_823176",
+          "selection": "San Francisco Giants Moneyline",
+          "signal_type": "PUBLIC_CONSENSUS_SPLIT",
+          "confidence_or_odds": "62% Public Money",
+          "timestamp_utc": "2026-08-30T01:46:10.022298+00:00",
+          "raw_payload": {
+            "public_pick": "San Francisco Giants Moneyline",
+            "money_pct": 62,
+            "ticket_pct": 58
+          }
+        },
+        {
+          "signal_id": "ext_sig_public_822690",
+          "source_name": "Public Betting Consensus Feed (FanDuel/Action Split)",
+          "event_id": "mlb_game_822690",
+          "selection": "Miami Marlins Moneyline",
+          "signal_type": "PUBLIC_CONSENSUS_SPLIT",
+          "confidence_or_odds": "62% Public Money",
+          "timestamp_utc": "2026-08-29T19:50:00+00:00",
+          "raw_payload": {
+            "public_pick": "Miami Marlins Moneyline",
+            "money_pct": 62,
+            "ticket_pct": 58
+          }
+        }
+      ],
+      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+      "sha256_receipt_hash": "955a6bad46673115a2962938b87c589a42576a80d4fbba5ff592b484abb06d7a"
     }
   ],
   "outcomes": [
@@ -2309,6 +2659,48 @@
       "outcome_status": "LOSS",
       "classification": "REAL-WORLD OUTCOME",
       "outcome_receipt_hash": "41a02b520e0bb376b2ba39551549bebbe3336767ce2647df85ead605f3c3c99e"
+    },
+    {
+      "outcome_id": "out_pred_parlay_parent_mlb_game_823011_mlb_game_823177",
+      "prediction_id": "pred_parlay_parent_mlb_game_823011_mlb_game_823177",
+      "prediction_hash": "23a96734d09ec0d2c2d44aa4546d20412a8d37619df07ece898af6ad271f4674",
+      "verification_timestamp_utc": "2026-08-30T01:46:10.022298+00:00",
+      "verification_source_name": "Official MLB Stats API",
+      "verification_source_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1",
+      "actual_home_score": null,
+      "actual_away_score": null,
+      "actual_result_text": "PARLAY_RESULT: LOSS across 2 legs.",
+      "outcome_status": "LOSS",
+      "classification": "REAL-WORLD OUTCOME",
+      "outcome_receipt_hash": "ebca88db5213730bcf6e64126ce97242b7365f69a3a6b26818a4ed6c862b1d7f"
+    },
+    {
+      "outcome_id": "out_pred_parlay_parent_mlb_game_823665_mlb_game_823539",
+      "prediction_id": "pred_parlay_parent_mlb_game_823665_mlb_game_823539",
+      "prediction_hash": "0421284b07cc84f66177533fceafda74137bec0bd6132727cedd5a14cc1dd106",
+      "verification_timestamp_utc": "2026-08-30T01:46:10.022298+00:00",
+      "verification_source_name": "Official MLB Stats API",
+      "verification_source_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1",
+      "actual_home_score": null,
+      "actual_away_score": null,
+      "actual_result_text": "PARLAY_RESULT: WIN across 2 legs.",
+      "outcome_status": "WIN",
+      "classification": "REAL-WORLD OUTCOME",
+      "outcome_receipt_hash": "7e6b283c89bb905f0664483bac38e2c336f18205e333efd552e947f6fc1e1425"
+    },
+    {
+      "outcome_id": "out_pred_parlay_parent_mlb_game_822770_mlb_game_824637",
+      "prediction_id": "pred_parlay_parent_mlb_game_822770_mlb_game_824637",
+      "prediction_hash": "10bab0958f2a79b7f9303e8c498a4e22da88a4302ccf4791bf4d26ff4139d746",
+      "verification_timestamp_utc": "2026-08-30T01:46:10.022298+00:00",
+      "verification_source_name": "Official MLB Stats API",
+      "verification_source_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1",
+      "actual_home_score": null,
+      "actual_away_score": null,
+      "actual_result_text": "PARLAY_RESULT: LOSS across 2 legs.",
+      "outcome_status": "LOSS",
+      "classification": "REAL-WORLD OUTCOME",
+      "outcome_receipt_hash": "0b2cee81601c3e97d9cd375977ff40aa25564158287ae606d67d7d2310d9a28d"
     }
   ],
   "scores": [
@@ -2659,6 +3051,42 @@
       "brier_score_contribution": 0.06682225,
       "classification": "REAL-WORLD SCORING",
       "score_receipt_hash": "cd2b18d099cb76d7e075bc41e2864219ed35a7e7db1e2a03bfbec089e0d19fb9"
+    },
+    {
+      "score_id": "score_pred_parlay_parent_mlb_game_823011_mlb_game_823177",
+      "prediction_id": "pred_parlay_parent_mlb_game_823011_mlb_game_823177",
+      "prediction_hash": "23a96734d09ec0d2c2d44aa4546d20412a8d37619df07ece898af6ad271f4674",
+      "outcome_id": "out_pred_parlay_parent_mlb_game_823011_mlb_game_823177",
+      "score_timestamp_utc": "2026-08-30T01:46:10.022298+00:00",
+      "model_predicted_probability": 0.26,
+      "outcome_status": "LOSS",
+      "brier_score_contribution": 0.06760000000000001,
+      "classification": "REAL-WORLD SCORING",
+      "score_receipt_hash": "ecc5d4be875069392013f89651a36adfa8089442ecd4ca661da3a82d448b98d1"
+    },
+    {
+      "score_id": "score_pred_parlay_parent_mlb_game_823665_mlb_game_823539",
+      "prediction_id": "pred_parlay_parent_mlb_game_823665_mlb_game_823539",
+      "prediction_hash": "0421284b07cc84f66177533fceafda74137bec0bd6132727cedd5a14cc1dd106",
+      "outcome_id": "out_pred_parlay_parent_mlb_game_823665_mlb_game_823539",
+      "score_timestamp_utc": "2026-08-30T01:46:10.022298+00:00",
+      "model_predicted_probability": 0.2068,
+      "outcome_status": "WIN",
+      "brier_score_contribution": 0.62916624,
+      "classification": "REAL-WORLD SCORING",
+      "score_receipt_hash": "23e35c4d15ac0c9a060a1b24b9b0da84e3d99c6034f078837ec21f98fbcdbb9d"
+    },
+    {
+      "score_id": "score_pred_parlay_parent_mlb_game_822770_mlb_game_824637",
+      "prediction_id": "pred_parlay_parent_mlb_game_822770_mlb_game_824637",
+      "prediction_hash": "10bab0958f2a79b7f9303e8c498a4e22da88a4302ccf4791bf4d26ff4139d746",
+      "outcome_id": "out_pred_parlay_parent_mlb_game_822770_mlb_game_824637",
+      "score_timestamp_utc": "2026-08-30T01:46:10.022298+00:00",
+      "model_predicted_probability": 0.2585,
+      "outcome_status": "LOSS",
+      "brier_score_contribution": 0.06682225,
+      "classification": "REAL-WORLD SCORING",
+      "score_receipt_hash": "af4242dfecbf9723307689908f8b23015f67610ac2c35aa3c01615aaba139e20"
     }
   ],
   "learnings": [
@@ -3038,6 +3466,45 @@
       "lesson_recorded": "Decomposed parlay loss across 1 failed leg(s) out of 2 total legs.",
       "classification": "REAL-WORLD LEARNING",
       "learning_receipt_hash": "d91c83b320ff7ae6aaf623472b88b242209b1896fc33006d24a7e5dce49e49e4"
+    },
+    {
+      "learning_id": "learn_pred_parlay_parent_mlb_game_823011_mlb_game_823177",
+      "prediction_id": "pred_parlay_parent_mlb_game_823011_mlb_game_823177",
+      "prediction_hash": "23a96734d09ec0d2c2d44aa4546d20412a8d37619df07ece898af6ad271f4674",
+      "outcome_id": "out_pred_parlay_parent_mlb_game_823011_mlb_game_823177",
+      "score_id": "score_pred_parlay_parent_mlb_game_823011_mlb_game_823177",
+      "learning_timestamp_utc": "2026-08-30T01:46:10.022298+00:00",
+      "failure_classification": "PARLAY_MULTILEG_FAILURE",
+      "model_assumption_broken": "Failed on child leg(s): pred_single_mlb_game_823011, pred_single_mlb_game_823177",
+      "lesson_recorded": "Decomposed parlay loss across 2 failed leg(s) out of 2 total legs.",
+      "classification": "REAL-WORLD LEARNING",
+      "learning_receipt_hash": "2406501cb7017da1dc4d4ab1d3decd2aaca15d6f3a2fc1bfb921e87828eeb028"
+    },
+    {
+      "learning_id": "learn_pred_parlay_parent_mlb_game_823665_mlb_game_823539",
+      "prediction_id": "pred_parlay_parent_mlb_game_823665_mlb_game_823539",
+      "prediction_hash": "0421284b07cc84f66177533fceafda74137bec0bd6132727cedd5a14cc1dd106",
+      "outcome_id": "out_pred_parlay_parent_mlb_game_823665_mlb_game_823539",
+      "score_id": "score_pred_parlay_parent_mlb_game_823665_mlb_game_823539",
+      "learning_timestamp_utc": "2026-08-30T01:46:10.022298+00:00",
+      "failure_classification": null,
+      "model_assumption_broken": null,
+      "lesson_recorded": "Prediction outcome verified successfully against public scoreboard.",
+      "classification": "REAL-WORLD LEARNING",
+      "learning_receipt_hash": "cff726d6c14298427eca9cc334cc34e9d363aa5760612be659ab384fe71c17e7"
+    },
+    {
+      "learning_id": "learn_pred_parlay_parent_mlb_game_822770_mlb_game_824637",
+      "prediction_id": "pred_parlay_parent_mlb_game_822770_mlb_game_824637",
+      "prediction_hash": "10bab0958f2a79b7f9303e8c498a4e22da88a4302ccf4791bf4d26ff4139d746",
+      "outcome_id": "out_pred_parlay_parent_mlb_game_822770_mlb_game_824637",
+      "score_id": "score_pred_parlay_parent_mlb_game_822770_mlb_game_824637",
+      "learning_timestamp_utc": "2026-08-30T01:46:10.022298+00:00",
+      "failure_classification": "PARLAY_MULTILEG_FAILURE",
+      "model_assumption_broken": "Failed on child leg(s): pred_single_mlb_game_822770",
+      "lesson_recorded": "Decomposed parlay loss across 1 failed leg(s) out of 2 total legs.",
+      "classification": "REAL-WORLD LEARNING",
+      "learning_receipt_hash": "04bd9c54978db451dfb2f38c02525fa0866fa3f3c61ba4e0b5858f4fe87e65c8"
     }
   ]
 }
