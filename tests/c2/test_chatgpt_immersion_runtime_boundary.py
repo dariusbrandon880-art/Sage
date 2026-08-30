@@ -32,7 +32,8 @@ def test_positive_gpt_response_reaches_full_immersion_rendering(monkeypatch, tmp
     response = client.execute_query(AIQueryRequest(prompt="Run diagnostic check"))
     assert "[SAGE::C2::CHATGPT]" in response.response_text
     assert "MISSION CONTROL" in response.response_text
-    assert "FLIGHT: C2 (ACTIVE)" in response.response_text
+    assert "FLIGHT: C2:" in response.response_text
+    assert " (ACTIVE)" in response.response_text
     assert "FLIGHT_001" not in response.response_text
     assert "PHASE: EXECUTE" in response.response_text
     assert "MISSION  : Close GPT Runtime Boundary" in response.response_text
