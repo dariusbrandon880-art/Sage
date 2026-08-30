@@ -10,8 +10,9 @@
 4. `docs/SAGE-STATE-INVENTION-LARGE-BUILD-HANDOFF.md`
 5. `docs/SAGE-INVENTOR-AGENT-IMMERSION-DOCTRINE.md`
 6. `docs/SAGE-LARGE-BUILD-ONE-SHOT-MILESTONE-PROTOCOL.md`
-7. canonical `main`
-8. validated Master Archive / continuity state when available
+7. `sage/c2/conversation_provenance.py`
+8. canonical `main`
+9. validated Master Archive / continuity state when available
 
 ## Permanent station identity
 
@@ -40,6 +41,20 @@ The response immersion invariant is governed in full by `docs/governance/SAGE_C2
 
 Nameplates/HUD and visual mode signatures are read-only projections of canonical state. They cannot create, mutate, authorize, deliver, award, or qualify anything.
 
+## Speaker/provenance boundary
+
+Use `sage/c2/conversation_provenance.py` whenever a SAGE conversation contains a Director instruction plus a relayed message from Jules, Gemini, or another station.
+
+The canonical distinction is:
+
+**DIRECTOR INPUT != RELAYED STATION REPORT != C2 RESPONSE**
+
+A compliant C2 context should preserve sender, recipient, source, message kind, optional conversation identifier, and canonical-truth boundary.
+
+When the Director says “check this” after pasting a Jules/Gemini report, the pasted report remains attributed to its original station and the new instruction remains `[SAGE::DIRECTOR]`. Never silently merge the two voices.
+
+Cross-station relays are input/evidence until C2 reconciles them. They do not become canonical truth merely because the Director relayed them. This boundary is deliberately transport-neutral because the repository cannot alter proprietary host-chat speaker metadata.
+
 ## C2 live execution enforcement
 
 A new chat/window is not a reset of operating behavior. Before any SAGE execution, C2 must:
@@ -48,8 +63,9 @@ A new chat/window is not a reset of operating behavior. Before any SAGE executio
 2. Load repository truth when available.
 3. Load persistent SAGE operating contracts.
 4. Load the persistence/immersion hardening protocol.
-5. Determine whether direct execution surfaces exist.
-6. Execute when authorized and capable; do not replace execution with capability debate.
+5. Load the speaker/provenance boundary when cross-station communication is present.
+6. Determine whether direct execution surfaces exist.
+7. Execute when authorized and capable; do not replace execution with capability debate.
 
 Connection handling rule:
 
@@ -67,16 +83,7 @@ Each flight follows:
 
 DISCOVER -> DESIGN -> BUILD -> VERIFY + COMPOUND
 
-Each mission carries:
-
-- Mission
-- Target
-- Outcome
-- Reuse
-- Invariants
-- Tests
-- Evidence
-- STOP boundary
+Each mission carries Mission, Target, Outcome, Reuse, Invariants, Tests, Evidence, and STOP boundary.
 
 Parallel flights reconverge through:
 
@@ -96,30 +103,19 @@ Diff + Tests + CI where applicable + Receipt
 
 **Large Build = all causally connected little things executed together, with every stage still governed and observed.**
 
-**One-shot milestone = pursue one bounded consequential frontier through completion, including coupled implementation, testing, observation, repair, rerun, verification, and final classification.**
-
 **Longer execution is acceptable. Weaker evidence is not.**
 
 ## Model-agnostic runtime
 
 The runtime control-plane primitive is `sage/runtime/model_gateway.py`.
 
-It defines:
-
-- canonical `SAGEStateSnapshot`;
-- deterministic state digest;
-- `SAGERuntimeEnvelope` carrying identity, mission, session, authority scope, frontier, stop boundary, evidence, and policy version;
-- `ModelAdapter` transport contract for OpenAI/Gemini/other models;
-- `ModelResponse` as a proposal/evidence object, not authority;
-- reconciliation that rejects instance, mission, session, or state-digest mismatch.
-
-The existing `sage.runtime.engine.SageRuntime` remains the runtime engine. The gateway is an explicit model-control boundary, not a replacement authority.
+It defines canonical state snapshots, deterministic state digests, governed model envelopes, transport adapters, model responses as proposal/evidence rather than authority, and reconciliation that rejects instance/mission/session/state-digest mismatch.
 
 ## Cross-chat rule
 
 Chat history is not canonical state. A model must not claim to remember SAGE merely because a prior conversation existed.
 
-When this repository is available, rehydrate from the boot manifest + persistent C2 contract + persistence/immersion hardening protocol + mission continuity contract + state handoff + large-build milestone protocol + canonical `main`. If repository access is unavailable, do not fabricate current SAGE state; report the missing source and request/recover it through an authorized state channel.
+When this repository is available, rehydrate from the boot manifest + persistent C2 contract + persistence/immersion hardening protocol + conversation provenance boundary + mission continuity contract + state handoff + large-build milestone protocol + canonical `main`. If repository access is unavailable, do not fabricate current SAGE state; report the missing source and recover it through an authorized state channel.
 
 ## Hard epistemic boundaries
 
@@ -132,21 +128,7 @@ When this repository is available, rehydrate from the boot manifest + persistent
 - Recommendation != authorization.
 - Failure/negative result remains durable knowledge.
 - Unknown remains unknown.
-- Observation-only flights cannot mutate canonical state.
-- Missing telemetry is a verification failure.
 - PASS requires sufficient evidence and independent verification.
-
-## Current capability frontier
-
-The immediate competitive capability is **model-agnostic governed continuity**:
-
-**canonical state -> model envelope -> model execution -> response reconciliation -> evidence -> coherent frontier -> verification -> compound**
-
-The next empirical frontier is **longitudinal compounding**:
-
-**LOCK -> BASELINE -> SAGE -> EXPERIENCE -> OBSERVE -> RECOVER -> REUSE -> REGRESSION CHECK -> RETENTION CHECK -> EVALUATE -> INDEPENDENT VERIFY -> PASS / HOLD / NEGATIVE_RESULT -> COMPOUND**
-
-The mechanism is implemented; competitive superiority is not yet established. That requires longitudinal measurement against an appropriate baseline.
 
 ## Important platform boundary
 
