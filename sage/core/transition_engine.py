@@ -1,9 +1,9 @@
-"""Governed Tier-4 capability transition engine v0.1.
+"""Governed Tier-4 capability transition engine v0.2.
 
 This module is the first state-mutating boundary in SAGE. It accepts only an
 immutable, already-produced AttestationReceipt and performs one bounded
 capability transition after independently validating authenticity, decision,
-scope, and replay state.
+scope, replay state, and the current authorization-state snapshot.
 
 Cryptographic key management/signing remains outside this engine. A trusted
 signature verifier is injected at the boundary so this primitive never
@@ -14,6 +14,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
+import hashlib
+from threading import RLock
 from typing import Callable, Mapping, MutableMapping
 
 from .attestation_receipt import AttestationDecision, AttestationReceipt
@@ -35,6 +37,10 @@ class ScopeMismatchError(TransitionAuthorityError):
     """Raised when requested transition scope does not match the receipt."""
 
 
+class StaleAuthorizationError(TransitionAuthorityError):
+    """Raised when authorization was issued against a changed state snapshot."""
+
+
 class TransitionDecision(str, Enum):
     """Outcome of one bounded capability transition attempt."""
 
@@ -44,15 +50,24 @@ class TransitionDecision(str, Enum):
 SignatureVerifier = Callable[[AttestationReceipt, str], bool]
 
 
+def compute_capability_state_digest(capability_state: Mapping[str, str]) -> str:
+    """Return a deterministic digest of the complete governed state snapshot."""
+    canonical = "\n".join(
+        f"{key}={capability_state[key]}" for key in sorted(capability_state)
+    )
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
 @dataclass(frozen=True)
 class TransitionRequest:
-    """Exact single-target transition requested by a caller."""
+    """Exact single-target transition plus the state snapshot it authorized."""
 
     capability_id: str
     subject_id: str
     policy_version: str
     authorization_scope: str
     target_state: str
+    authorization_state_digest: str
 
     def __post_init__(self) -> None:
         for name in (
@@ -61,6 +76,7 @@ class TransitionRequest:
             "policy_version",
             "authorization_scope",
             "target_state",
+            "authorization_state_digest",
         ):
             value = getattr(self, name)
             if not isinstance(value, str) or not value.strip():
@@ -99,10 +115,9 @@ class TransitionExecutionRecord:
 class TransitionAuthorityEngine:
     """Single-target, replay-protected capability state mutator.
 
-    ``capability_state`` is an explicitly supplied mutable state boundary.
-    The engine mutates exactly one key per successful call and records the
-    consumed receipt ID in the supplied replay ledger. It never creates keys
-    or signs receipts.
+    Every state-changing effect is now bound to an authorization-time state
+    digest and revalidated immediately before commit. This prevents a valid
+    approval from crossing the boundary after governed state has changed.
     """
 
     def __init__(
@@ -119,6 +134,7 @@ class TransitionAuthorityEngine:
         self._consumed_receipt_ids = (
             consumed_receipt_ids if consumed_receipt_ids is not None else set()
         )
+        self._commit_lock = RLock()
 
     @property
     def consumed_receipt_ids(self) -> frozenset[str]:
@@ -129,51 +145,58 @@ class TransitionAuthorityEngine:
         receipt: AttestationReceipt,
         request: TransitionRequest,
     ) -> TransitionExecutionRecord:
-        """Validate one receipt and apply exactly one requested transition."""
-        if not isinstance(receipt, AttestationReceipt):
-            raise InvalidAttestationError("receipt must be an AttestationReceipt")
-        if receipt.state_mutated:
-            raise InvalidAttestationError("attestation receipt is already mutated")
-        if receipt.decision is not AttestationDecision.APPROVED:
-            raise InvalidAttestationError(
-                "only APPROVED attestations may transition state"
+        """Validate authorization and apply one transition at the commit boundary."""
+        with self._commit_lock:
+            if not isinstance(receipt, AttestationReceipt):
+                raise InvalidAttestationError("receipt must be an AttestationReceipt")
+            if receipt.state_mutated:
+                raise InvalidAttestationError("attestation receipt is already mutated")
+            if receipt.decision is not AttestationDecision.APPROVED:
+                raise InvalidAttestationError(
+                    "only APPROVED attestations may transition state"
+                )
+            if receipt.receipt_id in self._consumed_receipt_ids:
+                raise ReplayAttestationError("attestation receipt has already been consumed")
+
+            expected_key = self._trusted_reviewer_keys.get(receipt.reviewer_id)
+            if expected_key is None:
+                raise InvalidAttestationError("reviewer_id is not trusted")
+            try:
+                authentic = self._signature_verifier(receipt, expected_key)
+            except Exception as exc:
+                raise InvalidAttestationError("signature verification failed") from exc
+            if not authentic:
+                raise InvalidAttestationError("attestation signature is invalid")
+
+            if (
+                receipt.capability_id != request.capability_id
+                or receipt.subject_id != request.subject_id
+                or receipt.policy_version != request.policy_version
+                or receipt.authorization_scope != request.authorization_scope
+            ):
+                raise ScopeMismatchError(
+                    "transition request does not match attestation scope"
+                )
+
+            current_digest = compute_capability_state_digest(self._capability_state)
+            if current_digest != request.authorization_state_digest:
+                raise StaleAuthorizationError(
+                    "authorization state digest is stale; re-authorize against current state"
+                )
+
+            state_key = f"{request.subject_id}:{request.capability_id}"
+            previous_state = self._capability_state.get(state_key, "UNQUALIFIED")
+
+            # Commit the bounded transition only after every validation gate passes.
+            self._capability_state[state_key] = request.target_state
+            self._consumed_receipt_ids.add(receipt.receipt_id)
+
+            return TransitionExecutionRecord(
+                receipt_id=receipt.receipt_id,
+                capability_id=request.capability_id,
+                subject_id=request.subject_id,
+                previous_state=previous_state,
+                new_state=request.target_state,
+                policy_version=request.policy_version,
+                authorization_scope=request.authorization_scope,
             )
-        if receipt.receipt_id in self._consumed_receipt_ids:
-            raise ReplayAttestationError("attestation receipt has already been consumed")
-
-        expected_key = self._trusted_reviewer_keys.get(receipt.reviewer_id)
-        if expected_key is None:
-            raise InvalidAttestationError("reviewer_id is not trusted")
-        try:
-            authentic = self._signature_verifier(receipt, expected_key)
-        except Exception as exc:
-            raise InvalidAttestationError("signature verification failed") from exc
-        if not authentic:
-            raise InvalidAttestationError("attestation signature is invalid")
-
-        if (
-            receipt.capability_id != request.capability_id
-            or receipt.subject_id != request.subject_id
-            or receipt.policy_version != request.policy_version
-            or receipt.authorization_scope != request.authorization_scope
-        ):
-            raise ScopeMismatchError(
-                "transition request does not match attestation scope"
-            )
-
-        state_key = f"{request.subject_id}:{request.capability_id}"
-        previous_state = self._capability_state.get(state_key, "UNQUALIFIED")
-
-        # Commit the bounded transition only after every validation gate passes.
-        self._capability_state[state_key] = request.target_state
-        self._consumed_receipt_ids.add(receipt.receipt_id)
-
-        return TransitionExecutionRecord(
-            receipt_id=receipt.receipt_id,
-            capability_id=request.capability_id,
-            subject_id=request.subject_id,
-            previous_state=previous_state,
-            new_state=request.target_state,
-            policy_version=request.policy_version,
-            authorization_scope=request.authorization_scope,
-        )
