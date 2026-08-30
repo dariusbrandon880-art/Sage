@@ -1,7 +1,7 @@
 """Hard GPT-to-SAGE boundary for ChatGPT-facing model turns.
 
 The boundary is intentionally the only supported path from a ChatGPT model
-adapter to the SAGE immersion renderer.  It revalidates model output even when
+adapter to the SAGE immersion renderer. It revalidates model output even when
 a custom adapter is supplied, so an adapter cannot bypass SAGE governance.
 """
 from __future__ import annotations
@@ -34,6 +34,11 @@ class SAGEChatGPTBoundary:
             return payload["response_text"]
         return "SAGE-governed model response accepted."
 
+    @staticmethod
+    def _reject(message: str) -> None:
+        """Expose one stable fail-closed contract at the ChatGPT boundary."""
+        raise ValueError(f"SAGE boundary rejection: {message}")
+
     def respond(
         self,
         task: str,
@@ -43,19 +48,22 @@ class SAGEChatGPTBoundary:
         live_capability: Any | None = None,
     ) -> tuple[str, ModelResponse]:
         """Run one model turn and expose only the SAGE-rendered response."""
-        response = self._runtime.invoke(
-            self._adapter,
-            task,
-            model_role=model_role,
-            live_capability=live_capability,
-        )
+        try:
+            response = self._runtime.invoke(
+                self._adapter,
+                task,
+                model_role=model_role,
+                live_capability=live_capability,
+            )
+        except ValueError as exc:
+            self._reject(str(exc))
 
         raw_output = response.raw_output if isinstance(response.raw_output, str) else ""
         structured = SAGEProtocolGovernor.validate_and_parse(raw_output)
         if structured.violations:
-            raise ValueError("SAGE boundary rejection: " + " | ".join(structured.violations))
+            self._reject("; ".join(structured.violations))
         if structured.station != "[SAGE::C2::CHATGPT]":
-            raise ValueError("SAGE boundary rejection: model station identity mismatch")
+            self._reject("station identity mismatch")
 
         rendered = render_chatgpt_c2_response(
             immersion_state,

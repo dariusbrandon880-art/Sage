@@ -112,7 +112,7 @@ def test_chatgpt_client_validates_override_or_output():
     assert "Execution plan verified." in res_valid.response_text
 
     req_roleplay = AIQueryRequest(prompt="Run recon", response_override="*smiles* In roleplay mode now.")
-    with pytest.raises(RuntimeError, match="SAGE Protocol Governance Violation"):
+    with pytest.raises(ValueError, match="SAGE boundary rejection: SAGE Protocol Governance Violation"):
         client.execute_query(req_roleplay)
 
 
@@ -185,5 +185,5 @@ def test_chatgpt_client_adversarial_rejection_suite():
 
     for payload in adversarial_payloads:
         req = AIQueryRequest(prompt="Adversarial check", response_override=payload)
-        with pytest.raises(RuntimeError, match="SAGE Protocol Governance Violation"):
+        with pytest.raises(ValueError, match="SAGE boundary rejection: SAGE Protocol Governance Violation"):
             client.execute_query(req)

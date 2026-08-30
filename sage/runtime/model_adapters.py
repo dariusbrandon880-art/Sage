@@ -24,14 +24,19 @@ class OpenAIResponsesAdapter:
     def invoke(self, envelope: SAGERuntimeEnvelope, task: str) -> ModelResponse:
         from sage.runtime.model_gateway import SAGEProtocolGovernor
 
-        response = self.client.responses.create(
-            model=self.model_id,
-            instructions=_system_instructions(envelope),
-            input=task,
-        )
+        try:
+            response = self.client.responses.create(
+                model=self.model_id,
+                instructions=_system_instructions(envelope),
+                input=task,
+            )
+        except Exception as exc:
+            raise RuntimeError(f"OpenAI API execution failed: {exc}") from exc
+
         text = getattr(response, "output_text", None)
-        if text is None:
-            raise ValueError("OpenAI response did not contain output_text")
+        if text is None or not str(text).strip():
+            raise RuntimeError("OpenAI API execution failed: empty output")
+        text = str(text)
 
         structured = SAGEProtocolGovernor.validate_and_parse(text, required_station=self.station)
         if structured.violations:
@@ -80,8 +85,9 @@ class GeminiInteractionsAdapter:
             request["tools"] = [dict(tool) for tool in self.tools]
         interaction = self.client.interactions.create(**request)
         text = getattr(interaction, "output_text", None)
-        if text is None:
-            raise ValueError("Gemini interaction did not contain output_text")
+        if text is None or not str(text).strip():
+            raise RuntimeError("Gemini API execution failed: empty output")
+        text = str(text)
 
         structured = SAGEProtocolGovernor.validate_and_parse(text, required_station=self.station)
         if structured.violations:
@@ -110,6 +116,7 @@ def _system_instructions(envelope: SAGERuntimeEnvelope) -> str:
     return (
         "You are operating under the SAGE Autonomous Continuity Runtime Protocol.\n"
         f"{render_system_contract()}\n"
+        "C2 Operating Context is bound to the canonical SAGE runtime envelope below.\n"
         "STRICT GOVERNANCE RULES:\n"
         "1. NO ROLEPLAY: You are operating in real reality, not roleplay or simulation mode. Do not use roleplay markers, persona fluff, or conversational narrative.\n"
         "2. NO MUTATION AUTHORITY: Model output does NOT constitute authorization, autonomous execution, or canonical state mutation. Human operators hold authority.\n"
