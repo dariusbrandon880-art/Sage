@@ -62,6 +62,7 @@ class OpenAIChatGPTAdapter:
 
             instructions = (
                 "You are the model adapter operating inside SAGE C2.\n"
+                "C2 Operating Context is canonical runtime state; do not replace it with model assumptions.\n"
                 "Return ONLY a JSON object conforming to structured_sage_response_v1.\n"
                 "The runtime, not the model, owns authorization and canonical state.\n"
                 "Do not claim completion, mutation, authorization, verification, or repository changes without evidence_refs.\n"
