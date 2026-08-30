@@ -29,9 +29,38 @@ Every consequential repair must record:
 
 ## Permanent repair workflow
 
-**SENSE → RECON → ROOT-CAUSE → REPAIR → REGRESSION → FULL VERIFY → EXACT-SHA RECONCILIATION → LOG → COMPOUND**
+**SENSE → RECON → ROOT-CAUSE → ATTACK → REPAIR → REGRESSION → FULL VERIFY → EXACT-SHA RECONCILIATION → LOG → COMPOUND → NEXT ATTACK**
 
 A repair is not considered historically complete until the learning is logged alongside its implementation/evidence trail.
+
+## Repair-method learning doctrine
+
+The durable learning unit is not only the bug or the patch. It is the **verified repair method** that can be reused against the next failure class.
+
+Every consequential repair should therefore extract:
+
+`FAILURE → SIGNAL → ROOT CAUSE → ATTACK VECTOR → DECISIVE REPAIR → PROOF QUALITY → REGRESSION → EVIDENCE → INVARIANT → REUSABLE REPAIR PATTERN → NEXT ATTACK`
+
+Reusable patterns should teach future C2/engineering work how to recognize and attack a failure, including:
+
+- start from live repository truth rather than a completion narrative;
+- retrieve prior repair history before designing a new repair;
+- attack the proof itself for vacuous or non-binding assertions;
+- require precondition → attempted violation → rejection → unchanged postcondition;
+- repair the canonical enforcement boundary instead of weakening a governor or patching a presentation symptom;
+- reconcile code, evidence, and exact SHA before promotion;
+- preserve rejected paths, near misses, and blocked transitions as negative evidence;
+- turn every newly exposed seam into the next bounded attack surface.
+
+Repair learning is **candidate knowledge until validated**. It cannot grant authority, change canonical state, or authorize promotion merely because a model or agent recorded it.
+
+## Autonomous repair-learning operating pattern
+
+When a consequential repair completes, the existing SAGE process should consume the result through the normal validation/archive pathway:
+
+`OBSERVE → RETRIEVE PRIOR REPAIRS → FORM REPAIR HYPOTHESIS → ATTACK → REPAIR → VERIFY → EXTRACT PATTERN → VALIDATE LEARNING → ARCHIVE → REUSE`
+
+The learning mechanism itself is governed. It is not a second control plane and cannot self-promote its own conclusions.
 
 ## Mandatory pre-repair questions
 
@@ -47,10 +76,13 @@ A repair is not considered historically complete until the learning is logged al
 
 1. What actually failed?
 2. Why did the existing controls miss it?
-3. What changed?
-4. What test now catches it?
-5. What adjacent bypass should be attacked next?
-6. What should C2/Jules do differently next time?
+3. What attack exposed it?
+4. What changed?
+5. What test now catches it?
+6. What evidence proves the repair?
+7. What reusable repair pattern was learned?
+8. What adjacent bypass should be attacked next?
+9. What should C2/Jules do differently next time?
 
 ## Historical index
 
@@ -109,6 +141,32 @@ See `docs/governance/C2_HISTORICAL_REPAIR_AND_RUNTIME_GOVERNANCE.md` for the con
 **Follow-on risk:** Extend the same contract to every direct runtime/tool/CLI entry point and verify that legacy `ChatGPTClient` execution cannot bypass `render_governed_chatgpt_turn`.
 
 **Search/research input:** NIST's 2026 agent identity/authorization work emphasizes explicit identification, authorization, auditing, non-repudiation, and prompt-injection controls. Microsoft's current agent-governance work independently emphasizes session policy pinning, fail-closed evaluation, complete snapshots, and action-bound execution-time revalidation. These are external threat-model inputs, not SAGE canonical authority.
+
+## 2026-08-30 — Repair-Method Learning / Proof-Attack Discipline
+
+**Issue / PR:** Big Jump Wave `feat/c2-autonomous-repair-learning-wave`
+
+**Detection:** C2 observed that a successful repair could remain isolated as a one-off implementation lesson even when the repair process itself contained reusable reconnaissance, falsification, proof-attack, and reconciliation techniques.
+
+**Root cause:** Existing repair records preserved failure and implementation history, but did not explicitly require extraction of the **repair method** as reusable candidate knowledge for future waves.
+
+**Affected boundary:** C2 repair workflow → historical learning → future Big Jump reconnaissance and verification.
+
+**Repair:** Extended the Big Jump protocol and Full Organism Consumption pathway to treat verified repair methods as reusable learning; added explicit `FAILURE → SIGNAL → ROOT CAUSE → ATTACK → REPAIR → PROOF → REGRESSION → EVIDENCE → INVARIANT → REUSABLE PATTERN → NEXT ATTACK` extraction; required proof-quality review and exact-SHA reconciliation; and made clear that repair learning remains subordinate to canonical governance and validation.
+
+**Why this repair:** It compounds the execution capability of SAGE without introducing a parallel authority system. Future waves can retrieve validated repair patterns before designing the next repair.
+
+**Regression proof:** Governance pathway documents now explicitly require historical repair retrieval, attack-the-proof discipline, precondition/violation/rejection/unchanged-postcondition testing, exact-SHA reconciliation, and permanent learning.
+
+**Evidence:** Wave branch commits `c86ad6f26a3226a1cfbe3bb65a46432f32d91663` and `1f4da80059c8bbd5b582b5694c6949bc617ac773`.
+
+**Verification:** Repository documents were written against the reconciled `main` baseline `35cf2717f881e1530c60fb98d6d0549962503dca` on the dedicated wave branch. Runtime/test execution is not claimed from documentation-only changes; promotion remains subject to the repository's normal CI and review gates.
+
+**Reusable invariant:** A consequential repair is incomplete as organism learning until the verified repair method, proof-quality lesson, invariant, and next attack surface are durable and reusable.
+
+**Follow-on risk:** Implement machine-readable retrieval/validation of repair patterns only if an existing canonical learning/archive path can be strengthened; do not create a second repair authority.
+
+**Search/research input:** The wave was primarily driven by repository-native repair history and observed C2 execution patterns. External research remains a falsification input and cannot promote repair learning into canonical authority.
 
 ### Template
 
