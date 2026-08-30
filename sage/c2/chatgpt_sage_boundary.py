@@ -21,7 +21,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from sage.c2.chatgpt_runtime import render_chatgpt_c2_response
-from sage.c2.immersion_state import ImmersionState
+from sage.c2.immersion_state import ExecutionPhase, FlightStatus, ImmersionState, TrustStatus
 from sage.runtime.model_gateway import (
     ModelResponse,
     SAGEProtocolGovernor,
@@ -114,12 +114,7 @@ def execute_sage_bound_chatgpt(
     response_override: str | None = None,
     live_capability: Any = None,
 ) -> SAGEBoundChatGPTResponse:
-    """Execute one GPT turn through SAGE governance and Full-SAGE render.
-
-    The function fails closed if either canonical state is invalid, if a required
-    live capability is absent, if the model violates the SAGE output contract, or
-    if the response cannot be reconciled to the supplied runtime state.
-    """
+    """Execute one GPT turn through SAGE governance and Full-SAGE render."""
     if not immersion_state.validate():
         raise ValueError("Invalid canonical immersion state")
 
@@ -145,4 +140,68 @@ def execute_sage_bound_chatgpt(
         rendered_output=rendered,
         state_digest=runtime_state.digest(),
         evidence_refs=tuple(response.evidence_refs),
+    )
+
+
+def execute_sage_bound_chatgpt_from_legacy_runtime(
+    *,
+    runtime: Any,
+    session_id: str,
+    task: str,
+    c2_context: dict[str, Any],
+    response_override: str | None = None,
+    live_capability: Any = None,
+) -> SAGEBoundChatGPTResponse:
+    """Adapt the existing ``sage.runtime.engine.SageRuntime`` into the boundary.
+
+    Required frontier/gate/next-move values must be supplied by C2 context. The
+    adapter refuses to invent them, so an incomplete context fails closed.
+    """
+    required = ("frontier", "gate", "next_move")
+    missing = [key for key in required if not str(c2_context.get(key, "")).strip()]
+    if missing:
+        raise ValueError(
+            "SAGE C2 immersion context incomplete; missing: " + ", ".join(missing)
+        )
+
+    mission = str(
+        c2_context.get("mission")
+        or c2_context.get("mission_id")
+        or runtime.current_state.current_objective
+        or "SAGE C2 Mission"
+    )
+    evidence_refs = tuple(str(ref) for ref in c2_context.get("evidence_refs", ()))
+    provenance_head = str(c2_context.get("provenance_head", ""))
+    runtime_state = SAGEStateSnapshot(
+        state_version=str(c2_context.get("state_version", "sage-runtime-v1")),
+        instance_id=str(c2_context.get("instance_id", "sage-runtime")),
+        mission_id=str(c2_context.get("mission_id", mission)),
+        session_id=session_id,
+        authority_scope=str(c2_context.get("authority_scope", "human-operator")),
+        active_frontier=str(c2_context["frontier"]),
+        stop_boundary=str(c2_context.get("stop_boundary", "SAGE C2 fail-closed boundary")),
+        evidence_refs=evidence_refs,
+        known_state_refs=tuple(str(x) for x in c2_context.get("known_state_refs", ())),
+        candidate_state_refs=tuple(str(x) for x in c2_context.get("candidate_state_refs", ())),
+        negative_memory_refs=tuple(str(x) for x in c2_context.get("negative_memory_refs", ())),
+    )
+    immersion_state = ImmersionState(
+        station_identity="[SAGE::C2::CHATGPT]",
+        mission=mission,
+        phase=ExecutionPhase.EXECUTE,
+        flight_id=str(c2_context.get("flight_id", session_id)),
+        flight_status=FlightStatus.ACTIVE,
+        trust_status=TrustStatus.UNVERIFIED,
+        frontier=str(c2_context["frontier"]),
+        gate=str(c2_context["gate"]),
+        next_move=str(c2_context["next_move"]),
+        evidence_refs=evidence_refs,
+        provenance_head=provenance_head or runtime_state.digest(),
+    )
+    return execute_sage_bound_chatgpt(
+        runtime_state=runtime_state,
+        immersion_state=immersion_state,
+        task=task,
+        response_override=response_override,
+        live_capability=live_capability,
     )
