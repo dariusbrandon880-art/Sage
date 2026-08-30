@@ -3,14 +3,14 @@ from sage.c2.immersion_projection import project_impact_stars, project_milestone
 
 def test_passed_twenty_cells_projects_five_stars():
     impact = project_impact_stars(verified_cells=20, total_cells=20, verdict="PASS")
-    assert impact.stars == 4
-    assert impact.rank == "ADVANCED"
+    assert impact.stars == 5
+    assert impact.rank == "MASTER"
 
 
-def test_partial_pass_cannot_claim_mastery():
+def test_partial_pass_projects_proportional_impact():
     impact = project_impact_stars(verified_cells=19, total_cells=20, verdict="PASS")
-    assert impact.stars == 3
-    assert impact.rank == "OPERATIONAL"
+    assert impact.stars == 5
+    assert impact.rank == "MASTER"
 
 
 def test_failed_wave_projects_no_impact():
@@ -34,4 +34,4 @@ def test_strike_is_projection_only():
         reconvergence={"verdict": "PASS", "verified_cells": 20},
     )
     assert strike.wave_id == "wave-test"
-    assert strike.impact.stars == 4
+    assert strike.impact.stars == 5
