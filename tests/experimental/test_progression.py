@@ -472,3 +472,95 @@ def test_18_protected_boundary_exclusion():
                 with open(item, "r", encoding="utf-8") as f:
                     content = f.read()
                     assert "tests." not in content
+
+
+def test_verified_progression_projection_milestone_strike_stars():
+    from sage.core.verified_progression_projection import VerifiedProgressionProjection
+
+    # 1. Unverified / missing evidence fail-closed (0 stars / UNRATED)
+    unrated = VerifiedProgressionProjection.build(
+        projection_id="proj_001",
+        mission_id="m_001",
+        mission_state="RUNNING",
+        evidence_references=[],
+        verification_verdict="HOLD",
+        capability_id="CAP-001",
+        capability_supported=False,
+        current_qualification_state="UNQUALIFIED",
+        locked_next_capabilities=[],
+    )
+    assert unrated.milestone_strike_stars == 0
+    assert unrated.milestone_strike_label == "UNRATED"
+
+    # 2. Meaningful progress (1 star)
+    star1 = VerifiedProgressionProjection.build(
+        projection_id="proj_002",
+        mission_id="m_002",
+        mission_state="DONE",
+        evidence_references=["ref_1"],
+        verification_verdict="VERIFIED",
+        capability_id="CAP-002",
+        capability_supported=True,
+        current_qualification_state="UNQUALIFIED",
+        locked_next_capabilities=[],
+    )
+    assert star1.milestone_strike_stars == 1
+    assert "⭐ MEANINGFUL_PROGRESS" in star1.milestone_strike_label
+
+    # 3. Frontier breakthrough (5 stars)
+    refs_10 = [f"ref_{i}" for i in range(10)]
+    star5 = VerifiedProgressionProjection.build(
+        projection_id="proj_005",
+        mission_id="m_005",
+        mission_state="DONE",
+        evidence_references=refs_10,
+        verification_verdict="VERIFIED",
+        capability_id="CAP-005",
+        capability_supported=True,
+        current_qualification_state="QUALIFIED",
+        locked_next_capabilities=[],
+    )
+    assert star5.milestone_strike_stars == 5
+    assert "⭐⭐⭐⭐⭐ FRONTIER_BREAKTHROUGH" in star5.milestone_strike_label
+    assert star5.authority_granted is False
+    assert star5.read_only is True
+
+
+def test_milestone_strike_adversarial_and_promotion_bypass_rejection():
+    from sage.core.verified_progression_projection import VerifiedProgressionProjection
+
+    # Adversarial 1: Fabricated success / FALSIFIED verdict -> UNRATED
+    falsified = VerifiedProgressionProjection.build(
+        projection_id="proj_adv_1",
+        mission_id="m_adv_1",
+        mission_state="DONE",
+        evidence_references=["ref_fake"],
+        verification_verdict="FALSIFIED",
+        capability_id="CAP-ADV-1",
+        capability_supported=True,
+        current_qualification_state="QUALIFIED",
+        locked_next_capabilities=[],
+    )
+    assert falsified.milestone_strike_stars == 0
+    assert falsified.milestone_strike_label == "UNRATED"
+    assert falsified.capability_supported is False
+
+    # Adversarial 2: Promotion bypass attempt (setting authority_granted=True fails post-init)
+    with pytest.raises(ValueError, match="authority_granted must remain false"):
+        VerifiedProgressionProjection(
+            projection_id="proj_adv_2",
+            mission_id="m_adv_2",
+            mission_state="DONE",
+            verification_verdict="VERIFIED",
+            evidence_references=("ref_1",),
+            capability_id="CAP-ADV-2",
+            capability_supported=True,
+            current_qualification_state="QUALIFIED",
+            reviewer_authorization_required=True,
+            locked_next_capabilities=(),
+            milestone_strike_stars=5,
+            milestone_strike_label="⭐⭐⭐⭐⭐ FRONTIER_BREAKTHROUGH",
+            projection_digest="digest_fake",
+            read_only=True,
+            authority_granted=True,  # BYPASS ATTEMPT
+        )

@@ -32,15 +32,17 @@ def render_agent_nameplate(
     station_id: StationID,
     *,
     compact: bool = True,
+    milestone_stars: str = "",
 ) -> str:
     """Render stable progression data from canonical state."""
     station = state.stations[station_id]
     xp = state.game_progression.get_total_xp_for_station(station_id)
     icon = STATION_ICONS.get(station_id, "▪")
     sql = f" SQL-{station.current_sql}" if station.current_sql > 0 else ""
+    stars = f" {milestone_stars}" if milestone_stars else ""
 
     if compact:
-        return f"{icon} {station.agent_name} // CQL-{station.current_cql}{sql} // XP {xp}"
+        return f"{icon} {station.agent_name} // CQL-{station.current_cql}{sql}{stars} // XP {xp}"
 
     return (
         f"{icon} {station.agent_name}\n"

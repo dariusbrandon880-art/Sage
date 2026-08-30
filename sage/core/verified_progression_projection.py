@@ -53,6 +53,8 @@ class VerifiedProgressionProjection:
     current_qualification_state: str
     reviewer_authorization_required: bool
     locked_next_capabilities: tuple[str, ...]
+    milestone_strike_stars: int
+    milestone_strike_label: str
     projection_digest: str
     read_only: bool = True
     authority_granted: bool = False
@@ -114,9 +116,22 @@ class VerifiedProgressionProjection:
             "current_qualification_state": current_qualification_state,
             "reviewer_authorization_required": reviewer_required,
             "locked_next_capabilities": list(locked),
+            "milestone_strike_stars": 0,
+            "milestone_strike_label": "UNRATED",
             "read_only": True,
             "authority_granted": False,
         }
+
+        # Calculate Milestone Strike Stars deterministically
+        stars, label = cls._calculate_milestone_strike(
+            verification_verdict=verification_verdict,
+            evidence_references=refs,
+            capability_supported=effective_supported,
+            qualification_state=current_qualification_state,
+        )
+        payload["milestone_strike_stars"] = stars
+        payload["milestone_strike_label"] = label
+
         digest = _canonical_digest(payload)
         return cls(
             projection_id=payload["projection_id"],
@@ -129,8 +144,35 @@ class VerifiedProgressionProjection:
             current_qualification_state=current_qualification_state,
             reviewer_authorization_required=reviewer_required,
             locked_next_capabilities=locked,
+            milestone_strike_stars=stars,
+            milestone_strike_label=label,
             projection_digest=digest,
         )
+
+    @staticmethod
+    def _calculate_milestone_strike(
+        *,
+        verification_verdict: str,
+        evidence_references: tuple[str, ...],
+        capability_supported: bool,
+        qualification_state: str,
+        safety_verified: bool = True,
+    ) -> tuple[int, str]:
+        """Derive deterministic Milestone Strike stars from evidence & verification state."""
+        if not safety_verified or verification_verdict != "VERIFIED" or not evidence_references:
+            return 0, "UNRATED"
+
+        num_refs = len(evidence_references)
+        if num_refs >= 10 and capability_supported and qualification_state == "QUALIFIED":
+            return 5, "⭐⭐⭐⭐⭐ FRONTIER_BREAKTHROUGH"
+        elif num_refs >= 5 and capability_supported:
+            return 4, "⭐⭐⭐⭐ COMPOUND_ADVANCEMENT"
+        elif num_refs >= 3:
+            return 3, "⭐⭐⭐ MAJOR_ADVANCEMENT"
+        elif num_refs >= 2:
+            return 2, "⭐⭐ STRONG_PROGRESS"
+        else:
+            return 1, "⭐ MEANINGFUL_PROGRESS"
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -145,6 +187,8 @@ class VerifiedProgressionProjection:
             "current_qualification_state": self.current_qualification_state,
             "reviewer_authorization_required": self.reviewer_authorization_required,
             "locked_next_capabilities": list(self.locked_next_capabilities),
+            "milestone_strike_stars": self.milestone_strike_stars,
+            "milestone_strike_label": self.milestone_strike_label,
             "projection_digest": self.projection_digest,
             "read_only": self.read_only,
             "authority_granted": self.authority_granted,

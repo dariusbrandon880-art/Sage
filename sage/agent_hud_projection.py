@@ -62,6 +62,8 @@ def build_agent_hud_projection(
             "sql": self_view.get("sql"),
             "xp": self_view.get("xp"),
             "state": self_view.get("state"),
+            "milestone_strike_stars": self_view.get("milestone_strike_stars", 0),
+            "milestone_strike_label": self_view.get("milestone_strike_label", "UNRATED"),
         },
         "team": {
             "coordination_status": team_view.get("coordination", {}).get("status"),
