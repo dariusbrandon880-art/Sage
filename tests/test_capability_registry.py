@@ -121,3 +121,17 @@ def test_reconcile_pr_capability(tmp_path):
     assert reloaded is not None
     assert reloaded.disposition == CapabilityDisposition.RECOVERED
     assert reloaded.pr_reference == "PR #266"
+
+
+def test_registry_disposition_filtering_and_health_audit(tmp_path):
+    registry_file = tmp_path / "operational_capability_registry.json"
+    registry = SAGEOperationalCapabilityRegistry(storage_path=str(registry_file))
+
+    integrated = registry.get_capabilities_by_disposition(CapabilityDisposition.INTEGRATED)
+    assert len(integrated) >= 7
+
+    health = registry.audit_registry_health()
+    assert health["total_capabilities"] >= 7
+    assert health["validated_count"] >= 7
+    assert health["ready_count"] >= 7
+    assert CapabilityDisposition.INTEGRATED.value in health["dispositions"]

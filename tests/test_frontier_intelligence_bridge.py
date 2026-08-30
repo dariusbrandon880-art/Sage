@@ -114,3 +114,9 @@ def test_bridge_fails_closed_when_any_candidate_unauthorized(sample_proposal):
     assert len(receipt.authorized_candidate_ids) == 4
     assert receipt.dispatch_result is None
     assert len(receipt.bridge_digest) == 64
+
+    telemetry = bridge.get_bridge_telemetry(receipt)
+    assert telemetry["is_authorized"] is False
+    assert telemetry["authorized_count"] == 4
+    assert telemetry["unauthorized_count"] == 1
+    assert telemetry["dispatch_verdict"] == "UNAUTHORIZED"

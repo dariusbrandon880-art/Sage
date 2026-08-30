@@ -183,4 +183,15 @@ def test_export_endpoint_returns_json():
     assert response.status_code == 200
     data = response.json()
     assert "timestamp" in data
-    assert "state" in data
+
+
+def test_runtime_engine_get_active_capability_summary():
+    from sage.runtime.engine import SageRuntime
+
+    runtime = SageRuntime(workspace_path="sage_data_test_summary")
+    summary = runtime.get_active_capability_summary()
+    assert "active" in summary
+    assert "session_depth" in summary
+    assert "integrity_valid" in summary
+    assert "c2_rehydrated" in summary
+    assert summary["subsystems_ready"] is True

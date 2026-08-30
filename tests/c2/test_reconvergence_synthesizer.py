@@ -48,6 +48,36 @@ def test_reconvergence_synthesis_pass_with_20_cell_and_exact_sha():
     assert len(package.package_hash) == 64
 
 
+def test_matrix_stage_breakdown():
+    synthesizer = C2ReconvergenceSynthesizer(wave_id="wave_test_breakdown")
+    summaries = []
+    sha = "a" * 40
+    for idx in range(1, 6):
+        m1 = LifecycleMilestoneRecord(stage=LifecycleStage.INTAKE_RECON, passed=True, evidence_ref="ref1")
+        m2 = LifecycleMilestoneRecord(stage=LifecycleStage.BOUNDED_BUILD, passed=True, evidence_ref="ref2")
+        m3 = LifecycleMilestoneRecord(stage=LifecycleStage.VERIFY_PROOF, passed=True, evidence_ref="ref3")
+        m4 = LifecycleMilestoneRecord(stage=LifecycleStage.WAREHOUSE_PROMOTE, passed=True, evidence_ref="ref4")
+        summaries.append(
+            FlightExecutionSummary(
+                flight_id=f"FLIGHT-{idx}",
+                target=f"target_{idx}",
+                classification="ACTIVE",
+                execution_result="PASS",
+                exact_head=sha,
+                tests_passed=5,
+                evidence_ref="evidence_ref",
+                pr_or_change="PR Change",
+                lifecycle_milestones=[m1, m2, m3, m4],
+            )
+        )
+    pkg = synthesizer.synthesize_reconvergence(summaries)
+    breakdown = synthesizer.get_matrix_stage_breakdown(pkg)
+    assert len(breakdown) == 4
+    for stage_data in breakdown.values():
+        assert stage_data["passed_count"] == 5
+        assert stage_data["pass_rate"] == 100.0
+
+
 def test_reconvergence_fails_closed_on_unstarted_or_short_sha():
     synthesizer = C2ReconvergenceSynthesizer(wave_id="big-jump-wave-session-3")
 

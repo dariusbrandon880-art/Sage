@@ -138,3 +138,29 @@ class C2ReconvergenceSynthesizer:
         )
         pkg.package_hash = pkg.compute_hash()
         return pkg
+
+    def get_matrix_stage_breakdown(
+        self,
+        package: ReconvergenceEvidencePackage,
+    ) -> Dict[str, Dict[str, Any]]:
+        """Extract stage-by-stage pass rate breakdown across the 5x4 matrix."""
+        stages = [
+            LifecycleStage.INTAKE_RECON,
+            LifecycleStage.BOUNDED_BUILD,
+            LifecycleStage.VERIFY_PROOF,
+            LifecycleStage.WAREHOUSE_PROMOTE,
+        ]
+        breakdown = {}
+        total_flights = max(1, package.total_flights)
+
+        for s_idx, stage in enumerate(stages, start=1):
+            cell_keys = [f"P{p_idx}-S{s_idx}" for p_idx in range(1, total_flights + 1)]
+            passed_cells = sum(1 for k in cell_keys if package.advancement_matrix_20_cells.get(k, False))
+            breakdown[stage.value] = {
+                "stage": stage.value,
+                "passed_count": passed_cells,
+                "total_count": total_flights,
+                "pass_rate": (passed_cells / total_flights) * 100.0,
+            }
+
+        return breakdown

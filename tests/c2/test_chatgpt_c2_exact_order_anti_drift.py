@@ -158,3 +158,15 @@ def test_openai_adapter_rejects_spoofed_station():
         def create(self, **kwargs): return SimpleNamespace(output_text=structured_output(station="[SAGE::FAKE::CHATGPT]"))
     class FakeClient: responses=FakeResponses()
     with pytest.raises(ValueError, match="SAGE Protocol Governance Violation"): SAGERuntime(state()).invoke(OpenAIResponsesAdapter(FakeClient(), model_id="test"), "recon", model_role="c2")
+
+
+def test_validate_directive_compliance_verification():
+    from sage.c2.chatgpt_c2_contract import validate_directive_compliance
+
+    decision = validate_directive_compliance("verify live connection and run deep search go finish")
+    assert decision.requires_live_verification is True
+    assert decision.requires_deep_recon is True
+    assert decision.requires_marathon_execution is True
+
+    with pytest.raises(ValueError, match="empty"):
+        validate_directive_compliance("")
