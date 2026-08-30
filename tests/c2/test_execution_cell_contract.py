@@ -77,5 +77,7 @@ def test_attestation_acceptance_is_fail_closed() -> None:
 
 
 def test_shadow_boundary_rejects_wagering() -> None:
+    payload = mission().model_dump()
+    payload["wagering_executed"] = True
     with pytest.raises(ValueError):
-        mission().model_copy(update={"wagering_executed": True})
+        MissionPackage(**payload)
