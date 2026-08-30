@@ -72,7 +72,7 @@ Super Search and SAGI research are **external intelligence sensors**.
 
 They may challenge assumptions, expose threat models, suggest architecture candidates, and identify emerging governance patterns. They never override repository truth or validated Master Archive state.
 
-The current external governance signal strongly supports this separation: NIST's 2026 agent-identity work emphasizes identification, authorization, auditing, non-repudiation, and prompt-injection controls, while current control-plane research emphasizes deterministic enforcement outside the model's reasoning authority. External research remains non-canonical and must be reconciled against SAGE implementation evidence. citeturn0search0turn0academia26
+Current external governance research supports this separation: NIST's 2026 agent-identity work emphasizes identification, authorization, auditing, non-repudiation, and prompt-injection controls. Current deterministic-control-plane research likewise argues for enforcement outside model authority. External research remains non-canonical and must be reconciled against SAGE implementation evidence.
 
 ## Anti-drift law
 
