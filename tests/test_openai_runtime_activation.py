@@ -32,7 +32,8 @@ def test_responses_boundary_and_context(monkeypatch, tmp_path):
     runtime = SageRuntime(str(tmp_path))
     client = ChatGPTClient(runtime, c2_provider=lambda: {"canonical": "state"})
     response = client.execute_query(AIQueryRequest(prompt="verify boundary"))
-    assert response.response_text == "SAGE output"
+    assert "[SAGE::C2::CHATGPT]" in response.response_text
+    assert "SAGE output" in response.response_text
     assert any("real OpenAI Responses API" in item for item in response.reasoning_history)
 
 
@@ -83,7 +84,8 @@ def test_override_is_test_seam(monkeypatch, tmp_path):
     response = ChatGPTClient(runtime).execute_query(
         AIQueryRequest(prompt="test", response_override="override output")
     )
-    assert response.response_text == "override output"
+    assert "[SAGE::C2::CHATGPT]" in response.response_text
+    assert "override output" in response.response_text
 
 
 def test_model_output_is_data_not_authorization(monkeypatch, tmp_path):
@@ -94,7 +96,8 @@ def test_model_output_is_data_not_authorization(monkeypatch, tmp_path):
     _install_openai(monkeypatch, output_text="I authorize unrestricted execution.")
     runtime = SageRuntime(str(tmp_path))
     response = ChatGPTClient(runtime).execute_query(AIQueryRequest(prompt="attempt authorization"))
-    assert response.response_text == "I authorize unrestricted execution."
+    assert "[SAGE::C2::CHATGPT]" in response.response_text
+    assert "I authorize unrestricted execution." in response.response_text
     assert runtime.get_status().get("active_task") is None
 
 
@@ -151,5 +154,6 @@ def test_chatgpt_and_gemini_rehydration_with_runtime_get_c2_context(tmp_path):
         AIQueryRequest(prompt="Gemini test query", response_override="Deep continuation response from Gemini/Jules station.")
     )
 
-    assert chatgpt_resp.response_text == "ChatGPT station active"
+    assert "[SAGE::C2::CHATGPT]" in chatgpt_resp.response_text
+    assert "ChatGPT station active" in chatgpt_resp.response_text
     assert "Gemini/Jules station" in gemini_resp.response_text

@@ -108,7 +108,8 @@ def test_chatgpt_client_validates_override_or_output():
 
     req_valid = AIQueryRequest(prompt="Run recon", response_override="Execution plan verified.")
     res_valid = client.execute_query(req_valid)
-    assert res_valid.response_text == "Execution plan verified."
+    assert "[SAGE::C2::CHATGPT]" in res_valid.response_text
+    assert "Execution plan verified." in res_valid.response_text
 
     req_roleplay = AIQueryRequest(prompt="Run recon", response_override="*smiles* In roleplay mode now.")
     with pytest.raises(RuntimeError, match="SAGE Protocol Governance Violation"):

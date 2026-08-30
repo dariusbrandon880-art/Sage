@@ -158,6 +158,36 @@ class ChatGPTClient(BaseAIClient):
         if structured.violations:
             raise RuntimeError(f"SAGE Protocol Governance Violation: {'; '.join(structured.violations)}")
 
+        # Project canonical state into full ChatGPT C2 immersion response
+        from sage.c2.chatgpt_immersion import project_chatgpt_immersion_response
+        from sage.c2.immersion_state import ExecutionPhase, FlightStatus, ImmersionState, TrustStatus
+
+        active_obj = (
+            c2_context.get("active_objective")
+            or (self.runtime.current_state.current_objective if hasattr(self.runtime, "current_state") else None)
+            or "AI Query Execution"
+        )
+        active_tsk = (
+            c2_context.get("active_task")
+            or (self.runtime.current_state.active_task if hasattr(self.runtime, "current_state") else None)
+            or f"ChatGPT Query: {request.prompt[:30]}..."
+        )
+
+        imm_state = ImmersionState(
+            station_identity="[SAGE::C2::CHATGPT]",
+            mission=active_obj,
+            phase=ExecutionPhase.EXECUTE,
+            flight_id="FLIGHT_001",
+            flight_status=FlightStatus.ACTIVE,
+            trust_status=TrustStatus.VERIFIED if referenced_ids else TrustStatus.HOLD,
+            frontier="gpt-c2-boundary",
+            gate="GOVERNED_EXECUTION",
+            next_move=active_tsk,
+            evidence_refs=tuple(referenced_ids),
+        )
+
+        rendered_immersion = project_chatgpt_immersion_response(imm_state, body=str(response_text)).render()
+
         # 3. Route through unified Continuity Bridge
         from sage.models import ExternalSessionPayload
 
@@ -172,6 +202,7 @@ class ChatGPTClient(BaseAIClient):
                     "content": {
                         "prompt": request.prompt,
                         "response": response_text,
+                        "rendered_immersion": rendered_immersion,
                         "referenced_memories": referenced_ids,
                         "client": "ChatGPT",
                     },
@@ -184,7 +215,7 @@ class ChatGPTClient(BaseAIClient):
         self.runtime.ingest_session_payload(payload)
 
         return AIQueryResponse(
-            response_text=response_text,
+            response_text=rendered_immersion,
             reasoning_history=self.reasoning_history.copy(),
             referenced_memories=referenced_ids,
             session_id=session_id,

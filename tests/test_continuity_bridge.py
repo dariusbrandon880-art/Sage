@@ -428,7 +428,8 @@ def test_ai_query_response_override(temp_workspace):
     req = AIQueryRequest(prompt="Test prompt", response_override=override_text)
 
     chatgpt_res = chatgpt.execute_query(req)
-    assert chatgpt_res.response_text == override_text
+    assert "[SAGE::C2::CHATGPT]" in chatgpt_res.response_text
+    assert override_text in chatgpt_res.response_text
 
     gemini_res = gemini.execute_query(req)
     assert gemini_res.response_text == override_text
