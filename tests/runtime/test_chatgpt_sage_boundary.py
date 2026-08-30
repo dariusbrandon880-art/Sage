@@ -59,7 +59,7 @@ def _immersion_state() -> ImmersionState:
 def _valid_output(text: str = "SAGE-bound response") -> str:
     return (
         '{"station":"[SAGE::C2::CHATGPT]",'
-        '"reasoning_chain":[],'
+        '"reasoning_chain":["SAGE response prepared from reconciled state"],'
         '"proposed_actions":[],'
         '"epistemic_state":{"confidence_level":"HIGH",'
         '"validated_facts":[],"unverified_hypotheses":[],"known_unknowns":[]},'
