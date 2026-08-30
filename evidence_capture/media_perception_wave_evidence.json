@@ -1,0 +1,57 @@
+{
+  "wave_id": "MEDIA_PERCEPTION_TEMPORAL_SUPER_SEARCH_WAVE_001",
+  "head_sha": "c3839cc41e1b2c46b50a7649271b7e72524b1538",
+  "timestamp_utc": "2026-08-30T00:25:33Z",
+  "wave_verdict": "PASS",
+  "governance_invariant": "ARCHITECTURE READY != LIVE SENSOR CONNECTED != CONTINUOUS COVERAGE VERIFIED",
+  "flights": [
+    {
+      "flight_id": "FLIGHT-MEDIA-INGEST-EDGE",
+      "passed": true,
+      "events_ingested": 3,
+      "stream_stats": {
+        "VISUAL": 1,
+        "AUDIO": 1,
+        "METADATA": 1
+      }
+    },
+    {
+      "flight_id": "FLIGHT-TEMPORAL-SESSION-INDEX",
+      "passed": true,
+      "range_matches": 3,
+      "entity_matches": 1,
+      "transcript_matches": 1,
+      "cross_references": 1
+    },
+    {
+      "flight_id": "FLIGHT-TEMPORAL-SUPER-SEARCH",
+      "passed": true,
+      "total_results": 4,
+      "planes_represented": [
+        "ACTIVE_SESSION",
+        "HISTORICAL_SESSION",
+        "REPOSITORY"
+      ]
+    },
+    {
+      "flight_id": "FLIGHT-VERIFICATION-AND-COVERAGE-AUDIT",
+      "passed": true,
+      "verification_passed": true,
+      "coverage_verdict": "CONTINUOUS_COVERAGE_VERIFIED",
+      "continuous_coverage_verified": true,
+      "uncertainty_score": 0.0
+    },
+    {
+      "flight_id": "FLIGHT-GOVERNED-PERCEPTION-SYNTHESIS",
+      "passed": true,
+      "receipt_sha256": "e5265bee367a02ce8b5ce94c20b931484e4add923f27546e42e37e794ccacbdc",
+      "synthesis_markdown_length": 1402
+    }
+  ],
+  "synthesis_sample": {
+    "query": "Synthesize current Observatory state and media perception telemetry",
+    "governance_notice": "SAGE GOVERNANCE INVARIANT ENFORCED: ARCHITECTURE READY != LIVE SENSOR CONNECTED != CONTINUOUS COVERAGE VERIFIED. Active status: live_sensor_connected=True, continuous_coverage_verified=True.",
+    "receipt_sha256": "e5265bee367a02ce8b5ce94c20b931484e4add923f27546e42e37e794ccacbdc"
+  },
+  "evidence_digest": "9e79be8e5315bb8c1d01845db76d323afa8083f145f05db1bb2a7614f3e94da2"
+}
