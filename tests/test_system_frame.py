@@ -1,10 +1,27 @@
 """Tests for SAGE GET /system-frame endpoint and extended API boundaries."""
 
+import fcntl
+import os
+import tempfile
+from pathlib import Path
+
 import pytest
 from fastapi.testclient import TestClient
 from sage.api import app
 
 client = TestClient(app)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _serialize_shared_system_frame_state():
+    """Serialize this shared-state integration module across concurrent pytest processes."""
+    lock_path = Path(tempfile.gettempdir()) / "sage_system_frame_test.lock"
+    with lock_path.open("w", encoding="utf-8") as lock_file:
+        fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX)
+        try:
+            yield
+        finally:
+            fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
 
 
 # Parametrizing the GET /system-frame authentication with 10 different key combinations
@@ -43,9 +60,9 @@ def test_system_frame_auth(api_key, expected_status):
     [
         ({}, 422),
         ({"wrong_field": "test"}, 422),
-        ({"objective": 12345}, 422),  # FastAPI strict check yields 422
+        ({"objective": 12345}, 422),
         ({"objective": None}, 422),
-        ({"objective": ""}, 200),  # Empty string is semantically a string
+        ({"objective": ""}, 200),
         ([], 422),
     ],
 )
@@ -61,7 +78,7 @@ def test_objective_input_validation(payload, expected_status):
     [
         ({}, 422),
         ({"wrong_key": "test"}, 422),
-        ({"task": 9999}, 422),  # FastAPI strict check yields 422
+        ({"task": 9999}, 422),
         ({"task": None}, 422),
         ({"task": ""}, 200),
         ([], 422),
@@ -73,7 +90,6 @@ def test_task_input_validation(payload, expected_status):
     assert response.status_code == expected_status
 
 
-# Additional unit tests to bring the total test cases count up by at least 15+ functions
 def test_system_frame_missing_header():
     """Verify GET /system-frame fails with 401 when no authorization header is supplied."""
     response = client.get("/system-frame")
@@ -161,7 +177,7 @@ def test_diagnostics_system_name():
 
 
 def test_diagnostics_version():
-    """Verify SAGE service diagnostics matches expected software version."""
+    """Verify service diagnostics matches expected software version."""
     response = client.get("/service/diagnostics")
     assert response.status_code == 200
     data = response.json()
