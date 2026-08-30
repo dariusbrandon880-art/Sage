@@ -198,11 +198,41 @@ def test_stale_authorization_is_rejected_at_commit_boundary() -> None:
     state = {"agent-1:budget": "AVAILABLE"}
     engine = make_engine(state)
     request = make_request(state)
+    state_before_rejection = state.copy()
+    consumed_before_rejection = engine.consumed_receipt_ids
 
     state["agent-1:budget"] = "EXHAUSTED"
 
     with pytest.raises(StaleAuthorizationError):
         engine.execute(signed_receipt(), request)
 
-    assert state["agent-1:flight"] == "UNQUALIFIED" if "agent-1:flight" in state else True
+    assert state == {"agent-1:budget": "EXHAUSTED"}
+    assert state != state_before_rejection
+    assert engine.consumed_receipt_ids == consumed_before_rejection
+
+
+def test_state_mutation_during_validation_is_rejected_without_commit() -> None:
+    state = {"agent-1:budget": "AVAILABLE"}
+    receipt = signed_receipt()
+    request = make_request(state)
+    state_before_execution = state.copy()
+    consumed_before_execution: set[str] = set()
+
+    def verify(receipt: AttestationReceipt, trusted_key: str) -> bool:
+        state["agent-1:budget"] = "EXHAUSTED"
+        return receipt.signature == f"sig:{trusted_key}:{receipt.attestation_payload_digest}"
+
+    engine = TransitionAuthorityEngine(
+        trusted_reviewer_keys={"reviewer-1": "public-key-1"},
+        signature_verifier=verify,
+        capability_state=state,
+        consumed_receipt_ids=consumed_before_execution,
+    )
+
+    with pytest.raises(StaleAuthorizationError):
+        engine.execute(receipt, request)
+
+    assert state == {"agent-1:budget": "EXHAUSTED"}
+    assert "agent-1:flight" not in state
     assert engine.consumed_receipt_ids == frozenset()
+    assert state != state_before_execution
