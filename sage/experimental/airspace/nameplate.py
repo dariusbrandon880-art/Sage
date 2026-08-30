@@ -48,7 +48,7 @@ def render_milestone_strike(stars: int) -> str:
             f"milestone strike stars must be between 0 and {MAX_MILESTONE_STRIKE_STARS}"
         )
     earned = "⭐" * stars
-    return f"MILESTONE STRIKE: {earned or "—"}"
+    return f"MILESTONE STRIKE: {earned or '—'}"
 
 
 def render_agent_nameplate(
