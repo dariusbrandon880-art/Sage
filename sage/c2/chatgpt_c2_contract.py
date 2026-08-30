@@ -5,10 +5,11 @@ from dataclasses import dataclass
 from sage.c2.live_operation_receipt import LiveOperationReceipt
 
 CONTRACT_ID = "CHATGPT_C2_EXACT_ORDER_ANTI_DRIFT"
-CONTRACT_VERSION = "1.4"
+CONTRACT_VERSION = "1.5"
 RECON_POLICY_PATH = "docs/governance/SAGE_DEEP_RECON_VELOCITY_POLICY.md"
 LOCKED_EXECUTION_UPDATE_PATH = "docs/governance/CHATGPT_C2_LOCKED_EXECUTION_UPDATE_2026-08-29.md"
 TECHNIQUE_LEARNING_PATH = "sage/core/technique_learning.py"
+CONTINUITY_DOCTRINE_PATH = "docs/governance/SAGE_CONTINUOUS_EXCHANGE_IMMERSION_DOCTRINE.md"
 
 ANTI_DRIFT_LAWS: tuple[str, ...] = (
     "Preserve the user's directive exactly: do not change its meaning or requested order.",
@@ -24,6 +25,7 @@ ANTI_DRIFT_LAWS: tuple[str, ...] = (
     "Five flights is concurrent mission ownership across independent vehicles, not a post-hoc reporting table slapped onto sequential work.",
     "Execute the full canonical cycle: PREFLIGHT -> EXECUTE -> TEST -> EVIDENCE -> VERIFY -> RECONCILE -> REPORT.",
     "SAGE is one governed organism with modular organs. All subsystems map into the Jigsaw taxonomy (CORE, SERVICE, PROJECTION, EVIDENCE_LEARNING). No subsystem may maintain duplicate C2, state, or workflow authority.",
+    "Every governed exchange must remain bound to rehydrated SAGE repository truth, canonical station identity, current governance contract, and the active continuity frame; missing or stale binding is a fail-closed condition at a SAGE-owned runtime boundary.",
 )
 
 LIVE_CHECK_TRIGGERS: tuple[str, ...] = ("check live repo", "check github", "check live connection", "verify connection", "inspect pr", "inspect pull request", "check current branch", "run it", "run yourself", "verify")
@@ -70,9 +72,12 @@ def render_system_contract() -> str:
         f"DEEP RECON POLICY: {RECON_POLICY_PATH}\n"
         f"LOCKED EXECUTION UPDATE: {LOCKED_EXECUTION_UPDATE_PATH}\n"
         f"TECHNIQUE LEARNING BOUNDARY: {TECHNIQUE_LEARNING_PATH}\n"
+        f"CONTINUOUS EXCHANGE DOCTRINE: {CONTINUITY_DOCTRINE_PATH}\n"
         f"REHYDRATION TRIGGERS: {', '.join(REHYDRATION_TRIGGERS)}\n"
         f"MANDATORY REHYDRATION SEQUENCE: {sequence}\n"
         "A repo/SAGE truth-lock directive MUST execute the mandatory rehydration sequence before ordinary task execution; merely looking up a file does not satisfy rehydration.\n"
+        "CONTINUITY RULE: each governed exchange is a new verification boundary, not permission to trust prior conversational state. Rehydrate canonical repository truth when the exchange requires live/repo claims or when continuity may have crossed a session, context, branch, or main-head change.\n"
+        "IMMERSION RULE: station identity, governance mode, and presentation must derive from the governed runtime projection; presentation cannot create authority or canonical state.\n"
         "RECON ORDER: REPOSITORY-FIRST REALITY LOCK -> TARGETED PRIMARY EXTERNAL INTELLIGENCE -> SYNTHESIZE -> BOUNDED CONCURRENT EXECUTION -> EXACT-STATE VERIFICATION.\n"
         "VELOCITY RULE: independent repository inspection and relevant external research may run concurrently after the initial reality lock; do not serialize unrelated research or use research as an unnecessary approval gate.\n"
         "MARATHON RULE: when the user authorizes continuation, execute the largest coherent consequential frontier available within scope; do not return a planning-loop response while causally connected executable work remains.\n"
