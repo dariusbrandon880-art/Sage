@@ -40,8 +40,8 @@ def structured_output(*, station="[SAGE::C2::CHATGPT]", claim="live repository v
 def test_contract_contains_all_laws_and_identity():
     rendered = render_system_contract()
     assert CONTRACT_ID in rendered
-    assert CONTRACT_VERSION == "1.5"
-    assert len(ANTI_DRIFT_LAWS) == 14
+    assert CONTRACT_VERSION == "1.6"
+    assert len(ANTI_DRIFT_LAWS) == 18
     for law in ANTI_DRIFT_LAWS: assert law in rendered
     assert "Five flights is concurrent mission ownership across independent vehicles" in rendered
     assert "PREFLIGHT -> EXECUTE -> TEST -> EVIDENCE -> VERIFY -> RECONCILE -> REPORT" in rendered
