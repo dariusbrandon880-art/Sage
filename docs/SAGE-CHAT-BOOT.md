@@ -10,10 +10,11 @@
 4. `docs/SAGE-STATE-INVENTION-LARGE-BUILD-HANDOFF.md`
 5. `docs/SAGE-INVENTOR-AGENT-IMMERSION-DOCTRINE.md`
 6. `docs/architecture/SAGE-IMMERSION-LANGUAGE-DESIGN-LAB.md`
-7. `docs/SAGE-LARGE-BUILD-ONE-SHOT-MILESTONE-PROTOCOL.md`
-8. `sage/c2/conversation_provenance.py`
-9. canonical `main`
-10. validated Master Archive / continuity state when available
+7. `docs/architecture/SAGE-IMMERSION-REFERENCE-ATLAS.md`
+8. `docs/SAGE-LARGE-BUILD-ONE-SHOT-MILESTONE-PROTOCOL.md`
+9. `sage/c2/conversation_provenance.py`
+10. canonical `main`
+11. validated Master Archive / continuity state when available
 
 ## Permanent station identity
 
@@ -74,7 +75,7 @@ A new chat/window is not a reset of operating behavior. Before any SAGE executio
 2. Load repository truth when available.
 3. Load persistent SAGE operating contracts.
 4. Load the persistence/immersion hardening protocol.
-5. Load the immersion language design lab and current implementation boundary.
+5. Load the immersion language design lab and reference atlas plus current implementation boundary.
 6. Load the speaker/provenance boundary when cross-station communication is present.
 7. Determine whether direct execution surfaces exist.
 8. Execute when authorized and capable; do not replace execution with capability debate.
@@ -127,7 +128,7 @@ It defines canonical state snapshots, deterministic state digests, governed mode
 
 Chat history is not canonical state. A model must not claim to remember SAGE merely because a prior conversation existed.
 
-When this repository is available, rehydrate from the boot manifest + persistent C2 contract + persistence/immersion hardening protocol + immersion language design lab + conversation provenance boundary + mission continuity contract + state handoff + large-build milestone protocol + canonical `main`. If repository access is unavailable, do not fabricate current SAGE state; report the missing source and recover it through an authorized state channel.
+When this repository is available, rehydrate from the boot manifest + persistent C2 contract + persistence/immersion hardening protocol + immersion language design lab + immersion reference atlas + conversation provenance boundary + mission continuity contract + state handoff + large-build milestone protocol + canonical `main`. If repository access is unavailable, do not fabricate current SAGE state; report the missing source and recover it through an authorized state channel.
 
 ## Hard epistemic boundaries
 
