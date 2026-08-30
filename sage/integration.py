@@ -160,7 +160,7 @@ class ChatGPTClient(BaseAIClient):
 
         # Project canonical state into full ChatGPT C2 immersion response
         from sage.c2.chatgpt_immersion import project_chatgpt_immersion_response
-        from sage.c2.immersion_state import ExecutionPhase, FlightStatus, ImmersionState, TrustStatus
+        from sage.c2.immersion_rehydration import build_chatgpt_immersion_state
 
         active_obj = (
             c2_context.get("active_objective")
@@ -173,16 +173,16 @@ class ChatGPTClient(BaseAIClient):
             or f"ChatGPT Query: {request.prompt[:30]}..."
         )
 
-        imm_state = ImmersionState(
-            station_identity="[SAGE::C2::CHATGPT]",
-            mission=active_obj,
-            phase=ExecutionPhase.EXECUTE,
-            flight_id="FLIGHT_001",
-            flight_status=FlightStatus.ACTIVE,
-            trust_status=TrustStatus.VERIFIED if referenced_ids else TrustStatus.HOLD,
-            frontier="gpt-c2-boundary",
-            gate="GOVERNED_EXECUTION",
-            next_move=active_tsk,
+        # Canonical C2 immersion is rehydrated from runtime-owned state.
+        # The interface boundary never manufactures a flight identifier.
+        imm_state = build_chatgpt_immersion_state(
+            self.runtime,
+            session_id=session_id,
+            c2_context={
+                **c2_context,
+                "active_objective": active_obj,
+                "active_task": active_tsk,
+            },
             evidence_refs=tuple(referenced_ids),
         )
 
