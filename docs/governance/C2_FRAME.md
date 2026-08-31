@@ -47,6 +47,8 @@ Any authorized SAGE mission may be assigned to any flight, including research, r
 
 Assignments may be completely different on the next Big Jump Wave.
 
+Flight capabilities do not need to be identical. Separate flights may develop different capabilities during the same wave, and those capabilities may expand independently while the flight identifiers remain reusable open slots.
+
 ## Flight Mission Package Contract
 
 Every current flight target must carry:
@@ -102,6 +104,7 @@ Every completed capability jump records:
 - F1-F5 are reusable execution slots, not hardcoded feature owners.
 - Any authorized SAGE mission may be assigned to any flight.
 - Mission meaning is supplied by the current wave assignment, never inferred from the flight number.
+- Flight capabilities may differ and may expand independently.
 - Master Archive governance supersedes operational execution directives.
 - Parallel execution must reconverge through verification before compounding.
 - Completion means verified capability, not merged activity.
