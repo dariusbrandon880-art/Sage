@@ -1,0 +1,1224 @@
+openapi: "3.1.0"
+info:
+  title: "SAGE Observatory & Execution Runtime API"
+  description: "Customer-facing SAGE live command HUD, acceptance surface, and REST API runtime gateway"
+  version: "1.2.0"
+paths:
+  /:
+    get:
+      summary: "Get Dashboard"
+      operationId: "get_dashboard__get"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            text/html:
+              schema:
+                type: "string"
+  /health:
+    get:
+      summary: "Health"
+      operationId: "health_health_get"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+  /status:
+    get:
+      summary: "Get Status"
+      operationId: "get_status_status_get"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+  /runtime/control-plane:
+    get:
+      summary: "Get Control Plane Status"
+      description: "Retrieve detailed SAGE Cognitive Control Plane status."
+      operationId: "get_control_plane_status_runtime_control_plane_get"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+  /runtime/diagnostics:
+    get:
+      summary: "Get Runtime Diagnostics"
+      operationId: "get_runtime_diagnostics_runtime_diagnostics_get"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+  /runtime/capabilities:
+    get:
+      summary: "Get Runtime Capabilities"
+      operationId: "get_runtime_capabilities_runtime_capabilities_get"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+  /runtime/metrics:
+    get:
+      summary: "Get Runtime Metrics"
+      operationId: "get_runtime_metrics_runtime_metrics_get"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+  /export:
+    get:
+      summary: "Export State"
+      operationId: "export_state_export_get"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+  /objective:
+    get:
+      summary: "Get Objective"
+      operationId: "get_objective_objective_get"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+    post:
+      summary: "Set Objective"
+      operationId: "set_objective_objective_post"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ObjectiveRequest"
+        required: true
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+        422:
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /task:
+    get:
+      summary: "Get Task"
+      operationId: "get_task_task_get"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+    post:
+      summary: "Set Task"
+      operationId: "set_task_task_post"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskRequest"
+        required: true
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+        422:
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /decision:
+    post:
+      summary: "Record Decision"
+      operationId: "record_decision_decision_post"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DecisionRequest"
+        required: true
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+        422:
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /decisions:
+    get:
+      summary: "List Decisions"
+      operationId: "list_decisions_decisions_get"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+  /decision/{decision_id}:
+    get:
+      summary: "Get Decision"
+      operationId: "get_decision_decision__decision_id__get"
+      parameters:
+        -
+          name: "decision_id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            title: "Decision Id"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+        422:
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /memory:
+    get:
+      summary: "List Memory"
+      operationId: "list_memory_memory_get"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+    post:
+      summary: "Create Memory"
+      operationId: "create_memory_memory_post"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MemoryCreateRequest"
+        required: true
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+        422:
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /memory/{memory_id}:
+    get:
+      summary: "Get Memory"
+      operationId: "get_memory_memory__memory_id__get"
+      parameters:
+        -
+          name: "memory_id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            title: "Memory Id"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+        422:
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /memory/search/tag/{tag}:
+    get:
+      summary: "Search By Tag"
+      operationId: "search_by_tag_memory_search_tag__tag__get"
+      parameters:
+        -
+          name: "tag"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            title: "Tag"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+        422:
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /memory/search/type/{object_type}:
+    get:
+      summary: "Search By Type"
+      operationId: "search_by_type_memory_search_type__object_type__get"
+      parameters:
+        -
+          name: "object_type"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            title: "Object Type"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+        422:
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /archive:
+    get:
+      summary: "List Archive"
+      operationId: "list_archive_archive_get"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+  /archive/{entry_id}:
+    get:
+      summary: "Get Archive Entry"
+      operationId: "get_archive_entry_archive__entry_id__get"
+      parameters:
+        -
+          name: "entry_id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            title: "Entry Id"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+        422:
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /archive/search/title/{title}:
+    get:
+      summary: "Search Archive By Title"
+      operationId: "search_archive_by_title_archive_search_title__title__get"
+      parameters:
+        -
+          name: "title"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            title: "Title"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+        422:
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /validate:
+    post:
+      summary: "Validate Memory"
+      operationId: "validate_memory_validate_post"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ValidationRequest"
+        required: true
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+        422:
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /promote/validated:
+    post:
+      summary: "Promote To Validated"
+      operationId: "promote_to_validated_promote_validated_post"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ValidationRequest"
+        required: true
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+        422:
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /promote/archive:
+    post:
+      summary: "Promote To Archive"
+      operationId: "promote_to_archive_promote_archive_post"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ArchivePromotionRequest"
+        required: true
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+        422:
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /blocker:
+    post:
+      summary: "Add Blocker"
+      operationId: "add_blocker_blocker_post"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              additionalProperties:
+                type: "string"
+              type: "object"
+              title: "Data"
+        required: true
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+        422:
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+    delete:
+      summary: "Resolve Blocker"
+      operationId: "resolve_blocker_blocker_delete"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              additionalProperties:
+                type: "string"
+              type: "object"
+              title: "Data"
+        required: true
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+        422:
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /checkpoint:
+    post:
+      summary: "Create Checkpoint"
+      operationId: "create_checkpoint_checkpoint_post"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+  /handoff:
+    post:
+      summary: "Generate Handoff"
+      operationId: "generate_handoff_handoff_post"
+      parameters:
+        -
+          name: "file_path"
+          in: "query"
+          required: false
+          schema:
+            anyOf:
+              -
+                type: "string"
+              -
+                type: "null"
+            title: "File Path"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+        422:
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /restore:
+    post:
+      summary: "Restore Session"
+      operationId: "restore_session_restore_post"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RestoreRequest"
+        required: true
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+        422:
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /service/startup:
+    post:
+      summary: "Service Startup"
+      operationId: "service_startup_service_startup_post"
+      parameters:
+        -
+          name: "x-api-key"
+          in: "header"
+          required: false
+          schema:
+            anyOf:
+              -
+                type: "string"
+              -
+                type: "null"
+            title: "X-Api-Key"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+        422:
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /service/shutdown:
+    post:
+      summary: "Service Shutdown"
+      operationId: "service_shutdown_service_shutdown_post"
+      parameters:
+        -
+          name: "x-api-key"
+          in: "header"
+          required: false
+          schema:
+            anyOf:
+              -
+                type: "string"
+              -
+                type: "null"
+            title: "X-Api-Key"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+        422:
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /service/diagnostics:
+    get:
+      summary: "Service Diagnostics"
+      operationId: "service_diagnostics_service_diagnostics_get"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+  /ai/query/chatgpt:
+    post:
+      summary: "Ai Query Chatgpt"
+      operationId: "ai_query_chatgpt_ai_query_chatgpt_post"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AIQueryRequest"
+        required: true
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+        422:
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /ai/query/gemini-jules:
+    post:
+      summary: "Ai Query Gemini Jules"
+      operationId: "ai_query_gemini_jules_ai_query_gemini_jules_post"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AIQueryRequest"
+        required: true
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+        422:
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /ai/context:
+    get:
+      summary: "Ai Context"
+      operationId: "ai_context_ai_context_get"
+      parameters:
+        -
+          name: "prompt"
+          in: "query"
+          required: true
+          schema:
+            type: "string"
+            title: "Prompt"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+        422:
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /tools/github/event:
+    post:
+      summary: "Index Github Event"
+      operationId: "index_github_event_tools_github_event_post"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+  /tools/workspace/artifact:
+    post:
+      summary: "Index Workspace Artifact"
+      operationId: "index_workspace_artifact_tools_workspace_artifact_post"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GoogleWorkspaceArtifact"
+        required: true
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+        422:
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /tools/index/relationships:
+    get:
+      summary: "Get Tool Relationships"
+      operationId: "get_tool_relationships_tools_index_relationships_get"
+      parameters:
+        -
+          name: "query_tag"
+          in: "query"
+          required: true
+          schema:
+            type: "string"
+            title: "Query Tag"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+        422:
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /tools/workspace/sync:
+    post:
+      summary: "Sync Workspace"
+      operationId: "sync_workspace_tools_workspace_sync_post"
+      parameters:
+        -
+          name: "credentials_path"
+          in: "query"
+          required: false
+          schema:
+            anyOf:
+              -
+                type: "string"
+              -
+                type: "null"
+            title: "Credentials Path"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+        422:
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /tools/skal/intake:
+    post:
+      summary: "Skal Intake"
+      description: "REST endpoint for SAGE-SKAL deterministic intake gate."
+      operationId: "skal_intake_tools_skal_intake_post"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SKALIntakeRequest"
+        required: true
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+        422:
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /snapshot:
+    post:
+      summary: "Create Snapshot"
+      operationId: "create_snapshot_snapshot_post"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+  /snapshots:
+    get:
+      summary: "List Snapshots"
+      operationId: "list_snapshots_snapshots_get"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+  /system-frame:
+    get:
+      summary: "Get System Frame"
+      operationId: "get_system_frame_system_frame_get"
+      parameters:
+        -
+          name: "x-api-key"
+          in: "header"
+          required: false
+          schema:
+            anyOf:
+              -
+                type: "string"
+              -
+                type: "null"
+            title: "X-Api-Key"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+        422:
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /ingest:
+    post:
+      summary: "Ingest Payload"
+      operationId: "ingest_payload_ingest_post"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExternalSessionPayload"
+        required: true
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+        422:
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /reason:
+    get:
+      summary: "Reason Over Continuity"
+      operationId: "reason_over_continuity_reason_get"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+  /verify:
+    get:
+      summary: "Verify Integrity"
+      operationId: "verify_integrity_verify_get"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+  /continuity/snapshot:
+    post:
+      summary: "Create Continuity Snapshot"
+      operationId: "create_continuity_snapshot_continuity_snapshot_post"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+  /continuity/snapshots:
+    get:
+      summary: "List Continuity Snapshots"
+      operationId: "list_continuity_snapshots_continuity_snapshots_get"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+  /continuity/restore/{id}:
+    post:
+      summary: "Restore Continuity Snapshot"
+      operationId: "restore_continuity_snapshot_continuity_restore__id__post"
+      parameters:
+        -
+          name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            title: "Id"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+        422:
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /api/state:
+    get:
+      summary: "Get State"
+      operationId: "get_state_api_state_get"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+  /api/hud:
+    get:
+      summary: "Get Hud"
+      operationId: "get_hud_api_hud_get"
+      parameters:
+        -
+          name: "agent_id"
+          in: "query"
+          required: false
+          schema:
+            type: "string"
+            default: "MISSION_CONTROL"
+            title: "Agent Id"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+        422:
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+components:
+  schemas:
+    AIQueryRequest:
+      properties:
+        prompt:
+          type: "string"
+          title: "Prompt"
+        session_id:
+          anyOf:
+            -
+              type: "string"
+            -
+              type: "null"
+          title: "Session Id"
+        include_validated_memory:
+          type: "boolean"
+          title: "Include Validated Memory"
+          default: true
+        include_knowledge_state:
+          type: "boolean"
+          title: "Include Knowledge State"
+          default: true
+        response_override:
+          anyOf:
+            -
+              type: "string"
+            -
+              type: "null"
+          title: "Response Override"
+      type: "object"
+      required:
+        - "prompt"
+      title: "AIQueryRequest"
+    ArchivePromotionRequest:
+      properties:
+        memory_id:
+          type: "string"
+          title: "Memory Id"
+        title:
+          type: "string"
+          title: "Title"
+        tags:
+          anyOf:
+            -
+              items:
+                type: "string"
+              type: "array"
+            -
+              type: "null"
+          title: "Tags"
+      type: "object"
+      required:
+        - "memory_id"
+        - "title"
+      title: "ArchivePromotionRequest"
+    DecisionRequest:
+      properties:
+        decision_type:
+          type: "string"
+          title: "Decision Type"
+        description:
+          type: "string"
+          title: "Description"
+        rationale:
+          type: "string"
+          title: "Rationale"
+        evidence:
+          anyOf:
+            -
+              items:
+                type: "string"
+              type: "array"
+            -
+              type: "null"
+          title: "Evidence"
+      type: "object"
+      required:
+        - "decision_type"
+        - "description"
+        - "rationale"
+      title: "DecisionRequest"
+    ExternalSessionPayload:
+      properties:
+        session_id:
+          anyOf:
+            -
+              type: "string"
+            -
+              type: "null"
+          title: "Session Id"
+        objective:
+          type: "string"
+          title: "Objective"
+        task:
+          anyOf:
+            -
+              type: "string"
+            -
+              type: "null"
+          title: "Task"
+        memories:
+          items:
+            additionalProperties: true
+            type: "object"
+          type: "array"
+          title: "Memories"
+        decisions:
+          items:
+            additionalProperties: true
+            type: "object"
+          type: "array"
+          title: "Decisions"
+        metadata:
+          additionalProperties: true
+          type: "object"
+          title: "Metadata"
+      type: "object"
+      required:
+        - "objective"
+      title: "ExternalSessionPayload"
+      description: "External session data; model observations cannot become active tasks."
+    GoogleWorkspaceArtifact:
+      properties:
+        doc_id:
+          type: "string"
+          title: "Doc Id"
+        title:
+          type: "string"
+          title: "Title"
+        doc_type:
+          type: "string"
+          title: "Doc Type"
+        last_modified_by:
+          type: "string"
+          title: "Last Modified By"
+        last_modified_at:
+          type: "string"
+          format: "date-time"
+          title: "Last Modified At"
+        url:
+          type: "string"
+          title: "Url"
+        metadata:
+          additionalProperties: true
+          type: "object"
+          title: "Metadata"
+      type: "object"
+      required:
+        - "doc_id"
+        - "title"
+        - "doc_type"
+        - "last_modified_by"
+        - "url"
+      title: "GoogleWorkspaceArtifact"
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: "#/components/schemas/ValidationError"
+          type: "array"
+          title: "Detail"
+      type: "object"
+      title: "HTTPValidationError"
+    MemoryCreateRequest:
+      properties:
+        object_type:
+          type: "string"
+          title: "Object Type"
+        content:
+          additionalProperties: true
+          type: "object"
+          title: "Content"
+        tags:
+          anyOf:
+            -
+              items:
+                type: "string"
+              type: "array"
+            -
+              type: "null"
+          title: "Tags"
+        confidence:
+          anyOf:
+            -
+              type: "string"
+            -
+              type: "null"
+          title: "Confidence"
+      type: "object"
+      required:
+        - "object_type"
+        - "content"
+      title: "MemoryCreateRequest"
+    ObjectiveRequest:
+      properties:
+        objective:
+          type: "string"
+          title: "Objective"
+      type: "object"
+      required:
+        - "objective"
+      title: "ObjectiveRequest"
+    RestoreRequest:
+      properties:
+        handoff_file:
+          type: "string"
+          title: "Handoff File"
+      type: "object"
+      required:
+        - "handoff_file"
+      title: "RestoreRequest"
+    SKALIntakeRequest:
+      properties:
+        payload_type:
+          type: "string"
+          title: "Payload Type"
+        payload_data:
+          additionalProperties: true
+          type: "object"
+          title: "Payload Data"
+      type: "object"
+      required:
+        - "payload_type"
+        - "payload_data"
+      title: "SKALIntakeRequest"
+      description: "Request model for SAGE-SKAL deterministic intake."
+    TaskRequest:
+      properties:
+        task:
+          type: "string"
+          title: "Task"
+      type: "object"
+      required:
+        - "task"
+      title: "TaskRequest"
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+              -
+                type: "string"
+              -
+                type: "integer"
+          type: "array"
+          title: "Location"
+        msg:
+          type: "string"
+          title: "Message"
+        type:
+          type: "string"
+          title: "Error Type"
+        input:
+          title: "Input"
+        ctx:
+          type: "object"
+          title: "Context"
+      type: "object"
+      required:
+        - "loc"
+        - "msg"
+        - "type"
+      title: "ValidationError"
+    ValidationRequest:
+      properties:
+        memory_id:
+          type: "string"
+          title: "Memory Id"
+      type: "object"
+      required:
+        - "memory_id"
+      title: "ValidationRequest"

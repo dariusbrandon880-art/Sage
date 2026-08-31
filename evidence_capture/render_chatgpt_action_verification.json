@@ -1,0 +1,38 @@
+{
+  "receipt_id": "RECEIPT-RENDER-ACTION-574A2553",
+  "timestamp": 1788198765.0418494,
+  "target_url": "https://sage-runtime.onrender.com",
+  "is_live_public_https": true,
+  "verification_passed": false,
+  "endpoint_results": {
+    "health": {
+      "status_code": 200,
+      "response": {
+        "status": "healthy",
+        "surface": "sage-observatory",
+        "runtime": "active"
+      },
+      "passed": true
+    },
+    "openapi": {
+      "status_code": 200,
+      "is_valid_json": true,
+      "passed": true
+    },
+    "status": {
+      "status_code": 404,
+      "response": "{\"detail\":\"Not Found\"}",
+      "passed": false
+    },
+    "ai_query_chatgpt": {
+      "status_code": 404,
+      "response_summary": "{\"detail\":\"Not Found\"}",
+      "passed": false
+    }
+  },
+  "deploy_services": {
+    "sage-runtime": "Deployed (Oregon)",
+    "Sage-1": "Deployed (Virginia)"
+  },
+  "action_configuration_status": "UNBRIDGED_HOST_SESSION"
+}

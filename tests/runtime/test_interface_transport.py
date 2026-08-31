@@ -90,3 +90,20 @@ def test_authorized_command_is_only_returned_by_explicit_callback():
     )
     assert adapter.authorize_command("session-1", "advance") == "[AUTHORIZED] advance"
     assert seen == [("session-1", "advance")]
+
+
+def test_chatgpt_client_create_interface_transport():
+    from sage.integration import ChatGPTClient
+
+    view = RuntimeView()
+    view.state = type("State", (), {"session_id": "session-1"})()
+    client = ChatGPTClient(view)
+
+    adapter = client.create_interface_transport("session-1")
+    assert isinstance(adapter, InterfaceTransportAdapter)
+
+    observation = InterfaceObservation("session-1", "dom-evt-1", 0, "test telemetry", True)
+    projection = adapter.observe(observation)
+    assert projection.session_id == "session-1"
+    assert projection.station_identity == "[SAGE::C2::CHATGPT]"
+    assert projection.immersion["flight_id"] == "C2:session-1"

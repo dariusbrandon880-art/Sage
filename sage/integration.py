@@ -56,6 +56,21 @@ class ChatGPTClient(BaseAIClient):
         super().__init__("ChatGPT", runtime)
         self.c2_provider = c2_provider
 
+    def create_interface_transport(self, session_id: str, command_authorizer: Any = None):
+        """Construct an InterfaceTransportAdapter bound to this ChatGPT client and runtime."""
+        from sage.runtime.interface_transport import InterfaceTransportAdapter
+        from sage.c2.immersion_rehydration import build_chatgpt_immersion_state
+
+        def _immersion_projector(s_id: str):
+            c2_context = self._rehydrate_c2_context(s_id)
+            return build_chatgpt_immersion_state(self.runtime, session_id=s_id, c2_context=c2_context)
+
+        return InterfaceTransportAdapter(
+            self.runtime,
+            immersion_projector=_immersion_projector,
+            command_authorizer=command_authorizer,
+        )
+
     def _rehydrate_c2_context(self, session_id: str) -> dict[str, Any]:
         if self.c2_provider and callable(self.c2_provider):
             context = self.c2_provider()
