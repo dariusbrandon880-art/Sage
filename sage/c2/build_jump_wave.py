@@ -40,13 +40,18 @@ class FlightMissionSpec(BaseModel):
     test_references: List[str] = Field(default_factory=list)
 
 
-CANONICAL_BIG_JUMP_MISSIONS: List[FlightMissionSpec] = [
-    FlightMissionSpec(flight_id="FLIGHT-F1-RESEARCH", frontier_name="Research & Intelligence Frontier", target_path="sage/c2/frontier_intelligence_bridge.py", collision_zone="sage/c2/frontier_intelligence/", evidence_ref="evidence_capture/f1_research_evidence.json", pr_or_change="F1 Autonomous Research", test_references=["tests/c2/test_frontier_admission.py"]),
-    FlightMissionSpec(flight_id="FLIGHT-F2-CONTINUITY", frontier_name="Continuity & Failure Memory Frontier", target_path="sage/capability_registry.py", collision_zone="sage/capability_registry.py", evidence_ref="evidence_capture/f2_continuity_evidence.json", pr_or_change="F2 Continuity Ledger", test_references=["tests/test_capability_registry.py", "tests/test_capability_lineage.py"]),
-    FlightMissionSpec(flight_id="FLIGHT-F3-EXECUTION", frontier_name="Execution & Substrate Frontier", target_path="sage/runtime/engine.py", collision_zone="sage/runtime/", evidence_ref="evidence_capture/f3_execution_evidence.json", pr_or_change="F3 Runtime Acceleration", test_references=["tests/test_system_frame.py"]),
-    FlightMissionSpec(flight_id="FLIGHT-F4-GUARD", frontier_name="Governance & Architecture Guard Frontier", target_path="sage/c2/chatgpt_c2_contract.py", collision_zone="sage/c2/contract/", evidence_ref="evidence_capture/f4_guard_evidence.json", pr_or_change="F4 Governance Sentinel", test_references=["tests/c2/test_chatgpt_c2_exact_order_anti_drift.py"]),
-    FlightMissionSpec(flight_id="FLIGHT-F5-WAREHOUSE", frontier_name="Capability Warehouse & Reconvergence Frontier", target_path="sage/c2/reconvergence_synthesizer.py", collision_zone="sage/c2/reconvergence/", evidence_ref="evidence_capture/f5_warehouse_evidence.json", pr_or_change="F5 Reconvergence Warehouse", test_references=["tests/c2/test_reconvergence_synthesizer.py"]),
-]
+def create_default_wave_missions() -> List[FlightMissionSpec]:
+    """Return caller-requested default 5-flight mission specifications for reusable slots F1..F5."""
+    return [
+        FlightMissionSpec(flight_id="FLIGHT-F1-RESEARCH", frontier_name="Research & Intelligence Frontier", target_path="sage/c2/frontier_intelligence_bridge.py", collision_zone="sage/c2/frontier_intelligence/", evidence_ref="evidence_capture/f1_research_evidence.json", pr_or_change="F1 Autonomous Research", test_references=["tests/c2/test_frontier_admission.py"]),
+        FlightMissionSpec(flight_id="FLIGHT-F2-CONTINUITY", frontier_name="Continuity & Failure Memory Frontier", target_path="sage/capability_registry.py", collision_zone="sage/capability_registry.py", evidence_ref="evidence_capture/f2_continuity_evidence.json", pr_or_change="F2 Continuity Ledger", test_references=["tests/test_capability_registry.py", "tests/test_capability_lineage.py"]),
+        FlightMissionSpec(flight_id="FLIGHT-F3-EXECUTION", frontier_name="Execution & Substrate Frontier", target_path="sage/runtime/engine.py", collision_zone="sage/runtime/", evidence_ref="evidence_capture/f3_execution_evidence.json", pr_or_change="F3 Runtime Acceleration", test_references=["tests/test_system_frame.py"]),
+        FlightMissionSpec(flight_id="FLIGHT-F4-GUARD", frontier_name="Governance & Architecture Guard Frontier", target_path="sage/c2/chatgpt_c2_contract.py", collision_zone="sage/c2/contract/", evidence_ref="evidence_capture/f4_guard_evidence.json", pr_or_change="F4 Governance Sentinel", test_references=["tests/c2/test_chatgpt_c2_exact_order_anti_drift.py"]),
+        FlightMissionSpec(flight_id="FLIGHT-F5-WAREHOUSE", frontier_name="Capability Warehouse & Reconvergence Frontier", target_path="sage/c2/reconvergence_synthesizer.py", collision_zone="sage/c2/reconvergence/", evidence_ref="evidence_capture/f5_warehouse_evidence.json", pr_or_change="F5 Reconvergence Warehouse", test_references=["tests/c2/test_reconvergence_synthesizer.py"]),
+    ]
+
+
+CANONICAL_BIG_JUMP_MISSIONS: List[FlightMissionSpec] = create_default_wave_missions()
 
 
 class BuildJumpWaveEngine:
@@ -60,7 +65,7 @@ class BuildJumpWaveEngine:
         self.admission_engine = FrontierAdmissionEngine()
         self.lock_manager = FlightCollisionLockManager()
         self.max_workers = max(1, min(max_workers, 5))
-        self.target_head_sha = target_head_sha or os.getenv("SAGE_TARGET_HEAD_SHA") or TARGET_RECONCILIATION_HEAD
+        self.target_head_sha = target_head_sha or os.getenv("SAGE_TARGET_HEAD_SHA")
         self._lock_manager_guard = threading.Lock()
 
     def get_current_head_sha(self) -> str:
@@ -140,12 +145,25 @@ class BuildJumpWaveEngine:
                 with self._lock_manager_guard:
                     self.lock_manager.release_lock(wave_id, spec.flight_id)
 
-    def execute_wave(self, wave_id: Optional[str] = None, missions: Optional[List[FlightMissionSpec]] = None) -> ReconvergenceEvidencePackage:
+    def execute_wave(
+        self,
+        wave_id: Optional[str] = None,
+        missions: Optional[List[FlightMissionSpec]] = None,
+        allow_default_missions: bool = True,
+    ) -> ReconvergenceEvidencePackage:
         head_sha = self.get_current_head_sha()
         w_id = wave_id or f"wave-big-jump-{int(time.time())}"
-        active_missions = missions or CANONICAL_BIG_JUMP_MISSIONS
+
+        if missions is None:
+            if not allow_default_missions:
+                raise ValueError("Big Jump Wave requires explicit flight missions specification or explicit default permission.")
+            active_missions = create_default_wave_missions()
+        else:
+            active_missions = missions
+
         if len(active_missions) != 5:
             raise ValueError(f"Big Jump Wave requires exactly 5 flight missions, got {len(active_missions)}")
+
         summaries: dict[str, FlightExecutionSummary] = {}
         with ThreadPoolExecutor(max_workers=self.max_workers, thread_name_prefix="sage-flight") as executor:
             futures = {executor.submit(self._run_flight, spec, w_id, head_sha): spec for spec in active_missions}

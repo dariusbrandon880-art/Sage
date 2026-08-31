@@ -6,7 +6,7 @@ import threading
 from pathlib import Path
 import pytest
 
-from sage.c2.build_jump_wave import BuildJumpWaveEngine, FlightMissionSpec
+from sage.c2.build_jump_wave import BuildJumpWaveEngine, FlightMissionSpec, create_default_wave_missions
 from sage.c2.reconvergence_synthesizer import FlightExecutionSummary, LifecycleMilestoneRecord, LifecycleStage
 
 
@@ -44,6 +44,11 @@ def test_build_jump_wave_execution_full(build_jump_engine):
         assert len(summary.exact_head) == 40
         assert summary.completed_all_stages() is True
         assert summary.blocker is None
+
+
+def test_build_jump_wave_fail_closed_without_explicit_missions(build_jump_engine):
+    with pytest.raises(ValueError, match="requires explicit flight missions specification"):
+        build_jump_engine.execute_wave(allow_default_missions=False)
 
 
 def test_build_jump_wave_runs_independent_flights_concurrently(build_jump_engine, monkeypatch):
