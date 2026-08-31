@@ -9,8 +9,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 
-GOOGLE_AGENT_NAMEPLATE = "[SAGE::C2::GOOGLE]"
-JULES_AGENT_NAMEPLATE = "[SAGE::C2::JULES]"
+GOOGLE_AGENT_NAMEPLATE = "[SAGE::INTEL::GEMINI]"
+JULES_AGENT_NAMEPLATE = "[SAGE::ENGINEER::JULES]"
 CHATGPT_AGENT_NAMEPLATE = "[SAGE::C2::CHATGPT]"
 
 
@@ -29,7 +29,7 @@ class AgentBoundaryIdentity:
 
 
 def build_google_nameplate(*, session_id: str) -> AgentBoundaryIdentity:
-    """Generate Google's canonical boundary nameplate for one runtime session.
+    """Generate Google's Gemini boundary nameplate for one runtime session.
 
     ``session_id`` must be supplied by the governed runtime. A browser, prompt,
     or caller cannot manufacture a session identity through this function.
@@ -40,7 +40,7 @@ def build_google_nameplate(*, session_id: str) -> AgentBoundaryIdentity:
     if normalized.startswith("FLIGHT_"):
         raise ValueError("Synthetic flight identity cannot bind Google nameplate")
     return AgentBoundaryIdentity(
-        agent="GOOGLE",
+        agent="GEMINI",
         session_id=normalized,
         nameplate=GOOGLE_AGENT_NAMEPLATE,
     )
