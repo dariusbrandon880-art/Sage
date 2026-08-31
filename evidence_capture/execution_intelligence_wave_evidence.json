@@ -1,0 +1,15 @@
+{
+  "receipt_id": "rec_ei_afa8c5b204b2",
+  "wave_id": "wave_execution_intelligence_v1",
+  "exact_git_head": "515548a0579c897f4b8ae3a6d737f9e241878a84",
+  "total_flights": 5,
+  "concurrent_workers_used": 4,
+  "max_observed_concurrency": 4,
+  "queue_wait_time_ms": 0.0,
+  "lock_contention_rate": 0.05,
+  "admission_pass_rate": 1.0,
+  "velocity_flights_per_sec": 41282.51968503937,
+  "rolls_royce_quality_passed": true,
+  "timestamp": 1788143829.1865687,
+  "receipt_hash": "fadf5b8236b73c395da2227fe4739e77a6947a62b44e68c2b9df0f74a358c704"
+}

@@ -3,6 +3,8 @@
 import json
 import re
 import subprocess
+import threading
+import time
 from pathlib import Path
 
 import pytest
@@ -32,34 +34,19 @@ def test_session_registration_and_lookup(velocity_engine):
 
 
 def test_anti_collision_lock_acquisition_and_release(velocity_engine):
-    lock_1 = velocity_engine.acquire_flight_lock(
-        session_id="session-alpha",
-        flight_id="F1",
-        target_files=["sage/c2/workflow_velocity.py"],
-        target_namespaces=["sage.c2.velocity"],
-    )
+    lock_1 = velocity_engine.acquire_flight_lock("session-alpha", "F1", ["sage/c2/workflow_velocity.py"], ["sage.c2.velocity"])
     assert lock_1.acquired is True
-    lock_2 = velocity_engine.acquire_flight_lock(
-        session_id="session-beta",
-        flight_id="F2",
-        target_files=["sage/c2/workflow_velocity.py"],
-        target_namespaces=["sage.c2.velocity"],
-    )
+    lock_2 = velocity_engine.acquire_flight_lock("session-beta", "F2", ["sage/c2/workflow_velocity.py"], ["sage.c2.velocity"])
     assert lock_2.acquired is False
     assert lock_2.conflicting_session_id == "session-alpha"
     assert lock_2.conflicting_flight_id == "F1"
     assert velocity_engine.release_flight_lock("session-alpha", "F1") is True
-    lock_3 = velocity_engine.acquire_flight_lock(
-        session_id="session-beta",
-        flight_id="F2",
-        target_files=["sage/c2/workflow_velocity.py"],
-        target_namespaces=["sage.c2.velocity"],
-    )
+    lock_3 = velocity_engine.acquire_flight_lock("session-beta", "F2", ["sage/c2/workflow_velocity.py"], ["sage.c2.velocity"])
     assert lock_3.acquired is True
 
 
-def test_multi_session_velocity_wave_execution(velocity_engine, valid_git_head):
-    flight_payloads = [
+def _flight_payloads():
+    return [
         {
             "flight_id": f"F{i}",
             "target": f"Frontier Path {i}",
@@ -71,12 +58,10 @@ def test_multi_session_velocity_wave_execution(velocity_engine, valid_git_head):
         }
         for i in range(1, 6)
     ]
-    receipt = velocity_engine.execute_velocity_wave(
-        wave_id="test_wave_100",
-        session_id="jules-session-1",
-        flight_payloads=flight_payloads,
-        exact_git_head=valid_git_head,
-    )
+
+
+def test_multi_session_velocity_wave_execution(velocity_engine, valid_git_head):
+    receipt = velocity_engine.execute_velocity_wave("test_wave_100", "jules-session-1", _flight_payloads(), valid_git_head)
     assert receipt.wave_id == "test_wave_100"
     assert receipt.exact_git_head == valid_git_head
     assert receipt.total_flights == 5
@@ -88,23 +73,44 @@ def test_multi_session_velocity_wave_execution(velocity_engine, valid_git_head):
     assert len(receipt.receipt_hash) == 64
 
 
+def test_velocity_wave_has_real_parallel_overlap(velocity_engine, valid_git_head):
+    state = {"active": 0, "max_active": 0}
+    state_lock = threading.Lock()
+    start_gate = threading.Barrier(5)
+
+    def make_executor():
+        def execute():
+            with state_lock:
+                state["active"] += 1
+                state["max_active"] = max(state["max_active"], state["active"])
+            try:
+                start_gate.wait(timeout=2)
+                time.sleep(0.02)
+                return {"execution_result": "PASS", "tests_passed": 1}
+            finally:
+                with state_lock:
+                    state["active"] -= 1
+        return execute
+
+    payloads = _flight_payloads()
+    for payload in payloads:
+        payload["executor"] = make_executor()
+
+    receipt = velocity_engine.execute_velocity_wave("parallel_wave_001", "jules-parallel", payloads, valid_git_head)
+    assert receipt.rolls_royce_quality_passed is True
+    assert receipt.concurrency_observed is True
+    assert receipt.max_concurrent_flights == 5
+    assert state["max_active"] >= 2
+    assert state["active"] == 0
+
+
 def test_invalid_sha_rejection(velocity_engine):
     with pytest.raises(ValueError, match="Invalid exact git HEAD commit SHA"):
-        velocity_engine.execute_velocity_wave(
-            wave_id="invalid_sha_wave",
-            session_id="jules-session-1",
-            flight_payloads=[{"flight_id": "F1", "target_files": [], "target_namespaces": []}],
-            exact_git_head="shortsha123",
-        )
+        velocity_engine.execute_velocity_wave("invalid_sha_wave", "jules-session-1", [{"flight_id": "F1", "target_files": [], "target_namespaces": []}], "shortsha123")
 
 
 def test_lock_collision_fails_closed(velocity_engine, valid_git_head):
-    velocity_engine.acquire_flight_lock(
-        session_id="external_blocking_session",
-        flight_id="F_BLOCK",
-        target_files=["sage/c2/workflow_velocity.py"],
-        target_namespaces=["sage.c2.velocity"],
-    )
+    velocity_engine.acquire_flight_lock("external_blocking_session", "F_BLOCK", ["sage/c2/workflow_velocity.py"], ["sage.c2.velocity"])
     flight_payloads = [
         {
             "flight_id": "F1",
@@ -112,17 +118,9 @@ def test_lock_collision_fails_closed(velocity_engine, valid_git_head):
             "target_files": ["sage/c2/workflow_velocity.py"],
             "target_namespaces": ["sage.c2.velocity"],
         },
-        *[
-            {"flight_id": f"F{i}", "target_files": [f"file{i}.py"], "target_namespaces": [f"ns{i}"]}
-            for i in range(2, 6)
-        ],
+        *[{"flight_id": f"F{i}", "target_files": [f"file{i}.py"], "target_namespaces": [f"ns{i}"]} for i in range(2, 6)],
     ]
-    receipt = velocity_engine.execute_velocity_wave(
-        wave_id="collision_wave_001",
-        session_id="jules-blocked-session",
-        flight_payloads=flight_payloads,
-        exact_git_head=valid_git_head,
-    )
+    receipt = velocity_engine.execute_velocity_wave("collision_wave_001", "jules-blocked-session", flight_payloads, valid_git_head)
     assert receipt.successful_flights < 5
     assert receipt.rolls_royce_quality_passed is False
     assert receipt.reconvergence_verdict == "FAIL_CLOSED"
@@ -132,15 +130,11 @@ def test_persisted_evidence_file_is_historical_not_live_gate():
     evidence_path = Path("evidence_capture/multi_session_velocity_wave_evidence.json")
     assert evidence_path.exists(), "Historical velocity evidence fixture must exist"
     data = json.loads(evidence_path.read_text(encoding="utf-8"))
-    current_head = subprocess.run(
-        ["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True
-    ).stdout.strip()
-
+    current_head = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True).stdout.strip()
     assert re.fullmatch(r"[0-9a-fA-F]{40}", data["exact_git_head"])
     assert re.fullmatch(r"[0-9a-fA-F]{40}", current_head)
     assert data["wave_id"] == "multi_session_velocity_wave_001"
     assert data["total_flights"] == 5
     assert data["successful_flights"] == 5
     assert len(data["advancement_matrix_20_cells"]) == 20
-    # A checked-in historical receipt can never be authoritative for a later HEAD.
     assert data["exact_git_head"] != current_head or data.get("gate_authority") != "live"
