@@ -22,6 +22,13 @@ jobs:
         uses: actions/checkout@v5
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with: {python-version: '3.12'}
+      - name: Install repository
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e '.[dev]'
       - name: Validate and publish current wave plan
         id: plan
         run: |
