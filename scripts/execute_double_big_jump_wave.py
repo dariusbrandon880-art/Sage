@@ -74,7 +74,8 @@ def main() -> int:
     def run_wave(wave: DoubleBigJumpWaveSpec):
         actual_head = get_git_head_sha()
         head = require_current_head(actual_head, expected_head)
-        return wave.wave_id, engine.execute_wave(wave_id=wave.wave_id, missions=list(wave.missions)), head
+        package = engine.execute_wave(wave_id=wave.wave_id, missions=list(wave.missions))
+        return wave.wave_id, package, head
 
     with ThreadPoolExecutor(max_workers=2, thread_name_prefix="double-big-jump") as executor:
         futures = [executor.submit(run_wave, wave) for wave in waves]
@@ -87,13 +88,14 @@ def main() -> int:
                 print(f"[!] wave execution failed closed: {type(exc).__name__}: {exc}")
 
     wave_pass = {
-        wave_id: bool(package.reconvergence_passed)
+        wave_id: package.reconvergence_verdict.upper() == "PASS"
         for wave_id, (package, _) in results.items()
     }
-    combined_pass = reconverge_double_big_jump(
-        wave_results=wave_pass,
-        waves=waves,
-    ) if len(results) == 2 else False
+    combined_pass = (
+        reconverge_double_big_jump(wave_results=wave_pass, waves=waves)
+        if len(results) == 2
+        else False
+    )
 
     receipt = {
         "execution": "double_big_jump",
@@ -101,9 +103,11 @@ def main() -> int:
         "waves": {
             wave_id: {
                 "head": head,
-                "reconvergence_passed": wave_pass.get(wave_id, False),
+                "reconvergence_verdict": package.reconvergence_verdict,
+                "successful_flights": package.successful_flights,
+                "total_flights": package.total_flights,
             }
-            for wave_id, (_, head) in results.items()
+            for wave_id, (package, head) in results.items()
         },
         "elapsed_seconds": round(time.time() - start, 6),
         "combined_verdict": "PASS" if combined_pass else "FAIL_CLOSED",
