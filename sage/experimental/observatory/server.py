@@ -27,7 +27,7 @@ async def api_key_auth_middleware(request: Request, call_next):
     require_auth = os.getenv("SAGE_REQUIRE_AUTH", "false").lower() == "true"
     bypass_paths = ["/", "/health", "/docs", "/redoc", "/openapi.json", "/api/state", "/api/hud"]
 
-    if require_auth and request.url.path not in bypass_paths and not request.url.path.startswith("/runtime/"):
+    if require_auth and request.url.path not in bypass_paths:
         x_api_key = request.headers.get("x-api-key")
         if not x_api_key or not lifecycle_mgr.authorize(x_api_key):
             return JSONResponse(

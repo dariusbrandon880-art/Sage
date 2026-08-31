@@ -50,6 +50,8 @@ def test_observatory_server_auth_middleware_bypass_rules(monkeypatch):
     assert client.get('/api/state').status_code == 200
     assert client.get('/openapi.json').status_code == 200
 
-    # Protected paths should require x-api-key
+    # Protected paths (both root and mounted under /runtime/) must enforce x-api-key
     assert client.get('/status').status_code == 401
+    assert client.get('/runtime/status').status_code == 401
     assert client.get('/status', headers={'x-api-key': 'sage-default-key-2026'}).status_code == 200
+    assert client.get('/runtime/status', headers={'x-api-key': 'sage-default-key-2026'}).status_code == 200
