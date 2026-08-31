@@ -24,35 +24,11 @@ Reconcile repository truth, main/side goals, PRs, CI, active flights, evidence, 
 
 ## Flight Board
 
-F1:
-Goal: Repository truth, architecture, runtime continuity, identity
-State: ACTIVE
-Blocker: None assumed; verify live state
-Next move: Reconcile and remove highest-value blocker
+F1-F5 are reusable execution slots. Their mission changes from wave to wave; no flight has a permanent functional department.
 
-F2:
-Goal: External intelligence / Super Search
-State: ACTIVE
-Blocker: Research must remain distinct from validated truth
-Next move: Research only where it materially changes the mission
+For each wave, C2 assigns five independent missions to F1-F5. Any slot may perform research, recon, implementation, repair, testing, governance work, architecture work, evidence capture, or another authorized mission.
 
-F3:
-Goal: Governed implementation
-State: ACTIVE
-Blocker: Depends on verified mission boundary and collision-free ownership
-Next move: Execute highest-leverage authorized build
-
-F4:
-Goal: Verification and empirical acceptance
-State: ACTIVE
-Blocker: Customer/operator surface cannot be inferred from backend tests
-Next move: Capture deterministic and empirical evidence separately
-
-F5:
-Goal: Capability warehouse / reusable learning
-State: ACTIVE
-Blocker: Qualification requires evidence
-Next move: Promote only validated reusable capability and negative knowledge
+Each assigned flight records its current mission, target boundary, dependencies, collision scope, evidence requirements, and completion criteria. The slot identity remains stable only for addressing and reconciliation.
 
 ## Decision Engine
 
@@ -79,6 +55,7 @@ SENSE -> VERIFY -> ORIENT -> EXECUTE -> OBSERVE -> VALIDATE -> COMPOUND
 - Preserve identity and provenance for every relayed surface.
 - Do not let the latest PR or isolated defect replace the main mission.
 - Do not claim a customer-facing surface is operational without empirical observation.
+- Never interpret F1-F5 as permanent functional roles; flight numbers identify reusable execution slots.
 
 ## Super Search Rule
 
