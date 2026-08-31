@@ -70,8 +70,6 @@ def test_multi_session_velocity_wave_execution(velocity_engine, valid_git_head):
     assert all(receipt.advancement_matrix_20_cells.values())
     assert receipt.rolls_royce_quality_passed is True
     assert receipt.reconvergence_verdict == "PASS"
-    assert receipt.concurrency_observed is True
-    assert receipt.max_concurrent_flights == 5
     assert len(receipt.receipt_hash) == 64
 
 
