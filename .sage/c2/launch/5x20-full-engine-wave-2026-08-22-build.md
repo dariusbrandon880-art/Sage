@@ -8,7 +8,9 @@ This manifest is a governed build target, not a success claim. Runtime completio
 
 ## Five selected repository frontiers
 
-### Flight 1 — Google / Continuity
+The flight numbers below are reusable execution identities only. These are the missions selected for this particular wave; they do not define permanent roles for F1-F5.
+
+### Flight F1 — Current Wave Mission
 Primary frontier:
 - `scripts/sync_to_drive.py`
 - `.sage/GOOGLE_INTEGRATION_GUIDE.md`
@@ -16,14 +18,14 @@ Primary frontier:
 
 Purpose: advance persistent continuity / Google projection using the existing repository implementation and evidence boundaries.
 
-### Flight 2 — Sports / Scientific Flight
+### Flight F2 — Current Wave Mission
 Primary frontier:
 - `scripts/run_sports_rce_flight.py`
 - `evidence_capture/sports_longitudinal_flight_001.json`
 
 Purpose: advance the existing sports scientific substrate while preserving OOS, leakage, robustness, and evidence-integrity constraints.
 
-### Flight 3 — Cognitive / SAGI
+### Flight F3 — Current Wave Mission
 Primary frontier:
 - `sage/experimental/sagi_flight_wave.py`
 - `sage/experimental/sagi_discovery_flight_selector.py`
@@ -31,7 +33,7 @@ Primary frontier:
 
 Purpose: advance governed discovery-to-flight selection and cognitive compounding without granting experimental code authority it does not have.
 
-### Flight 4 — Longitudinal Evidence / Recovery
+### Flight F4 — Current Wave Mission
 Primary frontier:
 - `scripts/run_longitudinal_flight.py`
 - `sage/experimental/flight_record.py`
@@ -39,7 +41,7 @@ Primary frontier:
 
 Purpose: strengthen observable longitudinal flight execution, recovery, provenance, and evidence reuse.
 
-### Flight 5 — Control Tower / Progression
+### Flight F5 — Current Wave Mission
 Primary frontier:
 - `sage/continuity/CONTROL_TOWER_EXECUTION.md`
 - `docs/SAGE-C2-PERSISTENT-OPERATING-CONTRACT.md`
@@ -80,3 +82,7 @@ The four gates are scheduling units only. They never remove stages from the full
 ## STOP boundary
 
 Do not stamp PASS or capability advancement from this manifest alone. Completion requires all five flight results, their evidence artifacts, and independent C2 reconvergence verification.
+
+## Reassignment rule
+
+The mission assignments in this historical manifest are specific to this wave. A later Big Jump Wave may assign completely different missions to F1-F5. The flight identifiers must never be interpreted as permanent functional labels.
