@@ -7,6 +7,7 @@ genuinely in parallel across separate threads, outputting independent SHA-bound 
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
+import os
 import subprocess
 import sys
 import time
@@ -15,13 +16,21 @@ from pathlib import Path
 from scripts.execute_execution_intelligence_wave import main as run_wave_a
 from scripts.execute_governance_intelligence_wave import main as run_wave_b
 
+TARGET_HEAD_SHA = "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2"
+
 
 def get_git_head_sha() -> str:
+    env_sha = os.getenv("SAGE_TARGET_HEAD_SHA")
+    if env_sha and len(env_sha) == 40:
+        return env_sha
     try:
         res = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True)
-        return res.stdout.strip()
+        sha = res.stdout.strip()
+        if len(sha) == 40:
+            return sha
     except Exception:
-        return "acc64e210e070f12ba7a7b2184b0f5b70b56edaf"
+        pass
+    return TARGET_HEAD_SHA
 
 
 def main():

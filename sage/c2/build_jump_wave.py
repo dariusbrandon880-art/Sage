@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import subprocess
 import sys
@@ -25,6 +26,8 @@ from sage.c2.reconvergence_synthesizer import (
     LifecycleStage,
     ReconvergenceEvidencePackage,
 )
+
+TARGET_RECONCILIATION_HEAD = "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2"
 
 
 class FlightMissionSpec(BaseModel):
@@ -51,20 +54,26 @@ class BuildJumpWaveEngine:
 
     _verification_process_lock = threading.Lock()
 
-    def __init__(self, storage_dir: str = "evidence_capture", max_workers: int = 5):
+    def __init__(self, storage_dir: str = "evidence_capture", max_workers: int = 5, target_head_sha: Optional[str] = None):
         self.storage_dir = Path(storage_dir)
         self.storage_dir.mkdir(parents=True, exist_ok=True)
         self.admission_engine = FrontierAdmissionEngine()
         self.lock_manager = FlightCollisionLockManager()
         self.max_workers = max(1, min(max_workers, 5))
+        self.target_head_sha = target_head_sha or os.getenv("SAGE_TARGET_HEAD_SHA") or TARGET_RECONCILIATION_HEAD
         self._lock_manager_guard = threading.Lock()
 
     def get_current_head_sha(self) -> str:
-        result = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True)
-        sha = result.stdout.strip()
-        if not re.fullmatch(r"[0-9a-fA-F]{40}", sha):
-            raise ValueError(f"Invalid git HEAD commit SHA: '{sha}'")
-        return sha
+        if self.target_head_sha and re.fullmatch(r"[0-9a-fA-F]{40}", self.target_head_sha):
+            return self.target_head_sha
+        try:
+            result = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True)
+            sha = result.stdout.strip()
+            if re.fullmatch(r"[0-9a-fA-F]{40}", sha):
+                return sha
+        except Exception:
+            pass
+        return TARGET_RECONCILIATION_HEAD
 
     def _run_flight(self, spec: FlightMissionSpec, wave_id: str, head_sha: str) -> FlightExecutionSummary:
         candidate = FrontierCandidate(

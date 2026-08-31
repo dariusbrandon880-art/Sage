@@ -1,12 +1,12 @@
 {
-  "receipt_id": "rec_gi_38613c20ea71",
+  "receipt_id": "rec_gi_6edb1a70d805",
   "wave_id": "wave_governance_intelligence_v1",
-  "exact_git_head": "acc64e210e070f12ba7a7b2184b0f5b70b56edaf",
+  "exact_git_head": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
   "total_attack_vectors_tested": 5,
   "attack_vectors_neutralized": 5,
   "anti_drift_reconciled": true,
   "identity_provenance_verified": true,
   "fail_closed_verdict": "PASS",
-  "timestamp": 1788210622.1805828,
-  "receipt_hash": "6ee28bc28ab91866ef824d1345949f2801143e1db556da588c86bb887e907cfa"
+  "timestamp": 1788212278.1664345,
+  "receipt_hash": "4b85e65a911da444f52d5ca023d1f75e1cbbd12625d371011c06546616f1717e"
 }
