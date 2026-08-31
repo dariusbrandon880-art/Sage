@@ -3,7 +3,7 @@
     "flight_type": "REAL-WORLD SPORTS OBSERVATION FLIGHT",
     "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
     "cycle_id": "cycle_real_mlb_20260831",
-    "execution_timestamp_utc": "2026-08-31T19:01:25.012326+00:00",
+    "execution_timestamp_utc": "2026-08-31T21:26:36.309298+00:00",
     "governance": "PROTECTED SPORTS/RCE RESEARCH LANE ONLY"
   },
   "flight_record": {
@@ -17,7 +17,7 @@
         "home_team": "Atlanta Braves",
         "away_team": "San Francisco Giants",
         "event_start_time_utc": "2026-08-31T22:05:00Z",
-        "observation_timestamp_utc": "2026-08-31T19:01:25.012326+00:00",
+        "observation_timestamp_utc": "2026-08-31T21:26:36.309298+00:00",
         "source_name": "Official MLB Stats API (statsapi.mlb.com)",
         "source_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1",
         "market_name": "Moneyline (Public Market)",
@@ -31,26 +31,26 @@
       "odds_at_lock": "ODDS_UNAVAILABLE",
       "implied_probability": 0.5,
       "model_predicted_probability": 0.55,
-      "lock_timestamp_utc": "2026-08-31T19:01:25.012326+00:00",
+      "lock_timestamp_utc": "2026-08-31T21:26:36.309298+00:00",
       "model_state_rationale": "Model baseline rating favorability for home team (Atlanta Braves) under live public observation.",
       "is_parlay": false,
       "parlay_legs": [],
       "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "d8438792d15759f964d26674c771bb2e110270cffea1dffbc8984ec234d4a283"
+      "sha256_receipt_hash": "d9cf9e3240c085e248fdec3fb266324ee318ec2ea21b1740ad98f8495b715ff6"
     },
     "outcome_record": {
       "outcome_id": "out_pred_real_mlb_824911",
       "prediction_id": "pred_real_mlb_824911",
-      "prediction_hash": "d8438792d15759f964d26674c771bb2e110270cffea1dffbc8984ec234d4a283",
-      "verification_timestamp_utc": "2026-08-31T19:01:25.012997+00:00",
+      "prediction_hash": "d9cf9e3240c085e248fdec3fb266324ee318ec2ea21b1740ad98f8495b715ff6",
+      "verification_timestamp_utc": "2026-08-31T21:26:36.309587+00:00",
       "verification_source_name": "Official MLB Stats API (statsapi.mlb.com)",
       "verification_source_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1",
-      "actual_home_score": null,
-      "actual_away_score": null,
+      "actual_home_score": 0,
+      "actual_away_score": 0,
       "actual_result_text": "Detailed State: Pre-Game. Outcome pending game completion.",
       "outcome_status": "PENDING",
       "classification": "REAL-WORLD OUTCOME",
-      "outcome_receipt_hash": "94203a1d286223f031e76757aae02fbd7f7d7c865c2080fe60d2d6c71686f6f4"
+      "outcome_receipt_hash": "589e658209cd9f9fe27372df24c60e208695ff804ddd92e7a58a3327cba87e1e"
     },
     "score_record": null,
     "learning_record": null

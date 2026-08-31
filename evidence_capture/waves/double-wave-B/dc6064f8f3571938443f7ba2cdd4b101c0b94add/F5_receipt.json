@@ -1,0 +1,10 @@
+{
+  "blocker": null,
+  "executed_head": "dc6064f8f3571938443f7ba2cdd4b101c0b94add",
+  "flight_id": "F5",
+  "frontier_name": "B-5-evaluation",
+  "status": "PASS",
+  "target_path": "sage/experimental/sports_quant/evaluation.py",
+  "timestamp": 1788211507.5979855,
+  "wave_id": "double-wave-B"
+}

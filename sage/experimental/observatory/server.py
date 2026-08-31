@@ -6,18 +6,39 @@ The production service mounts the authenticated SAGE runtime under /runtime so t
 customer surface and execution API are served by the same process.
 """
 
-from fastapi import FastAPI, HTTPException
+import os
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 
+from sage.api import app as api_app, lifecycle_mgr
 from sage.experimental.observatory.adapter import SAGEObservatoryAdapter
 from sage.live_agent_hud import get_live_agent_hud
 
 app = FastAPI(
-    title="SAGE Observatory",
-    description="Customer-facing SAGE live command HUD and acceptance surface",
+    title="SAGE Observatory & Execution Runtime API",
+    description="Customer-facing SAGE live command HUD, acceptance surface, and REST API runtime gateway",
     version="1.2.0",
 )
 adapter = SAGEObservatoryAdapter()
+
+
+@app.middleware("http")
+async def api_key_auth_middleware(request: Request, call_next):
+    require_auth = os.getenv("SAGE_REQUIRE_AUTH", "false").lower() == "true"
+    bypass_paths = ["/", "/health", "/docs", "/redoc", "/openapi.json", "/api/state", "/api/hud"]
+
+    if require_auth and request.url.path not in bypass_paths:
+        x_api_key = request.headers.get("x-api-key")
+        if not x_api_key or not lifecycle_mgr.authorize(x_api_key):
+            return JSONResponse(
+                status_code=401, content={"detail": "Unauthorized: Invalid or missing API key."}
+            )
+
+    return await call_next(request)
+
+
+# Mount the authenticated SAGE API runtime under /runtime
+app.mount("/runtime", api_app)
 
 
 @app.get("/health")
@@ -71,3 +92,10 @@ async function sendChatGPTQuery(){
 load();setInterval(load,5000);
 </script></body></html>"""
     return HTMLResponse(content=html, status_code=200)
+
+
+# Delegate root API paths from api_app so endpoints like /status and /ai/query/chatgpt resolve directly at root
+existing_paths = {r.path for r in app.routes}
+for route in api_app.routes:
+    if route.path not in existing_paths and route.path not in ["/", "/health"]:
+        app.routes.append(route)
