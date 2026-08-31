@@ -1,15 +1,28 @@
 import pytest
 
-from sage.c2.agent_identity import GOOGLE_AGENT_NAMEPLATE, build_google_nameplate
+from sage.c2.agent_identity import (
+    CHATGPT_AGENT_NAMEPLATE,
+    GOOGLE_AGENT_NAMEPLATE,
+    JULES_AGENT_NAMEPLATE,
+    build_google_nameplate,
+)
 
 
 def test_google_nameplate_is_stable_and_session_bound() -> None:
     identity = build_google_nameplate(session_id="session-google-001")
 
-    assert identity.agent == "GOOGLE"
+    assert identity.agent == "GEMINI"
     assert identity.session_id == "session-google-001"
-    assert identity.nameplate == GOOGLE_AGENT_NAMEPLATE
+    assert identity.nameplate == GOOGLE_AGENT_NAMEPLATE == "[SAGE::INTEL::GEMINI]"
     assert identity.authority == "governed_runtime_session"
+
+
+def test_canonical_station_nameplates_are_not_c2_reassigned() -> None:
+    assert CHATGPT_AGENT_NAMEPLATE == "[SAGE::C2::CHATGPT]"
+    assert JULES_AGENT_NAMEPLATE == "[SAGE::ENGINEER::JULES]"
+    assert GOOGLE_AGENT_NAMEPLATE == "[SAGE::INTEL::GEMINI]"
+    assert JULES_AGENT_NAMEPLATE != "[SAGE::C2::JULES]"
+    assert GOOGLE_AGENT_NAMEPLATE != "[SAGE::C2::GOOGLE]"
 
 
 def test_google_nameplate_requires_runtime_session() -> None:
