@@ -13,7 +13,7 @@ def _print_c2_bootstrap(runtime):
     print("MISSION LOCK: SAGE Operational Convergence")
     print("REALITY LOCK: repository state and acceptance evidence required")
     print("STATE LOCK: canonical mission contract + active work reconciled")
-    print("FLIGHT BOARD: F1=FOUNDATION F2=INTELLIGENCE F3=EXECUTION F4=VERIFICATION F5=WAREHOUSE")
+    print("FLIGHT BOARD: F1-F5=REUSABLE MISSION SLOTS (ASSIGN PER WAVE)")
     print("EXECUTION LOOP: SENSE -> VERIFY -> ORIENT -> EXECUTE -> OBSERVE -> VALIDATE -> COMPOUND")
     print("ANTI-DRIFT: no invented state; no narration substituted for execution")
     print(render_chat_identity())
