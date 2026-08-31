@@ -1,5 +1,6 @@
+import pytest
+
 from sage.experimental.sports_quant import (
-    MarketSnapshot,
     PredictionRecord,
     calculate_clv,
     score_predictions,
@@ -18,7 +19,7 @@ def record(event_id: str, model: str, probability: float, market: float = 0.5) -
 
 
 def test_clv_is_market_relative_and_does_not_execute_wagering():
-    assert calculate_clv(0.62, 0.55) == 0.07
+    assert calculate_clv(0.62, 0.55) == pytest.approx(0.07)
     r = record("e1", "shadow", 0.62, 0.55)
     assert not r.wagering_executed
     assert r.verify_lock()
@@ -27,8 +28,8 @@ def test_clv_is_market_relative_and_does_not_execute_wagering():
 def test_score_predictions_reports_clv_and_market_edge():
     result = score_predictions([record("e1", "shadow", 0.62, 0.55)], {"e1": 1})
     assert result.sample_count == 1
-    assert result.clv_score == 0.07
-    assert result.mean_market_edge == 0.07
+    assert result.clv_score == pytest.approx(0.07)
+    assert result.mean_market_edge == pytest.approx(0.07)
 
 
 def test_candidate_is_blocked_below_minimum_oos_sample():
