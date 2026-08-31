@@ -15,6 +15,20 @@ def build_jump_engine(tmp_path):
     return BuildJumpWaveEngine(storage_dir=str(tmp_path))
 
 
+def _missions():
+    return [
+        FlightMissionSpec(
+            flight_id=f"F{i}",
+            frontier_name=f"Mission {i}",
+            target_path=f"target/mission_{i}.py",
+            collision_zone=f"target/mission_{i}/",
+            evidence_ref=f"evidence/mission_{i}.json",
+            pr_or_change=f"mission-{i}",
+        )
+        for i in range(1, 6)
+    ]
+
+
 def test_build_jump_wave_head_sha(build_jump_engine):
     sha = build_jump_engine.get_current_head_sha()
     assert len(sha) == 40
@@ -22,7 +36,7 @@ def test_build_jump_wave_head_sha(build_jump_engine):
 
 
 def test_build_jump_wave_execution_full(build_jump_engine):
-    pkg = build_jump_engine.execute_wave(wave_id="test-wave-unit")
+    pkg = build_jump_engine.execute_wave(wave_id="test-wave-unit", missions=_missions())
 
     assert pkg.wave_id == "test-wave-unit"
     assert pkg.total_flights == 5
@@ -74,7 +88,7 @@ def test_build_jump_wave_runs_independent_flights_concurrently(build_jump_engine
         )
 
     monkeypatch.setattr(build_jump_engine, "_run_flight", fake_run_flight)
-    package = build_jump_engine.execute_wave(wave_id="parallel-wave-test")
+    package = build_jump_engine.execute_wave(wave_id="parallel-wave-test", missions=_missions())
 
     assert package.reconvergence_verdict == "PASS"
     assert package.total_flights == 5
@@ -83,16 +97,7 @@ def test_build_jump_wave_runs_independent_flights_concurrently(build_jump_engine
 
 
 def test_build_jump_wave_invalid_mission_count(build_jump_engine):
-    invalid_missions = [
-        FlightMissionSpec(
-            flight_id="F1",
-            frontier_name="F1",
-            target_path="t1.py",
-            collision_zone="ns1",
-            evidence_ref="e1.json",
-            pr_or_change="PR1",
-        )
-    ]
+    invalid_missions = _missions()[:1]
     with pytest.raises(ValueError, match="Big Jump Wave requires exactly 5 flight missions"):
         build_jump_engine.execute_wave(missions=invalid_missions)
 
