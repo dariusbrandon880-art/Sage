@@ -2,73 +2,50 @@
 
 ## Purpose
 
-Define how SAGE organizes capability execution through the canonical **Big Jump Wave** while preserving:
-
-- Master Archive authority
-- authorization boundaries
-- evidence discipline
-- continuity
-- fail-closed execution
+Define how SAGE organizes capability execution through the canonical **Big Jump Wave** while preserving Master Archive authority, authorization boundaries, evidence discipline, continuity, and fail-closed execution.
 
 This document defines coordination architecture. It does not create active work items.
 
----
+## Critical Rule: Five Flights Have No Permanent Jobs
 
-# Critical Rule: No Pre-Labeled Flights
+F1, F2, F3, F4, and F5 are **reusable execution slots**.
 
-Flights are instantiated only after:
+They are not permanent departments, frontiers, lifecycle stages, or capabilities.
 
-1. repository/context recon
-2. evidence review
-3. smallest consequential frontier identification
-4. authorization
-5. build execution begins
+Before each wave, C2 performs repository/context recon, evidence review, frontier selection, and authorization. Only then are five current missions assigned to the five slots.
 
-Before airborne execution:
+On a later wave, the same five slots may receive completely different missions.
 
-- tasks are unknown
-- flight numbers are not assigned
-- capability claims are not created
-- campaign paths are possibilities, not active missions
-
-A campaign architecture is not a backlog.
-
----
-
-# Canonical C2 Operating Loop
+## Canonical C2 Operating Loop
 
 ```text
 SENSE
 RECON
 SUPER SEARCH
-BOUND
+BOUND THE CURRENT MISSION
 DECIDE
 AUTHORIZE
 BIG JUMP WAVE
-BUILD
+BUILD / REPAIR / RESEARCH / TEST AS ASSIGNED
 OBSERVE
 VERIFY
 RECONVERGE
 COMPOUND
 ```
 
-**Big Jump Wave is the normal SAGE execution workflow.** There is no Medium Flow operating mode.
+**Big Jump Wave is the normal SAGE execution workflow.**
 
----
-
-# C2 FIVE-FLIGHT MODEL (LOCKED)
+## C2 FIVE-FLIGHT MODEL
 
 ```text
                  C2 MISSION CONTROL
                          |
-        ┌────────┬────────┬────────┬────────┐
+        ┌────────┬────────┬────────┬────────┬────────┐
         ▼        ▼        ▼        ▼        ▼
-
-     FLIGHT 1  FLIGHT 2  FLIGHT 3  FLIGHT 4  FLIGHT 5
-
-     Own       Own       Own       Own       Own
-     Frontier  Frontier  Frontier  Frontier  Frontier
-
+       F1       F2       F3       F4       F5
+        |        |        |        |        |
+   Mission  Mission  Mission  Mission  Mission
+      A        B        C        D        E
         \        |        |        |        /
                  ▼
           C2 RECONVERGENCE
@@ -76,229 +53,156 @@ COMPOUND
           Promotion Gate
 ```
 
-A flight is **NOT** a staged pipeline:
-- NOT "Flight 1 = discovery stage"
-- NOT "Flight 2 = testing stage"
-- NOT "Flight 3 = build stage"
+The labels A-E are intentionally placeholders: the current mission is selected for each slot by C2 for that wave.
 
-A flight **IS**:
-- an independent capability attack vector
-- a bounded build mission
-- its own recon
-- its own tests
-- its own evidence
-- its own milestone reporting back to C2 reconvergence
+A flight is an independent capability execution vector with its own current objective, target boundary, tests, evidence, and milestone reporting.
 
-# Big Strike Wave Definition
+A flight may perform any authorized kind of work, including research, reconnaissance, implementation, repair, testing, governance/security hardening, architecture investigation, evidence work, integration, or capability construction.
 
-# Big Jump Wave Definition
+## Mission Assignment Contract
 
-Big Jump Wave is the canonical SAGE execution unit:
-> **One coordinated wave where multiple independent flights hit separate consequential frontiers and reconverge.**
-
-It does **not** mean five flights building one single thing.
-
-Example Big Jump Wave:
-- Flight 1 → intelligence/capability advancement
-- Flight 2 → product/runtime advancement
-- Flight 3 → engineering advancement
-- Flight 4 → governance/security advancement
-- Flight 5 → evidence/continuity advancement
-
-Each produces its own bounded delta, then C2 evaluates the combined strike.
-
----
-
-# Big Jump Wave Operating Doctrine
-
-Big Jump Wave is the **normal workflow**, not an escalation tier above Medium Flow.
-
-The canonical pattern is:
+Every Big Jump Wave assigns exactly five current missions:
 
 ```text
-MISSION INTAKE
-     ↓
-RECON + SUPER SEARCH
-     ↓
-FRONTIER IDENTIFICATION
-     ↓
-BOUND + AUTHORIZE
-     ↓
-BIG JUMP WAVE
-     ├── Flight 1
-     ├── Flight 2
-     ├── Flight 3
-     ├── Flight 4
-     └── Flight 5
-     ↓
-INDEPENDENT VERIFY
-     ↓
-C2 RECONVERGENCE
-     ↓
-EVIDENCE / RECEIPTS
-     ↓
-CAPABILITY COMPOUNDING
-     ↓
-NEXT BIG JUMP WAVE
+Flight: F1 | F2 | F3 | F4 | F5
+Mission:
+Target Boundary:
+Dependencies:
+Collision Scope:
+Authorization:
+Tests:
+Evidence:
+Completion Criteria:
 ```
 
-The number of concurrent flights may scale when explicitly authorized, but scaling never removes bounded scope, independent verification, or evidence requirements.
+The flight identifier is an address for the reusable execution slot. Mission meaning belongs only to the current assignment.
 
----
+## Safety Model
 
-# Campaign Model
+The flights are separate because their **current mission boundaries** are separately admitted and reconciled—not because each flight is permanently restricted to one kind of work.
 
-When authorized, C2 coordinates parallel capability work through bounded execution paths.
+Safety comes from explicit target boundaries, ownership fingerprints, collision admission, dependency checks, exact repository HEAD binding, independent verification, and evidence.
 
-Each active flight must have:
+## 5x4 Lifecycle Matrix
 
-- explicit objective
-- reused components where appropriate
-- invariants
-- required tests
-- evidence requirements
-- STOP boundary
+The Big Jump Wave retains the 20-cell model:
 
-Each flight is not:
-
-- independent authority
-- separate memory
-- replacement for Master Archive
-- permission to bypass governance
-
----
-
-# Unknown Frontier State
-
-The default state before authorization is:
+**5 reusable mission slots x 4 lifecycle stages = 20 advancement cells.**
 
 ```text
-CAMPAIGN ARCHITECTURE READY
-        |
-        v
-RECON REQUIRED
-        |
-        v
-FRONTIER IDENTIFIED
-        |
-        v
-AUTHORIZED BIG JUMP WAVE
-        |
-        v
-FLIGHTS AIRBORNE
+                    INTAKE       BUILD       VERIFY       RECONVERGE
+F1                  current      current     current      current
+F2                  mission      mission     mission      mission
+F3                  assignment  assignment  assignment  assignment
+F4
+F5
 ```
 
-No transition may be skipped.
+The matrix tracks the current wave assignment. It does not assign permanent meaning to a flight number.
 
----
+## C2 Role
 
-# Governance Relationship
+C2:
+
+- establishes repository truth;
+- discovers the highest-leverage current missions;
+- assigns five independent missions;
+- prevents duplicate work and collisions;
+- protects validated architecture;
+- requires exact-head evidence;
+- verifies capability delta;
+- reconverges and promotes only validated capability.
+
+## Jules Integration
+
+Jules is the governed engineering execution station and may receive **any** of the five mission types.
+
+Every Jules flight report identifies:
 
 ```text
-Master Archive
-      |
-      v
-C2 Control Plane
-      |
-      v
-BIG JUMP WAVE
-      |
-      v
-Authorized Flights Only
-      |
-      v
-Validated Evidence
-      |
-      v
-Capability Compounding
+Flight:
+Current Mission:
+Target Boundary:
+Changes:
+Tests:
+Evidence:
+Capability Gained:
+Next Move:
 ```
 
-The three SAGE lanes remain authoritative. Big Jump Wave coordination does not create new lanes.
+Jules must never infer a permanent functional role from F1-F5.
 
----
-
-# Rolls-Royce + Lamborghini Lock
-
-## Rolls-Royce
-
-Protects:
-
-- truth
-- boundaries
-- evidence
-- architectural stability
-
-## Lamborghini
-
-Enables:
-
-- velocity after authorization
-- parallel execution after validation
-- capability compounding after proof
-
-Velocity begins after control, not before it.
-
----
-
-## Big Build = Production Velocity + Large Jump Levels
-
-The **Big Build** represents the production law inside each flight: input → build → verify → next task.
-
-The **Big Jump Wave** represents the coordinated parallel execution of independent frontiers.
+## Execution Law
 
 ```text
-SAGI Brain
-(opportunity discovery)
-
-        ↓
-
-C2 / ChatGPT
-(command + execution coordination)
-
-        ↓
-
-BIG JUMP WAVE
-(canonical execution workflow)
-
-        ↓
-
-5+ Concurrent Flights
-(each running independent targets)
-
-        ↓
-
-Big Build Loop
-(input → build → verify → next task)
-
-        ↓
-
-Verified capability gain
-        ↓
-
-Capability compounding
-        ↓
-
-Next Big Jump Wave
+F1 ─┐
+F2 ─┤
+F3 ─┼─> CURRENT WAVE MISSIONS -> VERIFY -> RECONVERGE
+F4 ─┤
+F5 ─┘
 ```
 
-**Retired operating mode:** Medium Flow. It is not part of the current SAGE execution hierarchy and must not be described as the default, current, or recommended workflow.
+The five paths execute concurrently when admitted. Their work can be completely different, and their assignments can be completely reshuffled on the next wave.
 
-Important separation stays:
+## Governance / Rolls-Royce Standard
 
-* **SAGI Brain** finds possible next builds.
-* **C2/ChatGPT** coordinates and executes the selected wave.
-* **Big Jump Wave** is the normal production execution workflow.
-* **Flights** are the concurrent execution units.
-* **Big Build** is the production law that each flight follows.
+Parallelism never weakens quality.
 
-No mixing the layers.
+```text
+EXECUTION
+-> EVIDENCE
+-> VERIFY
+-> VALIDATE
+-> ACTION-BOUND AUTHORIZATION
+-> PROMOTE
+```
 
----
+Failures, stale SHAs, collisions, incomplete proof, and ambiguous state fail closed.
 
-# Operational Reference
+## Capability Advancement Gate
 
-The execution method for the C2 control plane is maintained separately in:
+A green matrix, receipt, or test result is not capability by itself.
 
-`docs/governance/C2_FLIGHT_CONTROL_OPERATING_MODEL.md`
+Each current mission must establish:
 
-This preserves separation between architecture doctrine and operating procedure.
+```text
+BASELINE
+-> TARGET
+-> CONCRETE CHANGE
+-> DEDICATED VERIFICATION
+-> EVIDENCE
+-> REUSABLE OUTPUT
+-> RECONVERGENCE
+-> PROMOTION
+```
+
+No-net-delta work must not be inflated into velocity.
+
+## Deep Recon / Super Search
+
+Super Search is a reconnaissance sensor, not canonical authority. C2 establishes repository truth first, then uses targeted external intelligence when it can materially change mission selection, implementation, security, or verification.
+
+External findings remain candidate intelligence until validated.
+
+## Adaptive Evolution
+
+SAGE may learn from wave receipts, verification latency, collisions, rework, and capability gain to improve future **mission selection and slot assignment**.
+
+Learning may propose future assignments. It may not silently change authority or promote itself.
+
+## Anti-Drift Rules
+
+- F1-F5 are never permanent functional roles.
+- Never infer mission meaning from flight number.
+- Never collapse five separate missions into one shared task.
+- Never overwrite another flight's admitted boundary.
+- Never use stale evidence as current proof.
+- Never claim unperformed work.
+- Never promote without verification and evidence.
+- Never replace the Big Jump Wave frame merely to increase throughput.
+
+## Operating Principle
+
+**Five reusable flights. Five separately chosen missions. Concurrent execution. Safe separation. One reconvergence gate.**
+
+The mission changes. The slot does not acquire a permanent job.
