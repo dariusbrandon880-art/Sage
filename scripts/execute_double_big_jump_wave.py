@@ -29,32 +29,57 @@ def get_git_head_sha() -> str:
     return head
 
 
-def build_wave(wave_id: str, prefix: str) -> DoubleBigJumpWaveSpec:
+def build_wave_a() -> DoubleBigJumpWaveSpec:
+    wave_id = "double-wave-A"
     targets = (
-        ("execution_intelligence.py", "tests/c2/test_execution_intelligence_wave.py"),
-        ("governance_intelligence.py", "tests/c2/test_governance_intelligence_wave.py"),
-        ("build_jump_wave.py", "tests/c2/test_build_jump_wave.py"),
-        ("multi_frontier_dispatch.py", "tests/c2/test_multi_frontier_dispatch.py"),
-        ("double_big_jump_contract.py", "tests/c2/test_double_big_jump_contract.py"),
+        ("sage/c2/execution_intelligence.py", "sage.c2.execution_intelligence", "tests/c2/test_execution_intelligence_wave.py"),
+        ("sage/c2/governance_intelligence.py", "sage.c2.governance_intelligence", "tests/c2/test_governance_intelligence_wave.py"),
+        ("sage/c2/build_jump_wave.py", "sage.c2.build_jump_wave", "tests/c2/test_build_jump_wave.py"),
+        ("sage/c2/multi_frontier_dispatch.py", "sage.c2.multi_frontier_dispatch", "tests/c2/test_multi_frontier_dispatch.py"),
+        ("sage/c2/double_big_jump_contract.py", "sage.c2.double_big_jump_contract", "tests/c2/test_double_big_jump_contract.py"),
     )
     missions = tuple(
         FlightMissionSpec(
             flight_id=f"F{i}",
-            frontier_name=f"{prefix}-{i}-{Path(target).stem}",
-            target_path=f"sage/c2/{target}",
-            collision_zone=f"sage.c2.{Path(target).stem}",
+            frontier_name=f"A-{i}-{Path(target).stem}",
+            target_path=target,
+            collision_zone=collision_zone,
             evidence_ref=f"evidence_capture/waves/{wave_id}/F{i}_receipt.json",
-            pr_or_change=f"Double Big Jump {wave_id} mission F{i}",
+            pr_or_change=f"Double Big Jump Wave A mission F{i}",
             test_references=[test_path],
         )
-        for i, (target, test_path) in enumerate(targets, start=1)
+        for i, (target, collision_zone, test_path) in enumerate(targets, start=1)
+    )
+    return DoubleBigJumpWaveSpec(wave_id=wave_id, missions=missions)
+
+
+def build_wave_b() -> DoubleBigJumpWaveSpec:
+    wave_id = "double-wave-B"
+    targets = (
+        ("sage/experimental/sports_longitudinal.py", "sage.experimental.sports_longitudinal", "tests/experimental/test_sports_longitudinal.py"),
+        ("sage/experimental/sports_rce.py", "sage.experimental.sports_rce", "tests/experimental/test_sports_rce.py"),
+        ("sage/experimental/sports_trust_loop.py", "sage.experimental.sports_trust_loop", "tests/experimental/test_sports_trust_loop.py"),
+        ("sage/experimental/sports_quant/prediction.py", "sage.experimental.sports_quant_prediction", "tests/experimental/test_sports_quant.py"),
+        ("sage/experimental/sports_quant/evaluation.py", "sage.experimental.sports_quant_evaluation", "tests/experimental/test_sports_governed_wave.py"),
+    )
+    missions = tuple(
+        FlightMissionSpec(
+            flight_id=f"F{i}",
+            frontier_name=f"B-{i}-{Path(target).stem}",
+            target_path=target,
+            collision_zone=collision_zone,
+            evidence_ref=f"evidence_capture/waves/{wave_id}/F{i}_receipt.json",
+            pr_or_change=f"Double Big Jump Wave B mission F{i}",
+            test_references=[test_path],
+        )
+        for i, (target, collision_zone, test_path) in enumerate(targets, start=1)
     )
     return DoubleBigJumpWaveSpec(wave_id=wave_id, missions=missions)
 
 
 def main() -> int:
     expected_head = get_git_head_sha()
-    waves = validate_double_big_jump_waves((build_wave("double-wave-A", "A"), build_wave("double-wave-B", "B")))
+    waves = validate_double_big_jump_waves((build_wave_a(), build_wave_b()))
     print("=" * 80)
     print("SAGE C2 — DOUBLE BIG JUMP / CANONICAL WAVE COMPOSITION")
     print("=" * 80)

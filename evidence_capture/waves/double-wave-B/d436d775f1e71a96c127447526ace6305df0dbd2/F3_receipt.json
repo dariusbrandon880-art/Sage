@@ -1,0 +1,10 @@
+{
+  "blocker": null,
+  "executed_head": "d436d775f1e71a96c127447526ace6305df0dbd2",
+  "flight_id": "F3",
+  "frontier_name": "B-3-sports_trust_loop",
+  "status": "PASS",
+  "target_path": "sage/experimental/sports_trust_loop.py",
+  "timestamp": 1788209609.4288788,
+  "wave_id": "double-wave-B"
+}
