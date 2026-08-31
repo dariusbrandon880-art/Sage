@@ -1,10 +1,8 @@
-"""C2 compatibility adapter for the canonical five-flight wave engine.
+"""C2 adapter for the canonical five-slot Big Jump Wave engine.
 
-The canonical Big Jump Wave implementation in ``sage.c2.build_jump_wave`` is
-responsible for actual flight execution, lifecycle gates, pytest verification,
-exact-HEAD evidence, and C2 reconvergence.  This adapter intentionally does not
-manufacture PASS receipts: every receipt is derived from a real
-FlightExecutionSummary returned by that engine.
+Flight slots are reusable execution capacity. C2 supplies the mission for each
+slot; this adapter never assigns permanent capability ownership to F1-F5 and
+never manufactures PASS receipts.
 """
 
 from __future__ import annotations
@@ -12,7 +10,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Any, Callable, Dict, List, Optional
 
-from sage.c2.build_jump_wave import BuildJumpWaveEngine, CANONICAL_BIG_JUMP_MISSIONS
+from sage.c2.build_jump_wave import BuildJumpWaveEngine, FlightMissionSpec
 
 
 @dataclass(frozen=True)
@@ -49,14 +47,14 @@ class MultiFrontierDispatchReceipt:
 
 
 def compute_receipt_hash(flight_id: str, mission_id: str, boundary_scope: str, proof_type: str, commit_sha: str) -> str:
-    """Retained as a compatibility helper; hashes actual receipt identity fields."""
+    """Hash actual receipt identity fields deterministically."""
     import hashlib
     payload = f"{flight_id}:{mission_id}:{boundary_scope}:{proof_type}:{commit_sha}".encode("utf-8")
     return hashlib.sha256(payload).hexdigest()
 
 
 class MultiFrontierDispatcher:
-    """Delegate five-flight execution to the canonical governed wave engine."""
+    """Dispatch five explicitly assigned, independently reusable flight slots."""
 
     def __init__(
         self,
@@ -66,26 +64,29 @@ class MultiFrontierDispatcher:
         self.commit_sha = commit_sha
         self._engine_factory = engine_factory or (lambda: BuildJumpWaveEngine(max_workers=5))
 
-    def dispatch_all(self) -> MultiFrontierDispatchReceipt:
+    def dispatch_all(self, missions: List[FlightMissionSpec]) -> MultiFrontierDispatchReceipt:
+        if len(missions) != 5:
+            raise ValueError(f"Big Jump Wave requires exactly 5 assigned missions, got {len(missions)}")
+        if len({mission.flight_id for mission in missions}) != 5:
+            raise ValueError("Big Jump Wave requires five unique flight IDs")
+
         engine = self._engine_factory()
-        package = engine.execute_wave(wave_id="multi-frontier-dispatch")
+        package = engine.execute_wave(wave_id="multi-frontier-dispatch", missions=missions)
         expected_sha = self.commit_sha or engine.get_current_head_sha()
+        mission_by_flight = {mission.flight_id: mission for mission in missions}
         collisions: List[str] = []
         if package.total_flights != 5:
             collisions.append(f"expected 5 flights, observed {package.total_flights}")
 
         receipts: List[FlightReceipt] = []
         for flight in package.flight_summaries:
-            mission = next((m for m in CANONICAL_BIG_JUMP_MISSIONS if m.flight_id == flight.flight_id), None)
+            mission = mission_by_flight.get(flight.flight_id)
             if mission is None:
                 collisions.append(f"unknown flight returned: {flight.flight_id}")
                 continue
             sha_matches = flight.exact_head == expected_sha
             if not sha_matches:
-                # Preserve one independently attributable collision per affected flight.
-                collisions.append(
-                    f"stale or mismatched flight commit SHA detected: {flight.flight_id}"
-                )
+                collisions.append(f"stale or mismatched flight commit SHA detected: {flight.flight_id}")
             actual_pass = (
                 flight.execution_result == "PASS"
                 and sha_matches
@@ -136,5 +137,6 @@ class MultiFrontierDispatcher:
                 "first_pass_verification_rate": package.first_pass_verification_rate,
                 "synthetic_receipts": False,
                 "source": "BuildJumpWaveEngine",
+                "flight_assignment_model": "open_reusable_slots",
             },
         )
