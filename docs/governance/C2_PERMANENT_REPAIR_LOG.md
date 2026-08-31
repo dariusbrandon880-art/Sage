@@ -23,3 +23,17 @@
 **Evidence:** `docs/SAGE-INVENTOR-AGENT-IMMERSION-DOCTRINE.md`; `docs/governance/SAGE_UNIFIED_AGENT_CONTROL_PLANE.md`.
 
 **Repair pattern:** RECON → ROOT CAUSE → ATTACK → REPAIR → REGRESSION → FULL VERIFY → EXACT-SHA RECONCILIATION → PERMANENT LOG → COMPOUND
+
+## 2026-08-30 — Unified Agent Control Plane Boundary
+
+**Issue / PR:** PR #347; original branch conflicted with current `main`.
+
+**Root cause:** Provider governance and agent-task boundary hardening existed on a stale substrate and could not be promoted without reconciling current-main runtime behavior.
+
+**Repair:** Rebased the unique control-plane changes onto current `main` in a fresh repair branch. Gemini and OpenAI remain transport adapters behind the same `SAGEProtocolGovernor`; accepted model responses retain canonical envelope station/policy/provenance; agent task validation now rejects forged or unverified immersion state, missing provenance, cross-agent task identity, and cross-bound permission identity.
+
+**Regression proof:** Added shared provider-governance tests and unified agent control-plane adversarial tests. Current-main error handling and envelope identity binding were preserved rather than overwritten by the stale branch implementation.
+
+**Evidence discipline:** This repair branch has not been declared green from local or historical evidence. Remote verification must run against its exact resulting HEAD before promotion.
+
+**Reusable invariant:** Every governed agent enters the same canonical control plane; agent identity selects role and policy context, never an alternate authority path.
