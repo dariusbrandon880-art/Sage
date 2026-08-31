@@ -16,15 +16,13 @@ The wave is not complete because an implementation exists. It is complete only w
 
 ## Marine-style execution discipline
 
-Use the five-flight structure as a bounded operating pattern, not as theater. “Marine-style” means decisive execution against the actual failure surface, disciplined sequencing, explicit objectives, independent verification, and no premature victory declaration.
+Use the five-flight structure as a governed operating pattern, not as theater. “Marine-style” means decisive execution against the actual failure surface, disciplined sequencing, explicit objectives, independent verification, and no premature victory declaration.
 
-- **F1 — Recon / Architecture Guard:** establish exact repository truth, ownership, dependencies, prior failures, and blast radius.
-- **F2 — Intelligence / Falsification:** use Super Search and external sources to challenge assumptions and locate stronger patterns or known failure modes.
-- **F3 — Build / Repair:** implement the smallest change in the existing canonical architecture; no parallel authority.
-- **F4 — Verification / Red Team:** attack the boundary, including stale, missing, malformed, adversarial, replayed, unauthorized, and bypass paths; then run the full suite.
-- **F5 — Evidence / Compound:** bind results to exact SHA, persist receipts and learning, update the repair history, and identify the next frontier.
+**F1, F2, F3, F4, and F5 are open reusable execution slots.** No flight has a permanent function.
 
-Flights may run in parallel only when their ownership boundaries do not collide. Shared canonical files and state transitions require explicit sequencing.
+For the current wave, C2 assigns each slot a distinct mission and boundary. Any slot may perform recon, research, build, repair, testing, governance/security work, architecture work, evidence work, integration, or another authorized mission. The assignments can be completely different on the next wave.
+
+Flights may run in parallel only when their current mission boundaries do not collide. Shared canonical files and state transitions require explicit sequencing or governed collision admission.
 
 ## Repair-as-learning doctrine
 
