@@ -13,10 +13,10 @@ def test_big_jump_wave_evidence_is_sha_namespaced(tmp_path, monkeypatch):
     missions = [
         FlightMissionSpec(
             flight_id=f"F{i}",
-            frontier_name=f"frontier-{i}",
+            mission_name=f"wave-mission-{i}",
             target_path=f"sage/test_target_{i}.py",
             collision_zone=f"sage.test_{i}",
-            evidence_ref=f"legacy/F{i}.json",
+            evidence_ref=f"wave/F{i}.json",
             pr_or_change=f"test-{i}",
             test_references=[],
         )
