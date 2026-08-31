@@ -15,14 +15,30 @@ def build_jump_engine(tmp_path):
     return BuildJumpWaveEngine(storage_dir=str(tmp_path))
 
 
+@pytest.fixture
+def explicit_wave_missions():
+    """Build a current-wave assignment; F1-F5 are reusable slots, not permanent roles."""
+    return [
+        FlightMissionSpec(
+            flight_id=f"F{i}",
+            frontier_name=f"wave-frontier-{i}",
+            target_path=f"wave_target_{i}.py",
+            collision_zone=f"wave.ns{i}",
+            evidence_ref=f"wave_evidence_{i}.json",
+            pr_or_change=f"PR-wave-{i}",
+        )
+        for i in range(1, 6)
+    ]
+
+
 def test_build_jump_wave_head_sha(build_jump_engine):
     sha = build_jump_engine.get_current_head_sha()
     assert len(sha) == 40
     assert re.match(r"^[0-9a-fA-F]{40}$", sha)
 
 
-def test_build_jump_wave_execution_full(build_jump_engine):
-    pkg = build_jump_engine.execute_wave(wave_id="test-wave-unit")
+def test_build_jump_wave_execution_full(build_jump_engine, explicit_wave_missions):
+    pkg = build_jump_engine.execute_wave(wave_id="test-wave-unit", missions=explicit_wave_missions)
 
     assert pkg.wave_id == "test-wave-unit"
     assert pkg.total_flights == 5
@@ -46,7 +62,7 @@ def test_build_jump_wave_execution_full(build_jump_engine):
         assert summary.blocker is None
 
 
-def test_build_jump_wave_runs_independent_flights_concurrently(build_jump_engine, monkeypatch):
+def test_build_jump_wave_runs_independent_flights_concurrently(build_jump_engine, explicit_wave_missions, monkeypatch):
     thread_ids = set()
     start_barrier = threading.Barrier(5)
 
@@ -74,7 +90,7 @@ def test_build_jump_wave_runs_independent_flights_concurrently(build_jump_engine
         )
 
     monkeypatch.setattr(build_jump_engine, "_run_flight", fake_run_flight)
-    package = build_jump_engine.execute_wave(wave_id="parallel-wave-test")
+    package = build_jump_engine.execute_wave(wave_id="parallel-wave-test", missions=explicit_wave_missions)
 
     assert package.reconvergence_verdict == "PASS"
     assert package.total_flights == 5

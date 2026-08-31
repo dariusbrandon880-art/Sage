@@ -12,7 +12,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Any, Callable, Dict, List, Optional
 
-from sage.c2.build_jump_wave import BuildJumpWaveEngine, CANONICAL_BIG_JUMP_MISSIONS
+from sage.c2.build_jump_wave import BuildJumpWaveEngine, FlightMissionSpec
 
 
 @dataclass(frozen=True)
@@ -66,23 +66,29 @@ class MultiFrontierDispatcher:
         self.commit_sha = commit_sha
         self._engine_factory = engine_factory or (lambda: BuildJumpWaveEngine(max_workers=5))
 
-    def dispatch_all(self) -> MultiFrontierDispatchReceipt:
+    def dispatch_all(self, missions: List[FlightMissionSpec]) -> MultiFrontierDispatchReceipt:
+        """Execute one explicitly supplied five-slot mission plan.
+
+        F1-F5 are reusable execution slots, so no permanent mission registry is
+        consulted here.  The governed wave engine validates that ``missions``
+        contains each slot exactly once before execution.
+        """
         engine = self._engine_factory()
-        package = engine.execute_wave(wave_id="multi-frontier-dispatch")
+        package = engine.execute_wave(wave_id="multi-frontier-dispatch", missions=missions)
         expected_sha = self.commit_sha or engine.get_current_head_sha()
+        missions_by_slot = {mission.flight_id: mission for mission in missions}
         collisions: List[str] = []
         if package.total_flights != 5:
             collisions.append(f"expected 5 flights, observed {package.total_flights}")
 
         receipts: List[FlightReceipt] = []
         for flight in package.flight_summaries:
-            mission = next((m for m in CANONICAL_BIG_JUMP_MISSIONS if m.flight_id == flight.flight_id), None)
+            mission = missions_by_slot.get(flight.flight_id)
             if mission is None:
                 collisions.append(f"unknown flight returned: {flight.flight_id}")
                 continue
             sha_matches = flight.exact_head == expected_sha
             if not sha_matches:
-                # Preserve one independently attributable collision per affected flight.
                 collisions.append(
                     f"stale or mismatched flight commit SHA detected: {flight.flight_id}"
                 )
