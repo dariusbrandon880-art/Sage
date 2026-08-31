@@ -4,10 +4,22 @@ import json
 import re
 import threading
 from pathlib import Path
+
 import pytest
 
 from sage.c2.build_jump_wave import BuildJumpWaveEngine, FlightMissionSpec
 from sage.c2.reconvergence_synthesizer import FlightExecutionSummary, LifecycleMilestoneRecord, LifecycleStage
+
+
+def _missions():
+    return [
+        FlightMissionSpec(
+            flight_id=f"F{i}", mission_id=f"mission-{i}", frontier_name=f"frontier-{i}",
+            target_path=f"sage/mission_{i}.py", collision_zone=f"sage/mission_{i}/",
+            evidence_ref=f"evidence/mission_{i}.json", pr_or_change=f"mission-{i}",
+        )
+        for i in range(1, 6)
+    ]
 
 
 @pytest.fixture
@@ -21,8 +33,13 @@ def test_build_jump_wave_head_sha(build_jump_engine):
     assert re.match(r"^[0-9a-fA-F]{40}$", sha)
 
 
+def test_build_jump_wave_requires_explicit_mission_plan(build_jump_engine):
+    with pytest.raises(ValueError, match="explicit current-wave mission assignments"):
+        build_jump_engine.execute_wave(wave_id="test-wave-unit")
+
+
 def test_build_jump_wave_execution_full(build_jump_engine):
-    pkg = build_jump_engine.execute_wave(wave_id="test-wave-unit")
+    pkg = build_jump_engine.execute_wave(wave_id="test-wave-unit", missions=_missions())
 
     assert pkg.wave_id == "test-wave-unit"
     assert pkg.total_flights == 5
@@ -54,11 +71,7 @@ def test_build_jump_wave_runs_independent_flights_concurrently(build_jump_engine
         thread_ids.add(threading.get_ident())
         start_barrier.wait(timeout=5)
         lifecycle_milestones = [
-            LifecycleMilestoneRecord(
-                stage=stage,
-                passed=True,
-                evidence_ref=spec.evidence_ref,
-            )
+            LifecycleMilestoneRecord(stage=stage, passed=True, evidence_ref=spec.evidence_ref)
             for stage in LifecycleStage
         ]
         return FlightExecutionSummary(
@@ -74,7 +87,7 @@ def test_build_jump_wave_runs_independent_flights_concurrently(build_jump_engine
         )
 
     monkeypatch.setattr(build_jump_engine, "_run_flight", fake_run_flight)
-    package = build_jump_engine.execute_wave(wave_id="parallel-wave-test")
+    package = build_jump_engine.execute_wave(wave_id="parallel-wave-test", missions=_missions())
 
     assert package.reconvergence_verdict == "PASS"
     assert package.total_flights == 5
@@ -85,11 +98,8 @@ def test_build_jump_wave_runs_independent_flights_concurrently(build_jump_engine
 def test_build_jump_wave_invalid_mission_count(build_jump_engine):
     invalid_missions = [
         FlightMissionSpec(
-            flight_id="F1",
-            frontier_name="F1",
-            target_path="t1.py",
-            collision_zone="ns1",
-            evidence_ref="e1.json",
+            flight_id="F1", mission_id="mission-1", frontier_name="F1",
+            target_path="t1.py", collision_zone="ns1", evidence_ref="e1.json",
             pr_or_change="PR1",
         )
     ]
