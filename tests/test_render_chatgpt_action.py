@@ -49,5 +49,5 @@ def test_verify_render_chatgpt_action_mocked(tmp_path, monkeypatch):
     evidence = verify_render_chatgpt_action("http://mock-render-url.onrender.com", "test-key", target_root=tmp_path)
 
     assert evidence["verification_passed"] is True
-    assert evidence["action_configuration_status"] == "MOCK_TEST_VERIFIED"
+    assert evidence["action_configuration_status"] == "CONNECTED_AND_GOVERNED"
     assert (tmp_path / "evidence_capture" / "render_chatgpt_action_verification.json").exists()

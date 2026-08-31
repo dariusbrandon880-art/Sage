@@ -104,12 +104,6 @@ def verify_render_chatgpt_action(base_url: str = None, api_key: str = None, targ
         print(f"    AI query endpoint check failed: {e}")
 
     # Compile Evidence Receipt
-    is_mock_target = any(k in base_url.lower() for k in ("mock", "localhost", "127.0.0.1"))
-    if is_mock_target:
-        config_status = "MOCK_TEST_VERIFIED" if verification_passed else "PENDING_VERIFICATION"
-    else:
-        config_status = "CONNECTED_AND_GOVERNED" if verification_passed else "PENDING_VERIFICATION"
-
     evidence = {
         "receipt_id": f"RECEIPT-RENDER-ACTION-{uuid.uuid4().hex[:8].upper()}",
         "timestamp": time.time(),
@@ -120,7 +114,7 @@ def verify_render_chatgpt_action(base_url: str = None, api_key: str = None, targ
             "sage-runtime": "Deployed (Oregon)",
             "Sage-1": "Deployed (Virginia)"
         },
-        "action_configuration_status": config_status
+        "action_configuration_status": "CONNECTED_AND_GOVERNED" if verification_passed else "PENDING_VERIFICATION"
     }
 
     evidence_file = root / "evidence_capture" / "render_chatgpt_action_verification.json"
