@@ -1,10 +1,52 @@
-"""Failure diagnostics and candidate-strategy promotion gates."""
+"""Failure diagnostics, stake sizing (Kelly Criterion), and candidate-strategy promotion gates."""
 
 from dataclasses import dataclass
 from typing import Iterable, Mapping
 
 from .prediction import PredictionRecord
 from .evaluation import EvaluationResult, score_predictions
+
+
+@dataclass(frozen=True)
+class StakeRecommendation:
+    """Kelly criterion stake size recommendation (research-only shadow allocation)."""
+
+    prediction_id: str
+    event_id: str
+    selection: str
+    predicted_probability: float
+    decimal_odds: float
+    fractional_kelly: float
+    recommended_stake_pct: float
+    max_exposure_pct: float = 0.05
+    wagering_executed: bool = False
+
+    def __post_init__(self) -> None:
+        if self.wagering_executed:
+            raise ValueError("SHADOW_BOUNDARY_VIOLATION: wagering execution is prohibited")
+
+
+def calculate_kelly_stake(
+    predicted_probability: float,
+    decimal_odds: float,
+    fractional_kelly: float = 0.25,
+    max_exposure_pct: float = 0.05,
+) -> float:
+    """Calculate fractional Kelly Criterion recommended stake percentage."""
+    if decimal_odds <= 1.0 or predicted_probability <= 0.0 or predicted_probability >= 1.0:
+        return 0.0
+
+    b = decimal_odds - 1.0
+    p = predicted_probability
+    q = 1.0 - p
+
+    # Full Kelly = (b*p - q) / b
+    full_kelly = (b * p - q) / b
+    if full_kelly <= 0.0:
+        return 0.0
+
+    recommended = full_kelly * fractional_kelly
+    return min(recommended, max_exposure_pct)
 
 
 @dataclass(frozen=True)
