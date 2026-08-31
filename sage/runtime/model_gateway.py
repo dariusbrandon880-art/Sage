@@ -141,7 +141,7 @@ class SAGEProtocolGovernor:
         if any(indicator in lower_output for indicator in cls.UNVERIFIED_REPOSITORY_INDICATORS):
             violations.append("Model output claims repository or GitHub state change without verification receipt.")
         import re
-        for match in re.findall(r"\[SAGE::[^\]]+\]", raw_output):
+        for match in re.findall(r"\[(?:SAGE::|C2::)[^\]]+\]", raw_output):
             if match != required_station:
                 violations.append(f"Model output station identity mismatch: expected {required_station}, got {match}.")
         reasoning_chain: list[str] = []
