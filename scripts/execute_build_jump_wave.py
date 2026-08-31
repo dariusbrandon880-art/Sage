@@ -1,24 +1,36 @@
 #!/usr/bin/env python3
-"""Execute live 5-flight Big Jump Wave under SAGE C2 governance.
+"""Execute a live 5-flight Big Jump Wave under SAGE C2 governance.
 
-Outputs evidence package to evidence_capture/build_jump_wave_evidence.json.
+The mission plan is supplied by the current wave through
+``SAGE_WAVE_MISSIONS_JSON``.  No permanent F1-F5 mission table is embedded in
+this executor.
 """
 
 from __future__ import annotations
 
 import json
+import os
 import sys
 import time
 from pathlib import Path
 
-# Ensure repo root is on sys.path
 repo_root = Path(__file__).resolve().parent.parent
 if str(repo_root) not in sys.path:
     sys.path.insert(0, str(repo_root))
 
-from sage.c2.build_jump_wave import BuildJumpWaveEngine  # noqa: E402
+from sage.c2.build_jump_wave import BuildJumpWaveEngine, FlightMissionSpec  # noqa: E402
 
 EVIDENCE_PATH = repo_root / "evidence_capture" / "build_jump_wave_evidence.json"
+
+
+def _load_missions() -> list[FlightMissionSpec]:
+    raw = os.environ.get("SAGE_WAVE_MISSIONS_JSON")
+    if not raw:
+        raise ValueError("SAGE_WAVE_MISSIONS_JSON is required; F1-F5 have no permanent mission assignment")
+    payload = json.loads(raw)
+    if not isinstance(payload, list):
+        raise ValueError("SAGE_WAVE_MISSIONS_JSON must be a JSON list of five mission assignments")
+    return [FlightMissionSpec.model_validate(item) for item in payload]
 
 
 def main() -> int:
@@ -26,9 +38,15 @@ def main() -> int:
     print("SAGE C2 LIVE BIG JUMP WAVE EXECUTION")
     print("=" * 70)
 
+    try:
+        missions = _load_missions()
+    except (ValueError, TypeError, json.JSONDecodeError) as exc:
+        print(f"[!] WAVE MISSION PLAN REJECTED: {exc}", file=sys.stderr)
+        return 2
+
     wave_id = f"wave-big-jump-{int(time.time())}"
     engine = BuildJumpWaveEngine(storage_dir=str(repo_root / "evidence_capture"))
-    evidence_pkg = engine.execute_wave(wave_id=wave_id)
+    evidence_pkg = engine.execute_wave(wave_id=wave_id, missions=missions)
 
     EVIDENCE_PATH.parent.mkdir(parents=True, exist_ok=True)
     with open(EVIDENCE_PATH, "w", encoding="utf-8") as f:
