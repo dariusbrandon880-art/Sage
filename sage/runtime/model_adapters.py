@@ -61,7 +61,7 @@ class OpenAIResponsesAdapter:
 class GeminiInteractionsAdapter:
     """Google Gemini Interactions API adapter behind the SAGE model contract."""
 
-    station = "[SAGE::INTEL::GEMINI]"
+    station = "[SAGE::C2::GOOGLE]"
 
     def __init__(
         self,

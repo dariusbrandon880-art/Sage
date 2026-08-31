@@ -141,9 +141,9 @@ class GeminiJulesClient(BaseAIClient):
             c2_context = {"c2_identity": "GeminiJules", "master_archive_authority": True, "active_objective": status.get("current_objective"), "active_task": status.get("active_task"), "governance_status": "ACTIVE"}
         referenced_ids = [m["id"] for m in context["matched_memories"]] + [a["id"] for a in context["matched_archives"]]
         self.reasoning_history.append(f"Gemini/Jules rehydrated C2 context for session '{session_id}' and aligned with {len(referenced_ids)} SAGE knowledge artifacts.")
-        response_text = request.response_override or (f"Deep continuation response from Gemini/Jules station.\nC2 Operating Context rehydrated successfully: {json.dumps(c2_context, default=str)}\nReferenced SAGE keys: {referenced_ids}")
+        response_text = request.response_override or (f"[SAGE::C2::GOOGLE] Deep continuation response from Google builder station.\nC2 Operating Context rehydrated successfully: {json.dumps(c2_context, default=str)}\nReferenced SAGE keys: {referenced_ids}")
         from sage.runtime.model_gateway import SAGEProtocolGovernor
-        structured = SAGEProtocolGovernor.validate_and_parse(str(response_text), required_station="[SAGE::C2::GEMINI_JULES]")
+        structured = SAGEProtocolGovernor.validate_and_parse(str(response_text), required_station="[SAGE::C2::GOOGLE]")
         if structured.violations: raise RuntimeError(f"SAGE Protocol Governance Violation: {'; '.join(structured.violations)}")
         from sage.models import ExternalSessionPayload
         payload = ExternalSessionPayload(session_id=session_id, objective=self.runtime.current_state.current_objective or "AI Query Execution", task=f"GeminiJules Query: {request.prompt[:50]}...", memories=[{"id": f"ai_gemini_{uuid.uuid4().hex[:8]}", "object_type": "ai_query_interaction", "content": {"prompt": request.prompt, "response": response_text, "referenced_memories": referenced_ids, "c2_context": c2_context, "client": "GeminiJules"}, "tags": ["ai_query", "gemini_jules", "c2_rehydrated"], "confidence": "validated"}], decisions=[])

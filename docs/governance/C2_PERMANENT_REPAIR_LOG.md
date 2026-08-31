@@ -90,6 +90,32 @@ See `docs/governance/C2_HISTORICAL_REPAIR_AND_RUNTIME_GOVERNANCE.md` for the con
 
 ## Repair entries
 
+## 2026-08-30 — Self-Owned Interface Identity Convention & Google Station Boundary
+
+**Issue / PR:** Google Station Self-Owned Nameplate Hardening
+
+**Detection:** Architectural audit of station identity handling revealed that Google/Gemini responses relied on caller or ChatGPT-supplied station tags rather than generating self-owned nameplates (`[SAGE::C2::GOOGLE]`) from governed session state at the interface boundary.
+
+**Root cause:** Station identity was defined primarily as an external capability label (`[SAGE::INTEL::GEMINI]`) rather than a self-owned runtime builder boundary (`[SAGE::C2::GOOGLE]`).
+
+**Affected boundary:** `GeminiInteractionsAdapter` (`sage/runtime/model_adapters.py`), `GeminiJulesClient` (`sage/integration.py`), and `Station` enumeration (`sage/c2/conversation_provenance.py`).
+
+**Repair:** Bound `GeminiInteractionsAdapter` and `GeminiJulesClient` to station `[SAGE::C2::GOOGLE]`, enforcing self-owned nameplate generation at session start and failing closed if a caller attempts to spoof ChatGPT (`[SAGE::C2::CHATGPT]`) or supply a synthetic identity. Added unit tests in `tests/c2/test_google_interface_identity.py`.
+
+**Why this repair:** Enforces the core invariant that interface station tags must be self-owned projections from governed runtime session identity; no caller or model can manufacture authority or spoof another station.
+
+**Regression proof:** 3/3 tests passing in `tests/c2/test_google_interface_identity.py`.
+
+**Evidence:** SHA `9e2e5dd44b03a2b935a962882a7343d0bc568a19`.
+
+**Verification:** Local pytest run verified 0 regressions across C2 and runtime suites.
+
+**Reusable invariant:** Every interface station emits its own self-owned nameplate from governed runtime identity; station identity selects role and policy context, never C2 authority.
+
+**Follow-on risk:** Audit all remaining client adapters to ensure every agent station emits self-owned nameplates at session start.
+
+**Search/research input:** Internal C2 station identity directive.
+
 ## 2026-08-30 — Live Capability Execution Non-Empty Capability ID Enforcement
 
 **Issue / PR:** Live Capability Boundary Wave

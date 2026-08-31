@@ -11,6 +11,8 @@ class Station(StrEnum):
     C2_CHATGPT = "[SAGE::C2::CHATGPT]"
     ENGINEER_JULES = "[SAGE::ENGINEER::JULES]"
     INTEL_GEMINI = "[SAGE::INTEL::GEMINI]"
+    GOOGLE_BUILDER = "[SAGE::C2::GOOGLE]"
+    JULES_BUILDER = "[SAGE::C2::JULES]"
 
 @dataclass(frozen=True)
 class ConversationEnvelope:
