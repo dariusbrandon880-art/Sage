@@ -29,6 +29,8 @@ from sage.c2.reconvergence_synthesizer import (
 
 
 class FlightMissionSpec(BaseModel):
+    """Specification of a dynamic flight mission assigned to a flight slot."""
+
     flight_id: str
     frontier_name: str
     target_path: str
@@ -38,13 +40,55 @@ class FlightMissionSpec(BaseModel):
     test_references: List[str] = Field(default_factory=list)
 
 
-CANONICAL_BIG_JUMP_MISSIONS: List[FlightMissionSpec] = [
-    FlightMissionSpec(flight_id="FLIGHT-F1-RESEARCH", frontier_name="Research & Intelligence Frontier", target_path="sage/c2/frontier_intelligence_bridge.py", collision_zone="sage/c2/frontier_intelligence/", evidence_ref="evidence_capture/f1_research_evidence.json", pr_or_change="F1 Autonomous Research", test_references=["tests/c2/test_frontier_admission.py"]),
-    FlightMissionSpec(flight_id="FLIGHT-F2-CONTINUITY", frontier_name="Continuity & Failure Memory Frontier", target_path="sage/capability_registry.py", collision_zone="sage/capability_registry.py", evidence_ref="evidence_capture/f2_continuity_evidence.json", pr_or_change="F2 Continuity Ledger", test_references=["tests/test_capability_registry.py", "tests/test_capability_lineage.py"]),
-    FlightMissionSpec(flight_id="FLIGHT-F3-EXECUTION", frontier_name="Execution & Substrate Frontier", target_path="sage/runtime/engine.py", collision_zone="sage/runtime/", evidence_ref="evidence_capture/f3_execution_evidence.json", pr_or_change="F3 Runtime Acceleration", test_references=["tests/test_system_frame.py"]),
-    FlightMissionSpec(flight_id="FLIGHT-F4-GUARD", frontier_name="Governance & Architecture Guard Frontier", target_path="sage/c2/chatgpt_c2_contract.py", collision_zone="sage/c2/contract/", evidence_ref="evidence_capture/f4_guard_evidence.json", pr_or_change="F4 Governance Sentinel", test_references=["tests/c2/test_chatgpt_c2_exact_order_anti_drift.py"]),
-    FlightMissionSpec(flight_id="FLIGHT-F5-WAREHOUSE", frontier_name="Capability Warehouse & Reconvergence Frontier", target_path="sage/c2/reconvergence_synthesizer.py", collision_zone="sage/c2/reconvergence/", evidence_ref="evidence_capture/f5_warehouse_evidence.json", pr_or_change="F5 Reconvergence Warehouse", test_references=["tests/c2/test_reconvergence_synthesizer.py"]),
-]
+def create_default_wave_missions() -> List[FlightMissionSpec]:
+    """Factory creating dynamic 5-flight mission specifications for Big Jump Wave execution."""
+    return [
+        FlightMissionSpec(
+            flight_id="F1",
+            frontier_name="Research & Intelligence Frontier",
+            target_path="sage/c2/frontier_intelligence_bridge.py",
+            collision_zone="sage/c2/frontier_intelligence/",
+            evidence_ref="evidence_capture/f1_research_evidence.json",
+            pr_or_change="F1 Dynamic Flight",
+            test_references=["tests/c2/test_frontier_admission.py"],
+        ),
+        FlightMissionSpec(
+            flight_id="F2",
+            frontier_name="Continuity & Failure Memory Frontier",
+            target_path="sage/capability_registry.py",
+            collision_zone="sage/capability_registry.py",
+            evidence_ref="evidence_capture/f2_continuity_evidence.json",
+            pr_or_change="F2 Dynamic Flight",
+            test_references=["tests/test_capability_registry.py"],
+        ),
+        FlightMissionSpec(
+            flight_id="F3",
+            frontier_name="Execution & Substrate Frontier",
+            target_path="sage/runtime/engine.py",
+            collision_zone="sage/runtime/",
+            evidence_ref="evidence_capture/f3_execution_evidence.json",
+            pr_or_change="F3 Dynamic Flight",
+            test_references=["tests/test_system_frame.py"],
+        ),
+        FlightMissionSpec(
+            flight_id="F4",
+            frontier_name="Governance & Architecture Guard Frontier",
+            target_path="sage/c2/chatgpt_c2_contract.py",
+            collision_zone="sage/c2/contract/",
+            evidence_ref="evidence_capture/f4_guard_evidence.json",
+            pr_or_change="F4 Dynamic Flight",
+            test_references=["tests/c2/test_chatgpt_c2_exact_order_anti_drift.py"],
+        ),
+        FlightMissionSpec(
+            flight_id="F5",
+            frontier_name="Capability Warehouse & Reconvergence Frontier",
+            target_path="sage/c2/reconvergence_synthesizer.py",
+            collision_zone="sage/c2/reconvergence/",
+            evidence_ref="evidence_capture/f5_warehouse_evidence.json",
+            pr_or_change="F5 Dynamic Flight",
+            test_references=["tests/c2/test_reconvergence_synthesizer.py"],
+        ),
+    ]
 
 
 class BuildJumpWaveEngine:
@@ -150,10 +194,15 @@ class BuildJumpWaveEngine:
                 with self._lock_manager_guard:
                     self.lock_manager.release_lock(wave_id, spec.flight_id)
 
-    def execute_wave(self, wave_id: Optional[str] = None, missions: Optional[List[FlightMissionSpec]] = None) -> ReconvergenceEvidencePackage:
+    def execute_wave(
+        self,
+        wave_id: Optional[str] = None,
+        missions: Optional[List[FlightMissionSpec]] = None,
+    ) -> ReconvergenceEvidencePackage:
+        """Execute exactly 5 dynamic flight missions concurrently."""
         head_sha = self.get_current_head_sha()
         w_id = wave_id or f"wave-big-jump-{int(time.time())}"
-        active_missions = missions or CANONICAL_BIG_JUMP_MISSIONS
+        active_missions = missions if missions is not None else create_default_wave_missions()
         if len(active_missions) != 5:
             raise ValueError(f"Big Jump Wave requires exactly 5 flight missions, got {len(active_missions)}")
 

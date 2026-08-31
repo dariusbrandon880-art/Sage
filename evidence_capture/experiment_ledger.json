@@ -313,5 +313,120 @@
     "updated_at": 1788137390.3560715,
     "validation_notes": "Receipt recorded. Awaiting formal validation & explicit authorization.",
     "wave_id": "multi-frontier-dispatch"
+  },
+  {
+    "authorization": null,
+    "baselines": [],
+    "candidate_comparisons": [],
+    "commit_sha": "47bb765e03f1d07358ba783ce6ae69b1c8579167",
+    "counterexamples": [],
+    "created_at": 1788154693.8861954,
+    "evidence_refs": [
+      "evidence_capture/waves/multi-frontier-dispatch/47bb765e03f1d07358ba783ce6ae69b1c8579167/F1_receipt.json"
+    ],
+    "experiment_id": "exp_multi-frontier-dispatch_F1",
+    "flight_id": "F1",
+    "hypothesis": "Flight F1 target sage/c2/frontier_intelligence_bridge.py achieves verified execution proof.",
+    "observations": [
+      "Flight status: PASS at head 47bb765e03f1d07358ba783ce6ae69b1c8579167",
+      "Flight status: PASS at head 47bb765e03f1d07358ba783ce6ae69b1c8579167",
+      "Flight status: PASS at head 47bb765e03f1d07358ba783ce6ae69b1c8579167"
+    ],
+    "status": "HOLD",
+    "updated_at": 1788154859.7771556,
+    "validation_notes": "Receipt recorded. Awaiting formal validation & explicit authorization.",
+    "wave_id": "multi-frontier-dispatch"
+  },
+  {
+    "authorization": null,
+    "baselines": [],
+    "candidate_comparisons": [],
+    "commit_sha": "47bb765e03f1d07358ba783ce6ae69b1c8579167",
+    "counterexamples": [],
+    "created_at": 1788154694.0369399,
+    "evidence_refs": [
+      "evidence_capture/waves/multi-frontier-dispatch/47bb765e03f1d07358ba783ce6ae69b1c8579167/F2_receipt.json"
+    ],
+    "experiment_id": "exp_multi-frontier-dispatch_F2",
+    "flight_id": "F2",
+    "hypothesis": "Flight F2 target sage/capability_registry.py achieves verified execution proof.",
+    "observations": [
+      "Flight status: PASS at head 47bb765e03f1d07358ba783ce6ae69b1c8579167",
+      "Flight status: PASS at head 47bb765e03f1d07358ba783ce6ae69b1c8579167",
+      "Flight status: PASS at head 47bb765e03f1d07358ba783ce6ae69b1c8579167"
+    ],
+    "status": "HOLD",
+    "updated_at": 1788154860.11925,
+    "validation_notes": "Receipt recorded. Awaiting formal validation & explicit authorization.",
+    "wave_id": "multi-frontier-dispatch"
+  },
+  {
+    "authorization": null,
+    "baselines": [],
+    "candidate_comparisons": [],
+    "commit_sha": "47bb765e03f1d07358ba783ce6ae69b1c8579167",
+    "counterexamples": [],
+    "created_at": 1788154694.3536456,
+    "evidence_refs": [
+      "evidence_capture/waves/multi-frontier-dispatch/47bb765e03f1d07358ba783ce6ae69b1c8579167/F5_receipt.json"
+    ],
+    "experiment_id": "exp_multi-frontier-dispatch_F5",
+    "flight_id": "F5",
+    "hypothesis": "Flight F5 target sage/c2/reconvergence_synthesizer.py achieves verified execution proof.",
+    "observations": [
+      "Flight status: PASS at head 47bb765e03f1d07358ba783ce6ae69b1c8579167",
+      "Flight status: PASS at head 47bb765e03f1d07358ba783ce6ae69b1c8579167",
+      "Flight status: PASS at head 47bb765e03f1d07358ba783ce6ae69b1c8579167"
+    ],
+    "status": "HOLD",
+    "updated_at": 1788154859.8527465,
+    "validation_notes": "Receipt recorded. Awaiting formal validation & explicit authorization.",
+    "wave_id": "multi-frontier-dispatch"
+  },
+  {
+    "authorization": null,
+    "baselines": [],
+    "candidate_comparisons": [],
+    "commit_sha": "47bb765e03f1d07358ba783ce6ae69b1c8579167",
+    "counterexamples": [],
+    "created_at": 1788154694.3798282,
+    "evidence_refs": [
+      "evidence_capture/waves/multi-frontier-dispatch/47bb765e03f1d07358ba783ce6ae69b1c8579167/F4_receipt.json"
+    ],
+    "experiment_id": "exp_multi-frontier-dispatch_F4",
+    "flight_id": "F4",
+    "hypothesis": "Flight F4 target sage/c2/chatgpt_c2_contract.py achieves verified execution proof.",
+    "observations": [
+      "Flight status: PASS at head 47bb765e03f1d07358ba783ce6ae69b1c8579167",
+      "Flight status: PASS at head 47bb765e03f1d07358ba783ce6ae69b1c8579167",
+      "Flight status: PASS at head 47bb765e03f1d07358ba783ce6ae69b1c8579167"
+    ],
+    "status": "HOLD",
+    "updated_at": 1788154860.1150784,
+    "validation_notes": "Receipt recorded. Awaiting formal validation & explicit authorization.",
+    "wave_id": "multi-frontier-dispatch"
+  },
+  {
+    "authorization": null,
+    "baselines": [],
+    "candidate_comparisons": [],
+    "commit_sha": "47bb765e03f1d07358ba783ce6ae69b1c8579167",
+    "counterexamples": [],
+    "created_at": 1788154694.9348207,
+    "evidence_refs": [
+      "evidence_capture/waves/multi-frontier-dispatch/47bb765e03f1d07358ba783ce6ae69b1c8579167/F3_receipt.json"
+    ],
+    "experiment_id": "exp_multi-frontier-dispatch_F3",
+    "flight_id": "F3",
+    "hypothesis": "Flight F3 target sage/runtime/engine.py achieves verified execution proof.",
+    "observations": [
+      "Flight status: PASS at head 47bb765e03f1d07358ba783ce6ae69b1c8579167",
+      "Flight status: PASS at head 47bb765e03f1d07358ba783ce6ae69b1c8579167",
+      "Flight status: PASS at head 47bb765e03f1d07358ba783ce6ae69b1c8579167"
+    ],
+    "status": "HOLD",
+    "updated_at": 1788154860.7901347,
+    "validation_notes": "Receipt recorded. Awaiting formal validation & explicit authorization.",
+    "wave_id": "multi-frontier-dispatch"
   }
 ]

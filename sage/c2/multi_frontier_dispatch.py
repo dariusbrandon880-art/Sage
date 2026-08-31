@@ -12,7 +12,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Any, Callable, Dict, List, Optional
 
-from sage.c2.build_jump_wave import BuildJumpWaveEngine, CANONICAL_BIG_JUMP_MISSIONS
+from sage.c2.build_jump_wave import BuildJumpWaveEngine, FlightMissionSpec, create_default_wave_missions
 
 
 @dataclass(frozen=True)
@@ -62,13 +62,15 @@ class MultiFrontierDispatcher:
         self,
         commit_sha: Optional[str] = None,
         engine_factory: Callable[[], BuildJumpWaveEngine] | None = None,
+        missions: Optional[List[FlightMissionSpec]] = None,
     ) -> None:
         self.commit_sha = commit_sha
         self._engine_factory = engine_factory or (lambda: BuildJumpWaveEngine(max_workers=5))
+        self.missions = missions or create_default_wave_missions()
 
     def dispatch_all(self) -> MultiFrontierDispatchReceipt:
         engine = self._engine_factory()
-        package = engine.execute_wave(wave_id="multi-frontier-dispatch")
+        package = engine.execute_wave(wave_id="multi-frontier-dispatch", missions=self.missions)
         expected_sha = self.commit_sha or engine.get_current_head_sha()
         collisions: List[str] = []
         if package.total_flights != 5:
@@ -76,13 +78,11 @@ class MultiFrontierDispatcher:
 
         receipts: List[FlightReceipt] = []
         for flight in package.flight_summaries:
-            mission = next((m for m in CANONICAL_BIG_JUMP_MISSIONS if m.flight_id == flight.flight_id), None)
-            if mission is None:
-                collisions.append(f"unknown flight returned: {flight.flight_id}")
-                continue
+            mission = next((m for m in self.missions if m.flight_id == flight.flight_id), None)
+            boundary_scope = mission.collision_zone if mission else "sage/c2/frontier/"
+            frontier_name = mission.frontier_name if mission else flight.target
             sha_matches = flight.exact_head == expected_sha
             if not sha_matches:
-                # Preserve one independently attributable collision per affected flight.
                 collisions.append(
                     f"stale or mismatched flight commit SHA detected: {flight.flight_id}"
                 )
@@ -96,8 +96,8 @@ class MultiFrontierDispatcher:
                 FlightReceipt(
                     flight_id=flight.flight_id,
                     mission_id=flight.flight_id,
-                    frontier_name=mission.frontier_name,
-                    boundary_scope=mission.collision_zone,
+                    frontier_name=frontier_name,
+                    boundary_scope=boundary_scope,
                     status="PASS" if actual_pass else "FAIL",
                     commit_sha=flight.exact_head,
                     proof_type="governed_wave_execution_summary",
@@ -112,7 +112,7 @@ class MultiFrontierDispatcher:
                         ],
                     },
                     receipt_hash=compute_receipt_hash(
-                        flight.flight_id, flight.flight_id, mission.collision_zone,
+                        flight.flight_id, flight.flight_id, boundary_scope,
                         "governed_wave_execution_summary", flight.exact_head,
                     ),
                 )

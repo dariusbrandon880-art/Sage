@@ -2,8 +2,8 @@
   "commit_sha": "47bb765e03f1d07358ba783ce6ae69b1c8579167",
   "flight_receipts": [
     {
-      "flight_id": "FLIGHT-F1-RESEARCH",
-      "mission_id": "FLIGHT-F1-RESEARCH",
+      "flight_id": "F1",
+      "mission_id": "F1",
       "frontier_name": "Research & Intelligence Frontier",
       "boundary_scope": "sage/c2/frontier_intelligence/",
       "status": "PASS",
@@ -12,8 +12,8 @@
       "proof_data": {
         "target": "sage/c2/frontier_intelligence_bridge.py",
         "tests_passed": 4,
-        "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/47bb765e03f1d07358ba783ce6ae69b1c8579167/FLIGHT-F1-RESEARCH_receipt.json",
-        "pr_or_change": "F1 Autonomous Research",
+        "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/47bb765e03f1d07358ba783ce6ae69b1c8579167/F1_receipt.json",
+        "pr_or_change": "F1 Dynamic Flight",
         "lifecycle_milestones": [
           {
             "stage": "STAGE_1_INTAKE_RECON",
@@ -33,15 +33,15 @@
           {
             "stage": "STAGE_4_WAREHOUSE_PROMOTE",
             "passed": true,
-            "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/47bb765e03f1d07358ba783ce6ae69b1c8579167/FLIGHT-F1-RESEARCH_receipt.json"
+            "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/47bb765e03f1d07358ba783ce6ae69b1c8579167/F1_receipt.json"
           }
         ]
       },
-      "receipt_hash": "b3b1e3f03724043837f46337a75621a83e8810e2ed04116464792e17a61ee6d9"
+      "receipt_hash": "3a67dde658f681789a53e0ba240790ed19c20b937bff6e6642fec0f37cfe4b16"
     },
     {
-      "flight_id": "FLIGHT-F2-CONTINUITY",
-      "mission_id": "FLIGHT-F2-CONTINUITY",
+      "flight_id": "F2",
+      "mission_id": "F2",
       "frontier_name": "Continuity & Failure Memory Frontier",
       "boundary_scope": "sage/capability_registry.py",
       "status": "PASS",
@@ -49,9 +49,9 @@
       "proof_type": "governed_wave_execution_summary",
       "proof_data": {
         "target": "sage/capability_registry.py",
-        "tests_passed": 7,
-        "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/47bb765e03f1d07358ba783ce6ae69b1c8579167/FLIGHT-F2-CONTINUITY_receipt.json",
-        "pr_or_change": "F2 Continuity Ledger",
+        "tests_passed": 5,
+        "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/47bb765e03f1d07358ba783ce6ae69b1c8579167/F2_receipt.json",
+        "pr_or_change": "F2 Dynamic Flight",
         "lifecycle_milestones": [
           {
             "stage": "STAGE_1_INTAKE_RECON",
@@ -71,15 +71,15 @@
           {
             "stage": "STAGE_4_WAREHOUSE_PROMOTE",
             "passed": true,
-            "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/47bb765e03f1d07358ba783ce6ae69b1c8579167/FLIGHT-F2-CONTINUITY_receipt.json"
+            "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/47bb765e03f1d07358ba783ce6ae69b1c8579167/F2_receipt.json"
           }
         ]
       },
-      "receipt_hash": "6325b6c5452ed6855566ce5e512d63f04d69e7ba2a582ef7db374a55e634fe24"
+      "receipt_hash": "ffb91ba7ba2e1db9bb73bd0d9556827088e1f59eab61aa4cba986eef7b47544b"
     },
     {
-      "flight_id": "FLIGHT-F3-EXECUTION",
-      "mission_id": "FLIGHT-F3-EXECUTION",
+      "flight_id": "F3",
+      "mission_id": "F3",
       "frontier_name": "Execution & Substrate Frontier",
       "boundary_scope": "sage/runtime/",
       "status": "PASS",
@@ -88,8 +88,8 @@
       "proof_data": {
         "target": "sage/runtime/engine.py",
         "tests_passed": 36,
-        "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/47bb765e03f1d07358ba783ce6ae69b1c8579167/FLIGHT-F3-EXECUTION_receipt.json",
-        "pr_or_change": "F3 Runtime Acceleration",
+        "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/47bb765e03f1d07358ba783ce6ae69b1c8579167/F3_receipt.json",
+        "pr_or_change": "F3 Dynamic Flight",
         "lifecycle_milestones": [
           {
             "stage": "STAGE_1_INTAKE_RECON",
@@ -109,15 +109,15 @@
           {
             "stage": "STAGE_4_WAREHOUSE_PROMOTE",
             "passed": true,
-            "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/47bb765e03f1d07358ba783ce6ae69b1c8579167/FLIGHT-F3-EXECUTION_receipt.json"
+            "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/47bb765e03f1d07358ba783ce6ae69b1c8579167/F3_receipt.json"
           }
         ]
       },
-      "receipt_hash": "f5ca137875f74ab5abe558c8b151d90f39363251ed44f67f219ab2eae776fe83"
+      "receipt_hash": "b5ce1ab78a6d8ed37aaf6815f0de5790189a31c7ea32d1c27dad352c436147f4"
     },
     {
-      "flight_id": "FLIGHT-F4-GUARD",
-      "mission_id": "FLIGHT-F4-GUARD",
+      "flight_id": "F4",
+      "mission_id": "F4",
       "frontier_name": "Governance & Architecture Guard Frontier",
       "boundary_scope": "sage/c2/contract/",
       "status": "PASS",
@@ -126,8 +126,8 @@
       "proof_data": {
         "target": "sage/c2/chatgpt_c2_contract.py",
         "tests_passed": 24,
-        "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/47bb765e03f1d07358ba783ce6ae69b1c8579167/FLIGHT-F4-GUARD_receipt.json",
-        "pr_or_change": "F4 Governance Sentinel",
+        "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/47bb765e03f1d07358ba783ce6ae69b1c8579167/F4_receipt.json",
+        "pr_or_change": "F4 Dynamic Flight",
         "lifecycle_milestones": [
           {
             "stage": "STAGE_1_INTAKE_RECON",
@@ -147,15 +147,15 @@
           {
             "stage": "STAGE_4_WAREHOUSE_PROMOTE",
             "passed": true,
-            "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/47bb765e03f1d07358ba783ce6ae69b1c8579167/FLIGHT-F4-GUARD_receipt.json"
+            "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/47bb765e03f1d07358ba783ce6ae69b1c8579167/F4_receipt.json"
           }
         ]
       },
-      "receipt_hash": "6683216e921566dfdca2905351886b17fb255aac3a726874ce9ac0952dfb860b"
+      "receipt_hash": "c44c0fd1354636df2612d930bfb23645fdc9a637f42d9c580e20f222400be0a6"
     },
     {
-      "flight_id": "FLIGHT-F5-WAREHOUSE",
-      "mission_id": "FLIGHT-F5-WAREHOUSE",
+      "flight_id": "F5",
+      "mission_id": "F5",
       "frontier_name": "Capability Warehouse & Reconvergence Frontier",
       "boundary_scope": "sage/c2/reconvergence/",
       "status": "PASS",
@@ -164,8 +164,8 @@
       "proof_data": {
         "target": "sage/c2/reconvergence_synthesizer.py",
         "tests_passed": 2,
-        "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/47bb765e03f1d07358ba783ce6ae69b1c8579167/FLIGHT-F5-WAREHOUSE_receipt.json",
-        "pr_or_change": "F5 Reconvergence Warehouse",
+        "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/47bb765e03f1d07358ba783ce6ae69b1c8579167/F5_receipt.json",
+        "pr_or_change": "F5 Dynamic Flight",
         "lifecycle_milestones": [
           {
             "stage": "STAGE_1_INTAKE_RECON",
@@ -185,11 +185,11 @@
           {
             "stage": "STAGE_4_WAREHOUSE_PROMOTE",
             "passed": true,
-            "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/47bb765e03f1d07358ba783ce6ae69b1c8579167/FLIGHT-F5-WAREHOUSE_receipt.json"
+            "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/47bb765e03f1d07358ba783ce6ae69b1c8579167/F5_receipt.json"
           }
         ]
       },
-      "receipt_hash": "92fc0c728f0131af4f1dad0229b5e32fcafe88bcd90b38cdb765c774cad8ba87"
+      "receipt_hash": "be596afb2a8cc037a3ce0ffd0d1c2e6286b11f86c35053eb58933538b4359c7f"
     }
   ],
   "collision_count": 0,
