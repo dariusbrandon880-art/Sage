@@ -1,0 +1,14 @@
+{
+  "status": "PENDING_LIVE_VERIFICATION",
+  "verification_passed": false,
+  "reason": "PR #364 currently contains only mock/static Render verification evidence. Live CONNECTED_AND_GOVERNED status is not established.",
+  "required": [
+    "actual Render HTTPS URL",
+    "deployed commit SHA matching verified source",
+    "live health response",
+    "live OpenAPI response",
+    "live authenticated status response",
+    "live authenticated ChatGPT query response",
+    "evidence receipt bound to the live request"
+  ]
+}
