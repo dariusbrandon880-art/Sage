@@ -1,0 +1,9 @@
+{
+  "executed_head": "47bb765e03f1d07358ba783ce6ae69b1c8579167",
+  "gate_authority": "identity-addressed-receipt",
+  "job_id": "local-job",
+  "legacy_flat_file_gate_authority": false,
+  "receipt_path": "evidence_capture/waves/multi_session_velocity_wave_001/47bb765e03f1d07358ba783ce6ae69b1c8579167/wave_receipt.json",
+  "wave_id": "multi_session_velocity_wave_001",
+  "workflow_run_id": "local-run"
+}
