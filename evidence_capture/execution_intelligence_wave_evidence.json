@@ -8,8 +8,8 @@
   "queue_wait_time_ms": 0.0,
   "lock_contention_rate": 0.05,
   "admission_pass_rate": 1.0,
-  "velocity_flights_per_sec": 29330.797202797203,
+  "velocity_flights_per_sec": 4763.0070406541,
   "rolls_royce_quality_passed": true,
-  "timestamp": 1788143698.8007362,
-  "receipt_hash": "1fc3dfb583e2577dd69ccdf50cb688ec2b2ee493f294aa0a642b88fed27462f3"
+  "timestamp": 1788210622.180944,
+  "receipt_hash": "ef1430b69cf4f12cef621cdad17ab1f65261093fe74ac0645108b15db72068e0"
 }
