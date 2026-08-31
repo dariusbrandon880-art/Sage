@@ -59,8 +59,6 @@ def test_scoring_and_failure_diagnostics_are_oos_only():
     records = PredictionBatchEngine().generate([snapshot("e1"), snapshot("e2")], "cycle-score")
     outcomes = {"e1": 1, "e2": 0}
     result = score_predictions(records, outcomes)
-    # The batch engine emits one OOS prediction per market selection, so two
-    # events with home/away selections produce four valid scoring records.
     assert result.sample_count == 4
     assert result.resolved_count == 4
     assert result.brier_score is not None
@@ -78,6 +76,8 @@ def test_candidate_requires_strict_oos_brier_improvement_on_common_events():
         PredictionRecord("c1", "c", "e1", "moneyline", "home", "candidate", 0.8, 0.5, BEFORE, START).sign(),
         PredictionRecord("c2", "c", "e2", "moneyline", "home", "candidate", 0.2, 0.5, BEFORE, START).sign(),
     ]
-    promoted, candidate_eval, baseline_eval = validate_oos_candidate(candidate, baseline, {"e1": 1, "e2": 0})
+    promoted, candidate_eval, baseline_eval = validate_oos_candidate(
+        candidate, baseline, {"e1": 1, "e2": 0}, min_sample_size=2
+    )
     assert promoted
     assert candidate_eval.brier_score < baseline_eval.brier_score
