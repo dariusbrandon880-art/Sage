@@ -29,14 +29,7 @@ def get_git_head_sha() -> str:
     return head
 
 
-def build_wave(wave_id: str, prefix: str) -> DoubleBigJumpWaveSpec:
-    targets = (
-        ("execution_intelligence.py", "tests/c2/test_execution_intelligence_wave.py"),
-        ("governance_intelligence.py", "tests/c2/test_governance_intelligence_wave.py"),
-        ("build_jump_wave.py", "tests/c2/test_build_jump_wave.py"),
-        ("multi_frontier_dispatch.py", "tests/c2/test_multi_frontier_dispatch.py"),
-        ("double_big_jump_contract.py", "tests/c2/test_double_big_jump_contract.py"),
-    )
+def build_wave(wave_id: str, prefix: str, targets: tuple[tuple[str, str], ...]) -> DoubleBigJumpWaveSpec:
     missions = tuple(
         FlightMissionSpec(
             flight_id=f"F{i}",
@@ -54,7 +47,23 @@ def build_wave(wave_id: str, prefix: str) -> DoubleBigJumpWaveSpec:
 
 def main() -> int:
     expected_head = get_git_head_sha()
-    waves = validate_double_big_jump_waves((build_wave("double-wave-A", "A"), build_wave("double-wave-B", "B")))
+    targets_a = (
+        ("execution_intelligence.py", "tests/c2/test_execution_intelligence_wave.py"),
+        ("governance_intelligence.py", "tests/c2/test_governance_intelligence_wave.py"),
+        ("build_jump_wave.py", "tests/c2/test_build_jump_wave.py"),
+        ("multi_frontier_dispatch.py", "tests/c2/test_multi_frontier_dispatch.py"),
+        ("double_big_jump_contract.py", "tests/c2/test_double_big_jump_contract.py"),
+    )
+    targets_b = (
+        ("organism_jigsaw.py", "tests/c2/test_organism_jigsaw.py"),
+        ("chatgpt_c2_contract.py", "tests/c2/test_chatgpt_c2_exact_order_anti_drift.py"),
+        ("media_perception.py", "tests/c2/test_media_perception.py"),
+        ("workflow_velocity.py", "tests/c2/test_workflow_velocity.py"),
+        ("experiment_ledger.py", "tests/c2/test_experiment_ledger.py"),
+    )
+    waves = validate_double_big_jump_waves(
+        (build_wave("double-wave-A", "A", targets_a), build_wave("double-wave-B", "B", targets_b))
+    )
     print("=" * 80)
     print("SAGE C2 — DOUBLE BIG JUMP / CANONICAL WAVE COMPOSITION")
     print("=" * 80)

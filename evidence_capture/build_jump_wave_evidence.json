@@ -1,187 +1,187 @@
 {
-  "wave_id": "wave-big-jump-1788064930",
+  "wave_id": "wave-big-jump-1788211570",
   "flight_summaries": [
     {
-      "flight_id": "FLIGHT-F1-RESEARCH",
-      "target": "sage/c2/frontier_intelligence_bridge.py",
+      "flight_id": "F1",
+      "target": "sage/c2/execution_intelligence.py",
       "classification": "ACTIVE",
       "execution_result": "PASS",
-      "exact_head": "ee2c3682f1953769d133238d63270d12d3427a3e",
+      "exact_head": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
       "tests_passed": 4,
-      "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788064930/ee2c3682f1953769d133238d63270d12d3427a3e/FLIGHT-F1-RESEARCH_receipt.json",
-      "pr_or_change": "F1 Autonomous Research",
+      "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788211570/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F1_receipt.json",
+      "pr_or_change": "Canonical Big Jump Wave mission F1",
       "lifecycle_milestones": [
         {
           "stage": "STAGE_1_INTAKE_RECON",
           "passed": true,
-          "evidence_ref": "evidence_capture/f1_research_evidence.json",
-          "timestamp": 1788064930.6262784
+          "evidence_ref": "evidence_capture/waves/default/F1_receipt.json",
+          "timestamp": 1788211570.1583588
         },
         {
           "stage": "STAGE_2_BOUNDED_BUILD",
           "passed": true,
-          "evidence_ref": "sage/c2/frontier_intelligence_bridge.py",
-          "timestamp": 1788064930.6262846
+          "evidence_ref": "sage/c2/execution_intelligence.py",
+          "timestamp": 1788211570.1583638
         },
         {
           "stage": "STAGE_3_VERIFY_PROOF",
           "passed": true,
-          "evidence_ref": "tests/c2/test_frontier_admission.py",
-          "timestamp": 1788064931.9307709
+          "evidence_ref": "tests/c2/test_execution_intelligence_wave.py",
+          "timestamp": 1788211570.947879
         },
         {
           "stage": "STAGE_4_WAREHOUSE_PROMOTE",
           "passed": true,
-          "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788064930/ee2c3682f1953769d133238d63270d12d3427a3e/FLIGHT-F1-RESEARCH_receipt.json",
-          "timestamp": 1788064931.9312341
+          "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788211570/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F1_receipt.json",
+          "timestamp": 1788211570.9491422
         }
       ],
       "blocker": null
     },
     {
-      "flight_id": "FLIGHT-F2-CONTINUITY",
-      "target": "sage/capability_registry.py",
+      "flight_id": "F2",
+      "target": "sage/c2/governance_intelligence.py",
       "classification": "ACTIVE",
       "execution_result": "PASS",
-      "exact_head": "ee2c3682f1953769d133238d63270d12d3427a3e",
-      "tests_passed": 8,
-      "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788064930/ee2c3682f1953769d133238d63270d12d3427a3e/FLIGHT-F2-CONTINUITY_receipt.json",
-      "pr_or_change": "F2 Continuity Ledger",
+      "exact_head": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
+      "tests_passed": 4,
+      "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788211570/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F2_receipt.json",
+      "pr_or_change": "Canonical Big Jump Wave mission F2",
       "lifecycle_milestones": [
         {
           "stage": "STAGE_1_INTAKE_RECON",
           "passed": true,
-          "evidence_ref": "evidence_capture/f2_continuity_evidence.json",
-          "timestamp": 1788064930.62771
+          "evidence_ref": "evidence_capture/waves/default/F2_receipt.json",
+          "timestamp": 1788211570.159381
         },
         {
           "stage": "STAGE_2_BOUNDED_BUILD",
           "passed": true,
-          "evidence_ref": "sage/capability_registry.py",
-          "timestamp": 1788064930.6277144
+          "evidence_ref": "sage/c2/governance_intelligence.py",
+          "timestamp": 1788211570.1593857
         },
         {
           "stage": "STAGE_3_VERIFY_PROOF",
           "passed": true,
-          "evidence_ref": "tests/test_capability_registry.py",
-          "timestamp": 1788064932.02678
+          "evidence_ref": "tests/c2/test_governance_intelligence_wave.py",
+          "timestamp": 1788211571.7458339
         },
         {
           "stage": "STAGE_4_WAREHOUSE_PROMOTE",
           "passed": true,
-          "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788064930/ee2c3682f1953769d133238d63270d12d3427a3e/FLIGHT-F2-CONTINUITY_receipt.json",
-          "timestamp": 1788064932.0272608
+          "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788211570/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F2_receipt.json",
+          "timestamp": 1788211571.7465835
         }
       ],
       "blocker": null
     },
     {
-      "flight_id": "FLIGHT-F3-EXECUTION",
-      "target": "sage/runtime/engine.py",
+      "flight_id": "F3",
+      "target": "sage/c2/build_jump_wave.py",
       "classification": "ACTIVE",
       "execution_result": "PASS",
-      "exact_head": "ee2c3682f1953769d133238d63270d12d3427a3e",
-      "tests_passed": 37,
-      "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788064930/ee2c3682f1953769d133238d63270d12d3427a3e/FLIGHT-F3-EXECUTION_receipt.json",
-      "pr_or_change": "F3 Runtime Acceleration",
+      "exact_head": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
+      "tests_passed": 5,
+      "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788211570/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F3_receipt.json",
+      "pr_or_change": "Canonical Big Jump Wave mission F3",
       "lifecycle_milestones": [
         {
           "stage": "STAGE_1_INTAKE_RECON",
           "passed": true,
-          "evidence_ref": "evidence_capture/f3_execution_evidence.json",
-          "timestamp": 1788064930.628583
+          "evidence_ref": "evidence_capture/waves/default/F3_receipt.json",
+          "timestamp": 1788211570.1599514
         },
         {
           "stage": "STAGE_2_BOUNDED_BUILD",
           "passed": true,
-          "evidence_ref": "sage/runtime/engine.py",
-          "timestamp": 1788064930.6285868
+          "evidence_ref": "sage/c2/build_jump_wave.py",
+          "timestamp": 1788211570.1599548
         },
         {
           "stage": "STAGE_3_VERIFY_PROOF",
           "passed": true,
-          "evidence_ref": "tests/test_system_frame.py",
-          "timestamp": 1788064933.1687014
+          "evidence_ref": "tests/c2/test_build_jump_wave.py",
+          "timestamp": 1788211572.6167743
         },
         {
           "stage": "STAGE_4_WAREHOUSE_PROMOTE",
           "passed": true,
-          "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788064930/ee2c3682f1953769d133238d63270d12d3427a3e/FLIGHT-F3-EXECUTION_receipt.json",
-          "timestamp": 1788064933.1696742
+          "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788211570/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F3_receipt.json",
+          "timestamp": 1788211572.6179988
         }
       ],
       "blocker": null
     },
     {
-      "flight_id": "FLIGHT-F4-GUARD",
-      "target": "sage/c2/chatgpt_c2_contract.py",
+      "flight_id": "F4",
+      "target": "sage/c2/multi_frontier_dispatch.py",
       "classification": "ACTIVE",
       "execution_result": "PASS",
-      "exact_head": "ee2c3682f1953769d133238d63270d12d3427a3e",
-      "tests_passed": 25,
-      "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788064930/ee2c3682f1953769d133238d63270d12d3427a3e/FLIGHT-F4-GUARD_receipt.json",
-      "pr_or_change": "F4 Governance Sentinel",
+      "exact_head": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
+      "tests_passed": 5,
+      "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788211570/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F4_receipt.json",
+      "pr_or_change": "Canonical Big Jump Wave mission F4",
       "lifecycle_milestones": [
         {
           "stage": "STAGE_1_INTAKE_RECON",
           "passed": true,
-          "evidence_ref": "evidence_capture/f4_guard_evidence.json",
-          "timestamp": 1788064930.6331785
+          "evidence_ref": "evidence_capture/waves/default/F4_receipt.json",
+          "timestamp": 1788211570.1604261
         },
         {
           "stage": "STAGE_2_BOUNDED_BUILD",
           "passed": true,
-          "evidence_ref": "sage/c2/chatgpt_c2_contract.py",
-          "timestamp": 1788064930.633182
+          "evidence_ref": "sage/c2/multi_frontier_dispatch.py",
+          "timestamp": 1788211570.1604302
         },
         {
           "stage": "STAGE_3_VERIFY_PROOF",
           "passed": true,
-          "evidence_ref": "tests/c2/test_chatgpt_c2_exact_order_anti_drift.py",
-          "timestamp": 1788064931.917313
+          "evidence_ref": "tests/c2/test_multi_frontier_dispatch.py",
+          "timestamp": 1788211573.439635
         },
         {
           "stage": "STAGE_4_WAREHOUSE_PROMOTE",
           "passed": true,
-          "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788064930/ee2c3682f1953769d133238d63270d12d3427a3e/FLIGHT-F4-GUARD_receipt.json",
-          "timestamp": 1788064931.9182243
+          "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788211570/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F4_receipt.json",
+          "timestamp": 1788211573.4404037
         }
       ],
       "blocker": null
     },
     {
-      "flight_id": "FLIGHT-F5-WAREHOUSE",
-      "target": "sage/c2/reconvergence_synthesizer.py",
+      "flight_id": "F5",
+      "target": "sage/c2/double_big_jump_contract.py",
       "classification": "ACTIVE",
       "execution_result": "PASS",
-      "exact_head": "ee2c3682f1953769d133238d63270d12d3427a3e",
-      "tests_passed": 3,
-      "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788064930/ee2c3682f1953769d133238d63270d12d3427a3e/FLIGHT-F5-WAREHOUSE_receipt.json",
-      "pr_or_change": "F5 Reconvergence Warehouse",
+      "exact_head": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
+      "tests_passed": 5,
+      "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788211570/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F5_receipt.json",
+      "pr_or_change": "Canonical Big Jump Wave mission F5",
       "lifecycle_milestones": [
         {
           "stage": "STAGE_1_INTAKE_RECON",
           "passed": true,
-          "evidence_ref": "evidence_capture/f5_warehouse_evidence.json",
-          "timestamp": 1788064930.6380775
+          "evidence_ref": "evidence_capture/waves/default/F5_receipt.json",
+          "timestamp": 1788211570.1608365
         },
         {
           "stage": "STAGE_2_BOUNDED_BUILD",
           "passed": true,
-          "evidence_ref": "sage/c2/reconvergence_synthesizer.py",
-          "timestamp": 1788064930.6380813
+          "evidence_ref": "sage/c2/double_big_jump_contract.py",
+          "timestamp": 1788211570.16084
         },
         {
           "stage": "STAGE_3_VERIFY_PROOF",
           "passed": true,
-          "evidence_ref": "tests/c2/test_reconvergence_synthesizer.py",
-          "timestamp": 1788064932.0864651
+          "evidence_ref": "tests/c2/test_double_big_jump_contract.py",
+          "timestamp": 1788211574.317269
         },
         {
           "stage": "STAGE_4_WAREHOUSE_PROMOTE",
           "passed": true,
-          "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788064930/ee2c3682f1953769d133238d63270d12d3427a3e/FLIGHT-F5-WAREHOUSE_receipt.json",
-          "timestamp": 1788064932.0868564
+          "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788211570/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F5_receipt.json",
+          "timestamp": 1788211574.3176627
         }
       ],
       "blocker": null
@@ -214,6 +214,14 @@
   },
   "first_pass_verification_rate": 100.0,
   "reconvergence_verdict": "PASS",
-  "timestamp": 1788064933.1713846,
-  "package_hash": "32b2c219f90807ab9430e740da947c48448961553a1b4ed9f45ee66946bfc237"
+  "immersion_projection": {
+    "type": "MILESTONE_STRIKE",
+    "wave_id": "wave-big-jump-1788211570",
+    "verdict": "PASS",
+    "verified_cells": 20,
+    "safe_impact_stars": 5,
+    "rank": "MASTER"
+  },
+  "timestamp": 1788211574.3191216,
+  "package_hash": "b47c3d83d72f6c55c5e06de3ff764091502c0959f74e0a518156aa74e76738be"
 }
