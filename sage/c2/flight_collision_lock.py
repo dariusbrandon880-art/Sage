@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import posixpath
+import threading
 import time
 from typing import Dict, List, Optional, Set
 from pydantic import BaseModel, Field
@@ -38,13 +39,12 @@ class LockCheckResult(BaseModel):
 
 
 class FlightCollisionLockManager:
-    """Manager maintaining active resource reservation locks across concurrent sessions."""
+    """Thread-safe manager maintaining active resource reservations."""
 
     def __init__(self):
-        # Map normalized resource -> (session_id, flight_id)
         self._locked_resources: Dict[str, tuple[str, str]] = {}
-        # Map (session_id, flight_id) -> set of normalized resources
         self._session_locks: Dict[tuple[str, str], Set[str]] = {}
+        self._lock = threading.RLock()
 
     @staticmethod
     def normalize_path(path: str) -> str:
@@ -65,49 +65,46 @@ class FlightCollisionLockManager:
         return left == right or left.startswith(right + "/") or right.startswith(left + "/")
 
     def acquire_lock(self, request: FlightLockRequest) -> LockCheckResult:
-        """Attempts to lock all resources for a flight request."""
+        """Atomically checks and reserves all resources for a flight request."""
         requested_resources = {self.normalize_path(res) for res in request.target_files + request.target_namespaces}
+        with self._lock:
+            for res in requested_resources:
+                for locked_res, (conflict_session, conflict_flight) in self._locked_resources.items():
+                    if self.paths_overlap(res, locked_res) and (conflict_session, conflict_flight) != (request.session_id, request.flight_id):
+                        result = LockCheckResult(
+                            acquired=False,
+                            session_id=request.session_id,
+                            flight_id=request.flight_id,
+                            conflicting_session_id=conflict_session,
+                            conflicting_flight_id=conflict_flight,
+                            conflicting_resource=locked_res,
+                        )
+                        result.lock_hash = result.compute_hash()
+                        return result
 
-        # Check exact and hierarchical conflicts before mutating state.
-        for res in requested_resources:
-            for locked_res, (conflict_session, conflict_flight) in self._locked_resources.items():
-                if self.paths_overlap(res, locked_res) and (conflict_session, conflict_flight) != (request.session_id, request.flight_id):
-                    res_result = LockCheckResult(
-                        acquired=False,
-                        session_id=request.session_id,
-                        flight_id=request.flight_id,
-                        conflicting_session_id=conflict_session,
-                        conflicting_flight_id=conflict_flight,
-                        conflicting_resource=locked_res,
-                    )
-                    res_result.lock_hash = res_result.compute_hash()
-                    return res_result
+            key = (request.session_id, request.flight_id)
+            resources = self._session_locks.setdefault(key, set())
+            for res in requested_resources:
+                self._locked_resources[res] = key
+                resources.add(res)
 
-        key = (request.session_id, request.flight_id)
-        if key not in self._session_locks:
-            self._session_locks[key] = set()
-
-        for res in requested_resources:
-            self._locked_resources[res] = key
-            self._session_locks[key].add(res)
-
-        res_result = LockCheckResult(acquired=True, session_id=request.session_id, flight_id=request.flight_id)
-        res_result.lock_hash = res_result.compute_hash()
-        return res_result
+            result = LockCheckResult(acquired=True, session_id=request.session_id, flight_id=request.flight_id)
+            result.lock_hash = result.compute_hash()
+            return result
 
     def release_lock(self, session_id: str, flight_id: str) -> bool:
-        """Releases all locks held by a session flight."""
+        """Atomically releases all locks held by a session flight."""
         key = (session_id, flight_id)
-        if key not in self._session_locks:
-            return False
-
-        resources = self._session_locks.pop(key)
-        for res in resources:
-            if self._locked_resources.get(res) == key:
-                del self._locked_resources[res]
-
-        return True
+        with self._lock:
+            if key not in self._session_locks:
+                return False
+            resources = self._session_locks.pop(key)
+            for res in resources:
+                if self._locked_resources.get(res) == key:
+                    del self._locked_resources[res]
+            return True
 
     def get_active_locks(self) -> Dict[str, tuple[str, str]]:
-        """Returns snapshot of active locked resources."""
-        return dict(self._locked_resources)
+        """Returns a consistent snapshot of active locks."""
+        with self._lock:
+            return dict(self._locked_resources)
