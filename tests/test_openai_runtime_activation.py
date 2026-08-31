@@ -37,7 +37,7 @@ def test_responses_boundary_and_context(monkeypatch, tmp_path):
     runtime = SageRuntime(str(tmp_path))
     _seed_canonical_state(runtime)
     client = ChatGPTClient(runtime, c2_provider=lambda: {"canonical": "state", "active_objective": "Test ChatGPT Runtime Boundary", "active_task": "Verify governed model execution"})
-    response = client.execute_query(AIQueryRequest(prompt="verify boundary"))
+    response = client.execute_query(AIQueryRequest(prompt="boundary response"))
     assert "[SAGE::C2::CHATGPT]" in response.response_text
     assert "SAGE output" in response.response_text
     assert any("governed OpenAI adapter" in item for item in response.reasoning_history)
@@ -90,9 +90,7 @@ def test_override_is_test_seam(monkeypatch, tmp_path):
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     runtime = SageRuntime(str(tmp_path))
     _seed_canonical_state(runtime)
-    response = ChatGPTClient(runtime).execute_query(
-        AIQueryRequest(prompt="test", response_override="override output")
-    )
+    response = ChatGPTClient(runtime).execute_query(AIQueryRequest(prompt="test", response_override="override output"))
     assert "[SAGE::C2::CHATGPT]" in response.response_text
     assert "override output" in response.response_text
 
@@ -159,12 +157,8 @@ def test_chatgpt_and_gemini_rehydration_with_runtime_get_c2_context(tmp_path):
     chatgpt_client = ChatGPTClient(runtime)
     gemini_client = GeminiJulesClient(runtime)
 
-    chatgpt_resp = chatgpt_client.execute_query(
-        AIQueryRequest(prompt="ChatGPT test query", response_override="ChatGPT station active")
-    )
-    gemini_resp = gemini_client.execute_query(
-        AIQueryRequest(prompt="Gemini test query", response_override="Deep continuation response from Gemini/Jules station.")
-    )
+    chatgpt_resp = chatgpt_client.execute_query(AIQueryRequest(prompt="ChatGPT test query", response_override="ChatGPT station active"))
+    gemini_resp = gemini_client.execute_query(AIQueryRequest(prompt="Gemini test query", response_override="Deep continuation response from Gemini/Jules station."))
 
     assert "[SAGE::C2::CHATGPT]" in chatgpt_resp.response_text
     assert "ChatGPT station active" in chatgpt_resp.response_text
