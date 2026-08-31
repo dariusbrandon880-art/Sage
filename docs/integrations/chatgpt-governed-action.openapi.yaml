@@ -1,0 +1,98 @@
+openapi: 3.1.0
+info:
+  title: SAGE Governed ChatGPT Action Boundary
+  version: 1.0.0
+  description: |
+    Explicit integration boundary for routing a supported ChatGPT client through
+    the SAGE runtime. This specification does not claim control of the native
+    ChatGPT web application. A client is governed only when the request reaches
+    the deployed SAGE endpoint and passes its authentication/runtime/governance
+    path.
+servers:
+  - url: https://YOUR-SAGE-HOST.example.com
+    description: Replace with the deployed SAGE runtime origin.
+security:
+  - SageApiKey: []
+paths:
+  /ai/query/chatgpt:
+    post:
+      operationId: executeGovernedChatGPTQuery
+      summary: Execute a ChatGPT query through SAGE governance
+      description: |
+        Routes the query through ChatGPTClient, SAGEChatGPTBoundary and the
+        SAGE protocol governor. The calling client must be configured to use
+        this endpoint; this action does not intercept arbitrary browser traffic.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AIQueryRequest'
+      responses:
+        '200':
+          description: Governed ChatGPT response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIQueryResponse'
+        '401':
+          description: SAGE authentication failed
+        '403':
+          description: Governance/authority boundary rejected the request
+        '409':
+          description: Runtime or immersion state could not be reconciled
+        '500':
+          description: Governed execution failed closed
+  /health:
+    get:
+      operationId: getSageHealth
+      summary: Check SAGE runtime health
+      security: []
+      responses:
+        '200':
+          description: SAGE health status
+components:
+  securitySchemes:
+    SageApiKey:
+      type: apiKey
+      in: header
+      name: x-api-key
+  schemas:
+    AIQueryRequest:
+      type: object
+      required: [prompt]
+      properties:
+        prompt:
+          type: string
+          minLength: 1
+        session_id:
+          type: string
+          nullable: true
+        include_validated_memory:
+          type: boolean
+          default: true
+        include_knowledge_state:
+          type: boolean
+          default: true
+        response_override:
+          type: string
+          nullable: true
+    AIQueryResponse:
+      type: object
+      required: [response_text, reasoning_history, referenced_memories, session_id, timestamp]
+      properties:
+        response_text:
+          type: string
+        reasoning_history:
+          type: array
+          items:
+            type: string
+        referenced_memories:
+          type: array
+          items:
+            type: string
+        session_id:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
