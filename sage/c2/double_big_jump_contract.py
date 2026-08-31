@@ -3,7 +3,7 @@
 Double Big Jump is composition, not a second flight architecture:
 - each wave owns reusable F1..F5 slots;
 - each wave supplies explicit mission specifications;
-- waves share one verified repository HEAD;
+- waves share one independently anchored repository HEAD;
 - missing or stale HEAD evidence fails closed;
 - promotion requires both waves to pass independently.
 """
@@ -25,9 +25,12 @@ class DoubleBigJumpWaveSpec:
             raise ValueError("wave_id cannot be empty")
         if len(self.missions) != len(REUSABLE_FLIGHT_SLOTS):
             raise ValueError("each Double Big Jump wave requires exactly five missions")
-        if tuple(m.slot_id for m in self.missions) != REUSABLE_FLIGHT_SLOTS:
+        slots = tuple(m.flight_id for m in self.missions)
+        if slots != REUSABLE_FLIGHT_SLOTS:
             raise ValueError("missions must use reusable slots F1..F5 in canonical order")
-        mission_ids = tuple(m.mission_id for m in self.missions)
+        mission_ids = tuple(m.frontier_name for m in self.missions)
+        if any(not mission_id.strip() for mission_id in mission_ids):
+            raise ValueError("mission/frontier identities cannot be empty")
         if len(set(mission_ids)) != len(mission_ids):
             raise ValueError("mission identities must be unique within a wave")
 
@@ -49,7 +52,7 @@ def require_current_head(actual_head: str | None, expected_head: str | None) -> 
     """Fail closed unless a concrete current HEAD is independently available and matches."""
     if not actual_head or not expected_head:
         raise ValueError("Double Big Jump requires independently verified current repository HEAD")
-    if actual_head != expected_head:
+    if actual_head.lower() != expected_head.lower():
         raise ValueError("Double Big Jump repository HEAD mismatch")
     return actual_head
 
