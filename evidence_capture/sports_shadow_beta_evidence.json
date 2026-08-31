@@ -1,0 +1,25 @@
+{
+  "baseline_eval": {
+    "brier_score": 0.2508936929567361,
+    "clv_score": -0.029999999999999954,
+    "log_loss": 0.6949401801590661,
+    "model_version": "shadow-v1-baseline",
+    "sample_count": 6
+  },
+  "candidate_eval": {
+    "brier_score": 0.2508936929567361,
+    "clv_score": -0.029999999999999954,
+    "log_loss": 0.6949401801590661,
+    "model_version": "shadow-v2-candidate",
+    "sample_count": 6
+  },
+  "candidate_promoted": false,
+  "failure_clusters_count": 1,
+  "head_sha": "47bb765e03f1d07358ba783ce6ae69b1c8579167",
+  "overall_verdict": "PASS",
+  "parlay_id": "parlay_parlay_001",
+  "parlay_lock_verified": true,
+  "predictions_generated": 6,
+  "snapshots_count": 3,
+  "timestamp": 1788141208.7156534
+}

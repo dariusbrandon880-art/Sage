@@ -54,15 +54,25 @@ def validate_oos_candidate(
     candidate: Iterable[PredictionRecord],
     baseline: Iterable[PredictionRecord],
     outcomes: Mapping[str, int],
+    closing_prices: Mapping[str, float] | None = None,
+    min_sample_size: int = 2,
 ) -> tuple[bool, EvaluationResult, EvaluationResult]:
-    """Promote only when candidate beats baseline on the same locked OOS events."""
+    """Promote only when candidate beats baseline on the same locked OOS events with min sample size."""
     candidate_records = [p for p in candidate if p.is_oos]
     baseline_records = [p for p in baseline if p.is_oos]
     candidate_events = {p.event_id for p in candidate_records}
     baseline_events = {p.event_id for p in baseline_records}
     common = candidate_events & baseline_events & set(outcomes)
-    candidate_eval = score_predictions((p for p in candidate_records if p.event_id in common), outcomes)
-    baseline_eval = score_predictions((p for p in baseline_records if p.event_id in common), outcomes)
+
+    candidate_eval = score_predictions((p for p in candidate_records if p.event_id in common), outcomes, closing_prices)
+    baseline_eval = score_predictions((p for p in baseline_records if p.event_id in common), outcomes, closing_prices)
+
+    if candidate_eval.sample_count < min_sample_size:
+        return False, candidate_eval, baseline_eval
+
     if candidate_eval.brier_score is None or baseline_eval.brier_score is None:
         return False, candidate_eval, baseline_eval
-    return candidate_eval.brier_score < baseline_eval.brier_score, candidate_eval, baseline_eval
+
+    # Must strictly improve Brier score over baseline
+    promoted = candidate_eval.brier_score < baseline_eval.brier_score
+    return promoted, candidate_eval, baseline_eval

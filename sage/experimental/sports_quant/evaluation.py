@@ -1,4 +1,4 @@
-"""Out-of-sample calibration and market-edge evaluation for shadow predictions."""
+"""Out-of-sample calibration, closing line value (CLV), and market-edge evaluation for shadow predictions."""
 
 from dataclasses import dataclass
 import math
@@ -15,20 +15,36 @@ class EvaluationResult:
     log_loss: float | None
     market_brier_score: float | None
     mean_probability_error: float | None
+    clv_score: float | None
     resolved_count: int
 
 
+def calculate_clv(
+    predicted_probability: float,
+    closing_market_probability: float,
+) -> float:
+    """Calculate Closing Line Value (CLV) as log-ratio or difference of probabilities."""
+    if closing_market_probability <= 0.0 or closing_market_probability >= 1.0:
+        return 0.0
+    # Expected edge relative to closing market
+    return predicted_probability - closing_market_probability
+
+
 def score_predictions(
-    predictions: Iterable[PredictionRecord], outcomes: Mapping[str, int]
+    predictions: Iterable[PredictionRecord],
+    outcomes: Mapping[str, int],
+    closing_prices: Mapping[str, float] | None = None,
 ) -> EvaluationResult:
     records = [p for p in predictions if p.event_id in outcomes and p.verify_lock() and p.is_oos]
     if not records:
-        return EvaluationResult("unknown", 0, None, None, None, None, 0)
+        return EvaluationResult("unknown", 0, None, None, None, None, None, 0)
 
     brier = []
     market_brier = []
     log_losses = []
     errors = []
+    clvs = []
+
     for record in records:
         outcome = float(outcomes[record.event_id])
         p = min(1.0 - 1e-15, max(1e-15, record.predicted_probability))
@@ -38,6 +54,12 @@ def score_predictions(
         log_losses.append(-(outcome * math.log(p) + (1.0 - outcome) * math.log(1.0 - p)))
         errors.append(abs(p - outcome))
 
+        if closing_prices and record.event_id in closing_prices:
+            closing_prob = closing_prices[record.event_id]
+            clvs.append(calculate_clv(p, closing_prob))
+
+    mean_clv = sum(clvs) / len(clvs) if clvs else None
+
     return EvaluationResult(
         model_version=records[0].model_version,
         sample_count=len(records),
@@ -45,5 +67,6 @@ def score_predictions(
         log_loss=sum(log_losses) / len(log_losses),
         market_brier_score=sum(market_brier) / len(market_brier),
         mean_probability_error=sum(errors) / len(errors),
+        clv_score=mean_clv,
         resolved_count=len(records),
     )
