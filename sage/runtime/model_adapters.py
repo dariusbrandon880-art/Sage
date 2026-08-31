@@ -9,12 +9,11 @@ import json
 from typing import Any, Mapping, Sequence
 
 from sage.c2.chatgpt_c2_contract import render_system_contract
-from sage.runtime.model_gateway import ModelResponse, SAGERuntimeEnvelope
+from sage.runtime.model_gateway import ModelResponse, SAGERuntimeEnvelope, SAGEProtocolGovernor
 
 
 class OpenAIResponsesAdapter:
     """OpenAI Responses API adapter behind the SAGE model contract."""
-
     station = "[SAGE::C2::CHATGPT]"
 
     def __init__(self, client: Any, *, model_id: str):
@@ -22,65 +21,31 @@ class OpenAIResponsesAdapter:
         self.model_id = model_id
 
     def invoke(self, envelope: SAGERuntimeEnvelope, task: str) -> ModelResponse:
-        from sage.runtime.model_gateway import SAGEProtocolGovernor
-
         try:
-            response = self.client.responses.create(
-                model=self.model_id,
-                instructions=_system_instructions(envelope),
-                input=task,
-            )
+            response = self.client.responses.create(model=self.model_id, instructions=_system_instructions(envelope), input=task)
         except Exception as exc:
             raise RuntimeError(f"OpenAI API execution failed: {exc}") from exc
-
         text = getattr(response, "output_text", None)
         if text is None or not str(text).strip():
             raise RuntimeError("OpenAI API execution failed: empty output")
         text = str(text)
-
         structured = SAGEProtocolGovernor.validate_and_parse(text, required_station=self.station)
         if structured.violations:
             raise ValueError(f"SAGE Protocol Governance Violation: {'; '.join(structured.violations)}")
-
-        return ModelResponse(
-            model_id=self.model_id,
-            instance_id=envelope.state.instance_id,
-            mission_id=envelope.state.mission_id,
-            session_id=envelope.state.session_id,
-            input_state_digest=envelope.state_digest,
-            station=envelope.station,
-            policy_version=envelope.policy_version,
-            policy_digest=envelope.policy_digest,
-            provenance_digest=envelope.provenance_digest,
-            raw_output=text,
-            structured_response=structured,
-            evidence_refs=structured.evidence_refs,
-        )
+        return ModelResponse(model_id=self.model_id, instance_id=envelope.state.instance_id, mission_id=envelope.state.mission_id, session_id=envelope.state.session_id, input_state_digest=envelope.state_digest, station=envelope.station, policy_version=envelope.policy_version, policy_digest=envelope.policy_digest, provenance_digest=envelope.provenance_digest, raw_output=text, structured_response=structured, evidence_refs=structured.evidence_refs)
 
 
 class GeminiInteractionsAdapter:
     """Google Gemini Interactions API adapter behind the SAGE model contract."""
-
     station = "[SAGE::INTEL::GEMINI]"
 
-    def __init__(
-        self,
-        client: Any,
-        *,
-        model_id: str,
-        tools: Sequence[Mapping[str, Any]] = (),
-    ):
+    def __init__(self, client: Any, *, model_id: str, tools: Sequence[Mapping[str, Any]] = ()):
         self.client = client
         self.model_id = model_id
         self.tools = tuple(tools)
 
     def invoke(self, envelope: SAGERuntimeEnvelope, task: str) -> ModelResponse:
-        from sage.runtime.model_gateway import SAGEProtocolGovernor
-
-        request: dict[str, Any] = {
-            "model": self.model_id,
-            "input": _gemini_input(envelope, task),
-        }
+        request: dict[str, Any] = {"model": self.model_id, "input": _gemini_input(envelope, task)}
         if self.tools:
             request["tools"] = [dict(tool) for tool in self.tools]
         interaction = self.client.interactions.create(**request)
@@ -88,33 +53,17 @@ class GeminiInteractionsAdapter:
         if text is None or not str(text).strip():
             raise RuntimeError("Gemini API execution failed: empty output")
         text = str(text)
-
         structured = SAGEProtocolGovernor.validate_and_parse(text, required_station=self.station)
         if structured.violations:
             raise ValueError(f"SAGE Protocol Governance Violation: {'; '.join(structured.violations)}")
-
-        evidence_refs = _extract_url_citations(interaction)
-        evidence_refs = tuple(dict.fromkeys((*structured.evidence_refs, *evidence_refs)))
-        return ModelResponse(
-            model_id=self.model_id,
-            instance_id=envelope.state.instance_id,
-            mission_id=envelope.state.mission_id,
-            session_id=envelope.state.session_id,
-            input_state_digest=envelope.state_digest,
-            station=envelope.station,
-            policy_version=envelope.policy_version,
-            policy_digest=envelope.policy_digest,
-            provenance_digest=envelope.provenance_digest,
-            evidence_refs=evidence_refs,
-            raw_output=text,
-            structured_response=structured,
-        )
+        provider_refs = _extract_url_citations(interaction)
+        evidence_refs = tuple(dict.fromkeys((*structured.evidence_refs, *provider_refs)))
+        return ModelResponse(model_id=self.model_id, instance_id=envelope.state.instance_id, mission_id=envelope.state.mission_id, session_id=envelope.state.session_id, input_state_digest=envelope.state_digest, station=envelope.station, policy_version=envelope.policy_version, policy_digest=envelope.policy_digest, provenance_digest=envelope.provenance_digest, evidence_refs=evidence_refs, raw_output=text, structured_response=structured)
 
 
 def _system_instructions(envelope: SAGERuntimeEnvelope) -> str:
     payload = json.dumps(envelope.to_payload(), sort_keys=True, separators=(",", ":"))
-    return (
-        "You are operating under the SAGE Autonomous Continuity Runtime Protocol.\n"
+    return ("You are operating under the SAGE Autonomous Continuity Runtime Protocol.\n"
         f"{render_system_contract()}\n"
         "C2 Operating Context is bound to the canonical SAGE runtime envelope below.\n"
         "STRICT GOVERNANCE RULES:\n"
@@ -125,8 +74,7 @@ def _system_instructions(envelope: SAGERuntimeEnvelope) -> str:
         "5. EVIDENCE CLASSIFICATION: Label repository facts, external intelligence, inference, and unverified claims distinctly. Never let external research override live repository truth.\n"
         "6. IDENTITY IS BOUND: Treat the envelope station, agent identity, policy version, state digest, and provenance digest as immutable governance context. Do not invent, replace, or reinterpret them.\n"
         f"The envelope is authoritative context. Return structured output according to {envelope.required_output_contract}.\n"
-        f"SAGE_ENVELOPE={payload}"
-    )
+        f"SAGE_ENVELOPE={payload}")
 
 
 def _gemini_input(envelope: SAGERuntimeEnvelope, task: str) -> str:
@@ -134,7 +82,6 @@ def _gemini_input(envelope: SAGERuntimeEnvelope, task: str) -> str:
 
 
 def _extract_url_citations(interaction: Any) -> list[str]:
-    """Extract provider citations without treating them as canonical truth."""
     refs: list[str] = []
     for step in getattr(interaction, "steps", ()) or ():
         for block in getattr(step, "content", ()) or ():
