@@ -25,7 +25,7 @@ from sage.c2.reconvergence_synthesizer import (
     LifecycleStage,
     ReconvergenceEvidencePackage,
 )
-from sage.c2.reusable_flight_slots import SAGE_FLIGHT_SLOTS, validate_mission_assignments
+from sage.c2.reusable_flight_slots import FlightMissionAssignment, SAGE_FLIGHT_SLOTS, validate_mission_assignments
 
 
 class FlightMissionSpec(BaseModel):
@@ -44,7 +44,7 @@ class FlightMissionSpec(BaseModel):
 class BuildJumpWaveEngine:
     """Execute five bounded missions concurrently with fail-closed evidence.
 
-    The engine intentionally has no canonical F1-F5 mission table.  Every wave
+    The engine intentionally has no canonical F1-F5 mission table. Every wave
     must supply an explicit, validated assignment so slot identity cannot
     silently become a permanent mission role.
     """
@@ -144,7 +144,7 @@ class BuildJumpWaveEngine:
             raise ValueError(f"Big Jump Wave requires exactly {len(SAGE_FLIGHT_SLOTS)} flight missions, got {len(missions)}")
         validated = validate_mission_assignments(
             [
-                __import__("sage.c2.reusable_flight_slots", fromlist=["FlightMissionAssignment"]).FlightMissionAssignment(
+                FlightMissionAssignment(
                     slot_id=spec.flight_id,
                     mission_id=spec.mission_id,
                     frontier_name=spec.frontier_name,
