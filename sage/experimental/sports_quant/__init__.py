@@ -7,7 +7,7 @@ and learn from failures. It has no wagering or account-execution surface.
 
 from .ingestion import MarketSnapshot, FanDuelSnapshotAdapter
 from .prediction import PredictionRecord, PredictionBatchEngine
-from .evaluation import EvaluationResult, score_predictions
+from .evaluation import EvaluationResult, calculate_clv, score_predictions
 from .learning import FailureCluster, build_failure_clusters, validate_oos_candidate
 
 __all__ = [
@@ -16,6 +16,7 @@ __all__ = [
     "PredictionRecord",
     "PredictionBatchEngine",
     "EvaluationResult",
+    "calculate_clv",
     "score_predictions",
     "FailureCluster",
     "build_failure_clusters",
