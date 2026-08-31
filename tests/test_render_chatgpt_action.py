@@ -21,7 +21,13 @@ def test_export_openapi_schema(tmp_path):
     assert "/ai/query/chatgpt" in schema["paths"]
 
 
-def test_verify_render_chatgpt_action_mocked(tmp_path, monkeypatch):
+def test_verify_render_chatgpt_action_missing_key_fails_closed(tmp_path, monkeypatch):
+    monkeypatch.delenv("SAGE_API_KEYS", raising=False)
+    with pytest.raises(ValueError, match="API key must be explicitly provided"):
+        verify_render_chatgpt_action("https://sage-runtime.onrender.com", api_key=None, target_root=tmp_path)
+
+
+def test_verify_render_chatgpt_action_ai_query_non_200_fails_closed(tmp_path, monkeypatch):
     import httpx
     def mock_get(url, *args, **kwargs):
         class MockResponse:
@@ -29,32 +35,28 @@ def test_verify_render_chatgpt_action_mocked(tmp_path, monkeypatch):
             def json(self):
                 if "openapi.json" in url:
                     return {"paths": {"/status": {}}}
-                return {"status": "ok"}
-            @property
-            def text(self):
-                return '{"status": "ok"}'
+                return {"active": True}
         return MockResponse()
 
     def mock_post(url, *args, **kwargs):
         class MockResponse:
-            status_code = 200
+            status_code = 422
             @property
             def text(self):
-                return '{"response": "ok"}'
+                return '{"detail": "Unprocessable Entity"}'
         return MockResponse()
 
     monkeypatch.setattr(httpx, "get", mock_get)
     monkeypatch.setattr(httpx, "post", mock_post)
 
-    # Mocked URL must NOT claim CONNECTED_AND_GOVERNED
-    evidence = verify_render_chatgpt_action("http://mock-render-url.onrender.com", "test-key", target_root=tmp_path)
+    evidence = verify_render_chatgpt_action("https://sage-runtime.onrender.com", api_key="test-key", target_root=tmp_path)
 
-    assert evidence["is_live_public_https"] is False
-    assert evidence["action_configuration_status"] == "MOCK_VERIFIED_PENDING_LIVE_DEPLOYMENT"
-    assert (tmp_path / "evidence_capture" / "render_chatgpt_action_verification.json").exists()
+    assert evidence["endpoint_results"]["ai_query_chatgpt"]["passed"] is False
+    assert evidence["verification_passed"] is False
+    assert evidence["action_configuration_status"] == "UNBRIDGED_HOST_SESSION"
 
 
-def test_verify_render_chatgpt_action_live_https(tmp_path, monkeypatch):
+def test_verify_render_chatgpt_action_live_https_success(tmp_path, monkeypatch):
     import httpx
     def mock_get(url, *args, **kwargs):
         class MockResponse:
@@ -62,25 +64,23 @@ def test_verify_render_chatgpt_action_live_https(tmp_path, monkeypatch):
             def json(self):
                 if "openapi.json" in url:
                     return {"paths": {"/status": {}}}
-                return {"status": "ok"}
-            @property
-            def text(self):
-                return '{"status": "ok"}'
+                return {"active": True}
         return MockResponse()
 
     def mock_post(url, *args, **kwargs):
         class MockResponse:
             status_code = 200
+            def json(self):
+                return {"response_text": "[SAGE::C2::CHATGPT] Verified", "session_id": "session_test"}
             @property
             def text(self):
-                return '{"response": "ok"}'
+                return '{"response_text": "[SAGE::C2::CHATGPT] Verified"}'
         return MockResponse()
 
     monkeypatch.setattr(httpx, "get", mock_get)
     monkeypatch.setattr(httpx, "post", mock_post)
 
-    # Real HTTPS URL with valid responses claims CONNECTED_AND_GOVERNED
-    evidence = verify_render_chatgpt_action("https://sage-runtime.onrender.com", "test-key", target_root=tmp_path)
+    evidence = verify_render_chatgpt_action("https://sage-runtime.onrender.com", api_key="test-key", target_root=tmp_path)
 
     assert evidence["is_live_public_https"] is True
     assert evidence["verification_passed"] is True
