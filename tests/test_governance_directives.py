@@ -50,7 +50,10 @@ def test_five_flight_locked_model_and_big_strike_conformance():
     assert "Big Strike Wave Definition" in campaign_content
     assert "independent capability attack vector" in campaign_content
     operating_content = (gov_dir / "BIG_JUMP_WAVE_C2_5X4_OPERATING_FRAME.md").read_text(encoding="utf-8")
-    assert "## Core Model (Independent Vehicles)" in operating_content
+    assert "## Core Model — Five Reusable Open Slots" in operating_content
+    assert "OPEN" in operating_content
+    assert "reusable execution slot" in operating_content
+    assert "no permanent capability labels" in operating_content
     assert "Big Strike Wave Definition" in operating_content
 
 
