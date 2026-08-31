@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
-"""Execute live 5-flight Big Jump Wave under SAGE C2 governance.
+"""Execute a live five-flight Big Jump Wave with explicitly assigned missions.
 
-Outputs evidence package to evidence_capture/build_jump_wave_evidence.json.
+The five flight IDs are reusable execution slots. This runner supplies one
+selected mission set for this invocation; it does not define permanent flight
+roles.
 """
 
 from __future__ import annotations
@@ -11,14 +13,36 @@ import sys
 import time
 from pathlib import Path
 
-# Ensure repo root is on sys.path
 repo_root = Path(__file__).resolve().parent.parent
 if str(repo_root) not in sys.path:
     sys.path.insert(0, str(repo_root))
 
-from sage.c2.build_jump_wave import BuildJumpWaveEngine  # noqa: E402
+from sage.c2.build_jump_wave import BuildJumpWaveEngine, FlightMissionSpec  # noqa: E402
 
 EVIDENCE_PATH = repo_root / "evidence_capture" / "build_jump_wave_evidence.json"
+
+
+def selected_missions() -> list[FlightMissionSpec]:
+    """Return one wave-specific mission assignment for the reusable five slots."""
+    assignments = (
+        ("F1", "runtime-repair", "sage/runtime/engine.py", "sage/runtime/", "evidence_capture/f1_runtime_repair.json", "runtime repair", ["tests/test_system_frame.py"]),
+        ("F2", "transport-hardening", "sage/runtime/interface_transport.py", "sage/runtime/", "evidence_capture/f2_transport_hardening.json", "transport hardening", ["tests/runtime/test_interface_transport.py"]),
+        ("F3", "governance-attack", "sage/runtime/model_gateway.py", "sage/runtime/", "evidence_capture/f3_governance_attack.json", "governance attack", ["tests/runtime/test_protocol_governance.py"]),
+        ("F4", "c2-antidrift", "sage/c2/chatgpt_c2_contract.py", "sage/c2/contract/", "evidence_capture/f4_antidrift.json", "C2 anti-drift repair", ["tests/c2/test_chatgpt_c2_exact_order_anti_drift.py"]),
+        ("F5", "convergence-test", "sage/c2/reconvergence_synthesizer.py", "sage/c2/reconvergence/", "evidence_capture/f5_convergence_test.json", "reconvergence test", ["tests/c2/test_reconvergence_synthesizer.py"]),
+    )
+    return [
+        FlightMissionSpec(
+            flight_id=flight_id,
+            mission_name=mission_name,
+            target_path=target_path,
+            collision_zone=collision_zone,
+            evidence_ref=evidence_ref,
+            pr_or_change=pr_or_change,
+            test_references=test_references,
+        )
+        for flight_id, mission_name, target_path, collision_zone, evidence_ref, pr_or_change, test_references in assignments
+    ]
 
 
 def main() -> int:
@@ -28,7 +52,7 @@ def main() -> int:
 
     wave_id = f"wave-big-jump-{int(time.time())}"
     engine = BuildJumpWaveEngine(storage_dir=str(repo_root / "evidence_capture"))
-    evidence_pkg = engine.execute_wave(wave_id=wave_id)
+    evidence_pkg = engine.execute_wave(wave_id=wave_id, missions=selected_missions())
 
     EVIDENCE_PATH.parent.mkdir(parents=True, exist_ok=True)
     with open(EVIDENCE_PATH, "w", encoding="utf-8") as f:
@@ -53,7 +77,7 @@ def main() -> int:
         print("\n[!] BIG JUMP WAVE FAILED OR HELD", file=sys.stderr)
         return 1
 
-    print("\n[✓] BIG JUMP WAVE SUCCESSFUL — ALL 5 FLIGHTS VERIFIED (20/20 ADVANCEMENT CELLS)")
+    print("\n[✓] BIG JUMP WAVE SUCCESSFUL — ALL 5 ASSIGNED FLIGHTS VERIFIED (20/20 ADVANCEMENT CELLS)")
     return 0
 
 
