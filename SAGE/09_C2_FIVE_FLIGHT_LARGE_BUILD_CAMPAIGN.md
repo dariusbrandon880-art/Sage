@@ -5,22 +5,24 @@ Architecture Doctrine
 
 ## Purpose
 
-Define how C2/GPT coordinates multiple capability campaigns in parallel while preserving one governance spine, one evidence model, and one canonical SAGE state.
+Define how C2/GPT coordinates multiple capability missions in parallel while preserving one governance spine, one evidence model, and one canonical SAGE state.
 
 ## Core Definition
 
-Five Flights are a C2/GPT workflow metaphor and campaign model for running multiple bounded capability paths simultaneously.
+Five Flights are reusable C2/GPT execution slots for running five independent current missions simultaneously.
 
 They are:
-- separate mission paths
-- separate capability campaigns
-- separate upgrade/PR streams
+- separate mission paths for the current wave
+- separate capability campaigns for the current wave
+- separate upgrade/PR streams where appropriate
+- reusable across future waves with different mission assignments
 
 They are not:
 - independent agents
 - independent authorities
 - separate memory systems
 - independent truth sources
+- permanent departments or functional roles
 
 ## System Layout
 
@@ -33,7 +35,7 @@ SUPER SEARCH
 BOUND
 DECIDE
 AUTHORIZE
-BUILD
+BUILD / REPAIR / TEST
 OBSERVE
 VERIFY
 COMPOUND
@@ -41,15 +43,11 @@ COMPOUND
                          |
                          v
 
-              FIVE FLIGHT CAMPAIGN ENGINE
+              FIVE FLIGHT EXECUTION SLOTS
 
- Flight 1        Flight 2        Flight 3
- External        Domain          Cognitive
- Intelligence    Research        Brain Tree
-
- Flight 4        Flight 5
- Runtime         Adversarial
- Capability      Reality
+ F1              F2              F3              F4              F5
+ current         current         current         current         current
+ mission         mission         mission         mission         mission
 
                          |
                          v
@@ -73,96 +71,81 @@ COMPOUND
 
 Each flight:
 
-1. Defines a bounded frontier.
-2. Performs recon.
-3. Uses Super Search where useful.
-4. Builds only authorized changes.
-5. Produces evidence and receipts.
-6. Passes verification.
-7. Promotes only validated state.
+1. Receives a distinct current mission from C2.
+2. Defines the mission's bounded frontier.
+3. Performs recon.
+4. Uses Super Search where useful.
+5. Builds, repairs, researches, tests, or otherwise executes whatever the current mission requires.
+6. Produces evidence and receipts.
+7. Passes verification.
+8. Promotes only validated state.
 
-## Example Flight Paths
+The flight number itself never determines the kind of work performed.
 
-### Flight 1 — External Intelligence
+## Mission Assignment
 
-Purpose:
-- external research
-- standards
-- open source discovery
-- architecture comparison
+For every Big Jump Wave, C2 assigns five current missions to F1-F5.
 
-Output:
-validated candidates.
-
-### Flight 2 — Scientific Domain Research
-
-Purpose:
-- domain experimentation
-- evaluation systems
-- robustness research
-
-Rules:
-- research only where applicable
-- preserve negative findings
-- prevent leakage
-
-### Flight 3 — Cognitive Brain Tree
-
-Purpose:
-Advance:
+Example:
 
 ```
-Identity
- |
-Memory
- |
-Context Fabric
- |
-Executive Decision Layer
- |
-Learning Candidate
- |
-Verification
- |
-Evolution
+Wave N
+F1 -> runtime repair
+F2 -> architecture investigation
+F3 -> capability build
+F4 -> security hardening
+F5 -> verification infrastructure
+
+Wave N+1
+F1 -> research
+F2 -> integration
+F3 -> governance repair
+F4 -> capability build
+F5 -> recon
 ```
 
-### Flight 4 — Runtime Capability
+The same flight may receive any authorized mission on any subsequent wave.
 
-Purpose:
-- implementation
-- architecture primitives
-- engineering upgrades
+## Full-Engine Rule
 
-Requires:
-- tests
-- receipts
-- regression checks
+Every flight receives the same complete governed execution aperture. The mission determines which parts are causally necessary.
 
-### Flight 5 — Adversarial Reality
+```
+SENSE
+-> RECON
+-> SUPER SEARCH
+-> BOUND
+-> DECIDE
+-> AUTHORIZE
+-> BUILD / REPAIR / RESEARCH / TEST
+-> OBSERVE
+-> VERIFY
+-> EVIDENCE
+-> RECONVERGE
+-> COMPOUND
+```
 
-Purpose:
-Attack assumptions.
+A flight is never reduced to a permanent stage or subsystem function.
 
-Checks:
-- false capability claims
-- authority leaks
-- evidence weakness
-- recovery quality
+## Five Independent Paths
+
+The five paths are independent **for the current wave**. Their target paths, files, collision zones, and mission meanings are selected per wave and may change completely on the next wave.
+
+Safety comes from explicit mission boundaries, ownership, collision admission, exact repository HEAD binding, verification, and evidence—not from permanent functional assignment.
 
 ## Critical Distinction
 
 ```
-Five Flights
+F1 / F2 / F3 / F4 / F5
 =
-C2/GPT parallel campaign workflow
+reusable execution identities
 
-Five Fronts
+Current mission assignment
 =
-SAGE execution/reconvergence structure
+what that flight does in this wave
 ```
 
-Connected, but not identical.
+Never derive mission meaning from the flight number.
 
 ## Brain Tree Relationship
 
@@ -216,11 +199,11 @@ Rule:
 ## Promotion Path
 
 ```
-Flight Discovery
+Mission Selection
         |
 Bound Frontier
         |
-Build
+Build / Repair / Research / Test
         |
 Observe
         |
@@ -239,3 +222,6 @@ Master Archive Promotion
 - Observation is not automatic learning.
 - Implementation is not capability proof.
 - Test passing alone is not complete evidence.
+- F1-F5 have no permanent functional roles.
+- Any authorized mission may be assigned to any flight.
+- Parallel missions must remain distinct and reconverge through verification.
