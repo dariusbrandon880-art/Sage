@@ -1,0 +1,12 @@
+{
+  "receipt_id": "rec_gi_38613c20ea71",
+  "wave_id": "wave_governance_intelligence_v1",
+  "exact_git_head": "acc64e210e070f12ba7a7b2184b0f5b70b56edaf",
+  "total_attack_vectors_tested": 5,
+  "attack_vectors_neutralized": 5,
+  "anti_drift_reconciled": true,
+  "identity_provenance_verified": true,
+  "fail_closed_verdict": "PASS",
+  "timestamp": 1788141597.8298886,
+  "receipt_hash": "42add4eb40fda03b1ca520f033ae44845c1131121e943787dafc0802e3f228a0"
+}
