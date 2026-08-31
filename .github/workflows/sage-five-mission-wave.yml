@@ -3,6 +3,7 @@ name: SAGE Five-Mission Control Tower Wave
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -12,21 +13,48 @@ env:
   SAGE_CI_OPENAI_STUB: "1"
 
 jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+    steps:
+      - name: Checkout exact verification revision
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Validate and publish current wave plan
+        id: plan
+        run: |
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          from pathlib import Path
+          from sage.c2.reusable_flight_slots import SAGE_FLIGHT_SLOTS
+
+          plan = json.loads(Path('config/sage/current_wave_missions.json').read_text())
+          missions = plan.get('missions')
+          if not isinstance(missions, list) or len(missions) != 5:
+              raise SystemExit('Current wave plan must contain exactly five missions')
+          ids = tuple(item.get('id') for item in missions)
+          if ids != SAGE_FLIGHT_SLOTS:
+              raise SystemExit(f'Current wave plan must assign slots exactly once in canonical order: {SAGE_FLIGHT_SLOTS}')
+          if len({item.get('mission') for item in missions}) != 5:
+              raise SystemExit('Current wave plan requires unique mission identities')
+          if any(not item.get('mission', '').strip() for item in missions):
+              raise SystemExit('Every reusable slot requires an explicit mission identity')
+          print('matrix=' + json.dumps({'include': missions}, separators=(',', ':')))
+          PY
   flight:
+    needs: plan
     strategy:
       fail-fast: false
       max-parallel: 5
-      matrix:
-        include:
-          - {id: F1, mission: google-drive-continuity, test: tests/test_projection.py}
-          - {id: F2, mission: sports-scientific-integrity, test: tests}
-          - {id: F3, mission: cognitive-pfc-compound, test: tests/experimental/test_cognitive_kernel.py}
-          - {id: F4, mission: evidence-lineage-replay, test: tests}
-          - {id: F5, mission: progression-receipt-control-tower, test: tests}
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout canonical main
+      - name: Checkout exact verification revision
         uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Setup Python
         uses: actions/setup-python@v6
         with: {python-version: '3.12'}
@@ -34,6 +62,19 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e '.[dev]'
+      - name: Assert slot/mission contract
+        env:
+          SAGE_FLIGHT_ID: ${{ matrix.id }}
+          SAGE_MISSION: ${{ matrix.mission }}
+        run: |
+          python - <<'PY'
+          import os
+          from sage.c2.reusable_flight_slots import SAGE_FLIGHT_SLOTS
+          if os.environ['SAGE_FLIGHT_ID'] not in SAGE_FLIGHT_SLOTS:
+              raise SystemExit('Unknown reusable flight slot')
+          if not os.environ['SAGE_MISSION'].strip():
+              raise SystemExit('Mission identity is required')
+          PY
       - name: Mission preflight
         id: preflight
         continue-on-error: true
@@ -45,13 +86,14 @@ jobs:
           python scripts/sage_precommit_hook.py
           rc=$?
           python - "$rc" <<'PY'
-          import json,os,sys
+          import json,os,sys,subprocess
           from pathlib import Path
           rc=int(sys.argv[1])
-          report={'flight':os.environ['SAGE_FLIGHT_ID'],'mission':os.environ['SAGE_MISSION'],'stage':'PREFLIGHT','status':'PASS' if rc==0 else 'FAIL','exit_code':rc,'commit_sha':'${{ github.sha }}','run_id':'${{ github.run_id }}'}
+          sha=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
+          report={'flight':os.environ['SAGE_FLIGHT_ID'],'mission':os.environ['SAGE_MISSION'],'stage':'PREFLIGHT','status':'PASS' if rc==0 else 'FAIL','exit_code':rc,'commit_sha':sha,'run_id':'${{ github.run_id }}'}
           Path('flight_preflight.json').write_text(json.dumps(report,indent=2)); print(json.dumps(report,indent=2)); raise SystemExit(rc)
           PY
-      - name: Execute full repository verification for mission
+      - name: Execute repository verification for current mission
         id: verify
         if: always()
         continue-on-error: true
@@ -60,23 +102,26 @@ jobs:
           python -m pytest -q ${{ matrix.test }}
           rc=$?
           python - "$rc" <<'PY'
-          import json,sys
+          import json,sys,subprocess
           from pathlib import Path
           rc=int(sys.argv[1])
-          report={'flight':'${{ matrix.id }}','mission':'${{ matrix.mission }}','stage':'VERIFY','status':'PASS' if rc==0 else 'FAIL','exit_code':rc,'commit_sha':'${{ github.sha }}','run_id':'${{ github.run_id }}'}
+          sha=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
+          report={'flight':'${{ matrix.id }}','mission':'${{ matrix.mission }}','stage':'VERIFY','status':'PASS' if rc==0 else 'FAIL','exit_code':rc,'commit_sha':sha,'run_id':'${{ github.run_id }}'}
           Path('flight_verify.json').write_text(json.dumps(report,indent=2)); print(json.dumps(report,indent=2)); raise SystemExit(rc)
           PY
       - name: Build flight receipt
         if: always()
         run: |
           python - <<'PY'
-          import json
+          import json,subprocess
           from pathlib import Path
-          paths=[Path('flight_preflight.json'),Path('flight_verify.json')]; stages=[]
+          paths=[Path('flight_preflight.json'),Path('flight_verify.json')]
+          stages=[]
           for path in paths:
               data=json.loads(path.read_text()) if path.exists() else None
               stages.append({'stage':data.get('stage') if data else path.stem,'present':path.exists(),'status':data.get('status') if data else 'MISSING'})
-          report={'flight':'${{ matrix.id }}','mission':'${{ matrix.mission }}','commit_sha':'${{ github.sha }}','run_id':'${{ github.run_id }}','stages':stages,'all_stage_receipts_present':all(s['present'] for s in stages),'all_stage_passed':all(s['status']=='PASS' for s in stages)}
+          sha=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
+          report={'flight':'${{ matrix.id }}','mission':'${{ matrix.mission }}','commit_sha':sha,'run_id':'${{ github.run_id }}','stages':stages,'all_stage_receipts_present':all(s['present'] for s in stages),'all_stage_passed':all(s['status']=='PASS' for s in stages)}
           Path('flight_receipt.json').write_text(json.dumps(report,indent=2)); print(json.dumps(report,indent=2))
           if not report['all_stage_receipts_present'] or not report['all_stage_passed']: raise SystemExit(1)
           PY
