@@ -1,10 +1,9 @@
-"""C2 compatibility adapter for the canonical five-flight wave engine.
+"""C2 compatibility adapter for the governed five-flight wave engine.
 
 The canonical Big Jump Wave implementation in ``sage.c2.build_jump_wave`` is
 responsible for actual flight execution, lifecycle gates, pytest verification,
-exact-HEAD evidence, and C2 reconvergence.  This adapter intentionally does not
-manufacture PASS receipts: every receipt is derived from a real
-FlightExecutionSummary returned by that engine.
+exact-HEAD evidence, and C2 reconvergence. Flight slots are reusable and carry
+only the mission assigned for the current wave.
 """
 
 from __future__ import annotations
@@ -12,14 +11,14 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Any, Callable, Dict, List, Optional
 
-from sage.c2.build_jump_wave import BuildJumpWaveEngine, CANONICAL_BIG_JUMP_MISSIONS
+from sage.c2.build_jump_wave import BuildJumpWaveEngine, FlightMissionSpec
 
 
 @dataclass(frozen=True)
 class FlightReceipt:
     flight_id: str
     mission_id: str
-    frontier_name: str
+    mission_name: str
     boundary_scope: str
     status: str
     commit_sha: str
@@ -56,7 +55,7 @@ def compute_receipt_hash(flight_id: str, mission_id: str, boundary_scope: str, p
 
 
 class MultiFrontierDispatcher:
-    """Delegate five-flight execution to the canonical governed wave engine."""
+    """Delegate the current five wave-assigned missions to the governed wave engine."""
 
     def __init__(
         self,
@@ -66,26 +65,24 @@ class MultiFrontierDispatcher:
         self.commit_sha = commit_sha
         self._engine_factory = engine_factory or (lambda: BuildJumpWaveEngine(max_workers=5))
 
-    def dispatch_all(self) -> MultiFrontierDispatchReceipt:
+    def dispatch_all(self, missions: List[FlightMissionSpec]) -> MultiFrontierDispatchReceipt:
         engine = self._engine_factory()
-        package = engine.execute_wave(wave_id="multi-frontier-dispatch")
+        package = engine.execute_wave(wave_id="multi-frontier-dispatch", missions=missions)
         expected_sha = self.commit_sha or engine.get_current_head_sha()
         collisions: List[str] = []
         if package.total_flights != 5:
             collisions.append(f"expected 5 flights, observed {package.total_flights}")
+        mission_by_flight = {mission.flight_id: mission for mission in missions}
 
         receipts: List[FlightReceipt] = []
         for flight in package.flight_summaries:
-            mission = next((m for m in CANONICAL_BIG_JUMP_MISSIONS if m.flight_id == flight.flight_id), None)
+            mission = mission_by_flight.get(flight.flight_id)
             if mission is None:
                 collisions.append(f"unknown flight returned: {flight.flight_id}")
                 continue
             sha_matches = flight.exact_head == expected_sha
             if not sha_matches:
-                # Preserve one independently attributable collision per affected flight.
-                collisions.append(
-                    f"stale or mismatched flight commit SHA detected: {flight.flight_id}"
-                )
+                collisions.append(f"stale or mismatched flight commit SHA detected: {flight.flight_id}")
             actual_pass = (
                 flight.execution_result == "PASS"
                 and sha_matches
@@ -95,8 +92,8 @@ class MultiFrontierDispatcher:
             receipts.append(
                 FlightReceipt(
                     flight_id=flight.flight_id,
-                    mission_id=flight.flight_id,
-                    frontier_name=mission.frontier_name,
+                    mission_id=mission.flight_id,
+                    mission_name=mission.mission_name,
                     boundary_scope=mission.collision_zone,
                     status="PASS" if actual_pass else "FAIL",
                     commit_sha=flight.exact_head,
@@ -112,8 +109,8 @@ class MultiFrontierDispatcher:
                         ],
                     },
                     receipt_hash=compute_receipt_hash(
-                        flight.flight_id, flight.flight_id, mission.collision_zone,
-                        "governed_wave_execution_summary", flight.exact_head,
+                        flight.flight_id, mission.mission_id if hasattr(mission, "mission_id") else mission.flight_id,
+                        mission.collision_zone, "governed_wave_execution_summary", flight.exact_head,
                     ),
                 )
             )
