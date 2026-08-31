@@ -90,3 +90,19 @@ def test_authorized_command_is_only_returned_by_explicit_callback():
     )
     assert adapter.authorize_command("session-1", "advance") == "[AUTHORIZED] advance"
     assert seen == [("session-1", "advance")]
+
+
+def test_chatgpt_client_create_interface_transport_bridges_external_dom_surface():
+    from sage.integration import ChatGPTClient
+    r = runtime()
+    view = RuntimeView()
+    client = ChatGPTClient(r, c2_provider=lambda: {"active_objective": "Bridge External Web DOM Surface", "active_task": "Bridge Transport"})
+
+    transport = client.create_interface_transport()
+    obs = InterfaceObservation("session-1", "dom-evt-001", 0, "External ChatGPT DOM stream message", True)
+    projection = transport.observe(obs)
+
+    assert projection.session_id == "session-1"
+    assert projection.station_identity == "[SAGE::C2::CHATGPT]"
+    assert projection.immersion["flight_id"] == "C2:session-1"
+    assert projection.provenance_head
