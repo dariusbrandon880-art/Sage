@@ -13,7 +13,7 @@ def _print_c2_bootstrap(runtime):
     print("MISSION LOCK: SAGE Operational Convergence")
     print("REALITY LOCK: repository state and acceptance evidence required")
     print("STATE LOCK: canonical mission contract + active work reconciled")
-    print("FLIGHT BOARD: F1=FOUNDATION F2=INTELLIGENCE F3=EXECUTION F4=VERIFICATION F5=WAREHOUSE")
+    print("FLIGHT BOARD: F1-F5 = REUSABLE OPEN SLOTS; CURRENT MISSION ASSIGNMENT IS WAVE-SPECIFIC")
     print("EXECUTION LOOP: SENSE -> VERIFY -> ORIENT -> EXECUTE -> OBSERVE -> VALIDATE -> COMPOUND")
     print("ANTI-DRIFT: no invented state; no narration substituted for execution")
     print(render_chat_identity())
@@ -114,8 +114,7 @@ def main():
             if args.action == "summary": result = dashboard.retrieve_operator_summary()
             elif args.action == "diagnostics":
                 result = dashboard.retrieve_mission_diagnostics(args.mission_id)
-                if result is None:
-                    raise RuntimeError(f"No archived trace found for mission '{args.mission_id}'")
+                if result is None: raise RuntimeError(f"No archived trace found for mission '{args.mission_id}'")
             else: result = dashboard.handle_corrupted_archive_data()
             print(json.dumps(result, indent=2))
         elif args.command == "c2":
@@ -129,32 +128,13 @@ def main():
             from sage.c2.operator_acceptance_bootstrap import OperatorAcceptanceBootstrap
             from sage.c2.mission_continuity import CANONICAL_MAIN_GOALS
             bootstrap = OperatorAcceptanceBootstrap()
-            state = bootstrap.rehydrate(
-                mission_id="SAGE Operational Convergence",
-                main_goals=list(CANONICAL_MAIN_GOALS),
-                side_goals=[],
-                active_flights=["F1", "F2", "F3", "F4", "F5"],
-                required_interfaces=["chatgpt", "gemini", "jules", "observatory_hud"],
-            )
+            state = bootstrap.rehydrate(mission_id="SAGE Operational Convergence", main_goals=list(CANONICAL_MAIN_GOALS), side_goals=[], active_flights=["F1", "F2", "F3", "F4", "F5"], required_interfaces=["chatgpt", "gemini", "jules", "observatory_hud"])
             bootstrap.bind_customer_surface(state, "SAGE_FIRST_CUSTOMER", "FIRST_CUSTOMER_WORKBENCH", "[SAGE::C2::CHATGPT]")
             workbench = CustomerWorkbench("SAGE_FIRST_CUSTOMER")
             if args.action == "measure":
-                if not args.workflow_id:
-                    raise ValueError("--workflow-id is required for business --action measure")
-                workbench.record_workflow(CustomerWorkflowMeasurement(
-                    workflow_id=args.workflow_id,
-                    completed=args.completed,
-                    human_interventions=args.human_interventions,
-                    execution_seconds=args.execution_seconds,
-                    direct_cost_usd=args.cost_usd,
-                    value_usd=args.value_usd,
-                    reusable_capability=args.reusable_capability,
-                    failure_count=args.failures,
-                    recovery_count=args.recoveries,
-                    evidence_refs=args.evidence_ref,
-                ))
-            _print_c2_bootstrap(runtime)
-            print(json.dumps(workbench.snapshot(state, ["F1", "F2", "F3", "F4", "F5"]).to_dict(), indent=2))
+                if not args.workflow_id: raise ValueError("--workflow-id is required for business --action measure")
+                workbench.record_workflow(CustomerWorkflowMeasurement(workflow_id=args.workflow_id, completed=args.completed, human_interventions=args.human_interventions, execution_seconds=args.execution_seconds, direct_cost_usd=args.cost_usd, value_usd=args.value_usd, reusable_capability=args.reusable_capability, failure_count=args.failures, recovery_count=args.recoveries, evidence_refs=args.evidence_ref))
+            _print_c2_bootstrap(runtime); print(json.dumps(workbench.snapshot(state, ["F1", "F2", "F3", "F4", "F5"]).to_dict(), indent=2))
         else: parser.print_help()
     except Exception as e:
         print(f"Error: SAGE execution failed: {e!s}"); sys.exit(1)
