@@ -16,12 +16,18 @@ permissions:
 
 env:
   SAGE_CI_OPENAI_STUB: "1"
+  # Pull-request workflows otherwise expose the synthetic merge commit as
+  # github.sha. SAGE verification must bind every receipt to the actual PR
+  # head; push/manual runs continue to use github.sha.
+  SAGE_EXACT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
@@ -67,6 +73,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ env.SAGE_EXACT_SHA }}
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
@@ -106,7 +114,7 @@ jobs:
               "external_challenge_query": "${{ matrix.search }}",
               "status": "PASS" if rc == 0 else "FAIL",
               "exit_code": rc,
-              "commit_sha": "${{ github.sha }}",
+              "commit_sha": "${{ env.SAGE_EXACT_SHA }}",
               "run_id": "${{ github.run_id }}",
               "job": "${{ github.job }}",
           }
@@ -134,7 +142,7 @@ jobs:
               "status": "PASS" if rc == 0 else "FAIL",
               "exit_code": rc,
               "execution": "repository_tests",
-              "commit_sha": "${{ github.sha }}",
+              "commit_sha": "${{ env.SAGE_EXACT_SHA }}",
               "run_id": "${{ github.run_id }}",
               "job": "${{ github.job }}",
           }
@@ -163,7 +171,7 @@ jobs:
               "status": "PASS" if rc == 0 else "FAIL",
               "exit_code": rc,
               "repair_mode": "none; repair requires a new governed build commit",
-              "commit_sha": "${{ github.sha }}",
+              "commit_sha": "${{ env.SAGE_EXACT_SHA }}",
               "run_id": "${{ github.run_id }}",
               "job": "${{ github.job }}",
           }
@@ -193,7 +201,7 @@ jobs:
               "status": "PASS" if rc == 0 else "FAIL",
               "exit_code": rc,
               "authority_boundary": "execution evidence only; C2 must independently verify before qualification",
-              "commit_sha": "${{ github.sha }}",
+              "commit_sha": "${{ env.SAGE_EXACT_SHA }}",
               "run_id": "${{ github.run_id }}",
               "job": "${{ github.job }}",
           }
@@ -228,7 +236,7 @@ jobs:
               "all_stage_receipts_present": all_present,
               "all_stage_passed": all_passed,
               "wave_front_verdict": "PASS" if all_present and all_passed else "FAIL",
-              "commit_sha": "${{ github.sha }}",
+              "commit_sha": "${{ env.SAGE_EXACT_SHA }}",
               "run_id": "${{ github.run_id }}",
               "job": "${{ github.job }}",
           }
@@ -237,12 +245,11 @@ jobs:
           if not all_present or not all_passed:
               raise SystemExit(1)
           PY
-
       - name: Upload front evidence
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: sage-c2-full-engine-${{ matrix.front }}-${{ github.sha }}
+          name: sage-c2-full-engine-${{ matrix.front }}-${{ env.SAGE_EXACT_SHA }}
           path: front_*.json
           if-no-files-found: error
 
@@ -253,6 +260,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ env.SAGE_EXACT_SHA }}
       - name: Download five front evidence without collision
         uses: actions/download-artifact@v6
         with:
@@ -279,7 +288,7 @@ jobs:
                   receipts.append(json.loads(path.read_text()))
               except (OSError, json.JSONDecodeError):
                   continue
-          expected_sha = os.environ.get("GITHUB_SHA")
+          expected_sha = os.environ.get("SAGE_EXACT_SHA")
           provenance = {str(data.get("commit_sha")) for data in receipts if data.get("commit_sha")}
           valid = [
               data for data in receipts
@@ -319,6 +328,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: sage-c2-five-front-wave-${{ github.sha }}
+          name: sage-c2-five-front-wave-${{ env.SAGE_EXACT_SHA }}
           path: sage_c2_five_front_wave_report.json
           if-no-files-found: error
