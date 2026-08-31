@@ -1,5 +1,5 @@
 {
-  "wave_id": "wave-big-jump-1788211570",
+  "wave_id": "wave-big-jump-1788213107",
   "flight_summaries": [
     {
       "flight_id": "F1",
@@ -8,32 +8,32 @@
       "execution_result": "PASS",
       "exact_head": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
       "tests_passed": 4,
-      "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788211570/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F1_receipt.json",
+      "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788213107/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F1_receipt.json",
       "pr_or_change": "Canonical Big Jump Wave mission F1",
       "lifecycle_milestones": [
         {
           "stage": "STAGE_1_INTAKE_RECON",
           "passed": true,
-          "evidence_ref": "evidence_capture/waves/default/F1_receipt.json",
-          "timestamp": 1788211570.1583588
+          "evidence_ref": "evidence_capture/waves/wave-big-jump-1788213107/F1_receipt.json",
+          "timestamp": 1788213107.2633119
         },
         {
           "stage": "STAGE_2_BOUNDED_BUILD",
           "passed": true,
           "evidence_ref": "sage/c2/execution_intelligence.py",
-          "timestamp": 1788211570.1583638
+          "timestamp": 1788213107.263316
         },
         {
           "stage": "STAGE_3_VERIFY_PROOF",
           "passed": true,
           "evidence_ref": "tests/c2/test_execution_intelligence_wave.py",
-          "timestamp": 1788211570.947879
+          "timestamp": 1788213107.9890597
         },
         {
           "stage": "STAGE_4_WAREHOUSE_PROMOTE",
           "passed": true,
-          "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788211570/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F1_receipt.json",
-          "timestamp": 1788211570.9491422
+          "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788213107/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F1_receipt.json",
+          "timestamp": 1788213107.9907627
         }
       ],
       "blocker": null
@@ -45,32 +45,32 @@
       "execution_result": "PASS",
       "exact_head": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
       "tests_passed": 4,
-      "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788211570/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F2_receipt.json",
+      "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788213107/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F2_receipt.json",
       "pr_or_change": "Canonical Big Jump Wave mission F2",
       "lifecycle_milestones": [
         {
           "stage": "STAGE_1_INTAKE_RECON",
           "passed": true,
-          "evidence_ref": "evidence_capture/waves/default/F2_receipt.json",
-          "timestamp": 1788211570.159381
+          "evidence_ref": "evidence_capture/waves/wave-big-jump-1788213107/F2_receipt.json",
+          "timestamp": 1788213107.2640767
         },
         {
           "stage": "STAGE_2_BOUNDED_BUILD",
           "passed": true,
           "evidence_ref": "sage/c2/governance_intelligence.py",
-          "timestamp": 1788211570.1593857
+          "timestamp": 1788213107.2640803
         },
         {
           "stage": "STAGE_3_VERIFY_PROOF",
           "passed": true,
           "evidence_ref": "tests/c2/test_governance_intelligence_wave.py",
-          "timestamp": 1788211571.7458339
+          "timestamp": 1788213108.7091866
         },
         {
           "stage": "STAGE_4_WAREHOUSE_PROMOTE",
           "passed": true,
-          "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788211570/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F2_receipt.json",
-          "timestamp": 1788211571.7465835
+          "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788213107/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F2_receipt.json",
+          "timestamp": 1788213108.709919
         }
       ],
       "blocker": null
@@ -82,32 +82,32 @@
       "execution_result": "PASS",
       "exact_head": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
       "tests_passed": 5,
-      "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788211570/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F3_receipt.json",
+      "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788213107/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F3_receipt.json",
       "pr_or_change": "Canonical Big Jump Wave mission F3",
       "lifecycle_milestones": [
         {
           "stage": "STAGE_1_INTAKE_RECON",
           "passed": true,
-          "evidence_ref": "evidence_capture/waves/default/F3_receipt.json",
-          "timestamp": 1788211570.1599514
+          "evidence_ref": "evidence_capture/waves/wave-big-jump-1788213107/F3_receipt.json",
+          "timestamp": 1788213107.2645557
         },
         {
           "stage": "STAGE_2_BOUNDED_BUILD",
           "passed": true,
           "evidence_ref": "sage/c2/build_jump_wave.py",
-          "timestamp": 1788211570.1599548
+          "timestamp": 1788213107.2645586
         },
         {
           "stage": "STAGE_3_VERIFY_PROOF",
           "passed": true,
           "evidence_ref": "tests/c2/test_build_jump_wave.py",
-          "timestamp": 1788211572.6167743
+          "timestamp": 1788213109.5052624
         },
         {
           "stage": "STAGE_4_WAREHOUSE_PROMOTE",
           "passed": true,
-          "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788211570/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F3_receipt.json",
-          "timestamp": 1788211572.6179988
+          "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788213107/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F3_receipt.json",
+          "timestamp": 1788213109.5061266
         }
       ],
       "blocker": null
@@ -119,32 +119,32 @@
       "execution_result": "PASS",
       "exact_head": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
       "tests_passed": 5,
-      "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788211570/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F4_receipt.json",
+      "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788213107/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F4_receipt.json",
       "pr_or_change": "Canonical Big Jump Wave mission F4",
       "lifecycle_milestones": [
         {
           "stage": "STAGE_1_INTAKE_RECON",
           "passed": true,
-          "evidence_ref": "evidence_capture/waves/default/F4_receipt.json",
-          "timestamp": 1788211570.1604261
+          "evidence_ref": "evidence_capture/waves/wave-big-jump-1788213107/F4_receipt.json",
+          "timestamp": 1788213107.2650952
         },
         {
           "stage": "STAGE_2_BOUNDED_BUILD",
           "passed": true,
           "evidence_ref": "sage/c2/multi_frontier_dispatch.py",
-          "timestamp": 1788211570.1604302
+          "timestamp": 1788213107.2650976
         },
         {
           "stage": "STAGE_3_VERIFY_PROOF",
           "passed": true,
           "evidence_ref": "tests/c2/test_multi_frontier_dispatch.py",
-          "timestamp": 1788211573.439635
+          "timestamp": 1788213110.2644777
         },
         {
           "stage": "STAGE_4_WAREHOUSE_PROMOTE",
           "passed": true,
-          "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788211570/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F4_receipt.json",
-          "timestamp": 1788211573.4404037
+          "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788213107/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F4_receipt.json",
+          "timestamp": 1788213110.264895
         }
       ],
       "blocker": null
@@ -156,32 +156,32 @@
       "execution_result": "PASS",
       "exact_head": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
       "tests_passed": 5,
-      "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788211570/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F5_receipt.json",
+      "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788213107/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F5_receipt.json",
       "pr_or_change": "Canonical Big Jump Wave mission F5",
       "lifecycle_milestones": [
         {
           "stage": "STAGE_1_INTAKE_RECON",
           "passed": true,
-          "evidence_ref": "evidence_capture/waves/default/F5_receipt.json",
-          "timestamp": 1788211570.1608365
+          "evidence_ref": "evidence_capture/waves/wave-big-jump-1788213107/F5_receipt.json",
+          "timestamp": 1788213107.2657824
         },
         {
           "stage": "STAGE_2_BOUNDED_BUILD",
           "passed": true,
           "evidence_ref": "sage/c2/double_big_jump_contract.py",
-          "timestamp": 1788211570.16084
+          "timestamp": 1788213107.2657857
         },
         {
           "stage": "STAGE_3_VERIFY_PROOF",
           "passed": true,
           "evidence_ref": "tests/c2/test_double_big_jump_contract.py",
-          "timestamp": 1788211574.317269
+          "timestamp": 1788213111.0526142
         },
         {
           "stage": "STAGE_4_WAREHOUSE_PROMOTE",
           "passed": true,
-          "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788211570/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F5_receipt.json",
-          "timestamp": 1788211574.3176627
+          "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788213107/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F5_receipt.json",
+          "timestamp": 1788213111.0530896
         }
       ],
       "blocker": null
@@ -216,12 +216,12 @@
   "reconvergence_verdict": "PASS",
   "immersion_projection": {
     "type": "MILESTONE_STRIKE",
-    "wave_id": "wave-big-jump-1788211570",
+    "wave_id": "wave-big-jump-1788213107",
     "verdict": "PASS",
     "verified_cells": 20,
     "safe_impact_stars": 5,
     "rank": "MASTER"
   },
-  "timestamp": 1788211574.3191216,
-  "package_hash": "b47c3d83d72f6c55c5e06de3ff764091502c0959f74e0a518156aa74e76738be"
+  "timestamp": 1788213111.0556118,
+  "package_hash": "7c93cfb3ee510b46096eca1659fd94ab0acdea9b14dfb7ac36d0a223dce1ddca"
 }

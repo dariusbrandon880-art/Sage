@@ -16,9 +16,31 @@ repo_root = Path(__file__).resolve().parent.parent
 if str(repo_root) not in sys.path:
     sys.path.insert(0, str(repo_root))
 
-from sage.c2.build_jump_wave import BuildJumpWaveEngine  # noqa: E402
+from sage.c2.build_jump_wave import BuildJumpWaveEngine, FlightMissionSpec  # noqa: E402
 
 EVIDENCE_PATH = repo_root / "evidence_capture" / "build_jump_wave_evidence.json"
+
+
+def build_canonical_wave_missions(wave_id: str) -> list[FlightMissionSpec]:
+    targets = (
+        ("execution_intelligence.py", "tests/c2/test_execution_intelligence_wave.py"),
+        ("governance_intelligence.py", "tests/c2/test_governance_intelligence_wave.py"),
+        ("build_jump_wave.py", "tests/c2/test_build_jump_wave.py"),
+        ("multi_frontier_dispatch.py", "tests/c2/test_multi_frontier_dispatch.py"),
+        ("double_big_jump_contract.py", "tests/c2/test_double_big_jump_contract.py"),
+    )
+    return [
+        FlightMissionSpec(
+            flight_id=f"F{i}",
+            frontier_name=f"canonical-wave-F{i}-{Path(target).stem}",
+            target_path=f"sage/c2/{target}",
+            collision_zone=f"sage.c2.{Path(target).stem}",
+            evidence_ref=f"evidence_capture/waves/{wave_id}/F{i}_receipt.json",
+            pr_or_change=f"Canonical Big Jump Wave mission F{i}",
+            test_references=[test_path],
+        )
+        for i, (target, test_path) in enumerate(targets, start=1)
+    ]
 
 
 def main() -> int:
@@ -27,8 +49,9 @@ def main() -> int:
     print("=" * 70)
 
     wave_id = f"wave-big-jump-{int(time.time())}"
+    missions = build_canonical_wave_missions(wave_id)
     engine = BuildJumpWaveEngine(storage_dir=str(repo_root / "evidence_capture"))
-    evidence_pkg = engine.execute_wave(wave_id=wave_id)
+    evidence_pkg = engine.execute_wave(wave_id=wave_id, missions=missions)
 
     EVIDENCE_PATH.parent.mkdir(parents=True, exist_ok=True)
     with open(EVIDENCE_PATH, "w", encoding="utf-8") as f:

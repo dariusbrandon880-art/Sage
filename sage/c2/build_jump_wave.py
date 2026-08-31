@@ -54,29 +54,6 @@ def validate_wave_missions(missions: List[FlightMissionSpec]) -> List[FlightMiss
     return [next(spec for spec in missions if spec.flight_id == slot) for slot in REUSABLE_FLIGHT_SLOTS]
 
 
-def create_default_wave_missions() -> List[FlightMissionSpec]:
-    """Return default flight mission specifications assigned to reusable slots F1..F5."""
-    targets = (
-        ("execution_intelligence.py", "tests/c2/test_execution_intelligence_wave.py"),
-        ("governance_intelligence.py", "tests/c2/test_governance_intelligence_wave.py"),
-        ("build_jump_wave.py", "tests/c2/test_build_jump_wave.py"),
-        ("multi_frontier_dispatch.py", "tests/c2/test_multi_frontier_dispatch.py"),
-        ("double_big_jump_contract.py", "tests/c2/test_double_big_jump_contract.py"),
-    )
-    return [
-        FlightMissionSpec(
-            flight_id=f"F{i}",
-            frontier_name=f"canonical-wave-F{i}-{Path(target).stem}",
-            target_path=f"sage/c2/{target}",
-            collision_zone=f"sage.c2.{Path(target).stem}",
-            evidence_ref=f"evidence_capture/waves/default/F{i}_receipt.json",
-            pr_or_change=f"Canonical Big Jump Wave mission F{i}",
-            test_references=[test_path],
-        )
-        for i, (target, test_path) in enumerate(targets, start=1)
-    ]
-
-
 class BuildJumpWaveEngine:
     """Execute five bounded flights concurrently with fail-closed evidence."""
 
@@ -166,7 +143,7 @@ class BuildJumpWaveEngine:
         head_sha = self.get_current_head_sha()
         w_id = wave_id or f"wave-big-jump-{int(time.time())}"
         if missions is None:
-            missions = create_default_wave_missions()
+            raise ValueError("Big Jump Wave requires an explicit mission plan; reusable slots have no permanent missions")
         active_missions = validate_wave_missions(missions)
         summaries: dict[str, FlightExecutionSummary] = {}
         with ThreadPoolExecutor(max_workers=self.max_workers, thread_name_prefix="sage-flight") as executor:
