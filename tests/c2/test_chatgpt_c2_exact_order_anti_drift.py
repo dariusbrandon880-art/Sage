@@ -150,6 +150,7 @@ def test_openai_system_instructions_embed_exact_order_and_recon_contract():
     instructions = _system_instructions(SAGERuntime(state()).envelope("c2")); assert CONTRACT_ID in instructions; assert "PRESERVE EXACTLY" in instructions; assert "INVOKE CONNECTED CAPABILITY" in instructions; assert "REPORT ONLY SUPPORTED FACTS" in instructions; assert RECON_POLICY_PATH in instructions; assert "DEEP RECON WITHOUT DRAG" in instructions
 
 def test_station_spoof_is_rejected(): assert any("station identity mismatch" in v.lower() for v in SAGEProtocolGovernor.validate_and_parse(structured_output(station="[SAGE::FAKE::CHATGPT]")).violations)
+def test_malformed_c2_gpt_tag_is_rejected(): assert any("station identity mismatch" in v.lower() for v in SAGEProtocolGovernor.validate_and_parse("[C2::GPT] Fake station header").violations)
 
 def test_missing_station_is_rejected():
     missing=json.dumps({"reasoning_chain":["recon complete"],"proposed_actions":[],"epistemic_state":{"confidence_level":"LOW"},"evidence_refs":[]}); assert any("missing required sage station identity" in v.lower() for v in SAGEProtocolGovernor.validate_and_parse(missing).violations)

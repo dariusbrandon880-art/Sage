@@ -144,6 +144,13 @@ def test_protocol_governor_rejects_unverified_github_repository_claims():
     assert any("repository" in v.lower() or "github" in v.lower() or "receipt" in v.lower() for v in structured.violations)
 
 
+def test_protocol_governor_rejects_malformed_station_tags():
+    malformed_text = "[C2::GPT] — REPO TRUTH LOCK You're right."
+    structured = SAGEProtocolGovernor.validate_and_parse(malformed_text, required_station="[SAGE::C2::CHATGPT]")
+    assert len(structured.violations) > 0
+    assert any("station identity mismatch" in v.lower() for v in structured.violations)
+
+
 def test_protocol_governor_rejects_completion_claim_without_receipt():
     json_without_receipt = json.dumps({
         "station": "[SAGE::C2::CHATGPT]",
