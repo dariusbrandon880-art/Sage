@@ -6,7 +6,7 @@ This operating frame enforces the campaign model specified in `docs/governance/C
 
 ## C2 Control Contract
 
-C2 operates as the flight controller. Five Flights are parallel bounded execution paths, not independent assistants, PR lists, or authorities.
+C2 operates as the flight controller. Five Flights are parallel execution slots, not independent assistants, PR lists, authorities, or permanent functional roles.
 
 C2 execution loop:
 
@@ -19,14 +19,13 @@ C2 execution loop:
 - Gather external evidence only when it can improve or challenge a decision.
 
 3. BOUND
-- Select the smallest consequential frontier.
-- Define mission scope, constraints, and STOP boundary.
+- Select the smallest consequential frontier for each current mission.
+- Define mission scope, constraints, collision boundary, and STOP boundary.
 
 4. EXECUTE
 - Discover.
 - Design.
-- Build.
-- Verify + Compound.
+- Build / Repair / Test / Verify as the current mission requires.
 
 5. REPORT
 - Report evidence only.
@@ -34,33 +33,27 @@ C2 execution loop:
 
 ## Dynamic Five-Flight Execution Engine Loop
 
-C2 executes Director-assigned targets through five coordinated flight vectors.
+C2 executes Director-assigned targets through five reusable flight slots.
 
 Target authority remains with the Director. C2 does not invent authority or redefine SAGE boundaries.
 
-The five flights are:
+### Flight Identity Rule
 
-### Flight 1 — Capability / Intelligence
-Find capability gaps, build missing intelligence substrate, update validated capability state.
+F1, F2, F3, F4, and F5 have no permanent functional assignment.
 
-### Flight 2 — Cognitive Continuity
-Persistence, rehydration, identity continuity, and knowledge bridges.
+The flight number is an execution and reconciliation identity only. Mission meaning comes from the current wave assignment.
 
-### Flight 3 — Execution Engine
-Parallel frontier handling, independent flight operation, and safe reconvergence.
+Any authorized SAGE mission may be assigned to any flight, including research, reconnaissance, implementation, repair, testing, governance/security hardening, architecture investigation, evidence work, integration, or capability construction.
 
-### Flight 4 — Reality / Verification
-Evidence, observation, capability truth, and prevention of imagined progress.
-
-### Flight 5 — Evolution / Research
-Capability discovery, benchmarks, learning loops, and next frontier generation.
+Assignments may be completely different on the next Big Jump Wave.
 
 ## Flight Mission Package Contract
 
-Every flight target must carry:
+Every current flight target must carry:
 
-- Mission
-- Target
+- Flight ID
+- Current Mission
+- Target Frontier
 - Outcome
 - Reusable SAGE components
 - Design invariants
@@ -106,14 +99,15 @@ Every completed capability jump records:
 
 ## Protocol Invariants
 
-- Flights are adaptive execution units, not hardcoded feature owners.
-- Any authorized SAGE build target may be assigned to any flight.
+- F1-F5 are reusable execution slots, not hardcoded feature owners.
+- Any authorized SAGE mission may be assigned to any flight.
+- Mission meaning is supplied by the current wave assignment, never inferred from the flight number.
 - Master Archive governance supersedes operational execution directives.
 - Parallel execution must reconverge through verification before compounding.
 - Completion means verified capability, not merged activity.
 
 ## Mission Objective
 
-Increase SAGE growth velocity through coordinated bounded execution while maintaining governance, evidence discipline, and capability-complete proof.
+Increase SAGE growth velocity through coordinated parallel execution while maintaining governance, evidence discipline, and capability-complete proof.
 
-This frame defines C2 execution behavior for governed parallel building.
+This frame defines C2 execution behavior for governed Big Jump Wave building.
