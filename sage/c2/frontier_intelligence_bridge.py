@@ -14,6 +14,7 @@ from sage.c2.multi_frontier_dispatch import (
     MultiFrontierDispatcher,
     MultiFrontierDispatchReceipt,
 )
+from sage.c2.build_jump_wave import FlightMissionSpec
 
 
 @dataclass(frozen=True)
@@ -52,7 +53,7 @@ class FrontierIntelligenceBridge:
         authorized_candidate_ids: tuple[str, ...],
         commit_sha: str | None = None,
     ) -> FrontierBridgeDispatchReceipt:
-        """Evaluate candidate authorizations and dispatch via MultiFrontierDispatcher if approved."""
+        """Authorize discovery candidates, then dispatch them as five explicit missions."""
         if not proposal or not getattr(proposal, "candidates", None):
             raise ValueError("proposal requires valid discovery candidates")
 
@@ -78,11 +79,24 @@ class FrontierIntelligenceBridge:
             object.__setattr__(receipt, "bridge_digest", receipt.digest())
             return receipt
 
-        # Dispatch via MultiFrontierDispatcher
+        if len(candidates) != 5:
+            raise ValueError(f"Big Jump Wave requires exactly 5 authorized discovery candidates, got {len(candidates)}")
+
         if commit_sha:
             self.dispatcher.commit_sha = commit_sha
 
-        dispatch_result = self.dispatcher.dispatch_all()
+        missions = [
+            FlightMissionSpec(
+                flight_id=f"F{i}",
+                frontier_name=getattr(candidate, "description", candidate.candidate_id),
+                target_path=f"discovery/{candidate.candidate_id}",
+                collision_zone=f"discovery.{candidate.candidate_id}",
+                evidence_ref=getattr(candidate, "provenance_ref", candidate.candidate_id),
+                pr_or_change=f"discovery-candidate:{candidate.candidate_id}",
+            )
+            for i, candidate in enumerate(candidates, start=1)
+        ]
+        dispatch_result = self.dispatcher.dispatch_all(missions)
 
         receipt = FrontierBridgeDispatchReceipt(
             proposal_frontier_digest=getattr(proposal, "frontier_digest", ""),
