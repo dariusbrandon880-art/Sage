@@ -11,13 +11,19 @@ The Sports/RCE lane is a high-volume operational proving ground for SAGE's gover
 
 `SENSE → BOUND → LOCK → PARALLEL GENERATE → RESOLVE → SCORE → FALSIFY → OOS VALIDATE → COMPOUND → RECONVERGE`
 
-## Five-flight ownership
+## Five-flight execution model
 
-- **F1 Intelligence:** ingest read-only market snapshots and contextual features; preserve source/time provenance.
-- **F2 Continuity:** persist immutable prediction, parlay-leg, outcome, score, and model-version lineage.
-- **F3 Execution:** generate large shadow batches concurrently with isolated worker state; singles and parlays are research records only.
-- **F4 Guard:** enforce pre-event temporal locks, SHA-256 integrity, OOS separation, and fail-closed boundaries.
-- **F5 Warehouse:** resolve outcomes, cluster failures, compare candidate versions against the same locked OOS baseline, and promote only validated learning.
+F1–F5 are **five reusable, open execution slots**. They have no permanent capability ownership and no fixed research, continuity, execution, governance, or warehouse identity. C2 may assign any authorized sports mission to any available slot for a particular wave.
+
+A wave may therefore assign different sports capabilities to all five slots, including ingestion/recon, modeling, repair, testing, governance, evidence, settlement, or other authorized work. The assignment is per-wave and must be recorded in the flight mission specification and evidence.
+
+The capabilities below are responsibilities of the system, not permanent flight identities:
+
+- read-only market snapshots and contextual features with source/time provenance;
+- immutable prediction, parlay-leg, outcome, score, and model-version lineage;
+- concurrent shadow generation with isolated worker state;
+- pre-event temporal locks, SHA-256 integrity, OOS separation, and fail-closed boundaries;
+- outcome resolution, failure clustering, common-OOS comparison, and validated learning promotion.
 
 ## Evidence rules
 
