@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import hashlib
 import re
-import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from enum import Enum
 from threading import Lock
@@ -34,7 +33,7 @@ class SessionContext(BaseModel):
     session_id: str
     role: SessionRole
     active_wave_id: Optional[str] = None
-    registered_at: float = Field(default_factory=time.time)
+    registered_at: float = Field(default_factory=__import__("time").time)
 
 
 class MultiSessionVelocityReceipt(BaseModel):
@@ -50,7 +49,7 @@ class MultiSessionVelocityReceipt(BaseModel):
     concurrency_observed: bool = False
     max_concurrent_flights: int = 0
     organism_growth_receipt: Optional[Dict[str, Any]] = None
-    timestamp: float = Field(default_factory=time.time)
+    timestamp: float = Field(default_factory=__import__("time").time)
     receipt_hash: str = ""
 
     def compute_hash(self) -> str:
@@ -104,7 +103,7 @@ class MultiSessionVelocityEngine:
         return self._lock_manager.release_lock(session_id, flight_id)
 
     @staticmethod
-    def _execute_flight(flight: Dict[str, Any], idx: int, session_id: str, exact_git_head: str, wave_id: str, acquire_lock, release_lock) -> FlightExecutionSummary:
+    def _execute_flight(flight: Dict[str, Any], idx: int, session_id: str, exact_git_head: str, wave_id: str, acquire_lock, release_lock, tracker: Dict[str, int], tracker_lock: Lock) -> FlightExecutionSummary:
         flight_id = flight.get("flight_id", f"F{idx}")
         lock_res = acquire_lock(session_id, flight_id, flight.get("target_files", []), flight.get("target_namespaces", []))
         if not lock_res.acquired:
@@ -119,6 +118,9 @@ class MultiSessionVelocityEngine:
                 pr_or_change=flight.get("pr_or_change", f"PR #{260 + idx}"),
                 blocker=f"Namespace collision on {lock_res.conflicting_resource} with session {lock_res.conflicting_session_id}",
             )
+        with tracker_lock:
+            tracker["active"] += 1
+            tracker["max_active"] = max(tracker["max_active"], tracker["active"])
         try:
             executor = flight.get("executor")
             if executor is not None:
@@ -151,6 +153,8 @@ class MultiSessionVelocityEngine:
             )
         finally:
             release_lock(session_id, flight_id)
+            with tracker_lock:
+                tracker["active"] -= 1
 
     def execute_velocity_wave(self, wave_id: str, session_id: str, flight_payloads: List[Dict[str, Any]], exact_git_head: str) -> MultiSessionVelocityReceipt:
         """Run all independent flights concurrently, then reconverge deterministically."""
@@ -165,9 +169,11 @@ class MultiSessionVelocityEngine:
         worker_count = max(1, min(self._max_workers or min(5, len(flight_payloads)), len(flight_payloads)))
         results: Dict[str, FlightExecutionSummary] = {}
         errors: List[BaseException] = []
+        tracker = {"active": 0, "max_active": 0}
+        tracker_lock = Lock()
         with ThreadPoolExecutor(max_workers=worker_count, thread_name_prefix="sage-flight") as pool:
             futures = {
-                pool.submit(self._execute_flight, flight, idx, session_id, exact_git_head, wave_id, self.acquire_flight_lock, self.release_flight_lock): flight.get("flight_id", f"F{idx}")
+                pool.submit(self._execute_flight, flight, idx, session_id, exact_git_head, wave_id, self.acquire_flight_lock, self.release_flight_lock, tracker, tracker_lock): flight.get("flight_id", f"F{idx}")
                 for idx, flight in enumerate(flight_payloads, start=1)
             }
             for future in as_completed(futures):
@@ -208,8 +214,8 @@ class MultiSessionVelocityEngine:
             advancement_matrix_20_cells=reconvergence_pkg.advancement_matrix_20_cells,
             rolls_royce_quality_passed=rolls_royce_passed,
             reconvergence_verdict=reconvergence_pkg.reconvergence_verdict,
-            concurrency_observed=worker_count > 1 and len(flight_payloads) > 1,
-            max_concurrent_flights=worker_count,
+            concurrency_observed=tracker["max_active"] >= 2,
+            max_concurrent_flights=tracker["max_active"],
             organism_growth_receipt=organism_growth_dict,
         )
         receipt.receipt_hash = receipt.compute_hash()
