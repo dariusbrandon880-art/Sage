@@ -1,4 +1,4 @@
-"""SAGE Big Jump Wave Engine with bounded parallel flight execution."""
+"""SAGE Big Jump Wave Engine with concurrent five-flight execution."""
 
 from __future__ import annotations
 
@@ -27,9 +27,14 @@ from sage.c2.reconvergence_synthesizer import (
 )
 
 
+BIG_JUMP_FLIGHT_IDS = ("F1", "F2", "F3", "F4", "F5")
+
+
 class FlightMissionSpec(BaseModel):
+    """A wave-assigned mission; flight IDs are reusable execution slots, not roles."""
+
     flight_id: str
-    frontier_name: str
+    mission_name: str
     target_path: str
     collision_zone: str
     evidence_ref: str
@@ -37,17 +42,8 @@ class FlightMissionSpec(BaseModel):
     test_references: List[str] = Field(default_factory=list)
 
 
-CANONICAL_BIG_JUMP_MISSIONS: List[FlightMissionSpec] = [
-    FlightMissionSpec(flight_id="FLIGHT-F1-RESEARCH", frontier_name="Research & Intelligence Frontier", target_path="sage/c2/frontier_intelligence_bridge.py", collision_zone="sage/c2/frontier_intelligence/", evidence_ref="evidence_capture/f1_research_evidence.json", pr_or_change="F1 Autonomous Research", test_references=["tests/c2/test_frontier_admission.py"]),
-    FlightMissionSpec(flight_id="FLIGHT-F2-CONTINUITY", frontier_name="Continuity & Failure Memory Frontier", target_path="sage/capability_registry.py", collision_zone="sage/capability_registry.py", evidence_ref="evidence_capture/f2_continuity_evidence.json", pr_or_change="F2 Continuity Ledger", test_references=["tests/test_capability_registry.py", "tests/test_capability_lineage.py"]),
-    FlightMissionSpec(flight_id="FLIGHT-F3-EXECUTION", frontier_name="Execution & Substrate Frontier", target_path="sage/runtime/engine.py", collision_zone="sage/runtime/", evidence_ref="evidence_capture/f3_execution_evidence.json", pr_or_change="F3 Runtime Acceleration", test_references=["tests/test_system_frame.py"]),
-    FlightMissionSpec(flight_id="FLIGHT-F4-GUARD", frontier_name="Governance & Architecture Guard Frontier", target_path="sage/c2/chatgpt_c2_contract.py", collision_zone="sage/c2/contract/", evidence_ref="evidence_capture/f4_guard_evidence.json", pr_or_change="F4 Governance Sentinel", test_references=["tests/c2/test_chatgpt_c2_exact_order_anti_drift.py"]),
-    FlightMissionSpec(flight_id="FLIGHT-F5-WAREHOUSE", frontier_name="Capability Warehouse & Reconvergence Frontier", target_path="sage/c2/reconvergence_synthesizer.py", collision_zone="sage/c2/reconvergence/", evidence_ref="evidence_capture/f5_warehouse_evidence.json", pr_or_change="F5 Reconvergence Warehouse", test_references=["tests/c2/test_reconvergence_synthesizer.py"]),
-]
-
-
 class BuildJumpWaveEngine:
-    """Execute five bounded flights concurrently with fail-closed evidence."""
+    """Execute five independently assigned missions concurrently with fail-closed evidence."""
 
     _verification_process_lock = threading.Lock()
 
@@ -122,7 +118,7 @@ class BuildJumpWaveEngine:
             evidence_dir.mkdir(parents=True, exist_ok=True)
             evidence_file = evidence_dir / f"{spec.flight_id}_receipt.json"
             flight_passed = admission.admitted and lock_res.acquired and all_tests_ok
-            flight_proof = {"wave_id": wave_id, "flight_id": spec.flight_id, "frontier_name": spec.frontier_name, "target_path": spec.target_path, "executed_head": head_sha, "status": "PASS" if flight_passed else "FAIL", "blocker": blocker, "timestamp": time.time()}
+            flight_proof = {"wave_id": wave_id, "flight_id": spec.flight_id, "mission_name": spec.mission_name, "target_path": spec.target_path, "executed_head": head_sha, "status": "PASS" if flight_passed else "FAIL", "blocker": blocker, "timestamp": time.time()}
             evidence_file.write_text(json.dumps(flight_proof, indent=2, sort_keys=True) + "\n", encoding="utf-8")
             m4 = LifecycleMilestoneRecord(stage=LifecycleStage.WAREHOUSE_PROMOTE, passed=all_tests_ok, evidence_ref=str(evidence_file))
             return FlightExecutionSummary(flight_id=spec.flight_id, target=spec.target_path, classification="ACTIVE", execution_result="PASS" if flight_passed else "FAIL", exact_head=head_sha, tests_passed=tests_passed, evidence_ref=str(evidence_file), pr_or_change=spec.pr_or_change, lifecycle_milestones=[m1, m2, m3, m4], blocker=blocker)
@@ -134,12 +130,18 @@ class BuildJumpWaveEngine:
     def execute_wave(self, wave_id: Optional[str] = None, missions: Optional[List[FlightMissionSpec]] = None) -> ReconvergenceEvidencePackage:
         head_sha = self.get_current_head_sha()
         w_id = wave_id or f"wave-big-jump-{int(time.time())}"
-        active_missions = missions or CANONICAL_BIG_JUMP_MISSIONS
-        if len(active_missions) != 5:
-            raise ValueError(f"Big Jump Wave requires exactly 5 flight missions, got {len(active_missions)}")
+        if missions is None:
+            raise ValueError("Big Jump Wave requires five wave-assigned missions; flight slots have no permanent roles")
+        if len(missions) != 5:
+            raise ValueError(f"Big Jump Wave requires exactly 5 flight missions, got {len(missions)}")
+        mission_ids = [spec.flight_id for spec in missions]
+        if set(mission_ids) != set(BIG_JUMP_FLIGHT_IDS):
+            raise ValueError(f"Big Jump Wave requires exactly flight slots {BIG_JUMP_FLIGHT_IDS}, got {mission_ids}")
+        if len(set(mission_ids)) != 5:
+            raise ValueError("Big Jump Wave flight slots must be unique")
         summaries: dict[str, FlightExecutionSummary] = {}
         with ThreadPoolExecutor(max_workers=self.max_workers, thread_name_prefix="sage-flight") as executor:
-            futures = {executor.submit(self._run_flight, spec, w_id, head_sha): spec for spec in active_missions}
+            futures = {executor.submit(self._run_flight, spec, w_id, head_sha): spec for spec in missions}
             for future in as_completed(futures):
                 spec = futures[future]
                 try:
@@ -151,5 +153,5 @@ class BuildJumpWaveEngine:
                         lifecycle_milestones=[LifecycleMilestoneRecord(stage=LifecycleStage.VERIFY_PROOF, passed=False, evidence_ref=spec.evidence_ref)],
                         blocker=f"{type(exc).__name__}: {exc}",
                     )
-        ordered_summaries = [summaries[spec.flight_id] for spec in active_missions]
+        ordered_summaries = [summaries[spec.flight_id] for spec in missions]
         return C2ReconvergenceSynthesizer(wave_id=w_id).synthesize_reconvergence(ordered_summaries)
