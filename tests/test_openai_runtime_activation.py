@@ -163,23 +163,3 @@ def test_chatgpt_and_gemini_rehydration_with_runtime_get_c2_context(tmp_path):
     assert "[SAGE::C2::CHATGPT]" in chatgpt_resp.response_text
     assert "ChatGPT station active" in chatgpt_resp.response_text
     assert "Gemini/Jules station" in gemini_resp.response_text
-
-
-def test_chatgpt_client_interface_transport_integration(tmp_path):
-    from sage.integration import ChatGPTClient
-    from sage.runtime import SageRuntime
-    from sage.runtime.interface_transport import InterfaceObservation
-
-    runtime = SageRuntime(str(tmp_path))
-    _seed_canonical_state(runtime)
-
-    client = ChatGPTClient(runtime)
-    transport = client.create_interface_transport()
-
-    session_id = runtime.context.session_id
-    obs = InterfaceObservation(session_id, "dom-event-100", 0, "External web telemetry", True)
-    proj = transport.observe(obs)
-
-    assert proj.session_id == session_id
-    assert proj.station_identity == "[SAGE::C2::CHATGPT]"
-    assert proj.immersion["flight_id"] == f"C2:{session_id}"

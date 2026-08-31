@@ -2,6 +2,7 @@ import subprocess
 
 import pytest
 
+from sage.c2.build_jump_wave import FlightMissionSpec
 from sage.c2.frontier_intelligence_bridge import FrontierIntelligenceBridge
 from sage.experimental.sagi_discovery_flight_selector import (
     DiscoveryCandidate,
@@ -74,19 +75,36 @@ def sample_proposal():
     return selector.select(candidates, frontier_digest=frontier_digest)
 
 
+@pytest.fixture
+def sample_missions():
+    return [
+        FlightMissionSpec(
+            flight_id=f"F{i}",
+            frontier_name=f"Current Wave Mission {i}",
+            target_path=f"sage/c2/current_wave_target_{i}.py",
+            collision_zone=f"sage/c2/current_wave_target_{i}/",
+            evidence_ref=f"evidence_capture/current_wave_f{i}.json",
+            pr_or_change=f"Current Wave Mission {i}",
+            test_references=[],
+        )
+        for i in range(1, 6)
+    ]
+
+
 def _checked_out_head() -> str:
     return subprocess.check_output(
         ["git", "rev-parse", "HEAD"], text=True
     ).strip()
 
 
-def test_bridge_dispatches_when_all_candidates_authorized(sample_proposal):
+def test_bridge_dispatches_when_all_candidates_authorized(sample_proposal, sample_missions):
     bridge = FrontierIntelligenceBridge()
     authorized_ids = ("cand_a", "cand_b", "cand_c", "cand_d", "cand_e")
 
     receipt = bridge.bridge_and_dispatch(
         sample_proposal,
         authorized_candidate_ids=authorized_ids,
+        missions=sample_missions,
         commit_sha=_checked_out_head(),
     )
 
@@ -98,7 +116,7 @@ def test_bridge_dispatches_when_all_candidates_authorized(sample_proposal):
     assert len(receipt.bridge_digest) == 64
 
 
-def test_bridge_fails_closed_when_any_candidate_unauthorized(sample_proposal):
+def test_bridge_fails_closed_when_any_candidate_unauthorized(sample_proposal, sample_missions):
     bridge = FrontierIntelligenceBridge()
     # Missing cand_e
     authorized_ids = ("cand_a", "cand_b", "cand_c", "cand_d")
@@ -106,6 +124,7 @@ def test_bridge_fails_closed_when_any_candidate_unauthorized(sample_proposal):
     receipt = bridge.bridge_and_dispatch(
         sample_proposal,
         authorized_candidate_ids=authorized_ids,
+        missions=sample_missions,
         commit_sha=_checked_out_head(),
     )
 

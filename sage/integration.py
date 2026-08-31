@@ -125,48 +125,6 @@ class ChatGPTClient(BaseAIClient):
         self.runtime.ingest_session_payload(payload)
         return AIQueryResponse(response_text=rendered_immersion, reasoning_history=self.reasoning_history.copy(), referenced_memories=list(referenced_ids), session_id=session_id)
 
-    def create_interface_transport(self, *, command_authorizer: Any = None):
-        """Bind external ChatGPT interface telemetry (e.g., DOM surface) to InterfaceTransportAdapter."""
-        from types import SimpleNamespace
-        from sage.runtime.interface_transport import InterfaceTransportAdapter
-        from sage.c2.immersion_rehydration import build_chatgpt_immersion_state
-
-        def _projector(session_id: str):
-            c2_context = self._rehydrate_c2_context(session_id)
-            target_runtime = self.runtime
-            if not hasattr(target_runtime, "current_state") and hasattr(target_runtime, "state"):
-                state = target_runtime.state
-                current_state = SimpleNamespace(
-                    current_objective=getattr(state, "mission_id", None),
-                    active_task=getattr(state, "active_frontier", None),
-                    blockers=[],
-                    dependencies=[],
-                )
-                class _GatewayRuntimeWrapper:
-                    def __init__(self, inner, c_state):
-                        self._inner = inner
-                        self.current_state = c_state
-                    def __getattr__(self, name):
-                        return getattr(self._inner, name)
-                target_runtime = _GatewayRuntimeWrapper(target_runtime, current_state)
-            return build_chatgpt_immersion_state(target_runtime, session_id=session_id, c2_context=c2_context)
-
-        runtime_target = self.runtime
-        if not hasattr(runtime_target, "state") and hasattr(runtime_target, "context"):
-            class _RuntimeStateWrapper:
-                def __init__(self, inner):
-                    self._inner = inner
-                    self.state = SimpleNamespace(session_id=getattr(getattr(inner, "context", None), "session_id", None))
-                def __getattr__(self, name):
-                    return getattr(self._inner, name)
-            runtime_target = _RuntimeStateWrapper(self.runtime)
-
-        return InterfaceTransportAdapter(
-            runtime_target,
-            immersion_projector=_projector,
-            command_authorizer=command_authorizer,
-        )
-
 class GeminiJulesClient(BaseAIClient):
     """Connector for Google Gemini / Jules continuity workflow."""
     def __init__(self, runtime: Any, c2_provider: Any = None):

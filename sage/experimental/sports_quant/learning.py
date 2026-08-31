@@ -1,4 +1,4 @@
-"""Failure diagnostics and candidate-strategy promotion gates."""
+"""Failure diagnostics and governed candidate-strategy promotion gates."""
 
 from dataclasses import dataclass
 from typing import Iterable, Mapping
@@ -54,10 +54,11 @@ def validate_oos_candidate(
     candidate: Iterable[PredictionRecord],
     baseline: Iterable[PredictionRecord],
     outcomes: Mapping[str, int],
+    min_sample_size: int = 30,
 ) -> tuple[bool, EvaluationResult, EvaluationResult]:
-    """Promote only when candidate beats baseline on the same locked OOS events."""
-    candidate_records = [p for p in candidate if p.is_oos]
-    baseline_records = [p for p in baseline if p.is_oos]
+    """Allow promotion only after sufficiently large common OOS evidence and strict improvement."""
+    candidate_records = [p for p in candidate if p.is_oos and p.verify_lock()]
+    baseline_records = [p for p in baseline if p.is_oos and p.verify_lock()]
     candidate_events = {p.event_id for p in candidate_records}
     baseline_events = {p.event_id for p in baseline_records}
     common = candidate_events & baseline_events & set(outcomes)
@@ -65,4 +66,13 @@ def validate_oos_candidate(
     baseline_eval = score_predictions((p for p in baseline_records if p.event_id in common), outcomes)
     if candidate_eval.brier_score is None or baseline_eval.brier_score is None:
         return False, candidate_eval, baseline_eval
-    return candidate_eval.brier_score < baseline_eval.brier_score, candidate_eval, baseline_eval
+    if len(common) < min_sample_size:
+        return False, candidate_eval, baseline_eval
+    if candidate_eval.clv_score is None or baseline_eval.clv_score is None:
+        return False, candidate_eval, baseline_eval
+    return (
+        candidate_eval.brier_score < baseline_eval.brier_score
+        and candidate_eval.clv_score > baseline_eval.clv_score,
+        candidate_eval,
+        baseline_eval,
+    )

@@ -10,6 +10,7 @@ import hashlib
 import json
 from typing import Any, Mapping
 
+from sage.c2.build_jump_wave import FlightMissionSpec
 from sage.c2.multi_frontier_dispatch import (
     MultiFrontierDispatcher,
     MultiFrontierDispatchReceipt,
@@ -50,9 +51,10 @@ class FrontierIntelligenceBridge:
         proposal: Any,
         *,
         authorized_candidate_ids: tuple[str, ...],
+        missions: list[FlightMissionSpec],
         commit_sha: str | None = None,
     ) -> FrontierBridgeDispatchReceipt:
-        """Evaluate candidate authorizations and dispatch via MultiFrontierDispatcher if approved."""
+        """Authorize candidates, then dispatch the explicitly supplied wave plan."""
         if not proposal or not getattr(proposal, "candidates", None):
             raise ValueError("proposal requires valid discovery candidates")
 
@@ -78,11 +80,10 @@ class FrontierIntelligenceBridge:
             object.__setattr__(receipt, "bridge_digest", receipt.digest())
             return receipt
 
-        # Dispatch via MultiFrontierDispatcher
         if commit_sha:
             self.dispatcher.commit_sha = commit_sha
 
-        dispatch_result = self.dispatcher.dispatch_all()
+        dispatch_result = self.dispatcher.dispatch_all(missions)
 
         receipt = FrontierBridgeDispatchReceipt(
             proposal_frontier_digest=getattr(proposal, "frontier_digest", ""),
