@@ -1,14 +1,14 @@
 {
   "wave_id": "wave_organism_growth_001",
-  "exact_git_head": "2ba64b81be3b52c9597a4e1af18d6a7da3296dcf",
+  "exact_git_head": "acc64e210e070f12ba7a7b2184b0f5b70b56edaf",
   "velocity_receipt": {
-    "receipt_id": "rec_83d950178d80",
+    "receipt_id": "rec_e6b4cd3ed944",
     "wave_id": "wave_organism_growth_001",
     "active_sessions": [
       "session_organism_growth_primary",
       "c2-control-tower-primary"
     ],
-    "exact_git_head": "2ba64b81be3b52c9597a4e1af18d6a7da3296dcf",
+    "exact_git_head": "acc64e210e070f12ba7a7b2184b0f5b70b56edaf",
     "total_flights": 5,
     "successful_flights": 5,
     "advancement_matrix_20_cells": {
@@ -35,20 +35,22 @@
     },
     "rolls_royce_quality_passed": true,
     "reconvergence_verdict": "PASS",
+    "concurrency_observed": false,
+    "max_concurrent_flights": 1,
     "organism_growth_receipt": {
-      "receipt_id": "org_growth_2c1a03dcd56f",
-      "commit_sha": "2ba64b81be3b52c9597a4e1af18d6a7da3296dcf",
+      "receipt_id": "org_growth_51f4b70f10a2",
+      "commit_sha": "acc64e210e070f12ba7a7b2184b0f5b70b56edaf",
       "velocity_score": 1.0,
       "prediction_accuracy_score": 1.0,
       "wave_completion_rate": 1.0,
       "anti_drift_compliance_score": 1.0,
       "compound_growth_index": 1.0,
       "growth_verdict": "ACCELERATING",
-      "provenance_hash": "2c1a03dcd56f62b489ad91bffb0d951b854ff1fa22e7b6b0becfd62489e98cb8",
-      "timestamp": "2026-08-29T12:46:58.699569+00:00"
+      "provenance_hash": "51f4b70f10a2d181696544aa91bc88a55a7133f1a9da32253b9200bc59ccd50e",
+      "timestamp": "2026-08-31T01:51:45.266890+00:00"
     },
-    "timestamp": 1788007618.6996427,
-    "receipt_hash": "60662cff2ea6690280571209eaada2ea53204954663a6c2d789b4c7cae998f9b"
+    "timestamp": 1788141105.266988,
+    "receipt_hash": "d37c686d500b8a06518cf617f107ab2c3608e1e7ed84aa3c35465df5793502a5"
   },
   "prediction_growth_delta": {
     "historical_brier": 0.25,
@@ -58,18 +60,18 @@
     "calibration_score": 0.98
   },
   "organism_growth_receipt": {
-    "receipt_id": "org_growth_76f9b54eba43",
-    "commit_sha": "2ba64b81be3b52c9597a4e1af18d6a7da3296dcf",
+    "receipt_id": "org_growth_f7dced3ce5e9",
+    "commit_sha": "acc64e210e070f12ba7a7b2184b0f5b70b56edaf",
     "velocity_score": 1.0,
     "prediction_accuracy_score": 0.855,
     "wave_completion_rate": 1.0,
     "anti_drift_compliance_score": 1.0,
     "compound_growth_index": 0.9637,
     "growth_verdict": "ACCELERATING",
-    "provenance_hash": "76f9b54eba436ae2c6af80c179d5483d813b6c3a5aa3bf237ae7d8adde237cf9",
-    "timestamp": "2026-08-29T12:46:58.699835+00:00"
+    "provenance_hash": "f7dced3ce5e972bfbd6aa90feea6241e231a95ed489b284faf9f1f0afd861083",
+    "timestamp": "2026-08-31T01:51:45.267216+00:00"
   },
   "reconvergence_verdict": "PASS",
   "status": "VALIDATED",
-  "timestamp": 1788007618.6998723
+  "timestamp": 1788141105.267253
 }
