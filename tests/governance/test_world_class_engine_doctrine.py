@@ -38,13 +38,9 @@ def test_world_class_engine_doctrine_contains_non_negotiable_controls() -> None:
         assert invariant in content
 
 
-def test_chat_boot_binds_world_class_engine_doctrine() -> None:
-    path = _repo_root() / "docs/SAGE-CHAT-BOOT.md"
+def test_c2_boot_sequence_binds_world_class_engine_doctrine() -> None:
+    path = _repo_root() / "docs/governance/C2_MISSION_CONTROL_BOOT_SEQUENCE.md"
     content = path.read_text(encoding="utf-8")
     assert "SAGE_WORLD_CLASS_ENGINE_PRINCIPLE_DOCTRINE.md" in content
-
-
-def test_big_jump_wave_frame_binds_world_class_engine_doctrine() -> None:
-    path = _repo_root() / "docs/governance/BIG_JUMP_WAVE_C2_5X4_OPERATING_FRAME.md"
-    content = path.read_text(encoding="utf-8")
-    assert "SAGE_WORLD_CLASS_ENGINE_PRINCIPLE_DOCTRINE.md" in content
+    assert "60% HARDEN / 40% ADVANCE" in content
+    assert "Do not manufacture hardening when the demonstrated seam is already closed." in content
