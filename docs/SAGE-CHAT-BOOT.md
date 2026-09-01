@@ -5,16 +5,17 @@
 ## Read first
 
 1. `docs/SAGE-C2-PERSISTENT-OPERATING-CONTRACT.md`
-2. `docs/governance/SAGE_C2_PERSISTENCE_AND_IMMERSION_HARDENING_PROTOCOL.md`
-3. `docs/governance/SAGE_CANONICAL_MISSION_CONTINUITY_CONTRACT.md`
-4. `docs/SAGE-STATE-INVENTION-LARGE-BUILD-HANDOFF.md`
-5. `docs/SAGE-INVENTOR-AGENT-IMMERSION-DOCTRINE.md`
-6. `docs/architecture/SAGE-IMMERSION-LANGUAGE-DESIGN-LAB.md`
-7. `docs/architecture/SAGE-IMMERSION-REFERENCE-ATLAS.md`
-8. `docs/SAGE-LARGE-BUILD-ONE-SHOT-MILESTONE-PROTOCOL.md`
-9. `sage/c2/conversation_provenance.py`
-10. canonical `main`
-11. validated Master Archive / continuity state when available
+2. `docs/governance/SAGE_WORLD_CLASS_ENGINE_PRINCIPLE_DOCTRINE.md`
+3. `docs/governance/SAGE_C2_PERSISTENCE_AND_IMMERSION_HARDENING_PROTOCOL.md`
+4. `docs/governance/SAGE_CANONICAL_MISSION_CONTINUITY_CONTRACT.md`
+5. `docs/SAGE-STATE-INVENTION-LARGE-BUILD-HANDOFF.md`
+6. `docs/SAGE-INVENTOR-AGENT-IMMERSION-DOCTRINE.md`
+7. `docs/architecture/SAGE-IMMERSION-LANGUAGE-DESIGN-LAB.md`
+8. `docs/architecture/SAGE-IMMERSION-REFERENCE-ATLAS.md`
+9. `docs/SAGE-LARGE-BUILD-ONE-SHOT-MILESTONE-PROTOCOL.md`
+10. `sage/c2/conversation_provenance.py`
+11. canonical `main`
+12. validated Master Archive / continuity state when available
 
 ## Permanent station identity
 

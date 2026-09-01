@@ -1,7 +1,7 @@
 # BIG JUMP WAVE C2 5x4 OPERATING FRAME
 
 **Status:** Governing workflow extension
-**Authority:** SAGE C2 Persistent Operating Contract + Git/main truth + validated Master Archive + `docs/governance/JULES_C2_CAPABILITY_ENHANCEMENT_DIRECTIVE.md`
+**Authority:** SAGE C2 Persistent Operating Contract + World-Class Engine Principle (`docs/governance/SAGE_WORLD_CLASS_ENGINE_PRINCIPLE_DOCTRINE.md`) + Git/main truth + validated Master Archive + `docs/governance/JULES_C2_CAPABILITY_ENHANCEMENT_DIRECTIVE.md`
 
 ## Purpose
 
