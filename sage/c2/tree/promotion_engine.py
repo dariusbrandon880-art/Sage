@@ -60,9 +60,17 @@ class PromotionCandidate:
 class PromotionEngine:
     """Fail-closed promotion gate for the canonical SAGE trunk."""
 
-    def __init__(self, git_provider: GitProvider, canonical_branch: str = "main"):
+    def __init__(
+        self,
+        git_provider: GitProvider,
+        canonical_branch: str = "main",
+        max_receipt_age: float = 86400.0,
+        clock_skew_tolerance: float = 300.0,
+    ):
         self.git_provider = git_provider
         self.canonical_branch = canonical_branch
+        self.max_receipt_age = max_receipt_age
+        self.clock_skew_tolerance = clock_skew_tolerance
 
     @staticmethod
     def _validate_sha(sha: str, name: str) -> str:
@@ -103,6 +111,12 @@ class PromotionEngine:
             return {}
 
         candidate.source_sha = source_sha
+
+        if source_sha == candidate.target_sha.lower():
+            candidate.status = PromotionStatus.REJECTED
+            logger.error("Promotion rejected: source_sha equals target_sha (no-op or self-promotion).")
+            return {}
+
         if not candidate.required_gates or len(set(candidate.required_gates)) != len(
             candidate.required_gates
         ):
@@ -124,6 +138,15 @@ class PromotionEngine:
             ):
                 candidate.status = PromotionStatus.REJECTED
                 logger.error("Promotion rejected: malformed evidence receipt.")
+                return {}
+
+            now = time.time()
+            if (
+                receipt.timestamp < (now - self.max_receipt_age)
+                or receipt.timestamp > (now + self.clock_skew_tolerance)
+            ):
+                candidate.status = PromotionStatus.REJECTED
+                logger.error("Promotion rejected: receipt %s timestamp expired or future-skewed.", receipt.receipt_id)
                 return {}
 
             try:

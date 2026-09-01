@@ -18,26 +18,24 @@ def test_sagi_genesis_initialization():
     assert state.mutation_radius == 0.1
     assert len(state.identity_anchor.initial_sha256) == 64
     assert len(state.current_hash) == 64
-    assert state.validate_state_integrity() is True
 
 
-def test_sagi_state_integrity_and_crpl_f3():
-    """Verify state integrity validation and CRPL-F3 state integrity verifier check."""
-    state = SAGIState.initialize_genesis(state_id="test_crpl_f3")
-    assert state.validate_state_integrity() is True
+def test_sagi_identity_anchor_is_immutable():
+    """Verify the genesis identity anchor cannot be mutated in place."""
+    state = SAGIState.initialize_genesis()
+    with pytest.raises((TypeError, ValueError)):
+        state.identity_anchor.initial_sha256 = "b" * 64
+    with pytest.raises(AttributeError):
+        state.identity_anchor.core_rules.append("UNAUTHORIZED_RULE")
 
-    # Tamper with state hash
-    state.current_hash = "f" * 64
-    assert state.validate_state_integrity() is False
 
-    verifier = SAGIVerifier()
-    generator = SAGICandidateGenerator(seed=303)
-    cand = generator.generate_candidate(state)
+def test_sagi_state_hash_covers_failure_memory_contents():
+    """Verify failure-memory content changes invalidate the stored Ω hash."""
+    state = SAGIState.initialize_genesis()
+    assert state.verify_integrity() is True
 
-    res = verifier.verify_proposal(state, cand)
-    assert res.crpl_f3_passed is False
-    assert res.is_valid is False
-    assert "CRPL_F3_VIOLATION" in res.decision_reasoning
+    state.failure_memory.append({"proposal_id": "failed_01", "reason": "TEST_REJECTION"})
+    assert state.verify_integrity() is False
 
 
 def test_sagi_candidate_generation():
@@ -60,14 +58,12 @@ def test_crpl_f1_metadata_non_influence():
     cand1 = generator.generate_candidate(state, tier3_metadata={"priority": "LOW", "region": "US"})
     cand2 = generator.generate_candidate(state, tier3_metadata={"priority": "CRITICAL", "region": "EU", "extra": "data"})
 
-    # Force identical semantic fields
     cand2.proposal_id = cand1.proposal_id
     cand2.mutation_delta = cand1.mutation_delta
     cand2.mutation_radius = cand1.mutation_radius
     cand2.temperature = cand1.temperature
     cand2.proposal_hash = cand2.compute_sha256()
 
-    # Even though tier3_metadata differs, proposal_hash MUST be byte-for-byte identical
     assert cand1.proposal_hash == cand2.proposal_hash
 
 
@@ -79,14 +75,12 @@ def test_crpl_f2_persona_non_influence():
     cand1 = generator.generate_candidate(state, persona_label="persona_alpha")
     cand2 = generator.generate_candidate(state, persona_label="persona_omega")
 
-    # Force identical semantic fields
     cand2.proposal_id = cand1.proposal_id
     cand2.mutation_delta = cand1.mutation_delta
     cand2.mutation_radius = cand1.mutation_radius
     cand2.temperature = cand1.temperature
     cand2.proposal_hash = cand2.compute_sha256()
 
-    # Even though persona_label differs, proposal_hash MUST be byte-for-byte identical
     assert cand1.proposal_hash == cand2.proposal_hash
 
 
@@ -96,15 +90,14 @@ def test_sagi_verification_and_fail_closed():
     generator = SAGICandidateGenerator(seed=101)
     verifier = SAGIVerifier(max_spectral_shift=0.2)
 
-    # Valid candidate
     cand_valid = generator.generate_candidate(state)
     res_valid = verifier.verify_proposal(state, cand_valid)
     assert res_valid.is_valid is True
     assert res_valid.status == "APPROVED"
+    assert res_valid.state_integrity_passed is True
     assert res_valid.crpl_f1_passed is True
     assert res_valid.crpl_f2_passed is True
 
-    # Invalid candidate: Excessive parameter shift exceeding spectral stability
     cand_invalid = generator.generate_candidate(state)
     cand_invalid.mutation_delta["parameter_shift"] = 0.95
     res_invalid = verifier.verify_proposal(state, cand_invalid)
@@ -113,24 +106,36 @@ def test_sagi_verification_and_fail_closed():
     assert "SPECTRAL_STABILITY_VIOLATION" in res_invalid.decision_reasoning
 
 
+def test_sagi_verifier_rejects_corrupted_state():
+    """Verify candidates are rejected when Ω state contents no longer match its stored hash."""
+    state = SAGIState.initialize_genesis()
+    generator = SAGICandidateGenerator(seed=303)
+    verifier = SAGIVerifier()
+    candidate = generator.generate_candidate(state)
+
+    state.failure_memory.append({"proposal_id": "tampered", "reason": "CORRUPTION"})
+    result = verifier.verify_proposal(state, candidate)
+
+    assert result.is_valid is False
+    assert result.state_integrity_passed is False
+    assert "STATE_INTEGRITY_VIOLATION" in result.decision_reasoning
+
+
 def test_sagi_evolution_controller_and_receipts():
     """Verify evolution controller cycles, temperature adaptation, and receipt generation."""
     controller = SAGIEvolutionController()
 
-    # Cycle 1: Successful
     rcpt1 = controller.execute_evolution_cycle(tier3_metadata={"meta": "test_1"})
     assert rcpt1.verification_status == "APPROVED"
     assert rcpt1.crpl_f1_passed is True
     assert rcpt1.crpl_f2_passed is True
     assert len(rcpt1.receipt_sha256) == 64
-    assert controller.state.temperature < rcpt1.temperature_before  # Temperature cooled
+    assert controller.state.temperature < rcpt1.temperature_before
 
-    # Cycle 2: Forced Failure
     rcpt2 = controller.execute_evolution_cycle(force_fail_closed=True)
     assert rcpt2.verification_status == "REJECTED"
-    assert controller.state.temperature > rcpt2.temperature_before  # Temperature warmed
+    assert controller.state.temperature > rcpt2.temperature_before
 
-    # Verify Learning Metrics (PHASE-1H)
     metrics = controller.compute_learning_metrics()
     assert metrics["total_cycles"] == 2.0
     assert metrics["successful_cycles"] == 1.0
@@ -246,7 +251,6 @@ def test_sagi_research_graph_ingest_search_receipt():
     assert len(graph.nodes) == 1
     assert "search_cycle_g1" in graph.cycles_indexed
 
-    # Emit graph receipt
     graph_rcpt = graph.emit_graph_receipt()
     assert graph_rcpt.graph_id == "graph_search_ingest"
     assert graph_rcpt.nodes_added == 1
@@ -271,7 +275,6 @@ def test_sagi_research_graph_ingest_evolution_receipt():
     assert node_pass.guardian_result == "APPROVED"
     assert node_fail.guardian_result == "REJECTED"
 
-    # Query nodes
     approved_nodes = graph.query_nodes(guardian_result="APPROVED")
     assert len(approved_nodes) == 1
     assert approved_nodes[0].node_id == node_pass.node_id
