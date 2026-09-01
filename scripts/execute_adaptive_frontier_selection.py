@@ -16,13 +16,9 @@ repo_root = Path(__file__).resolve().parent.parent
 if str(repo_root) not in sys.path:
     sys.path.insert(0, str(repo_root))
 
-from sage.c2.authorization_package_synthesis import (  # noqa: E402
-    AuthorizationPackageSynthesizer,
-)
+from sage.c2.authorization_package_synthesis import AuthorizationPackageSynthesizer  # noqa: E402
 from sage.c2.build_jump_wave import FlightMissionSpec  # noqa: E402
-from sage.c2.frontier_intelligence_bridge import (  # noqa: E402
-    FrontierIntelligenceBridge,
-)
+from sage.c2.frontier_intelligence_bridge import FrontierIntelligenceBridge  # noqa: E402
 from sage.experimental.sagi_discovery_flight_selector import (  # noqa: E402
     DiscoveryCandidate,
     FlightRole,
@@ -38,7 +34,6 @@ def main() -> int:
     print("SAGE ADAPTIVE FRONTIER SELECTION V0.1 EXECUTION")
     print("=" * 70)
 
-    # 1. Mission Intake
     intake = SAGEMissionIntakeLayer()
     proposal_data = {
         "name": "Adaptive Frontier Selection",
@@ -50,21 +45,15 @@ def main() -> int:
     }
     intake_res = intake.submit_proposal(proposal_data)
 
-    # 2. Risk Surface & Authorization Package Synthesis
     synthesizer = AuthorizationPackageSynthesizer()
-
     candidates_def = (
         {
             "cand": DiscoveryCandidate(
                 candidate_id="cand_consequent_adaptive_01",
                 description="Consequent frontier: adaptive selection engine",
                 role=FlightRole.CONSEQUENT_FRONTIER,
-                consequentiality=0.9,
-                information_gain=0.8,
-                falsification_value=0.7,
-                safety=0.95,
-                evidence_gap=0.6,
-                provenance_ref="provenance_adaptive_01",
+                consequentiality=0.9, information_gain=0.8, falsification_value=0.7,
+                safety=0.95, evidence_gap=0.6, provenance_ref="provenance_adaptive_01",
             ),
             "paths": ("sage/c2/authorization_package_synthesis.py",),
         },
@@ -73,12 +62,8 @@ def main() -> int:
                 candidate_id="cand_info_gain_adaptive_02",
                 description="Information gain: intake lineage tracking",
                 role=FlightRole.INFORMATION_GAIN,
-                consequentiality=0.8,
-                information_gain=0.95,
-                falsification_value=0.6,
-                safety=0.9,
-                evidence_gap=0.5,
-                provenance_ref="provenance_adaptive_02",
+                consequentiality=0.8, information_gain=0.95, falsification_value=0.6,
+                safety=0.9, evidence_gap=0.5, provenance_ref="provenance_adaptive_02",
             ),
             "paths": ("sage/mission_intake.py",),
         },
@@ -87,12 +72,8 @@ def main() -> int:
                 candidate_id="cand_falsification_adaptive_03",
                 description="Falsification: risk surface error boundary testing",
                 role=FlightRole.FALSIFICATION,
-                consequentiality=0.7,
-                information_gain=0.7,
-                falsification_value=0.9,
-                safety=0.85,
-                evidence_gap=0.4,
-                provenance_ref="provenance_adaptive_03",
+                consequentiality=0.7, information_gain=0.7, falsification_value=0.9,
+                safety=0.85, evidence_gap=0.4, provenance_ref="provenance_adaptive_03",
             ),
             "paths": ("tests/test_authorization_package_synthesis.py",),
         },
@@ -101,12 +82,8 @@ def main() -> int:
                 candidate_id="cand_recovery_adaptive_04",
                 description="Recovery regression: fail-closed gate verification",
                 role=FlightRole.RECOVERY_REGRESSION,
-                consequentiality=0.85,
-                information_gain=0.75,
-                falsification_value=0.8,
-                safety=0.9,
-                evidence_gap=0.5,
-                provenance_ref="provenance_adaptive_04",
+                consequentiality=0.85, information_gain=0.75, falsification_value=0.8,
+                safety=0.9, evidence_gap=0.5, provenance_ref="provenance_adaptive_04",
             ),
             "paths": ("sage/experimental/five_flight_reconvergence.py",),
         },
@@ -115,12 +92,8 @@ def main() -> int:
                 candidate_id="cand_transfer_adaptive_05",
                 description="Independent transfer: evidence receipt archiving",
                 role=FlightRole.INDEPENDENT_TRANSFER,
-                consequentiality=0.75,
-                information_gain=0.8,
-                falsification_value=0.65,
-                safety=0.92,
-                evidence_gap=0.45,
-                provenance_ref="provenance_adaptive_05",
+                consequentiality=0.75, information_gain=0.8, falsification_value=0.65,
+                safety=0.92, evidence_gap=0.45, provenance_ref="provenance_adaptive_05",
             ),
             "paths": ("evidence_capture/adaptive_frontier_selection_evidence.json",),
         },
@@ -129,7 +102,6 @@ def main() -> int:
     packages = []
     authorized_candidate_ids = []
     discovery_candidates = tuple(item["cand"] for item in candidates_def)
-
     for item in candidates_def:
         cand = item["cand"]
         pkg = synthesizer.synthesize_package(
@@ -143,59 +115,29 @@ def main() -> int:
         if pkg.is_authorized:
             authorized_candidate_ids.append(cand.candidate_id)
 
-    # 3. SAGI Selection
     selector = SAGIDiscoveryFlightSelector()
     proposal = selector.select(discovery_candidates, frontier_digest="frontier_digest_adaptive_v1")
 
-    # 4. Bridge Wave Dispatch
+    # Discovery only selects candidates. Convert the selected portfolio into an
+    # explicit five-slot mission plan; BuildJumpWaveEngine rejects implicit/default missions.
+    missions = []
+    for index, candidate in enumerate(proposal.candidates, start=1):
+        definition = next(
+            item for item in candidates_def if item["cand"].candidate_id == candidate.candidate_id
+        )
+        target_path = definition["paths"][0]
+        missions.append(
+            FlightMissionSpec(
+                flight_id=f"F{index}",
+                frontier_name=candidate.description,
+                target_path=target_path,
+                collision_zone=target_path.rsplit("/", 1)[0].replace("/", "."),
+                evidence_ref=f"adaptive:{candidate.candidate_id}",
+                pr_or_change="adaptive-frontier-selection",
+            )
+        )
+
     bridge = FrontierIntelligenceBridge()
-    missions = [
-        FlightMissionSpec(
-            flight_id="F1",
-            frontier_name="Adaptive Selection Engine",
-            target_path="sage/c2/authorization_package_synthesis.py",
-            collision_zone="sage/c2/authorization_package_synthesis",
-            evidence_ref="evidence_capture/adaptive_frontier_selection_evidence.json",
-            pr_or_change="PR-ADAPTIVE-F1",
-            test_references=["tests/test_authorization_package_synthesis.py"],
-        ),
-        FlightMissionSpec(
-            flight_id="F2",
-            frontier_name="Intake Lineage Tracking",
-            target_path="sage/mission_intake.py",
-            collision_zone="sage/mission_intake",
-            evidence_ref="evidence_capture/adaptive_frontier_selection_evidence.json",
-            pr_or_change="PR-ADAPTIVE-F2",
-            test_references=["tests/test_mission_intake.py"],
-        ),
-        FlightMissionSpec(
-            flight_id="F3",
-            frontier_name="Risk Surface Error Boundary Testing",
-            target_path="sage/c2/frontier_intelligence_bridge.py",
-            collision_zone="sage/c2/frontier_intelligence_bridge",
-            evidence_ref="evidence_capture/adaptive_frontier_selection_evidence.json",
-            pr_or_change="PR-ADAPTIVE-F3",
-            test_references=["tests/test_frontier_intelligence_bridge.py"],
-        ),
-        FlightMissionSpec(
-            flight_id="F4",
-            frontier_name="Fail-Closed Gate Verification",
-            target_path="sage/experimental/sagi_discovery_flight_selector.py",
-            collision_zone="sage/experimental/sagi_discovery_flight_selector",
-            evidence_ref="evidence_capture/adaptive_frontier_selection_evidence.json",
-            pr_or_change="PR-ADAPTIVE-F4",
-            test_references=["tests/experimental/test_sagi_discovery_flight_selector.py"],
-        ),
-        FlightMissionSpec(
-            flight_id="F5",
-            frontier_name="Evidence Receipt Archiving",
-            target_path="sage/c2/multi_frontier_dispatch.py",
-            collision_zone="sage/c2/multi_frontier_dispatch",
-            evidence_ref="evidence_capture/adaptive_frontier_selection_evidence.json",
-            pr_or_change="PR-ADAPTIVE-F5",
-            test_references=["tests/c2/test_multi_frontier_dispatch.py"],
-        ),
-    ]
     bridge_receipt = bridge.bridge_and_dispatch(
         proposal,
         authorized_candidate_ids=tuple(authorized_candidate_ids),
@@ -212,8 +154,7 @@ def main() -> int:
         "is_authorized": bridge_receipt.is_authorized,
         "dispatch_verdict": (
             bridge_receipt.dispatch_result.wave_verdict
-            if bridge_receipt.dispatch_result
-            else "BLOCKED"
+            if bridge_receipt.dispatch_result else "BLOCKED"
         ),
         "selection_verdict": (
             "PASS"
@@ -225,8 +166,7 @@ def main() -> int:
     }
 
     EVIDENCE_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with open(EVIDENCE_PATH, "w", encoding="utf-8") as f:
-        json.dump(evidence_data, f, indent=2)
+    EVIDENCE_PATH.write_text(json.dumps(evidence_data, indent=2), encoding="utf-8")
 
     print(f"Commit SHA: {synthesizer.commit_sha}")
     print(f"Intake Mission ID: {intake_res.get('mission_id')}")

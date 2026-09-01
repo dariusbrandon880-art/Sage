@@ -40,23 +40,46 @@ class SAGIEvolutionReceipt(BaseModel):
         if not self.receipt_sha256:
             self.receipt_sha256 = self.compute_sha256()
 
-    def compute_sha256(self) -> str:
-        """Compute SHA-256 hash over receipt contents."""
-        payload = {
+    def _integrity_payload(self) -> Dict[str, Any]:
+        """Return the complete receipt payload excluding only its integrity hash."""
+        return {
             "receipt_id": self.receipt_id,
             "cycle_index": self.cycle_index,
             "parent_state_hash": self.parent_state_hash,
             "next_state_hash": self.next_state_hash,
+            "proposal_id": self.proposal_id,
             "proposal_hash": self.proposal_hash,
             "verification_status": self.verification_status,
-            "learning_metrics": self.learning_metrics
+            "decision_reasoning": self.decision_reasoning,
+            "temperature_before": self.temperature_before,
+            "temperature_after": self.temperature_after,
+            "mutation_radius": self.mutation_radius,
+            "crpl_f1_passed": self.crpl_f1_passed,
+            "crpl_f2_passed": self.crpl_f2_passed,
+            "failure_memory_count": self.failure_memory_count,
+            "learning_metrics": self.learning_metrics,
+            "timestamp": self.timestamp,
         }
-        serialized = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+
+    def compute_sha256(self) -> str:
+        """Compute SHA-256 over every receipt field except receipt_sha256 itself."""
+        serialized = json.dumps(
+            self._integrity_payload(), sort_keys=True, separators=(",", ":")
+        )
         return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+    def verify_integrity(self) -> bool:
+        """Return whether the stored receipt hash matches its complete payload."""
+        return self.receipt_sha256 == self.compute_sha256()
+
+
+class SAGITransitionError(RuntimeError):
+    """Raised when a SAGI evolution transition fails or violates state integrity."""
+    pass
 
 
 class SAGIEvolutionController:
-    """Controller regulating bounded SAGI evolution cycles."""
+    """Controller regulating bounded SAGI evolution cycles with atomic transaction boundaries."""
 
     def __init__(
         self,
@@ -92,67 +115,91 @@ class SAGIEvolutionController:
         tier3_metadata: Optional[Dict[str, Any]] = None,
         force_fail_closed: bool = False
     ) -> SAGIEvolutionReceipt:
-        """Execute one bounded evolution cycle: Generate -> Verify -> Adapt -> Receipt."""
+        """Execute one bounded evolution cycle under an atomic transaction boundary.
+
+        Generate -> Verify -> Adapt -> Verify State Integrity -> Emission.
+        If an exception occurs or post-transition state verification fails,
+        the controller automatically rolls back to the pre-cycle state snapshot
+        and raises a SAGITransitionError.
+        """
+        # Capture pre-cycle atomic snapshot
+        snapshot_state_dict = json.loads(self.state.model_dump_json())
+        snapshot_success_cycles = self.successful_cycles
+        snapshot_failed_cycles = self.failed_cycles
+        snapshot_gen_failures = list(self.generator.failure_memory)
+
         temp_before = self.state.temperature
         parent_hash = self.state.current_hash
 
-        # 1. Generate Candidate Proposal
-        candidate = self.generator.generate_candidate(
-            current_state=self.state,
-            proposal_id_prefix=f"sagi_cycle_{self.state.cycle_index}",
-            persona_label=persona_label,
-            tier3_metadata=tier3_metadata
-        )
+        try:
+            candidate = self.generator.generate_candidate(
+                current_state=self.state,
+                proposal_id_prefix=f"sagi_cycle_{self.state.cycle_index}",
+                persona_label=persona_label,
+                tier3_metadata=tier3_metadata
+            )
 
-        # Failure Injection for verification testing
-        if force_fail_closed:
-            candidate.mutation_delta["parameter_shift"] = 999.0  # Exceed spectral stability
+            if force_fail_closed:
+                candidate.mutation_delta["parameter_shift"] = 999.0
 
-        # 2. Verify Candidate against Invariants and CRPL Falsification
-        v_result = self.verifier.verify_proposal(self.state, candidate)
+            v_result = self.verifier.verify_proposal(self.state, candidate)
 
-        # 3. Adapt State & Temperature based on Verification Outcome
-        if v_result.is_valid:
-            self.successful_cycles += 1
-            # Cool down temperature on success
-            self.state.temperature = max(0.05, round(self.state.temperature * 0.95, 4))
-            self.state.cycle_index += 1
-            self.state.active_hypotheses.append({
-                "proposal_id": candidate.proposal_id,
-                "mutation_delta": candidate.mutation_delta,
-                "accepted_at_cycle": self.state.cycle_index
-            })
-            self.state.update_hash()
-        else:
-            self.failed_cycles += 1
-            # Record failure in generator memory and warm temperature slightly
-            self.generator.record_failure(candidate, v_result.decision_reasoning)
-            self.state.failure_memory.append({
-                "proposal_id": candidate.proposal_id,
-                "reason": v_result.decision_reasoning
-            })
-            self.state.temperature = min(1.8, round(self.state.temperature * 1.05, 4))
-            self.state.update_hash()
+            if v_result.is_valid:
+                self.successful_cycles += 1
+                self.state.temperature = max(0.05, round(self.state.temperature * 0.95, 4))
+                self.state.cycle_index += 1
+                self.state.active_hypotheses.append({
+                    "proposal_id": candidate.proposal_id,
+                    "mutation_delta": candidate.mutation_delta,
+                    "accepted_at_cycle": self.state.cycle_index
+                })
+                self.state.update_hash()
+            else:
+                self.failed_cycles += 1
+                self.generator.record_failure(candidate, v_result.decision_reasoning)
+                self.state.failure_memory.append({
+                    "proposal_id": candidate.proposal_id,
+                    "reason": v_result.decision_reasoning
+                })
+                self.state.temperature = min(1.8, round(self.state.temperature * 1.05, 4))
+                self.state.update_hash()
 
-        # 4. Generate Fresh Receipt with Actual Metrics & Hashes
-        learning_metrics = self.compute_learning_metrics()
-        receipt = SAGIEvolutionReceipt(
-            receipt_id=f"rcpt_sagi_{self.state.cycle_index}_{len(self.receipt_history)+1}",
-            cycle_index=self.state.cycle_index,
-            parent_state_hash=parent_hash,
-            next_state_hash=self.state.current_hash,
-            proposal_id=candidate.proposal_id,
-            proposal_hash=candidate.proposal_hash,
-            verification_status=v_result.status,
-            decision_reasoning=v_result.decision_reasoning,
-            temperature_before=temp_before,
-            temperature_after=self.state.temperature,
-            mutation_radius=self.state.mutation_radius,
-            crpl_f1_passed=v_result.crpl_f1_passed,
-            crpl_f2_passed=v_result.crpl_f2_passed,
-            failure_memory_count=len(self.generator.failure_memory),
-            learning_metrics=learning_metrics
-        )
+            # Fail-closed post-transition state integrity check
+            if not self.state.verify_integrity():
+                raise SAGITransitionError("Post-transition state integrity check failed: hash mismatch")
 
-        self.receipt_history.append(receipt)
-        return receipt
+            learning_metrics = self.compute_learning_metrics()
+            receipt = SAGIEvolutionReceipt(
+                receipt_id=f"rcpt_sagi_{self.state.cycle_index}_{len(self.receipt_history)+1}",
+                cycle_index=self.state.cycle_index,
+                parent_state_hash=parent_hash,
+                next_state_hash=self.state.current_hash,
+                proposal_id=candidate.proposal_id,
+                proposal_hash=candidate.proposal_hash,
+                verification_status=v_result.status,
+                decision_reasoning=v_result.decision_reasoning,
+                temperature_before=temp_before,
+                temperature_after=self.state.temperature,
+                mutation_radius=self.state.mutation_radius,
+                crpl_f1_passed=v_result.crpl_f1_passed,
+                crpl_f2_passed=v_result.crpl_f2_passed,
+                failure_memory_count=len(self.generator.failure_memory),
+                learning_metrics=learning_metrics
+            )
+
+            if not receipt.verify_integrity():
+                raise SAGITransitionError("Emitted evolution receipt integrity check failed")
+
+            self.receipt_history.append(receipt)
+            return receipt
+
+        except Exception as exc:
+            # Atomic rollback: restore state and controller counters
+            self.state = SAGIState(**snapshot_state_dict)
+            self.successful_cycles = snapshot_success_cycles
+            self.failed_cycles = snapshot_failed_cycles
+            self.generator.failure_memory = snapshot_gen_failures
+
+            if isinstance(exc, SAGITransitionError):
+                raise
+            raise SAGITransitionError(f"SAGI evolution cycle aborted due to unhandled exception: {exc}") from exc
