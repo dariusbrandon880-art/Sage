@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from dataclasses import dataclass
 from typing import Sequence
 
@@ -51,6 +52,13 @@ class SportsDecision:
             raise ValueError("SHADOW_BOUNDARY_VIOLATION: wagering execution is prohibited")
 
 
+def _reference_component(value: str) -> str:
+    """Normalize human labels into deterministic reference-safe components."""
+    normalized = re.sub(r"\s+", "_", value.strip())
+    normalized = re.sub(r"[^A-Za-z0-9_.:-]", "_", normalized)
+    return normalized
+
+
 def _snapshot_hash(edge: PropEdgeResult, candidates: Sequence[PropEdgeResult]) -> str:
     payload = {
         "player": edge.player_name,
@@ -85,10 +93,11 @@ def build_sports_decision(
     if any(item.selection == edge.selection for item in alternatives):
         raise ValueError("SPORTS_DECISION_ALTERNATIVE_DUPLICATE: chosen selection cannot be an alternative")
     snapshot_hash = _snapshot_hash(edge, alternatives)
+    event_id = f"{_reference_component(edge.player_name)}_{_reference_component(edge.prop_category)}"
     return SportsDecision(
         decision_id=decision_id,
         mission_id=mission_id,
-        event_id=f"{edge.player_name}_{edge.prop_category}",
+        event_id=event_id,
         decided_at_utc=decided_at_utc,
         information_snapshot_hash=snapshot_hash,
         chosen_selection=edge.selection,
