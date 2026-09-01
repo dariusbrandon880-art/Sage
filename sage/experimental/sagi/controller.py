@@ -40,19 +40,37 @@ class SAGIEvolutionReceipt(BaseModel):
         if not self.receipt_sha256:
             self.receipt_sha256 = self.compute_sha256()
 
-    def compute_sha256(self) -> str:
-        """Compute SHA-256 hash over receipt contents."""
-        payload = {
+    def _integrity_payload(self) -> Dict[str, Any]:
+        """Return the complete receipt payload excluding only its integrity hash."""
+        return {
             "receipt_id": self.receipt_id,
             "cycle_index": self.cycle_index,
             "parent_state_hash": self.parent_state_hash,
             "next_state_hash": self.next_state_hash,
+            "proposal_id": self.proposal_id,
             "proposal_hash": self.proposal_hash,
             "verification_status": self.verification_status,
-            "learning_metrics": self.learning_metrics
+            "decision_reasoning": self.decision_reasoning,
+            "temperature_before": self.temperature_before,
+            "temperature_after": self.temperature_after,
+            "mutation_radius": self.mutation_radius,
+            "crpl_f1_passed": self.crpl_f1_passed,
+            "crpl_f2_passed": self.crpl_f2_passed,
+            "failure_memory_count": self.failure_memory_count,
+            "learning_metrics": self.learning_metrics,
+            "timestamp": self.timestamp,
         }
-        serialized = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+
+    def compute_sha256(self) -> str:
+        """Compute SHA-256 over every receipt field except receipt_sha256 itself."""
+        serialized = json.dumps(
+            self._integrity_payload(), sort_keys=True, separators=(",", ":")
+        )
         return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+    def verify_integrity(self) -> bool:
+        """Return whether the stored receipt hash matches its complete payload."""
+        return self.receipt_sha256 == self.compute_sha256()
 
 
 class SAGIEvolutionController:
@@ -96,7 +114,6 @@ class SAGIEvolutionController:
         temp_before = self.state.temperature
         parent_hash = self.state.current_hash
 
-        # 1. Generate Candidate Proposal
         candidate = self.generator.generate_candidate(
             current_state=self.state,
             proposal_id_prefix=f"sagi_cycle_{self.state.cycle_index}",
@@ -104,17 +121,13 @@ class SAGIEvolutionController:
             tier3_metadata=tier3_metadata
         )
 
-        # Failure Injection for verification testing
         if force_fail_closed:
-            candidate.mutation_delta["parameter_shift"] = 999.0  # Exceed spectral stability
+            candidate.mutation_delta["parameter_shift"] = 999.0
 
-        # 2. Verify Candidate against Invariants and CRPL Falsification
         v_result = self.verifier.verify_proposal(self.state, candidate)
 
-        # 3. Adapt State & Temperature based on Verification Outcome
         if v_result.is_valid:
             self.successful_cycles += 1
-            # Cool down temperature on success
             self.state.temperature = max(0.05, round(self.state.temperature * 0.95, 4))
             self.state.cycle_index += 1
             self.state.active_hypotheses.append({
@@ -125,7 +138,6 @@ class SAGIEvolutionController:
             self.state.update_hash()
         else:
             self.failed_cycles += 1
-            # Record failure in generator memory and warm temperature slightly
             self.generator.record_failure(candidate, v_result.decision_reasoning)
             self.state.failure_memory.append({
                 "proposal_id": candidate.proposal_id,
@@ -134,7 +146,6 @@ class SAGIEvolutionController:
             self.state.temperature = min(1.8, round(self.state.temperature * 1.05, 4))
             self.state.update_hash()
 
-        # 4. Generate Fresh Receipt with Actual Metrics & Hashes
         learning_metrics = self.compute_learning_metrics()
         receipt = SAGIEvolutionReceipt(
             receipt_id=f"rcpt_sagi_{self.state.cycle_index}_{len(self.receipt_history)+1}",
