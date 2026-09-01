@@ -19,6 +19,7 @@ if str(repo_root) not in sys.path:
 from sage.c2.authorization_package_synthesis import (  # noqa: E402
     AuthorizationPackageSynthesizer,
 )
+from sage.c2.build_jump_wave import FlightMissionSpec  # noqa: E402
 from sage.c2.frontier_intelligence_bridge import (  # noqa: E402
     FrontierIntelligenceBridge,
 )
@@ -148,9 +149,57 @@ def main() -> int:
 
     # 4. Bridge Wave Dispatch
     bridge = FrontierIntelligenceBridge()
+    missions = [
+        FlightMissionSpec(
+            flight_id="F1",
+            frontier_name="Adaptive Selection Engine",
+            target_path="sage/c2/authorization_package_synthesis.py",
+            collision_zone="sage/c2/authorization_package_synthesis",
+            evidence_ref="evidence_capture/adaptive_frontier_selection_evidence.json",
+            pr_or_change="PR-ADAPTIVE-F1",
+            test_references=["tests/test_authorization_package_synthesis.py"],
+        ),
+        FlightMissionSpec(
+            flight_id="F2",
+            frontier_name="Intake Lineage Tracking",
+            target_path="sage/mission_intake.py",
+            collision_zone="sage/mission_intake",
+            evidence_ref="evidence_capture/adaptive_frontier_selection_evidence.json",
+            pr_or_change="PR-ADAPTIVE-F2",
+            test_references=["tests/test_mission_intake.py"],
+        ),
+        FlightMissionSpec(
+            flight_id="F3",
+            frontier_name="Risk Surface Error Boundary Testing",
+            target_path="sage/c2/frontier_intelligence_bridge.py",
+            collision_zone="sage/c2/frontier_intelligence_bridge",
+            evidence_ref="evidence_capture/adaptive_frontier_selection_evidence.json",
+            pr_or_change="PR-ADAPTIVE-F3",
+            test_references=["tests/test_frontier_intelligence_bridge.py"],
+        ),
+        FlightMissionSpec(
+            flight_id="F4",
+            frontier_name="Fail-Closed Gate Verification",
+            target_path="sage/experimental/sagi_discovery_flight_selector.py",
+            collision_zone="sage/experimental/sagi_discovery_flight_selector",
+            evidence_ref="evidence_capture/adaptive_frontier_selection_evidence.json",
+            pr_or_change="PR-ADAPTIVE-F4",
+            test_references=["tests/experimental/test_sagi_discovery_flight_selector.py"],
+        ),
+        FlightMissionSpec(
+            flight_id="F5",
+            frontier_name="Evidence Receipt Archiving",
+            target_path="sage/c2/multi_frontier_dispatch.py",
+            collision_zone="sage/c2/multi_frontier_dispatch",
+            evidence_ref="evidence_capture/adaptive_frontier_selection_evidence.json",
+            pr_or_change="PR-ADAPTIVE-F5",
+            test_references=["tests/c2/test_multi_frontier_dispatch.py"],
+        ),
+    ]
     bridge_receipt = bridge.bridge_and_dispatch(
         proposal,
         authorized_candidate_ids=tuple(authorized_candidate_ids),
+        missions=missions,
         commit_sha=synthesizer.commit_sha,
     )
 
