@@ -7,7 +7,7 @@
 
 This document defines the Big Jump Wave execution frame as the acceleration workflow layered on top of SAGE governance. It coordinates independent reusable flight slots without assigning permanent missions to any slot.
 
-## Core Model — Reusable Independent Vehicles
+## Core Model (Independent Vehicles)
 
 ```text
                  C2 MISSION CONTROL
