@@ -106,3 +106,26 @@ class FrontierIntelligenceBridge:
             "bridge_digest": receipt.bridge_digest,
             "dispatch_verdict": receipt.dispatch_result.wave_verdict if receipt.dispatch_result else "UNAUTHORIZED",
         }
+
+    def discover_and_build_missions(self, limit: int = 5) -> list[FlightMissionSpec]:
+        """Uses CapabilityGraphEngine to discover candidate missions from the capability surface."""
+        from sage.c2.capability_graph import CapabilityGraphEngine
+
+        engine = CapabilityGraphEngine()
+        candidates = engine.rank_candidate_missions(limit=limit)
+
+        missions = []
+        for i, cand in enumerate(candidates, start=1):
+            # Re-assign to dynamic slot F1..F5
+            spec = FlightMissionSpec(
+                flight_id=f"F{i}",
+                frontier_name=cand.frontier_name,
+                target_path=cand.flight_spec.target_path,
+                collision_zone=cand.flight_spec.collision_zone,
+                evidence_ref=cand.flight_spec.evidence_ref,
+                pr_or_change=cand.flight_spec.pr_or_change,
+                test_references=cand.flight_spec.test_references,
+            )
+            missions.append(spec)
+
+        return missions

@@ -257,3 +257,34 @@ class SAGEOperationalCapabilityRegistry:
                 for disp in CapabilityDisposition
             },
         }
+
+    def sync_from_capability_graph(self, repo_root: str = ".") -> int:
+        """Discovers repository capability surface and registers newly validated/tested nodes."""
+        from sage.c2.capability_graph import CapabilityGraphEngine
+
+        engine = CapabilityGraphEngine(repo_root=repo_root)
+        nodes = engine.discover_repository_capabilities()
+
+        added_count = 0
+        for cap_id, node in nodes.items():
+            if cap_id in self.capabilities:
+                continue
+
+            cap = SAGECapability(
+                capability_id=f"CAP-{cap_id.upper().replace('.', '-')}",
+                name=node.name,
+                description=node.description or f"Auto-discovered capability from {node.source_path}",
+                implementation_status=node.status.value,
+                validation_status="VALIDATED" if node.test_paths else "UNVERIFIED",
+                evidence_references=[],
+                test_references=list(node.test_paths),
+                archive_promotion_status="READY",
+                disposition=CapabilityDisposition.INTEGRATED,
+            )
+            self.capabilities[cap.capability_id] = cap
+            added_count += 1
+
+        if added_count > 0:
+            self.save()
+
+        return added_count
