@@ -5,13 +5,11 @@
 
 ## Purpose
 
-This document defines the Big Jump Wave execution frame as the primary acceleration workflow layered on top of SAGE governance.
+This document defines the Big Jump Wave execution frame as the acceleration workflow layered on top of SAGE governance. It coordinates independent reusable flight slots without assigning permanent missions to any slot.
 
-The frame does not replace existing architecture, sessions, or authority boundaries. It coordinates them.
+## Core Model — Reusable Independent Vehicles
 
-## Core Model (Independent Vehicles)
-
-```
+```text
                  C2 MISSION CONTROL
                          |
         ┌────────┬────────┬────────┬────────┬────────┐
@@ -19,8 +17,8 @@ The frame does not replace existing architecture, sessions, or authority boundar
 
      FLIGHT 1  FLIGHT 2  FLIGHT 3  FLIGHT 4  FLIGHT 5
 
-     Own       Own       Own       Own       Own
-     Frontier  Frontier  Frontier  Frontier  Frontier
+     dynamic   dynamic   dynamic   dynamic   dynamic
+     mission   mission   mission   mission   mission
 
         \        |        |        |        /
                  ▼
@@ -29,20 +27,24 @@ The frame does not replace existing architecture, sessions, or authority boundar
           Promotion Gate
 ```
 
-A flight is **NOT** a staged pipeline step.
-A flight **IS** an independent capability attack vector operating as a bounded build mission with its own recon, tests, evidence, and milestone output.
+A flight is **NOT** a staged pipeline step and is **NOT** a permanent department, capability, or role.
 
-5 PATHS x 4 LIFECYCLE STAGES = 20 ADVANCEMENT CELLS
+A flight **IS** a reusable execution slot. C2 assigns its mission for each wave from the current canonical state, target frontier, authorization, collision boundaries, and expected capability delta.
 
-### Big Strike Wave Definition
-A **Big Strike Wave** is defined as one coordinated wave where multiple independent flights hit separate frontiers and reconverge (e.g., F1 Fleet intelligence, F2 HUD/immersion, F3 Engineering capability, F4 Governance/security, F5 Evidence/archive). It is NOT five flights building one single item.
+The same F1-F5 slot may perform research, recon, build, repair, verification, governance, warehouse work, or another authorized mission in a later wave.
+
+The governing contract is `docs/governance/FLIGHT_ASSIGNMENT_CONTRACT.md`.
+
+## Big Strike Wave Definition
+
+A **Big Strike Wave** is one coordinated wave in which multiple independent reusable flights attack separately authorized frontiers and reconverge. The composition is selected per wave. It may contain different mission types or similar mission types against separate frontiers. It is never derived from the flight number.
 
 ## C2 Role
 
 C2 Mission Control must:
 
 - maintain the complete board;
-- map every work item to a path and course position;
+- map every work item to a current path/course position and assigned flight;
 - select highest-leverage moves;
 - prevent duplicate work;
 - protect validated architecture;
@@ -53,48 +55,50 @@ C2 must not:
 - invent repository state;
 - claim unperformed actions;
 - reopen validated work without evidence;
-- confuse activity with capability.
+- confuse activity with capability;
+- infer a mission from F1-F5.
 
 ## Operational 20-Cell Advancement Matrix
 
-The 5x4 Operating Frame operates across **20 explicit advancement cells** (5 Parallel Paths x 4 Lifecycle Stages):
+The 5x4 frame represents **20 advancement cells**: five parallel work paths crossed with four lifecycle stages. Paths describe the work frontier for a particular wave; they do **not** permanently belong to flight slots.
 
-```
+```text
                         STAGE 1           STAGE 2           STAGE 3           STAGE 4
                      Intake & Recon    Bounded Build    Verify & Proof    Warehouse Promote
                    +-----------------+-----------------+-----------------+-----------------+
-PATH 1: Research   | Cell P1-S1      | Cell P1-S2      | Cell P1-S3      | Cell P1-S4      |
-PATH 2: Continuity | Cell P2-S1      | Cell P2-S2      | Cell P2-S3      | Cell P2-S4      |
-PATH 3: Execution  | Cell P3-S1      | Cell P3-S2      | Cell P3-S3      | Cell P3-S4      |
-PATH 4: Guard      | Cell P4-S1      | Cell P4-S2      | Cell P4-S3      | Cell P4-S4      |
-PATH 5: Warehouse  | Cell P5-S1      | Cell P5-S2      | Cell P5-S3      | Cell P5-S4      |
+PATH 1              | Cell P1-S1      | Cell P1-S2      | Cell P1-S3      | Cell P1-S4      |
+PATH 2              | Cell P2-S1      | Cell P2-S2      | Cell P2-S3      | Cell P2-S4      |
+PATH 3              | Cell P3-S1      | Cell P3-S2      | Cell P3-S3      | Cell P3-S4      |
+PATH 4              | Cell P4-S1      | Cell P4-S2      | Cell P4-S3      | Cell P4-S4      |
+PATH 5              | Cell P5-S1      | Cell P5-S2      | Cell P5-S3      | Cell P5-S4      |
                    +-----------------+-----------------+-----------------+-----------------+
 ```
 
 ### Stage Transitions & Authorization Gate
-- **Stage 1 (Intake & Recon):** SAGI Discovery generates candidates (`DiscoveryCandidate` -> `FlightSelectionProposal`).
-- **Authorization Gate:** `FrontierIntelligenceBridge` (`sage/c2/frontier_intelligence_bridge.py`) inspects candidates for explicit C2 candidate authorization before allowing transition to Stage 2. Unapproved items fail closed (`REJECTED_UNAUTHORIZED`).
-- **Stage 2 (Bounded Build):** `MultiFrontierDispatcher` executes isolated flight builds across non-overlapping target paths.
-- **Stage 3 (Verify & Proof):** Reconvergence engine (`reconverge_five_flight_wave`) and full platform test suite execute fail-closed verification.
-- **Stage 4 (Warehouse Promote):** Cryptographic receipts (`FrontierBridgeDispatchReceipt`) and knowledge graph records are committed to the capability warehouse.
+
+- **Stage 1:** SAGI Discovery generates candidates (`DiscoveryCandidate` -> `FlightSelectionProposal`).
+- **Authorization Gate:** `FrontierIntelligenceBridge` validates explicit C2 authorization before Stage 2. Unapproved items fail closed.
+- **Stage 2:** `MultiFrontierDispatcher` executes isolated builds using the current wave's explicit F1-F5 assignments.
+- **Stage 3:** Reconvergence and the full platform test suite perform fail-closed verification.
+- **Stage 4:** Cryptographic receipts and validated knowledge are eligible for capability-warehouse promotion.
 
 ## Work Item Tracking Contract
 
 Every active item maps through:
 
-```
-PATH (1-5)
-    -> LIFECYCLE STAGE (1-4)
-    -> FLIGHT (F1-F5)
-    -> AUTHORIZATION GATE (FrontierIntelligenceBridge)
-    -> BOUNDED BUILD (MultiFrontierDispatcher)
-    -> TEST & RECONVERGE (reconverge_five_flight_wave)
-    -> RECEIPT & PROMOTION (Capability Warehouse)
+```text
+CURRENT PATH / FRONTIER
+    -> LIFECYCLE STAGE
+    -> REUSABLE FLIGHT SLOT (F1-F5)
+    -> AUTHORIZATION GATE
+    -> BOUNDED BUILD
+    -> TEST & RECONVERGE
+    -> RECEIPT & PROMOTION
 ```
 
 Required record:
 
-```
+```text
 Path:
 Lifecycle Stage:
 Advancement Cell:
@@ -108,56 +112,29 @@ Capability Gained:
 Next Move:
 ```
 
-## Flight Layer
+## Flight Layer — Dynamic Assignment Only
 
-F1 Foundation
-- repository truth
-- architecture state
-- capability inventory
+F1-F5 are **five reusable slots**. They have no permanent mission labels.
 
-F2 Intelligence
-- reconnaissance
-- failure mining
-- opportunity discovery
+For every wave, C2 MUST assign each slot explicitly:
 
-F3 Execution
-- governed build
-- implementation
-- workflow activation
+```text
+Flight F1 -> Mission selected for this wave
+Flight F2 -> Mission selected for this wave
+Flight F3 -> Mission selected for this wave
+Flight F4 -> Mission selected for this wave
+Flight F5 -> Mission selected for this wave
+```
 
-F4 Verification
-- tests
-- artifacts
-- receipts
-- proof
-
-F5 Capability Warehouse
-- reusable patterns
-- lessons
-- validated knowledge
-
-## Jules Integration
-
-Every Jules report must be translated by C2 into:
-
-1. Which path advanced?
-2. Which course part advanced?
-3. Which flight advanced?
-4. What capability increased?
-5. What evidence exists?
-6. What is the next highest-value move?
+Assignment can change completely on the next wave. Historical reports, receipt filenames, examples, and previous assignments do not establish standing flight roles.
 
 ## Jules Flight Start Board
 
-Jules operates as the engineering execution station inside the same Big Jump Wave framework.
-
-Jules does not create a separate workflow. Jules follows the same governed execution protocol used by C2.
-
 Before every flight:
 
-```
+```text
 MISSION LOCK
-- What capability are we creating?
+- What capability are we creating or repairing?
 
 REALITY LOCK
 - What is verified?
@@ -168,139 +145,50 @@ STATE LOCK
 - What must not be rebuilt?
 
 FLIGHT LOCK
-- Path (1-5)
-- Course Part (1-4)
-- Flight (F1-F5)
+- Which reusable slot is assigned this mission?
+- What exact mission is bound to that slot for this wave?
 ```
 
-Shared execution loop:
-
-```
-SENSE
--> RECON
--> SUPER SEARCH (when useful)
--> BOUND
--> DECIDE
--> BUILD
--> OBSERVE
--> VERIFY
--> COMPOUND
-```
-
-Jules execution reports must return:
-
-```
-Path:
-Course Part:
-Flight:
-Mission:
-Changes:
-Tests:
-Evidence:
-Capability Gained:
-Next Move:
-```
-
-C2 and Jules are different stations operating under one shared workflow frame.
-
-C2 coordinates alignment, verification, and architecture protection.
-
-Jules executes engineering work, implementation, testing, and evidence capture.
-
-No duplicate authority.
-No separate workflow.
-One Big Jump Wave protocol.
+The dispatcher must reject or hold any mission plan that omits an explicit slot assignment, duplicates a slot, or attempts to derive mission identity from the slot number.
 
 ## Completion Standard
 
 A capability is real only when:
 
-BUILD
-+
-TEST
-+
-VERIFY
-+
-EVIDENCE
-+
-REUSE
+`BUILD + TEST + VERIFY + EVIDENCE + REUSE`
 
-exist.
+exist at the declared acceptance boundary.
 
 ## Capability Advancement Gate — Non-Negotiable
 
-A Big Jump Wave is **not complete merely because its 20-cell matrix is green, receipts exist, or the test suite passes**.
+A green matrix, receipt, report, or test suite is not itself a capability delta. Every flight must establish a concrete before/after capability change against the authoritative pre-wave baseline.
 
-For every flight, C2/Jules must establish a **NET CAPABILITY DELTA** against the authoritative pre-wave baseline:
+If no concrete capability delta exists, record `NO_NET_CAPABILITY_DELTA` and return the target to selection.
 
-```
-BASELINE CAPABILITY
-    -> TARGET FRONTIER
-    -> CONCRETE CODE / BEHAVIOR CHANGE
-    -> DEDICATED VERIFICATION
-    -> EVIDENCE BOUND TO RESULT
-    -> REUSABLE OUTPUT
-    -> RECONVERGENCE
-    -> PROMOTION
-```
-
-### Evidence-only prohibition
-
-Evidence, receipts, reports, hashes, matrices, documentation, or test-only changes **do not count as capability advancement by themselves**. They may prove an advancement, but cannot substitute for one.
-
-If a flight produces no concrete capability delta, its advancement status MUST be recorded as `NO_NET_CAPABILITY_DELTA` and the target must be returned to target selection rather than inflated into velocity.
-
-### Baseline and duplicate gate
-
-Before BUILD, every flight must record:
+Before BUILD, record:
 
 - authoritative baseline SHA;
 - exact target files / collision zone;
 - existing capability already present;
-- reason the target is uncovered and higher leverage than the next candidate.
+- reason the target is uncovered and higher leverage than alternatives.
 
-A target already present on the baseline MUST NOT be reopened or relabeled as new advancement. It must be replaced by the next-highest-leverage uncovered target.
-
-### Verification gate
-
-A green test establishes that the tested behavior passes. It does not establish that the behavior is newly capable. C2 must separately verify the before/after capability delta and persistent/reusable output.
-
-### Wave promotion gate
-
-A wave may be promoted only when every claimed capability cell has:
-
-`BUILD + TEST + VERIFY + EVIDENCE + REUSE`
-
-and the wave-level report distinguishes:
-
-- execution/evidence throughput;
-- net verified capability added;
-- rework/conflicts;
-- human intervention;
-- blocked or no-delta flights.
+A target already present on the baseline MUST be replaced by the next-highest-leverage uncovered target.
 
 ## Deep Recon / Super Search Gate
 
 Super Search is a reconnaissance sensor, not repository authority.
 
-For substantive engineering work, C2 MUST:
+For substantive work, C2 establishes repository-first truth, determines whether external intelligence can materially change the decision, uses targeted current primary intelligence when useful, then reconciles external findings with canonical repository truth before mutation.
 
-1. establish repository-first reality lock;
-2. determine whether external intelligence can materially change target selection, implementation, security, validation, or verification;
-3. use targeted primary/current external intelligence when it can change the decision;
-4. synthesize external findings with repository truth before mutation;
-5. reuse verified findings instead of repeating identical searches;
-6. avoid turning research into a serial approval gate when sufficient evidence already exists.
-
-Super Search may be omitted only when external information cannot materially change the implementation or verification decision. Its omission must not be used to justify speculative work.
+Super Search may be omitted only when external information cannot materially change implementation or verification.
 
 ## Velocity Measurement Contract
 
-SAGE measures velocity as **verified reusable capability added per scarce execution capacity**, not as task count, receipt count, elapsed time, or green-cell count alone.
+SAGE measures velocity as verified reusable capability added per scarce execution capacity, not task count, receipt count, elapsed time, or green-cell count.
 
-Every Big Jump Wave should therefore record, where available:
+Every wave should record, where available:
 
-```
+```text
 External Sessions Consumed:
 Active Flights Actually Executed:
 Net Capability Deltas:
@@ -314,25 +202,9 @@ Execution Duration:
 Verification Duration:
 ```
 
-Do not claim a multiplier from one wave. Velocity claims require repeated observations over comparable waves with the same completion boundary.
-
 ## C2 Stop/Continue Rule
 
-C2 must continue authorized work through the complete bounded workflow. It must not stop at:
-
-- target identification;
-- a plan;
-- a green evidence matrix;
-- a local test result;
-- a pasted agent report;
-- or a successful workflow configuration.
-
-C2 may stop only when:
-
-1. the authorized completion boundary is satisfied;
-2. a real external blocker prevents continuation;
-3. a governance/authorization boundary requires human action; or
-4. repository evidence proves that no safe implementation is justified, in which case the mission must record the decision and select the next highest-value path.
+C2 must continue authorized work through the complete bounded workflow. It may stop only at the declared completion boundary, a real external blocker, a governance/authorization boundary requiring human action, or a repository-proven decision that no safe implementation is justified.
 
 ## Operating Principle
 
@@ -342,10 +214,8 @@ C2 protects alignment.
 
 SAGI discovers.
 
-Builders execute.
+Reusable flights execute whatever missions C2 assigns.
 
 Evidence promotes.
 
-The goal is not more activity.
-
-The goal is faster verified capability and compounding execution speed.
+The goal is not more activity. The goal is faster verified capability and compounding execution speed.
