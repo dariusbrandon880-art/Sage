@@ -3,6 +3,11 @@ from sage.experimental.sagi.regret import RegretAttributionEngine
 
 
 def _autopsy(attribution: str, regret: float = 2.0) -> DecisionAutopsy:
+    chosen_expected_utility = 5.0
+    alternative_expected_utilities = (("B", 7.0), ("C", 4.0))
+    if regret == 0.0:
+        chosen_expected_utility = 7.0
+        alternative_expected_utilities = (("B", 7.0), ("C", 4.0))
     decision = DecisionRecord(
         decision_id="d1",
         mission_id="m1",
@@ -12,8 +17,8 @@ def _autopsy(attribution: str, regret: float = 2.0) -> DecisionAutopsy:
         assumptions=("a1",),
         chosen_action="A",
         alternatives=("B", "C"),
-        chosen_expected_utility=5.0,
-        alternative_expected_utilities=(("B", 7.0), ("C", 4.0)),
+        chosen_expected_utility=chosen_expected_utility,
+        alternative_expected_utilities=alternative_expected_utilities,
         decision_confidence=0.8,
     )
     outcome = OutcomeRecord(
@@ -56,6 +61,7 @@ def test_information_shock_updates_information_requirements():
 
 def test_zero_regret_produces_no_regret_class():
     record = RegretAttributionEngine().derive(_autopsy("UNKNOWN", regret=0.0))
+    assert record.regret == 0.0
     assert record.regret_class == "NO_REGRET"
     assert record.avoidable is False
     assert record.learning_signal == "NO_LEARNING_DELTA"
