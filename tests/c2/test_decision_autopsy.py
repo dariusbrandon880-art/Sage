@@ -49,7 +49,17 @@ def test_good_decision_bad_outcome_is_variance():
 def test_bad_decision_good_outcome_preserves_decision_error():
     d = decision()
     d = DecisionRecord(
-        **{**d.to_dict(), "chosen_expected_utility": 0.30}
+        decision_id=d.decision_id,
+        mission_id=d.mission_id,
+        decided_at_utc=d.decided_at_utc,
+        information_snapshot_hash=d.information_snapshot_hash,
+        information_refs=d.information_refs,
+        assumptions=d.assumptions,
+        chosen_action=d.chosen_action,
+        alternatives=d.alternatives,
+        chosen_expected_utility=0.30,
+        alternative_expected_utilities=d.alternative_expected_utilities,
+        decision_confidence=d.decision_confidence,
     )
     autopsy = DecisionAutopsyEngine().autopsy(
         d,
