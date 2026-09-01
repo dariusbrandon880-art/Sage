@@ -7,7 +7,7 @@ and cryptographic SHA-256 state tracking for the SAGI core simulator.
 import hashlib
 import json
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -18,13 +18,11 @@ class IdentityAnchor(BaseModel):
     initial_sha256: str
     genesis_timestamp: float = Field(default_factory=time.time)
     governance_version: str = "SAGI-v1.0.0"
-    core_rules: List[str] = Field(
-        default_factory=lambda: [
-            "IDENTITY_INVARIANT_PRESERVED",
-            "CRPL_F1_METADATA_NON_INFLUENCE",
-            "CRPL_F2_PERSONA_NON_INFLUENCE",
-            "BOUNDED_EVOLUTION_REGULATION"
-        ]
+    core_rules: Tuple[str, ...] = (
+        "IDENTITY_INVARIANT_PRESERVED",
+        "CRPL_F1_METADATA_NON_INFLUENCE",
+        "CRPL_F2_PERSONA_NON_INFLUENCE",
+        "BOUNDED_EVOLUTION_REGULATION",
     )
 
 
