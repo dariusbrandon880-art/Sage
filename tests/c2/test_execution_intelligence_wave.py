@@ -10,7 +10,7 @@ from sage.c2.execution_intelligence import (
     WorkflowVelocityController,
 )
 
-EXACT_HEAD_SHA = "acc64e210e070f12ba7a7b2184b0f5b70b56edaf"
+EXACT_HEAD_SHA = "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2"
 
 
 def test_adaptive_concurrency_governor_scaling():
