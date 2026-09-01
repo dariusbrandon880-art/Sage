@@ -1,0 +1,10 @@
+{
+  "blocker": null,
+  "executed_head": "e6f413366944a53a0746f7b330b2c5339804707e",
+  "flight_id": "F2",
+  "frontier_name": "canonical-wave-F2-governance_intelligence",
+  "status": "PASS",
+  "target_path": "sage/c2/governance_intelligence.py",
+  "timestamp": 1788254274.369956,
+  "wave_id": "wave-big-jump-1788254272"
+}

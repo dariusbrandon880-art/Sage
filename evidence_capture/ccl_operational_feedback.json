@@ -1,20 +1,20 @@
 {
-  "orchestrator_run_id": "orch_run_c16449ee4781",
-  "timestamp": "2026-08-31T21:53:17.839694Z",
+  "orchestrator_run_id": "orch_run_fc06c5126ebb",
+  "timestamp": "2026-09-01T09:18:25.362133Z",
   "session_id": "session_non_reexec_001",
   "session_objectives": [
     "obj_autonomous_mission_continuity"
   ],
   "status": "VALIDATED",
   "ccl_record": {
-    "record_id": "CCL-REC-20260831-78fd4937-871b-4d9f-a9a3-b77b9167ea7a",
+    "record_id": "CCL-REC-20260901-8e7c57af-55a0-416f-9318-e0b04b06fdf9",
     "session_id": "session_non_reexec_001",
     "event_type": "state_transition",
-    "timestamp": 1788213197.8399289,
+    "timestamp": 1788254305.3623056,
     "action_taken": "Successfully revalidated workspace capabilities for files: ['sage/experimental/act/continuity_control.py']",
     "decision_reasoning": "Governed workspace revalidation executed cleanly; capability status updated and promoted to Master Archive",
     "evidence_payload": {
-      "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
+      "git_commit": "e6f413366944a53a0746f7b330b2c5339804707e",
       "protection_report": {
         "is_violation_found": false,
         "violations_found": 0,
@@ -22,7 +22,7 @@
         "violations": [],
         "status": "CLEAN_WORKSPACE"
       },
-      "cmaps_audit_id": "audit_a0507bf92e3d4a62ae899d103975d998",
+      "cmaps_audit_id": "audit_02e91e1e499c4b76bc2604705aa39121",
       "revalidated_capabilities": [
         "CAP-PML-RELIABILITY"
       ],
@@ -31,12 +31,12 @@
       ],
       "session_completed_actions": [],
       "session_pending_actions": [],
-      "enrichment_timestamp": 1788213197.8399055,
+      "enrichment_timestamp": 1788254305.3622785,
       "human_approval_record": {
         "supervisor_id": "supervisor_jules",
-        "signature": "sig_jules_084fa07a98b7",
+        "signature": "sig_jules_099ebd442277",
         "decision": "APPROVED",
-        "approved_at": 1788213197.8405626
+        "approved_at": 1788254305.3629975
       }
     },
     "failure_context": null,
@@ -46,8 +46,8 @@
     "improvement_opportunities": []
   },
   "cmaps_payload": {
-    "audit_id": "audit_a0507bf92e3d4a62ae899d103975d998",
-    "timestamp": "2026-08-31T21:53:17.839694Z",
+    "audit_id": "audit_02e91e1e499c4b76bc2604705aa39121",
+    "timestamp": "2026-09-01T09:18:25.362133Z",
     "agent_identity": {
       "agent_id": "agent_jules_sage",
       "name": "Jules",
@@ -60,11 +60,11 @@
       "temperature": 0.2
     },
     "execution_state": {
-      "run_id": "run_4c6f2c6af7864864a94c",
+      "run_id": "run_f94892afac8045cfac62",
       "status": "completed",
       "step_counter": 1,
-      "started_at": "2026-08-31T21:53:17.839694Z",
-      "updated_at": "2026-08-31T21:53:17.839694Z"
+      "started_at": "2026-09-01T09:18:25.362133Z",
+      "updated_at": "2026-09-01T09:18:25.362133Z"
     },
     "task_lineage": {
       "session_id": "session_effddef5",
@@ -74,7 +74,7 @@
     "decision_events": [
       {
         "decision_id": "decision_coordinate_dev_loop",
-        "timestamp": "2026-08-31T21:53:17.839694Z",
+        "timestamp": "2026-09-01T09:18:25.362133Z",
         "summary": "Successfully revalidated workspace capabilities for files: ['sage/experimental/act/continuity_control.py']",
         "reasoning": "Governed workspace revalidation executed cleanly; capability status updated and promoted to Master Archive",
         "confidence": 1.0
@@ -85,238 +85,63 @@
     "evidence_relationships": [
       {
         "artifact_path": "evidence_capture/build_jump_wave_evidence.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "52f6cb3c6af112c51fe986581d3b3f46080895034ae050499c322b13ab2caf65"
+        "git_commit": "e6f413366944a53a0746f7b330b2c5339804707e",
+        "sha256_checksum": "ea75d2de8c8f7aca0df835ff2fdf1ada6d534c1cc57b1539d1d430f73d5f4bfc"
       },
       {
-        "artifact_path": "evidence_capture/ccl_operational_feedback.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "20d230fe9965ca6956d35152574fee4fab54ff5a16b7007820f208fa55d7b767"
+        "artifact_path": "evidence_capture/waves/wave-big-jump-1788254210/e6f413366944a53a0746f7b330b2c5339804707e/F1_receipt.json",
+        "git_commit": "e6f413366944a53a0746f7b330b2c5339804707e",
+        "sha256_checksum": "8cf9c4f6746a87151e483f65ba09c3c595ce98892c13934374f512f3a8a1a139"
       },
       {
-        "artifact_path": "evidence_capture/double_big_jump_wave_evidence.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "1ae4d86ccad7c8874fe7bc0aab7192255cf235cce08ce8de00c2c1451828ec7b"
+        "artifact_path": "evidence_capture/waves/wave-big-jump-1788254210/e6f413366944a53a0746f7b330b2c5339804707e/F2_receipt.json",
+        "git_commit": "e6f413366944a53a0746f7b330b2c5339804707e",
+        "sha256_checksum": "61d4382c37ac485cde643784152926122d928ddd19bce31989b31cfc54e35951"
       },
       {
-        "artifact_path": "evidence_capture/phase_4_controlled_evaluation_evidence.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "13c941f6a2fcdfff43887736a95b7c8d47af735a07ebe471666896268bcb68e0"
+        "artifact_path": "evidence_capture/waves/wave-big-jump-1788254210/e6f413366944a53a0746f7b330b2c5339804707e/F3_receipt.json",
+        "git_commit": "e6f413366944a53a0746f7b330b2c5339804707e",
+        "sha256_checksum": "e253132b80f479f0ea5be032fad5d0ae384b5a6d45fd6649786cdffb6e48f3bb"
       },
       {
-        "artifact_path": "evidence_capture/phase_4_controlled_evaluation_evidence_scenario_a.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "be30dbfd90c2f46e9c9c26e2a38362674d5b4caf36ae737ef4169d45368954fd"
+        "artifact_path": "evidence_capture/waves/wave-big-jump-1788254210/e6f413366944a53a0746f7b330b2c5339804707e/F4_receipt.json",
+        "git_commit": "e6f413366944a53a0746f7b330b2c5339804707e",
+        "sha256_checksum": "d1cde7224d0f9f64a03820438170fe209a6abfd3936575959f92d71b1852a92b"
       },
       {
-        "artifact_path": "evidence_capture/phase_4_controlled_evaluation_evidence_scenario_b.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "9565fdb2a3b3ca90c588e98a5aba529a05349f213c56239fe7640b676d306485"
+        "artifact_path": "evidence_capture/waves/wave-big-jump-1788254210/e6f413366944a53a0746f7b330b2c5339804707e/F5_receipt.json",
+        "git_commit": "e6f413366944a53a0746f7b330b2c5339804707e",
+        "sha256_checksum": "040ec234715ecae8131a0b7b1a849611c2bcb212a57bf476999d9f49116be75b"
       },
       {
-        "artifact_path": "evidence_capture/phase_4_repeatability_run_1.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "6722bd4d8bc15868f55b213485ea8e94d1e09b8c91a69be6e080e92659a3ac39"
+        "artifact_path": "evidence_capture/waves/wave-big-jump-1788254272/e6f413366944a53a0746f7b330b2c5339804707e/F1_receipt.json",
+        "git_commit": "e6f413366944a53a0746f7b330b2c5339804707e",
+        "sha256_checksum": "16588d9ebf6a93aa7dfc93ad09ba77d33da7f32e2f80dc3cdeef26d9f979c863"
       },
       {
-        "artifact_path": "evidence_capture/phase_4_repeatability_run_1_scenario_a.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "0ff185a03065dccc6735e82798c64caed1475fa8aa73aab44377160a79cba265"
+        "artifact_path": "evidence_capture/waves/wave-big-jump-1788254272/e6f413366944a53a0746f7b330b2c5339804707e/F2_receipt.json",
+        "git_commit": "e6f413366944a53a0746f7b330b2c5339804707e",
+        "sha256_checksum": "88004d44701216ca6012b00711dc85cfa663c64e1d01c6f513b163154225fc78"
       },
       {
-        "artifact_path": "evidence_capture/phase_4_repeatability_run_1_scenario_b.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "44e2b2c0ac53cdc8da66629acc2656612f5f6abbeb22fbfff33773b2ee9eb1ad"
+        "artifact_path": "evidence_capture/waves/wave-big-jump-1788254272/e6f413366944a53a0746f7b330b2c5339804707e/F3_receipt.json",
+        "git_commit": "e6f413366944a53a0746f7b330b2c5339804707e",
+        "sha256_checksum": "ba9a1a48ab55b5097247e87f94e3e544a53d0a3911142ec9e896f2bf1404cbef"
       },
       {
-        "artifact_path": "evidence_capture/phase_4_repeatability_run_2.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "8d6074937e83b03874fc91c9db30f2c779c806d658086b512dee94f65c3a7a7e"
+        "artifact_path": "evidence_capture/waves/wave-big-jump-1788254272/e6f413366944a53a0746f7b330b2c5339804707e/F4_receipt.json",
+        "git_commit": "e6f413366944a53a0746f7b330b2c5339804707e",
+        "sha256_checksum": "4fbe0756336125b0dad570b988c298f138e10e06c55bbadd9e56f5562064b0bf"
       },
       {
-        "artifact_path": "evidence_capture/phase_4_repeatability_run_2_scenario_a.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "662cee63da0ed8a937a6a740767030c0d42766d8a53fc2c1f58182883f9b65b4"
-      },
-      {
-        "artifact_path": "evidence_capture/phase_4_repeatability_run_2_scenario_b.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "3444f059c48a2fb384f8a2603c97815f918c91f7ea6997b9329d751204995404"
-      },
-      {
-        "artifact_path": "evidence_capture/phase_4_repeatability_run_3.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "a241d7930383d71a9010d56b912dc9033a2b7f1e590a239c8fcf34e82c4f2145"
-      },
-      {
-        "artifact_path": "evidence_capture/phase_4_repeatability_run_3_scenario_a.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "0af42d3c0e7c6cf651874d615433de805fb7a5c0082feb0dda229af6e51a12bf"
-      },
-      {
-        "artifact_path": "evidence_capture/phase_4_repeatability_run_3_scenario_b.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "a6e48addf2c55768c910afb532d398e36b9dbb383c3c48a3e2319a2d9a30c75c"
-      },
-      {
-        "artifact_path": "evidence_capture/phase_4_repeatability_summary.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "f87a11c799559eef19bd4f3db0e8cab27841211ddc9473999e7dbf941933dc06"
-      },
-      {
-        "artifact_path": "evidence_capture/phase_4_scenario_a_evidence.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "0af42d3c0e7c6cf651874d615433de805fb7a5c0082feb0dda229af6e51a12bf"
-      },
-      {
-        "artifact_path": "evidence_capture/phase_4_scenario_b_evidence.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "a6e48addf2c55768c910afb532d398e36b9dbb383c3c48a3e2319a2d9a30c75c"
-      },
-      {
-        "artifact_path": "evidence_capture/rce_001_experiment_artifacts.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "730ef84949a3c8e99422f1e2655aa51acbe506c22d69116219a8fea98d95aa02"
-      },
-      {
-        "artifact_path": "evidence_capture/waves/double-wave-A/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F1_receipt.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "66603628e02f564787e6991852e12c6afae707a9987a13d3393e8f12cca61100"
-      },
-      {
-        "artifact_path": "evidence_capture/waves/double-wave-A/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F2_receipt.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "e9e76317cb2be0d15e281d6f675c1d32a947a0c7c2bd3440513d6ff4bada2d26"
-      },
-      {
-        "artifact_path": "evidence_capture/waves/double-wave-A/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F3_receipt.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "7d0691b8347bde962c3d71e33e954bc03e635530047b02f1b5eb00c55fb3ab6a"
-      },
-      {
-        "artifact_path": "evidence_capture/waves/double-wave-A/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F4_receipt.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "5c9c46b8ff17fd6bdbbdea3289826832a88573b06a03395093e5c1d8621788f7"
-      },
-      {
-        "artifact_path": "evidence_capture/waves/double-wave-A/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F5_receipt.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "efbc39f1cf8f6a3845c1ff98ea3fa372f80fea95fc3a83f504a61544ce774b35"
-      },
-      {
-        "artifact_path": "evidence_capture/waves/double-wave-B/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F1_receipt.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "7b4d621f537c21e2593d1ebd26ddb9323c57ebb2cbced5fea2df8ace2f508311"
-      },
-      {
-        "artifact_path": "evidence_capture/waves/double-wave-B/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F2_receipt.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "2909d0c76383b8c5749b6037c29d2f02a9afc38c5b985ec2a9deabaa713e7ab9"
-      },
-      {
-        "artifact_path": "evidence_capture/waves/double-wave-B/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F3_receipt.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "9b279862288d0be9b231fd305bd76adf6ce9a3e64813312df2c9221daf526111"
-      },
-      {
-        "artifact_path": "evidence_capture/waves/double-wave-B/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F4_receipt.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "bdc92f2c59fcbda522da1621691a407368e446d1179ebf59fb3fa5bb96dfb775"
-      },
-      {
-        "artifact_path": "evidence_capture/waves/double-wave-B/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F5_receipt.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "d199a95ca9c891a624930a23d0252d6d4463a6ea4959486aaf115f5f59c9856b"
-      },
-      {
-        "artifact_path": "evidence_capture/waves/multi-frontier-dispatch/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F1_receipt.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "ffa4adabf17d7de4dedd0492c2a3408e452a5e307445821d8bc46e2e33ce2391"
-      },
-      {
-        "artifact_path": "evidence_capture/waves/multi-frontier-dispatch/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F2_receipt.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "b340e5d089106259e5418b3968b2bb646c152094a63368ee0d0d0708e2ee3099"
-      },
-      {
-        "artifact_path": "evidence_capture/waves/multi-frontier-dispatch/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F3_receipt.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "1a81612af00b0de5d7d10c0372469bbd5a176360be159ae6da41d769254aa839"
-      },
-      {
-        "artifact_path": "evidence_capture/waves/multi-frontier-dispatch/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F4_receipt.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "2dabba30467a5f362960852597b4d2b3a0b97b647b52636622d628912f4b6c93"
-      },
-      {
-        "artifact_path": "evidence_capture/waves/multi-frontier-dispatch/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F5_receipt.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "797efd24e1954da08324afa7e35732b107927574c9a1f8442ecaa620c72d33b5"
-      },
-      {
-        "artifact_path": "evidence_capture/waves/wave-big-jump-1788211570/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F1_receipt.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "0720253e3f967828d0d30fb268c373ae6654334f01f091daf7622f694aad88a9"
-      },
-      {
-        "artifact_path": "evidence_capture/waves/wave-big-jump-1788211570/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F2_receipt.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "563c8af6841cdf81ead2dd5905721ec0bf985dc4a7f6762a9514ff3f2a139ea7"
-      },
-      {
-        "artifact_path": "evidence_capture/waves/wave-big-jump-1788211570/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F3_receipt.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "4c3817933d93ab0be63ccb92674980b9b123317fd52ea363e656a399f51de855"
-      },
-      {
-        "artifact_path": "evidence_capture/waves/wave-big-jump-1788211570/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F4_receipt.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "4b83336c37fa9551034a0a9ddadbdd7d024b04f17a21bca8935636ece781590e"
-      },
-      {
-        "artifact_path": "evidence_capture/waves/wave-big-jump-1788211570/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F5_receipt.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "51850097841185393c08a9c867740d4745649853c9a90248f5147d71b709f249"
-      },
-      {
-        "artifact_path": "evidence_capture/waves/wave-big-jump-1788213107/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F1_receipt.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "0896ab5faa580a603fabab56ba6d05baa4f718b5da19bf41e8d0379678600208"
-      },
-      {
-        "artifact_path": "evidence_capture/waves/wave-big-jump-1788213107/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F2_receipt.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "b9ae76e2a64a31c0e55623e541eb7e70eb9ddeb5e07347e1509386350f534926"
-      },
-      {
-        "artifact_path": "evidence_capture/waves/wave-big-jump-1788213107/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F3_receipt.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "7892fee55876713e19ec1b6c850ee77282601989c102e6001f9d2cd7c5121696"
-      },
-      {
-        "artifact_path": "evidence_capture/waves/wave-big-jump-1788213107/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F4_receipt.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "28e12816cd787485c1a0e1384a0a7d2cd009011fe405288dcfa2d6569a6d687b"
-      },
-      {
-        "artifact_path": "evidence_capture/waves/wave-big-jump-1788213107/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F5_receipt.json",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "70cc61a9969bce7b8cd8453a52dad16030e8debe94124d7b3ee6cc8b9ad1e3ab"
-      },
-      {
-        "artifact_path": "scripts/execute_build_jump_wave.py",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "220cb1dbb1251c380f1fb17fc37a9ceecd527048750b1c08c7a98da1703e08cf"
-      },
-      {
-        "artifact_path": "scripts/execute_double_big_jump_wave.py",
-        "git_commit": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-        "sha256_checksum": "642a1ca435e96591a510d6ca08304d3ad8f35b820c0a009c2d1befe8e52d118f"
+        "artifact_path": "evidence_capture/waves/wave-big-jump-1788254272/e6f413366944a53a0746f7b330b2c5339804707e/F5_receipt.json",
+        "git_commit": "e6f413366944a53a0746f7b330b2c5339804707e",
+        "sha256_checksum": "182764c68a529121880210bdffe393bb5a5854711225f1c1060307c49f624004"
       }
     ],
     "attestation": {
-      "nonce": "c437214f284e48ae",
-      "signature": "sig_jules_084fa07a98b7",
+      "nonce": "491f07b75e574b5c",
+      "signature": "sig_jules_099ebd442277",
       "signer_identity": "supervisor_jules"
     }
   },
@@ -331,7 +156,7 @@
       "evidence_completeness": 1.0,
       "decision_trace_completeness": 1.0,
       "workflow_state_accuracy": 1.0,
-      "execution_cycle_duration": 0.24264931678771973,
+      "execution_cycle_duration": 0.09078621864318848,
       "context_preservation_score": 1.0,
       "unnecessary_reassessment_events": 0,
       "repeated_execution_prevention": true,
