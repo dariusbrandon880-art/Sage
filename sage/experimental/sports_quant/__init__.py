@@ -21,6 +21,12 @@ from .evaluation import (
     score_predictions,
 )
 from .learning import FailureCluster, build_failure_clusters, validate_oos_candidate
+from .decision_bridge import (
+    SportsDecision,
+    build_sports_decision,
+    autopsy_sports_decision,
+    derive_sports_learning_signal,
+)
 
 __all__ = [
     "MarketSnapshot",
@@ -39,4 +45,8 @@ __all__ = [
     "FailureCluster",
     "build_failure_clusters",
     "validate_oos_candidate",
+    "SportsDecision",
+    "build_sports_decision",
+    "autopsy_sports_decision",
+    "derive_sports_learning_signal",
 ]
