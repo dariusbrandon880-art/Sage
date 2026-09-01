@@ -52,9 +52,11 @@ class SAGIDiscoveryFlightSelector:
 
     @staticmethod
     def _validate_candidate(candidate: DiscoveryCandidate) -> None:
-        if not candidate.candidate_id or not candidate.description:
+        if not isinstance(candidate.role, FlightRole):
+            raise ValueError("candidate role must be a governed FlightRole")
+        if not candidate.candidate_id.strip() or not candidate.description.strip():
             raise ValueError("candidate identity and description are required")
-        if not candidate.provenance_ref:
+        if not candidate.provenance_ref.strip():
             raise ValueError("candidate provenance is required")
         for value in (
             candidate.consequentiality,
@@ -82,11 +84,26 @@ class SAGIDiscoveryFlightSelector:
     def _digest(
         candidates: tuple[DiscoveryCandidate, ...], frontier_digest: str
     ) -> str:
+        # Bind the complete selected payload, including every score that can affect
+        # selection. Identity-only hashing would allow semantic candidate tampering
+        # without changing the recorded selection digest.
         material = "|".join(
-            f"{c.role.value}:{c.candidate_id}:{c.provenance_ref}"
+            "\x1f".join(
+                (
+                    c.role.value,
+                    c.candidate_id.strip(),
+                    c.description.strip(),
+                    f"{c.consequentiality:.17g}",
+                    f"{c.information_gain:.17g}",
+                    f"{c.falsification_value:.17g}",
+                    f"{c.safety:.17g}",
+                    f"{c.evidence_gap:.17g}",
+                    c.provenance_ref.strip(),
+                )
+            )
             for c in candidates
         )
-        return hashlib.sha256(f"{frontier_digest}|{material}".encode()).hexdigest()
+        return hashlib.sha256(f"{frontier_digest.strip()}|{material}".encode("utf-8")).hexdigest()
 
     def select(
         self,
@@ -95,7 +112,7 @@ class SAGIDiscoveryFlightSelector:
         frontier_digest: str,
         selection_digest: str | None = None,
     ) -> FlightSelectionProposal:
-        if not frontier_digest:
+        if not frontier_digest.strip():
             raise ValueError("selection requires canonical frontier digest")
         if not candidates:
             raise ValueError("selection requires discovery candidates")
@@ -124,6 +141,6 @@ class SAGIDiscoveryFlightSelector:
 
         return FlightSelectionProposal(
             candidates=selected_tuple,
-            frontier_digest=frontier_digest,
+            frontier_digest=frontier_digest.strip(),
             selection_digest=derived_digest,
         )
