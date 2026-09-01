@@ -15,6 +15,7 @@ class VerificationResult(BaseModel):
     """Result of SAGI candidate verification."""
     is_valid: bool
     status: str
+    state_integrity_passed: bool
     identity_invariant_passed: bool
     spectral_stability_passed: bool
     crpl_f1_passed: bool
@@ -30,6 +31,9 @@ class SAGIVerifier:
 
     def verify_proposal(self, state: SAGIState, proposal: CandidateProposal) -> VerificationResult:
         """Run complete verification and falsification battery over candidate proposal."""
+        # 0. State Integrity: reject proposals against a mutated/corrupted Ω state.
+        state_integrity_passed = state.verify_integrity()
+
         # 1. Identity Invariant Verification: Parent state hash must match current state hash
         identity_passed = (proposal.parent_state_hash == state.current_hash)
 
@@ -48,13 +52,16 @@ class SAGIVerifier:
         crpl_f2_passed = (proposal.proposal_hash == persona_proposal.compute_sha256())
 
         overall_valid = (
-            identity_passed
+            state_integrity_passed
+            and identity_passed
             and spectral_passed
             and crpl_f1_passed
             and crpl_f2_passed
         )
 
         reasons = []
+        if not state_integrity_passed:
+            reasons.append("STATE_INTEGRITY_VIOLATION: Stored Ω state hash mismatch")
         if not identity_passed:
             reasons.append("IDENTITY_INVARIANT_VIOLATION: Parent state hash mismatch")
         if not spectral_passed:
@@ -69,6 +76,7 @@ class SAGIVerifier:
         return VerificationResult(
             is_valid=overall_valid,
             status="APPROVED" if overall_valid else "REJECTED",
+            state_integrity_passed=state_integrity_passed,
             identity_invariant_passed=identity_passed,
             spectral_stability_passed=spectral_passed,
             crpl_f1_passed=crpl_f1_passed,

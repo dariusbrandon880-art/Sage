@@ -67,12 +67,12 @@ def test_double_big_jump_contract_rejects_duplicate_mission_names() -> None:
 
 def test_require_current_head_fails_closed_on_sha_mismatch() -> None:
     with pytest.raises(ValueError, match="repository HEAD mismatch"):
-        require_current_head("e2949fd523900d981ce69b3373727d1ecd7ada21", "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2")
+        require_current_head("c91ba68ce99ce59965e483bce241cee0f6d17ae6", "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2")
 
 
 def test_require_current_head_fails_closed_on_none() -> None:
     with pytest.raises(ValueError, match="requires independently verified"):
-        require_current_head(None, "e2949fd523900d981ce69b3373727d1ecd7ada21")
+        require_current_head(None, "c91ba68ce99ce59965e483bce241cee0f6d17ae6")
 
 
 def test_adaptive_concurrency_governor_hold_status_and_risk_throttling() -> None:
@@ -111,7 +111,7 @@ def test_governance_proof_attack_auditor_neutralizes_stale_sha_claims() -> None:
     auditor = GovernanceProofAttackAuditor()
     res = auditor.audit_stale_evidence_attack(
         legacy_sha="39411847",
-        current_head="e2949fd523900d981ce69b3373727d1ecd7ada21",
+        current_head="c91ba68ce99ce59965e483bce241cee0f6d17ae6",
     )
     assert res.neutralized is True
     assert "Stale or mismatched evidence SHA rejected" in res.rejection_reason
