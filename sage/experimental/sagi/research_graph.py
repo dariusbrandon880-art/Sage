@@ -107,6 +107,9 @@ class SAGIResearchGraph:
 
     def ingest_search_receipt(self, search_receipt: SAGISearchLoopReceipt) -> SAGIResearchNode:
         """Ingest a SAGISearchLoopReceipt and convert it into a SAGIResearchNode in the graph."""
+        if not search_receipt.verify_integrity():
+            raise ValueError("Tampered or invalid SAGISearchLoopReceipt rejected from research graph ingestion")
+
         node_id = f"node_{search_receipt.cycle_id}_{len(self.nodes)+1}"
         guardian_res = "APPROVED" if search_receipt.guardian_checks_passed else "REJECTED"
 
@@ -140,6 +143,9 @@ class SAGIResearchGraph:
 
     def ingest_evolution_receipt(self, evolution_receipt: SAGIEvolutionReceipt, identity_anchor: str) -> SAGIResearchNode:
         """Ingest a single SAGIEvolutionReceipt into a SAGIResearchNode."""
+        if not evolution_receipt.verify_integrity():
+            raise ValueError("Tampered or invalid SAGIEvolutionReceipt rejected from research graph ingestion")
+
         node_id = f"node_evo_{evolution_receipt.receipt_id}"
 
         failure_state = None

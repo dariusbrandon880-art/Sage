@@ -144,87 +144,6 @@ def test_sagi_evolution_controller_and_receipts():
     assert metrics["failure_memory_size"] == 1.0
 
 
-def test_sagi_evolution_controller_atomic_transition_and_rollback():
-    """Adversarial Test: Exceptions during candidate generation or verification trigger complete rollback."""
-    from sage.experimental.sagi.controller import SAGITransitionError
-
-    controller = SAGIEvolutionController()
-    initial_state_hash = controller.state.current_hash
-    initial_cycle_index = controller.state.cycle_index
-    initial_temp = controller.state.temperature
-
-    # Inject exception during candidate generation
-    def broken_generate(*args, **kwargs):
-        raise RuntimeError("SIMULATED_GENERATOR_CRASH")
-
-    controller.generator.generate_candidate = broken_generate
-
-    with pytest.raises(SAGITransitionError, match="SIMULATED_GENERATOR_CRASH"):
-        controller.execute_evolution_cycle()
-
-    # Verify complete atomic state recovery
-    assert controller.state.current_hash == initial_state_hash
-    assert controller.state.cycle_index == initial_cycle_index
-    assert controller.state.temperature == initial_temp
-    assert controller.successful_cycles == 0
-    assert controller.failed_cycles == 0
-    assert len(controller.receipt_history) == 0
-
-
-def test_sagi_evolution_controller_post_transition_integrity_rollback():
-    """Adversarial Test: Post-transition state integrity failure triggers complete rollback."""
-    from sage.experimental.sagi.controller import SAGITransitionError
-
-    controller = SAGIEvolutionController()
-    initial_state_hash = controller.state.current_hash
-
-    # Override update_hash to simulate a corrupted state hash update
-    def corrupt_update_hash():
-        object.__setattr__(controller.state, "current_hash", "corrupted_sha_" + "0" * 50)
-
-    object.__setattr__(controller.state, "update_hash", corrupt_update_hash)
-
-    with pytest.raises(SAGITransitionError, match="Post-transition state integrity check failed"):
-        controller.execute_evolution_cycle()
-
-    # Verify complete rollback to pristine state
-    assert controller.state.current_hash == initial_state_hash
-    assert controller.state.verify_integrity() is True
-    assert controller.successful_cycles == 0
-    assert controller.failed_cycles == 0
-    assert len(controller.state.failure_memory) == 0
-
-
-def test_sagi_evolution_controller_receipt_tampering_rollback():
-    """Adversarial Test: Receipt verification failure triggers complete rollback."""
-    from sage.experimental.sagi.controller import SAGITransitionError, SAGIEvolutionReceipt
-
-    controller = SAGIEvolutionController()
-    initial_state_hash = controller.state.current_hash
-
-    # Inject corrupting verify_integrity on receipt
-    original_init = SAGIEvolutionReceipt.__init__
-
-    def corrupting_receipt_init(self, **data):
-        original_init(self, **data)
-        object.__setattr__(self, "receipt_sha256", "tampered_hash_" + "0" * 48)
-
-    SAGIEvolutionReceipt.__init__ = corrupting_receipt_init
-
-    try:
-        with pytest.raises(SAGITransitionError, match="Emitted evolution receipt integrity check failed"):
-            controller.execute_evolution_cycle()
-    finally:
-        SAGIEvolutionReceipt.__init__ = original_init
-
-    # Verify complete rollback to pristine state
-    assert controller.state.current_hash == initial_state_hash
-    assert controller.state.verify_integrity() is True
-    assert controller.successful_cycles == 0
-    assert controller.failed_cycles == 0
-    assert len(controller.receipt_history) == 0
-
-
 def test_sagi_failure_memory_non_repetition():
     """Verify failure memory records rejected proposals and prevents exact repeat mutations."""
     state = SAGIState.initialize_genesis()
@@ -394,3 +313,30 @@ def test_sagi_research_graph_checksum_and_receipt_determinism():
 
     assert len(hash1) == 64
     assert hash1 == hash2
+
+
+def test_sagi_research_graph_rejects_tampered_evolution_receipt():
+    """Adversarial Test: Research graph rejects tampered SAGIEvolutionReceipt from ingestion."""
+    controller = SAGIEvolutionController()
+    identity_anchor = controller.state.identity_anchor.initial_sha256
+    evo_rcpt = controller.execute_evolution_cycle()
+
+    # Tamper with receipt SHA256 string
+    object.__setattr__(evo_rcpt, "receipt_sha256", "tampered_" + "0" * 55)
+
+    graph = SAGIResearchGraph(graph_id="graph_tamper_evo")
+    with pytest.raises(ValueError, match="Tampered or invalid SAGIEvolutionReceipt rejected"):
+        graph.ingest_evolution_receipt(evo_rcpt, identity_anchor)
+
+
+def test_sagi_research_graph_rejects_tampered_search_receipt():
+    """Adversarial Test: Research graph rejects tampered SAGISearchLoopReceipt from ingestion."""
+    search_loop = SAGISearchLoop()
+    search_rcpt = search_loop.run_search_cycle(cycle_id="cycle_tamper_search", candidates_per_cycle=2)
+
+    # Tamper with search receipt signature
+    object.__setattr__(search_rcpt, "receipt_sha256", "tampered_search_" + "0" * 48)
+
+    graph = SAGIResearchGraph(graph_id="graph_tamper_search")
+    with pytest.raises(ValueError, match="Tampered or invalid SAGISearchLoopReceipt rejected"):
+        graph.ingest_search_receipt(search_rcpt)

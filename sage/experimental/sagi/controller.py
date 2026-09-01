@@ -4,6 +4,7 @@ Regulates bounded evolution across candidate generation, verification,
 temperature adaptation, failure learning metrics, and fresh receipt emission.
 """
 
+import copy
 import hashlib
 import json
 import time
@@ -73,13 +74,8 @@ class SAGIEvolutionReceipt(BaseModel):
         return self.receipt_sha256 == self.compute_sha256()
 
 
-class SAGITransitionError(RuntimeError):
-    """Raised when a SAGI evolution transition fails or violates state/receipt integrity."""
-    pass
-
-
 class SAGIEvolutionController:
-    """Controller regulating bounded SAGI evolution cycles with atomic transaction boundaries."""
+    """Controller regulating bounded SAGI evolution cycles."""
 
     def __init__(
         self,
@@ -109,25 +105,41 @@ class SAGIEvolutionController:
             "failure_memory_size": float(len(self.generator.failure_memory))
         }
 
+    def _snapshot_transition_state(self) -> Dict[str, Any]:
+        """Capture all mutable controller state needed for atomic rollback."""
+        return {
+            "state": copy.deepcopy(self.state),
+            "failure_memory": copy.deepcopy(self.generator.failure_memory),
+            "receipt_history": copy.deepcopy(self.receipt_history),
+            "successful_cycles": self.successful_cycles,
+            "failed_cycles": self.failed_cycles,
+        }
+
+    def _restore_transition_state(self, snapshot: Dict[str, Any]) -> None:
+        """Restore the exact pre-transition controller state after an exception."""
+        self.state = snapshot["state"]
+        self.generator.failure_memory = snapshot["failure_memory"]
+        self.receipt_history = snapshot["receipt_history"]
+        self.successful_cycles = snapshot["successful_cycles"]
+        self.failed_cycles = snapshot["failed_cycles"]
+
+    def _assert_transition_integrity(self, parent_hash: str) -> None:
+        """Fail closed if the completed transition does not preserve Ω integrity."""
+        if not self.state.verify_integrity():
+            raise RuntimeError("SAGI transition produced invalid Ω-state integrity")
+        if not parent_hash or len(parent_hash) != 64:
+            raise RuntimeError("SAGI transition parent hash is invalid")
+        if len(self.state.current_hash) != 64:
+            raise RuntimeError("SAGI transition next hash is invalid")
+
     def execute_evolution_cycle(
         self,
         persona_label: str = "sagi_core_agent",
         tier3_metadata: Optional[Dict[str, Any]] = None,
         force_fail_closed: bool = False
     ) -> SAGIEvolutionReceipt:
-        """Execute one bounded evolution cycle under an atomic transaction boundary.
-
-        Generate -> Verify -> Adapt -> Verify State Integrity -> Verify Receipt Integrity -> Emission.
-        If an exception occurs or post-transition integrity checks fail,
-        the controller automatically rolls back to the pre-cycle state snapshot
-        and raises a SAGITransitionError.
-        """
-        # Capture pre-cycle atomic snapshot across all mutable state
-        snapshot_state_dict = json.loads(self.state.model_dump_json())
-        snapshot_success_cycles = self.successful_cycles
-        snapshot_failed_cycles = self.failed_cycles
-        snapshot_gen_failures = list(self.generator.failure_memory)
-
+        """Execute one atomic bounded evolution cycle with automatic rollback on error."""
+        snapshot = self._snapshot_transition_state()
         temp_before = self.state.temperature
         parent_hash = self.state.current_hash
 
@@ -164,9 +176,7 @@ class SAGIEvolutionController:
                 self.state.temperature = min(1.8, round(self.state.temperature * 1.05, 4))
                 self.state.update_hash()
 
-            # Post-transition state integrity check
-            if not self.state.verify_integrity():
-                raise SAGITransitionError("Post-transition state integrity check failed: hash mismatch")
+            self._assert_transition_integrity(parent_hash)
 
             learning_metrics = self.compute_learning_metrics()
             receipt = SAGIEvolutionReceipt(
@@ -188,18 +198,10 @@ class SAGIEvolutionController:
             )
 
             if not receipt.verify_integrity():
-                raise SAGITransitionError("Emitted evolution receipt integrity check failed")
+                raise RuntimeError("SAGI evolution receipt integrity verification failed")
 
             self.receipt_history.append(receipt)
             return receipt
-
-        except Exception as exc:
-            # Complete atomic rollback: restore state, cycle counters, and failure memory
-            self.state = SAGIState(**snapshot_state_dict)
-            self.successful_cycles = snapshot_success_cycles
-            self.failed_cycles = snapshot_failed_cycles
-            self.generator.failure_memory = snapshot_gen_failures
-
-            if isinstance(exc, SAGITransitionError):
-                raise
-            raise SAGITransitionError(f"SAGI evolution cycle aborted due to unhandled exception: {exc}") from exc
+        except Exception:
+            self._restore_transition_state(snapshot)
+            raise

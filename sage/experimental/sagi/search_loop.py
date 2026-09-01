@@ -60,6 +60,10 @@ class SAGISearchLoopReceipt(BaseModel):
         serialized = json.dumps(payload, sort_keys=True, separators=(",", ":"))
         return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
+    def verify_integrity(self) -> bool:
+        """Return whether the stored receipt hash matches its complete payload."""
+        return self.receipt_sha256 == self.compute_sha256()
+
 
 class SAGISearchLoop:
     """Governed Research Search Loop for SAGI Explorer."""
