@@ -80,11 +80,11 @@ The article presents several recurring strategy claims:
 
 ### Super Search corroboration
 
-Fresh recon supports the **market-state observation layer**, not the article's promise of a “winning” strategy. Current line-movement tools explicitly timestamp and normalize price changes into implied-probability movement, including FanDuel changes across moneylines, spreads, and totals. citeturn0search0turn0search3
+Fresh recon supports the **market-state observation layer**, not the article's promise of a “winning” strategy. Current line-movement tools explicitly timestamp and normalize price changes into implied-probability movement, including FanDuel changes across moneylines, spreads, and totals.
 
-Independent 2026 research describes odds as information-bearing market signals and notes that bettors use line movement to infer updated information, while also warning that implied probabilities can be misleading because of randomness or market mispricing. citeturn0search18
+Independent 2026 research describes odds as information-bearing market signals and notes that bettors use line movement to infer updated information, while also warning that implied probabilities can be misleading because of randomness or market mispricing.
 
-A current FanDuel market-data feed advertises pre-match/live coverage, player props, alternates, and real-time normalized odds, reinforcing that timestamped market snapshots are a practical data primitive for research. citeturn0search4
+A current FanDuel market-data feed advertises pre-match/live coverage, player props, alternates, and real-time normalized odds, reinforcing that timestamped market snapshots are a practical data primitive for research.
 
 ### C2 interpretation
 
@@ -104,7 +104,7 @@ That produces several falsifiable research dimensions:
 
 ### SAGE gap identified
 
-The existing sports ingestion boundary already preserves `event_id`, sport/league, event start, observation timestamp, market, prices, source, source URL, and metadata, which is sufficient groundwork for time-indexed research. fileciteturn149file0
+The existing sports ingestion boundary already preserves `event_id`, sport/league, event start, observation timestamp, market, prices, source, source URL, and metadata, which is sufficient groundwork for time-indexed research.
 
 The next capability gap is **not another odds calculator**. It is a controlled temporal market-observation/evaluation layer that can answer:
 
@@ -132,3 +132,83 @@ This observation strengthens the existing **Selection-level parlay/SGP research 
 - Temporal research value: **high candidate**
 - Canonical promotion: **not authorized**
 - Next step: **collect timestamped paper observations and evaluate movement/close relationships out-of-sample**
+
+## Observation 003 — Dimers: production sports-analytics architecture signal
+
+**Observed source:** Dimers/Wikipedia description supplied to C2 by Mission Director, followed by current Dimers Super Search reconnaissance.
+
+**Observation date:** 2026-09-01
+
+**Source class:** External commercial/product recon plus secondary reference. **Non-canonical.**
+
+### Raw observations
+
+The supplied source identifies Dimers as a sports analytics platform under Cipher Sports Technology Group, combining predictive analytics, machine learning, odds comparison, news/content, and B2B analytics. Current first-party reconnaissance adds several concrete architecture signals:
+
+- Dimers says its DimersBOT runs at least **10,000 Monte Carlo simulations per event** for NBA, NFL, MLB, and NHL, using rosters, form, previous matchups, weather, and other matchup inputs. citeturn0search0turn0search9
+- Dimers says its models calculate probabilities, compare them with sportsbook-implied probabilities, and surface measurable **edge** signals. Its current Best Bets surface is updated as markets move and exposes probability, edge, and best available price across operators. citeturn0search8turn0search4
+- Dimers says its models incorporate real-time betting-market movement and update throughout the week as new information arrives. citeturn0search4
+- Dimers also exposes a distinct **live/in-play probability** product where the model simulates the remainder of a game and updates after every play using current game state and comparable team/player situations. citeturn0search11
+- Dimers' more advanced Platinum product describes a reinforcement-learning architecture trained on outcomes/profit and loss rather than statistical accuracy alone. This is a vendor claim, not independently validated by C2. citeturn0search5turn0search10
+- Dimers also reports independent Pickwatch verification for some historical football-model performance. That claim should be treated as externally asserted evidence requiring direct dataset/methodology inspection before canonical promotion. citeturn0search2
+
+### C2 interpretation
+
+The strongest reusable signal is **architectural decomposition**, not “copy Dimers betting strategy.” Dimers publicly describes a production loop that separates several research primitives SAGE is already beginning to model:
+
+> **DATA → SIMULATION / PROBABILITY → MARKET COMPARISON → EDGE SIGNAL → CONTINUOUS UPDATE → LIVE STATE → OUTCOME EVALUATION**
+
+This matters because it exposes a concrete capability frontier for SAGE: a sports quantitative system should not be only a static odds calculator or a single prediction function. It should preserve the lineage between **raw observation, model probability, market probability, temporal state, information updates, and eventual outcome** so each signal can be evaluated independently and OOS.
+
+### New falsifiable research dimensions
+
+1. **Simulation-to-probability calibration** — test whether simulation-derived probabilities remain calibrated OOS across sport, market, horizon, and sample size.
+2. **Probability-to-market edge decomposition** — separate model probability, market-implied probability, de-vig adjustment, and the resulting delta/edge into auditable fields.
+3. **Continuous-update value** — measure whether incorporating timestamped market movement and new information improves calibration or only tracks the market.
+4. **Live-state transition modeling** — represent live observations as sequential state transitions with event/play timestamps rather than treating them as independent snapshots.
+5. **Model-vs-market attribution** — determine whether apparent edge comes from model signal, stale market data, information latency, or random variance.
+6. **Outcome-trained learning claims** — investigate whether outcome/profit-trained models outperform accuracy-trained baselines under controlled OOS evaluation without allowing wagering execution.
+7. **Independent verification lineage** — preserve third-party verification source, methodology, cohort, timestamp, and denominator so external performance claims can be reproduced or falsified.
+8. **Coverage-scale data architecture** — investigate the engineering requirements for high-volume probability/line/edge records without conflating volume with predictive quality.
+
+### SAGE gap identified
+
+Observation 002 identified the **Temporal Market-State Research Layer**. Dimers makes the next missing boundary clearer: SAGE needs a governed **Model–Market–Outcome Evaluation Fabric** that can join, at exact timestamps and exact selection identity:
+
+`observation → model version → model probability → market snapshot(s) → implied/de-vig probability → edge decomposition → information state → close → resolved outcome → OOS evaluation`
+
+For live products, the chain must additionally preserve:
+
+`event state T0 → state transition T1 → ... → state Tn → final outcome`
+
+This is a real capability frontier because it enables SAGE to answer not merely “what probability did the model output?” but **why did the model differ from the market, what information was available then, how did the market respond, and did the signal survive independent out-of-sample evaluation?**
+
+### SAGE action
+
+**Do not copy Dimers' proprietary claims or promote its “winning,” ROI, or +EV language into SAGE strategy.** Promote the measurable architecture primitives only:
+
+- simulation provenance;
+- model/version identity;
+- probability snapshots;
+- market snapshots and best-price references;
+- de-vig/implied-probability normalization;
+- edge decomposition;
+- temporal and live-state lineage;
+- information-shock provenance;
+- outcome resolution;
+- independent/OOS verification.
+
+This observation therefore **extends Observation 002 rather than replacing it**. The temporal market-state layer remains the immediate substrate; the broader frontier is now a governed **Model–Market–Outcome Evaluation Fabric**.
+
+### Boundary
+
+`wagering_executed = False` remains mandatory. Dimers is being used as external recon about production sports-analytics architecture, not as authorization to bet, stake, optimize bankrolls, or execute wagers.
+
+### Evidence status
+
+- External observation: **observed**
+- First-party product architecture signals: **corroborated by current Dimers pages**
+- Vendor performance claims: **unvalidated by SAGE**
+- Reusable architecture primitives: **high-value candidate**
+- Canonical strategy promotion: **not authorized**
+- Next step: **design/implement a paper-only Model–Market–Outcome Evaluation Fabric against exact selection identity and timestamped observations, then validate OOS**
