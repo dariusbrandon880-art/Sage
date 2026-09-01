@@ -11,7 +11,7 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import dataclass
-from typing import Mapping, Sequence
+from typing import Sequence
 
 
 OUTCOME_LABELS = {"GOOD", "BAD", "UNKNOWN"}
