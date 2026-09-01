@@ -3,6 +3,9 @@
 This module selects experiments; it does not authorize, execute, promote, or
 qualify them. External research is candidate intelligence only. Canonical SAGE
 state and observed flight evidence remain authoritative.
+
+Flight slots are anonymous execution containers. Mission/capability identity
+belongs to the candidate mission, never to F1-F5.
 """
 from __future__ import annotations
 
@@ -30,6 +33,7 @@ class DiscoveryCandidate:
     safety: float
     evidence_gap: float
     provenance_ref: str
+    capability_surface: str = ""
 
 
 @dataclass(frozen=True)
@@ -40,15 +44,7 @@ class FlightSelectionProposal:
 
 
 class SAGIDiscoveryFlightSelector:
-    """Select a diversified five-flight portfolio from governed candidates."""
-
-    REQUIRED_ROLES = (
-        FlightRole.CONSEQUENT_FRONTIER,
-        FlightRole.INFORMATION_GAIN,
-        FlightRole.FALSIFICATION,
-        FlightRole.RECOVERY_REGRESSION,
-        FlightRole.INDEPENDENT_TRANSFER,
-    )
+    """Select a distinct capability portfolio for reusable flight slots."""
 
     @staticmethod
     def _validate_candidate(candidate: DiscoveryCandidate) -> None:
@@ -84,9 +80,6 @@ class SAGIDiscoveryFlightSelector:
     def _digest(
         candidates: tuple[DiscoveryCandidate, ...], frontier_digest: str
     ) -> str:
-        # Bind the complete selected payload, including every score that can affect
-        # selection. Identity-only hashing would allow semantic candidate tampering
-        # without changing the recorded selection digest.
         material = "|".join(
             "\x1f".join(
                 (
@@ -99,6 +92,7 @@ class SAGIDiscoveryFlightSelector:
                     f"{c.safety:.17g}",
                     f"{c.evidence_gap:.17g}",
                     c.provenance_ref.strip(),
+                    c.capability_surface.strip(),
                 )
             )
             for c in candidates
@@ -111,11 +105,20 @@ class SAGIDiscoveryFlightSelector:
         *,
         frontier_digest: str,
         selection_digest: str | None = None,
+        portfolio_size: int = 5,
     ) -> FlightSelectionProposal:
+        """Select the highest-value safe, distinct capability missions.
+
+        No semantic role is required or mapped to a flight slot. Roles remain
+        discovery metadata only. When capability surfaces are supplied, selection
+        prefers distinct surfaces so a wave does not recycle one frontier.
+        """
         if not frontier_digest.strip():
             raise ValueError("selection requires canonical frontier digest")
         if not candidates:
             raise ValueError("selection requires discovery candidates")
+        if portfolio_size < 1:
+            raise ValueError("portfolio size must be positive")
 
         seen: set[str] = set()
         for candidate in candidates:
@@ -124,15 +127,36 @@ class SAGIDiscoveryFlightSelector:
                 raise ValueError("candidate IDs must be unique")
             seen.add(candidate.candidate_id)
 
+        safe = [c for c in candidates if c.safety > 0.0]
+        if len(safe) < portfolio_size:
+            raise ValueError("not enough safe candidates for requested portfolio")
+
+        ranked = sorted(safe, key=self._score, reverse=True)
         selected: list[DiscoveryCandidate] = []
-        for role in self.REQUIRED_ROLES:
-            pool = [
-                c for c in candidates
-                if c.role is role and c.safety > 0.0
-            ]
-            if not pool:
-                raise ValueError(f"no safe candidate for required role: {role.value}")
-            selected.append(max(pool, key=self._score))
+        used_surfaces: set[str] = set()
+
+        # First pass maximizes capability-surface diversity. Empty surfaces remain
+        # valid legacy candidates and are treated as unknown rather than a domain.
+        for candidate in ranked:
+            surface = candidate.capability_surface.strip()
+            if surface and surface in used_surfaces:
+                continue
+            selected.append(candidate)
+            if surface:
+                used_surfaces.add(surface)
+            if len(selected) == portfolio_size:
+                break
+
+        # If fewer distinct surfaces exist, fill remaining slots by value. This is
+        # a portfolio constraint, not a semantic assignment to F1-F5.
+        if len(selected) < portfolio_size:
+            selected_ids = {c.candidate_id for c in selected}
+            for candidate in ranked:
+                if candidate.candidate_id in selected_ids:
+                    continue
+                selected.append(candidate)
+                if len(selected) == portfolio_size:
+                    break
 
         selected_tuple = tuple(selected)
         derived_digest = self._digest(selected_tuple, frontier_digest)
