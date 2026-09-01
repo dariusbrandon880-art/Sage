@@ -1,9 +1,16 @@
+import pytest
 from sage.experimental.sports_quant import (
+    FanDuelPlayerPropAnalyzer,
     FanDuelSnapshotAdapter,
     MarketSnapshot,
+    PlayerPropSnapshot,
     PredictionBatchEngine,
     PredictionRecord,
+    PropEdgeResult,
     build_failure_clusters,
+    calculate_ev,
+    calculate_kelly_stake,
+    evaluate_sgp_boost,
     score_predictions,
     validate_oos_candidate,
 )
@@ -82,3 +89,81 @@ def test_candidate_requires_strict_oos_brier_and_clv_improvement_on_common_event
     assert promoted
     assert candidate_eval.brier_score < baseline_eval.brier_score
     assert candidate_eval.clv_score > baseline_eval.clv_score
+
+
+def test_american_to_decimal_conversion():
+    assert FanDuelSnapshotAdapter.american_to_decimal(100) == 2.0
+    assert FanDuelSnapshotAdapter.american_to_decimal(250) == 3.5
+    assert FanDuelSnapshotAdapter.american_to_decimal(-110) == 1.9091
+    assert FanDuelSnapshotAdapter.american_to_decimal(-200) == 1.5
+    with pytest.raises(ValueError, match="odds cannot be zero"):
+        FanDuelSnapshotAdapter.american_to_decimal(0)
+
+
+def test_player_prop_snapshot_parsing_and_validation():
+    payload = {
+        "event": {"id": "nfl_101", "sport": "football", "league": "NFL", "start_utc": START},
+        "prop": {
+            "player_name": "Derrick Henry",
+            "category": "anytime_touchdown",
+            "american_prices": {"yes": -150},
+            "sharp_reference_price": 1.62,
+        },
+        "observed_at_utc": BEFORE,
+    }
+    prop = FanDuelSnapshotAdapter.parse_player_prop(payload)
+    assert prop.player_name == "Derrick Henry"
+    assert prop.prop_category == "anytime_touchdown"
+    assert prop.prices["yes"] == 1.6667
+    assert prop.sharp_reference_price == 1.62
+
+
+def test_ev_and_kelly_staking_calculations():
+    # Win prob 0.60 at 2.0 odds => EV = (0.60 * 2.0) - 1 = +0.20 (+20% EV)
+    ev = calculate_ev(0.60, 2.0)
+    assert pytest.approx(ev) == 0.20
+
+    # Kelly stake calculation under zero-wagering bounds
+    kelly = calculate_kelly_stake(0.60, 2.0, fraction=0.25)
+    # Full kelly = (0.6 * 1 - 0.4) / 1 = 0.20. Quarter kelly = 0.05
+    assert pytest.approx(kelly) == 0.05
+
+    # Violating zero wagering execution fails closed
+    with pytest.raises(ValueError, match="SHADOW_BOUNDARY_VIOLATION"):
+        calculate_kelly_stake(0.60, 2.0, wagering_executed=True)
+
+
+def test_fanduel_player_prop_analyzer_nfl_atd_and_sgp_evaluation():
+    payload = {
+        "event_id": "nfl_102",
+        "sport": "football",
+        "league": "NFL",
+        "event_start_utc": START,
+        "observed_at_utc": BEFORE,
+        "player_name": "Travis Kelce",
+        "prop_category": "anytime_touchdown",
+        "threshold": 0.5,
+        "prices": {"yes": 2.50},  # Implied prob = 40%
+        "sharp_reference_price": 2.20,  # Sharp implied = 45.45%
+    }
+    snap = FanDuelSnapshotAdapter.parse_player_prop(payload)
+    analyzer = FanDuelPlayerPropAnalyzer()
+    res = analyzer.analyze_prop(
+        snap,
+        selection="yes",
+        red_zone_touch_share=0.35,  # Strong RZ share
+        game_script_bias=1.0,
+    )
+    assert res.is_positive_ev
+    assert res.edge_score > 0
+    assert res.confidence_score >= 0.85
+
+    prediction_rec = analyzer.generate_prop_prediction(snap, res, "cycle_props_1")
+    assert prediction_rec.verify_lock()
+    assert not prediction_rec.wagering_executed
+    assert "Travis Kelce" in prediction_rec.selection
+
+    # Test SGP Boost Evaluation
+    sgp_result = evaluate_sgp_boost([res], boosted_decimal_price=3.0)
+    assert sgp_result["recommendation"] == "GRAVY"
+    assert sgp_result["all_legs_positive_ev"] is True

@@ -2,9 +2,10 @@
 
 from dataclasses import dataclass
 import math
-from typing import Iterable, Mapping
+from typing import TYPE_CHECKING, Iterable, Mapping
 
-from .prediction import PredictionRecord
+if TYPE_CHECKING:
+    from .prediction import PredictionRecord
 
 
 @dataclass(frozen=True)
@@ -20,13 +21,50 @@ class EvaluationResult:
     resolved_count: int
 
 
+def calculate_ev(win_probability: float, decimal_odds: float) -> float:
+    """Calculate Expected Value (EV) fraction per unit wagered.
+
+    EV = (p * decimal_odds) - 1
+    """
+    if not 0.0 <= win_probability <= 1.0:
+        raise ValueError("INVALID_PROBABILITY: win_probability must be between 0 and 1")
+    if decimal_odds <= 0.0:
+        raise ValueError("INVALID_ODDS: decimal_odds must be positive")
+    return (win_probability * decimal_odds) - 1.0
+
+
+def calculate_kelly_stake(
+    win_probability: float,
+    decimal_odds: float,
+    fraction: float = 0.25,
+    max_stake_cap: float = 0.05,
+    wagering_executed: bool = False,
+) -> float:
+    """Calculate fractional Kelly stake recommendation under strict zero-wagering bounds."""
+    if wagering_executed:
+        raise ValueError("SHADOW_BOUNDARY_VIOLATION: wagering execution is prohibited")
+    if not 0.0 <= win_probability <= 1.0:
+        raise ValueError("INVALID_PROBABILITY")
+    if decimal_odds <= 1.0:
+        return 0.0
+
+    b = decimal_odds - 1.0
+    q = 1.0 - win_probability
+    raw_kelly = (win_probability * b - q) / b
+    if raw_kelly <= 0.0:
+        return 0.0
+
+    suggested_stake = raw_kelly * fraction
+    return min(suggested_stake, max_stake_cap)
+
+
 def calculate_clv(predicted_probability: float, closing_market_probability: float) -> float:
     """Return model probability edge versus the closing market probability."""
     return predicted_probability - closing_market_probability
 
 
 def score_predictions(
-    predictions: Iterable[PredictionRecord], outcomes: Mapping[str, int]
+    predictions: Iterable["PredictionRecord"], outcomes: Mapping[str, int]
 ) -> EvaluationResult:
     records = [p for p in predictions if p.event_id in outcomes and p.verify_lock() and p.is_oos]
     if not records:
