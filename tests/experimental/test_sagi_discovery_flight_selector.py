@@ -108,3 +108,22 @@ def test_whitespace_frontier_digest_fails_closed():
     candidates = tuple(candidate(i, role) for i, role in enumerate(FlightRole))
     with pytest.raises(ValueError, match="frontier digest"):
         SAGIDiscoveryFlightSelector().select(candidates, frontier_digest="   ")
+
+
+def test_generate_broad_surface_candidates():
+    candidates = SAGIDiscoveryFlightSelector.generate_broad_surface_candidates()
+    assert len(candidates) == 5
+    roles = {c.role for c in candidates}
+    assert roles == set(FlightRole)
+
+    # Verify candidates span distinct SAGE capability surfaces
+    descriptions = " ".join(c.description for c in candidates)
+    assert "Observatory" in descriptions
+    assert "Sports" in descriptions
+    assert "SAGI" in descriptions
+    assert "C2" in descriptions
+    assert "Airspace" in descriptions
+
+    proposal = SAGIDiscoveryFlightSelector().select(candidates, frontier_digest="broad-surface-frontier")
+    assert len(proposal.candidates) == 5
+    assert proposal.selection_digest
