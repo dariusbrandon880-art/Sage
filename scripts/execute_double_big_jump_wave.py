@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
-"""Execute two canonical Big Jump waves concurrently.
+"""Execute two Big Jump waves concurrently from an explicit mission plan.
 
-Double Big Jump is composition: each wave uses the canonical Big Jump engine
-with reusable F1..F5 slots and an explicit mission plan. No permanent flight
-roles and no historical HEAD fallback are permitted.
+F1-F5 are reusable slots. No permanent slot-to-capability mapping is encoded
+here; each wave supplies its own assignments.
+
+Usage:
+    python scripts/execute_double_big_jump_wave.py --mission-plan path/to/plan.json
 """
+
+from __future__ import annotations
+
+import argparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
 import subprocess
@@ -29,46 +35,43 @@ def get_git_head_sha() -> str:
     return head
 
 
-def build_wave(wave_id: str, prefix: str, targets: tuple[tuple[str, str], ...]) -> DoubleBigJumpWaveSpec:
-    missions = tuple(
-        FlightMissionSpec(
-            flight_id=f"F{i}",
-            frontier_name=f"{prefix}-{i}-{Path(target).stem}",
-            target_path=f"sage/c2/{target}",
-            collision_zone=f"sage.c2.{Path(target).stem}",
-            evidence_ref=f"evidence_capture/waves/{wave_id}/F{i}_receipt.json",
-            pr_or_change=f"Double Big Jump {wave_id} mission F{i}",
-            test_references=[test_path],
-        )
-        for i, (target, test_path) in enumerate(targets, start=1)
-    )
-    return DoubleBigJumpWaveSpec(wave_id=wave_id, missions=missions)
+def load_mission_plan(path: Path) -> tuple[DoubleBigJumpWaveSpec, DoubleBigJumpWaveSpec]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict) or not isinstance(payload.get("waves"), list):
+        raise ValueError("Double Big Jump mission plan must contain a 'waves' list")
+    if len(payload["waves"]) != 2:
+        raise ValueError("Double Big Jump mission plan requires exactly two waves")
+
+    waves: list[DoubleBigJumpWaveSpec] = []
+    for raw_wave in payload["waves"]:
+        if not isinstance(raw_wave, dict):
+            raise ValueError("Each wave must be a JSON object")
+        wave_id = raw_wave.get("wave_id")
+        raw_missions = raw_wave.get("missions")
+        if not isinstance(wave_id, str) or not isinstance(raw_missions, list):
+            raise ValueError("Each wave requires 'wave_id' and 'missions'")
+        missions = tuple(FlightMissionSpec.model_validate(item) for item in raw_missions)
+        waves.append(DoubleBigJumpWaveSpec(wave_id=wave_id, missions=missions))
+
+    return validate_double_big_jump_waves(tuple(waves))
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser(description="Execute two explicitly assigned Big Jump Waves")
+    parser.add_argument("--mission-plan", required=True, type=Path, help="JSON file containing both waves' F1-F5 assignments")
+    args = parser.parse_args()
+
+    mission_plan = args.mission_plan if args.mission_plan.is_absolute() else Path.cwd() / args.mission_plan
+    if not mission_plan.is_file():
+        parser.error(f"mission plan not found: {mission_plan}")
+
+    waves = load_mission_plan(mission_plan)
     expected_head = get_git_head_sha()
-    targets_a = (
-        ("execution_intelligence.py", "tests/c2/test_execution_intelligence_wave.py"),
-        ("governance_intelligence.py", "tests/c2/test_governance_intelligence_wave.py"),
-        ("build_jump_wave.py", "tests/c2/test_build_jump_wave.py"),
-        ("multi_frontier_dispatch.py", "tests/c2/test_multi_frontier_dispatch.py"),
-        ("double_big_jump_contract.py", "tests/c2/test_double_big_jump_contract.py"),
-    )
-    targets_b = (
-        ("organism_jigsaw.py", "tests/c2/test_organism_jigsaw.py"),
-        ("chatgpt_c2_contract.py", "tests/c2/test_chatgpt_c2_exact_order_anti_drift.py"),
-        ("media_perception.py", "tests/c2/test_media_perception.py"),
-        ("workflow_velocity.py", "tests/c2/test_workflow_velocity.py"),
-        ("experiment_ledger.py", "tests/c2/test_experiment_ledger.py"),
-    )
-    waves = validate_double_big_jump_waves(
-        (build_wave("double-wave-A", "A", targets_a), build_wave("double-wave-B", "B", targets_b))
-    )
     print("=" * 80)
-    print("SAGE C2 — DOUBLE BIG JUMP / CANONICAL WAVE COMPOSITION")
+    print("SAGE C2 — DOUBLE BIG JUMP / DYNAMIC WAVE COMPOSITION")
     print("=" * 80)
     print(f"[*] Anchored repository HEAD: {expected_head}")
-    print("[*] Two canonical five-slot waves will execute concurrently.")
+    print("[*] Two independent five-slot waves will execute concurrently.")
 
     engine = BuildJumpWaveEngine()
     results = {}
@@ -94,8 +97,12 @@ def main() -> int:
         "execution": "double_big_jump",
         "anchored_head": expected_head,
         "waves": {
-            wave_id: {"head": head, "reconvergence_verdict": package.reconvergence_verdict,
-                      "successful_flights": package.successful_flights, "total_flights": package.total_flights}
+            wave_id: {
+                "head": head,
+                "reconvergence_verdict": package.reconvergence_verdict,
+                "successful_flights": package.successful_flights,
+                "total_flights": package.total_flights,
+            }
             for wave_id, (package, head) in results.items()
         },
         "elapsed_seconds": round(time.time() - start, 6),
