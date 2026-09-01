@@ -1,7 +1,7 @@
 """Adversarial Hardening Test Suite for SAGE 60/40 Operating Architecture.
 
 Tests fail-closed boundaries, lock collision resistance, anti-drift state reconciliation,
-and exact-HEAD contract validation across C2 substrates.
+TransitionAuthorityEngine state-digest validation, and exact-HEAD contract validation.
 """
 
 import pytest
@@ -11,7 +11,6 @@ from sage.c2.double_big_jump_contract import (
     DoubleBigJumpWaveSpec,
     reconverge_double_big_jump,
     require_current_head,
-    validate_double_big_jump_waves,
 )
 from sage.c2.execution_intelligence import (
     AdaptiveConcurrencyGovernor,
@@ -21,9 +20,16 @@ from sage.c2.execution_intelligence import (
     WorkflowVelocityController,
 )
 from sage.c2.governance_intelligence import (
-    AntiDriftVerificationEngine,
     GovernanceProofAttackAuditor,
     GovernanceProvenanceValidator,
+)
+from sage.core.attestation_receipt import AttestationDecision, AttestationReceipt
+from sage.core.transition_engine import (
+    ReplayAttestationError,
+    StaleAuthorizationError,
+    TransitionAuthorityEngine,
+    TransitionRequest,
+    compute_capability_state_digest,
 )
 
 
@@ -122,6 +128,82 @@ def test_governance_provenance_validator_rejects_invalid_station() -> None:
     res = validator.audit_station_spoof_attack("[C2::UNKNOWN_AGENT]")
     assert res.neutralized is True
     assert "non-canonical station identity tag rejected" in res.rejection_reason
+
+
+def test_transition_engine_fails_closed_on_stale_state_digest() -> None:
+    initial_state = {"agent_1:cap_a": "QUALIFIED"}
+    initial_digest = compute_capability_state_digest(initial_state)
+
+    engine = TransitionAuthorityEngine(
+        trusted_reviewer_keys={"reviewer_1": "key_1"},
+        signature_verifier=lambda receipt, key: True,
+        capability_state=initial_state,
+    )
+
+    receipt = AttestationReceipt(
+        assessment_digest="digest_assess_1",
+        sufficiency_digest="digest_suff_1",
+        capability_id="cap_a",
+        subject_id="agent_1",
+        policy_version="p1",
+        reviewer_id="reviewer_1",
+        authorization_scope="scope_a",
+        attested_at="2026-08-31T20:00:00Z",
+        decision=AttestationDecision.APPROVED,
+        signature="sig_001",
+    )
+
+    # Mutate state before executing request
+    initial_state["agent_1:cap_b"] = "QUALIFIED"
+
+    request = TransitionRequest(
+        capability_id="cap_a",
+        subject_id="agent_1",
+        policy_version="p1",
+        authorization_scope="scope_a",
+        target_state="PROMOTED",
+        authorization_state_digest=initial_digest,
+    )
+
+    with pytest.raises(StaleAuthorizationError, match="authorization state digest is stale"):
+        engine.execute(receipt, request)
+
+
+def test_transition_engine_fails_closed_on_replayed_receipt() -> None:
+    initial_state = {"agent_1:cap_a": "QUALIFIED"}
+    digest = compute_capability_state_digest(initial_state)
+
+    receipt = AttestationReceipt(
+        assessment_digest="digest_assess_1",
+        sufficiency_digest="digest_suff_1",
+        capability_id="cap_a",
+        subject_id="agent_1",
+        policy_version="p1",
+        reviewer_id="reviewer_1",
+        authorization_scope="scope_a",
+        attested_at="2026-08-31T20:00:00Z",
+        decision=AttestationDecision.APPROVED,
+        signature="sig_001",
+    )
+
+    engine = TransitionAuthorityEngine(
+        trusted_reviewer_keys={"reviewer_1": "key_1"},
+        signature_verifier=lambda receipt, key: True,
+        capability_state=initial_state,
+        consumed_receipt_ids={receipt.receipt_id},
+    )
+
+    request = TransitionRequest(
+        capability_id="cap_a",
+        subject_id="agent_1",
+        policy_version="p1",
+        authorization_scope="scope_a",
+        target_state="PROMOTED",
+        authorization_state_digest=digest,
+    )
+
+    with pytest.raises(ReplayAttestationError, match="has already been consumed"):
+        engine.execute(receipt, request)
 
 
 def test_reconverge_double_big_jump_fails_closed_if_one_wave_fails() -> None:
