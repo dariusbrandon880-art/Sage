@@ -1,0 +1,10 @@
+{
+  "blocker": null,
+  "executed_head": "e2949fd523900d981ce69b3373727d1ecd7ada21",
+  "flight_id": "F3",
+  "frontier_name": "B-3-media_perception",
+  "status": "PASS",
+  "target_path": "sage/c2/media_perception.py",
+  "timestamp": 1788229629.5640492,
+  "wave_id": "double-wave-B"
+}

@@ -392,137 +392,6 @@
       ],
       "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
       "sha256_receipt_hash": "f201afef212b6f4c16826a42e082009f91c01d730516ecfa4f526dc0363de46d"
-    },
-    {
-      "prediction_id": "pred_real_mlb_824911",
-      "cycle_id": "cycle_real_mlb_20260831",
-      "event_observation": {
-        "event_id": "mlb_game_824911",
-        "sport": "baseball",
-        "league": "mlb",
-        "home_team": "Atlanta Braves",
-        "away_team": "San Francisco Giants",
-        "event_start_time_utc": "2026-08-31T22:05:00Z",
-        "observation_timestamp_utc": "2026-08-31T22:00:28.986596+00:00",
-        "source_name": "Official MLB Stats API (statsapi.mlb.com)",
-        "source_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1",
-        "market_name": "Moneyline (Public Market)",
-        "observed_odds": {
-          "status": "ODDS_UNAVAILABLE",
-          "note": "Public schedule feed does not expose market betting lines"
-        },
-        "event_status": "Live"
-      },
-      "selected_prediction": "Atlanta Braves Moneyline",
-      "odds_at_lock": "ODDS_UNAVAILABLE",
-      "implied_probability": 0.5,
-      "model_predicted_probability": 0.55,
-      "lock_timestamp_utc": "2026-08-31T22:00:28.986596+00:00",
-      "model_state_rationale": "Model baseline rating favorability for home team (Atlanta Braves) under live public observation.",
-      "is_parlay": false,
-      "parlay_legs": [],
-      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "c1dc5dfaa2d6a926ad20a63b767fca90427c4db2e333f78cda4674f85a466d1d"
-    },
-    {
-      "prediction_id": "pred_parlay_leg_1_824911",
-      "cycle_id": "cycle_real_mlb_20260831",
-      "event_observation": {
-        "event_id": "mlb_game_leg1_824911",
-        "sport": "baseball",
-        "league": "mlb",
-        "home_team": "NYY",
-        "away_team": "BOS",
-        "event_start_time_utc": "2026-08-31T22:05:00Z",
-        "observation_timestamp_utc": "2026-08-31T22:00:28.986596+00:00",
-        "source_name": "Official MLB Stats API",
-        "source_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1",
-        "market_name": "Moneyline",
-        "observed_odds": {
-          "status": "ODDS_UNAVAILABLE",
-          "note": "Public schedule feed does not expose market betting lines"
-        },
-        "event_status": "Live"
-      },
-      "selected_prediction": "NYY Moneyline",
-      "odds_at_lock": "ODDS_UNAVAILABLE",
-      "implied_probability": 0.52,
-      "model_predicted_probability": 0.58,
-      "lock_timestamp_utc": "2026-08-31T22:00:28.986596+00:00",
-      "model_state_rationale": "Leg 1 baseline rating",
-      "is_parlay": false,
-      "parlay_legs": [],
-      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "0415615ec7996aec2429bf8a5fb50e19c71a00d1172262fa71ae233d88bf2c1c"
-    },
-    {
-      "prediction_id": "pred_parlay_leg_2_824911",
-      "cycle_id": "cycle_real_mlb_20260831",
-      "event_observation": {
-        "event_id": "mlb_game_leg2_824911",
-        "sport": "baseball",
-        "league": "mlb",
-        "home_team": "LAD",
-        "away_team": "SF",
-        "event_start_time_utc": "2026-08-31T22:05:00Z",
-        "observation_timestamp_utc": "2026-08-31T22:00:28.986596+00:00",
-        "source_name": "Official MLB Stats API",
-        "source_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1",
-        "market_name": "Moneyline",
-        "observed_odds": {
-          "status": "ODDS_UNAVAILABLE",
-          "note": "Public schedule feed does not expose market betting lines"
-        },
-        "event_status": "Live"
-      },
-      "selected_prediction": "LAD Moneyline",
-      "odds_at_lock": "ODDS_UNAVAILABLE",
-      "implied_probability": 0.6,
-      "model_predicted_probability": 0.65,
-      "lock_timestamp_utc": "2026-08-31T22:00:28.986596+00:00",
-      "model_state_rationale": "Leg 2 baseline rating",
-      "is_parlay": false,
-      "parlay_legs": [],
-      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "a4e87853d8d1c4e0b25e9e6afa25c69dc577d91bb0071ee5a82464883e88188c"
-    },
-    {
-      "prediction_id": "pred_parlay_parent_824911",
-      "cycle_id": "cycle_real_mlb_20260831",
-      "event_observation": {
-        "event_id": "mlb_parlay_824911",
-        "sport": "baseball",
-        "league": "mlb",
-        "home_team": "Multi-Team",
-        "away_team": "Multi-Team",
-        "event_start_time_utc": "2026-08-31T22:05:00Z",
-        "observation_timestamp_utc": "2026-08-31T22:00:28.986596+00:00",
-        "source_name": "Official MLB Stats API",
-        "source_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1",
-        "market_name": "2-Leg Parlay",
-        "observed_odds": {
-          "status": "ODDS_UNAVAILABLE",
-          "note": "Public schedule feed does not expose market betting lines"
-        },
-        "event_status": "Live"
-      },
-      "selected_prediction": "2-Leg MLB Parlay (NYY + LAD)",
-      "odds_at_lock": "ODDS_UNAVAILABLE",
-      "implied_probability": 0.312,
-      "model_predicted_probability": 0.377,
-      "lock_timestamp_utc": "2026-08-31T22:00:28.986596+00:00",
-      "model_state_rationale": "2-Leg Parlay composite rating",
-      "is_parlay": true,
-      "parlay_legs": [
-        {
-          "prediction_id": "pred_parlay_leg_1_824911"
-        },
-        {
-          "prediction_id": "pred_parlay_leg_2_824911"
-        }
-      ],
-      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "0c43525f720edbd2c149aa1e18466055c67e284f33f4eb97cb719268862a5d13"
     }
   ],
   "outcomes": [
@@ -679,48 +548,6 @@
       "outcome_status": "WIN",
       "classification": "REAL-WORLD OUTCOME",
       "outcome_receipt_hash": "7b7f739df5a785ed85b28ee0eded02805f18c62c638a8c36d4b45ba4a86ef44d"
-    },
-    {
-      "outcome_id": "out_pred_parlay_leg_1_824911",
-      "prediction_id": "pred_parlay_leg_1_824911",
-      "prediction_hash": "0415615ec7996aec2429bf8a5fb50e19c71a00d1172262fa71ae233d88bf2c1c",
-      "verification_timestamp_utc": "2026-08-31T22:00:28.986868+00:00",
-      "verification_source_name": "Official MLB Stats API",
-      "verification_source_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1",
-      "actual_home_score": 5,
-      "actual_away_score": 3,
-      "actual_result_text": "NYY defeated BOS 5-3",
-      "outcome_status": "WIN",
-      "classification": "REAL-WORLD OUTCOME",
-      "outcome_receipt_hash": "8c824754bd69ecffde95d9159f0dded0e7e56acfe0167229038f72006a85be66"
-    },
-    {
-      "outcome_id": "out_pred_parlay_leg_2_824911",
-      "prediction_id": "pred_parlay_leg_2_824911",
-      "prediction_hash": "a4e87853d8d1c4e0b25e9e6afa25c69dc577d91bb0071ee5a82464883e88188c",
-      "verification_timestamp_utc": "2026-08-31T22:00:28.986868+00:00",
-      "verification_source_name": "Official MLB Stats API",
-      "verification_source_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1",
-      "actual_home_score": 4,
-      "actual_away_score": 1,
-      "actual_result_text": "LAD defeated SF 4-1",
-      "outcome_status": "WIN",
-      "classification": "REAL-WORLD OUTCOME",
-      "outcome_receipt_hash": "28ef70b4f3e27b4283a57f18d1d7efa7128fd87a0156182a98f0f29dc0490d54"
-    },
-    {
-      "outcome_id": "out_pred_parlay_parent_824911",
-      "prediction_id": "pred_parlay_parent_824911",
-      "prediction_hash": "0c43525f720edbd2c149aa1e18466055c67e284f33f4eb97cb719268862a5d13",
-      "verification_timestamp_utc": "2026-08-31T22:00:28.986868+00:00",
-      "verification_source_name": "Official MLB Stats API",
-      "verification_source_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1",
-      "actual_home_score": null,
-      "actual_away_score": null,
-      "actual_result_text": "PARLAY_RESULT: WIN across 2 legs.",
-      "outcome_status": "WIN",
-      "classification": "REAL-WORLD OUTCOME",
-      "outcome_receipt_hash": "50197860f7b82d3b5100f6a7fdaa43f0ccd72e8dade3a1d8789219bc9863a57f"
     }
   ],
   "scores": [
@@ -855,42 +682,6 @@
       "brier_score_contribution": 0.388129,
       "classification": "REAL-WORLD SCORING",
       "score_receipt_hash": "844c1f977a8f8cf7f3c683acd1c2795c2390443f3c30173abf4c68f9f55e9ea4"
-    },
-    {
-      "score_id": "score_pred_parlay_leg_1_824911",
-      "prediction_id": "pred_parlay_leg_1_824911",
-      "prediction_hash": "0415615ec7996aec2429bf8a5fb50e19c71a00d1172262fa71ae233d88bf2c1c",
-      "outcome_id": "out_pred_parlay_leg_1_824911",
-      "score_timestamp_utc": "2026-08-31T22:00:28.986868+00:00",
-      "model_predicted_probability": 0.58,
-      "outcome_status": "WIN",
-      "brier_score_contribution": 0.17640000000000003,
-      "classification": "REAL-WORLD SCORING",
-      "score_receipt_hash": "2a90fc84b562993589dda187d9277318c72b4f4f7c1baefb5cf1655c77e7b109"
-    },
-    {
-      "score_id": "score_pred_parlay_leg_2_824911",
-      "prediction_id": "pred_parlay_leg_2_824911",
-      "prediction_hash": "a4e87853d8d1c4e0b25e9e6afa25c69dc577d91bb0071ee5a82464883e88188c",
-      "outcome_id": "out_pred_parlay_leg_2_824911",
-      "score_timestamp_utc": "2026-08-31T22:00:28.986868+00:00",
-      "model_predicted_probability": 0.65,
-      "outcome_status": "WIN",
-      "brier_score_contribution": 0.12249999999999998,
-      "classification": "REAL-WORLD SCORING",
-      "score_receipt_hash": "b2a687a97847305add9b00f7da9142aeb7e13866960e4e2e0b752f6f652c24c4"
-    },
-    {
-      "score_id": "score_pred_parlay_parent_824911",
-      "prediction_id": "pred_parlay_parent_824911",
-      "prediction_hash": "0c43525f720edbd2c149aa1e18466055c67e284f33f4eb97cb719268862a5d13",
-      "outcome_id": "out_pred_parlay_parent_824911",
-      "score_timestamp_utc": "2026-08-31T22:00:28.986868+00:00",
-      "model_predicted_probability": 0.377,
-      "outcome_status": "WIN",
-      "brier_score_contribution": 0.388129,
-      "classification": "REAL-WORLD SCORING",
-      "score_receipt_hash": "253a65fdf2c18598ac484ee8a6dc7cb24e589e4e47b8ef85845e1b8c25298d8b"
     }
   ],
   "learnings": [
@@ -1036,45 +827,6 @@
       "lesson_recorded": "Prediction outcome verified successfully against public scoreboard.",
       "classification": "REAL-WORLD LEARNING",
       "learning_receipt_hash": "4327e572b2b4ce5d9e725bf901cc9826061ba4e951f134e236a1b53714d3d3d5"
-    },
-    {
-      "learning_id": "learn_pred_parlay_leg_1_824911",
-      "prediction_id": "pred_parlay_leg_1_824911",
-      "prediction_hash": "0415615ec7996aec2429bf8a5fb50e19c71a00d1172262fa71ae233d88bf2c1c",
-      "outcome_id": "out_pred_parlay_leg_1_824911",
-      "score_id": "score_pred_parlay_leg_1_824911",
-      "learning_timestamp_utc": "2026-08-31T22:00:28.986868+00:00",
-      "failure_classification": null,
-      "model_assumption_broken": null,
-      "lesson_recorded": "Prediction outcome verified successfully against public scoreboard.",
-      "classification": "REAL-WORLD LEARNING",
-      "learning_receipt_hash": "f6d756d6f2c390ab8d4f4156184a3e66fac71f7e74dfed235dacd4f5bd6942d3"
-    },
-    {
-      "learning_id": "learn_pred_parlay_leg_2_824911",
-      "prediction_id": "pred_parlay_leg_2_824911",
-      "prediction_hash": "a4e87853d8d1c4e0b25e9e6afa25c69dc577d91bb0071ee5a82464883e88188c",
-      "outcome_id": "out_pred_parlay_leg_2_824911",
-      "score_id": "score_pred_parlay_leg_2_824911",
-      "learning_timestamp_utc": "2026-08-31T22:00:28.986868+00:00",
-      "failure_classification": null,
-      "model_assumption_broken": null,
-      "lesson_recorded": "Prediction outcome verified successfully against public scoreboard.",
-      "classification": "REAL-WORLD LEARNING",
-      "learning_receipt_hash": "1d472b624e747e05ac65fe160660ee6905f552ae7a4b2c996ed58102cbcaed6b"
-    },
-    {
-      "learning_id": "learn_pred_parlay_parent_824911",
-      "prediction_id": "pred_parlay_parent_824911",
-      "prediction_hash": "0c43525f720edbd2c149aa1e18466055c67e284f33f4eb97cb719268862a5d13",
-      "outcome_id": "out_pred_parlay_parent_824911",
-      "score_id": "score_pred_parlay_parent_824911",
-      "learning_timestamp_utc": "2026-08-31T22:00:28.986868+00:00",
-      "failure_classification": null,
-      "model_assumption_broken": null,
-      "lesson_recorded": "Prediction outcome verified successfully against public scoreboard.",
-      "classification": "REAL-WORLD LEARNING",
-      "learning_receipt_hash": "d881ef40eb01bd0d64016ec637c420398dca6d812d6237792f6b6f2701c4502c"
     }
   ]
 }

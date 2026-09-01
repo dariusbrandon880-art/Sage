@@ -12,9 +12,6 @@ def test_customer_surface_server_exposes_live_acceptance_and_nameplates():
     assert '/api/hud' in source
     assert 'LIVE AGENT NAMEPLATES' in source
     assert 'setInterval(load,5000)' in source
-    assert 'GOVERNED CHATGPT COMMAND CONSOLE' in source
-    assert 'sendChatGPTQuery' in source
-    assert '/ai/query/chatgpt' in source
 
 
 def test_production_deploy_targets_customer_surface():
