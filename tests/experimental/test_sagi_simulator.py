@@ -25,6 +25,8 @@ def test_sagi_identity_anchor_is_immutable():
     state = SAGIState.initialize_genesis()
     with pytest.raises((TypeError, ValueError)):
         state.identity_anchor.initial_sha256 = "b" * 64
+    with pytest.raises(AttributeError):
+        state.identity_anchor.core_rules.append("UNAUTHORIZED_RULE")
 
 
 def test_sagi_state_hash_covers_failure_memory_contents():
