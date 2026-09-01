@@ -8,11 +8,13 @@ import hashlib
 import json
 import time
 from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class IdentityAnchor(BaseModel):
     """Immutable I(t0) identity anchor for SAGI governance."""
+    model_config = ConfigDict(frozen=True)
+
     initial_sha256: str
     genesis_timestamp: float = Field(default_factory=time.time)
     governance_version: str = "SAGI-v1.0.0"
@@ -50,11 +52,15 @@ class SAGIState(BaseModel):
             "temperature": round(self.temperature, 4),
             "mutation_radius": round(self.mutation_radius, 4),
             "active_hypotheses": self.active_hypotheses,
-            "failure_memory_count": len(self.failure_memory),
-            "identity_anchor": self.identity_anchor.initial_sha256
+            "failure_memory": self.failure_memory,
+            "identity_anchor": self.identity_anchor.model_dump(mode="json")
         }
         serialized = json.dumps(payload, sort_keys=True, separators=(",", ":"))
         return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+    def verify_integrity(self) -> bool:
+        """Return whether the stored state hash matches the current state contents."""
+        return self.current_hash == self.compute_sha256()
 
     def update_hash(self) -> str:
         """Recalculate and update current_hash."""
