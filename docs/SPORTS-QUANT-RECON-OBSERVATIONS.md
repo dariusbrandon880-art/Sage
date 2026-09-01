@@ -259,71 +259,113 @@ Credible historical reporting describes Walters' operation as highly analytical 
 
 Across these historically different operations, the recurring capability stack is:
 
-> **DATA ACQUISITION → DATA ENGINEERING → FEATURE/FACTOR MODELING → PROBABILITY ESTIMATION → MARKET INFORMATION FUSION → TEMPORAL UPDATES → CALIBRATION / VALIDATION → MARKET-RESPONSE ANALYSIS → OUTCOME LEARNING**
+> **DATA ACQUISITION → DATA ENGINEERING → FEATURE/FACTOR MODELING → PROBABILITY ESTIMATION → MARKET FUSION → TEMPORAL UPDATE → CALIBRATION → DRIFT/ERROR → OUTCOME LEARNING**
 
-The recurring differentiator is **not one secret betting trick**. It is the construction of a research and decision system that compounds better data, better probability estimates, better market observations, and repeated validation.
-
-### Super Search corroboration
-
-- Benter's technical work explicitly combines fundamental model output with public implied probabilities and describes ongoing re-estimation.
-- Starlizard's current first-party material describes real-time data ingestion, large-scale analytics, adaptable models, continuous iteration, and high-performance distributed messaging infrastructure.
-- Voulgaris' historical account provides unusually concrete evidence that building and organizing granular event data was itself a major engineering project.
-- Academic work reinforces the importance of calibration over raw accuracy for probabilistic sports models, and newer work shows market-price calibration varies with time-to-expiry and product type.
-- Research on information release shows that new information can improve line accuracy and reduce line movement as market/oddsmaker forecasts converge; separate research finds information shocks can produce lagged market reactions.
-- Current research on in-play forecasting shows that calibrating interpretable models to market prices can materially improve predictive accuracy, reinforcing the value of treating market state as an explicit model input rather than an afterthought.
-
-### New falsifiable research dimensions
-
-1. **Model–market fusion value** — compare independent-model probability, market probability, and fused probability under strict temporal/OOS evaluation.
-2. **Factor provenance** — record each feature/factor, source timestamp, transformation, model version, and contribution so model evolution is auditable.
-3. **Data-granularity effect** — test whether play/event-level data materially improves calibration versus coarse game-level aggregates.
-4. **Continuous re-estimation value** — measure whether scheduled/adaptive model updates improve future calibration without leakage or overreaction to noise.
-5. **Market-response decomposition** — separate genuine information shocks from ordinary price noise and market-following behavior.
-6. **Market-calibration transfer** — test whether calibrating a sports model to market prices improves OOS performance across leagues/markets or merely transfers market bias.
-7. **Non-stationarity / drift** — detect changes by sport, league, market, season phase, and product type; trigger bounded recalibration only when evidence supports it.
-8. **Execution-economics isolation** — keep rebates, liquidity, limits, slippage, and execution mechanics analytically separate from predictive edge so research conclusions are not contaminated.
-9. **Infrastructure scalability** — test ingestion, normalization, timestamp alignment, lineage, and evaluation at increasing observation volume before claiming capability from model complexity alone.
-10. **Independent verification fabric** — preserve external benchmark claims as evidence objects with methodology, cohort, denominator, timestamp, and reproducibility status.
+This is a stronger architectural signal than any individual bettor's “strategy.”
 
 ### SAGE gap identified
 
-Observations 002 and 003 identified temporal market state and the Model–Market–Outcome Evaluation Fabric. Observation 004 reveals the deeper missing substrate beneath both:
-
-> **Governed Sports Research Data Fabric**
-
-It should provide canonical paper-only primitives for:
-
-`source observation → normalized event/play state → timestamp → selection identity → feature/factor lineage → model/version → probability → market snapshot → market reference set → calibration → drift state → information shock → close → outcome → OOS evaluation → evidence`
-
-The architecture should support both pregame and live research without collapsing live transitions into static snapshots.
+The next missing layer is a governed **Sports Research Data Fabric** capable of preserving raw observations, normalized event/play state, timestamp alignment, feature/factor lineage, model/version lineage, probability snapshots, market snapshots, calibration, drift/error, information shocks, outcomes, and OOS evidence.
 
 ### SAGE action
 
-**Do not copy historical bettor tactics, staking systems, bankroll rules, rebates, market manipulation, or wagering execution.** Extract only the engineering/research primitives that can be tested safely:
-
-- deep historical data;
-- event-level normalization;
-- factor/feature provenance;
-- model-market fusion;
-- probability calibration;
-- temporal validation;
-- continuous but bounded model improvement;
-- drift detection;
-- market-response analysis;
-- independent verification;
-- scalable data/lineage infrastructure.
-
-This observation **does not replace the existing frontier**. It identifies the substrate required to make the Temporal Market-State Layer and Model–Market–Outcome Evaluation Fabric genuinely compoundable.
+Historical bettors are treated as **architecture-recon subjects**, not strategy authorities. Their proprietary tactics, execution methods, market manipulation, bankroll/rebate optimization, and wagering instructions are not promoted into SAGE.
 
 ### Boundary
 
-`wagering_executed = False` remains mandatory. No betting, staking, bankroll optimization, rebate exploitation, market manipulation, or wager execution is authorized.
+`wagering_executed = False` remains mandatory.
 
 ### Evidence status
 
 - Historical architecture signals: **observed**
-- Cross-source corroboration: **strong**
-- Proprietary tactics/methods: **not treated as canonical**
-- Reusable research primitives: **high-value candidate**
+- Cross-source recurrence: **strong**
+- Proprietary methods: **unknown/unvalidated**
+- Reusable architecture primitives: **high-value candidate**
 - Canonical strategy promotion: **not authorized**
-- Next step: **inventory the current SAGE sports-quant data/model/evaluation substrate against this fabric and identify the highest-leverage capability gap before another build wave**
+- Next step: **design the Sports Research Data Fabric and validate its temporal/model/market/outcome lineage**
+
+## Observation 005 — Odds literacy + line-movement education: turn the visible market board into measurable state
+
+**Observed sources:** Mission Director supplied four educational/search surfaces: 2eZ Sports Betting “How to Read Sports Odds & Line Movement,” Caan Berry Pro Trader “How Betting Odds Work in 8 Minutes,” Hard Rock Bet “How To Understand Odds,” FanDuel “Understanding How Odds Work at FanDuel Sportsbook,” plus Sportsbook Review and Oddschecker odds/line-movement surfaces.
+
+**Observation date:** 2026-09-01
+
+**Source class:** Educational/commercial external recon. **Non-canonical.**
+
+### What the supplied material actually adds
+
+The 2eZ video explicitly teaches reading odds charts, line movement, sharp-vs-public shifts, and real-time market changes. Search metadata confirms those are the video's stated topics, but C2 did **not** claim to have watched the full 24:49 video from metadata alone. citeturn1youtube26
+
+FanDuel's official odds explainer establishes the underlying display semantics: negative odds represent the amount needed to win $100, positive odds represent the profit on a $100 stake, and the sign conveys an implied-likelihood relationship rather than a guarantee. citeturn0search0turn0youtube54
+
+Oddschecker currently exposes real-time cross-book moneyline, spread, and total prices and explicitly compares independent sportsbook prices side-by-side. Its NFL pages also describe line movement from opening through closing and distinguish market movement associated with injuries/weather/financial action. These commercial explanations are hypotheses about causes, not proof that a particular movement is “sharp money.” citeturn1search0turn1search1
+
+### Super Search — deeper research signal
+
+The research layer is materially stronger than beginner education alone:
+
+1. **Odds are not probabilities by default.** A quoted price contains margin and may exhibit calibration bias. A 2026 study using 90,014 football matches across five bookmakers proposes an odds-only conversion method because existing conversion methods can misrepresent bookmaker pricing objectives and biases. citeturn0academia58
+2. **Calibration is temporal.** A 2026 study using 23 million sports event-contract trades found calibration changes with time-to-expiry and becomes sharply distorted near settlement. It also found systematic cross-game parlay overpricing increasing with leg count. citeturn0academia56
+3. **Line movement is measurable rather than mystical.** A newly published open dataset contains 11.7 million odds snapshots from 52 bookmakers across 13+ sports and explicitly measures open-to-close de-vig probability movement and distance-to-close by time-to-start. citeturn0search8turn0search14
+4. **Movement can show serial structure.** A 2025 study of NFL/NBA/NHL moneyline movement from opening to closing found significant negative autocorrelation across all three sports, consistent with broad overreaction characteristics. This is evidence for a research hypothesis, not a universal exploitable rule. citeturn0search5
+5. **Information shocks have measurable lag/response structure.** A 2025 Economic Inquiry study analyzed 117,174 odds from 32 bookmakers around elite-player absence announcements and found initial inertia followed by lagged price reaction. citeturn0search2
+6. **High-frequency state matters.** Research using second-by-second in-play football prices and volumes demonstrates why price *and quantity* should be joined when studying market reaction to breaking events. citeturn0search11
+7. **Markets do not necessarily anticipate major events.** A 1-Hz Bundesliga study found neither bookmakers nor bettors significantly anticipated first goals immediately before they occurred. This is a useful negative result against naive “the market knows before the event” assumptions. citeturn0academia57
+8. **Market calibration can itself be a model feature.** A 2026 in-play football paper found calibrating model parameters to pre-match exchange prices was the dominant driver of predictive accuracy in its tested models. This is highly relevant to SAGE as a model-market fusion hypothesis, but its betting simulation result is not a target capability for SAGE. citeturn0academia55
+9. **Anchoring is another measurable market-state variable.** A 2025 NFL study found preseason Super Bowl odds continued to influence bettor behavior and sportsbook closing lines weeks into the season. citeturn0search1turn0search3
+
+### C2 interpretation
+
+The beginner videos are therefore useful primarily as **schema reconnaissance**: they reveal the vocabulary and visual state that a human market observer sees — odds format, price direction, line movement, public/sharp labels, opening/closing state, and live updates.
+
+SAGE should translate that visible vocabulary into **machine-auditable state**, not into betting advice.
+
+The new canonical research primitive candidate is:
+
+> **Market State = timestamped price + normalized probability + margin/vig estimate + market/selection identity + source/book + cross-book state + time-to-event + movement trajectory + information context + eventual close/outcome.**
+
+### New falsifiable research dimensions
+
+1. **Odds-format normalization** — American, decimal, fractional, and probability representations must round-trip without semantic loss.
+2. **Vig/de-vig model comparison** — compare multiple probability-normalization methods by sport, market type, bookmaker, and time-to-event; do not assume one universal conversion is correct.
+3. **Open-to-close trajectory** — model the complete path, not only opening and closing values.
+4. **Distance-to-close curve** — quantify how informative an observation at T is about the eventual close, segmented by sport/market/time horizon.
+5. **Cross-book dispersion** — preserve the full contemporaneous distribution rather than only the “best price.”
+6. **Movement attribution** — distinguish observed movement from inferred cause; attach information shocks where evidence exists instead of labeling every move “sharp money.”
+7. **Autocorrelation/overreaction** — test whether movement persistence/mean reversion is stable across sport, market, season, and regime.
+8. **Anchoring** — test whether stale prior expectations continue influencing later market prices after controlling for current information.
+9. **Quantity + price fusion** — where available, join transaction volume/count with price movement to separate participation effects from pure price relocation.
+10. **Live state transitions** — preserve event-by-event/second-by-second state where available rather than reducing live markets to isolated snapshots.
+11. **Negative-signal preservation** — explicitly retain cases where apparent movement signals fail, including the Bundesliga pre-goal anticipation result.
+12. **Market-calibrated model fusion** — compare model performance with and without market-state calibration to determine whether the market contributes independent predictive information or merely tracks it.
+
+### SAGE gap identified
+
+Observation 004 proposed the **Sports Research Data Fabric**. Observation 005 makes its minimum market-state schema more concrete:
+
+`event_id + selection_id + market_type + source/book + observed_at + event_start + raw_odds + normalized_probability + vig_estimate + cross_book_snapshot + movement_path + time_to_event + information_context + close_state + outcome`
+
+That schema should be immutable at observation time and append-only across updates. Derived values must retain method/version lineage so SAGE can reproduce why a probability or edge was calculated.
+
+### SAGE action
+
+**Do not promote “sharp money,” “reverse line movement,” “best odds,” or “CLV = guaranteed predictive skill” as rules.** They are research labels/hypotheses requiring empirical validation.
+
+Promote the underlying **market-observation primitives** into the Sports Research Data Fabric and Model–Market–Outcome Evaluation Fabric.
+
+The next engineering target is therefore not an odds tutorial or betting recommendation engine. It is a **reproducible Market-State Capture + Normalization + Trajectory layer** that feeds paper-only evaluation.
+
+### Boundary
+
+`wagering_executed = False` remains mandatory. No wagering, staking, bankroll optimization, or execution is authorized by this observation.
+
+### Evidence status
+
+- Educational market vocabulary: **observed**
+- Odds/line semantics: **corroborated**
+- Temporal calibration effects: **strong external research signal**
+- Open line-movement dataset: **available external research signal**
+- “Sharp money” causal interpretation: **unvalidated**
+- Market-state schema: **high-value architecture candidate**
+- Canonical strategy promotion: **not authorized**
+- Next step: **implement paper-only market-state capture/normalization/trajectory primitives and validate against exact timestamped observations**
