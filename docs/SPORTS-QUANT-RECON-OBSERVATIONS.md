@@ -145,12 +145,12 @@ This observation strengthens the existing **Selection-level parlay/SGP research 
 
 The supplied source identifies Dimers as a sports analytics platform under Cipher Sports Technology Group, combining predictive analytics, machine learning, odds comparison, news/content, and B2B analytics. Current first-party reconnaissance adds several concrete architecture signals:
 
-- Dimers says its DimersBOT runs at least **10,000 Monte Carlo simulations per event** for NBA, NFL, MLB, and NHL, using rosters, form, previous matchups, weather, and other matchup inputs. citeturn0search0turn0search9
-- Dimers says its models calculate probabilities, compare them with sportsbook-implied probabilities, and surface measurable **edge** signals. Its current Best Bets surface is updated as markets move and exposes probability, edge, and best available price across operators. citeturn0search8turn0search4
-- Dimers says its models incorporate real-time betting-market movement and update throughout the week as new information arrives. citeturn0search4
-- Dimers also exposes a distinct **live/in-play probability** product where the model simulates the remainder of a game and updates after every play using current game state and comparable team/player situations. citeturn0search11
-- Dimers' more advanced Platinum product describes a reinforcement-learning architecture trained on outcomes/profit and loss rather than statistical accuracy alone. This is a vendor claim, not independently validated by C2. citeturn0search5turn0search10
-- Dimers also reports independent Pickwatch verification for some historical football-model performance. That claim should be treated as externally asserted evidence requiring direct dataset/methodology inspection before canonical promotion. citeturn0search2
+- Dimers says its DimersBOT runs at least **10,000 Monte Carlo simulations per event** for NBA, NFL, MLB, and NHL, using rosters, form, previous matchups, weather, and other matchup inputs.
+- Dimers says its models calculate probabilities, compare them with sportsbook-implied probabilities, and surface measurable **edge** signals. Its current Best Bets surface is updated as markets move and exposes probability, edge, and best available price across operators.
+- Dimers says its models incorporate real-time betting-market movement and update throughout the week as new information arrives.
+- Dimers also exposes a distinct **live/in-play probability** product where the model simulates the remainder of a game and updates after every play using current game state and comparable team/player situations.
+- Dimers' more advanced Platinum product describes a reinforcement-learning architecture trained on outcomes/profit and loss rather than statistical accuracy alone. This is a vendor claim, not independently validated by C2.
+- Dimers also reports independent Pickwatch verification for some historical football-model performance. That claim should be treated as externally asserted evidence requiring direct dataset/methodology inspection before canonical promotion.
 
 ### C2 interpretation
 
@@ -212,3 +212,118 @@ This observation therefore **extends Observation 002 rather than replacing it**.
 - Reusable architecture primitives: **high-value candidate**
 - Canonical strategy promotion: **not authorized**
 - Next step: **design/implement a paper-only Model–Market–Outcome Evaluation Fabric against exact selection identity and timestamped observations, then validate OOS**
+
+## Observation 004 — Quantitative bettor history: the real reusable signal is research-system architecture
+
+**Observed source:** Mission Director supplied a search result asking for historically notable sports bettors, including Billy Walters, Bill Benter, Zeljko Ranogajec, Tony Bloom, and Haralabos Voulgaris. C2 then performed independent Super Search across primary/credible reporting, first-party Starlizard material, academic research, and historical technical material.
+
+**Observation date:** 2026-09-01
+
+**Source class:** Historical/academic/commercial recon. **Non-canonical.**
+
+### Raw observations
+
+The names are not being treated as authorities to imitate. The useful signal is the recurring **system architecture** visible across independent accounts:
+
+#### Bill Benter — model + market fusion + continuous re-estimation
+
+Benter's published technical report describes a computerized horse-racing system combining a fundamental handicapping model with public implied probabilities through a logit-based technique. The report describes substantial database/model-development effort, continuing model improvement, and regular re-estimation as new data accumulated. Independent academic history also describes Benter's use of large factor models and market odds as either a comparison target or an input variable.
+
+**Reusable SAGE signal:** the market is not merely an opponent or display; it can be a measurable information source whose relationship to an independent model must itself be learned and evaluated.
+
+#### Tony Bloom / Starlizard — heterogeneous data + weighting + constant iteration + high-performance infrastructure
+
+Starlizard's current first-party description says it consumes information on every aspect of sporting fixtures, analyzes huge volumes of data in real time, produces agile/adaptable models, and continuously iterates them. Historical reporting on Starlizard describes separate research/data and quantitative teams, complex statistical models that weight many inputs, and frequent model updates. The exact proprietary methodology is not public.
+
+**Reusable SAGE signal:** high-quality sports intelligence requires a governed data layer, explicit feature/weight provenance, continuous model iteration, and infrastructure capable of processing event-scale data in real time.
+
+#### Haralabos Voulgaris — deep event-level database + data engineering as capability
+
+Historical interviews describe Voulgaris maintaining a database containing every play from five years of NBA games and spending months engineering the collection/organization so the data became useful for prediction. The important lesson is not his reported betting success; it is that **data acquisition, normalization, and queryable event history were themselves a major capability investment**.
+
+**Reusable SAGE signal:** sports prediction quality is bounded by the quality, granularity, temporal alignment, and engineering of the underlying event data—not merely by model sophistication.
+
+#### Zeljko Ranogajec — economics/operational layer is separate from predictive layer
+
+Historical reporting describes a high-volume quantitative operation built around liquidity, small margins, sophisticated systems, diversification, and negotiated rebates. Rebate economics materially change the economics of a high-volume operation, but they are not a predictive-model capability and are not appropriate to promote into SAGE's paper-only research engine.
+
+**Reusable SAGE signal:** keep **predictive quality**, **market economics**, and **execution economics** as separate analytical layers. Do not let a commercial/rebate mechanism masquerade as model accuracy or predictive edge.
+
+#### Billy Walters — line discrepancy + information/network + market response
+
+Credible historical reporting describes Walters' operation as highly analytical and technically capable, with systematic attention to discrepancies between internal lines and bookmaker lines. Reporting also describes deliberate market-moving activity and distribution/network infrastructure. These execution/manipulation tactics are explicitly excluded from SAGE. The reusable research signal is the distinction between an independent fair-line estimate and an observed market line, plus the need to model how market prices react to information and participation.
+
+**Reusable SAGE signal:** maintain a clean separation between **prediction**, **market observation**, **market response**, and **execution**. SAGE studies the first three; wagering/execution remains disabled.
+
+### Cross-source synthesis
+
+Across these historically different operations, the recurring capability stack is:
+
+> **DATA ACQUISITION → DATA ENGINEERING → FEATURE/FACTOR MODELING → PROBABILITY ESTIMATION → MARKET INFORMATION FUSION → TEMPORAL UPDATES → CALIBRATION / VALIDATION → MARKET-RESPONSE ANALYSIS → OUTCOME LEARNING**
+
+The recurring differentiator is **not one secret betting trick**. It is the construction of a research and decision system that compounds better data, better probability estimates, better market observations, and repeated validation.
+
+### Super Search corroboration
+
+- Benter's technical work explicitly combines fundamental model output with public implied probabilities and describes ongoing re-estimation.
+- Starlizard's current first-party material describes real-time data ingestion, large-scale analytics, adaptable models, continuous iteration, and high-performance distributed messaging infrastructure.
+- Voulgaris' historical account provides unusually concrete evidence that building and organizing granular event data was itself a major engineering project.
+- Academic work reinforces the importance of calibration over raw accuracy for probabilistic sports models, and newer work shows market-price calibration varies with time-to-expiry and product type.
+- Research on information release shows that new information can improve line accuracy and reduce line movement as market/oddsmaker forecasts converge; separate research finds information shocks can produce lagged market reactions.
+- Current research on in-play forecasting shows that calibrating interpretable models to market prices can materially improve predictive accuracy, reinforcing the value of treating market state as an explicit model input rather than an afterthought.
+
+### New falsifiable research dimensions
+
+1. **Model–market fusion value** — compare independent-model probability, market probability, and fused probability under strict temporal/OOS evaluation.
+2. **Factor provenance** — record each feature/factor, source timestamp, transformation, model version, and contribution so model evolution is auditable.
+3. **Data-granularity effect** — test whether play/event-level data materially improves calibration versus coarse game-level aggregates.
+4. **Continuous re-estimation value** — measure whether scheduled/adaptive model updates improve future calibration without leakage or overreaction to noise.
+5. **Market-response decomposition** — separate genuine information shocks from ordinary price noise and market-following behavior.
+6. **Market-calibration transfer** — test whether calibrating a sports model to market prices improves OOS performance across leagues/markets or merely transfers market bias.
+7. **Non-stationarity / drift** — detect changes by sport, league, market, season phase, and product type; trigger bounded recalibration only when evidence supports it.
+8. **Execution-economics isolation** — keep rebates, liquidity, limits, slippage, and execution mechanics analytically separate from predictive edge so research conclusions are not contaminated.
+9. **Infrastructure scalability** — test ingestion, normalization, timestamp alignment, lineage, and evaluation at increasing observation volume before claiming capability from model complexity alone.
+10. **Independent verification fabric** — preserve external benchmark claims as evidence objects with methodology, cohort, denominator, timestamp, and reproducibility status.
+
+### SAGE gap identified
+
+Observations 002 and 003 identified temporal market state and the Model–Market–Outcome Evaluation Fabric. Observation 004 reveals the deeper missing substrate beneath both:
+
+> **Governed Sports Research Data Fabric**
+
+It should provide canonical paper-only primitives for:
+
+`source observation → normalized event/play state → timestamp → selection identity → feature/factor lineage → model/version → probability → market snapshot → market reference set → calibration → drift state → information shock → close → outcome → OOS evaluation → evidence`
+
+The architecture should support both pregame and live research without collapsing live transitions into static snapshots.
+
+### SAGE action
+
+**Do not copy historical bettor tactics, staking systems, bankroll rules, rebates, market manipulation, or wagering execution.** Extract only the engineering/research primitives that can be tested safely:
+
+- deep historical data;
+- event-level normalization;
+- factor/feature provenance;
+- model-market fusion;
+- probability calibration;
+- temporal validation;
+- continuous but bounded model improvement;
+- drift detection;
+- market-response analysis;
+- independent verification;
+- scalable data/lineage infrastructure.
+
+This observation **does not replace the existing frontier**. It identifies the substrate required to make the Temporal Market-State Layer and Model–Market–Outcome Evaluation Fabric genuinely compoundable.
+
+### Boundary
+
+`wagering_executed = False` remains mandatory. No betting, staking, bankroll optimization, rebate exploitation, market manipulation, or wager execution is authorized.
+
+### Evidence status
+
+- Historical architecture signals: **observed**
+- Cross-source corroboration: **strong**
+- Proprietary tactics/methods: **not treated as canonical**
+- Reusable research primitives: **high-value candidate**
+- Canonical strategy promotion: **not authorized**
+- Next step: **inventory the current SAGE sports-quant data/model/evaluation substrate against this fabric and identify the highest-leverage capability gap before another build wave**
