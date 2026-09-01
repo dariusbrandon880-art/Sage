@@ -107,6 +107,7 @@ def test_non_governed_role_type_fails_closed():
         original.provenance_ref,
         original.capability_surface,
     )
+    selector = SAGIDiscoveryFlightSelector()
     with pytest.raises(ValueError, match="FlightRole"):
         selector.select(tuple(candidates), frontier_digest="frontier")
 
