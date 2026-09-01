@@ -22,37 +22,23 @@ Record what is verified, what is unknown, and what requires checking. Never prom
 
 Reconcile repository truth, main/side goals, PRs, CI, active flights, evidence, acceptance state, and validated work. Do not reopen closed work without new evidence.
 
-## Flight Board
+## Flight Board — Dynamic Reusable Slots
 
-F1:
-Goal: Repository truth, architecture, runtime continuity, identity
-State: ACTIVE
-Blocker: None assumed; verify live state
-Next move: Reconcile and remove highest-value blocker
+F1-F5 are **reusable execution slots, not permanent roles**. C2 assigns each slot a concrete mission for the current wave. The assignment may change completely on the next wave.
 
-F2:
-Goal: External intelligence / Super Search
-State: ACTIVE
-Blocker: Research must remain distinct from validated truth
-Next move: Research only where it materially changes the mission
+Before execution, record:
 
-F3:
-Goal: Governed implementation
-State: ACTIVE
-Blocker: Depends on verified mission boundary and collision-free ownership
-Next move: Execute highest-leverage authorized build
+```text
+F1 -> current mission
+F2 -> current mission
+F3 -> current mission
+F4 -> current mission
+F5 -> current mission
+```
 
-F4:
-Goal: Verification and empirical acceptance
-State: ACTIVE
-Blocker: Customer/operator surface cannot be inferred from backend tests
-Next move: Capture deterministic and empirical evidence separately
+No slot may be treated as permanently Research, Continuity, Execution, Governance, Verification, Warehouse, or any other domain. Those are possible mission types only.
 
-F5:
-Goal: Capability warehouse / reusable learning
-State: ACTIVE
-Blocker: Qualification requires evidence
-Next move: Promote only validated reusable capability and negative knowledge
+The governing contract is `docs/governance/FLIGHT_ASSIGNMENT_CONTRACT.md`.
 
 ## Decision Engine
 
@@ -87,6 +73,8 @@ The doctrine operates under the standing **60% HARDEN / 40% ADVANCE** frame. A h
 - Do not claim a customer-facing surface is operational without empirical observation.
 - Do not manufacture hardening when the demonstrated seam is already closed.
 - Prefer substrate improvements that make future capabilities safer.
+- Never infer a flight's mission from its F1-F5 slot number.
+- Never convert a historical flight assignment into a permanent role.
 
 ## Super Search Rule
 
@@ -94,7 +82,7 @@ When external intelligence can materially improve the mission, run Super Search 
 
 ## Session Continuity Rule
 
-Cold/resumed sessions must rehydrate the canonical mission contract, this boot sequence, the World-Class Engine doctrine, the live repository state, active work, evidence, acceptance state, and current flight board before execution. The repository's `scripts/build_session_manifest.py` is the canonical mechanism for materializing `.sage/session_manifest.json`; manifests are SHA-bound and fail closed on drift.
+Cold/resumed sessions must rehydrate the canonical mission contract, this boot sequence, the World-Class Engine doctrine, the dynamic flight assignment contract, the live repository state, active work, evidence, acceptance state, and current flight board before execution. The repository's `scripts/build_session_manifest.py` is the canonical mechanism for materializing `.sage/session_manifest.json`; manifests are SHA-bound and fail closed on drift.
 
 ## Completion Standard
 
@@ -108,4 +96,4 @@ Mission completion additionally requires reconciliation against the canonical SA
 
 ## Runtime Rule
 
-This document is the operational bootstrap companion to `docs/governance/SAGE_CANONICAL_MISSION_CONTINUITY_CONTRACT.md` and the World-Class Engine doctrine. Any SAGE execution surface must rehydrate the canonical contract, the doctrine, and this boot sequence before operational execution.
+This document is the operational bootstrap companion to `docs/governance/SAGE_CANONICAL_MISSION_CONTINUITY_CONTRACT.md` and the World-Class Engine doctrine. Any SAGE execution surface must rehydrate the canonical contract, the doctrine, the dynamic flight assignment contract, and this boot sequence before operational execution.
