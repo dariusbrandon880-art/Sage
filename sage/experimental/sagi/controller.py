@@ -4,6 +4,7 @@ Regulates bounded evolution across candidate generation, verification,
 temperature adaptation, failure learning metrics, and fresh receipt emission.
 """
 
+import copy
 import hashlib
 import json
 import time
@@ -104,66 +105,103 @@ class SAGIEvolutionController:
             "failure_memory_size": float(len(self.generator.failure_memory))
         }
 
+    def _snapshot_transition_state(self) -> Dict[str, Any]:
+        """Capture all mutable controller state needed for atomic rollback."""
+        return {
+            "state": copy.deepcopy(self.state),
+            "failure_memory": copy.deepcopy(self.generator.failure_memory),
+            "receipt_history": copy.deepcopy(self.receipt_history),
+            "successful_cycles": self.successful_cycles,
+            "failed_cycles": self.failed_cycles,
+        }
+
+    def _restore_transition_state(self, snapshot: Dict[str, Any]) -> None:
+        """Restore the exact pre-transition controller state after an exception."""
+        self.state = snapshot["state"]
+        self.generator.failure_memory = snapshot["failure_memory"]
+        self.receipt_history = snapshot["receipt_history"]
+        self.successful_cycles = snapshot["successful_cycles"]
+        self.failed_cycles = snapshot["failed_cycles"]
+
+    def _assert_transition_integrity(self, parent_hash: str) -> None:
+        """Fail closed if the completed transition does not preserve Ω integrity."""
+        if not self.state.verify_integrity():
+            raise RuntimeError("SAGI transition produced invalid Ω-state integrity")
+        if not parent_hash or len(parent_hash) != 64:
+            raise RuntimeError("SAGI transition parent hash is invalid")
+        if len(self.state.current_hash) != 64:
+            raise RuntimeError("SAGI transition next hash is invalid")
+
     def execute_evolution_cycle(
         self,
         persona_label: str = "sagi_core_agent",
         tier3_metadata: Optional[Dict[str, Any]] = None,
         force_fail_closed: bool = False
     ) -> SAGIEvolutionReceipt:
-        """Execute one bounded evolution cycle: Generate -> Verify -> Adapt -> Receipt."""
+        """Execute one atomic bounded evolution cycle with automatic rollback on error."""
+        snapshot = self._snapshot_transition_state()
         temp_before = self.state.temperature
         parent_hash = self.state.current_hash
 
-        candidate = self.generator.generate_candidate(
-            current_state=self.state,
-            proposal_id_prefix=f"sagi_cycle_{self.state.cycle_index}",
-            persona_label=persona_label,
-            tier3_metadata=tier3_metadata
-        )
+        try:
+            candidate = self.generator.generate_candidate(
+                current_state=self.state,
+                proposal_id_prefix=f"sagi_cycle_{self.state.cycle_index}",
+                persona_label=persona_label,
+                tier3_metadata=tier3_metadata
+            )
 
-        if force_fail_closed:
-            candidate.mutation_delta["parameter_shift"] = 999.0
+            if force_fail_closed:
+                candidate.mutation_delta["parameter_shift"] = 999.0
 
-        v_result = self.verifier.verify_proposal(self.state, candidate)
+            v_result = self.verifier.verify_proposal(self.state, candidate)
 
-        if v_result.is_valid:
-            self.successful_cycles += 1
-            self.state.temperature = max(0.05, round(self.state.temperature * 0.95, 4))
-            self.state.cycle_index += 1
-            self.state.active_hypotheses.append({
-                "proposal_id": candidate.proposal_id,
-                "mutation_delta": candidate.mutation_delta,
-                "accepted_at_cycle": self.state.cycle_index
-            })
-            self.state.update_hash()
-        else:
-            self.failed_cycles += 1
-            self.generator.record_failure(candidate, v_result.decision_reasoning)
-            self.state.failure_memory.append({
-                "proposal_id": candidate.proposal_id,
-                "reason": v_result.decision_reasoning
-            })
-            self.state.temperature = min(1.8, round(self.state.temperature * 1.05, 4))
-            self.state.update_hash()
+            if v_result.is_valid:
+                self.successful_cycles += 1
+                self.state.temperature = max(0.05, round(self.state.temperature * 0.95, 4))
+                self.state.cycle_index += 1
+                self.state.active_hypotheses.append({
+                    "proposal_id": candidate.proposal_id,
+                    "mutation_delta": candidate.mutation_delta,
+                    "accepted_at_cycle": self.state.cycle_index
+                })
+                self.state.update_hash()
+            else:
+                self.failed_cycles += 1
+                self.generator.record_failure(candidate, v_result.decision_reasoning)
+                self.state.failure_memory.append({
+                    "proposal_id": candidate.proposal_id,
+                    "reason": v_result.decision_reasoning
+                })
+                self.state.temperature = min(1.8, round(self.state.temperature * 1.05, 4))
+                self.state.update_hash()
 
-        learning_metrics = self.compute_learning_metrics()
-        receipt = SAGIEvolutionReceipt(
-            receipt_id=f"rcpt_sagi_{self.state.cycle_index}_{len(self.receipt_history)+1}",
-            cycle_index=self.state.cycle_index,
-            parent_state_hash=parent_hash,
-            next_state_hash=self.state.current_hash,
-            proposal_id=candidate.proposal_id,
-            proposal_hash=candidate.proposal_hash,
-            verification_status=v_result.status,
-            decision_reasoning=v_result.decision_reasoning,
-            temperature_before=temp_before,
-            temperature_after=self.state.temperature,
-            mutation_radius=self.state.mutation_radius,
-            crpl_f1_passed=v_result.crpl_f1_passed,
-            crpl_f2_passed=v_result.crpl_f2_passed,
-            failure_memory_count=len(self.generator.failure_memory),
-            learning_metrics=learning_metrics
-        )
+            self._assert_transition_integrity(parent_hash)
 
-        self.receipt_history.append(receipt)
-        return receipt
+            learning_metrics = self.compute_learning_metrics()
+            receipt = SAGIEvolutionReceipt(
+                receipt_id=f"rcpt_sagi_{self.state.cycle_index}_{len(self.receipt_history)+1}",
+                cycle_index=self.state.cycle_index,
+                parent_state_hash=parent_hash,
+                next_state_hash=self.state.current_hash,
+                proposal_id=candidate.proposal_id,
+                proposal_hash=candidate.proposal_hash,
+                verification_status=v_result.status,
+                decision_reasoning=v_result.decision_reasoning,
+                temperature_before=temp_before,
+                temperature_after=self.state.temperature,
+                mutation_radius=self.state.mutation_radius,
+                crpl_f1_passed=v_result.crpl_f1_passed,
+                crpl_f2_passed=v_result.crpl_f2_passed,
+                failure_memory_count=len(self.generator.failure_memory),
+                learning_metrics=learning_metrics
+            )
+
+            if not receipt.verify_integrity():
+                raise RuntimeError("SAGI evolution receipt integrity verification failed")
+
+            self.receipt_history.append(receipt)
+            return receipt
+        except Exception:
+            self._restore_transition_state(snapshot)
+            raise
