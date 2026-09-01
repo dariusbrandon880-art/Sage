@@ -15,7 +15,7 @@ jobs:
     name: C2 promotion boundary invariant
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Verify repository-native promotion controls
         env:

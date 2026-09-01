@@ -144,24 +144,6 @@ def test_sagi_evolution_controller_and_receipts():
     assert metrics["failure_memory_size"] == 1.0
 
 
-def test_sagi_controller_atomic_rollback_on_failure():
-    """Verify that state integrity failure triggers atomic rollback to pre-execution state."""
-    controller = SAGIEvolutionController()
-    initial_hash = controller.state.current_hash
-    clean_snapshot = controller.state.model_copy(deep=True)
-
-    # Tamper with state hash prior to cycle execution
-    controller.state.current_hash = "f" * 64
-
-    with pytest.raises(ValueError, match="Pre-execution SAGIState integrity failure"):
-        controller.execute_evolution_cycle()
-
-    # Rollback to pre-tampered snapshot restores clean state
-    controller.rollback_to_snapshot(clean_snapshot)
-    assert controller.state.current_hash == initial_hash
-    assert controller.state.verify_integrity() is True
-
-
 def test_sagi_failure_memory_non_repetition():
     """Verify failure memory records rejected proposals and prevents exact repeat mutations."""
     state = SAGIState.initialize_genesis()

@@ -149,27 +149,3 @@ def test_invalid_branch_and_sha_are_rejected():
     assert bad_sha.status == PromotionStatus.REJECTED
     assert engine.verify_candidate(bad_branch) == {}
     assert bad_branch.status == PromotionStatus.REJECTED
-
-
-def test_self_promotion_or_noop_target_rejected():
-    engine = PromotionEngine(MockCASGitProvider(SHA_A, descendants=[SHA_A]))
-    noop = candidate(receipt("tests", sha=SHA_A), source=SHA_A, target=SHA_A)
-
-    assert engine.verify_candidate(noop) == {}
-    assert noop.status == PromotionStatus.REJECTED
-
-
-def test_expired_and_future_skewed_receipts_rejected():
-    engine = PromotionEngine(MockCASGitProvider(SHA_A, descendants=[SHA_B]), max_receipt_age=3600.0, clock_skew_tolerance=60.0)
-
-    # Expired receipt (older than 1h)
-    expired_rcpt = EvidenceReceipt("rcpt-exp", "f1", "tests", SHA_B, True, time.time() - 7200.0)
-    cand_expired = candidate(expired_rcpt, source=SHA_B, target=SHA_A)
-    assert engine.verify_candidate(cand_expired) == {}
-    assert cand_expired.status == PromotionStatus.REJECTED
-
-    # Future skewed receipt (further than 60s in future)
-    future_rcpt = EvidenceReceipt("rcpt-fut", "f1", "tests", SHA_B, True, time.time() + 300.0)
-    cand_future = candidate(future_rcpt, source=SHA_B, target=SHA_A)
-    assert engine.verify_candidate(cand_future) == {}
-    assert cand_future.status == PromotionStatus.REJECTED

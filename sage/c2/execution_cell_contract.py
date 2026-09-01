@@ -64,6 +64,12 @@ class MissionPackage(BaseModel):
         payload = self.model_dump(exclude={"signature"}, mode="json")
         return payload
 
+    def compute_package_hash(self) -> str:
+        """Compute cryptographic SHA-256 hash over canonical mission payload."""
+        import json
+        serialized = json.dumps(self.canonical_payload(), sort_keys=True, separators=(",", ":"))
+        return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
     def sign(self, secret: bytes) -> str:
         body = self.model_dump_json(exclude={"signature"}).encode("utf-8")
         return hmac.new(secret, body, hashlib.sha256).hexdigest()
@@ -100,6 +106,8 @@ class ExecutionAttestation(BaseModel):
     collision_detected: bool
     wagering_executed: bool = False
     stderr_digest: Optional[str] = None
+    mission_package_hash: Optional[str] = None
+    attestation_digest: Optional[str] = None
 
     @field_validator("executed_head_sha", "produced_head_sha")
     @classmethod
@@ -121,6 +129,45 @@ class ExecutionAttestation(BaseModel):
         if value:
             raise ValueError("EXECUTION_CELL_SHADOW_BOUNDARY_VIOLATION")
         return value
+
+    def compute_digest(self) -> str:
+        """Compute cryptographic SHA-256 digest over complete execution attestation payload."""
+        import json
+        payload = {
+            "contract_version": self.contract_version,
+            "mission_id": self.mission_id,
+            "substrate": self.substrate,
+            "status": self.status,
+            "exit_code": self.exit_code,
+            "executed_head_sha": self.executed_head_sha,
+            "produced_head_sha": self.produced_head_sha,
+            "receipt_path": self.receipt_path,
+            "exact_head_verified": self.exact_head_verified,
+            "test_pass_rate": self.test_pass_rate,
+            "collision_detected": self.collision_detected,
+            "mission_package_hash": self.mission_package_hash or "",
+        }
+        serialized = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+        return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+    def verify_integrity(self) -> bool:
+        """Return True if stored attestation_digest matches current computed digest."""
+        if not self.attestation_digest:
+            return False
+        return self.attestation_digest == self.compute_digest()
+
+    def verify_mission_binding(self, mission: MissionPackage) -> bool:
+        """Verify attestation is bound to exact authorized mission package, ID, and head SHA."""
+        if not mission or not self.acceptance_eligible():
+            return False
+        if self.mission_id != mission.mission_id:
+            return False
+        if self.executed_head_sha != mission.canonical_head_sha:
+            return False
+        if self.mission_package_hash:
+            if self.mission_package_hash != mission.compute_package_hash():
+                return False
+        return True
 
     def acceptance_eligible(self) -> bool:
         """Return true only when the attestation itself satisfies hard gates."""

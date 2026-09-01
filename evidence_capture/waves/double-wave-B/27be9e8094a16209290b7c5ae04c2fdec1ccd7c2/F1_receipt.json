@@ -1,10 +1,10 @@
 {
   "blocker": null,
-  "executed_head": "172c3227a791dfb6b3da9db4e64ea779c19d16f5",
+  "executed_head": "27be9e8094a16209290b7c5ae04c2fdec1ccd7c2",
   "flight_id": "F1",
   "frontier_name": "B-1-organism_jigsaw",
   "status": "PASS",
   "target_path": "sage/c2/organism_jigsaw.py",
-  "timestamp": 1788241342.1588953,
+  "timestamp": 1788247372.363758,
   "wave_id": "double-wave-B"
 }

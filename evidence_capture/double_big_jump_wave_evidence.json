@@ -1,17 +1,17 @@
 {
-  "anchored_head": "172c3227a791dfb6b3da9db4e64ea779c19d16f5",
+  "anchored_head": "27be9e8094a16209290b7c5ae04c2fdec1ccd7c2",
   "combined_verdict": "PASS",
-  "elapsed_seconds": 9.428961,
+  "elapsed_seconds": 9.358733,
   "execution": "double_big_jump",
   "waves": {
     "double-wave-A": {
-      "head": "172c3227a791dfb6b3da9db4e64ea779c19d16f5",
+      "head": "27be9e8094a16209290b7c5ae04c2fdec1ccd7c2",
       "reconvergence_verdict": "PASS",
       "successful_flights": 5,
       "total_flights": 5
     },
     "double-wave-B": {
-      "head": "172c3227a791dfb6b3da9db4e64ea779c19d16f5",
+      "head": "27be9e8094a16209290b7c5ae04c2fdec1ccd7c2",
       "reconvergence_verdict": "PASS",
       "successful_flights": 5,
       "total_flights": 5

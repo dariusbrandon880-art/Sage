@@ -4,6 +4,7 @@ Regulates bounded evolution across candidate generation, verification,
 temperature adaptation, failure learning metrics, and fresh receipt emission.
 """
 
+import copy
 import hashlib
 import json
 import time
@@ -104,11 +105,32 @@ class SAGIEvolutionController:
             "failure_memory_size": float(len(self.generator.failure_memory))
         }
 
-    def rollback_to_snapshot(self, snapshot: SAGIState, force: bool = False) -> None:
-        """Atomic rollback of SAGI state to a pre-execution snapshot."""
-        if not force and not snapshot.verify_integrity():
-            raise ValueError("Cannot rollback to corrupted SAGIState snapshot")
-        self.state = snapshot.model_copy(deep=True)
+    def _snapshot_transition_state(self) -> Dict[str, Any]:
+        """Capture all mutable controller state needed for atomic rollback."""
+        return {
+            "state": copy.deepcopy(self.state),
+            "failure_memory": copy.deepcopy(self.generator.failure_memory),
+            "receipt_history": copy.deepcopy(self.receipt_history),
+            "successful_cycles": self.successful_cycles,
+            "failed_cycles": self.failed_cycles,
+        }
+
+    def _restore_transition_state(self, snapshot: Dict[str, Any]) -> None:
+        """Restore the exact pre-transition controller state after an exception."""
+        self.state = snapshot["state"]
+        self.generator.failure_memory = snapshot["failure_memory"]
+        self.receipt_history = snapshot["receipt_history"]
+        self.successful_cycles = snapshot["successful_cycles"]
+        self.failed_cycles = snapshot["failed_cycles"]
+
+    def _assert_transition_integrity(self, parent_hash: str) -> None:
+        """Fail closed if the completed transition does not preserve Ω integrity."""
+        if not self.state.verify_integrity():
+            raise RuntimeError("SAGI transition produced invalid Ω-state integrity")
+        if not parent_hash or len(parent_hash) != 64:
+            raise RuntimeError("SAGI transition parent hash is invalid")
+        if len(self.state.current_hash) != 64:
+            raise RuntimeError("SAGI transition next hash is invalid")
 
     def execute_evolution_cycle(
         self,
@@ -116,15 +138,12 @@ class SAGIEvolutionController:
         tier3_metadata: Optional[Dict[str, Any]] = None,
         force_fail_closed: bool = False
     ) -> SAGIEvolutionReceipt:
-        """Execute one bounded evolution cycle: Generate -> Verify -> Adapt -> Receipt with atomic state rollback."""
-        state_snapshot = self.state.model_copy(deep=True)
+        """Execute one atomic bounded evolution cycle with automatic rollback on error."""
+        snapshot = self._snapshot_transition_state()
         temp_before = self.state.temperature
         parent_hash = self.state.current_hash
 
         try:
-            if not self.state.verify_integrity():
-                raise ValueError("Pre-execution SAGIState integrity failure")
-
             candidate = self.generator.generate_candidate(
                 current_state=self.state,
                 proposal_id_prefix=f"sagi_cycle_{self.state.cycle_index}",
@@ -157,6 +176,8 @@ class SAGIEvolutionController:
                 self.state.temperature = min(1.8, round(self.state.temperature * 1.05, 4))
                 self.state.update_hash()
 
+            self._assert_transition_integrity(parent_hash)
+
             learning_metrics = self.compute_learning_metrics()
             receipt = SAGIEvolutionReceipt(
                 receipt_id=f"rcpt_sagi_{self.state.cycle_index}_{len(self.receipt_history)+1}",
@@ -176,8 +197,11 @@ class SAGIEvolutionController:
                 learning_metrics=learning_metrics
             )
 
+            if not receipt.verify_integrity():
+                raise RuntimeError("SAGI evolution receipt integrity verification failed")
+
             self.receipt_history.append(receipt)
             return receipt
         except Exception:
-            self.rollback_to_snapshot(state_snapshot, force=True)
+            self._restore_transition_state(snapshot)
             raise

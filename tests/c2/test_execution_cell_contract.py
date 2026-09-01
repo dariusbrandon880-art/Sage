@@ -81,3 +81,40 @@ def test_shadow_boundary_rejects_wagering() -> None:
     payload["wagering_executed"] = True
     with pytest.raises(ValueError):
         MissionPackage(**payload)
+
+
+def test_execution_attestation_digest_and_mission_binding() -> None:
+    pkg = mission()
+    pkg_hash = pkg.compute_package_hash()
+    assert len(pkg_hash) == 64
+
+    attestation = ExecutionAttestation(
+        mission_id=pkg.mission_id,
+        substrate="github_actions",
+        status="PASS",
+        exit_code=0,
+        executed_head_sha=SHA,
+        produced_head_sha=SHA,
+        receipt_path="evidence_capture/execution_cell_receipt.json",
+        exact_head_verified=True,
+        test_pass_rate=1.0,
+        collision_detected=False,
+        mission_package_hash=pkg_hash,
+    )
+    attestation.attestation_digest = attestation.compute_digest()
+
+    assert len(attestation.attestation_digest) == 64
+    assert attestation.verify_integrity() is True
+    assert attestation.verify_mission_binding(pkg) is True
+
+    # Tampered attestation digest fails integrity
+    tampered_att = attestation.model_copy(update={"test_pass_rate": 0.9})
+    assert tampered_att.verify_integrity() is False
+
+    # Cross-flight mission ID mismatch fails binding
+    mismatched_pkg = pkg.model_copy(update={"mission_id": "MIS-CROSS-FLIGHT-999"})
+    assert attestation.verify_mission_binding(mismatched_pkg) is False
+
+    # Stale head SHA mismatch fails binding
+    stale_pkg = pkg.model_copy(update={"canonical_head_sha": "a" * 40})
+    assert attestation.verify_mission_binding(stale_pkg) is False
