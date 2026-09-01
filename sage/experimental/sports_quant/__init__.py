@@ -5,18 +5,36 @@ paper predictions, lock them before event start, resolve outcomes, score calibra
 and learn from failures. It has no wagering or account-execution surface.
 """
 
-from .ingestion import MarketSnapshot, FanDuelSnapshotAdapter
-from .prediction import PredictionRecord, PredictionBatchEngine
-from .evaluation import EvaluationResult, calculate_clv, score_predictions
+from .ingestion import MarketSnapshot, PlayerPropSnapshot, FanDuelSnapshotAdapter
+from .prediction import (
+    PredictionRecord,
+    PredictionBatchEngine,
+    PropEdgeResult,
+    FanDuelPlayerPropAnalyzer,
+    evaluate_sgp_boost,
+)
+from .evaluation import (
+    EvaluationResult,
+    calculate_clv,
+    calculate_ev,
+    calculate_kelly_stake,
+    score_predictions,
+)
 from .learning import FailureCluster, build_failure_clusters, validate_oos_candidate
 
 __all__ = [
     "MarketSnapshot",
+    "PlayerPropSnapshot",
     "FanDuelSnapshotAdapter",
     "PredictionRecord",
     "PredictionBatchEngine",
+    "PropEdgeResult",
+    "FanDuelPlayerPropAnalyzer",
+    "evaluate_sgp_boost",
     "EvaluationResult",
     "calculate_clv",
+    "calculate_ev",
+    "calculate_kelly_stake",
     "score_predictions",
     "FailureCluster",
     "build_failure_clusters",
