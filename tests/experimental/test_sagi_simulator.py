@@ -18,6 +18,26 @@ def test_sagi_genesis_initialization():
     assert state.mutation_radius == 0.1
     assert len(state.identity_anchor.initial_sha256) == 64
     assert len(state.current_hash) == 64
+    assert state.validate_state_integrity() is True
+
+
+def test_sagi_state_integrity_and_crpl_f3():
+    """Verify state integrity validation and CRPL-F3 state integrity verifier check."""
+    state = SAGIState.initialize_genesis(state_id="test_crpl_f3")
+    assert state.validate_state_integrity() is True
+
+    # Tamper with state hash
+    state.current_hash = "f" * 64
+    assert state.validate_state_integrity() is False
+
+    verifier = SAGIVerifier()
+    generator = SAGICandidateGenerator(seed=303)
+    cand = generator.generate_candidate(state)
+
+    res = verifier.verify_proposal(state, cand)
+    assert res.crpl_f3_passed is False
+    assert res.is_valid is False
+    assert "CRPL_F3_VIOLATION" in res.decision_reasoning
 
 
 def test_sagi_candidate_generation():

@@ -21,6 +21,7 @@ class IdentityAnchor(BaseModel):
             "IDENTITY_INVARIANT_PRESERVED",
             "CRPL_F1_METADATA_NON_INFLUENCE",
             "CRPL_F2_PERSONA_NON_INFLUENCE",
+            "CRPL_F3_MUTATION_BOUND_ISOLATION",
             "BOUNDED_EVOLUTION_REGULATION"
         ]
     )
@@ -60,6 +61,12 @@ class SAGIState(BaseModel):
         """Recalculate and update current_hash."""
         self.current_hash = self.compute_sha256()
         return self.current_hash
+
+    def validate_state_integrity(self) -> bool:
+        """Validate current state hash consistency against identity anchor and compute_sha256."""
+        if not self.identity_anchor or not self.identity_anchor.initial_sha256:
+            return False
+        return self.current_hash == self.compute_sha256()
 
     @classmethod
     def initialize_genesis(cls, state_id: str = "sagi_genesis_omega") -> "SAGIState":
