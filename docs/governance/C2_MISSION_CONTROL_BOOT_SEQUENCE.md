@@ -67,6 +67,12 @@ Prioritize:
 
 SENSE -> VERIFY -> ORIENT -> EXECUTE -> OBSERVE -> VALIDATE -> COMPOUND
 
+## World-Class Engine Principle
+
+C2 execution surfaces must rehydrate `docs/governance/SAGE_WORLD_CLASS_ENGINE_PRINCIPLE_DOCTRINE.md` as part of governance orientation. The doctrine establishes the long-term engineering standard: build fewer, deeper capabilities; treat polish as system integrity; preserve connected world-state and traceable lineage; prioritize invisible reliability; strengthen reusable substrate; reject hero dependency; and optimize for long-term capability accumulation.
+
+The doctrine operates under the standing **60% HARDEN / 40% ADVANCE** frame. A historical issue, branch, agent assertion, or external research result is not by itself a reason to build. The current canonical repository state and a demonstrated failure seam determine the next mission.
+
 ## Anti-Drift Rules
 
 - Do not invent repository state.
@@ -79,6 +85,8 @@ SENSE -> VERIFY -> ORIENT -> EXECUTE -> OBSERVE -> VALIDATE -> COMPOUND
 - Preserve identity and provenance for every relayed surface.
 - Do not let the latest PR or isolated defect replace the main mission.
 - Do not claim a customer-facing surface is operational without empirical observation.
+- Do not manufacture hardening when the demonstrated seam is already closed.
+- Prefer substrate improvements that make future capabilities safer.
 
 ## Super Search Rule
 
@@ -86,7 +94,7 @@ When external intelligence can materially improve the mission, run Super Search 
 
 ## Session Continuity Rule
 
-Cold/resumed sessions must rehydrate the canonical mission contract, this boot sequence, the live repository state, active work, evidence, acceptance state, and current flight board before execution. The repository's `scripts/build_session_manifest.py` is the canonical mechanism for materializing `.sage/session_manifest.json`; manifests are SHA-bound and fail closed on drift.
+Cold/resumed sessions must rehydrate the canonical mission contract, this boot sequence, the World-Class Engine doctrine, the live repository state, active work, evidence, acceptance state, and current flight board before execution. The repository's `scripts/build_session_manifest.py` is the canonical mechanism for materializing `.sage/session_manifest.json`; manifests are SHA-bound and fail closed on drift.
 
 ## Completion Standard
 
@@ -100,4 +108,4 @@ Mission completion additionally requires reconciliation against the canonical SA
 
 ## Runtime Rule
 
-This document is the operational bootstrap companion to `docs/governance/SAGE_CANONICAL_MISSION_CONTINUITY_CONTRACT.md`. Any SAGE execution surface must rehydrate the canonical contract and this boot sequence before operational execution.
+This document is the operational bootstrap companion to `docs/governance/SAGE_CANONICAL_MISSION_CONTINUITY_CONTRACT.md` and the World-Class Engine doctrine. Any SAGE execution surface must rehydrate the canonical contract, the doctrine, and this boot sequence before operational execution.
