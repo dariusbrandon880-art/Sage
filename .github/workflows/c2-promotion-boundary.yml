@@ -1,0 +1,45 @@
+name: SAGE C2 Promotion Boundary
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  promotion-boundary:
+    name: C2 promotion boundary invariant
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Verify repository-native promotion controls
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          SHA: ${{ github.sha }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+          test -s .github/CODEOWNERS
+          test -s docs/governance/C2_PROMOTION_BOUNDARY_HARDENING.md
+          test -s .github/workflows/main.yml
+          grep -q 'poetry run pytest\|pytest' .github/workflows/main.yml
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            test "$BASE_REF" = "main"
+          elif [ "$EVENT_NAME" = "push" ]; then
+            test "$REF_NAME" = "main"
+          fi
+          test "${#SHA}" -eq 40
+          echo "C2 promotion-boundary repository invariants: PASS"
+          echo "head_sha=$SHA"
+
+      - name: Explicitly report external ruleset boundary
+        run: |
+          echo "Repository-native promotion controls are present."
+          echo "GitHub branch protection/rulesets remain an external platform control."
+          echo "This workflow does not claim to enable or enforce a missing ruleset."

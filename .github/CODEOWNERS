@@ -1,0 +1,10 @@
+# SAGE promotion boundary ownership
+# This file becomes an enforceable review boundary when GitHub branch rulesets
+# require CODEOWNERS approval for protected paths.
+
+/.github/ @dariusbrandon880-art
+/docs/governance/ @dariusbrandon880-art
+/sage/c2/ @dariusbrandon880-art
+/sage/core/ @dariusbrandon880-art
+/scripts/ @dariusbrandon880-art
+/tests/c2/ @dariusbrandon880-art
