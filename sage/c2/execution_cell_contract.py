@@ -12,12 +12,14 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import json
 import re
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
-SHA256_RE = re.compile(r"^[0-9a-f]{40}$")
+SHA40_RE = re.compile(r"^[0-9a-f]{40}$")
+SHA64_RE = re.compile(r"^[0-9a-f]{64}$")
 FORBIDDEN_SHELL_TOKENS = ("&&", ";", "|", "`", "$(", "\n", "\r")
 
 
@@ -49,7 +51,7 @@ class MissionPackage(BaseModel):
     @field_validator("canonical_head_sha")
     @classmethod
     def validate_sha(cls, value: str) -> str:
-        if not SHA256_RE.fullmatch(value):
+        if not SHA40_RE.fullmatch(value):
             raise ValueError("CANONICAL_HEAD_SHA_MUST_BE_EXACTLY_40_LOWERCASE_HEX_CHARS")
         return value
 
@@ -61,8 +63,14 @@ class MissionPackage(BaseModel):
         return value
 
     def canonical_payload(self) -> Dict[str, Any]:
-        payload = self.model_dump(exclude={"signature"}, mode="json")
-        return payload
+        return self.model_dump(exclude={"signature"}, mode="json")
+
+    def package_digest(self) -> str:
+        """Return the canonical digest that an execution attestation must bind."""
+        body = json.dumps(
+            self.canonical_payload(), sort_keys=True, separators=(",", ":")
+        ).encode("utf-8")
+        return hashlib.sha256(body).hexdigest()
 
     def sign(self, secret: bytes) -> str:
         body = self.model_dump_json(exclude={"signature"}).encode("utf-8")
@@ -83,12 +91,16 @@ class MissionPackage(BaseModel):
         """Require an explicit path or directory-prefix allowlist match."""
         if not path or path.startswith("/") or ".." in path.split("/"):
             return False
-        return any(path == allowed or path.startswith(allowed.rstrip("/") + "/") for allowed in self.allowed_paths)
+        return any(
+            path == allowed or path.startswith(allowed.rstrip("/") + "/")
+            for allowed in self.allowed_paths
+        )
 
 
 class ExecutionAttestation(BaseModel):
     contract_version: str = "1.0.0"
     mission_id: str
+    mission_package_digest: Optional[str] = None
     substrate: str
     status: str
     exit_code: int
@@ -104,8 +116,15 @@ class ExecutionAttestation(BaseModel):
     @field_validator("executed_head_sha", "produced_head_sha")
     @classmethod
     def validate_attestation_sha(cls, value: str) -> str:
-        if not SHA256_RE.fullmatch(value):
+        if not SHA40_RE.fullmatch(value):
             raise ValueError("ATTESTATION_SHA_MUST_BE_EXACTLY_40_LOWERCASE_HEX_CHARS")
+        return value
+
+    @field_validator("mission_package_digest")
+    @classmethod
+    def validate_mission_digest(cls, value: Optional[str]) -> Optional[str]:
+        if value is not None and not SHA64_RE.fullmatch(value):
+            raise ValueError("MISSION_PACKAGE_DIGEST_MUST_BE_EXACTLY_64_LOWERCASE_HEX_CHARS")
         return value
 
     @field_validator("test_pass_rate")
@@ -122,8 +141,20 @@ class ExecutionAttestation(BaseModel):
             raise ValueError("EXECUTION_CELL_SHADOW_BOUNDARY_VIOLATION")
         return value
 
-    def acceptance_eligible(self) -> bool:
-        """Return true only when the attestation itself satisfies hard gates."""
+    def verify_mission_binding(self, mission_package: MissionPackage) -> bool:
+        """Require mission identity, exact execution head, and package digest alignment."""
+        return (
+            self.mission_id == mission_package.mission_id
+            and self.mission_package_digest is not None
+            and hmac.compare_digest(self.mission_package_digest, mission_package.package_digest())
+            and self.executed_head_sha == mission_package.canonical_head_sha
+            and self.produced_head_sha == self.executed_head_sha
+        )
+
+    def acceptance_eligible(self, mission_package: Optional[MissionPackage] = None) -> bool:
+        """Return true only when execution and mission lineage satisfy every hard gate."""
+        if mission_package is None or not self.verify_mission_binding(mission_package):
+            return False
         return (
             self.status == "PASS"
             and self.exit_code == 0
