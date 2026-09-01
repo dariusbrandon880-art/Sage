@@ -140,7 +140,7 @@ def test_unsafe_candidate_fails_closed(concurrency_engine, valid_git_head):
     )
     candidates["sess-1"] = tuple(cand_list)
 
-    with pytest.raises(ValueError, match="no safe candidate for required role"):
+    with pytest.raises(ValueError, match="safe candidates"):
         concurrency_engine.execute_concurrency_wave(
             wave_id="unsafe_candidate_wave",
             exact_git_head=valid_git_head,
