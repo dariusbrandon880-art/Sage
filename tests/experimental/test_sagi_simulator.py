@@ -195,6 +195,36 @@ def test_sagi_evolution_controller_post_transition_integrity_rollback():
     assert len(controller.state.failure_memory) == 0
 
 
+def test_sagi_evolution_controller_receipt_tampering_rollback():
+    """Adversarial Test: Receipt verification failure triggers complete rollback."""
+    from sage.experimental.sagi.controller import SAGITransitionError, SAGIEvolutionReceipt
+
+    controller = SAGIEvolutionController()
+    initial_state_hash = controller.state.current_hash
+
+    # Inject corrupting verify_integrity on receipt
+    original_init = SAGIEvolutionReceipt.__init__
+
+    def corrupting_receipt_init(self, **data):
+        original_init(self, **data)
+        object.__setattr__(self, "receipt_sha256", "tampered_hash_" + "0" * 48)
+
+    SAGIEvolutionReceipt.__init__ = corrupting_receipt_init
+
+    try:
+        with pytest.raises(SAGITransitionError, match="Emitted evolution receipt integrity check failed"):
+            controller.execute_evolution_cycle()
+    finally:
+        SAGIEvolutionReceipt.__init__ = original_init
+
+    # Verify complete rollback to pristine state
+    assert controller.state.current_hash == initial_state_hash
+    assert controller.state.verify_integrity() is True
+    assert controller.successful_cycles == 0
+    assert controller.failed_cycles == 0
+    assert len(controller.receipt_history) == 0
+
+
 def test_sagi_failure_memory_non_repetition():
     """Verify failure memory records rejected proposals and prevents exact repeat mutations."""
     state = SAGIState.initialize_genesis()

@@ -62,3 +62,49 @@ def test_selection_digest_is_deterministic_and_tamper_detecting():
     assert first.selection_digest == second.selection_digest
     with pytest.raises(ValueError, match="digest"):
         selector.select(candidates, frontier_digest="frontier", selection_digest="tampered")
+
+
+def test_selection_digest_binds_semantic_candidate_payload():
+    candidates = tuple(candidate(i, role, i / 5) for i, role in enumerate(FlightRole, 1))
+    selector = SAGIDiscoveryFlightSelector()
+    baseline = selector.select(candidates, frontier_digest="frontier")
+
+    tampered = list(candidates)
+    original = tampered[0]
+    tampered[0] = DiscoveryCandidate(
+        original.candidate_id,
+        "tampered description",
+        original.role,
+        original.consequentiality,
+        original.information_gain,
+        original.falsification_value,
+        original.safety,
+        original.evidence_gap,
+        original.provenance_ref,
+    )
+    with pytest.raises(ValueError, match="digest"):
+        selector.select(tuple(tampered), frontier_digest="frontier", selection_digest=baseline.selection_digest)
+
+
+def test_non_governed_role_type_fails_closed():
+    candidates = list(candidate(i, role) for i, role in enumerate(FlightRole))
+    original = candidates[0]
+    candidates[0] = DiscoveryCandidate(
+        original.candidate_id,
+        original.description,
+        "CONSEQUENT_FRONTIER",
+        original.consequentiality,
+        original.information_gain,
+        original.falsification_value,
+        original.safety,
+        original.evidence_gap,
+        original.provenance_ref,
+    )
+    with pytest.raises(ValueError, match="FlightRole"):
+        SAGIDiscoveryFlightSelector().select(tuple(candidates), frontier_digest="frontier")
+
+
+def test_whitespace_frontier_digest_fails_closed():
+    candidates = tuple(candidate(i, role) for i, role in enumerate(FlightRole))
+    with pytest.raises(ValueError, match="frontier digest"):
+        SAGIDiscoveryFlightSelector().select(candidates, frontier_digest="   ")

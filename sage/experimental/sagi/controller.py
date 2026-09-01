@@ -74,7 +74,7 @@ class SAGIEvolutionReceipt(BaseModel):
 
 
 class SAGITransitionError(RuntimeError):
-    """Raised when a SAGI evolution transition fails or violates state integrity."""
+    """Raised when a SAGI evolution transition fails or violates state/receipt integrity."""
     pass
 
 
@@ -117,12 +117,12 @@ class SAGIEvolutionController:
     ) -> SAGIEvolutionReceipt:
         """Execute one bounded evolution cycle under an atomic transaction boundary.
 
-        Generate -> Verify -> Adapt -> Verify State Integrity -> Emission.
-        If an exception occurs or post-transition state verification fails,
+        Generate -> Verify -> Adapt -> Verify State Integrity -> Verify Receipt Integrity -> Emission.
+        If an exception occurs or post-transition integrity checks fail,
         the controller automatically rolls back to the pre-cycle state snapshot
         and raises a SAGITransitionError.
         """
-        # Capture pre-cycle atomic snapshot
+        # Capture pre-cycle atomic snapshot across all mutable state
         snapshot_state_dict = json.loads(self.state.model_dump_json())
         snapshot_success_cycles = self.successful_cycles
         snapshot_failed_cycles = self.failed_cycles
@@ -164,7 +164,7 @@ class SAGIEvolutionController:
                 self.state.temperature = min(1.8, round(self.state.temperature * 1.05, 4))
                 self.state.update_hash()
 
-            # Fail-closed post-transition state integrity check
+            # Post-transition state integrity check
             if not self.state.verify_integrity():
                 raise SAGITransitionError("Post-transition state integrity check failed: hash mismatch")
 
@@ -194,7 +194,7 @@ class SAGIEvolutionController:
             return receipt
 
         except Exception as exc:
-            # Atomic rollback: restore state and controller counters
+            # Complete atomic rollback: restore state, cycle counters, and failure memory
             self.state = SAGIState(**snapshot_state_dict)
             self.successful_cycles = snapshot_success_cycles
             self.failed_cycles = snapshot_failed_cycles
