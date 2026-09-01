@@ -88,7 +88,7 @@ def build_sports_decision(
     return SportsDecision(
         decision_id=decision_id,
         mission_id=mission_id,
-        event_id=f"{edge.player_name}:{edge.prop_category}",
+        event_id=f"{edge.player_name}_{edge.prop_category}",
         decided_at_utc=decided_at_utc,
         information_snapshot_hash=snapshot_hash,
         chosen_selection=edge.selection,
