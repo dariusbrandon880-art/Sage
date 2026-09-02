@@ -149,6 +149,54 @@ def render_immersion_nameplate(
     )
 
 
+def render_station_operating_panel(
+    state: AirspaceState,
+    station_id: StationID,
+    *,
+    compact: bool = True,
+) -> str:
+    """Render the complete station-facing immersion panel.
+
+    This is a composition-only surface: it exposes existing identity, XP,
+    qualification, mission, frontier, evidence, clearance, and sortie state
+    together without introducing new state or progression rules.
+    """
+    station = state.stations[station_id]
+    xp = state.game_progression.get_total_xp_for_station(station_id)
+    mission = state.active_mission
+    mission_line = "NO ACTIVE MISSION"
+    if mission is not None:
+        mission_line = f"MISSION {mission.mission_id} // {mission.mission_name}"
+
+    frontier = mission.current_frontier if mission is not None else "UNSPECIFIED"
+    evidence_count = len(state.recent_evidence)
+    tags = " | ".join(render_capability_tags(state, station_id)) or "UNQUALIFIED"
+    live = render_live_sortie_strip(state, station_id=station_id)
+    identity = f"{STATION_NAMEPLATES[station_id]} {STATION_ICONS.get(station_id, '▪')} {station.agent_name}"
+
+    if compact:
+        return (
+            f"{identity} // XP {xp} // CQL-{station.current_cql} // SQL-{station.current_sql}\n"
+            f"  {tags}\n"
+            f"  {mission_line} // FRONTIER {frontier}\n"
+            f"  EVIDENCE {evidence_count} // NEXT {state.next_clearance}\n"
+            f"  {live}"
+        )
+
+    return (
+        f"{identity}\n"
+        f"  ROLE      : {station.role_description}\n"
+        f"  XP        : {xp}\n"
+        f"  STACK     : {render_capability_stack(state, station_id)}\n"
+        f"  QUALIFIED : {tags}\n"
+        f"  MISSION   : {mission_line}\n"
+        f"  FRONTIER  : {frontier}\n"
+        f"  EVIDENCE  : {evidence_count}\n"
+        f"  NEXT      : {state.next_clearance}\n"
+        f"  SORTIES   : {live}"
+    )
+
+
 def render_sgp_boost_glyph(recommendation: str) -> str:
     """Render a game immersion glyph for FanDuel SGP boost quality classification."""
     return SGP_RECOMMENDATION_GLYPHS.get(recommendation.upper(), "🎯")
