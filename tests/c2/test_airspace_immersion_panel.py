@@ -1,11 +1,18 @@
 from sage.experimental.airspace.immersion import render_station_operating_panel
-from sage.experimental.airspace.models import AirspaceState, Station, StationID
+from sage.experimental.airspace.models import AirspaceState, Mission, Station, StationID
 
 
 def _state() -> AirspaceState:
     state = AirspaceState(
         session_id="session_test_001",
         mode="OPERATIONAL",
+        active_mission=Mission(
+            mission_id="mission-test-001",
+            mission_name="Interface Progression",
+            theater="Airspace/C2",
+            objective="Expose canonical station progression",
+            current_frontier="frontier-test",
+        ),
         stations={
             StationID.MISSION_CONTROL: Station(
                 station_id=StationID.MISSION_CONTROL,
@@ -16,7 +23,7 @@ def _state() -> AirspaceState:
             )
         },
         current_frontiers=["frontier-test"],
-        recent_evidence=[{"evidence_id": "ev-001"}],
+        recent_evidence=["ev-001"],
         next_clearance="VERIFY",
         active_sorties=[],
     )
@@ -30,8 +37,8 @@ def test_station_operating_panel_projects_existing_progression_and_operational_s
     assert "XP" in panel
     assert "CQL-4" in panel
     assert "SQL-3" in panel
-    assert "MISSION" in panel
-    assert "FRONTIER" in panel
+    assert "MISSION mission-test-001 // Interface Progression" in panel
+    assert "FRONTIER frontier-test" in panel
     assert "EVIDENCE 1" in panel
     assert "NEXT VERIFY" in panel
     assert "NO ACTIVE SORTIES" in panel
