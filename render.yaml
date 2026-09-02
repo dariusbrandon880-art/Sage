@@ -21,9 +21,9 @@ services:
         generateValue: true
         scope: run_and_build
       - key: MEMORY_BACKEND
-        value: in-memory
+        value: disk
       - key: ARCHIVE_BACKEND
-        value: in-memory
+        value: disk
       - key: ENABLE_CONTINUITY
         value: "true"
       - key: GOOGLE_WORKSPACE_CREDENTIALS_PATH
@@ -37,3 +37,11 @@ services:
       - key: SAGE_AUTH_SECRET
         generateValue: true
         scope: run_and_build
+      - key: CHATGPT_MODEL
+        value: gpt-4
+      - key: CHATGPT_MAX_TOKENS
+        value: "2048"
+      - key: CHATGPT_TEMPERATURE
+        value: "0.7"
+      - key: CHATGPT_EVIDENCE_CAPTURE
+        value: "true"
