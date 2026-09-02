@@ -101,6 +101,11 @@ class CanonicalC2TransitionBridge:
         runtime_action = _ACTIONS[action][1]
         before = self._digest(self._runtime)
         transition_id = None
+        old_value = ""
+        if action is C2TransitionAction.SET_TASK:
+            old_value = getattr(self._runtime.current_state, "active_task", None) or "None"
+        elif action is C2TransitionAction.SET_OBJECTIVE:
+            old_value = getattr(self._runtime.current_state, "current_objective", None) or "None"
 
         from_state, to_state = self._bond_flow(action)
         bond_state = {"current_project_state": from_state, "runtime_state_digest": before}
@@ -132,18 +137,9 @@ class CanonicalC2TransitionBridge:
         mutator = getattr(self._runtime, "authority_gate", None)
         if mutator is None:
             raise ValueError("Canonical C2 transition bridge requires runtime authority_gate")
-
-        if action in (C2TransitionAction.SET_OBJECTIVE, C2TransitionAction.SET_TASK):
-            mutator.request_mutation(self._runtime, runtime_action, value)
-        else:
-            mutator.request_mutation(self._runtime, runtime_action, value)
+        mutator.request_mutation(self._runtime, runtime_action, value)
 
         if action is not C2TransitionAction.SET_OBJECTIVE:
-            old_value = ""
-            if action is C2TransitionAction.SET_TASK:
-                old_value = getattr(self._runtime.current_state, "active_task", None) or "None"
-            else:
-                old_value = ""
             self._runtime.context_tracker.record_transition(
                 from_state=f"{runtime_action}:{old_value}",
                 to_state=f"{runtime_action}:{value}",
