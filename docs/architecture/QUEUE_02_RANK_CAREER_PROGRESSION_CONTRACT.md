@@ -58,7 +58,7 @@ These are distinct progression/recognition signals.
 - **Boss tally:** the career display keeps the Boss class marker beside the accumulated kill/capture markers so the record shows both the class and the agent's Boss history.
 - **Points:** quantified verified work value assigned to an event.
 - **XP:** durable career progression accumulated from governed progression events.
-- **Badges:** separate durable recognition for governed accomplishments/attributes; badges are not interchangeable with Boss markers, Points, or XP.
+- **Badges:** separate durable recognition for governed accomplishments/attributes. **20 verified Boss kills award one Kill Badge; 20 verified Boss captures award one Capture Badge.** Kill and Capture Badges are separate badge types.
 - **Rank:** aggregate designation reflecting the agent's overall evolution.
 
 ### Locked Boss visual semantics
@@ -84,7 +84,7 @@ When an agent reaches a **new rank**:
 
 Therefore, a rank-up produces a fresh visible Boss tally for the new rank while preserving the complete historical record and durable XP/badge state.
 
-The exact XP bases/conversion and any badge-award economy are **not** defined by this section; those remain deferred to their numbered work items.
+The exact XP bases/conversion and any badge-award economy beyond the locked 20-event Boss badge thresholds are not defined by this section; those remain deferred to their numbered work items.
 
 ## 5. Attribution and shared progress
 
