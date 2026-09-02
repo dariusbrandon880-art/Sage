@@ -13,6 +13,14 @@ This doctrine converts that requirement into a durable repository rule.
 
 The doctrine is inspired by transferable principles from high-tempo command-and-control systems, high-reliability engineering, and high-ownership operating models. It does **not** import military authority, tactics, or organizational hierarchy into SAGE. Only the execution principles are adapted.
 
+### Marine shorthand
+
+Within SAGE conversations and internal execution coordination, **Marine** may be used as shorthand for this hard-execution, high-tempo operating posture: repo-first recon, bounded execution, verification, evidence, and advance.
+
+This shorthand is **not** a SAGE product identity, organizational identity, military affiliation, presentation theme, or authority layer. It does not create permissions, change the Five Flight model, or override any existing governance boundary.
+
+The canonical doctrine remains this document. Marine shorthand must not become a competing doctrine or duplicate source of truth.
+
 ## 2. Core law — One objective, one wave, one close
 
 When the Mission Director authorizes a bounded mission, C2 owns the orchestration of the entire causally connected frontier until a real terminal boundary is reached.
