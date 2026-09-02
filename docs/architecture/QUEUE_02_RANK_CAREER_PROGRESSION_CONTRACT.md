@@ -13,7 +13,7 @@ The causal direction is:
 
 `REAL WORK → WORKFLOW EVOLUTION → CAPABILITY EVOLUTION → VERIFIED PROGRESSION → CAREER RECORD → RANK ASSESSMENT`
 
-XP, Points, accomplishments, Boss outcomes, and other verified progression signals may contribute to the assessment, but no single signal is itself the definition of rank.
+XP, Points, accomplishments, Boss outcomes, badges, and other verified progression signals may contribute to the assessment, but no single signal is itself the definition of rank.
 
 ## 2. What contributes to an agent's evolution
 
@@ -33,30 +33,44 @@ The career record may accumulate verified evidence from real SAGE work, includin
 
 The system must not invent accomplishments merely to advance an agent.
 
-## 3. Bosses are first-class career events
+## 3. Bosses are exceptional career events
 
 A **Boss** is a governed difficulty classification for an exceptional real SAGE accomplishment. It is not required to represent literal combat.
 
-Boss classes currently recognized by this contract:
+Only two Boss classes are recognized by this contract:
 
-- **Minor Boss**
-- **Big Boss**
-- **Major Boss**
+- **Big Boss** — represented visually by **⭐**
+- **Major Boss** — represented visually by **⭐⭐**
 
-Examples can include a difficult build, major repair, invention, architecture breakthrough, severe production failure resolved, major research breakthrough, difficult recon/intelligence problem, security problem, integration problem, or another high-value challenge.
+Examples can include a difficult build, major repair, invention, architecture breakthrough, severe production failure resolved, major research breakthrough, difficult recon/intelligence problem, security problem, integration problem, or another genuinely exceptional challenge.
 
-Each verified Boss outcome creates a **durable career achievement / stripe**. Boss outcomes can also contribute to Points, XP, and career progression according to the verified substance of the event. A Boss class must not imply a fixed automatic XP payout.
+Not every hard task qualifies as a Boss, and a task must not become a Boss merely because it consumed time or effort. As SAGE accumulates real verified work and evidence, the system should detect patterns that appear Boss-worthy and **propose** Boss classification. The Director retains final authority to confirm/recognize the Boss event.
 
-## 4. Stripes are distinct from Points and XP
+A verified Boss battle/kill/capture creates the career's Boss accomplishment record and contributes Points and XP according to the verified substance of the event. Boss class does not imply a fixed automatic XP payout.
 
-A Boss stripe is durable recognition of a verified accomplishment.
+## 4. Stripes, Points, XP, and badges
 
-- **Stripe:** what exceptional accomplishment was demonstrated.
-- **Points:** the verified work value assigned to an event.
-- **XP:** durable progression accumulated from governed progression events.
+These are distinct progression signals.
+
+- **Stripe:** the visual tally of an agent's cumulative verified Boss battles/kills/captures. One Boss battle = one Stripe; two Boss battles = two Stripes; and so on.
+- **Boss stars:** identify the class of the Boss associated with the current/recorded Boss event: ⭐ = Big Boss; ⭐⭐ = Major Boss.
+- **Points:** quantified verified work value assigned to an event.
+- **XP:** durable career progression accumulated from governed progression events.
+- **Badges:** separate durable recognition for governed accomplishments/attributes; badges are not interchangeable with Boss Stripes, Points, or XP.
 - **Rank:** aggregate designation reflecting the agent's overall evolution.
 
-These signals must not be collapsed into one counter.
+### Locked Boss visual
+
+The HUD/career presentation uses the following visual relationship:
+
+```text
+⭐  |  ⚔️⚔️⚔️⚔️   = Big Boss | 4 cumulative Boss battles
+⭐⭐ |  ⚔️⚔️       = Major Boss | 2 cumulative Boss battles
+```
+
+The **stars identify Boss class**. The **Stripe tally records how many Boss battles the agent has accumulated**. The tally sits directly beside the Boss-star marker in the visual presentation.
+
+The exact visual glyphs and presentation can later be rendered by the HUD implementation, but this semantic relationship is locked by Queue #02. No HUD implementation is being coupled into this contract.
 
 ## 5. Attribution and shared progress
 
@@ -92,8 +106,9 @@ A proposal can summarize:
 - current rank
 - Points
 - XP
-- Boss stripes
+- Boss Stripe tally
 - verified accomplishments
+- badges
 - workflow evolution
 - capability evolution
 - evidence lineage
@@ -125,11 +140,15 @@ Air Force development materials emphasize education, training, experience, compe
 
 ### Warframe
 
-Warframe's Mastery Rank aggregates progression across equipment and missions and uses separate rank tests before advancement. A useful lesson for SAGE is that accumulated progression and demonstrated advancement can be distinct. Warframe also prevents repeatedly farming the same first-time Mastery sources, which is relevant to later anti-farming design. See the official Mastery Rank guide: https://www.warframe.com/en/news/rukovodstvo-po-rangam-masterstva
+Warframe's Mastery Rank aggregates progression across equipment and missions and uses separate rank tests before advancement. A useful lesson for SAGE is that accumulated progression and demonstrated advancement can be distinct. Warframe also prevents repeatedly farming the same first-time Mastery sources, which is relevant to later anti-farming design.
 
 ### Deep Rock Galactic
 
-Deep Rock Galactic separates class progression, player rank, and promotion/prestige. Its promotion system demonstrates the value of making promotion a distinct career milestone rather than merely another XP increment. Its official site also describes rank as a tally of everything the player does. See: https://www.deeprockgalactic.com/ and https://deeprockgalactic.wiki.gg/wiki/Promotion
+Deep Rock Galactic separates class progression, player rank, and promotion/prestige. Its promotion system demonstrates the value of making promotion a distinct career milestone rather than merely another XP increment. Its rank model also supports the concept of aggregate activity contributing to career standing.
+
+### Broader progression research
+
+Cross-genre research supports separating progression currencies from durable accomplishments, specialization, commendations/badges, titles, milestones, and difficult encounter recognition. SAGE uses these as design evidence only and does not copy another game's combat or progression economy.
 
 ### Research boundary
 
@@ -145,8 +164,8 @@ This contract does **not** yet define:
 - rank thresholds
 - promotion eligibility formulas
 - demotion/invalidation propagation
-- Boss reward amounts
-- HUD presentation
+- exact Boss reward amounts
+- HUD implementation
 - anti-farming implementation
 - Five-Flight structure
 
