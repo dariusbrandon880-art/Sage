@@ -133,3 +133,16 @@ def test_boundary_rejects_wrong_station() -> None:
         SAGEChatGPTBoundary(_runtime(), WrongStationAdapter()).respond(
             "status", model_role="chatgpt", immersion_state=_immersion_state()
         )
+
+
+def test_boundary_rejects_invalid_immersion_state() -> None:
+    class GoodAdapter:
+        model_id = "fake"
+        station = "[SAGE::C2::CHATGPT]"
+        def invoke(self, envelope, task):
+            return _bound_response(_runtime(), _valid_output())
+
+    with pytest.raises(ValueError, match="invalid canonical immersion state"):
+        SAGEChatGPTBoundary(_runtime(), GoodAdapter()).respond(
+            "status", model_role="chatgpt", immersion_state=None
+        )

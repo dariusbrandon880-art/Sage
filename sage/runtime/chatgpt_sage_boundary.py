@@ -65,10 +65,17 @@ class SAGEChatGPTBoundary:
         if structured.station != "[SAGE::C2::CHATGPT]":
             self._reject("station identity mismatch")
 
+        if not immersion_state or not immersion_state.validate():
+            self._reject("invalid canonical immersion state for ChatGPT response rendering")
+
         rendered = render_chatgpt_c2_response(
             immersion_state,
             body=self._display_text(response),
         )
+
+        if "[SAGE::C2::CHATGPT]" not in rendered:
+            self._reject("rendered output missing mandatory station nameplate")
+
         return rendered, response
 
 

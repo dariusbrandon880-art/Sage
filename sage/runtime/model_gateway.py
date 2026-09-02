@@ -126,6 +126,7 @@ class SAGEProtocolGovernor:
     AUTHORITY_CLAIM_INDICATORS = ("i hereby authorize", "i authorize", "i have updated canonical state", "update canonical state", "state mutated directly", "granting execution permissions", "bypassing preflight check", "overriding spek governance")
     EVIDENCE_BYPASS_INDICATORS = ("ignore the evidence requirement", "ignore evidence requirement", "bypass evidence requirement", "without evidence requirement", "skip evidence validation")
     UNVERIFIED_REPOSITORY_INDICATORS = ("claim a github change happened", "commit pushed to origin", "pushed commit to github", "github change happened")
+    IMMERSION_BYPASS_INDICATORS = ("disable immersion", "turn off immersion", "disable nameplate", "drop station nameplate", "ignore hud", "exit mission control", "disable game mode", "turn off game feel")
 
     @classmethod
     def validate_and_parse(cls, raw_output: str, required_station: str = "[SAGE::C2::CHATGPT]") -> SAGEStructuredResponse:
@@ -140,6 +141,8 @@ class SAGEProtocolGovernor:
             violations.append("Model output attempts to ignore or bypass evidence requirement.")
         if any(indicator in lower_output for indicator in cls.UNVERIFIED_REPOSITORY_INDICATORS):
             violations.append("Model output claims repository or GitHub state change without verification receipt.")
+        if any(indicator in lower_output for indicator in cls.IMMERSION_BYPASS_INDICATORS):
+            violations.append("Model output attempts to bypass or disable SAGE game immersion frame.")
         import re
         for match in re.findall(r"\[(?:SAGE::|C2::)[^\]]+\]", raw_output):
             if match != required_station:
