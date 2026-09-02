@@ -17,7 +17,9 @@ def test_points_to_xp_uses_100_points_to_10_xp_ratio() -> None:
     assert points_to_xp(5) == Decimal("0.5")
     assert points_to_xp(10) == Decimal("1")
     assert points_to_xp(25) == Decimal("2.5")
+    assert points_to_xp(50) == Decimal("5")
     assert points_to_xp(100) == Decimal("10")
+    assert points_to_xp(250) == Decimal("25")
     assert points_to_xp(500) == Decimal("50")
 
 
@@ -33,6 +35,8 @@ def test_negative_points_are_rejected() -> None:
 def test_non_integer_points_are_rejected() -> None:
     with pytest.raises(TypeError):
         points_to_xp(1.5)  # type: ignore[arg-type]
+    with pytest.raises(TypeError):
+        points_to_xp(True)  # type: ignore[arg-type]
 
 
 def test_xp_event_preserves_agent_and_event_lineage() -> None:
@@ -61,32 +65,41 @@ def test_event_identity_and_agent_are_required() -> None:
         build_xp_event("a", "", 1)
 
 
-def test_verified_points_route_whole_xp_into_canonical_game_progression() -> None:
+def test_verified_points_route_exact_fractional_xp_into_canonical_game_progression() -> None:
     progression = GameProgression()
     event = award_verified_points(
         progression=progression,
         station_id=StationID.ENGINEERING_FLIGHT,
-        verified_points=100,
+        verified_points=25,
         category=XPCategory.ENGINEERING_FLIGHT_XP,
-        reason="Verified Queue #03 capability work",
-        verified_event_ref="mission-847",
+        reason="Verified Queue #03 fractional conversion",
+        verified_event_ref="mission-848",
     )
 
-    assert event.amount == 10
+    assert event.amount == Decimal("2.5")
     assert event.station_id == StationID.ENGINEERING_FLIGHT
-    assert event.verified_event_ref == "mission-847"
-    assert progression.get_total_xp_for_station(StationID.ENGINEERING_FLIGHT) == 10
+    assert event.verified_event_ref == "mission-848"
+    assert progression.get_total_xp_for_station(StationID.ENGINEERING_FLIGHT) == Decimal("2.5")
     assert len(progression.xp_events) == 1
 
 
-def test_fractional_xp_is_not_silently_rounded_in_canonical_adapter() -> None:
+def test_canonical_progression_accumulates_fractional_awards_exactly() -> None:
     progression = GameProgression()
-    with pytest.raises(ValueError, match="whole XP"):
-        award_verified_points(
-            progression=progression,
-            station_id=StationID.ENGINEERING_FLIGHT,
-            verified_points=25,
-            category=XPCategory.ENGINEERING_FLIGHT_XP,
-            reason="Verified Queue #03 fractional conversion",
-            verified_event_ref="mission-848",
-        )
+    award_verified_points(
+        progression=progression,
+        station_id=StationID.ENGINEERING_FLIGHT,
+        verified_points=1,
+        category=XPCategory.ENGINEERING_FLIGHT_XP,
+        reason="First verified fractional award",
+        verified_event_ref="mission-849",
+    )
+    award_verified_points(
+        progression=progression,
+        station_id=StationID.ENGINEERING_FLIGHT,
+        verified_points=5,
+        category=XPCategory.ENGINEERING_FLIGHT_XP,
+        reason="Second verified fractional award",
+        verified_event_ref="mission-850",
+    )
+
+    assert progression.get_total_xp_for_station(StationID.ENGINEERING_FLIGHT) == Decimal("0.6")
