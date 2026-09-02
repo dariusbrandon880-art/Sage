@@ -1,18 +1,28 @@
 from pathlib import Path
 
-from sage.c2.frontier_execution import FIVE_FRONT_NAMES, run_frontier
+from sage.c2.frontier_execution import PROGRESSION_FRONT_NAMES, run_frontier
 from sage.c2.progression_receipt_serializer import MissionProgressionReceiptSerializer
 from sage.evidence.native_persisted_loader import NativePersistedEvidenceLoader
 
 
-def test_five_fronts_are_exactly_bounded():
-    assert FIVE_FRONT_NAMES == (
-        "drive_continuity",
-        "governed_execution",
-        "sports_research",
+def test_progression_fronts_are_exactly_bounded():
+    assert PROGRESSION_FRONT_NAMES == (
         "native_persisted_evidence",
         "progression_receipts",
     )
+
+
+def test_retired_fronts_fail_closed():
+    for retired_front in (
+        "drive_continuity",
+        "governed_execution",
+        "sports_research",
+    ):
+        try:
+            run_frontier(retired_front, lambda: None)
+        except ValueError:
+            continue
+        raise AssertionError(f"retired frontier was accepted: {retired_front}")
 
 
 def test_unknown_frontier_fails_closed():
