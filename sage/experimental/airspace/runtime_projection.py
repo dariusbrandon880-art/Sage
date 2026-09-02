@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import hashlib
 
-from sage.experimental.airspace.models import AirspaceState, Mission, StationID
+from sage.experimental.airspace.models import AirspaceState, Mission, Station, StationID
 
 
 def _derived_mission_id(objective: str) -> str:
@@ -42,7 +42,15 @@ def project_runtime_state(runtime) -> AirspaceState:
     return AirspaceState(
         session_id=session_id,
         mode="OPERATIONAL",
-        stations={StationID.MISSION_CONTROL: {"agent_name": "ChatGPT"}},
+        stations={
+            StationID.MISSION_CONTROL: Station(
+                station_id=StationID.MISSION_CONTROL,
+                agent_name="GPT",
+                role_description="C2 Synthesis & Operational Coordination",
+                current_cql=4,
+                current_sql=3,
+            )
+        },
         active_mission=mission,
         current_frontiers=[task] if task else [],
         recent_evidence=[],
