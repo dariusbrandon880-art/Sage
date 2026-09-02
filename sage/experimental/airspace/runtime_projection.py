@@ -1,51 +1,34 @@
-"""Read-only projection from canonical SAGE runtime state into Airspace.
-
-Airspace is an observability/immersion surface. This module derives its view
-from the canonical runtime and never writes runtime state, creates missions,
-or authorizes execution.
-"""
+"""Read-only projection from canonical SageRuntime state into Airspace immersion."""
 
 from __future__ import annotations
 
 import hashlib
-from typing import Any
 
-from sage.experimental.airspace.models import AirspaceState, Mission
+from sage.experimental.airspace.models import AirspaceState, Mission, StationID
 
 
 def _derived_mission_id(objective: str) -> str:
-    """Create a stable projection identifier from the canonical objective."""
-    digest = hashlib.sha256(objective.encode("utf-8")).hexdigest()[:12]
-    return f"runtime-objective-{digest}"
+    """Create a stable projection identifier without creating canonical state."""
+    digest = hashlib.sha256(objective.encode("utf-8")).hexdigest()[:16]
+    return f"runtime:{digest}"
 
 
-def project_runtime_state(runtime: Any) -> AirspaceState:
-    """Project canonical ``SageRuntime.current_state`` into Airspace.
+def project_runtime_state(runtime) -> AirspaceState:
+    """Project canonical runtime state into the existing Airspace presentation model.
 
-    Only values that already exist in canonical runtime state are projected.
-    Missing operational concepts remain explicitly unbound instead of being
-    synthesized by the game/immersion layer.
+    This function is intentionally read-only. It does not mutate runtime state,
+    create sorties, authorize execution, or introduce an alternate source of truth.
     """
-    canonical = runtime.current_state
-    objective = getattr(canonical, "current_objective", None)
-    task = getattr(canonical, "active_task", None)
-    blockers = list(getattr(canonical, "blockers", []) or [])
-
-    session_id = "unbound"
+    current_state = runtime.current_state
+    objective = getattr(current_state, "current_objective", None)
+    task = getattr(current_state, "active_task", None)
+    blockers = list(getattr(current_state, "blockers", []) or [])
     context = getattr(runtime, "context", None)
-    if context is not None and getattr(context, "session_id", None):
-        session_id = context.session_id
+    session_id = getattr(context, "session_id", None) or "unbound"
 
-    state = AirspaceState(
-        session_id=session_id,
-        mode="OPERATIONAL",
-        current_frontiers=[task] if task else [],
-        recent_evidence=[],
-        next_clearance="UNSPECIFIED",
-    )
-
+    mission = None
     if objective:
-        state.active_mission = Mission(
+        mission = Mission(
             mission_id=_derived_mission_id(objective),
             mission_name="Canonical Runtime Objective",
             theater="SAGE Runtime",
@@ -56,7 +39,13 @@ def project_runtime_state(runtime: Any) -> AirspaceState:
             current_frontier=task or "UNSPECIFIED",
         )
 
-    return state
-
-
-__all__ = ["project_runtime_state"]
+    return AirspaceState(
+        session_id=session_id,
+        mode="OPERATIONAL",
+        stations={StationID.MISSION_CONTROL},
+        active_mission=mission,
+        current_frontiers=[task] if task else [],
+        recent_evidence=[],
+        next_clearance="UNSPECIFIED",
+        active_sorties=[],
+    )
