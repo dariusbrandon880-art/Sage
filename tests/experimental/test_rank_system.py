@@ -57,10 +57,10 @@ def test_boss_display_distinguishes_kills_from_captures():
     major = BossDisplay(BossClass.MAJOR, boss_kill_count=2, boss_capture_count=3)
     assert big.stars == "⭐"
     assert big.kills == "⚔️" * 4
-    assert big.captures == "—" * 2
+    assert big.captures == "┃" * 2
     assert major.stars == "⭐⭐"
     assert major.kills == "⚔️" * 2
-    assert major.captures == "—" * 3
+    assert major.captures == "┃" * 3
 
 
 def test_boss_display_rejects_negative_tallies():
