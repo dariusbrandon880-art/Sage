@@ -190,3 +190,74 @@ def render_sports_pick_action_strip(
         f"KELLY {PICK_ACTION_GLYPHS['KELLY']} {kelly_stake:.2%} | "
         f"LOCK {lock_glyph} | STATUS {outcome_glyph} {outcome_status}"
     )
+
+
+def render_strike_feed(state: AirspaceState) -> str:
+    """Render high-tempo operational strike feed events derived from canonical AirspaceState."""
+    lines = []
+    lines.append("━" * 42)
+    lines.append("04 — STRIKE FEED // HIGH-TEMPO EVENTS")
+    lines.append("━" * 42)
+
+    if state.current_frontiers:
+        lines.append(f"🎯 TARGET ACQUIRED // {state.current_frontiers[-1]}")
+    else:
+        lines.append("🎯 TARGET ACQUIRED // SYSTEM INITIALIZATION")
+
+    if state.active_sorties:
+        latest = state.active_sorties[-1]
+        glyph = render_sortie_glyph(latest.status)
+        lines.append(f"⚡ MARINE STRIKE    // {glyph} [{latest.sortie_id}] {latest.station.value}")
+        lines.append(f"   target: {latest.target[:36]}")
+
+    if state.recent_evidence:
+        lines.append(f"🛡️ EVIDENCE CAPTURED// {state.recent_evidence[-1][:36]}")
+        lines.append("✓ HIT CONFIRMED    // Real evidence landed")
+
+    lines.append(f"→ NEXT TARGET      // {state.next_clearance[:36]}")
+    lines.append("━" * 42)
+    return "\n".join(lines)
+
+
+def render_four_layer_hud(state: AirspaceState) -> str:
+    """Render full Four-Layer HUD (Command Band, Operating Picture, Progression/Impact, Strike Feed)."""
+    lines = []
+    # 01 — COMMAND BAND
+    lines.append("01 — COMMAND BAND")
+    lines.append("━" * 42)
+    c2_station = state.stations.get(StationID.MISSION_CONTROL)
+    c2_cql = c2_station.current_cql if c2_station else 0
+    c2_sql = c2_station.current_sql if c2_station else 0
+    lines.append(f"[SAGE::C2::CHATGPT] ◈ C2 MISSION CONTROL")
+    lines.append(f"STATUS   : {state.mode}")
+    lines.append(f"QUAL     : CQL-{c2_cql} | SQL-{c2_sql}")
+    if state.active_mission:
+        lines.append(f"MISSION  : {state.active_mission.mission_id} [{state.active_mission.priority}]")
+        lines.append(f"THEATER  : {state.active_mission.theater}")
+    else:
+        lines.append("MISSION  : NONE ACTIVE")
+
+    # 02 — OPERATING PICTURE
+    lines.append("\n02 — OPERATING PICTURE")
+    lines.append("─" * 42)
+    if state.active_sorties:
+        lines.append("ACTIVE SORTIES:")
+        for s in state.active_sorties[-3:]:
+            glyph = render_sortie_glyph(s.status)
+            lines.append(f" {glyph} [{s.sortie_id}] {s.station.value:<12} {s.status.value}")
+    else:
+        lines.append("ACTIVE SORTIES: NONE ACTIVE")
+
+    # 03 — PROGRESSION / IMPACT
+    lines.append("\n03 — PROGRESSION / IMPACT")
+    lines.append("─" * 42)
+    total_xp = state.game_progression.get_total_airspace_xp()
+    lines.append(f"TOTAL SYSTEM XP : {total_xp}")
+    for st_id, station in state.stations.items():
+        stack = render_capability_stack(state, st_id)
+        xp = state.game_progression.get_total_xp_for_station(st_id)
+        lines.append(f" ▪ {st_id.value:<12} XP {xp:<5} {stack}")
+
+    # 04 — STRIKE FEED
+    lines.append("\n" + render_strike_feed(state))
+    return "\n".join(lines)

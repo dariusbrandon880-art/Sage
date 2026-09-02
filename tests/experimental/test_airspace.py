@@ -376,9 +376,12 @@ def test_sports_adapter_read_only():
 def test_mobile_compact_render():
     state = AirspaceState()
     rendered = AirspaceRenderer.render_c2_board(state)
-    assert "SAGE AIRSPACE // C2 OPERATING PICTURE" in rendered
-    assert "Human Director" in rendered
-    assert "Jules" in rendered
+    assert "01 — COMMAND BAND" in rendered
+    assert "02 — OPERATING PICTURE" in rendered
+    assert "03 — PROGRESSION / IMPACT" in rendered
+    assert "04 — STRIKE FEED" in rendered
+    assert "[SAGE::C2::CHATGPT] ◈ C2 MISSION CONTROL" in rendered
+    assert "ENGINEERING_FLIGHT" in rendered
 
 
 def test_mission_card_render():

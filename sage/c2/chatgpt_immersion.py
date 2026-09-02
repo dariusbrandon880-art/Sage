@@ -15,6 +15,7 @@ from dataclasses import dataclass
 from sage.c2.immersion_projection import (
     C2ResponseContract,
     MilestoneStrike,
+    StrikeFeedProjection,
     project_c2_response_contract,
 )
 from sage.c2.immersion_state import ImmersionState
@@ -29,6 +30,7 @@ class ChatGPTImmersionResponse:
     immersion_envelope: C2ResponseContract
     body: str
     milestone: MilestoneStrike | None = None
+    strike_feed: StrikeFeedProjection | None = None
 
     def render(self) -> str:
         """Render the complete response without creating canonical state."""
@@ -43,12 +45,14 @@ def project_chatgpt_immersion_response(
     state: ImmersionState,
     body: str = "",
     milestone: MilestoneStrike | None = None,
+    strike_feed: StrikeFeedProjection | None = None,
 ) -> ChatGPTImmersionResponse:
     """Project a canonical state into the ChatGPT C2 response surface."""
-    contract = project_c2_response_contract(state)
+    contract = project_c2_response_contract(state, strike_feed=strike_feed)
     return ChatGPTImmersionResponse(
         station_header="[SAGE::C2::CHATGPT] **C2 Mission Control**",
         immersion_envelope=contract,
         body=body,
         milestone=milestone,
+        strike_feed=strike_feed or contract.hud.strike_feed,
     )

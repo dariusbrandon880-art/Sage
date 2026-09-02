@@ -17,7 +17,7 @@ from sage.c2.chatgpt_immersion import (
     ChatGPTImmersionResponse,
     project_chatgpt_immersion_response,
 )
-from sage.c2.immersion_projection import MilestoneStrike
+from sage.c2.immersion_projection import MilestoneStrike, StrikeFeedProjection
 from sage.c2.immersion_state import ImmersionState
 from sage.runtime.model_gateway import ModelResponse, SAGERuntime, SAGEStateSnapshot
 
@@ -26,12 +26,14 @@ def render_chatgpt_c2_response(
     state: ImmersionState,
     body: str = "",
     milestone: MilestoneStrike | None = None,
+    strike_feed: StrikeFeedProjection | None = None,
 ) -> str:
     """Render one canonical C2 response through the ChatGPT immersion surface."""
     response: ChatGPTImmersionResponse = project_chatgpt_immersion_response(
         state,
         body=body,
         milestone=milestone,
+        strike_feed=strike_feed,
     )
     return response.render()
 
@@ -40,12 +42,14 @@ def build_chatgpt_c2_response(
     state: ImmersionState,
     body: str = "",
     milestone: MilestoneStrike | None = None,
+    strike_feed: StrikeFeedProjection | None = None,
 ) -> ChatGPTImmersionResponse:
     """Return the structured read-only ChatGPT immersion response."""
     return project_chatgpt_immersion_response(
         state,
         body=body,
         milestone=milestone,
+        strike_feed=strike_feed,
     )
 
 

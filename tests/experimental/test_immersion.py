@@ -89,3 +89,39 @@ def test_sports_pick_action_strip_renders_canonical_data():
     assert "KELLY 💰 3.50%" in rendered
     assert "LOCK 🔒" in rendered
     assert "STATUS 🏆 WIN" in rendered
+
+
+def test_render_strike_feed_and_four_layer_hud():
+    from sage.experimental.airspace.immersion import (
+        render_strike_feed,
+        render_four_layer_hud,
+    )
+
+    state = AirspaceState()
+    state.current_frontiers.append("FULL-INTERFACE-CONVERGENCE")
+    state.recent_evidence.append("receipt_airspace_001.json")
+
+    sortie = Sortie(
+        sortie_id="SORTIE-IMMERSION-001",
+        mission_id="M-IMMERSION",
+        station=StationID.ENGINEERING_FLIGHT,
+        objective="Verify strike feed",
+        target="sage/experimental/airspace/immersion.py",
+        status=SortieState.ACTIVE,
+    )
+    state.active_sorties.append(sortie)
+
+    strike_feed = render_strike_feed(state)
+    assert "04 — STRIKE FEED // HIGH-TEMPO EVENTS" in strike_feed
+    assert "🎯 TARGET ACQUIRED // FULL-INTERFACE-CONVERGENCE" in strike_feed
+    assert "⚡ MARINE STRIKE    // ✈️ [SORTIE-IMMERSION-001] ENGINEERING_FLIGHT" in strike_feed
+    assert "🛡️ EVIDENCE CAPTURED// receipt_airspace_001.json" in strike_feed
+
+    four_layer = render_four_layer_hud(state)
+    assert "01 — COMMAND BAND" in four_layer
+    assert "[SAGE::C2::CHATGPT] ◈ C2 MISSION CONTROL" in four_layer
+    assert "02 — OPERATING PICTURE" in four_layer
+    assert "ACTIVE SORTIES:" in four_layer
+    assert "03 — PROGRESSION / IMPACT" in four_layer
+    assert "TOTAL SYSTEM XP : 0" in four_layer
+    assert "04 — STRIKE FEED // HIGH-TEMPO EVENTS" in four_layer
