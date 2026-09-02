@@ -27,7 +27,9 @@ A request to fix, improve, clean up, simplify, accelerate, or finish something d
 
 Passing tests, green CI, mergeability, or apparent technical necessity does **not** constitute permission to change architecture.
 
-## Five-Flight operating rule
+## Five-Flight DO NOT TOUCH boundary
+
+🚫 **DO NOT TOUCH — FIVE-FLIGHT SYSTEM** 🚫
 
 The Five-Flight system is **dynamic and reusable**, not a permanently pinned feature map.
 
@@ -35,7 +37,10 @@ The Five-Flight system is **dynamic and reusable**, not a permanently pinned fea
 - Flight identity and mission assignment are determined by current C2/authorized mission state.
 - No permanent feature/domain ownership is implied by a flight number.
 - Flight assignments may change as mission priorities and authorized work change.
-- This rule does not create a separate special lock on the Five-Flight system; the normal architecture approval gate above remains the governing boundary for architectural changes.
+- The Five-Flight system is operationally protected by this explicit DO NOT TOUCH boundary: do not modify, reassign, delete, pin, unpin, rename, or structurally redefine the Five-Flight system during ordinary execution.
+- If a requested change would touch the Five-Flight structure itself, stop and obtain explicit Mission Director approval before making that change.
+
+This is a protection against accidental workflow drift, not a permanent assignment of flight roles or a prohibition on future authorized evolution.
 
 ## Architecture preservation principle
 
