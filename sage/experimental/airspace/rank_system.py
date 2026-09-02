@@ -68,7 +68,7 @@ class BossDisplay:
     @property
     def captures(self) -> str:
         """Render Boss captures as regular Stripe markers."""
-        return "—" * self.boss_capture_count
+        return "┃" * self.boss_capture_count
 
 
 RANK_LADDER: Final[tuple[RankDefinition, ...]] = (
