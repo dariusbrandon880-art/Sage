@@ -38,3 +38,27 @@ def test_chatgpt_immersion_is_read_only() -> None:
 
     assert response.immersion_envelope.read_only is True
     assert response.immersion_envelope.authority == "canonical_immersion_state"
+
+
+def test_chatgpt_immersion_renders_strike_feed() -> None:
+    from sage.c2.immersion_projection import StrikeEvent, StrikeFeedProjection
+
+    state = _state()
+    custom_feed = StrikeFeedProjection(
+        events=(
+            StrikeEvent("TARGET ACQUIRED", "🎯", "Custom Frontier", "Gate: Test"),
+            StrikeEvent("TARGET KILLED", "◆", "Seam Closed", "Custom"),
+        )
+    )
+
+    response = project_chatgpt_immersion_response(
+        state,
+        body="Custom strike feed turn",
+        strike_feed=custom_feed,
+    )
+
+    rendered = response.render()
+    assert "04 — STRIKE FEED" in rendered
+    assert "🎯 TARGET ACQUIRED // Custom Frontier" in rendered
+    assert "◆ TARGET KILLED // Seam Closed" in rendered
+    assert "Custom strike feed turn" in rendered

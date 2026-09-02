@@ -27,48 +27,9 @@ class AirspaceRenderer:
 
     @classmethod
     def render_c2_board(cls, state: AirspaceState) -> str:
-        """Renders compact mobile-first C2 Operating Board."""
-        lines = []
-        lines.append("SAGE AIRSPACE // C2 OPERATING PICTURE")
-        lines.append("━" * 42)
-        lines.append(f"STATUS       : {state.mode}")
-        lines.append(f"SESSION      : {state.session_id}")
-
-        if state.active_mission:
-            lines.append(f"MISSION      : {state.active_mission.mission_id} [{state.active_mission.priority}]")
-            lines.append(f"THEATER      : {state.active_mission.theater}")
-        else:
-            lines.append("MISSION      : NONE ACTIVE")
-
-        lines.append("─" * 42)
-        lines.append("STATIONS & QUALIFICATIONS")
-
-        for st_id, station in state.stations.items():
-            cql_bar = cls.render_progress_bar(station.current_cql, total=7, width=8)
-            sql_str = f"SQL-{station.current_sql}" if station.current_sql > 0 else "      "
-            lines.append(
-                f"▪ {station.agent_name:<10} CQL-{station.current_cql} {cql_bar} {sql_str}"
-            )
-
-        lines.append("─" * 42)
-        lines.append("ACTIVE SORTIES")
-        if state.active_sorties:
-            for sortie in state.active_sorties[-3:]:  # Show up to 3 active sorties
-                lines.append(f"• [{sortie.sortie_id}] {sortie.status.value:<14} ({sortie.station.value})")
-                lines.append(f"  Target: {sortie.target[:32]}")
-        else:
-            lines.append("• NO ACTIVE SORTIES")
-
-        lines.append("─" * 42)
-        lines.append("EVIDENCE & FRONTIER")
-        if state.recent_evidence:
-            lines.append(f"✓ Latest Evidence : {state.recent_evidence[-1][:32]}")
-        if state.current_frontiers:
-            lines.append(f"🎯 Current Frontier: {state.current_frontiers[-1][:32]}")
-        lines.append(f"🔓 Next Clearance : {state.next_clearance[:32]}")
-        lines.append("━" * 42)
-
-        return "\n".join(lines)
+        """Renders compact mobile-first Four-Layer C2 Operating Board."""
+        from sage.experimental.airspace.immersion import render_four_layer_hud
+        return render_four_layer_hud(state)
 
     @classmethod
     def render_mission_card(cls, mission: Mission) -> str:
