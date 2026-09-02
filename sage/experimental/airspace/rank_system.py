@@ -1,12 +1,14 @@
 """Canonical SAGE career-rank taxonomy for Queue #02.
 
-Rank is a governed capability designation, not an XP threshold and not a command
-authority. The ladder is shared by every SAGE agent; agent identity, career
-specialization, CQL/SQL, Points, XP, and evidence remain separate concerns.
+Rank is the aggregate result of demonstrated career evolution. It does not
+grant, unlock, or prescribe capabilities, and it is not an XP threshold.
+Capability, workflow evolution, Points, XP, accomplishments, Boss history,
+badges, evidence, and career history remain separate inputs to rank
+assessment.
 
-The vocabulary intentionally blends Marine-style execution/discipline with
-Air Force/airspace-style precision, operations, intelligence, and strategic
-responsibility. These are SAGE immersion titles, not real-world military ranks.
+The ladder intentionally blends Marine-style execution/discipline with Air
+Force/airspace-style precision, operations, intelligence, and responsibility.
+These are SAGE immersion titles, not real-world military ranks.
 """
 
 from __future__ import annotations
@@ -25,49 +27,75 @@ class RankBand(str, Enum):
     ELITE = "ELITE"
 
 
+class BossClass(str, Enum):
+    """Governed Boss classes currently recognized by Queue #02."""
+
+    BIG = "BIG"
+    MAJOR = "MAJOR"
+
+
 @dataclass(frozen=True)
 class RankDefinition:
-    """Immutable definition of one governed SAGE career rank."""
+    """Immutable vocabulary entry; it does not prescribe agent capability."""
 
     level: int
     title: str
     band: RankBand
-    capability: str
-    qualification_requirement: str
-    promotion_evidence: str
+
+
+@dataclass(frozen=True)
+class BossDisplay:
+    """Visual career marker for Boss class and cumulative Boss battle count."""
+
+    boss_class: BossClass
+    boss_kill_count: int
+
+    def __post_init__(self) -> None:
+        if self.boss_kill_count < 0:
+            raise ValueError("Boss kill count must be non-negative.")
+
+    @property
+    def stars(self) -> str:
+        """Render Boss class as the locked one/two-star visual."""
+        return "⭐" if self.boss_class is BossClass.BIG else "⭐⭐"
+
+    @property
+    def stripes(self) -> str:
+        """Render the cumulative Boss-battle tally as Stripe markers."""
+        return "⚔️" * self.boss_kill_count
 
 
 RANK_LADDER: Final[tuple[RankDefinition, ...]] = (
-    RankDefinition(1, "Recruit", RankBand.FOUNDATION, "execute bounded tasks", "CQL-1", "conceptual evidence"),
-    RankDefinition(2, "Private First Class", RankBand.FOUNDATION, "execute repeatable tasks", "CQL-2", "implementation evidence"),
-    RankDefinition(3, "Lance Operator", RankBand.FOUNDATION, "operate a governed workflow", "CQL-2", "verified workflow evidence"),
-    RankDefinition(4, "Corporal Operator", RankBand.FOUNDATION, "own a bounded sortie", "CQL-3", "verified sortie evidence"),
-    RankDefinition(5, "Sergeant Operator", RankBand.FOUNDATION, "lead a bounded execution cell", "CQL-3", "verified leadership evidence"),
-    RankDefinition(6, "Airman Operator", RankBand.AIRSPACE, "execute precise airspace work", "CQL-3", "precision execution evidence"),
-    RankDefinition(7, "Airman First Class", RankBand.AIRSPACE, "sustain reliable operational execution", "CQL-4", "operational evidence"),
-    RankDefinition(8, "Senior Airman", RankBand.AIRSPACE, "coordinate multi-step execution", "CQL-4", "coordination evidence"),
-    RankDefinition(9, "Technical Operator", RankBand.AIRSPACE, "apply technical expertise", "CQL-4", "technical verification evidence"),
-    RankDefinition(10, "Staff Operator", RankBand.AIRSPACE, "supervise governed operations", "CQL-4", "supervision evidence"),
-    RankDefinition(11, "Joint Operator", RankBand.JOINT, "integrate cross-agent execution", "CQL-4", "joint mission evidence"),
-    RankDefinition(12, "Joint Sergeant", RankBand.JOINT, "coordinate cross-domain sorties", "CQL-5", "joint coordination evidence"),
-    RankDefinition(13, "Joint Technical Sergeant", RankBand.JOINT, "integrate technical and operational work", "CQL-5", "integration evidence"),
-    RankDefinition(14, "Joint Master Sergeant", RankBand.JOINT, "mentor and stabilize complex execution", "CQL-5", "sustained capability evidence"),
-    RankDefinition(15, "Joint Gunnery Specialist", RankBand.JOINT, "master precision under complexity", "CQL-5", "precision mastery evidence"),
-    RankDefinition(16, "Operations Flight Lead", RankBand.ADVANCED, "lead continuous operations", "CQL-5", "continuous-operation evidence"),
-    RankDefinition(17, "Mission Flight Lead", RankBand.ADVANCED, "lead multi-front missions", "CQL-6", "adaptive mission evidence"),
-    RankDefinition(18, "Senior Mission Lead", RankBand.ADVANCED, "resolve cross-system dependencies", "CQL-6", "dependency-resolution evidence"),
-    RankDefinition(19, "Command Master Specialist", RankBand.ADVANCED, "govern specialist execution", "CQL-6", "specialist-governance evidence"),
-    RankDefinition(20, "Master Operations Specialist", RankBand.ADVANCED, "sustain adaptive operational capability", "CQL-6", "adaptive operations evidence"),
-    RankDefinition(21, "Squadron Operations Lead", RankBand.STRATEGIC, "direct strategic mission sequencing", "CQL-6", "strategic sequencing evidence"),
-    RankDefinition(22, "Group Operations Lead", RankBand.STRATEGIC, "coordinate multiple operational domains", "CQL-6", "multi-domain evidence"),
-    RankDefinition(23, "Wing Operations Lead", RankBand.STRATEGIC, "shape system-wide operational posture", "CQL-7", "frontier posture evidence"),
-    RankDefinition(24, "Fleet Operations Lead", RankBand.STRATEGIC, "coordinate sustained system capability", "CQL-7", "sustained system evidence"),
-    RankDefinition(25, "Senior Fleet Specialist", RankBand.STRATEGIC, "master strategic specialization", "CQL-7", "strategic mastery evidence"),
-    RankDefinition(26, "Frontier Specialist", RankBand.ELITE, "solve frontier capability problems", "CQL-7", "frontier breakthrough evidence"),
-    RankDefinition(27, "Frontier Master", RankBand.ELITE, "reliably reproduce frontier capability", "CQL-7", "reproducible frontier evidence"),
-    RankDefinition(28, "Elite Mission Specialist", RankBand.ELITE, "execute exceptional governed missions", "CQL-7", "elite mission evidence"),
-    RankDefinition(29, "Elite Systems Specialist", RankBand.ELITE, "integrate frontier system capability", "CQL-7", "system integration evidence"),
-    RankDefinition(30, "Master of Operations", RankBand.ELITE, "demonstrate sustained system-level mastery", "CQL-7", "system-level mastery evidence"),
+    RankDefinition(1, "Recruit", RankBand.FOUNDATION),
+    RankDefinition(2, "Private First Class", RankBand.FOUNDATION),
+    RankDefinition(3, "Lance Operator", RankBand.FOUNDATION),
+    RankDefinition(4, "Corporal Operator", RankBand.FOUNDATION),
+    RankDefinition(5, "Sergeant Operator", RankBand.FOUNDATION),
+    RankDefinition(6, "Airman Operator", RankBand.AIRSPACE),
+    RankDefinition(7, "Airman First Class", RankBand.AIRSPACE),
+    RankDefinition(8, "Senior Airman", RankBand.AIRSPACE),
+    RankDefinition(9, "Technical Operator", RankBand.AIRSPACE),
+    RankDefinition(10, "Staff Operator", RankBand.AIRSPACE),
+    RankDefinition(11, "Joint Operator", RankBand.JOINT),
+    RankDefinition(12, "Joint Sergeant", RankBand.JOINT),
+    RankDefinition(13, "Joint Technical Sergeant", RankBand.JOINT),
+    RankDefinition(14, "Joint Master Sergeant", RankBand.JOINT),
+    RankDefinition(15, "Joint Gunnery Specialist", RankBand.JOINT),
+    RankDefinition(16, "Operations Flight Lead", RankBand.ADVANCED),
+    RankDefinition(17, "Mission Flight Lead", RankBand.ADVANCED),
+    RankDefinition(18, "Senior Mission Lead", RankBand.ADVANCED),
+    RankDefinition(19, "Command Master Specialist", RankBand.ADVANCED),
+    RankDefinition(20, "Master Operations Specialist", RankBand.ADVANCED),
+    RankDefinition(21, "Squadron Operations Lead", RankBand.STRATEGIC),
+    RankDefinition(22, "Group Operations Lead", RankBand.STRATEGIC),
+    RankDefinition(23, "Wing Operations Lead", RankBand.STRATEGIC),
+    RankDefinition(24, "Fleet Operations Lead", RankBand.STRATEGIC),
+    RankDefinition(25, "Senior Fleet Specialist", RankBand.STRATEGIC),
+    RankDefinition(26, "Frontier Specialist", RankBand.ELITE),
+    RankDefinition(27, "Frontier Master", RankBand.ELITE),
+    RankDefinition(28, "Elite Mission Specialist", RankBand.ELITE),
+    RankDefinition(29, "Elite Systems Specialist", RankBand.ELITE),
+    RankDefinition(30, "Master of Operations", RankBand.ELITE),
 )
 
 RANK_BY_LEVEL: Final[dict[int, RankDefinition]] = {rank.level: rank for rank in RANK_LADDER}
@@ -82,7 +110,7 @@ def rank_for_level(level: int) -> RankDefinition:
 
 
 def validate_rank_progression(current_level: int, target_level: int) -> None:
-    """Enforce sequential promotion; XP alone is intentionally irrelevant here."""
+    """Enforce sequential rank movement; XP alone does not define rank."""
     if current_level < 0 or target_level < 1:
         raise ValueError("Rank levels must be non-negative and target level must be positive.")
     if target_level > len(RANK_LADDER):
