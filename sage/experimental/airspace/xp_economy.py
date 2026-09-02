@@ -17,7 +17,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from sage.experimental.airspace.models import GameProgression, StationID, XPCategory, XPEvent as CanonicalXPEvent
 
 
-POINT_TO_XP = Decimal("10")
+POINT_TO_XP = Decimal("0.1")
 
 
 @dataclass(frozen=True)
