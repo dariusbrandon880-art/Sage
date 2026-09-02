@@ -107,3 +107,22 @@ def test_chatgpt_client_create_interface_transport():
     assert projection.session_id == "session-1"
     assert projection.station_identity == "[SAGE::C2::CHATGPT]"
     assert projection.immersion["flight_id"] == "C2:session-1"
+
+
+def test_observation_never_mutates_canonical_runtime_state():
+    r = runtime()
+    before_digest = r.state.digest()
+    view = RuntimeView()
+    adapter = InterfaceTransportAdapter(
+        r,
+        immersion_projector=lambda session_id: build_chatgpt_immersion_state(
+            view,
+            session_id=session_id,
+            c2_context={"active_objective": "Immersion", "active_task": "Verify transport"},
+        ),
+    )
+
+    adapter.observe(InterfaceObservation("session-1", "dom-2", 1, "untrusted telemetry", True))
+
+    assert r.state.digest() == before_digest
+    assert r.state.active_frontier == "chatgpt-boundary"
