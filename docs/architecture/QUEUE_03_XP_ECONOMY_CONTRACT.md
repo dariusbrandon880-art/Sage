@@ -1,34 +1,34 @@
 # Queue #03 — XP Economy Contract
 
-**Status:** LOCKED — conversion v0.1
+**Status:** LOCKED — conversion v0.2
 **Queue:** 03 — XP Economy
 **Branch:** `c2/xp-economy-step-03-reconciled`
 
 ## Core rule
 
-SAGE career XP is a **deterministic progression currency derived from verified Points**.
+SAGE career XP is a deterministic progression currency derived from verified Points.
 
 **Locked conversion:**
 
-`1 verified Point = 10 career XP`
+`100 verified Points = 10 career XP`
 
 Therefore:
 
-`XP_awarded = verified_points × 10`
+`1 verified Point = 0.1 career XP`
+
+`XP_awarded = verified_points × 0.1`
 
 `XP_lifetime = Σ verified_XP_awards`
 
 There is no random roll, casino-style variance, streak multiplier, or hidden modifier in the career-XP conversion.
 
-## Why this model
+## Precision
 
-Game-economy research recommends quantitative modeling and simulation for progression pacing. Casino mechanics provide a useful lesson about reward anticipation and variance, but that lesson is intentionally bounded here: optional presentation/reward loops may use game-like engagement patterns, while the career ledger remains deterministic, inspectable, and fair.
-
-A verified event must produce the same career XP every time it carries the same verified Point value.
+Conversion uses exact decimal arithmetic. Fractional XP is preserved and must never be silently rounded.
 
 ## Accounting contract
 
-Every XP award is represented by an auditable event containing:
+Every conversion receipt is represented by an auditable event containing:
 
 - `event_id` — source event / mission / evidence identity;
 - `agent_id` — agent receiving individual attribution;
@@ -37,28 +37,29 @@ Every XP award is represented by an auditable event containing:
 
 Lifetime XP is the sum of verified XP awards. XP is not created merely because time elapsed, a message was sent, or a task was claimed.
 
-## Precision and validity
+## Validity
 
 - Point input is an integer.
 - Negative Points are rejected.
 - Boolean values are rejected as invalid Point inputs.
-- Conversion is exact integer arithmetic at the locked 10:1 ratio.
 - Missing event or agent identity is rejected at event construction.
+- Fractional results such as `25 Points = 2.5 XP` are preserved exactly in conversion receipts.
+- The existing canonical `GameProgression` ledger currently accepts whole-XP awards; its adapter rejects fractional awards rather than silently rounding them. Extending canonical persistence to fractional XP is an explicit integration concern and is not silently changed by Queue #03.
 
 ## Worked examples
 
 | Verified Points | Career XP |
 |---:|---:|
-| 1 | 10 |
-| 5 | 50 |
-| 10 | 100 |
-| 25 | 250 |
-| 50 | 500 |
-| 100 | 1,000 |
-| 250 | 2,500 |
-| 500 | 5,000 |
+| 1 | 0.1 |
+| 5 | 0.5 |
+| 10 | 1 |
+| 25 | 2.5 |
+| 50 | 5 |
+| 100 | 10 |
+| 250 | 25 |
+| 500 | 50 |
 
-These examples intentionally align with the Point denominations reserved for Queue #04.
+These examples align with the Point denominations reserved for Queue #04.
 
 ## Progression relationship
 
@@ -89,15 +90,16 @@ Those queues may constrain how XP events are admitted, but they do not alter thi
 
 1. **Deterministic:** identical verified inputs produce identical XP.
 2. **Attributable:** every award has event and agent lineage.
-3. **No randomness:** career XP is not a variable-ratio reward mechanism.
-4. **No time farming:** elapsed time is not an XP source.
-5. **No hidden multipliers:** modifiers must not exist outside this contract.
-6. **Auditable:** lifetime totals are reconstructible from verified events.
-7. **Stable:** historical awards do not change because a later curve is tuned.
-8. **Separable:** optional game-like reward presentation cannot corrupt the career ledger.
+3. **Exact:** fractional XP is preserved; no silent rounding.
+4. **No randomness:** career XP is not a variable-ratio reward mechanism.
+5. **No time farming:** elapsed time is not an XP source.
+6. **No hidden multipliers:** modifiers must not exist outside this contract.
+7. **Auditable:** lifetime totals are reconstructible from verified events.
+8. **Stable:** historical awards do not change because a later curve is tuned.
+9. **Separable:** optional game-like reward presentation cannot corrupt the career ledger.
 
 ## Verification
 
-The implementation at `sage/experimental/airspace/xp_economy.py` provides deterministic conversion, event lineage, validation, and lifetime accumulation. Regression coverage is in `tests/experimental/test_xp_economy.py`.
+The implementation at `sage/experimental/airspace/xp_economy.py` provides deterministic decimal conversion, event lineage, validation, lifetime accumulation, and a guarded adapter into canonical progression. Regression coverage is in `tests/experimental/test_xp_economy.py`.
 
-**Queue #03 conversion v0.1 is locked.**
+**Queue #03 conversion v0.2 is locked.**
