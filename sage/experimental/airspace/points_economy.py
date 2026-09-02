@@ -52,7 +52,7 @@ class PointAward:
     """Immutable verified point award attached to one unique evidence event."""
 
     event_id: str
-    station_id: str
+    agent_id: str
     event_type: PointEventType
     base_points: int
     difficulty: int
@@ -73,8 +73,8 @@ class PointAward:
         ):
             if value < 1 or value > 5:
                 raise ValueError(f"Point award rejected: {name} must be between 1 and 5.")
-        if not self.station_id.strip():
-            raise ValueError("Point award rejected: station_id is required.")
+        if not self.agent_id.strip():
+            raise ValueError("Point award rejected: agent_id is required.")
         if not self.verified_event_ref.strip():
             raise ValueError("Point award rejected: verified_event_ref is required.")
         if not self.evidence_refs:
@@ -109,17 +109,17 @@ class PointsLedger:
     def awards(self) -> tuple[PointAward, ...]:
         return tuple(self._awards.values())
 
-    def verified_points_for_station(self, station_id: str) -> int:
-        return sum(a.verified_points for a in self._awards.values() if a.station_id == station_id)
+    def verified_points_for_agent(self, agent_id: str) -> int:
+        return sum(a.verified_points for a in self._awards.values() if a.agent_id == agent_id)
 
     def verified_points_total(self) -> int:
         return sum(a.verified_points for a in self._awards.values())
 
-    def career_xp_for_station(self, station_id: str) -> int:
-        return self.verified_points_for_station(station_id) // self.POINTS_PER_XP
+    def career_xp_for_agent(self, agent_id: str) -> int:
+        return self.verified_points_for_agent(agent_id) // self.POINTS_PER_XP
 
     def career_xp_total(self) -> int:
         return self.verified_points_total() // self.POINTS_PER_XP
 
-    def unconverted_points_for_station(self, station_id: str) -> int:
-        return self.verified_points_for_station(station_id) % self.POINTS_PER_XP
+    def unconverted_points_for_agent(self, agent_id: str) -> int:
+        return self.verified_points_for_agent(agent_id) % self.POINTS_PER_XP
