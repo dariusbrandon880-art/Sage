@@ -1,10 +1,8 @@
 """Governed career XP conversion primitives for SAGE.
 
-Queue #03 deliberately keeps the conversion deterministic. Casino-style
-variable reinforcement is useful for optional presentation/reward loops, but
-career XP must remain auditable and attributable to verified work. Randomness
-must never change the amount of career XP earned for the same verified Point
-value.
+Queue #03 keeps the conversion deterministic. Casino-style variable
+reinforcement may inform optional presentation, but career XP remains
+auditable and attributable to verified work.
 
 The conversion layer does not own career state. Canonical ``GameProgression``
 remains the authoritative XP ledger; ``award_verified_points`` is the governed
@@ -12,11 +10,12 @@ adapter from verified Points into that existing ledger.
 """
 
 from dataclasses import dataclass
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal
 
 from sage.experimental.airspace.models import GameProgression, StationID, XPCategory, XPEvent as CanonicalXPEvent
 
 
+# 100 verified Points = 10 career XP.
 POINT_TO_XP = Decimal("0.1")
 
 
@@ -27,20 +26,16 @@ class XPEvent:
     event_id: str
     agent_id: str
     verified_points: int
-    xp_awarded: int
+    xp_awarded: Decimal
 
 
-def points_to_xp(verified_points: int) -> int:
-    """Convert verified Points to career XP using the locked 10:1 ratio."""
+def points_to_xp(verified_points: int) -> Decimal:
+    """Convert verified Points to career XP at 100 Points = 10 XP."""
     if isinstance(verified_points, bool) or not isinstance(verified_points, int):
         raise TypeError("verified_points must be an integer")
     if verified_points < 0:
         raise ValueError("verified_points cannot be negative")
-    return int(
-        (Decimal(verified_points) * POINT_TO_XP).quantize(
-            Decimal("1"), rounding=ROUND_HALF_UP
-        )
-    )
+    return Decimal(verified_points) * POINT_TO_XP
 
 
 def build_xp_event(event_id: str, agent_id: str, verified_points: int) -> XPEvent:
@@ -57,9 +52,9 @@ def build_xp_event(event_id: str, agent_id: str, verified_points: int) -> XPEven
     )
 
 
-def accumulate_xp(events: list[XPEvent]) -> int:
+def accumulate_xp(events: list[XPEvent]) -> Decimal:
     """Return the XP represented by verified conversion receipts."""
-    return sum(event.xp_awarded for event in events)
+    return sum((event.xp_awarded for event in events), Decimal("0"))
 
 
 def award_verified_points(
@@ -72,15 +67,18 @@ def award_verified_points(
 ) -> CanonicalXPEvent:
     """Convert verified Points and append the result to canonical GameProgression.
 
-    This is the Queue #03 integration seam: Point conversion happens here, but
-    persistent career XP remains owned by the existing canonical progression
-    model. No second XP ledger is created.
+    Canonical progression currently stores integer XP amounts, so this adapter
+    accepts only conversions that resolve to whole XP. Fractional conversions
+    remain representable by the conversion receipt and must not be silently
+    rounded.
     """
     amount = points_to_xp(verified_points)
+    if amount != amount.to_integral_value():
+        raise ValueError("Canonical XP ledger requires whole XP for this award")
     return progression.award_xp(
         station_id=station_id,
         category=category,
-        amount=amount,
+        amount=int(amount),
         reason=reason,
         verified_event_ref=verified_event_ref,
     )
