@@ -51,6 +51,16 @@ def render_milestone_strike(stars: int) -> str:
     return f"MILESTONE STRIKE: {earned or '—'}"
 
 
+def _display_xp(value: Any) -> Any:
+    """Keep legacy integer-shaped projections while preserving fractional XP."""
+    try:
+        if value == value.to_integral_value():
+            return int(value)
+    except AttributeError:
+        pass
+    return value
+
+
 def render_agent_nameplate(
     state: AirspaceState,
     station_id: StationID,
@@ -59,7 +69,7 @@ def render_agent_nameplate(
 ) -> str:
     """Render stable progression data from canonical state."""
     station = state.stations[station_id]
-    xp = state.game_progression.get_total_xp_for_station(station_id)
+    xp = _display_xp(state.game_progression.get_total_xp_for_station(station_id))
     icon = STATION_ICONS.get(station_id, "▪")
     sql = f" SQL-{station.current_sql}" if station.current_sql > 0 else ""
 
@@ -100,7 +110,7 @@ def build_agent_identity(
         "role": station.role_description,
         "cql": station.current_cql,
         "sql": station.current_sql,
-        "xp": state.game_progression.get_total_xp_for_station(station_id),
+        "xp": _display_xp(state.game_progression.get_total_xp_for_station(station_id)),
         "state": state_label,
         "read_only": True,
         "authority": "canonical_airspace_state",
