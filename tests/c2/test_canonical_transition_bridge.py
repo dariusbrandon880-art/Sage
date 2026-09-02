@@ -23,7 +23,11 @@ def _response(action_type="SET_TASK", target="canonical_runtime_state", paramete
 
 class _Runtime:
     def __init__(self):
-        self.current_state = SimpleNamespace(current_objective="objective", active_task="old task", model_dump=lambda: {"current_objective": "objective", "active_task": "old task"})
+        self.current_state = SimpleNamespace(current_objective="objective", active_task="old task")
+        self.current_state.model_dump = lambda: {
+            "current_objective": self.current_state.current_objective,
+            "active_task": self.current_state.active_task,
+        }
         self.bond_manager = SimpleNamespace(execute_transition=lambda state, payload: {"last_applied_transition": "bond-1"})
         self.authority_gate = SimpleNamespace(request_mutation=self._mutate)
         self.context_tracker = SimpleNamespace(record_transition=self._record)
