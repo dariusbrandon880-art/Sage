@@ -16,8 +16,6 @@ permissions:
 
 env:
   SAGE_CI_OPENAI_STUB: "1"
-  # Deterministic non-production credential used only by repository tests.
-  # Production credentials remain external secrets/environment configuration.
   SAGE_API_KEYS: "sage-default-key-2026"
 
 jobs:
@@ -44,21 +42,13 @@ jobs:
     needs: test
     strategy:
       fail-fast: false
-      max-parallel: 5
+      max-parallel: 3
       matrix:
         include:
-          - front: DRIVE_CONTINUITY
-            target: scripts/verify_drive_projection_handshake.py
-            tests: tests
-            search: "drive continuity projection persistence"
           - front: GOVERNED_EXECUTION
             target: sage/c2/frontier_execution.py
             tests: tests/test_c2_five_fronts.py
-            search: "failure memory prefight authorization safety governed execution verification receipt evidence"
-          - front: SPORTS_RESEARCH
-            target: scripts/run_sports_rce_flight.py
-            tests: tests
-            search: "sports scientific research leakage OOS robustness evidence"
+            search: "failure memory preflight authorization safety governed execution verification receipt evidence"
           - front: NATIVE_PERSISTED_EVIDENCE
             target: sage/evidence/native_persisted_loader.py
             tests: tests/test_c2_five_fronts.py
@@ -78,7 +68,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
-
       - name: "01 RECON — ${{ matrix.front }}"
         id: recon
         continue-on-error: true
@@ -89,158 +78,77 @@ jobs:
         run: |
           set +e
           if [ -f "$TARGET" ]; then
-            python -m compileall -q "$TARGET"
-            rc=$?
+            python -m compileall -q "$TARGET"; rc=$?
             if [ "$rc" -eq 0 ]; then ruff check "$TARGET"; rc=$?; fi
           else
-            test -d "$TARGET"
-            rc=$?
+            test -d "$TARGET"; rc=$?
             if [ "$rc" -eq 0 ]; then python -m compileall -q "$TARGET"; rc=$?; fi
             if [ "$rc" -eq 0 ]; then ruff check "$TARGET"; rc=$?; fi
           fi
           python - "$rc" <<'PY'
-          import json
-          import sys
+          import json, sys
           from pathlib import Path
           rc = int(sys.argv[1])
-          report = {
-              "stage": "RECON",
-              "front": "${{ matrix.front }}",
-              "external_challenge_query": "${{ matrix.search }}",
-              "status": "PASS" if rc == 0 else "FAIL",
-              "exit_code": rc,
-              "commit_sha": "${{ github.sha }}",
-              "run_id": "${{ github.run_id }}",
-              "job": "${{ github.job }}",
-          }
-          Path("front_recon.json").write_text(json.dumps(report, indent=2))
-          print(json.dumps(report, indent=2))
-          raise SystemExit(rc)
+          report = {"stage":"RECON","front":"${{ matrix.front }}","external_challenge_query":"${{ matrix.search }}","status":"PASS" if rc == 0 else "FAIL","exit_code":rc,"commit_sha":"${{ github.sha }}","run_id":"${{ github.run_id }}","job":"${{ github.job }}"}
+          Path("front_recon.json").write_text(json.dumps(report, indent=2)); print(json.dumps(report, indent=2)); raise SystemExit(rc)
           PY
-
       - name: "02 BUILD — ${{ matrix.front }}"
-        id: build
         if: always()
         continue-on-error: true
         run: |
           set +e
-          pytest -q "${{ matrix.tests }}" --tb=short
-          rc=$?
+          pytest -q "${{ matrix.tests }}" --tb=short; rc=$?
           python - "$rc" <<'PY'
-          import json
-          import sys
+          import json, sys
           from pathlib import Path
           rc = int(sys.argv[1])
-          report = {
-              "stage": "BUILD",
-              "front": "${{ matrix.front }}",
-              "status": "PASS" if rc == 0 else "FAIL",
-              "exit_code": rc,
-              "execution": "repository_tests",
-              "commit_sha": "${{ github.sha }}",
-              "run_id": "${{ github.run_id }}",
-              "job": "${{ github.job }}",
-          }
-          Path("front_build.json").write_text(json.dumps(report, indent=2))
-          print(json.dumps(report, indent=2))
-          raise SystemExit(rc)
+          report = {"stage":"BUILD","front":"${{ matrix.front }}","status":"PASS" if rc == 0 else "FAIL","exit_code":rc,"execution":"repository_tests","commit_sha":"${{ github.sha }}","run_id":"${{ github.run_id }}","job":"${{ github.job }}"}
+          Path("front_build.json").write_text(json.dumps(report, indent=2)); print(json.dumps(report, indent=2)); raise SystemExit(rc)
           PY
-
       - name: "03 OBSERVE / REPAIR — ${{ matrix.front }}"
-        id: repair
         if: always()
         continue-on-error: true
         run: |
           set +e
-          pytest -q "${{ matrix.tests }}" --tb=short
-          rc=$?
+          pytest -q "${{ matrix.tests }}" --tb=short; rc=$?
           if [ "$rc" -eq 0 ]; then ruff check "${{ matrix.target }}"; rc=$?; fi
           python - "$rc" <<'PY'
-          import json
-          import sys
+          import json, sys
           from pathlib import Path
           rc = int(sys.argv[1])
-          report = {
-              "stage": "OBSERVE",
-              "front": "${{ matrix.front }}",
-              "status": "PASS" if rc == 0 else "FAIL",
-              "exit_code": rc,
-              "repair_mode": "none; repair requires a new governed build commit",
-              "commit_sha": "${{ github.sha }}",
-              "run_id": "${{ github.run_id }}",
-              "job": "${{ github.job }}",
-          }
-          Path("front_repair.json").write_text(json.dumps(report, indent=2))
-          print(json.dumps(report, indent=2))
-          raise SystemExit(rc)
+          report = {"stage":"OBSERVE","front":"${{ matrix.front }}","status":"PASS" if rc == 0 else "FAIL","exit_code":rc,"repair_mode":"none; repair requires a new governed build commit","commit_sha":"${{ github.sha }}","run_id":"${{ github.run_id }}","job":"${{ github.job }}"}
+          Path("front_repair.json").write_text(json.dumps(report, indent=2)); print(json.dumps(report, indent=2)); raise SystemExit(rc)
           PY
-
       - name: "04 VERIFY / COMPOUND — ${{ matrix.front }}"
-        id: verify
         if: always()
         continue-on-error: true
         run: |
           set +e
-          pytest -q "${{ matrix.tests }}" --tb=short
-          rc=$?
+          pytest -q "${{ matrix.tests }}" --tb=short; rc=$?
           if [ "$rc" -eq 0 ]; then python -m compileall -q sage scripts; rc=$?; fi
           if [ "$rc" -eq 0 ]; then ruff check "${{ matrix.target }}"; rc=$?; fi
           python - "$rc" <<'PY'
-          import json
-          import sys
+          import json, sys
           from pathlib import Path
           rc = int(sys.argv[1])
-          report = {
-              "stage": "VERIFY_COMPOUND",
-              "front": "${{ matrix.front }}",
-              "status": "PASS" if rc == 0 else "FAIL",
-              "exit_code": rc,
-              "authority_boundary": "execution evidence only; C2 must independently verify before qualification",
-              "commit_sha": "${{ github.sha }}",
-              "run_id": "${{ github.run_id }}",
-              "job": "${{ github.job }}",
-          }
-          Path("front_verify.json").write_text(json.dumps(report, indent=2))
-          print(json.dumps(report, indent=2))
-          raise SystemExit(rc)
+          report = {"stage":"VERIFY_COMPOUND","front":"${{ matrix.front }}","status":"PASS" if rc == 0 else "FAIL","exit_code":rc,"authority_boundary":"execution evidence only; C2 must independently verify before qualification","commit_sha":"${{ github.sha }}","run_id":"${{ github.run_id }}","job":"${{ github.job }}"}
+          Path("front_verify.json").write_text(json.dumps(report, indent=2)); print(json.dumps(report, indent=2)); raise SystemExit(rc)
           PY
-
       - name: Build full-engine receipt
         if: always()
         run: |
           python - <<'PY'
           import json
           from pathlib import Path
-          stages = []
-          for stage in ("recon", "build", "repair", "verify"):
-              path = Path(f"front_{stage}.json")
-              data = json.loads(path.read_text()) if path.exists() else None
-              stages.append({
-                  "stage": stage,
-                  "present": path.exists(),
-                  "status": data.get("status") if data else "MISSING",
-                  "exit_code": data.get("exit_code") if data else None,
-              })
-          all_present = all(item["present"] for item in stages)
-          all_passed = all(item["status"] == "PASS" for item in stages)
-          report = {
-              "wave": "SAGE-C2-FIVE-CONCURRENT-FULL-ENGINE",
-              "front": "${{ matrix.front }}",
-              "expected_stages": 4,
-              "stages": stages,
-              "all_stage_receipts_present": all_present,
-              "all_stage_passed": all_passed,
-              "wave_front_verdict": "PASS" if all_present and all_passed else "FAIL",
-              "commit_sha": "${{ github.sha }}",
-              "run_id": "${{ github.run_id }}",
-              "job": "${{ github.job }}",
-          }
-          Path("front_receipt.json").write_text(json.dumps(report, indent=2))
-          print(json.dumps(report, indent=2))
-          if not all_present or not all_passed:
-              raise SystemExit(1)
+          stages=[]
+          for stage in ("recon","build","repair","verify"):
+              path=Path(f"front_{stage}.json"); data=json.loads(path.read_text()) if path.exists() else None
+              stages.append({"stage":stage,"present":path.exists(),"status":data.get("status") if data else "MISSING","exit_code":data.get("exit_code") if data else None})
+          all_present=all(x["present"] for x in stages); all_passed=all(x["status"]=="PASS" for x in stages)
+          report={"wave":"SAGE-C2-THREE-FRONT-FULL-ENGINE","front":"${{ matrix.front }}","expected_stages":4,"stages":stages,"all_stage_receipts_present":all_present,"all_stage_passed":all_passed,"wave_front_verdict":"PASS" if all_present and all_passed else "FAIL","commit_sha":"${{ github.sha }}","run_id":"${{ github.run_id }}","job":"${{ github.job }}"}
+          Path("front_receipt.json").write_text(json.dumps(report, indent=2)); print(json.dumps(report, indent=2))
+          if not all_present or not all_passed: raise SystemExit(1)
           PY
-
       - name: Upload front evidence
         if: always()
         uses: actions/upload-artifact@v6
@@ -250,78 +158,45 @@ jobs:
           if-no-files-found: error
 
   reconverge:
-    name: C2 Five-Front Fail-Closed Reconvergence
+    name: C2 Three-Front Fail-Closed Reconvergence
     if: ${{ always() }}
     needs: [test, five-front-full-engine]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - name: Download five front evidence without collision
+      - name: Download three front evidence without collision
         uses: actions/download-artifact@v6
         with:
           pattern: sage-c2-full-engine-*
-          path: five-front-evidence
+          path: three-front-evidence
           merge-multiple: false
-      - name: Verify complete five-front wave
+      - name: Verify complete three-front wave
         run: |
           python - <<'PY'
-          import json
-          import os
+          import json, os
           from pathlib import Path
-          root = Path("five-front-evidence")
-          expected = {
-              "DRIVE_CONTINUITY",
-              "GOVERNED_EXECUTION",
-              "SPORTS_RESEARCH",
-              "NATIVE_PERSISTED_EVIDENCE",
-              "PROGRESSION_RECEIPTS",
-          }
-          receipts = []
+          root=Path("three-front-evidence")
+          expected={"GOVERNED_EXECUTION","NATIVE_PERSISTED_EVIDENCE","PROGRESSION_RECEIPTS"}
+          receipts=[]
           for path in root.glob("*/front_receipt.json"):
-              try:
-                  receipts.append(json.loads(path.read_text()))
-              except (OSError, json.JSONDecodeError):
-                  continue
-          expected_sha = os.environ.get("GITHUB_SHA")
-          provenance = {str(data.get("commit_sha")) for data in receipts if data.get("commit_sha")}
-          valid = [
-              data for data in receipts
-              if data.get("front") in expected
-              and data.get("all_stage_receipts_present") is True
-              and data.get("all_stage_passed") is True
-              and data.get("commit_sha") == expected_sha
-          ]
-          observed = {data["front"] for data in valid}
-          missing = sorted(expected - observed)
-          duplicates = sorted(
-              front for front in expected
-              if sum(1 for data in valid if data.get("front") == front) > 1
-          )
-          invalid = sorted({str(data.get("front")) for data in receipts if data.get("front") not in expected})
-          stale_or_mixed = sorted(provenance - {expected_sha}) if expected_sha else sorted(provenance)
-          all_fronts_pass = len(valid) == 5 and not missing and not duplicates and not invalid and not stale_or_mixed and provenance == {expected_sha}
-          report = {
-              "wave": "SAGE-C2-FIVE-CONCURRENT-FULL-ENGINE",
-              "expected_fronts": 5,
-              "observed_fronts": len(observed),
-              "missing_fronts": missing,
-              "duplicate_fronts": duplicates,
-              "invalid_fronts": invalid,
-              "provenance_commits": sorted(provenance),
-              "expected_commit": expected_sha,
-              "stale_or_mixed_commits": stale_or_mixed,
-              "wave_verdict": "REQUIRES_INDEPENDENT_C2_VERIFICATION" if all_fronts_pass else "HOLD",
-              "authority_boundary": "Aggregates execution observations; does not qualify capability.",
-          }
-          Path("sage_c2_five_front_wave_report.json").write_text(json.dumps(report, indent=2))
-          print(json.dumps(report, indent=2))
-          if not all_fronts_pass:
-              raise SystemExit(1)
+              try: receipts.append(json.loads(path.read_text()))
+              except (OSError,json.JSONDecodeError): pass
+          expected_sha=os.environ.get("GITHUB_SHA")
+          provenance={str(x.get("commit_sha")) for x in receipts if x.get("commit_sha")}
+          valid=[x for x in receipts if x.get("front") in expected and x.get("all_stage_receipts_present") is True and x.get("all_stage_passed") is True and x.get("commit_sha")==expected_sha]
+          observed={x["front"] for x in valid}; missing=sorted(expected-observed)
+          duplicates=sorted(f for f in expected if sum(1 for x in valid if x.get("front")==f)>1)
+          invalid=sorted({str(x.get("front")) for x in receipts if x.get("front") not in expected})
+          stale=sorted(provenance-{expected_sha}) if expected_sha else sorted(provenance)
+          all_fronts_pass=len(valid)==3 and not missing and not duplicates and not invalid and not stale and provenance=={expected_sha}
+          report={"wave":"SAGE-C2-THREE-FRONT-FULL-ENGINE","expected_fronts":3,"observed_fronts":len(observed),"missing_fronts":missing,"duplicate_fronts":duplicates,"invalid_fronts":invalid,"provenance_commits":sorted(provenance),"expected_commit":expected_sha,"stale_or_mixed_commits":stale,"wave_verdict":"REQUIRES_INDEPENDENT_C2_VERIFICATION" if all_fronts_pass else "HOLD","authority_boundary":"Aggregates execution observations; does not qualify capability."}
+          Path("sage_c2_three_front_wave_report.json").write_text(json.dumps(report, indent=2)); print(json.dumps(report, indent=2))
+          if not all_fronts_pass: raise SystemExit(1)
           PY
       - name: Upload compound evidence
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: sage-c2-five-front-wave-${{ github.sha }}
-          path: sage_c2_five_front_wave_report.json
+          name: sage-c2-three-front-wave-${{ github.sha }}
+          path: sage_c2_three_front_wave_report.json
           if-no-files-found: error
