@@ -119,12 +119,12 @@ def validate_rank_progression(current_level: int, target_level: int) -> None:
     """Enforce sequential rank movement; XP alone does not define rank."""
     if current_level < 0 or target_level < 1:
         raise ValueError("Rank levels must be non-negative and target level must be positive.")
-    if target_level > len(RANK_LADDER):
-        raise ValueError(f"Rank level {target_level} exceeds the locked ladder.")
     if target_level != current_level + 1:
         raise ValueError(
             f"Rank skipping rejected: cannot promote from {current_level} to {target_level}."
         )
+    if target_level > len(RANK_LADDER):
+        raise ValueError(f"Rank level {target_level} exceeds the locked ladder.")
 
 
 def is_c2_rank_title(title: str) -> bool:
