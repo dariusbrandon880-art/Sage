@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from enum import Enum
 from typing import Dict
+from decimal import Decimal
 
 from pydantic import BaseModel, Field
 
@@ -31,7 +32,7 @@ class CareerProjection(BaseModel):
     agent_id: AgentIdentity
     station_id: StationID
     role_description: str
-    career_xp: int = 0
+    career_xp: Decimal = Decimal("0")
     cql_level: int = 0
     sql_level: int = 0
     evidence_count: int = 0
