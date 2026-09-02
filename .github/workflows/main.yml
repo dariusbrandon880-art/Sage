@@ -16,6 +16,9 @@ permissions:
 
 env:
   SAGE_CI_OPENAI_STUB: "1"
+  # Deterministic non-production credential used only by repository tests.
+  # Production credentials remain external secrets/environment configuration.
+  SAGE_API_KEYS: "sage-default-key-2026"
 
 jobs:
   test:
