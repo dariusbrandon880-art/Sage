@@ -1,8 +1,8 @@
 """Verified Points -> Career XP economy for SAGE career progression.
 
 Points are event-level performance accounting. Career XP is durable progression.
-Both require evidence-backed, unique verified events. The scoring is bounded,
-deterministic, replay-protected, and designed for calibration through tests.
+Both require evidence-backed, unique verified events. Point values are explicit,
+deterministic, replay-protected, and attached to verification-quality metadata.
 """
 
 from __future__ import annotations
@@ -82,9 +82,8 @@ class PointAward:
 
     @property
     def verified_points(self) -> int:
-        """Deterministic verified points after bounded 1x-5x quality weighting."""
-        multiplier_sum = self.difficulty + self.verification_quality + self.impact + self.reuse
-        return max(1, round(self.base_points * multiplier_sum / 4))
+        """Return the explicit event award; quality dimensions remain auditable metadata."""
+        return self.base_points
 
 
 class PointsLedger:
