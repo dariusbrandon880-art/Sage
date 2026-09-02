@@ -34,6 +34,7 @@ def test_chatgpt_controller_render_and_evidence():
     assert response.session_id == "session_c2_test"
     assert response.model == "gpt-4"
     assert response.governed is True
+    assert response.provider_execution == "override"
     assert response.evidence_id.startswith("mem_chatgpt_")
 
     # Verify memory evidence
@@ -44,10 +45,50 @@ def test_chatgpt_controller_render_and_evidence():
     assert mem.content["prompt"] == "Analyze mission control status"
     assert "[SAGE::C2::CHATGPT] Mission control status verified." in mem.content["response"]
     assert mem.content["bind_to_decision"] == decision_id
+    assert mem.content["provider_execution"] == "override"
 
     # Verify decision evidence binding
     decision = runtime.decisions.retrieve_decision(decision_id)
     assert response.evidence_id in decision.evidence
+
+
+def test_chatgpt_controller_bind_to_invalid_decision_fails_closed(monkeypatch):
+    runtime = SAGERuntime()
+    runtime.start()
+    controller = ChatGPTController(runtime)
+
+    request = ChatRenderRequest(
+        prompt="Analyze mission control status",
+        session_id="session_invalid_decision_test",
+        model="gpt-4",
+        bind_to_decision="non_existent_decision_12345",
+    )
+
+    try:
+        controller.render(
+            request, response_override="[SAGE::C2::CHATGPT] Test response."
+        )
+        assert False, "Should have raised ValueError for non-existent decision ID"
+    except ValueError as e:
+        assert "non_existent_decision_12345" in str(e)
+
+
+def test_chatgpt_controller_offline_fallback(monkeypatch):
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    runtime = SAGERuntime()
+    runtime.start()
+    controller = ChatGPTController(runtime)
+
+    request = ChatRenderRequest(
+        prompt="Test offline fallback render",
+        session_id="session_offline_fallback",
+        model="gpt-4",
+    )
+
+    response = controller.render(request)
+    assert response.provider_execution == "offline_fallback"
+    assert "[SAGE::C2::CHATGPT]" in response.content
+    assert "Governed response for prompt" in response.content
 
 
 def test_chatgpt_controller_render_stream():

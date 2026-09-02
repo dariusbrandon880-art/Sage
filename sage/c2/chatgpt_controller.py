@@ -33,6 +33,7 @@ class ChatRenderResponse(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc).isoformat()
     )
     governed: bool = True
+    provider_execution: str = "offline_fallback"
     usage: dict[str, Any] | None = None
 
 
@@ -59,7 +60,10 @@ class ChatGPTController:
             if not getattr(self.runtime.current_state, "active_task", None) and hasattr(self.runtime, "set_task"):
                 self.runtime.set_task(f"ChatGPT Render: {request.prompt[:50]}")
 
-        if response_override is None and not os.environ.get("OPENAI_API_KEY", "").strip():
+        if response_override is not None:
+            provider_execution = "override"
+        elif not os.environ.get("OPENAI_API_KEY", "").strip():
+            provider_execution = "offline_fallback"
             response_override = json.dumps({
                 "station": "[SAGE::C2::CHATGPT]",
                 "reasoning_chain": ["Governed offline execution fallback"],
@@ -73,6 +77,8 @@ class ChatGPTController:
                 "evidence_refs": [],
                 "response_text": f"[SAGE::C2::CHATGPT] Governed response for prompt: {request.prompt[:100]}"
             })
+        else:
+            provider_execution = "openai_provider"
 
         query_req = AIQueryRequest(
             prompt=request.prompt,
@@ -92,6 +98,7 @@ class ChatGPTController:
             "model": model,
             "authenticated": authenticated,
             "bind_to_decision": request.bind_to_decision,
+            "provider_execution": provider_execution,
             "referenced_memories": query_resp.referenced_memories,
             "reasoning_history": query_resp.reasoning_history,
         }
@@ -107,16 +114,21 @@ class ChatGPTController:
         self.runtime.memory.store(memory_obj)
 
         if request.bind_to_decision:
-            try:
-                decision = self.runtime.decisions.retrieve_decision(
-                    request.bind_to_decision
+            if not hasattr(self.runtime, "decisions") or self.runtime.decisions is None:
+                raise ValueError(
+                    f"Runtime decision tracker unavailable to bind decision '{request.bind_to_decision}'"
                 )
-                if decision:
-                    if decision.evidence is None:
-                        decision.evidence = []
-                    decision.evidence.append(evidence_id)
-            except Exception:
-                pass
+            decision = self.runtime.decisions.retrieve_decision(request.bind_to_decision)
+            if not decision:
+                raise ValueError(
+                    f"Decision '{request.bind_to_decision}' not found for evidence binding"
+                )
+            if decision.evidence is None:
+                decision.evidence = []
+            if evidence_id not in decision.evidence:
+                decision.evidence.append(evidence_id)
+            if hasattr(self.runtime.decisions, "_save_decision"):
+                self.runtime.decisions._save_decision(decision)
 
         return ChatRenderResponse(
             content=query_resp.response_text,
@@ -125,6 +137,7 @@ class ChatGPTController:
             evidence_id=evidence_id,
             timestamp=now_str,
             governed=True,
+            provider_execution=provider_execution,
             usage={"prompt_tokens": len(request.prompt.split()), "completion_tokens": len(query_resp.response_text.split())},
         )
 

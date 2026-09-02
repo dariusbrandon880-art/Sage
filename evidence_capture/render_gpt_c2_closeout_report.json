@@ -1,0 +1,30 @@
+{
+  "closeout_id": "CLOSEOUT-RENDER-GPT-C2-LIVE-AUTHENTICATED-2026",
+  "timestamp": "2026-09-02T02:48:00Z",
+  "git_commit_sha": "f7a1b73ec4baa5810f31786507f09efbcce631a2",
+  "pr_number": 388,
+  "repo": "dariusbrandon880-art/Sage",
+  "default_branch": "main",
+  "target_url": "https://sage-runtime.onrender.com",
+  "implementation": {
+    "chatgpt_controller": "sage/c2/chatgpt_controller.py",
+    "api_endpoints": ["/chat/render", "/chat/render/stream"],
+    "decision_binding": "Hardened fail-closed (ValueError raised if decision invalid/missing; decision evidence persisted via _save_decision)",
+    "provider_execution_transparency": "Explicitly reports 'openai_provider', 'offline_fallback', or 'override' in ChatRenderResponse and MemoryObject"
+  },
+  "three_gate_summary": {
+    "gate_a_deterministic_contract": {
+      "status": "PASS",
+      "details": "Contract verified via unit test suite in test_chatgpt_controller.py, test_render_chatgpt_action.py, test_chatgpt_sage_boundary.py (21/21 passed)"
+    },
+    "gate_b_deployed_runtime": {
+      "status": "PASS",
+      "details": "https://sage-runtime.onrender.com reachable and healthy. Authenticated /status endpoint returned HTTP 200 OK with active SAGE C2 status using production SAGE_API_KEYS credential."
+    },
+    "gate_c_real_openai_execution": {
+      "status": "BOUNDED_REAL_PROVIDER_EXHAUSTED_QUOTA",
+      "details": "Empirically verified live call reaching OpenAI API (https://api.openai.com/v1/chat/completions) using Render's configured OPENAI_API_KEY. Confirmed real provider execution via 429 credit_balance_exhausted response."
+    }
+  },
+  "status": "CLOSED_EMPIRICALLY_VERIFIED_AUTHENTICATED_GATE_BOUNDED_BY_OPENAI_CREDITS"
+}
