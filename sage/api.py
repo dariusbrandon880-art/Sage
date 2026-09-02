@@ -8,10 +8,15 @@ from datetime import datetime
 from typing import Any
 
 from fastapi import FastAPI, Header, HTTPException, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
 from sage.acr.skal import process_incoming_payload
+from sage.c2.chatgpt_controller import (
+    ChatGPTController,
+    ChatRenderRequest,
+    ChatRenderResponse,
+)
 from sage.integration import (
     AIQueryRequest,
     ChatGPTClient,
@@ -47,6 +52,7 @@ validation = ValidationSystem(runtime.memory, runtime.archive)
 lifecycle_mgr = LifecycleManager()
 lifecycle_mgr.startup()  # Default startup on initialization
 chatgpt_client = ChatGPTClient(runtime)
+chatgpt_controller = ChatGPTController(runtime, chatgpt_client=chatgpt_client)
 gemini_jules_client = GeminiJulesClient(runtime)
 tool_mgr = ToolIntegrationManager(runtime)
 workspace_sync_mgr = GoogleWorkspaceSyncManager(runtime)
@@ -402,6 +408,23 @@ async def service_diagnostics():
 @app.post("/ai/query/chatgpt")
 async def ai_query_chatgpt(req: AIQueryRequest):
     return chatgpt_client.execute_query(req)
+
+
+@app.post("/chat/render", response_model=ChatRenderResponse)
+async def chat_render(req: ChatRenderRequest):
+    try:
+        return chatgpt_controller.render(req, authenticated=True)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"ChatGPT rendering failed: {e!s}")
+
+
+@app.post("/chat/render/stream")
+async def chat_render_stream(req: ChatRenderRequest):
+    try:
+        gen = chatgpt_controller.render_stream(req, authenticated=True)
+        return StreamingResponse(gen, media_type="application/x-ndjson")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"ChatGPT streaming rendering failed: {e!s}")
 
 
 @app.post("/ai/query/gemini-jules")
