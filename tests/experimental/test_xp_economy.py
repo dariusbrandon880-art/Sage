@@ -1,8 +1,10 @@
 import pytest
 
+from sage.experimental.airspace.models import GameProgression, StationID, XPCategory
 from sage.experimental.airspace.xp_economy import (
     XPEvent,
     accumulate_xp,
+    award_verified_points,
     build_xp_event,
     points_to_xp,
 )
@@ -53,3 +55,21 @@ def test_event_identity_and_agent_are_required() -> None:
         build_xp_event("", "jules", 1)
     with pytest.raises(ValueError):
         build_xp_event("a", "", 1)
+
+
+def test_verified_points_route_into_canonical_game_progression() -> None:
+    progression = GameProgression()
+    event = award_verified_points(
+        progression=progression,
+        station_id=StationID.ENGINEERING_FLIGHT,
+        verified_points=25,
+        category=XPCategory.ENGINEERING_FLIGHT_XP,
+        reason="Verified Queue #03 capability work",
+        verified_event_ref="mission-847",
+    )
+
+    assert event.amount == 250
+    assert event.station_id == StationID.ENGINEERING_FLIGHT
+    assert event.verified_event_ref == "mission-847"
+    assert progression.get_total_xp_for_station(StationID.ENGINEERING_FLIGHT) == 250
+    assert len(progression.xp_events) == 1
