@@ -1,12 +1,8 @@
 """Governed career XP conversion primitives for SAGE.
 
-Queue #03 keeps the conversion deterministic. Casino-style variable
-reinforcement may inform optional presentation, but career XP remains
-auditable and attributable to verified work.
-
-The conversion layer does not own career state. Canonical ``GameProgression``
-remains the authoritative XP ledger; ``award_verified_points`` is the governed
-adapter from verified Points into that existing ledger.
+Queue #03 keeps conversion deterministic and exact. The canonical
+``GameProgression`` ledger owns persistent XP state; this module owns only the
+verified Point -> XP conversion and its auditable receipt.
 """
 
 from dataclasses import dataclass
@@ -53,7 +49,7 @@ def build_xp_event(event_id: str, agent_id: str, verified_points: int) -> XPEven
 
 
 def accumulate_xp(events: list[XPEvent]) -> Decimal:
-    """Return the XP represented by verified conversion receipts."""
+    """Return the exact XP represented by verified conversion receipts."""
     return sum((event.xp_awarded for event in events), Decimal("0"))
 
 
@@ -65,20 +61,12 @@ def award_verified_points(
     reason: str,
     verified_event_ref: str,
 ) -> CanonicalXPEvent:
-    """Convert verified Points and append the result to canonical GameProgression.
-
-    Canonical progression currently stores integer XP amounts, so this adapter
-    accepts only conversions that resolve to whole XP. Fractional conversions
-    remain representable by the conversion receipt and must not be silently
-    rounded.
-    """
+    """Convert verified Points and append exact XP to canonical progression."""
     amount = points_to_xp(verified_points)
-    if amount != amount.to_integral_value():
-        raise ValueError("Canonical XP ledger requires whole XP for this award")
     return progression.award_xp(
         station_id=station_id,
         category=category,
-        amount=int(amount),
+        amount=amount,
         reason=reason,
         verified_event_ref=verified_event_ref,
     )
