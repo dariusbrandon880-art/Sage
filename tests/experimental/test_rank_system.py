@@ -3,6 +3,8 @@
 import pytest
 
 from sage.experimental.airspace.rank_system import (
+    BossClass,
+    BossDisplay,
     RANK_LADDER,
     RankBand,
     is_c2_rank_title,
@@ -64,10 +66,28 @@ def test_rank_ladder_blends_operational_vocabulary_without_making_c2_a_rank():
     assert all(not is_c2_rank_title(title) for title in titles)
 
 
-def test_rank_requires_capability_and_qualification_metadata():
-    assert all(rank.capability for rank in RANK_LADDER)
-    assert all(rank.qualification_requirement.startswith("CQL-") for rank in RANK_LADDER)
-    assert all(rank.promotion_evidence for rank in RANK_LADDER)
+def test_rank_does_not_prescribe_capability_qualification_or_evidence():
+    assert all(not hasattr(rank, "capability") for rank in RANK_LADDER)
+    assert all(not hasattr(rank, "qualification_requirement") for rank in RANK_LADDER)
+    assert all(not hasattr(rank, "promotion_evidence") for rank in RANK_LADDER)
+
+
+def test_boss_classes_are_only_big_and_major():
+    assert set(BossClass) == {BossClass.BIG, BossClass.MAJOR}
+
+
+def test_boss_display_uses_one_or_two_stars_and_stripe_tally():
+    big = BossDisplay(BossClass.BIG, 4)
+    major = BossDisplay(BossClass.MAJOR, 2)
+    assert big.stars == "⭐"
+    assert big.stripes == "⚔️" * 4
+    assert major.stars == "⭐⭐"
+    assert major.stripes == "⚔️" * 2
+
+
+def test_boss_display_rejects_negative_tally():
+    with pytest.raises(ValueError):
+        BossDisplay(BossClass.BIG, -1)
 
 
 def test_rank_lookup_rejects_unknown_levels():
