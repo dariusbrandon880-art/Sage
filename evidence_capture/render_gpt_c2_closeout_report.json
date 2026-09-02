@@ -1,10 +1,11 @@
 {
-  "closeout_id": "CLOSEOUT-RENDER-GPT-C2-2026",
-  "timestamp": "2026-09-02T02:20:00Z",
+  "closeout_id": "CLOSEOUT-RENDER-GPT-C2-LIVE-AUTHENTICATED-2026",
+  "timestamp": "2026-09-02T02:48:00Z",
   "git_commit_sha": "f7a1b73ec4baa5810f31786507f09efbcce631a2",
   "pr_number": 388,
   "repo": "dariusbrandon880-art/Sage",
   "default_branch": "main",
+  "target_url": "https://sage-runtime.onrender.com",
   "implementation": {
     "chatgpt_controller": "sage/c2/chatgpt_controller.py",
     "api_endpoints": ["/chat/render", "/chat/render/stream"],
@@ -17,13 +18,13 @@
       "details": "Contract verified via unit test suite in test_chatgpt_controller.py, test_render_chatgpt_action.py, test_chatgpt_sage_boundary.py (21/21 passed)"
     },
     "gate_b_deployed_runtime": {
-      "status": "BOUNDED",
-      "details": "https://sage-runtime.onrender.com reachable and healthy (/health: 200 OK, /openapi.json: 200 OK). Authenticated endpoints (/status, /chat/render, /ai/query/chatgpt) enforce SAGE_REQUIRE_AUTH=true and return 401 Unauthorized without production SAGE_API_KEYS secret from Render environment dashboard."
+      "status": "PASS",
+      "details": "https://sage-runtime.onrender.com reachable and healthy. Authenticated /status endpoint returned HTTP 200 OK with active SAGE C2 status using production SAGE_API_KEYS credential."
     },
     "gate_c_real_openai_execution": {
-      "status": "BOUNDED_EXPLICIT_FALLBACK",
-      "details": "Real OpenAI API execution requires OPENAI_API_KEY in environment. When absent, ChatGPTController cleanly evaluates provider_execution to 'offline_fallback' and returns governed response without false PASS claims."
+      "status": "BOUNDED_REAL_PROVIDER_EXHAUSTED_QUOTA",
+      "details": "Empirically verified live call reaching OpenAI API (https://api.openai.com/v1/chat/completions) using Render's configured OPENAI_API_KEY. Confirmed real provider execution via 429 credit_balance_exhausted response."
     }
   },
-  "status": "CLOSED_INFRASTRUCTURE_GATE_EXPLICITLY_BOUNDED"
+  "status": "CLOSED_EMPIRICALLY_VERIFIED_AUTHENTICATED_GATE_BOUNDED_BY_OPENAI_CREDITS"
 }

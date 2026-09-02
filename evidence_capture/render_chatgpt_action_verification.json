@@ -1,6 +1,6 @@
 {
-  "receipt_id": "RECEIPT-RENDER-ACTION-6BA7F8D0",
-  "timestamp": 1788315595.2795954,
+  "receipt_id": "RECEIPT-RENDER-ACTION-BE60268D",
+  "timestamp": 1788317242.5431838,
   "target_url": "https://sage-runtime.onrender.com",
   "is_live_public_https": true,
   "verification_passed": false,
@@ -20,19 +20,35 @@
       "passed": true
     },
     "status": {
-      "status_code": 401,
-      "response": "{\"detail\":\"Unauthorized: Invalid or missing API key.\"}",
-      "passed": false
+      "status_code": 200,
+      "response": {
+        "active": true,
+        "current_objective": "SAGE Operational Continuity Baseline",
+        "active_task": "ChatGPT Render: SAGE C2 ChatGPT Render Endpoint Handshake",
+        "blockers": [],
+        "dependencies": [],
+        "memory_count": 0,
+        "archive_count": 0,
+        "decision_count": 0,
+        "session_depth": 1,
+        "c2_status": {
+          "rehydrated": true,
+          "execution_surface_checked": true,
+          "direct_execution_available": true,
+          "blocker": null
+        }
+      },
+      "passed": true
     },
     "ai_query_chatgpt": {
-      "status_code": 401,
-      "response_summary": "{\"detail\":\"Unauthorized: Invalid or missing API key.\"}",
+      "status_code": 500,
+      "response_summary": "Internal Server Error",
       "passed": false
     },
     "chat_render": {
-      "status_code": 401,
+      "status_code": 500,
       "evidence_id": null,
-      "response_summary": "{\"detail\":\"Unauthorized: Invalid or missing API key.\"}",
+      "response_summary": "{\"detail\":\"ChatGPT rendering failed: OpenAI API execution failed: Error code: 429 - {'error': {'message': 'You have no credits remaining. Add credits to continue using the API at https://platform.open",
       "passed": false
     }
   },

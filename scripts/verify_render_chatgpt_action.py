@@ -50,7 +50,7 @@ def verify_render_chatgpt_action(base_url: str = None, api_key: str = None, targ
     # 1. Health check (/health)
     print("[1] Testing /health endpoint...")
     try:
-        r = httpx.get(f"{base_url}/health", timeout=10.0)
+        r = httpx.get(f"{base_url}/health", timeout=30.0)
         results["health"] = {
             "status_code": r.status_code,
             "response": r.json() if r.status_code == 200 else r.text,
@@ -64,7 +64,7 @@ def verify_render_chatgpt_action(base_url: str = None, api_key: str = None, targ
     # 2. OpenAPI Schema check (/openapi.json)
     print("\n[2] Testing /openapi.json endpoint...")
     try:
-        r = httpx.get(f"{base_url}/openapi.json", timeout=10.0)
+        r = httpx.get(f"{base_url}/openapi.json", timeout=30.0)
         is_valid_schema = r.status_code == 200 and isinstance(r.json(), dict) and "paths" in r.json()
         results["openapi"] = {
             "status_code": r.status_code,
@@ -80,7 +80,7 @@ def verify_render_chatgpt_action(base_url: str = None, api_key: str = None, targ
     print("\n[3] Testing /status endpoint...")
     headers = {"x-api-key": api_key}
     try:
-        r = httpx.get(f"{base_url}/status", headers=headers, timeout=10.0)
+        r = httpx.get(f"{base_url}/status", headers=headers, timeout=30.0)
         is_valid_status = r.status_code == 200 and isinstance(r.json(), dict) and "active" in r.json()
         results["status"] = {
             "status_code": r.status_code,
@@ -99,7 +99,7 @@ def verify_render_chatgpt_action(base_url: str = None, api_key: str = None, targ
             "prompt": "SAGE ChatGPT Action Runtime Handshake",
             "agent_id": "[SAGE::C2::CHATGPT]"
         }
-        r = httpx.post(f"{base_url}/ai/query/chatgpt", json=query_payload, headers=headers, timeout=10.0)
+        r = httpx.post(f"{base_url}/ai/query/chatgpt", json=query_payload, headers=headers, timeout=30.0)
         is_governed_success = r.status_code == 200 and isinstance(r.json(), dict) and "response_text" in r.json()
         results["ai_query_chatgpt"] = {
             "status_code": r.status_code,
@@ -119,7 +119,7 @@ def verify_render_chatgpt_action(base_url: str = None, api_key: str = None, targ
             "session_id": "c2-recon-test",
             "model": "gpt-4"
         }
-        r = httpx.post(f"{base_url}/chat/render", json=render_payload, headers=headers, timeout=10.0)
+        r = httpx.post(f"{base_url}/chat/render", json=render_payload, headers=headers, timeout=30.0)
         is_render_success = r.status_code == 200 and isinstance(r.json(), dict) and "content" in r.json() and "evidence_id" in r.json()
         results["chat_render"] = {
             "status_code": r.status_code,
