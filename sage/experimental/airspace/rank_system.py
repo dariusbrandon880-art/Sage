@@ -37,9 +37,6 @@ class RankDefinition:
     promotion_evidence: str
 
 
-# A long shared ladder gives SAGE room to grow without tying rank to any one
-# agent, station, or military branch. C2 is deliberately absent: it is a
-# control function, not a career rank.
 RANK_LADDER: Final[tuple[RankDefinition, ...]] = (
     RankDefinition(1, "Recruit", RankBand.FOUNDATION, "execute bounded tasks", "CQL-1", "conceptual evidence"),
     RankDefinition(2, "Private First Class", RankBand.FOUNDATION, "execute repeatable tasks", "CQL-2", "implementation evidence"),
@@ -72,7 +69,6 @@ RANK_LADDER: Final[tuple[RankDefinition, ...]] = (
     RankDefinition(29, "Elite Systems Specialist", RankBand.ELITE, "integrate frontier system capability", "CQL-7", "system integration evidence"),
     RankDefinition(30, "Master of Operations", RankBand.ELITE, "demonstrate sustained system-level mastery", "CQL-7", "system-level mastery evidence"),
 )
-
 
 RANK_BY_LEVEL: Final[dict[int, RankDefinition]] = {rank.level: rank for rank in RANK_LADDER}
 
