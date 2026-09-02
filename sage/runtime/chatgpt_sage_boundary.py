@@ -2,24 +2,34 @@
 
 The boundary is intentionally the only supported path from a ChatGPT model
 adapter to the SAGE immersion renderer. It revalidates model output even when
-a custom adapter is supplied, so an adapter cannot bypass SAGE governance.
+a custom adapter is supplied, then routes any state-changing proposal through
+the canonical C2 transition bridge before rendering the resulting state.
 """
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 from typing import Any
 
+from sage.c2.canonical_transition_bridge import CanonicalC2TransitionBridge
 from sage.c2.chatgpt_runtime import render_chatgpt_c2_response
+from sage.c2.immersion_rehydration import build_chatgpt_immersion_state
 from sage.c2.immersion_state import ImmersionState
 from sage.runtime.model_gateway import ModelAdapter, ModelResponse, SAGERuntime, SAGEProtocolGovernor
 
 
 class SAGEChatGPTBoundary:
-    """Execute a ChatGPT model only through the SAGE runtime and renderer."""
+    """Execute ChatGPT only through SAGE governance and canonical state authority."""
 
-    def __init__(self, runtime: SAGERuntime, adapter: ModelAdapter) -> None:
+    def __init__(
+        self,
+        runtime: SAGERuntime,
+        adapter: ModelAdapter,
+        operational_runtime: Any | None = None,
+    ) -> None:
         self._runtime = runtime
         self._adapter = adapter
+        self._operational_runtime = operational_runtime
 
     @staticmethod
     def _display_text(response: ModelResponse) -> str:
@@ -46,6 +56,7 @@ class SAGEChatGPTBoundary:
         model_role: str,
         immersion_state: ImmersionState,
         live_capability: Any | None = None,
+        session_id: str | None = None,
     ) -> tuple[str, ModelResponse]:
         """Run one model turn and expose only the SAGE-rendered response."""
         try:
@@ -64,6 +75,34 @@ class SAGEChatGPTBoundary:
             self._reject("; ".join(structured.violations))
         if structured.station != "[SAGE::C2::CHATGPT]":
             self._reject("station identity mismatch")
+
+        if structured.proposed_actions:
+            if self._operational_runtime is None:
+                self._reject("state transition proposal has no canonical operational runtime")
+            try:
+                transition = CanonicalC2TransitionBridge(self._operational_runtime).apply(structured)
+            except Exception as exc:
+                self._reject(str(exc))
+            if transition.accepted:
+                response = replace(
+                    response,
+                    evidence_refs=tuple(dict.fromkeys((*response.evidence_refs, *transition.evidence_refs))),
+                    output_state_digest=transition.after_state_digest,
+                )
+                if not session_id:
+                    session_id = immersion_state.flight_id.removeprefix("C2:")
+                try:
+                    immersion_state = build_chatgpt_immersion_state(
+                        self._operational_runtime,
+                        session_id=session_id,
+                        c2_context={
+                            "active_frontier": immersion_state.frontier,
+                            "gate": immersion_state.gate,
+                        },
+                        evidence_refs=response.evidence_refs,
+                    )
+                except Exception as exc:
+                    self._reject(f"post-transition immersion rehydration failed: {exc}")
 
         rendered = render_chatgpt_c2_response(
             immersion_state,
