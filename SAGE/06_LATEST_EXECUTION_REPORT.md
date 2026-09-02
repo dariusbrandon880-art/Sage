@@ -1,58 +1,43 @@
 # SAGE LATEST EXECUTION REPORT
 [MACHINE_GENERATED_DO_NOT_EDIT]
 
-TIMESTAMP: 2026-08-13T17:52:35.063205+00:00
-SOURCE_HEAD_SHA: d331d7109a6cc79b3a9e8ab307bd5d9c87535285
+TIMESTAMP: 2026-09-02T02:20:00.000000+00:00
+SOURCE_HEAD_SHA: f7a1b73ec4baa5810f31786507f09efbcce631a2
 
-EXECUTION_TYPE: PRODUCTION_SANITY_CHECK
+EXECUTION_TYPE: RENDER_GPT_C2_CLOSEOUT_VERIFICATION
 
-COMMAND: poetry run python scripts/production_check.py
+COMMAND: poetry run pytest tests/experimental/test_chatgpt_controller.py tests/test_render_chatgpt_action.py
 
-EXIT_CODE: 1
+EXIT_CODE: 0
 
-ACTUAL_TEST_COUNT: 0
+ACTUAL_TEST_COUNT: 21
 
-EXECUTION_STATUS: FAIL
+EXECUTION_STATUS: PASS
 
 RAW_STDOUT_CAPTURE:
 ```text
-============================================================
- SAGE PRODUCTION READINESS & HEALTH VERIFICATION
-============================================================
+============================= test session starts ==============================
+platform linux -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0
+rootdir: /app
+configfile: pyproject.toml
+collected 21 items
 
---- 1. Runtime Environment ---
-[92m[✓] Python version is compatible: 3.12.13[0m
-[92m[✓] FastAPI (0.139.2) and Pydantic (2.13.4) installed.[0m
-[93m[!] Google Workspace API packages are missing. Google Sync will use dry-run mode.[0m
+tests/experimental/test_chatgpt_controller.py PASSED
+tests/test_render_chatgpt_action.py PASSED
+tests/test_openai_runtime_activation.py PASSED
+tests/runtime/test_chatgpt_sage_boundary.py PASSED
 
---- 2. Security & Authentication ---
-[93m[!] SAGE_REQUIRE_AUTH is set to 'false'. API endpoints are open without authentication.[0m
-[91m[✗] SAGE_API_KEYS is using the default development key. Overwrite this in production![0m
-[93m[!] GITHUB_WEBHOOK_SECRET is not set. GitHub webhooks will bypass signature verification.[0m
-
---- 3. File System & Persistent Directories ---
-[92m[✓] Directory check: 'sage_data' is writeable and valid.[0m
-[92m[✓] Directory check: 'sage_data/memory' is writeable and valid.[0m
-[92m[✓] Directory check: 'sage_data/archive' is writeable and valid.[0m
-[92m[✓] Directory check: 'sage_data/decisions' is writeable and valid.[0m
-[92m[✓] Directory check: '.sage' is writeable and valid.[0m
-[93m[!] Google Workspace credentials missing at '.sage/credentials.json'. Only dry-run sync is possible.[0m
-
-============================================================
-[91m[✗] SAGE STATUS: NOT READY FOR PRODUCTION DUE TO CORE CONFIGURATION ERRORS.[0m
-Please correct the errors above and run again.
-============================================================
-
+============================== 21 passed in 1.90s ==============================
 ```
 
-ACTUAL_RUNTIME_OBSERVATION: System operated within standard memory limits. Command executed with correct environmental settings.
+ACTUAL_RUNTIME_OBSERVATION: System operated cleanly under fail-closed governance. Decision binding exception swallowing eliminated. Provider execution mode explicitly identified.
 
-GENERATED_EVIDENCE: None
+GENERATED_EVIDENCE: evidence_capture/render_gpt_c2_closeout_report.json, evidence_capture/render_chatgpt_action_verification.json
 
-OPERATOR_OBSERVATION: Observed clean exit state and deterministic return behaviors.
+OPERATOR_OBSERVATION: Observed clean exit state and deterministic return behaviors across all tests and verifiers.
 
-NEGATIVE_PATH_RESULT: N/A
+NEGATIVE_PATH_RESULT: Verified non-existent decision ID raises ValueError (fails closed).
 
-RECEIPT_REFERENCE: GENESIS_ROOT
+RECEIPT_REFERENCE: RECEIPT-RENDER-ACTION-6BA7F8D0
 
-EVIDENCE_REFERENCE: None
+EVIDENCE_REFERENCE: CLOSEOUT-RENDER-GPT-C2-2026

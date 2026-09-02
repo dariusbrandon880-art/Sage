@@ -1,0 +1,29 @@
+{
+  "closeout_id": "CLOSEOUT-RENDER-GPT-C2-2026",
+  "timestamp": "2026-09-02T02:20:00Z",
+  "git_commit_sha": "f7a1b73ec4baa5810f31786507f09efbcce631a2",
+  "pr_number": 388,
+  "repo": "dariusbrandon880-art/Sage",
+  "default_branch": "main",
+  "implementation": {
+    "chatgpt_controller": "sage/c2/chatgpt_controller.py",
+    "api_endpoints": ["/chat/render", "/chat/render/stream"],
+    "decision_binding": "Hardened fail-closed (ValueError raised if decision invalid/missing; decision evidence persisted via _save_decision)",
+    "provider_execution_transparency": "Explicitly reports 'openai_provider', 'offline_fallback', or 'override' in ChatRenderResponse and MemoryObject"
+  },
+  "three_gate_summary": {
+    "gate_a_deterministic_contract": {
+      "status": "PASS",
+      "details": "Contract verified via unit test suite in test_chatgpt_controller.py, test_render_chatgpt_action.py, test_chatgpt_sage_boundary.py (21/21 passed)"
+    },
+    "gate_b_deployed_runtime": {
+      "status": "BOUNDED",
+      "details": "https://sage-runtime.onrender.com reachable and healthy (/health: 200 OK, /openapi.json: 200 OK). Authenticated endpoints (/status, /chat/render, /ai/query/chatgpt) enforce SAGE_REQUIRE_AUTH=true and return 401 Unauthorized without production SAGE_API_KEYS secret from Render environment dashboard."
+    },
+    "gate_c_real_openai_execution": {
+      "status": "BOUNDED_EXPLICIT_FALLBACK",
+      "details": "Real OpenAI API execution requires OPENAI_API_KEY in environment. When absent, ChatGPTController cleanly evaluates provider_execution to 'offline_fallback' and returns governed response without false PASS claims."
+    }
+  },
+  "status": "CLOSED_INFRASTRUCTURE_GATE_EXPLICITLY_BOUNDED"
+}

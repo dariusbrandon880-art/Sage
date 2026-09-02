@@ -1,6 +1,6 @@
 {
-  "receipt_id": "RECEIPT-RENDER-ACTION-574A2553",
-  "timestamp": 1788198765.0418494,
+  "receipt_id": "RECEIPT-RENDER-ACTION-6BA7F8D0",
+  "timestamp": 1788315595.2795954,
   "target_url": "https://sage-runtime.onrender.com",
   "is_live_public_https": true,
   "verification_passed": false,
@@ -20,13 +20,19 @@
       "passed": true
     },
     "status": {
-      "status_code": 404,
-      "response": "{\"detail\":\"Not Found\"}",
+      "status_code": 401,
+      "response": "{\"detail\":\"Unauthorized: Invalid or missing API key.\"}",
       "passed": false
     },
     "ai_query_chatgpt": {
-      "status_code": 404,
-      "response_summary": "{\"detail\":\"Not Found\"}",
+      "status_code": 401,
+      "response_summary": "{\"detail\":\"Unauthorized: Invalid or missing API key.\"}",
+      "passed": false
+    },
+    "chat_render": {
+      "status_code": 401,
+      "evidence_id": null,
+      "response_summary": "{\"detail\":\"Unauthorized: Invalid or missing API key.\"}",
       "passed": false
     }
   },
