@@ -1,0 +1,50 @@
+{
+  "wave_id": "game-immersion-big-jump-wave-001",
+  "missions": [
+    {
+      "flight_id": "F1",
+      "frontier_name": "Airspace Immersion Glyphs",
+      "target_path": "sage/experimental/airspace/immersion.py",
+      "collision_zone": "sage/experimental/airspace/immersion",
+      "evidence_ref": "evidence_capture/f1_immersion_receipt.json",
+      "pr_or_change": "Airspace pick action strip and SGP boost glyph rendering",
+      "test_references": ["tests/experimental/test_immersion.py"]
+    },
+    {
+      "flight_id": "F2",
+      "frontier_name": "C2 Pick Action Projection",
+      "target_path": "sage/c2/immersion_projection.py",
+      "collision_zone": "sage/c2/immersion_projection",
+      "evidence_ref": "evidence_capture/f2_projection_receipt.json",
+      "pr_or_change": "PickActionProjection and project_pick_action_visual",
+      "test_references": ["tests/c2/test_immersion_projection.py"]
+    },
+    {
+      "flight_id": "F3",
+      "frontier_name": "ChatGPT Interface Immersion",
+      "target_path": "sage/c2/chatgpt_immersion.py",
+      "collision_zone": "sage/c2/chatgpt_immersion",
+      "evidence_ref": "evidence_capture/f3_chatgpt_immersion_receipt.json",
+      "pr_or_change": "ChatGPT C2 station response contract immersion envelope",
+      "test_references": ["tests/c2/test_chatgpt_interface_immersion_continuity.py"]
+    },
+    {
+      "flight_id": "F4",
+      "frontier_name": "ChatGPT Runtime Boundary",
+      "target_path": "sage/c2/chatgpt_runtime.py",
+      "collision_zone": "sage/c2/chatgpt_runtime",
+      "evidence_ref": "evidence_capture/f4_chatgpt_runtime_receipt.json",
+      "pr_or_change": "ChatGPT runtime immersion rendering entry point",
+      "test_references": ["tests/c2/test_chatgpt_immersion_runtime_boundary.py"]
+    },
+    {
+      "flight_id": "F5",
+      "frontier_name": "Immersion Language Contract Governance",
+      "target_path": "docs/governance/SAGE_C2_IMMERSION_LANGUAGE_CONTRACT.md",
+      "collision_zone": "docs/governance/immersion_language_contract",
+      "evidence_ref": "evidence_capture/f5_immersion_contract_receipt.json",
+      "pr_or_change": "Permanent game immersion mechanics and sports pick visuals doctrine",
+      "test_references": ["tests/governance/test_immersion_persistence_contract.py"]
+    }
+  ]
+}

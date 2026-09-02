@@ -1,187 +1,187 @@
 {
-  "wave_id": "wave-big-jump-1788213107",
+  "wave_id": "game-immersion-big-jump-wave-001",
   "flight_summaries": [
     {
       "flight_id": "F1",
-      "target": "sage/c2/execution_intelligence.py",
+      "target": "sage/experimental/airspace/immersion.py",
       "classification": "ACTIVE",
       "execution_result": "PASS",
-      "exact_head": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-      "tests_passed": 4,
-      "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788213107/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F1_receipt.json",
-      "pr_or_change": "Canonical Big Jump Wave mission F1",
+      "exact_head": "bbe4240571adcbd22c5bb40ffe2baabf67bfb6e6",
+      "tests_passed": 6,
+      "evidence_ref": "/app/evidence_capture/waves/game-immersion-big-jump-wave-001/bbe4240571adcbd22c5bb40ffe2baabf67bfb6e6/F1_receipt.json",
+      "pr_or_change": "Airspace pick action strip and SGP boost glyph rendering",
       "lifecycle_milestones": [
         {
           "stage": "STAGE_1_INTAKE_RECON",
           "passed": true,
-          "evidence_ref": "evidence_capture/waves/wave-big-jump-1788213107/F1_receipt.json",
-          "timestamp": 1788213107.2633119
+          "evidence_ref": "evidence_capture/f1_immersion_receipt.json",
+          "timestamp": 1788334160.3686485
         },
         {
           "stage": "STAGE_2_BOUNDED_BUILD",
           "passed": true,
-          "evidence_ref": "sage/c2/execution_intelligence.py",
-          "timestamp": 1788213107.263316
+          "evidence_ref": "sage/experimental/airspace/immersion.py",
+          "timestamp": 1788334160.368654
         },
         {
           "stage": "STAGE_3_VERIFY_PROOF",
           "passed": true,
-          "evidence_ref": "tests/c2/test_execution_intelligence_wave.py",
-          "timestamp": 1788213107.9890597
+          "evidence_ref": "tests/experimental/test_immersion.py",
+          "timestamp": 1788334161.4712396
         },
         {
           "stage": "STAGE_4_WAREHOUSE_PROMOTE",
           "passed": true,
-          "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788213107/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F1_receipt.json",
-          "timestamp": 1788213107.9907627
+          "evidence_ref": "/app/evidence_capture/waves/game-immersion-big-jump-wave-001/bbe4240571adcbd22c5bb40ffe2baabf67bfb6e6/F1_receipt.json",
+          "timestamp": 1788334161.4759643
         }
       ],
       "blocker": null
     },
     {
       "flight_id": "F2",
-      "target": "sage/c2/governance_intelligence.py",
+      "target": "sage/c2/immersion_projection.py",
       "classification": "ACTIVE",
       "execution_result": "PASS",
-      "exact_head": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-      "tests_passed": 4,
-      "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788213107/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F2_receipt.json",
-      "pr_or_change": "Canonical Big Jump Wave mission F2",
+      "exact_head": "bbe4240571adcbd22c5bb40ffe2baabf67bfb6e6",
+      "tests_passed": 6,
+      "evidence_ref": "/app/evidence_capture/waves/game-immersion-big-jump-wave-001/bbe4240571adcbd22c5bb40ffe2baabf67bfb6e6/F2_receipt.json",
+      "pr_or_change": "PickActionProjection and project_pick_action_visual",
       "lifecycle_milestones": [
         {
           "stage": "STAGE_1_INTAKE_RECON",
           "passed": true,
-          "evidence_ref": "evidence_capture/waves/wave-big-jump-1788213107/F2_receipt.json",
-          "timestamp": 1788213107.2640767
+          "evidence_ref": "evidence_capture/f2_projection_receipt.json",
+          "timestamp": 1788334160.3694263
         },
         {
           "stage": "STAGE_2_BOUNDED_BUILD",
           "passed": true,
-          "evidence_ref": "sage/c2/governance_intelligence.py",
-          "timestamp": 1788213107.2640803
+          "evidence_ref": "sage/c2/immersion_projection.py",
+          "timestamp": 1788334160.36943
         },
         {
           "stage": "STAGE_3_VERIFY_PROOF",
           "passed": true,
-          "evidence_ref": "tests/c2/test_governance_intelligence_wave.py",
-          "timestamp": 1788213108.7091866
+          "evidence_ref": "tests/c2/test_immersion_projection.py",
+          "timestamp": 1788334162.2622993
         },
         {
           "stage": "STAGE_4_WAREHOUSE_PROMOTE",
           "passed": true,
-          "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788213107/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F2_receipt.json",
-          "timestamp": 1788213108.709919
+          "evidence_ref": "/app/evidence_capture/waves/game-immersion-big-jump-wave-001/bbe4240571adcbd22c5bb40ffe2baabf67bfb6e6/F2_receipt.json",
+          "timestamp": 1788334162.2632537
         }
       ],
       "blocker": null
     },
     {
       "flight_id": "F3",
-      "target": "sage/c2/build_jump_wave.py",
+      "target": "sage/c2/chatgpt_immersion.py",
       "classification": "ACTIVE",
       "execution_result": "PASS",
-      "exact_head": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-      "tests_passed": 5,
-      "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788213107/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F3_receipt.json",
-      "pr_or_change": "Canonical Big Jump Wave mission F3",
+      "exact_head": "bbe4240571adcbd22c5bb40ffe2baabf67bfb6e6",
+      "tests_passed": 4,
+      "evidence_ref": "/app/evidence_capture/waves/game-immersion-big-jump-wave-001/bbe4240571adcbd22c5bb40ffe2baabf67bfb6e6/F3_receipt.json",
+      "pr_or_change": "ChatGPT C2 station response contract immersion envelope",
       "lifecycle_milestones": [
         {
           "stage": "STAGE_1_INTAKE_RECON",
           "passed": true,
-          "evidence_ref": "evidence_capture/waves/wave-big-jump-1788213107/F3_receipt.json",
-          "timestamp": 1788213107.2645557
+          "evidence_ref": "evidence_capture/f3_chatgpt_immersion_receipt.json",
+          "timestamp": 1788334160.370239
         },
         {
           "stage": "STAGE_2_BOUNDED_BUILD",
           "passed": true,
-          "evidence_ref": "sage/c2/build_jump_wave.py",
-          "timestamp": 1788213107.2645586
+          "evidence_ref": "sage/c2/chatgpt_immersion.py",
+          "timestamp": 1788334160.3702428
         },
         {
           "stage": "STAGE_3_VERIFY_PROOF",
           "passed": true,
-          "evidence_ref": "tests/c2/test_build_jump_wave.py",
-          "timestamp": 1788213109.5052624
+          "evidence_ref": "tests/c2/test_chatgpt_interface_immersion_continuity.py",
+          "timestamp": 1788334163.2656176
         },
         {
           "stage": "STAGE_4_WAREHOUSE_PROMOTE",
           "passed": true,
-          "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788213107/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F3_receipt.json",
-          "timestamp": 1788213109.5061266
+          "evidence_ref": "/app/evidence_capture/waves/game-immersion-big-jump-wave-001/bbe4240571adcbd22c5bb40ffe2baabf67bfb6e6/F3_receipt.json",
+          "timestamp": 1788334163.266818
         }
       ],
       "blocker": null
     },
     {
       "flight_id": "F4",
-      "target": "sage/c2/multi_frontier_dispatch.py",
+      "target": "sage/c2/chatgpt_runtime.py",
       "classification": "ACTIVE",
       "execution_result": "PASS",
-      "exact_head": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-      "tests_passed": 5,
-      "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788213107/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F4_receipt.json",
-      "pr_or_change": "Canonical Big Jump Wave mission F4",
+      "exact_head": "bbe4240571adcbd22c5bb40ffe2baabf67bfb6e6",
+      "tests_passed": 6,
+      "evidence_ref": "/app/evidence_capture/waves/game-immersion-big-jump-wave-001/bbe4240571adcbd22c5bb40ffe2baabf67bfb6e6/F4_receipt.json",
+      "pr_or_change": "ChatGPT runtime immersion rendering entry point",
       "lifecycle_milestones": [
         {
           "stage": "STAGE_1_INTAKE_RECON",
           "passed": true,
-          "evidence_ref": "evidence_capture/waves/wave-big-jump-1788213107/F4_receipt.json",
-          "timestamp": 1788213107.2650952
+          "evidence_ref": "evidence_capture/f4_chatgpt_runtime_receipt.json",
+          "timestamp": 1788334160.370766
         },
         {
           "stage": "STAGE_2_BOUNDED_BUILD",
           "passed": true,
-          "evidence_ref": "sage/c2/multi_frontier_dispatch.py",
-          "timestamp": 1788213107.2650976
+          "evidence_ref": "sage/c2/chatgpt_runtime.py",
+          "timestamp": 1788334160.3707688
         },
         {
           "stage": "STAGE_3_VERIFY_PROOF",
           "passed": true,
-          "evidence_ref": "tests/c2/test_multi_frontier_dispatch.py",
-          "timestamp": 1788213110.2644777
+          "evidence_ref": "tests/c2/test_chatgpt_immersion_runtime_boundary.py",
+          "timestamp": 1788334166.1840787
         },
         {
           "stage": "STAGE_4_WAREHOUSE_PROMOTE",
           "passed": true,
-          "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788213107/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F4_receipt.json",
-          "timestamp": 1788213110.264895
+          "evidence_ref": "/app/evidence_capture/waves/game-immersion-big-jump-wave-001/bbe4240571adcbd22c5bb40ffe2baabf67bfb6e6/F4_receipt.json",
+          "timestamp": 1788334166.1849613
         }
       ],
       "blocker": null
     },
     {
       "flight_id": "F5",
-      "target": "sage/c2/double_big_jump_contract.py",
+      "target": "docs/governance/SAGE_C2_IMMERSION_LANGUAGE_CONTRACT.md",
       "classification": "ACTIVE",
       "execution_result": "PASS",
-      "exact_head": "bf2560ede2899adfe73fe2e2cfb4accd0b8885e2",
-      "tests_passed": 5,
-      "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788213107/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F5_receipt.json",
-      "pr_or_change": "Canonical Big Jump Wave mission F5",
+      "exact_head": "bbe4240571adcbd22c5bb40ffe2baabf67bfb6e6",
+      "tests_passed": 3,
+      "evidence_ref": "/app/evidence_capture/waves/game-immersion-big-jump-wave-001/bbe4240571adcbd22c5bb40ffe2baabf67bfb6e6/F5_receipt.json",
+      "pr_or_change": "Permanent game immersion mechanics and sports pick visuals doctrine",
       "lifecycle_milestones": [
         {
           "stage": "STAGE_1_INTAKE_RECON",
           "passed": true,
-          "evidence_ref": "evidence_capture/waves/wave-big-jump-1788213107/F5_receipt.json",
-          "timestamp": 1788213107.2657824
+          "evidence_ref": "evidence_capture/f5_immersion_contract_receipt.json",
+          "timestamp": 1788334160.3714433
         },
         {
           "stage": "STAGE_2_BOUNDED_BUILD",
           "passed": true,
-          "evidence_ref": "sage/c2/double_big_jump_contract.py",
-          "timestamp": 1788213107.2657857
+          "evidence_ref": "docs/governance/SAGE_C2_IMMERSION_LANGUAGE_CONTRACT.md",
+          "timestamp": 1788334160.3714466
         },
         {
           "stage": "STAGE_3_VERIFY_PROOF",
           "passed": true,
-          "evidence_ref": "tests/c2/test_double_big_jump_contract.py",
-          "timestamp": 1788213111.0526142
+          "evidence_ref": "tests/governance/test_immersion_persistence_contract.py",
+          "timestamp": 1788334166.9774232
         },
         {
           "stage": "STAGE_4_WAREHOUSE_PROMOTE",
           "passed": true,
-          "evidence_ref": "/app/evidence_capture/waves/wave-big-jump-1788213107/bf2560ede2899adfe73fe2e2cfb4accd0b8885e2/F5_receipt.json",
-          "timestamp": 1788213111.0530896
+          "evidence_ref": "/app/evidence_capture/waves/game-immersion-big-jump-wave-001/bbe4240571adcbd22c5bb40ffe2baabf67bfb6e6/F5_receipt.json",
+          "timestamp": 1788334166.9778762
         }
       ],
       "blocker": null
@@ -216,12 +216,12 @@
   "reconvergence_verdict": "PASS",
   "immersion_projection": {
     "type": "MILESTONE_STRIKE",
-    "wave_id": "wave-big-jump-1788213107",
+    "wave_id": "game-immersion-big-jump-wave-001",
     "verdict": "PASS",
     "verified_cells": 20,
     "safe_impact_stars": 5,
     "rank": "MASTER"
   },
-  "timestamp": 1788213111.0556118,
-  "package_hash": "7c93cfb3ee510b46096eca1659fd94ab0acdea9b14dfb7ac36d0a223dce1ddca"
+  "timestamp": 1788334166.979265,
+  "package_hash": "5a034887e4ea22e0a27b3b000ac14a8d6ac0d00ed3d53d61fc5478af6b94df90"
 }

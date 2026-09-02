@@ -1,0 +1,10 @@
+{
+  "blocker": null,
+  "executed_head": "bbe4240571adcbd22c5bb40ffe2baabf67bfb6e6",
+  "flight_id": "F2",
+  "frontier_name": "C2 Pick Action Projection",
+  "status": "PASS",
+  "target_path": "sage/c2/immersion_projection.py",
+  "timestamp": 1788334162.2624836,
+  "wave_id": "game-immersion-big-jump-wave-001"
+}

@@ -1,0 +1,10 @@
+{
+  "blocker": null,
+  "executed_head": "bbe4240571adcbd22c5bb40ffe2baabf67bfb6e6",
+  "flight_id": "F1",
+  "frontier_name": "Airspace Immersion Glyphs",
+  "status": "PASS",
+  "target_path": "sage/experimental/airspace/immersion.py",
+  "timestamp": 1788334161.4742851,
+  "wave_id": "game-immersion-big-jump-wave-001"
+}
