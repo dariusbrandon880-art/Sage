@@ -27,14 +27,15 @@ A request to fix, improve, clean up, simplify, accelerate, or finish something d
 
 Passing tests, green CI, mergeability, or apparent technical necessity does **not** constitute permission to change architecture.
 
-## Flight protection
+## Five-Flight operating rule
 
-The Five-Flight system is an explicit protected architecture boundary.
+The Five-Flight system is **dynamic and reusable**, not a permanently pinned feature map.
 
 - F1–F5 are reusable execution slots.
-- Flight identity and mission assignment are determined by C2/authorized mission state.
-- No flight may be made a permanent feature/domain owner without explicit Mission Director approval.
-- No agent may pin, unpin, rename, reassign, delete, or structurally redefine the Five-Flight system without explicit Mission Director approval.
+- Flight identity and mission assignment are determined by current C2/authorized mission state.
+- No permanent feature/domain ownership is implied by a flight number.
+- Flight assignments may change as mission priorities and authorized work change.
+- This rule does not create a separate special lock on the Five-Flight system; the normal architecture approval gate above remains the governing boundary for architectural changes.
 
 ## Architecture preservation principle
 
