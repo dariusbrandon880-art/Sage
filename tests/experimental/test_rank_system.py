@@ -10,11 +10,48 @@ from sage.experimental.airspace.rank_system import (
     validate_rank_progression,
 )
 
+EXPECTED_RANK_TITLES = (
+    "Recruit",
+    "Private First Class",
+    "Lance Operator",
+    "Corporal Operator",
+    "Sergeant Operator",
+    "Airman Operator",
+    "Airman First Class",
+    "Senior Airman",
+    "Technical Operator",
+    "Staff Operator",
+    "Joint Operator",
+    "Joint Sergeant",
+    "Joint Technical Sergeant",
+    "Joint Master Sergeant",
+    "Joint Gunnery Specialist",
+    "Operations Flight Lead",
+    "Mission Flight Lead",
+    "Senior Mission Lead",
+    "Command Master Specialist",
+    "Master Operations Specialist",
+    "Squadron Operations Lead",
+    "Group Operations Lead",
+    "Wing Operations Lead",
+    "Fleet Operations Lead",
+    "Senior Fleet Specialist",
+    "Frontier Specialist",
+    "Frontier Master",
+    "Elite Mission Specialist",
+    "Elite Systems Specialist",
+    "Master of Operations",
+)
 
-def test_rank_ladder_is_long_ordered_and_shared():
+
+def test_rank_ladder_is_locked_to_agreed_names_and_order():
     assert len(RANK_LADDER) == 30
-    assert [rank.level for rank in RANK_LADDER] == list(range(1, 31))
-    assert len({rank.title for rank in RANK_LADDER}) == 30
+    assert tuple(rank.level for rank in RANK_LADDER) == tuple(range(1, 31))
+    assert tuple(rank.title for rank in RANK_LADDER) == EXPECTED_RANK_TITLES
+    assert len(set(EXPECTED_RANK_TITLES)) == 30
+
+
+def test_rank_ladder_is_shared_and_uses_all_progression_bands():
     assert {rank.band for rank in RANK_LADDER} == set(RankBand)
 
 
@@ -48,7 +85,7 @@ def test_rank_promotion_is_sequential_and_not_xp_driven():
     with pytest.raises(ValueError, match="skipping"):
         validate_rank_progression(1, 3)
     with pytest.raises(ValueError, match="skipping"):
-        validate_rank_progression(29, 30) if False else validate_rank_progression(29, 31)
+        validate_rank_progression(29, 31)
 
 
 def test_negative_and_non_positive_targets_fail_closed():
