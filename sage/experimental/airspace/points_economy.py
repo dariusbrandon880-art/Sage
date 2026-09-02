@@ -82,7 +82,7 @@ class PointAward:
 
     @property
     def verified_points(self) -> int:
-        """Bounded multiplier: average quality dimension, from 1x through 5x."""
+        """Deterministic verified points after bounded 1x-5x quality weighting."""
         multiplier_sum = self.difficulty + self.verification_quality + self.impact + self.reuse
         return max(1, round(self.base_points * multiplier_sum / 4))
 
