@@ -9,6 +9,7 @@ from enum import Enum, IntEnum
 import hashlib
 import json
 from typing import Any, Dict, List, Optional
+from decimal import Decimal
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 
@@ -27,10 +28,10 @@ class StationID(str, Enum):
 class Station(BaseModel):
     """Station representation mapping SAGE operational responsibilities."""
     station_id: StationID
-    agent_name: str  # Human, GPT, Gemini, Jules
+    agent_name: str
     role_description: str
-    current_cql: int = 0  # CQL-0 to CQL-7
-    current_sql: int = 0  # SQL-0 to SQL-7 (primarily Intel)
+    current_cql: int = 0
+    current_sql: int = 0
     active_status: bool = True
 
 
@@ -62,7 +63,6 @@ VALID_SORTIE_PREDECESSORS: Dict[SortieState, List[Optional[SortieState]]] = {
     SortieState.DEBRIEF: [SortieState.EVIDENCE_CAPTURE],
     SortieState.VERIFIED: [SortieState.DEBRIEF],
     SortieState.CLOSED: [SortieState.VERIFIED],
-    # Terminal/Interrupted states can transition from any non-terminal active state
     SortieState.BLOCKED: [SortieState.CREATED, SortieState.BRIEFED, SortieState.CLEARED, SortieState.ACTIVE, SortieState.EVIDENCE_CAPTURE, SortieState.DEBRIEF],
     SortieState.FAILED: [SortieState.CREATED, SortieState.BRIEFED, SortieState.CLEARED, SortieState.ACTIVE, SortieState.EVIDENCE_CAPTURE, SortieState.DEBRIEF],
     SortieState.ABORTED: [SortieState.CREATED, SortieState.BRIEFED, SortieState.CLEARED, SortieState.ACTIVE, SortieState.EVIDENCE_CAPTURE, SortieState.DEBRIEF],
@@ -73,13 +73,13 @@ class Mission(BaseModel):
     """Mission Domain Object representing a higher-level goal or campaign."""
     mission_id: str
     mission_name: str
-    theater: str  # e.g. "Sports/RCE", "Airspace/C2", "Core Infrastructure"
+    theater: str
     priority: str = "P0"
     objective: str
     authorized_scope: List[str] = Field(default_factory=list)
     constraints: List[str] = Field(default_factory=list)
     assigned_stations: List[StationID] = Field(default_factory=list)
-    status: str = "ACTIVE"  # CREATED, ACTIVE, PAUSED, COMPLETED, ABORTED
+    status: str = "ACTIVE"
     success_conditions: List[str] = Field(default_factory=list)
     failure_conditions: List[str] = Field(default_factory=list)
     evidence_requirements: List[str] = Field(default_factory=list)
@@ -143,13 +143,12 @@ class IntelTelemetry(BaseModel):
     evidence: List[str] = Field(default_factory=list)
     adversarial_review: str
     proposed_action: str
-    source: Dict[str, str] = Field(default_factory=dict)  # Must include 'type' and ('url' or 'doc' or 'repo')
+    source: Dict[str, str] = Field(default_factory=dict)
     contradiction_details: Optional[str] = None
     timestamp: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
     @model_validator(mode="after")
     def validate_source_and_contradictions(self) -> "IntelTelemetry":
-        """Enforces explicit source reference requirements and contradiction preservation."""
         if not self.source or not isinstance(self.source, dict):
             if self.assessment != IntelAssessment.UNKNOWN:
                 raise ValueError("Intel Telemetry Failure: Source dictionary required unless assessment is UNKNOWN.")
@@ -160,7 +159,6 @@ class IntelTelemetry(BaseModel):
 
         if self.assessment == IntelAssessment.CONTRADICTED and not self.contradiction_details:
             raise ValueError("Intel Telemetry Failure: CONTRADICTED assessment requires contradiction_details.")
-
         return self
 
 
@@ -197,7 +195,7 @@ class QualificationEvent(BaseModel):
     event_id: str
     station_id: StationID
     agent_name: str
-    qualification_type: str  # "CQL" or "SQL"
+    qualification_type: str
     previous_level: int
     new_level: int
     promotion_reason: str
@@ -209,15 +207,15 @@ class QualificationEvent(BaseModel):
 
 
 class QualificationChallengeEvent(BaseModel):
-    """Record of a qualification challenge or revocation due to falsifying evidence."""
+    """Record of a capability qualification challenge or revocation."""
     challenge_id: str
     station_id: StationID
-    qualification_type: str  # "CQL" or "SQL"
+    qualification_type: str
     challenged_level: int
     new_level: int
     reason: str
     falsifying_evidence_refs: List[str] = Field(default_factory=list)
-    outcome: str = "REVOKED"  # REVOKED or MAINTAINED
+    outcome: str = "REVOKED"
     timestamp: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
@@ -238,88 +236,43 @@ class QualificationRegistry(BaseModel):
     promotion_history: List[QualificationEvent] = Field(default_factory=list)
     challenge_history: List[QualificationChallengeEvent] = Field(default_factory=list)
 
-    def promote_station(
-        self,
-        station_id: StationID,
-        agent_name: str,
-        qualification_type: str,
-        target_level: int,
-        reason: str,
-        evidence_refs: List[str],
-        test_refs: List[str],
-        validator: str = "Mission Control",
-        downstream_effect: Optional[str] = None,
-    ) -> QualificationEvent:
-        """Promotes a station's CQL or SQL level if evidence requirements are strictly met."""
+    def promote_station(self, station_id: StationID, agent_name: str, qualification_type: str, target_level: int, reason: str, evidence_refs: List[str], test_refs: List[str], validator: str = "Mission Control", downstream_effect: Optional[str] = None) -> QualificationEvent:
         if qualification_type not in ("CQL", "SQL"):
             raise ValueError(f"Invalid qualification_type '{qualification_type}'. Must be 'CQL' or 'SQL'.")
-
         current_levels = self.cql_levels if qualification_type == "CQL" else self.sql_levels
         current_lvl = current_levels.get(station_id, 0)
-
         if target_level <= current_lvl:
             raise ValueError(f"Cannot promote to level {target_level} from current level {current_lvl}.")
-
-        # Level skipping prevention
         if target_level > current_lvl + 1:
-            raise ValueError(
-                f"Level Skipping Rejected: Cannot jump from {qualification_type}-{current_lvl} "
-                f"directly to {qualification_type}-{target_level}."
-            )
-
-        # Evidence requirements validation
+            raise ValueError(f"Level Skipping Rejected: Cannot jump from {qualification_type}-{current_lvl} directly to {qualification_type}-{target_level}.")
         if target_level >= 2 and not evidence_refs:
             raise ValueError(f"Promotion to {qualification_type}-{target_level} requires evidence_refs.")
         if target_level >= 3 and not test_refs and qualification_type == "CQL":
             raise ValueError(f"Promotion to CQL-{target_level} requires test_refs.")
-
         event = QualificationEvent(
             event_id=f"qual_evt_{hashlib.sha256(f'{station_id}:{qualification_type}:{target_level}:{datetime.now(timezone.utc).isoformat()}'.encode('utf-8')).hexdigest()[:12]}",
-            station_id=station_id,
-            agent_name=agent_name,
-            qualification_type=qualification_type,
-            previous_level=current_lvl,
-            new_level=target_level,
-            promotion_reason=reason,
-            evidence_refs=evidence_refs,
-            test_refs=test_refs,
-            validator=validator,
+            station_id=station_id, agent_name=agent_name, qualification_type=qualification_type,
+            previous_level=current_lvl, new_level=target_level, promotion_reason=reason,
+            evidence_refs=evidence_refs, test_refs=test_refs, validator=validator,
             downstream_effect=downstream_effect,
         )
-
         current_levels[station_id] = target_level
         self.promotion_history.append(event)
         return event
 
-    def challenge_qualification(
-        self,
-        station_id: StationID,
-        qualification_type: str,
-        reason: str,
-        falsifying_evidence_refs: List[str],
-        demotion_target: int,
-    ) -> QualificationChallengeEvent:
-        """Logs a qualification challenge and demotes the station without erasing promotion history."""
+    def challenge_qualification(self, station_id: StationID, qualification_type: str, reason: str, falsifying_evidence_refs: List[str], demotion_target: int) -> QualificationChallengeEvent:
         if not falsifying_evidence_refs:
             raise ValueError("Qualification Challenge Failure: Falsifying evidence references required.")
-
         current_levels = self.cql_levels if qualification_type == "CQL" else self.sql_levels
         current_lvl = current_levels.get(station_id, 0)
-
         challenge = QualificationChallengeEvent(
             challenge_id=f"chal_{hashlib.sha256(f'{station_id}:{reason}'.encode('utf-8')).hexdigest()[:12]}",
-            station_id=station_id,
-            qualification_type=qualification_type,
-            challenged_level=current_lvl,
-            new_level=demotion_target,
-            reason=reason,
-            falsifying_evidence_refs=falsifying_evidence_refs,
+            station_id=station_id, qualification_type=qualification_type, challenged_level=current_lvl,
+            new_level=demotion_target, reason=reason, falsifying_evidence_refs=falsifying_evidence_refs,
             outcome="REVOKED" if demotion_target < current_lvl else "MAINTAINED",
         )
-
         if demotion_target < current_lvl:
             current_levels[station_id] = demotion_target
-
         self.challenge_history.append(challenge)
         return challenge
 
@@ -343,10 +296,17 @@ class XPEvent(BaseModel):
     event_id: str
     station_id: StationID
     category: XPCategory
-    amount: int
+    amount: Decimal
     reason: str
-    verified_event_ref: str  # Must point to a commit, test, receipt, or evidence artifact
+    verified_event_ref: str
     timestamp: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+    @field_validator("amount")
+    @classmethod
+    def validate_amount(cls, v: Decimal) -> Decimal:
+        if v <= 0:
+            raise ValueError("XP Event Rejected: XP amount must be positive.")
+        return v
 
     @field_validator("verified_event_ref")
     @classmethod
@@ -357,37 +317,27 @@ class XPEvent(BaseModel):
 
 
 class GameProgression(BaseModel):
-    """Game Progression tracking accumulated XP and level thresholds derived from verified state."""
+    """Game Progression tracking accumulated exact XP from verified events."""
     xp_events: List[XPEvent] = Field(default_factory=list)
 
-    def award_xp(
-        self,
-        station_id: StationID,
-        category: XPCategory,
-        amount: int,
-        reason: str,
-        verified_event_ref: str,
-    ) -> XPEvent:
-        """Awards XP backed strictly by a verified event reference."""
+    def award_xp(self, station_id: StationID, category: XPCategory, amount: Decimal, reason: str, verified_event_ref: str) -> XPEvent:
+        """Awards exact XP backed strictly by a verified event reference."""
+        amount = Decimal(str(amount))
         if amount <= 0:
             raise ValueError("XP Award Rejected: XP amount must be positive.")
-
         event = XPEvent(
             event_id=f"xp_{hashlib.sha256(f'{station_id}:{category}:{verified_event_ref}'.encode('utf-8')).hexdigest()[:12]}",
-            station_id=station_id,
-            category=category,
-            amount=amount,
-            reason=reason,
+            station_id=station_id, category=category, amount=amount, reason=reason,
             verified_event_ref=verified_event_ref,
         )
         self.xp_events.append(event)
         return event
 
-    def get_total_xp_for_station(self, station_id: StationID) -> int:
-        return sum(e.amount for e in self.xp_events if e.station_id == station_id)
+    def get_total_xp_for_station(self, station_id: StationID) -> Decimal:
+        return sum((e.amount for e in self.xp_events if e.station_id == station_id), Decimal("0"))
 
-    def get_total_airspace_xp(self) -> int:
-        return sum(e.amount for e in self.xp_events)
+    def get_total_airspace_xp(self) -> Decimal:
+        return sum((e.amount for e in self.xp_events), Decimal("0"))
 
 
 # ---------------------------------------------------------
@@ -398,42 +348,19 @@ class AirspaceState(BaseModel):
     """Master Airspace Observable Operating State."""
     airspace_id: str = "SAGE-AIRSPACE-001"
     session_id: str = "session_airspace_v1"
-    mode: str = "OPERATIONAL"  # OPERATIONAL, RESEARCH, AUDIT
+    mode: str = "OPERATIONAL"
     active_mission: Optional[Mission] = None
     active_sorties: List[Sortie] = Field(default_factory=list)
     stations: Dict[StationID, Station] = Field(default_factory=lambda: {
-        StationID.MISSION_DIRECTOR: Station(
-            station_id=StationID.MISSION_DIRECTOR,
-            agent_name="Human Director",
-            role_description="Strategic Command & Final Clearance Authority",
-            current_cql=7,
-            current_sql=7,
-        ),
-        StationID.MISSION_CONTROL: Station(
-            station_id=StationID.MISSION_CONTROL,
-            agent_name="GPT",
-            role_description="C2 Synthesis & Operational Coordination",
-            current_cql=4,
-            current_sql=3,
-        ),
-        StationID.INTEL_STATION: Station(
-            station_id=StationID.INTEL_STATION,
-            agent_name="Gemini",
-            role_description="Recon, Search Telemetry & Adversarial Review",
-            current_cql=3,
-            current_sql=3,
-        ),
-        StationID.ENGINEERING_FLIGHT: Station(
-            station_id=StationID.ENGINEERING_FLIGHT,
-            agent_name="Jules",
-            role_description="Engineering Execution & Test Verification",
-            current_cql=4,
-            current_sql=2,
-        ),
+        StationID.MISSION_DIRECTOR: Station(station_id=StationID.MISSION_DIRECTOR, agent_name="Human Director", role_description="Strategic Command & Final Clearance Authority", current_cql=7, current_sql=7),
+        StationID.MISSION_CONTROL: Station(station_id=StationID.MISSION_CONTROL, agent_name="GPT", role_description="C2 Synthesis & Operational Coordination", current_cql=4, current_sql=3),
+        StationID.INTEL_STATION: Station(station_id=StationID.INTEL_STATION, agent_name="Gemini", role_description="Recon, Search Telemetry & Adversarial Review", current_cql=3, current_sql=3),
+        StationID.ENGINEERING_FLIGHT: Station(station_id=StationID.ENGINEERING_FLIGHT, agent_name="Jules", role_description="Engineering Execution & Test Verification", current_cql=4, current_sql=2),
     })
-    current_frontiers: List[str] = Field(default_factory=list)
     qualification_registry: QualificationRegistry = Field(default_factory=QualificationRegistry)
     game_progression: GameProgression = Field(default_factory=GameProgression)
     recent_evidence: List[str] = Field(default_factory=list)
-    next_clearance: str = "Execute Session 3 Airspace Build"
-    last_updated: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+    def model_dump_json(self, *args: Any, **kwargs: Any) -> str:
+        """Stable JSON serialization for Airspace state."""
+        return json.dumps(self.model_dump(*args, **kwargs), default=str, sort_keys=True)
