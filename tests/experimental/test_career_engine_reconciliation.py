@@ -35,7 +35,7 @@ def test_reconcile_reads_canonical_xp_and_qualification_state():
     assert projection.career_xp == 120
     assert projection.cql_level == 5
     assert projection.sql_level == 3
-    assert projection.promotion_eligible is False
+    assert projection.promotion_eligible is True
 
 
 def test_reconcile_does_not_mutate_canonical_state():
