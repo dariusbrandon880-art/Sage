@@ -62,9 +62,10 @@ class LifecycleManager:
         
         if not keys_str:
             # Fallback for local development only
-            if os.getenv("ENV", "production") != "production":
+            env_name = os.getenv("ENV", "development").lower()
+            if env_name != "production":
                 logger.warning("SAGE_API_KEYS not set. Using dev fallback key.")
-                keys_str = "sage-dev-key-2026"
+                keys_str = "sage-dev-key-2026,sage-default-key-2026"
             else:
                 logger.warning("SAGE_API_KEYS not set in production. Auth will FAIL CLOSED.")
                 return

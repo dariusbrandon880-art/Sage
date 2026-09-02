@@ -276,3 +276,45 @@ def test_ingest_reason_verify_endpoints():
         assert response.status_code == 200
         res_verify = response.json()
         assert "is_valid" in res_verify
+
+
+def test_chat_render_and_stream_endpoints():
+    """Test /chat/render and /chat/render/stream endpoints and memory evidence capture."""
+    with TestClient(app) as client:
+        # 1. Render endpoint
+        render_payload = {
+            "prompt": "What is the mission status of SAGE?",
+            "session_id": "c2-session-test-001",
+            "model": "gpt-4",
+        }
+        response = client.post("/chat/render", json=render_payload)
+        assert response.status_code == 200
+        data = response.json()
+        assert "content" in data
+        assert data["session_id"] == "c2-session-test-001"
+        assert data["model"] == "gpt-4"
+        assert data["governed"] is True
+        assert "evidence_id" in data
+
+        evidence_id = data["evidence_id"]
+
+        # 2. Search memory by tag 'chatgpt' to verify evidence capture
+        response = client.get("/memory/search/tag/chatgpt")
+        assert response.status_code == 200
+        tag_results = response.json()
+        assert tag_results["count"] > 0
+        found_ids = [item["id"] for item in tag_results["results"]]
+        assert evidence_id in found_ids
+
+        # 3. Stream endpoint
+        stream_payload = {
+            "prompt": "List SAGE capabilities in stream mode",
+            "session_id": "c2-session-stream-001",
+            "model": "gpt-4",
+            "stream": True,
+        }
+        response = client.post("/chat/render/stream", json=stream_payload)
+        assert response.status_code == 200
+        assert "application/x-ndjson" in response.headers.get("content-type", "")
+        lines = [line.strip() for line in response.text.strip().split("\n") if line.strip()]
+        assert len(lines) > 0

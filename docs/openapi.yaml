@@ -4,6 +4,51 @@ info:
   description: "Customer-facing SAGE live command HUD, acceptance surface, and REST API runtime gateway"
   version: "1.2.0"
 paths:
+  /health:
+    get:
+      summary: "Health"
+      operationId: "health_health_get"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+  /api/state:
+    get:
+      summary: "Get State"
+      operationId: "get_state_api_state_get"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+  /api/hud:
+    get:
+      summary: "Get Hud"
+      operationId: "get_hud_api_hud_get"
+      parameters:
+        -
+          name: "agent_id"
+          in: "query"
+          required: false
+          schema:
+            type: "string"
+            default: "MISSION_CONTROL"
+            title: "Agent Id"
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+        422:
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
   /:
     get:
       summary: "Get Dashboard"
@@ -15,16 +60,6 @@ paths:
             text/html:
               schema:
                 type: "string"
-  /health:
-    get:
-      summary: "Health"
-      operationId: "health_health_get"
-      responses:
-        200:
-          description: "Successful Response"
-          content:
-            application/json:
-              schema: {}
   /status:
     get:
       summary: "Get Status"
@@ -628,6 +663,51 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HTTPValidationError"
+  /chat/render:
+    post:
+      summary: "Chat Render"
+      operationId: "chat_render_chat_render_post"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatRenderRequest"
+        required: true
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatRenderResponse"
+        422:
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /chat/render/stream:
+    post:
+      summary: "Chat Render Stream"
+      operationId: "chat_render_stream_chat_render_stream_post"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatRenderRequest"
+        required: true
+      responses:
+        200:
+          description: "Successful Response"
+          content:
+            application/json:
+              schema: {}
+        422:
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
   /ai/query/gemini-jules:
     post:
       summary: "Ai Query Gemini Jules"
@@ -915,41 +995,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HTTPValidationError"
-  /api/state:
-    get:
-      summary: "Get State"
-      operationId: "get_state_api_state_get"
-      responses:
-        200:
-          description: "Successful Response"
-          content:
-            application/json:
-              schema: {}
-  /api/hud:
-    get:
-      summary: "Get Hud"
-      operationId: "get_hud_api_hud_get"
-      parameters:
-        -
-          name: "agent_id"
-          in: "query"
-          required: false
-          schema:
-            type: "string"
-            default: "MISSION_CONTROL"
-            title: "Agent Id"
-      responses:
-        200:
-          description: "Successful Response"
-          content:
-            application/json:
-              schema: {}
-        422:
-          description: "Validation Error"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/HTTPValidationError"
 components:
   schemas:
     AIQueryRequest:
@@ -1005,6 +1050,81 @@ components:
         - "memory_id"
         - "title"
       title: "ArchivePromotionRequest"
+    ChatRenderRequest:
+      properties:
+        prompt:
+          type: "string"
+          title: "Prompt"
+        session_id:
+          anyOf:
+            -
+              type: "string"
+            -
+              type: "null"
+          title: "Session Id"
+        model:
+          anyOf:
+            -
+              type: "string"
+            -
+              type: "null"
+          title: "Model"
+          default: "gpt-4"
+        bind_to_decision:
+          anyOf:
+            -
+              type: "string"
+            -
+              type: "null"
+          title: "Bind To Decision"
+        stream:
+          anyOf:
+            -
+              type: "boolean"
+            -
+              type: "null"
+          title: "Stream"
+          default: false
+      type: "object"
+      required:
+        - "prompt"
+      title: "ChatRenderRequest"
+    ChatRenderResponse:
+      properties:
+        content:
+          type: "string"
+          title: "Content"
+        model:
+          type: "string"
+          title: "Model"
+        session_id:
+          type: "string"
+          title: "Session Id"
+        evidence_id:
+          type: "string"
+          title: "Evidence Id"
+        timestamp:
+          type: "string"
+          title: "Timestamp"
+        governed:
+          type: "boolean"
+          title: "Governed"
+          default: true
+        usage:
+          anyOf:
+            -
+              additionalProperties: true
+              type: "object"
+            -
+              type: "null"
+          title: "Usage"
+      type: "object"
+      required:
+        - "content"
+        - "model"
+        - "session_id"
+        - "evidence_id"
+      title: "ChatRenderResponse"
     DecisionRequest:
       properties:
         decision_type:

@@ -84,7 +84,9 @@ class ChatGPTClient(BaseAIClient):
             return dict(context)
         if hasattr(self.runtime, "get_status"):
             status = self.runtime.get_status()
-            return {"c2_identity": "ChatGPT", "master_archive_authority": True, "active_objective": status.get("current_objective"), "active_task": status.get("active_task"), "governance_status": "ACTIVE", "c2_status": status.get("c2_status", {}), "active_frontier": "c2-runtime-boundary", "gate": "GOVERNED_EXECUTION"}
+            obj = status.get("current_objective") or getattr(getattr(self.runtime, "current_state", None), "current_objective", None)
+            tsk = status.get("active_task") or getattr(getattr(self.runtime, "current_state", None), "active_task", None)
+            return {"c2_identity": "ChatGPT", "master_archive_authority": True, "active_objective": obj, "active_task": tsk, "governance_status": "ACTIVE", "c2_status": status.get("c2_status", {}), "active_frontier": "c2-runtime-boundary", "gate": "GOVERNED_EXECUTION"}
         raise ValueError("SAGE runtime cannot rehydrate canonical C2 context")
 
     def _build_governed_runtime(self, *, session_id: str, c2_context: dict[str, Any], evidence_refs: tuple[str, ...]):

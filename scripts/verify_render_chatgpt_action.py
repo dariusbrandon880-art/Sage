@@ -96,7 +96,7 @@ def verify_render_chatgpt_action(base_url: str = None, api_key: str = None, targ
     print("\n[4] Testing /ai/query/chatgpt endpoint...")
     try:
         query_payload = {
-            "prompt": "Verify SAGE ChatGPT Action Runtime Handshake",
+            "prompt": "SAGE ChatGPT Action Runtime Handshake",
             "agent_id": "[SAGE::C2::CHATGPT]"
         }
         r = httpx.post(f"{base_url}/ai/query/chatgpt", json=query_payload, headers=headers, timeout=10.0)
@@ -110,6 +110,27 @@ def verify_render_chatgpt_action(base_url: str = None, api_key: str = None, targ
     except Exception as e:
         results["ai_query_chatgpt"] = {"status_code": 0, "error": str(e), "passed": False}
         print(f"    AI query endpoint check failed: {e}")
+
+    # 5. C2 ChatGPT Render Check (/chat/render)
+    print("\n[5] Testing /chat/render endpoint...")
+    try:
+        render_payload = {
+            "prompt": "SAGE C2 ChatGPT Render Endpoint Handshake",
+            "session_id": "c2-recon-test",
+            "model": "gpt-4"
+        }
+        r = httpx.post(f"{base_url}/chat/render", json=render_payload, headers=headers, timeout=10.0)
+        is_render_success = r.status_code == 200 and isinstance(r.json(), dict) and "content" in r.json() and "evidence_id" in r.json()
+        results["chat_render"] = {
+            "status_code": r.status_code,
+            "evidence_id": r.json().get("evidence_id", "") if is_render_success else None,
+            "response_summary": r.json().get("content", "")[:200] if is_render_success else r.text[:200],
+            "passed": is_render_success
+        }
+        print(f"    Status: {r.status_code} - {'PASS (RENDER & EVIDENCE CAPTURED)' if is_render_success else 'FAIL (ERROR)'}")
+    except Exception as e:
+        results["chat_render"] = {"status_code": 0, "error": str(e), "passed": False}
+        print(f"    Chat render endpoint check failed: {e}")
 
     # All endpoint checks must pass
     all_endpoints_passed = all(res.get("passed", False) for res in results.values())

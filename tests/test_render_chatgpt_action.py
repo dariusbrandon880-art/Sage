@@ -71,6 +71,12 @@ def test_verify_render_chatgpt_action_live_https_success(tmp_path, monkeypatch):
         class MockResponse:
             status_code = 200
             def json(self):
+                if "chat/render" in url:
+                    return {
+                        "content": "[SAGE::C2::CHATGPT] Verified",
+                        "evidence_id": "mem_chatgpt_test",
+                        "session_id": "session_test",
+                    }
                 return {"response_text": "[SAGE::C2::CHATGPT] Verified", "session_id": "session_test"}
             @property
             def text(self):
