@@ -80,9 +80,11 @@ When canonical state actually changes, the presentation may expose:
 - capability collection updates
 - frontier movement
 - next-objective indicators
+- sports pick action strips and boost glyphs (`🎰` GRAVY, `📈` GENUINE_PLUS_EV, `⚠️` BOOST_TRAP, `🎯` CONDITIONAL_ACCEPT)
+- prop edge and expected value visual indicators (`⚡` EDGE, `💰` KELLY, `🔒` LOCKED, `🏆` WIN, `❌` LOSS, `⏸️` PUSH, `🎲` UNRESOLVED)
 - failure/hold feedback
 
-Feedback must be immediate when the underlying state is available, but must not imply state that has not been verified.
+Feedback must be immediate when the underlying state is available, but must not imply state that has not been verified. Sports/pick projections operate strictly under zero-wagering bounds (`wagering_executed = False`).
 
 ## 7. Persistent progression
 

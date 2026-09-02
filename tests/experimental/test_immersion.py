@@ -58,3 +58,34 @@ def test_immersion_nameplate_combines_identity_progression_and_live_state():
     assert "XP 0" in rendered
     assert "CQL ⚙️⚙️⚙️⚙️" in rendered
     assert "NO ACTIVE SORTIES" in rendered
+
+
+def test_sports_pick_action_strip_renders_canonical_data():
+    from sage.experimental.airspace.immersion import (
+        render_sgp_boost_glyph,
+        render_sports_pick_action_strip,
+    )
+
+    assert render_sgp_boost_glyph("GRAVY") == "🎰"
+    assert render_sgp_boost_glyph("BOOST_TRAP") == "⚠️"
+
+    rendered = render_sports_pick_action_strip(
+        player_or_selection="Aaron Judge",
+        market_or_category="Anytime Home Run",
+        projected_prob=0.35,
+        fd_price=3.20,
+        expected_value=0.12,
+        edge_score=0.08,
+        kelly_stake=0.035,
+        recommendation="GRAVY",
+        lock_verified=True,
+        outcome_status="WIN",
+    )
+
+    assert "🎰 PICK [Aaron Judge | Anytime Home Run]" in rendered
+    assert "@ 3.20" in rendered
+    assert "EV 📈 +12.00%" in rendered
+    assert "EDGE ⚡ +8.00%" in rendered
+    assert "KELLY 💰 3.50%" in rendered
+    assert "LOCK 🔒" in rendered
+    assert "STATUS 🏆 WIN" in rendered

@@ -31,6 +31,44 @@ class MilestoneStrike:
 
 
 @dataclass(frozen=True)
+class PickActionProjection:
+    """Read-only high-tempo pick/prediction visual projection derived from canonical state."""
+
+    selection: str
+    market: str
+    decimal_price: float
+    expected_value: float
+    edge_score: float
+    kelly_stake: float
+    recommendation: str
+    outcome_status: str
+
+    def render(self) -> str:
+        recommendation_glyph = {
+            "GRAVY": "🎰",
+            "GENUINE_PLUS_EV": "📈",
+            "BOOST_TRAP": "⚠️",
+            "CONDITIONAL_ACCEPT": "🎯",
+        }.get(self.recommendation.upper(), "📈")
+
+        ev_glyph = "📈" if self.expected_value > 0 else "📉"
+        outcome_glyph = {
+            "WIN": "🏆",
+            "LOSS": "❌",
+            "PUSH": "⏸️",
+        }.get(self.outcome_status.upper(), "🎲")
+
+        return (
+            f"{recommendation_glyph} PICK [{self.selection} | {self.market}] "
+            f"@ {self.decimal_price:.2f} | "
+            f"EV {ev_glyph} {self.expected_value:+.2%} | "
+            f"EDGE ⚡ {self.edge_score:+.2%} | "
+            f"KELLY 💰 {self.kelly_stake:.2%} | "
+            f"STATUS {outcome_glyph} {self.outcome_status}"
+        )
+
+
+@dataclass(frozen=True)
 class NameplateProjection:
     """Deterministic presentation nameplate projected from canonical ImmersionState."""
 
@@ -171,3 +209,27 @@ def project_c2_response_contract(state: ImmersionState) -> C2ResponseContract:
     nameplate = project_immersion_nameplate(state)
     hud = project_mission_hud(state)
     return C2ResponseContract(nameplate=nameplate, hud=hud)
+
+
+def project_pick_action_visual(
+    *,
+    selection: str,
+    market: str,
+    decimal_price: float,
+    expected_value: float,
+    edge_score: float,
+    kelly_stake: float,
+    recommendation: str = "GENUINE_PLUS_EV",
+    outcome_status: str = "UNRESOLVED",
+) -> PickActionProjection:
+    """Project a high-tempo sports pick visual action projection derived from canonical data."""
+    return PickActionProjection(
+        selection=selection,
+        market=market,
+        decimal_price=decimal_price,
+        expected_value=expected_value,
+        edge_score=edge_score,
+        kelly_stake=kelly_stake,
+        recommendation=recommendation,
+        outcome_status=outcome_status,
+    )
