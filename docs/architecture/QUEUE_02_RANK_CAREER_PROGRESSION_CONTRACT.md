@@ -48,29 +48,29 @@ Not every hard task qualifies as a Boss, and a task must not become a Boss merel
 
 A verified Boss battle/kill/capture creates the career's Boss accomplishment record and contributes Points and XP according to the verified substance of the event. Boss class does not imply a fixed automatic XP payout.
 
-## 4. Stripes, Points, XP, and badges
+## 4. Boss stars, kill markers, capture Stripes, Points, XP, and badges
 
-These are distinct progression signals.
+These are distinct progression/recognition signals.
 
-- **Stripe:** the visual tally of an agent's cumulative verified Boss battles/kills/captures. One Boss battle = one Stripe; two Boss battles = two Stripes; and so on.
-- **Boss stars:** identify the class of the Boss associated with the current/recorded Boss event: ⭐ = Big Boss; ⭐⭐ = Major Boss.
+- **Boss stars:** identify the class of the Boss event: ⭐ = Big Boss; ⭐⭐ = Major Boss.
+- **Boss kill marker:** a crossed-swords **⚔️** represents one verified Boss kill.
+- **Capture Stripe:** a regular Stripe marker represents one verified Boss capture. Capture Stripes are distinct from crossed-swords kill markers.
+- **Boss tally:** the career display keeps the Boss class marker beside the accumulated kill/capture markers so the record shows both the class and the agent's Boss history.
 - **Points:** quantified verified work value assigned to an event.
 - **XP:** durable career progression accumulated from governed progression events.
-- **Badges:** separate durable recognition for governed accomplishments/attributes; badges are not interchangeable with Boss Stripes, Points, or XP.
+- **Badges:** separate durable recognition for governed accomplishments/attributes; badges are not interchangeable with Boss markers, Points, or XP.
 - **Rank:** aggregate designation reflecting the agent's overall evolution.
 
-### Locked Boss visual
-
-The HUD/career presentation uses the following visual relationship:
+### Locked Boss visual semantics
 
 ```text
-⭐  |  ⚔️⚔️⚔️⚔️   = Big Boss | 4 cumulative Boss battles
-⭐⭐ |  ⚔️⚔️       = Major Boss | 2 cumulative Boss battles
+⭐  |  ⚔️⚔️⚔️⚔️  |  ┃┃     = Big Boss | 4 kills | 2 captures
+⭐⭐ |  ⚔️⚔️      |  ┃┃┃    = Major Boss | 2 kills | 3 captures
 ```
 
-The **stars identify Boss class**. The **Stripe tally records how many Boss battles the agent has accumulated**. The tally sits directly beside the Boss-star marker in the visual presentation.
+The **stars identify Boss class**. The **crossed swords tally verified Boss kills**. The **regular Stripe tally records verified Boss captures**. The markers sit directly beside the Boss-star marker in the visual career presentation.
 
-The exact visual glyphs and presentation can later be rendered by the HUD implementation, but this semantic relationship is locked by Queue #02. No HUD implementation is being coupled into this contract.
+The exact rendering glyph can later be implemented by the HUD, but these semantics are locked by Queue #02. No HUD implementation is being coupled into this contract.
 
 ## 5. Attribution and shared progress
 
@@ -106,7 +106,7 @@ A proposal can summarize:
 - current rank
 - Points
 - XP
-- Boss Stripe tally
+- Boss kill/capture history
 - verified accomplishments
 - badges
 - workflow evolution
