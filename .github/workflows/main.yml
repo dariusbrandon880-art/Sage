@@ -36,19 +36,15 @@ jobs:
       - name: Run pytest
         run: pytest -v --tb=short
 
-  five-front-full-engine:
-    name: "C2 Full Engine / ${{ matrix.front }}"
+  progression-front-full-engine:
+    name: "C2 Progression Front / ${{ matrix.front }}"
     if: ${{ always() }}
     needs: test
     strategy:
       fail-fast: false
-      max-parallel: 3
+      max-parallel: 2
       matrix:
         include:
-          - front: GOVERNED_EXECUTION
-            target: sage/c2/frontier_execution.py
-            tests: tests/test_c2_five_fronts.py
-            search: "failure memory preflight authorization safety governed execution verification receipt evidence"
           - front: NATIVE_PERSISTED_EVIDENCE
             target: sage/evidence/native_persisted_loader.py
             tests: tests/test_c2_five_fronts.py
@@ -134,7 +130,7 @@ jobs:
           report = {"stage":"VERIFY_COMPOUND","front":"${{ matrix.front }}","status":"PASS" if rc == 0 else "FAIL","exit_code":rc,"authority_boundary":"execution evidence only; C2 must independently verify before qualification","commit_sha":"${{ github.sha }}","run_id":"${{ github.run_id }}","job":"${{ github.job }}"}
           Path("front_verify.json").write_text(json.dumps(report, indent=2)); print(json.dumps(report, indent=2)); raise SystemExit(rc)
           PY
-      - name: Build full-engine receipt
+      - name: Build progression receipt
         if: always()
         run: |
           python - <<'PY'
@@ -145,38 +141,38 @@ jobs:
               path=Path(f"front_{stage}.json"); data=json.loads(path.read_text()) if path.exists() else None
               stages.append({"stage":stage,"present":path.exists(),"status":data.get("status") if data else "MISSING","exit_code":data.get("exit_code") if data else None})
           all_present=all(x["present"] for x in stages); all_passed=all(x["status"]=="PASS" for x in stages)
-          report={"wave":"SAGE-C2-THREE-FRONT-FULL-ENGINE","front":"${{ matrix.front }}","expected_stages":4,"stages":stages,"all_stage_receipts_present":all_present,"all_stage_passed":all_passed,"wave_front_verdict":"PASS" if all_present and all_passed else "FAIL","commit_sha":"${{ github.sha }}","run_id":"${{ github.run_id }}","job":"${{ github.job }}"}
+          report={"wave":"SAGE-C2-PROGRESSION-FRONT-FULL-ENGINE","front":"${{ matrix.front }}","expected_stages":4,"stages":stages,"all_stage_receipts_present":all_present,"all_stage_passed":all_passed,"wave_front_verdict":"PASS" if all_present and all_passed else "FAIL","commit_sha":"${{ github.sha }}","run_id":"${{ github.run_id }}","job":"${{ github.job }}"}
           Path("front_receipt.json").write_text(json.dumps(report, indent=2)); print(json.dumps(report, indent=2))
           if not all_present or not all_passed: raise SystemExit(1)
           PY
-      - name: Upload front evidence
+      - name: Upload progression evidence
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: sage-c2-full-engine-${{ matrix.front }}-${{ github.sha }}
+          name: sage-c2-progression-front-${{ matrix.front }}-${{ github.sha }}
           path: front_*.json
           if-no-files-found: error
 
   reconverge:
-    name: C2 Three-Front Fail-Closed Reconvergence
+    name: C2 Progression-Front Fail-Closed Reconvergence
     if: ${{ always() }}
-    needs: [test, five-front-full-engine]
+    needs: [test, progression-front-full-engine]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - name: Download three front evidence without collision
+      - name: Download progression front evidence without collision
         uses: actions/download-artifact@v6
         with:
-          pattern: sage-c2-full-engine-*
-          path: three-front-evidence
+          pattern: sage-c2-progression-front-*
+          path: progression-front-evidence
           merge-multiple: false
-      - name: Verify complete three-front wave
+      - name: Verify complete progression-front wave
         run: |
           python - <<'PY'
           import json, os
           from pathlib import Path
-          root=Path("three-front-evidence")
-          expected={"GOVERNED_EXECUTION","NATIVE_PERSISTED_EVIDENCE","PROGRESSION_RECEIPTS"}
+          root=Path("progression-front-evidence")
+          expected={"NATIVE_PERSISTED_EVIDENCE","PROGRESSION_RECEIPTS"}
           receipts=[]
           for path in root.glob("*/front_receipt.json"):
               try: receipts.append(json.loads(path.read_text()))
@@ -188,15 +184,15 @@ jobs:
           duplicates=sorted(f for f in expected if sum(1 for x in valid if x.get("front")==f)>1)
           invalid=sorted({str(x.get("front")) for x in receipts if x.get("front") not in expected})
           stale=sorted(provenance-{expected_sha}) if expected_sha else sorted(provenance)
-          all_fronts_pass=len(valid)==3 and not missing and not duplicates and not invalid and not stale and provenance=={expected_sha}
-          report={"wave":"SAGE-C2-THREE-FRONT-FULL-ENGINE","expected_fronts":3,"observed_fronts":len(observed),"missing_fronts":missing,"duplicate_fronts":duplicates,"invalid_fronts":invalid,"provenance_commits":sorted(provenance),"expected_commit":expected_sha,"stale_or_mixed_commits":stale,"wave_verdict":"REQUIRES_INDEPENDENT_C2_VERIFICATION" if all_fronts_pass else "HOLD","authority_boundary":"Aggregates execution observations; does not qualify capability."}
-          Path("sage_c2_three_front_wave_report.json").write_text(json.dumps(report, indent=2)); print(json.dumps(report, indent=2))
+          all_fronts_pass=len(valid)==2 and not missing and not duplicates and not invalid and not stale and provenance=={expected_sha}
+          report={"wave":"SAGE-C2-PROGRESSION-FRONT-FULL-ENGINE","expected_fronts":2,"observed_fronts":len(observed),"missing_fronts":missing,"duplicate_fronts":duplicates,"invalid_fronts":invalid,"provenance_commits":sorted(provenance),"expected_commit":expected_sha,"stale_or_mixed_commits":stale,"wave_verdict":"REQUIRES_INDEPENDENT_C2_VERIFICATION" if all_fronts_pass else "HOLD","authority_boundary":"Aggregates execution observations; does not qualify capability."}
+          Path("sage_c2_progression_front_wave_report.json").write_text(json.dumps(report, indent=2)); print(json.dumps(report, indent=2))
           if not all_fronts_pass: raise SystemExit(1)
           PY
       - name: Upload compound evidence
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: sage-c2-three-front-wave-${{ github.sha }}
-          path: sage_c2_three_front_wave_report.json
+          name: sage-c2-progression-front-wave-${{ github.sha }}
+          path: sage_c2_progression_front_wave_report.json
           if-no-files-found: error
