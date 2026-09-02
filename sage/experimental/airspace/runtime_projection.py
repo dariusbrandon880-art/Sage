@@ -42,7 +42,7 @@ def project_runtime_state(runtime) -> AirspaceState:
     return AirspaceState(
         session_id=session_id,
         mode="OPERATIONAL",
-        stations={StationID.MISSION_CONTROL},
+        stations={StationID.MISSION_CONTROL: {"agent_name": "ChatGPT"}},
         active_mission=mission,
         current_frontiers=[task] if task else [],
         recent_evidence=[],
