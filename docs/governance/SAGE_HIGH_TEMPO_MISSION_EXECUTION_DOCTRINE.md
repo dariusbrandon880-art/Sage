@@ -11,13 +11,15 @@ SAGE is designed for high verified execution velocity. A known consequential blo
 
 This doctrine converts that requirement into a durable repository rule.
 
-The doctrine is inspired by transferable principles from high-tempo command-and-control systems, high-reliability engineering, and high-ownership operating models. It does **not** import military authority, tactics, or organizational hierarchy into SAGE. Only the execution principles are adapted.
+**The execution philosophy is intentionally informed by how the U.S. Marine Corps organizes, commands, executes, adapts, and delivers under consequential conditions.** That military origin is part of SAGE's design provenance, not something to obscure or sanitize away. SAGE translates selected military execution principles into a governed software/intelligence operating model while rejecting military authority, force structure, or organizational command as authority inside SAGE.
+
+The objective is to preserve the useful execution characteristics: clear intent, disciplined initiative, decentralized execution inside bounds, high tempo, ownership of the whole mission, rapid adaptation, deep inspection, decisive action, verification, after-action learning, and delivery to a real terminal boundary.
 
 ### Marine shorthand
 
-Within SAGE conversations and internal execution coordination, **Marine** may be used as shorthand for this hard-execution, high-tempo operating posture: repo-first recon, bounded execution, verification, evidence, and advance.
+Within SAGE conversations and internal execution coordination, **Marine** may be used as shorthand for the Marine-derived hard-execution, high-tempo operating posture: repo-first recon, clear intent, bounded initiative, coordinated execution, verification, evidence, delivery, and advance.
 
-This shorthand is **not** a SAGE product identity, organizational identity, military affiliation, presentation theme, or authority layer. It does not create permissions, change the Five Flight model, or override any existing governance boundary.
+This is not a disclaimer that the military origin is irrelevant. The origin is intentionally part of the architecture's execution philosophy. The boundary is that SAGE does not inherit military legal authority, rank, force structure, tactics, weapons doctrine, or organizational affiliation. The term does not create permissions or override SAGE governance.
 
 The canonical doctrine remains this document. Marine shorthand must not become a competing doctrine or duplicate source of truth.
 
@@ -283,12 +285,14 @@ Parallelism changes scheduling. It never lowers the intelligence, build aperture
 
 ## 14. Governance source synthesis
 
-The doctrine is a deliberate SAGE adaptation of principles, not an assertion that SAGE is a military organization.
+The doctrine is a deliberate SAGE adaptation of military execution doctrine and other high-performance operating principles. **The military source is intentional design provenance, not incidental inspiration.**
 
-- U.S. Marine Corps MCDP 1 and MCDP 6 emphasize commander intent as durable purpose, initiative within intent, decentralized execution, and command-and-control designed to enable faster effective decisions/actions. See the official Marine Corps publications linked below.
+- U.S. Marine Corps MCDP 1 and MCDP 6 emphasize commander intent as durable purpose, initiative within intent, decentralized execution, and command-and-control designed to enable faster effective decisions/actions. SAGE deliberately studies and translates these execution principles into its own governed architecture.
 - Amazon's public Leadership Principles emphasize Ownership, Bias for Action, Dive Deep, Insist on the Highest Standards, Have Backbone; Disagree and Commit, and Deliver Results. SAGE adopts only the transferable operating principles and rejects any corporate-specific authority model.
 
-The synthesis is intentionally balanced: **initiative + ownership + speed + deep inspection + highest standards + evidence + bounded authority.**
+The synthesis is intentionally balanced: **mission intent + disciplined initiative + ownership + speed + deep inspection + highest standards + evidence + bounded authority + delivery + learning.**
+
+SAGE is therefore not merely using a metaphorical "Marine mode." Its broader architecture is intentionally shaped by the execution-and-delivery philosophy being studied from Marine practice, while the resulting authority model remains SAGE-native and governed by SAGE's own Mission Director, C2, validation, evidence, and Master Archive rules.
 
 ## 15. Source links
 
