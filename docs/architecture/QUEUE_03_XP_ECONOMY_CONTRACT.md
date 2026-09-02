@@ -44,7 +44,7 @@ Lifetime XP is the sum of verified XP awards. XP is not created merely because t
 - Boolean values are rejected as invalid Point inputs.
 - Missing event or agent identity is rejected at event construction.
 - Fractional results such as `25 Points = 2.5 XP` are preserved exactly in conversion receipts.
-- The existing canonical `GameProgression` ledger currently accepts whole-XP awards; its adapter rejects fractional awards rather than silently rounding them. Extending canonical persistence to fractional XP is an explicit integration concern and is not silently changed by Queue #03.
+- Canonical `GameProgression` persistence accepts exact Decimal XP so fractional awards remain lossless through the career ledger.
 
 ## Worked examples
 
