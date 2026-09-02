@@ -18,10 +18,10 @@ MISSIONS / SORTIES
         ↓
    BOSS ENCOUNTER
         ↓
- ┌──────┼──────┐
- ▼      ▼      ▼
-SMALL  BIG   MAJOR
-BOSS   BOSS   BOSS
+ ┌──────┴──────┐
+ ▼             ▼
+BIG           MAJOR
+BOSS          BOSS
         ↓
  VERIFIED OUTCOME
         ↓
@@ -55,7 +55,7 @@ This preserves the separation established in the historical career recon.
 
 ## 3. Why Bosses Fit SAGE
 
-Game-design research commonly treats bosses as milestone tests: they close a progression segment, test mastery, and create a meaningful transition point. Boss encounters can also be structured as multi-phase tests rather than a single undifferentiated difficulty value. citeturn0search0turn0search8
+Game-design research commonly treats bosses as milestone tests: they close a progression segment, test mastery, and create a meaningful transition point. Boss encounters can also be structured as multi-phase tests rather than a single undifferentiated difficulty value.
 
 The SAGE translation is not literal combat. The boss is a **governed challenge representation** over real work.
 
@@ -65,18 +65,6 @@ SAGE:       discover → bound → execute → verify → overcome → capture c
 ```
 
 ## 4. Boss Classes
-
-### Small Boss
-
-A bounded but non-trivial challenge that requires demonstrated competence beyond routine work.
-
-Examples:
-
-- difficult defect elimination
-- contained integration obstacle
-- meaningful recon target
-- first successful demonstration of a capability
-- bounded verification challenge
 
 ### Big Boss
 
@@ -102,7 +90,9 @@ Examples:
 - major frontier breakthrough
 - elimination of a persistent high-impact failure mode
 
-**Important:** Small/Big/Major are difficulty classes, not automatic XP amounts.
+**Important:** Big/Major are difficulty classes, not automatic XP amounts.
+
+No additional Boss tier is defined by this contract.
 
 ## 5. Boss Outcomes
 
@@ -164,7 +154,7 @@ CAPTURE / KILL
 
 This intentionally echoes SAGE's existing governed continuous-intelligence loop rather than inventing a disconnected game lifecycle.
 
-Multi-phase boss design is useful because individual phases can test different capabilities and provide meaningful progression beats. citeturn0search8turn0search9
+Multi-phase boss design is useful because individual phases can test different capabilities and provide meaningful progression beats.
 
 ## 7. No Fake Health Bars
 
@@ -319,12 +309,12 @@ This directly addresses known progression-system failure modes where repetitive 
                            ▼
                     BOSS ENCOUNTERS
                            │
-              ┌────────────┼────────────┐
-              ▼            ▼            ▼
-           SMALL          BIG         MAJOR
-           BOSS           BOSS          BOSS
-              │            │            │
-              └────────────┼────────────┘
+                  ┌────────┴────────┐
+                  ▼                 ▼
+                BIG               MAJOR
+                BOSS               BOSS
+                  │                 │
+                  └────────┬────────┘
                            ▼
                     VERIFIED OUTCOME
                            │
@@ -356,7 +346,7 @@ This directly addresses known progression-system failure modes where repetitive 
 The following are now design findings for the Career Boss concept:
 
 - Milestones can be represented as Boss Encounters.
-- Small, Big, and Major represent challenge tiers, not fixed XP payouts.
+- Big and Major represent the only defined challenge tiers, not fixed XP payouts.
 - A Boss is a test of demonstrated capability and a progression closure point.
 - Elite Kill means verified elimination of a meaningful obstacle.
 - Elite Capture means verified acquisition/establishment of a meaningful capability, qualification, intelligence result, or reusable asset.
@@ -366,6 +356,7 @@ The following are now design findings for the Career Boss concept:
 - Bosses are not Five-Flight identities or career classes.
 - Bosses feed career accounting; they do not replace XP, qualification, mastery, rank, or promotion gates.
 - Repeated Boss work must not create automatic career inflation without new verified value.
+- No additional Boss tier is defined by this contract.
 
 ## 16. Still Open
 
@@ -374,7 +365,7 @@ Not locked:
 - exact Boss schema
 - exact difficulty calculation
 - exact phase schema
-- exact Small/Big/Major thresholds
+- exact Big/Major thresholds
 - exact Points/XP consequences
 - Boss creation authority
 - Boss closure authority
