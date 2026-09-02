@@ -72,6 +72,20 @@ The **stars identify Boss class**. The **crossed swords tally verified Boss kill
 
 The exact rendering glyph can later be implemented by the HUD, but these semantics are locked by Queue #02. No HUD implementation is being coupled into this contract.
 
+### 4.1 Rank-up board reset vs. durable career history
+
+When an agent reaches a **new rank**:
+
+- **XP is retained** and continues as lifetime/durable career XP.
+- The **visible Boss kill tally resets** for the new-rank board cycle.
+- The **visible Boss capture tally resets** for the new-rank board cycle.
+- **Badges are retained**; rank-up does not clear durable badge recognition.
+- The underlying verified **kill/capture history is retained in the system**; the board reset is presentation/cycle accounting, not deletion of career history.
+
+Therefore, a rank-up produces a fresh visible Boss tally for the new rank while preserving the complete historical record and durable XP/badge state.
+
+The exact XP bases/conversion and any badge-award economy are **not** defined by this section; those remain deferred to their numbered work items.
+
 ## 5. Attribution and shared progress
 
 Every progression event must preserve individual attribution while allowing shared mission credit.
