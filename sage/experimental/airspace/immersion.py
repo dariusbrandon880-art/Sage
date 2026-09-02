@@ -35,6 +35,24 @@ SORTIE_GLYPHS = {
     SortieState.ABORTED: "↩",
 }
 
+SGP_RECOMMENDATION_GLYPHS = {
+    "GRAVY": "🎰",
+    "GENUINE_PLUS_EV": "📈",
+    "BOOST_TRAP": "⚠️",
+    "CONDITIONAL_ACCEPT": "🎯",
+}
+
+PICK_ACTION_GLYPHS = {
+    "POSITIVE_EV": "📈",
+    "EDGE": "⚡",
+    "KELLY": "💰",
+    "LOCKED": "🔒",
+    "WIN": "🏆",
+    "LOSS": "❌",
+    "PUSH": "⏸️",
+    "UNRESOLVED": "🎲",
+}
+
 CQL_LABELS = {
     0: "UNQUALIFIED",
     1: "CONCEPTUAL",
@@ -128,4 +146,47 @@ def render_immersion_nameplate(
         f"  STACK     : {stack}\n"
         f"  QUALIFIED : {' | '.join(tags) if tags else 'UNQUALIFIED'}\n"
         f"  SORTIES   : {live}"
+    )
+
+
+def render_sgp_boost_glyph(recommendation: str) -> str:
+    """Render a game immersion glyph for FanDuel SGP boost quality classification."""
+    return SGP_RECOMMENDATION_GLYPHS.get(recommendation.upper(), "🎯")
+
+
+def render_sports_pick_action_strip(
+    *,
+    player_or_selection: str,
+    market_or_category: str,
+    projected_prob: float,
+    fd_price: float,
+    expected_value: float,
+    edge_score: float,
+    kelly_stake: float,
+    recommendation: str = "GENUINE_PLUS_EV",
+    lock_verified: bool = True,
+    outcome_status: str = "UNRESOLVED",
+) -> str:
+    """Render high-tempo sports pick visual action projection derived from canonical data.
+
+    Visual feedback is read-only presentation derived from verified prediction state.
+    It does not execute trades, place bets, or mutate underlying ledgers.
+    """
+    boost_glyph = render_sgp_boost_glyph(recommendation)
+    ev_glyph = PICK_ACTION_GLYPHS["POSITIVE_EV"] if expected_value > 0 else "📉"
+    lock_glyph = PICK_ACTION_GLYPHS["LOCKED"] if lock_verified else "🔓"
+
+    outcome_glyph = {
+        "WIN": PICK_ACTION_GLYPHS["WIN"],
+        "LOSS": PICK_ACTION_GLYPHS["LOSS"],
+        "PUSH": PICK_ACTION_GLYPHS["PUSH"],
+    }.get(outcome_status.upper(), PICK_ACTION_GLYPHS["UNRESOLVED"])
+
+    return (
+        f"{boost_glyph} PICK [{player_or_selection} | {market_or_category}] "
+        f"@ {fd_price:.2f} | PROB {projected_prob:.1%} | "
+        f"EV {ev_glyph} {expected_value:+.2%} | "
+        f"EDGE {PICK_ACTION_GLYPHS['EDGE']} {edge_score:+.2%} | "
+        f"KELLY {PICK_ACTION_GLYPHS['KELLY']} {kelly_stake:.2%} | "
+        f"LOCK {lock_glyph} | STATUS {outcome_glyph} {outcome_status}"
     )

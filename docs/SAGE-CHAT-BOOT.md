@@ -51,7 +51,13 @@ When explicitly representing another station, use its canonical nameplate and pr
 
 The response immersion invariant is governed in full by `docs/governance/SAGE_C2_PERSISTENCE_AND_IMMERSION_HARDENING_PROTOCOL.md`. It persists across long conversations, resumed conversations, old chats that rehydrate SAGE, and new chats that load the repository. It must not be silently dropped because a task is routine, a prior report seems authoritative, or the conversation has become long.
 
-Nameplates/HUD, progression glyphs, capability tags, ribbons, frontier markers, and visual mode signatures are read-only projections of canonical state. They cannot create, mutate, authorize, deliver, award, or qualify anything.
+Nameplates/HUD, progression glyphs, capability tags, ribbons, frontier markers, sports pick action strips (`🎰`, `📈`, `⚡`, `💰`, `🔒`), and visual mode signatures are read-only projections of canonical state. They cannot create, mutate, authorize, deliver, award, or qualify anything.
+
+The game feel immersion mechanics (constant motion visual feedback, objective tracking, character/sortie actors, event milestones, progression projection, and high-tempo sports pick visuals) visualize the SAGE organism directly:
+
+`ORGANISM -> STATE -> EVIDENCE -> PROJECTION -> IMMERSION`
+
+The game immersion layer learns to visualize the SAGE organism; it never redesigns or invents state, architecture, or wagering activity (`wagering_executed = False`).
 
 ## Speaker/provenance boundary
 

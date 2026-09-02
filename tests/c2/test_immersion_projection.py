@@ -35,3 +35,26 @@ def test_strike_is_projection_only():
     )
     assert strike.wave_id == "wave-test"
     assert strike.impact.stars == 5
+
+
+def test_pick_action_visual_projection():
+    from sage.c2.immersion_projection import project_pick_action_visual
+
+    projection = project_pick_action_visual(
+        selection="Shohei Ohtani - Over 1.5 Total Bases",
+        market="Player Props",
+        decimal_price=1.85,
+        expected_value=0.085,
+        edge_score=0.062,
+        kelly_stake=0.028,
+        recommendation="GENUINE_PLUS_EV",
+        outcome_status="UNRESOLVED",
+    )
+
+    rendered = projection.render()
+    assert "📈 PICK [Shohei Ohtani - Over 1.5 Total Bases | Player Props]" in rendered
+    assert "@ 1.85" in rendered
+    assert "EV 📈 +8.50%" in rendered
+    assert "EDGE ⚡ +6.20%" in rendered
+    assert "KELLY 💰 2.80%" in rendered
+    assert "STATUS 🎲 UNRESOLVED" in rendered
