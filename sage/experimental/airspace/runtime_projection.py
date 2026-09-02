@@ -39,7 +39,7 @@ def project_runtime_state(runtime) -> AirspaceState:
             current_frontier=task or "UNSPECIFIED",
         )
 
-    return AirspaceState(
+    state = AirspaceState(
         session_id=session_id,
         mode="OPERATIONAL",
         stations={
@@ -52,8 +52,13 @@ def project_runtime_state(runtime) -> AirspaceState:
             )
         },
         active_mission=mission,
-        current_frontiers=[task] if task else [],
         recent_evidence=[],
-        next_clearance="UNSPECIFIED",
         active_sorties=[],
     )
+
+    # The reconciliation branch temporarily lacks these legacy presentation
+    # fields on AirspaceState. Preserve the established projection contract
+    # without mutating canonical runtime state or inventing clearance.
+    object.__setattr__(state, "current_frontiers", [task] if task else [])
+    object.__setattr__(state, "next_clearance", "UNSPECIFIED")
+    return state
