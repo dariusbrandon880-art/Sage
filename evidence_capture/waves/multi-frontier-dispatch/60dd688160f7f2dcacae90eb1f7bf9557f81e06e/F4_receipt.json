@@ -1,0 +1,10 @@
+{
+  "blocker": null,
+  "executed_head": "60dd688160f7f2dcacae90eb1f7bf9557f81e06e",
+  "flight_id": "F4",
+  "frontier_name": "Current Wave Mission 4",
+  "status": "PASS",
+  "target_path": "sage/c2/current_wave_target_4.py",
+  "timestamp": 1788312844.839446,
+  "wave_id": "multi-frontier-dispatch"
+}
