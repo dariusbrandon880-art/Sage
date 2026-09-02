@@ -13,36 +13,12 @@ from sage.experimental.airspace.rank_system import (
 )
 
 EXPECTED_RANK_TITLES = (
-    "Recruit",
-    "Private First Class",
-    "Lance Operator",
-    "Corporal Operator",
-    "Sergeant Operator",
-    "Airman Operator",
-    "Airman First Class",
-    "Senior Airman",
-    "Technical Operator",
-    "Staff Operator",
-    "Joint Operator",
-    "Joint Sergeant",
-    "Joint Technical Sergeant",
-    "Joint Master Sergeant",
-    "Joint Gunnery Specialist",
-    "Operations Flight Lead",
-    "Mission Flight Lead",
-    "Senior Mission Lead",
-    "Command Master Specialist",
-    "Master Operations Specialist",
-    "Squadron Operations Lead",
-    "Group Operations Lead",
-    "Wing Operations Lead",
-    "Fleet Operations Lead",
-    "Senior Fleet Specialist",
-    "Frontier Specialist",
-    "Frontier Master",
-    "Elite Mission Specialist",
-    "Elite Systems Specialist",
-    "Master of Operations",
+    "Recruit", "Private First Class", "Lance Operator", "Corporal Operator", "Sergeant Operator",
+    "Airman Operator", "Airman First Class", "Senior Airman", "Technical Operator", "Staff Operator",
+    "Joint Operator", "Joint Sergeant", "Joint Technical Sergeant", "Joint Master Sergeant", "Joint Gunnery Specialist",
+    "Operations Flight Lead", "Mission Flight Lead", "Senior Mission Lead", "Command Master Specialist", "Master Operations Specialist",
+    "Squadron Operations Lead", "Group Operations Lead", "Wing Operations Lead", "Fleet Operations Lead", "Senior Fleet Specialist",
+    "Frontier Specialist", "Frontier Master", "Elite Mission Specialist", "Elite Systems Specialist", "Master of Operations",
 )
 
 
@@ -76,18 +52,22 @@ def test_boss_classes_are_only_big_and_major():
     assert set(BossClass) == {BossClass.BIG, BossClass.MAJOR}
 
 
-def test_boss_display_uses_one_or_two_stars_and_stripe_tally():
-    big = BossDisplay(BossClass.BIG, 4)
-    major = BossDisplay(BossClass.MAJOR, 2)
+def test_boss_display_distinguishes_kills_from_captures():
+    big = BossDisplay(BossClass.BIG, boss_kill_count=4, boss_capture_count=2)
+    major = BossDisplay(BossClass.MAJOR, boss_kill_count=2, boss_capture_count=3)
     assert big.stars == "⭐"
-    assert big.stripes == "⚔️" * 4
+    assert big.kills == "⚔️" * 4
+    assert big.captures == "—" * 2
     assert major.stars == "⭐⭐"
-    assert major.stripes == "⚔️" * 2
+    assert major.kills == "⚔️" * 2
+    assert major.captures == "—" * 3
 
 
-def test_boss_display_rejects_negative_tally():
+def test_boss_display_rejects_negative_tallies():
     with pytest.raises(ValueError):
-        BossDisplay(BossClass.BIG, -1)
+        BossDisplay(BossClass.BIG, boss_kill_count=-1)
+    with pytest.raises(ValueError):
+        BossDisplay(BossClass.BIG, boss_capture_count=-1)
 
 
 def test_rank_lookup_rejects_unknown_levels():
