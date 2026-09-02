@@ -13,6 +13,7 @@ from sage.experimental.airspace.models import (
     IntelTelemetry,
     QualificationEvent,
 )
+from sage.experimental.airspace.nameplate import render_chat_nameplate
 
 
 class AirspaceRenderer:
@@ -49,6 +50,9 @@ class AirspaceRenderer:
             lines.append(
                 f"▪ {station.agent_name:<10} CQL-{station.current_cql} {cql_bar} {sql_str}"
             )
+            # Keep the operating board aligned with the canonical identity and
+            # progression projection so XP is visible on the primary mobile HUD.
+            lines.append(f"  {render_chat_nameplate(state, st_id)}")
 
         lines.append("─" * 42)
         lines.append("ACTIVE SORTIES")
