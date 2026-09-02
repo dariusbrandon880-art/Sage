@@ -45,14 +45,15 @@ class RankDefinition:
 
 @dataclass(frozen=True)
 class BossDisplay:
-    """Visual career marker for Boss class and cumulative Boss battle count."""
+    """Visual marker for Boss class plus separate kill/capture career tallies."""
 
     boss_class: BossClass
-    boss_kill_count: int
+    boss_kill_count: int = 0
+    boss_capture_count: int = 0
 
     def __post_init__(self) -> None:
-        if self.boss_kill_count < 0:
-            raise ValueError("Boss kill count must be non-negative.")
+        if self.boss_kill_count < 0 or self.boss_capture_count < 0:
+            raise ValueError("Boss kill and capture counts must be non-negative.")
 
     @property
     def stars(self) -> str:
@@ -60,9 +61,14 @@ class BossDisplay:
         return "⭐" if self.boss_class is BossClass.BIG else "⭐⭐"
 
     @property
-    def stripes(self) -> str:
-        """Render the cumulative Boss-battle tally as Stripe markers."""
+    def kills(self) -> str:
+        """Render Boss kills as crossed-sword markers."""
         return "⚔️" * self.boss_kill_count
+
+    @property
+    def captures(self) -> str:
+        """Render Boss captures as regular Stripe markers."""
+        return "—" * self.boss_capture_count
 
 
 RANK_LADDER: Final[tuple[RankDefinition, ...]] = (
