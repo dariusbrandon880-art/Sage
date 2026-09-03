@@ -20,7 +20,6 @@ from sage.c2.chatgpt_immersion import (
 )
 from sage.c2.immersion_projection import MilestoneStrike, StrikeFeedProjection
 from sage.c2.immersion_state import ImmersionState
-from sage.experimental.airspace.turn_engine import TurnResolution, TurnStatus
 from sage.runtime.model_gateway import ModelResponse, SAGERuntime, SAGEStateSnapshot
 
 
@@ -132,13 +131,21 @@ def render_resolved_chatgpt_turn(
     *,
     manager: object,
     immersion_state: ImmersionState,
-    resolution: TurnResolution,
+    resolution: Any,
     station_id: Any,
     body: str = "",
     state_label: str = "READY",
 ) -> str:
-    """Render a freshly reconciled HUD after SAGE closes a verified turn."""
-    if resolution.status is not TurnStatus.CLOSED or not resolution.verified:
+    """Render a freshly reconciled HUD after SAGE closes a verified turn.
+
+    The runtime intentionally accepts a structural resolution object rather
+    than importing the experimental Turn Engine. This preserves the production
+    -> experimental one-way import boundary while still requiring a closed,
+    verified settlement before refreshing the presentation surface.
+    """
+    status = getattr(resolution, "status", None)
+    status_value = getattr(status, "value", status)
+    if status_value != "CLOSED" or not bool(getattr(resolution, "verified", False)):
         raise ValueError("Only verified closed turns may refresh the organism HUD.")
     return render_chatgpt_c2_response(
         immersion_state,
