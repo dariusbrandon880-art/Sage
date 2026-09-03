@@ -14,17 +14,34 @@ from sage.c2.organism_jigsaw import (
 def test_subsystem_catalog_taxonomy_validity():
     """Verify that every SAGE subsystem in the catalog has a valid Jigsaw taxonomy classification."""
     catalog = get_canonical_subsystem_catalog()
-    assert len(catalog) >= 10
+    assert len(catalog) >= 15
 
     core_count = sum(1 for s in catalog if s.relationship == JigsawRelationship.CORE)
     service_count = sum(1 for s in catalog if s.relationship == JigsawRelationship.SERVICE)
     projection_count = sum(1 for s in catalog if s.relationship == JigsawRelationship.PROJECTION)
     evidence_count = sum(1 for s in catalog if s.relationship == JigsawRelationship.EVIDENCE_LEARNING)
 
-    assert core_count >= 3
+    assert core_count >= 5
     assert service_count >= 3
-    assert projection_count >= 2
-    assert evidence_count >= 3
+    assert projection_count >= 3
+    assert evidence_count >= 5
+
+
+def test_7_core_organism_organs_registered_in_jigsaw_catalog():
+    """Verify that all 7 core organism organs from the Organism Feedback Model are explicitly registered."""
+    catalog = get_canonical_subsystem_catalog()
+    subsystem_ids = {s.subsystem_id for s in catalog}
+
+    required_organs = {
+        "sagi_brain",
+        "master_archive",
+        "c2_mission_control",
+        "capability_tree",
+        "big_jump_wave",
+        "game_immersion",
+        "sage_runtime",
+    }
+    assert required_organs.issubset(subsystem_ids)
 
 
 def test_no_duplicate_authorities_detected_in_canonical_catalog():

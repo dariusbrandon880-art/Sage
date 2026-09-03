@@ -151,6 +151,38 @@ def get_canonical_subsystem_catalog() -> list[SubsystemRegistration]:
             relationship=JigsawRelationship.EVIDENCE_LEARNING,
             description="Cognitive learning & feedback loop bridge",
         ),
+        SubsystemRegistration(
+            subsystem_id="sagi_brain",
+            module_path="sage/experimental/sagi/",
+            relationship=JigsawRelationship.EVIDENCE_LEARNING,
+            description="SAGI Brain cognition, discovery, metacognition & learning substrate",
+            authoritative_domain="sagi_cognition",
+        ),
+        SubsystemRegistration(
+            subsystem_id="master_archive",
+            module_path="sage/archive/",
+            relationship=JigsawRelationship.EVIDENCE_LEARNING,
+            description="Canonical long-term memory & validated knowledge store",
+            authoritative_domain="master_archive_authority",
+        ),
+        SubsystemRegistration(
+            subsystem_id="capability_tree",
+            module_path="sage/c2/tree/",
+            relationship=JigsawRelationship.CORE,
+            description="Capability tree taxonomy & promotion engine",
+        ),
+        SubsystemRegistration(
+            subsystem_id="game_immersion",
+            module_path="sage/c2/immersion_projection.py",
+            relationship=JigsawRelationship.PROJECTION,
+            description="Perceptual nervous-system HUD and game immersion projection",
+        ),
+        SubsystemRegistration(
+            subsystem_id="big_jump_wave",
+            module_path="sage/c2/build_jump_wave.py",
+            relationship=JigsawRelationship.CORE,
+            description="Coordinated organism execution mechanism & wave orchestrator",
+        ),
     ]
 
 
