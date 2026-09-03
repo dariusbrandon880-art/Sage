@@ -130,7 +130,7 @@ CURRENT_STATUS: {str(state.get('current_status') or 'UNSPECIFIED')}
 
 OPEN_BOUNDARY: {str(state.get('open_boundary') or 'UNSPECIFIED')}
 
-NEXT_COMPOUND: {str(state.get('next_compound') or 'UNSPECIFIED')
+NEXT_COMPOUND: {str(state.get('next_compound') or 'UNSPECIFIED')}
 """
     with open(sage_dir / "03_CURRENT_FRONTIER.md", "w", encoding="utf-8") as f:
         f.write(current_frontier_content)
