@@ -52,8 +52,7 @@ def test_turn_resolves_verified_points_xp_and_fresh_hud(tmp_path: Path) -> None:
 
     assert resolution.status is TurnStatus.CLOSED
     assert resolution.verified is True
-    # BUILD base value is 25; the verified dimensions score it at 3x/2? 
-    # The canonical economy rounds 25 * (2 + 5 + 3 + 2) / 4 = 75.
+    # The canonical economy scores BUILD at 25 * (2 + 5 + 3 + 2) / 4 = 75.
     assert resolution.total_verified_points == 75
     assert sum(r.award.points for r in resolution.contribution_results) == 75
     assert resolution.total_xp_minted == 7
@@ -91,6 +90,47 @@ def test_turn_cannot_be_resolved_twice(tmp_path: Path) -> None:
         event_type=PointEventType.RECON,
         verified_event_ref="verified:turn-003",
         evidence_refs=("evidence:turn-003",),
+        contributions=(contribution("c", StationID.MISSION_CONTROL, "DISCOVERED"),),
+        reason="Verified recon",
+    )
+    engine.resolve_turn(**kwargs)
+    with pytest.raises(ValueError, match="is not open"):
+        engine.resolve_turn(**kwargs)
+
+
+def test_turn_causal_parent_and_settlement_id_are_deterministic(tmp_path: Path) -> None:
+    mgr = manager(tmp_path)
+    engine = TurnEngine(mgr)
+    engine.open_turn(actor="Mission Control", turn_id="turn-parent", input_ref="input:parent")
+    engine.open_turn(
+        actor="Mission Control",
+        turn_id="turn-child",
+        input_ref="input:child",
+        parent_turn_ids=("turn-parent",),
+    )
+    resolution = engine.resolve_turn(
+        actor="Mission Control",
+        turn_id="turn-child",
+        event_type=PointEventType.RECON,
+        verified_event_ref="verified:child",
+        evidence_refs=("evidence:child",),
+        contributions=(contribution("c", StationID.MISSION_CONTROL, "DISCOVERED"),),
+        reason="Verified causal child",
+    )
+    assert resolution.settlement_id == engine._settlement_id("turn-child", "verified:child")
+    assert len(resolution.settlement_id) == 64
+
+
+def test_turn_rejects_duplicate_settlement_identity(tmp_path: Path) -> None:
+    mgr = manager(tmp_path)
+    engine = TurnEngine(mgr)
+    engine.open_turn(actor="Mission Control", turn_id="turn-a", input_ref="input:a")
+    kwargs = dict(
+        actor="Mission Control",
+        turn_id="turn-a",
+        event_type=PointEventType.RECON,
+        verified_event_ref="verified:a",
+        evidence_refs=("evidence:a",),
         contributions=(contribution("c", StationID.MISSION_CONTROL, "DISCOVERED"),),
         reason="Verified recon",
     )
