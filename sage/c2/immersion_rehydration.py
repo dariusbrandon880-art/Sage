@@ -16,6 +16,8 @@ from sage.c2.immersion_state import ExecutionPhase, FlightStatus, ImmersionState
 
 
 STATION = "[SAGE::C2::CHATGPT]"
+REHYDRATE_HUD_COMMAND = "rehydrate hud"
+REHYDRATION_CONTRACT_VERSION = "1"
 
 C2_OPERATING_FRAME_SEQUENCE: tuple[str, ...] = (
     "LIVE REPO",
@@ -28,6 +30,18 @@ C2_OPERATING_FRAME_SEQUENCE: tuple[str, ...] = (
     "VERIFY",
     "PROMOTE",
 )
+
+
+def normalize_c2_command(command: str) -> str:
+    """Normalize a model-facing C2 command without changing its semantics."""
+    if not isinstance(command, str):
+        return ""
+    return " ".join(command.strip().casefold().split())
+
+
+def is_rehydrate_hud_command(command: str) -> bool:
+    """Return whether input is the canonical REHYDRATE HUD command."""
+    return normalize_c2_command(command) == REHYDRATE_HUD_COMMAND
 
 
 def _load_airspace_manager() -> Any | None:
@@ -75,6 +89,8 @@ def build_chatgpt_immersion_state(
         raise ValueError("SAGE immersion rehydration blocked: C2 runtime is not rehydrated")
 
     canonical_payload = {
+        "contract_version": REHYDRATION_CONTRACT_VERSION,
+        "command": REHYDRATE_HUD_COMMAND,
         "session_id": session_id,
         "objective": mission,
         "task": task,
@@ -132,3 +148,14 @@ def rehydrate_chatgpt_c2_frame(
         organism_manager=mgr,
     )
     return immersion_state, response
+
+
+__all__ = [
+    "C2_OPERATING_FRAME_SEQUENCE",
+    "REHYDRATE_HUD_COMMAND",
+    "REHYDRATION_CONTRACT_VERSION",
+    "build_chatgpt_immersion_state",
+    "is_rehydrate_hud_command",
+    "normalize_c2_command",
+    "rehydrate_chatgpt_c2_frame",
+]
