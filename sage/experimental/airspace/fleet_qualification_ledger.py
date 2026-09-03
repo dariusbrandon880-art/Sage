@@ -1,65 +1,58 @@
-"""Fleet Qualification Ledger & State Recovery Engine.
+"""Legacy fleet qualification snapshot/recovery compatibility layer.
 
-Maps verified evidence receipts, test proofs, and XP events to military fleet rank states,
-providing state persistence, snapshot exporting, and recovery capabilities.
+Canonical career progression is owned by the Airspace event/progression substrate.
+This legacy ledger remains available for snapshot/recovery compatibility, but it
+must not mint XP, assign rank, or infer qualification from raw XP. Those operations
+are deliberately fail-closed so stale direct-XP behavior cannot silently reappear.
 """
 
 from __future__ import annotations
 
-import hashlib
 import json
 import time
-from typing import Any, Dict, List, Optional
+from typing import Dict
+
 from pydantic import BaseModel, Field
 
 
 class FleetRankState(BaseModel):
-    """Military rank state of an airspace fleet agent."""
+    """Historical fleet state retained for compatibility and snapshot recovery."""
+
     agent_id: str
     rank_title: str = "Cadet"
     total_xp: int = 0
     cql_qualified: bool = False
     sql_qualified: bool = False
-    verification_badges: List[str] = Field(default_factory=list)
+    verification_badges: list[str] = Field(default_factory=list)
     last_updated: float = Field(default_factory=time.time)
 
 
 class FleetQualificationLedger:
-    """Ledger tracking fleet agent qualification states and supporting snapshot export/recovery."""
+    """Legacy snapshot/recovery surface with direct progression mutation disabled."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._states: Dict[str, FleetRankState] = {}
 
     def get_or_create_state(self, agent_id: str) -> FleetRankState:
-        """Retrieves or initializes rank state for an agent."""
+        """Retrieve or initialize a historical compatibility state."""
         if agent_id not in self._states:
             self._states[agent_id] = FleetRankState(agent_id=agent_id)
         return self._states[agent_id]
 
-    def record_xp_event(self, agent_id: str, xp_gained: int, badge: Optional[str] = None) -> FleetRankState:
-        """Records an XP gain event and updates rank state."""
-        state = self.get_or_create_state(agent_id)
-        state.total_xp += xp_gained
+    def record_xp_event(self, agent_id: str, xp_gained: int, badge: str | None = None) -> FleetRankState:
+        """Reject the obsolete direct-XP/rank mutation path.
 
-        if badge and badge not in state.verification_badges:
-            state.verification_badges.append(badge)
-
-        # Update rank title based on total XP thresholds
-        if state.total_xp >= 1000:
-            state.rank_title = "Fleet Commander"
-            state.cql_qualified = True
-            state.sql_qualified = True
-        elif state.total_xp >= 500:
-            state.rank_title = "Squadron Leader"
-            state.cql_qualified = True
-        elif state.total_xp >= 100:
-            state.rank_title = "Flight Captain"
-
-        state.last_updated = time.time()
-        return state
+        Career XP must enter through verified Points and the canonical Airspace
+        event ledger. Rank and qualification are governed projections, not side
+        effects of a raw XP increment.
+        """
+        raise RuntimeError(
+            "Direct FleetQualificationLedger XP mutation is disabled; "
+            "use the canonical verified-event Points -> XP progression path."
+        )
 
     def export_snapshot(self) -> str:
-        """Exports the complete ledger state as a JSON snapshot string."""
+        """Export historical compatibility state for recovery."""
         snapshot_data = {
             "timestamp": time.time(),
             "agents": {agent_id: state.model_dump() for agent_id, state in self._states.items()},
@@ -67,7 +60,7 @@ class FleetQualificationLedger:
         return json.dumps(snapshot_data, indent=2)
 
     def recover_from_snapshot(self, snapshot_json: str) -> int:
-        """Restores ledger states from a JSON snapshot string."""
+        """Restore historical states without recalculating rank or qualification."""
         data = json.loads(snapshot_json)
         agents_data = data.get("agents", {})
         restored_count = 0

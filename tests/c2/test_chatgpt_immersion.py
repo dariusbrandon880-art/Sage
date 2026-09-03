@@ -1,4 +1,5 @@
-from sage.c2.chatgpt_immersion import project_chatgpt_immersion_response
+from sage.c2.chatgpt_immersion import ChatGPTImmersionResponse, project_chatgpt_immersion_response
+from sage.c2.immersion_projection import project_c2_response_contract
 from sage.c2.immersion_state import ExecutionPhase, FlightStatus, ImmersionState, TrustStatus
 
 
@@ -62,3 +63,25 @@ def test_chatgpt_immersion_renders_strike_feed() -> None:
     assert "🎯 TARGET ACQUIRED // Custom Frontier" in rendered
     assert "◆ TARGET KILLED // Seam Closed" in rendered
     assert "Custom strike feed turn" in rendered
+
+
+def test_chatgpt_organism_hud_is_first_layer_when_present() -> None:
+    state = _state()
+    contract = project_c2_response_contract(state)
+    response = ChatGPTImmersionResponse(
+        station_header="[SAGE::C2::CHATGPT] **C2 Mission Control**",
+        immersion_envelope=contract,
+        body="Mission body",
+        organism_tag=(
+            "[SAGE::C2::CHATGPT] ◈ GPT // CQL-? // SQL-? // POINTS ? // XP ? // "
+            "BOSS ⭐×? ⭐⭐×? // ⚔️ ? // ┃ ? // READY"
+        ),
+    )
+
+    rendered = response.render()
+    hud_index = rendered.index("POINTS ?")
+    mission_index = rendered.index("C2 Mission Control")
+    body_index = rendered.index("Mission body")
+
+    assert hud_index < mission_index < body_index
+    assert rendered.startswith("[SAGE::C2::CHATGPT] ◈ GPT // CQL-?")

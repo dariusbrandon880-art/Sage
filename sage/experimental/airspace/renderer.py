@@ -90,3 +90,9 @@ class AirspaceRenderer:
         lines.append(f"VALIDATOR   : {event.validator}")
         lines.append("━" * 42)
         return "\n".join(lines)
+
+    @classmethod
+    def render_c2_board_from_manager(cls, manager, *, status: str = "READY") -> str:
+        """Render the C2 board with the unified organism progression projection."""
+        from sage.experimental.airspace.immersion import render_four_layer_hud_from_manager
+        return render_four_layer_hud_from_manager(manager, status=status)

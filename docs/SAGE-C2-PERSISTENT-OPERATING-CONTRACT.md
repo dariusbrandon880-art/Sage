@@ -218,100 +218,65 @@ Never claim novelty merely because search found no precedent. Candidate novelty 
 - No architecture expansion without a consequential gap.
 - No unrelated expansion during a Large Build.
 - No unauthorized authority mutation.
-- No hidden progression mutation.
-- No automatic XP/rank/promotion from unverified claims.
-- No second persistence or authority system for immersion/transport convenience.
-- MCP/A2A are transport/interoperability surfaces, not authority sources.
-- CI telemetry must be reconciled with repository implementation.
-- Never weaken tests or semantics merely to make CI green.
-- Distinguish semantic defects, API-contract mismatches, fixture/test defects, static-analysis defects, and infrastructure/environment noise before repairing behavior.
 
-## 11. Identity, awareness, and provenance
+## 11. C2 Operational Lesson — Boss-Fight Calibration
 
-Identity is provenance. State is evidence. Rank is earned.
+### Incident
 
-The human relay between separate model surfaces is a real governed communication primitive. It must preserve sender, recipient, role, and message provenance. Separate model surfaces must never be described as secretly connected.
+During Queue #09, PR #419 reached a clean, bounded merge state at exact HEAD `881d05d6c5b800f6ba0a88169f1fd92965a394b0`. The first governed merge attempt was blocked by the execution safety layer before GitHub returned a merge result. C2 correctly did **not** claim a merge, invent a merge SHA, or treat the blocked mutation as proof of a repository defect.
 
-HUD/nameplates are read-only projections of canonical state. They cannot grant authority, mutate persistence, deliver messages, award XP, or qualify capability.
+A subsequent live check established the actual repository state: PR #419 remained open, non-draft, mergeable, and unchanged at the verified HEAD; both observed workflow runs for that exact HEAD completed successfully.
 
-## 12. Progression law
+### Classification lesson
 
-Progression loop:
+The event was initially described as a possible **boss fight**. After evidence-based reconciliation, that classification was rejected. It was a routine execution-boundary/tooling issue, not a consequential architecture or systemic-invariant failure.
 
-**MISSION -> PERFORMANCE -> EVIDENCE -> XP -> QUALIFICATION/RANK -> NEW CAPABILITY -> HARDER MISSION**
+**C2 calibration rule:** difficulty, friction, or an unexpected tool response does not by itself constitute boss territory.
 
-XP, rank, qualification, and promotion are derived only from verified evidence. Agents cannot self-award progression by reporting success.
+A true boss fight requires deeper discovery or reasoning beyond the normal execution path — for example:
 
-Progression remains independent by station. C2 does not inherit Gemini or Jules progression, and vice versa. Failures remain in the longitudinal profile.
+- an architecture conflict that cannot be resolved by ordinary bounded inspection;
+- a hidden dependency or systemic coupling discovered only through deeper recon;
+- a violated invariant whose source is not immediately apparent;
+- unexpected repository behavior that survives normal verification and requires investigation;
+- a consequential failure that remains after the standard repair/test/verify cadence;
+- a problem where available evidence contradicts the expected architecture or governing contract.
 
-## 13. Current SAGE architectural composition
+Routine cases such as a blocked mutation with otherwise clean repo state, straightforward CI/PR verification, or a recoverable tooling boundary remain **easy/ordinary**, even when they initially interrupt execution.
 
-SAGE is governed as one integrated system composed through explicit boundaries:
+### Severity calibration
 
-**Awareness / Governed Context -> Assessment -> Evidence -> Attestation -> Authorized Transition -> Observed Effect -> Learning Candidate -> Verification -> Progression**
+- **GREEN / EASY:** straightforward verification, bounded tooling issue, clean PR/CI state, recoverable execution boundary.
+- **AMBER / SERIOUS:** cross-file interaction, ambiguous repository state, competing implementation paths, or a failure requiring material investigation.
+- **RED / BOSS:** systemic or architectural uncertainty, hidden dependency, persistent invariant failure, contradictory canonical evidence, or a consequential problem that survives normal verification and repair.
 
-Preserve these separations:
+The severity label must be assigned **after recon and evidence**, not from first impression.
 
-- awareness is read-only projection;
-- governed context controls audience/purpose/context visibility;
-- assessment evaluates evidence;
-- attestation records immutable evidence-bearing assertions;
-- transition authority enforces bounded permission;
-- EffectObservation records observed causal outcomes;
-- GovernedLearningCandidate is candidate learning, not automatic promotion;
-- progression projects verified capability.
+### Required C2 behavior
 
-Cognitive/epistemic plane and coordination/awareness plane may meet through explicit evidence/context references but must not merge authorities.
+1. Reconcile live repository truth before classification.
+2. Separate **FACT**, **INFERENCE**, and **UNKNOWN**.
+3. Attempt the smallest governed repair/next action that can resolve the issue.
+4. Re-verify the exact affected HEAD/state.
+5. Escalate to Super Search or deeper investigation only when material uncertainty remains.
+6. Record the lesson as durable negative/operational knowledge when the event changes future C2 behavior.
+7. Do not inflate routine friction into a boss fight; doing so creates false urgency and wastes the Large-Build aperture.
+8. Do not downgrade a genuine systemic failure merely because the first symptom looks simple; classification remains evidence-driven.
 
-## 14. Current empirical frontier — Longitudinal Flight
+### Outcome
 
-Canonical substrate status:
+This event establishes a durable distinction between **execution friction** and **boss-level system difficulty**. The lesson is operational, not architectural: the C2 organism should become better at triage and severity calibration without changing SAGE authority, progression rules, Five-Flight architecture, or Queue #09 numeric policy.
 
-- PR #179 — merged; EffectObservation v0.1.
-- PR #181 — merged; Longitudinal Measurement Substrate.
-- PR #182 — governed longitudinal flight runner.
-- `coherent_frontier.py` — coordinated Large-Build execution primitive now present.
-- Capability demonstration — **NOT ESTABLISHED**.
+### Scope boundary
 
-The empirical question is:
+This lesson does **not** authorize:
 
-> Can SAGE demonstrably accumulate trustworthy capability over long horizons better than an appropriate baseline while preserving identity, provenance, authorization, negative knowledge, recovery quality, and continuity?
+- automatic promotion;
+- XP-based rank mutation;
+- any new Boss outcome rule;
+- changes to the 30-rank taxonomy;
+- changes to Five-Flight role assignment;
+- guessed Queue #09 numeric thresholds;
+- bypass of repository, governance, evidence, or verification gates.
 
-Locked flight sequence:
-
-**LOCK -> BASELINE -> SAGE -> REAL OBSERVATIONS -> FAILURE / RECOVERY -> RECEIPTS + EVIDENCE -> LONGITUDINAL EVALUATION -> INDEPENDENT C2 VERIFICATION -> PASS / HOLD / NEGATIVE_RESULT -> QUALIFICATION ONLY IF EARNED**
-
-## 15. Client-Useful Production Frontier — Locked
-
-SAGE is being built for eventual actuation by real organizations. Therefore **engineering-verified is not the commercial finish line**. A capability is not promoted as client-useful merely because code exists, tests pass, or a CI workflow is green.
-
-The production frontier is explicitly:
-
-**BUSINESS PROBLEM -> GOVERNED MISSION -> EXECUTION -> OBSERVED OUTCOME -> EVIDENCE -> INDEPENDENT EVALUATION -> REPEATABILITY -> COST / LATENCY / RELIABILITY MEASUREMENT -> CLIENT-USEFUL QUALIFICATION**
-
-A client-useful capability must demonstrate, for its declared use case:
-
-1. **Outcome value:** a measurable business or operational outcome, not merely model activity.
-2. **Repeatability:** the outcome survives repeated governed runs and reasonable perturbations.
-3. **Traceability:** consequential actions, tool use, evidence, provenance, and observed effects are auditable.
-4. **Governance:** authorization, identity, policy boundaries, fail-closed behavior, and human accountability remain intact during execution.
-5. **Observability:** operators can determine what happened, what evidence supported it, where it failed, and what it cost.
-6. **Recovery:** consequential failures produce bounded recovery behavior and durable negative knowledge rather than silent degradation.
-7. **Economic fitness:** measure material latency, resource/cost burden, and operational overhead for the target workflow.
-8. **Client boundary:** define what the system is qualified to do, what remains human-controlled, and what evidence is required before expanding authority.
-
-### Production acceptance law
-
-For each proposed client-facing capability, C2 must maintain separate proof for:
-
-- **ENGINEERING_VERIFIED** — implementation and automated tests pass.
-- **EMPIRICALLY_VALIDATED** — the capability produces the intended observed outcome under governed execution.
-- **CLIENT_USEFUL** — the validated outcome is materially useful for the declared workflow and survives repeatability/economic evaluation.
-
-These statuses must never be collapsed. A lower status cannot be reported as a higher one.
-
-### Business-actuation rule
-
-The next consequential frontier after engineering repair is therefore **not another abstract architecture expansion**. It is to select a bounded client-useful workflow, run the full five-flight engine against it, measure observed outcomes and economics, preserve evidence, independently verify the result, and compound only what the evidence earns.
-
-No revenue claim, client-readiness claim, or production qualification may be inferred from internal test counts alone.
+It is a C2 operating lesson only.
