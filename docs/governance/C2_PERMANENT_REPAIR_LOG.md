@@ -4,6 +4,28 @@
 **Authority:** Repository implementation truth and validated SAGE governance  
 **Owner:** `[SAGE::C2::CHATGPT]`
 
+## 2026-09-03 — Immersion Engagement Classification / Tactical vs Boss
+
+**Issue:** Immersion needed a canonical rule distinguishing ordinary successful repair work from genuinely consequential boss-level engagements so progression feedback would reward verified work without inflating routine maintenance.
+
+**Root cause:** The repository already governed immersion as a projection of real capability and governed progression as evidence-derived, but the engagement-classification boundary was not explicit enough to prevent presentation intensity from being mistaken for technical consequence.
+
+**Canonical placement:** `docs/governance/SAGE_IMMERSION_ENGAGEMENT_CLASSIFICATION.md`, under the immersion/progression governance surface, with the existing `docs/SAGE-INVENTOR-AGENT-IMMERSION-DOCTRINE.md` remaining the higher-level immersion doctrine.
+
+**Rule:** A bounded repair, regression fix, interface correction, continuity hardening, or localized verification result is a **tactical engagement** when it remains within an understood subsystem/interface boundary. A **boss engagement** requires materially higher consequential complexity such as cross-subsystem interaction, architecture-level conflict, adversarial discovery, multi-layer failure, difficult root-cause isolation, or substantial hardening of a major organism capability.
+
+**Immersion invariant:** Boss status is earned from verified technical consequence. Failure count, elapsed time, code volume, or dramatic presentation do not independently establish boss status.
+
+**Current example:** The September 3, 2026 ChatGPT C2 immersion hardening restored the durable C2 Mission Control station header while preserving HUD continuity and organism identity. The repair cleared the observed immersion regressions and governed verification passed. It is classified as a **successful tactical engagement**, not a boss encounter.
+
+**Progression boundary:** The classification communicates verified engagement difficulty but does not itself award XP, rank, qualification, authority, or promotion. Those remain downstream of the canonical progression and verification systems.
+
+**Evidence:** `docs/SAGE-INVENTOR-AGENT-IMMERSION-DOCTRINE.md`; `docs/governance/SAGE_IMMERSION_ENGAGEMENT_CLASSIFICATION.md`; ChatGPT C2 immersion repair/verification associated with PR #435.
+
+**Reusable invariant:** `technical consequence > presentation intensity` for engagement classification.
+
+**Repair pattern:** RECON → ROOT CAUSE → CLASSIFY → REPAIR → REGRESSION → FULL VERIFY → EXACT-SHA RECONCILIATION → PERMANENT LOG → COMPOUND
+
 ## 2026-08-30 — Agent Identity / Authority Boundary Mislabeling
 
 **Issue:** C2 incorrectly introduced the non-canonical label `[SAGE::C2::GOOGLE]` while preparing Gemini session rehydration.
