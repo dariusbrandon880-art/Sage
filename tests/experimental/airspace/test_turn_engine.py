@@ -63,7 +63,7 @@ def test_turn_resolves_verified_points_xp_and_fresh_hud(tmp_path: Path) -> None:
     assert projections[StationID.MISSION_CONTROL].points - 10 * projections[StationID.MISSION_CONTROL].career_xp == 8
     assert projections[StationID.ENGINEERING_FLIGHT].points - 10 * projections[StationID.ENGINEERING_FLIGHT].career_xp == 7
     for result in resolution.contribution_results:
-        projection = projections[result.contribution.station_id]
+        projection = projections[result.award.station_id]
         remainder = projection.points - 10 * projection.career_xp
         assert 0 <= remainder < 10
         assert 10 * projection.career_xp + remainder == projection.points
