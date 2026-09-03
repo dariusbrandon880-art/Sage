@@ -41,6 +41,29 @@ def test_research_graph_node_becomes_bounded_c2_candidate():
     assert node.node_sha256 in proposal.candidate.source
 
 
+def test_c2_bridge_accepts_boundary_compatible_node_without_research_import():
+    class BoundaryNode:
+        node_id = "node_boundary"
+        identity_anchor = ANCHOR
+        guardian_result = "APPROVED"
+        node_sha256 = "a" * 64
+
+        def compute_sha256(self):
+            return self.node_sha256
+
+    proposal = SAGIFrontierBridge(ANCHOR).to_frontier_candidate(
+        BoundaryNode(),
+        target="target.py",
+        base_sha="980f79a89a4dfdaf3979756d78251846eeca2d18",
+        collision_zone="target.py",
+        stop_condition="pass",
+    )
+
+    assert proposal.research_node_id == "node_boundary"
+    assert proposal.research_node_sha256 == "a" * 64
+    assert proposal.research_only is True
+
+
 def test_unapproved_research_node_fails_closed():
     node = make_node(guardian_result="REJECTED")
     with pytest.raises(ValueError, match="not approved"):
