@@ -123,9 +123,14 @@ class ChatGPTImmersionResponse:
         if not tag:
             raise ValueError("SAGE organism name tag required for C2 immersion response")
 
+        # Preserve the established C2 station header while allowing the HUD
+        # continuity layer to suppress only the repeated HUD itself. The HUD
+        # remains the first operational layer after the organism identity;
+        # station identity stays durable on every rendered response.
         parts = [tag, "", self.immersion_envelope.nameplate.render()]
         if self.should_render_hud:
             parts.extend(["", self.immersion_envelope.hud.render()])
+        parts.extend(["", self.station_header])
         if self.body and self.body.strip():
             parts.extend(["", self.body.strip()])
         return render_station_response("\n".join(parts), c2_chatgpt_presentation())
