@@ -1,6 +1,6 @@
 """Canonical presentation envelope for SAGE station responses.
 
-The envelope is a read-only projection of already-governed provenance.  It does
+The envelope is a read-only projection of already-governed provenance. It does
 not grant authority, mutate canonical state, or attempt to control a host UI.
 Host adapters may render the identity fields visually; plain-text clients use
 the canonical nameplate prefix.
@@ -9,6 +9,7 @@ the canonical nameplate prefix.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from hashlib import sha256
 from typing import Any
 
 
@@ -76,3 +77,31 @@ def build_response_envelope(text: str, presentation: StationPresentation) -> dic
         "presentation": presentation.as_dict(),
         "response_text": render_station_response(text, presentation),
     }
+
+
+def hud_update_key(hud: object) -> str:
+    """Return a deterministic key for the exact visible HUD projection."""
+    rendered = getattr(hud, "render", None)
+    if not callable(rendered):
+        raise ValueError("HUD continuity requires a renderable HUD projection")
+    text = str(rendered())
+    if not text.strip():
+        raise ValueError("HUD continuity requires non-empty HUD output")
+    return sha256(text.encode("utf-8")).hexdigest()
+
+
+def should_render_hud(
+    current_key: str,
+    *,
+    previous_key: str | None = None,
+    force: bool = False,
+) -> bool:
+    """Decide whether a HUD needs to be surfaced without silently dropping updates.
+
+    A first HUD, a changed HUD, or an explicitly forced HUD must render. An
+    unchanged HUD may be suppressed by a host to avoid visual noise. The key
+    is content-derived, so suppression cannot hide a changed HUD accidentally.
+    """
+    if not current_key or not current_key.strip():
+        raise ValueError("HUD continuity requires a non-empty current key")
+    return force or previous_key is None or current_key != previous_key
