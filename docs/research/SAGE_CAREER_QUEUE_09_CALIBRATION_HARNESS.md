@@ -23,12 +23,26 @@ The Queue #09 threshold-validation contract requires empirical/simulation eviden
   - parameterized increasing-delta, piecewise-band, and hybrid candidate curves;
   - explicit separation of `xp_threshold_reached` from actual promotion eligibility;
   - six deterministic simulation profiles required by Queue #09.
+- `sage/experimental/airspace/boss_progression.py`
+  - verified Boss outcome recording through the existing Airspace event ledger;
+  - locked Big Boss / Major Boss classification vocabulary;
+  - independent kill/capture reconstruction;
+  - Queue #08 badge cadence reconstruction without a second store.
+- `sage/experimental/airspace/organism_projection.py`
+  - one read-only organism-wide projection joining identity, CQL/SQL, Points, Career XP, Boss outcomes, badges, and status;
+  - one shared tag vocabulary for every participating agent.
+- `sage/experimental/airspace/nameplate.py`
+  - manager-backed full organism nameplate and roster projection while preserving the existing state-only API.
 - `tests/experimental/test_career_calibration.py`
   - replay/conversion invariants;
   - curve monotonicity checks;
   - hybrid correction failure detection;
   - qualification/evidence/no-skipping anti-bypass checks;
   - deterministic profile coverage.
+- `tests/experimental/test_organism_projection.py`
+  - Boss cadence and independent kill/capture tests;
+  - duplicate/replay protection;
+  - unified Points/XP/Boss projection coverage.
 
 ## Evidence boundary
 
@@ -38,21 +52,21 @@ No exact 30-rank threshold values are selected here. No rank mutation, qualifica
 
 ## Organism-wide scoring direction
 
-The organism, not an individual agent, is the eventual scoring authority. Agents should never self-award, self-certify, or directly mutate their own SAGE Points, Career XP, rank, badges, or promotion state. A future governed scoring layer should evaluate **every participating agent through the same canonical evidence pipeline**, using attributable verified events and the existing scoring dimensions, while keeping scoring authority outside the scored agent.
+The organism, not an individual agent, is the scoring authority. Agents never self-award, self-certify, or directly mutate their own SAGE Points, Career XP, rank, badges, or promotion state. Every participating agent is evaluated through the same canonical evidence pipeline, using attributable verified events and the existing scoring dimensions, while keeping scoring authority outside the scored agent.
 
-This is a **future architecture direction, not an implementation claim**. Queue #09 does not yet lock the scoring formula, exact thresholds, telemetry requirements, evaluator topology, or promotion policy needed to make organism-wide agent scoring authoritative. Those decisions require validation evidence and a Director decision record after calibration is complete.
+Queue #09 does not lock exact rank thresholds, telemetry targets, evaluator topology, or promotion policy. Those remain subject to calibration evidence and a Director decision record. The organism projection implemented in this branch is a read-only reconciliation layer; it does not turn provisional thresholds into policy.
 
 ## Universal identity projection
 
-The eventual read-only identity projection must make each agent's current governed progression legible to the whole organism. Every SAGE identity/agent tag should expose, in a compact form:
+Every SAGE identity/agent tag can now use one shared manager-backed projection:
 
-`IDENTITY // RANK/QUAL // POINTS // XP // BADGES // STATUS`
+`IDENTITY // CQL/SQL // POINTS // XP // BOSS badges // ⚔️ kills // ┃ captures // STATUS`
 
-Points and Career XP must come from the canonical ledger. Badge state must come from the future canonical badge authority. The presentation layer must never infer, award, remove, or otherwise mutate progression.
+Points and Career XP are reconstructed from the canonical Airspace ledger/economy. Verified Boss outcomes and badge state are reconstructed from `BOSS_OUTCOME_VERIFIED` events in that same append-only ledger. The presentation layer never infers, awards, removes, or otherwise mutates progression.
 
-Badge visibility is intentionally **bounded**. The complete badge inventory should not be printed into every tag because badge accumulation can consume the operational display surface. Compact tags should show only a governed set of featured badges plus an overflow count, with the full inventory available through a detail/drill-down surface.
+Queue #08 semantics are explicit: Major Boss ⭐⭐ awards one badge per 20 verified Major Boss kills and per 20 verified Major Boss captures; Big Boss ⭐ awards one badge per 30 verified Big Boss kills and per 30 verified Big Boss captures. Kill and capture tallies remain independent, and both can occur in one verified encounter. Badges persist across rank-ups.
 
-The dedicated display policy is recorded in `docs/research/SAGE_BADGE_DISPLAY_POLICY.md`. It defines the current design boundary without pretending that a production badge registry already exists.
+The dedicated display policy is recorded in `docs/research/SAGE_BADGE_DISPLAY_POLICY.md`.
 
 ## Scoring/progression invariants
 
@@ -64,8 +78,8 @@ The dedicated display policy is recorded in `docs/research/SAGE_BADGE_DISPLAY_PO
 6. **Append-only provenance:** scoring decisions remain reconstructable from the underlying verified events and evidence.
 7. **Governed progression:** Points/XP contribute to progression but do not bypass qualification, evidence, no-skipping, or other promotion gates.
 8. **Calibration before lock:** exact scoring weights, threshold values, and velocity targets remain provisional until supported by observed/replay evidence.
-9. **Compact visibility:** badge accumulation cannot make identity tags unbounded; overflow is compressed and the full inventory remains inspectable.
-10. **Single projection boundary:** Points, XP, qualification/rank, badges, and status are displayed from canonical state rather than separate presentation stores.
+9. **Independent Boss accounting:** Boss kills, captures, and badges remain separate signals from Points, XP, qualification, and rank.
+10. **Single projection boundary:** Points, XP, qualification/rank, Boss outcomes, badges, and status are displayed from canonical state/ledger rather than separate presentation stores.
 
 ## External research synthesis
 
@@ -86,8 +100,9 @@ These sources support **calibration against observed progression velocity and te
 3. Compare candidate curve families against routine, builder, breakthrough, elite, collaborative, and recovery-heavy profiles.
 4. Measure threshold-crossing velocity and sensitivity to exceptional events.
 5. Produce negative-case evidence showing that XP/Points/Boss outcomes/badges alone cannot satisfy promotion gates.
-6. Design and validate the universal agent-attribution/scoring substrate without creating a second scoring authority.
-7. Validate the compact badge display policy against real mobile tag/HUD space.
-8. Only then produce a Director decision record for exact numeric thresholds and the eventual organism-wide scoring policy.
+6. Validate the universal agent-attribution/scoring substrate against all organism participants without creating a second scoring authority.
+7. Add canonical rank-transition events when rank becomes operationally authoritative, then derive the Queue #02 visible kill/capture board-cycle reset without deleting lifetime history.
+8. Validate the compact organism tag against real mobile HUD space.
+9. Only then produce a Director decision record for exact numeric thresholds and any remaining progression policy.
 
-**Authoritative outcome remains HOLD until the required calibration evidence exists.**
+**Authoritative numeric rank outcome remains HOLD until the required calibration evidence exists.**
