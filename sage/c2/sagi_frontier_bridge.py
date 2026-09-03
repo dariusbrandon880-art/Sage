@@ -1,18 +1,42 @@
-"""Bounded SAGI ResearchGraph -> C2 frontier candidate bridge.
+"""Bounded SAGI research -> C2 frontier candidate bridge.
 
 SAGI remains proposal/research authority. This module only translates a verified
-research node into the existing canonical C2 FrontierCandidate shape; C2's
-FrontierAdmissionEngine remains the admission authority.
+research-node boundary object into the existing canonical C2 FrontierCandidate
+shape; C2's FrontierAdmissionEngine remains the admission authority.
+
+Import boundary:
+    ``sage.c2`` MUST NOT import ``sage.experimental``.  The research layer may
+    hand a compatible node object to this bridge, but the C2 production boundary
+    depends only on the node's verified data contract.
 """
 
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import List, Optional, Protocol, runtime_checkable
 
 from pydantic import BaseModel
 
 from sage.c2.frontier_admission import FrontierCandidate, FrontierState
-from sage.experimental.sagi.research_graph import SAGIResearchNode
+
+
+@runtime_checkable
+class SAGIResearchNodeBoundary(Protocol):
+    """Minimal verified SAGI research-node contract consumed by C2.
+
+    This protocol deliberately contains no dependency on the experimental SAGI
+    implementation.  It is the C2-side boundary contract: a SAGI research node
+    may satisfy it structurally without making the production C2 package import
+    research code.
+    """
+
+    node_id: str
+    identity_anchor: str
+    guardian_result: str
+    node_sha256: str
+
+    def compute_sha256(self) -> str:
+        """Return the deterministic digest for the node's canonical fields."""
+        ...
 
 
 class SAGIFrontierCandidate(BaseModel):
@@ -35,7 +59,7 @@ class SAGIFrontierBridge:
 
     def to_frontier_candidate(
         self,
-        node: SAGIResearchNode,
+        node: SAGIResearchNodeBoundary,
         *,
         target: str,
         base_sha: str,
@@ -45,6 +69,8 @@ class SAGIFrontierBridge:
         dependencies: Optional[List[str]] = None,
     ) -> SAGIFrontierCandidate:
         """Fail closed unless the research node is verified, approved, and anchored."""
+        if not isinstance(node, SAGIResearchNodeBoundary):
+            raise ValueError("ResearchGraph node does not satisfy the C2 boundary contract")
         if node.guardian_result.upper() != "APPROVED":
             raise ValueError("ResearchGraph node was not approved by the SAGI guardian")
         if node.identity_anchor != self.identity_anchor:
