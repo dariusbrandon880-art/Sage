@@ -55,10 +55,34 @@ def test_turn_resolves_verified_points_xp_and_fresh_hud(tmp_path: Path) -> None:
     # The canonical economy scores BUILD at 25 * (2 + 5 + 3 + 2) / 4 = 75.
     assert resolution.total_verified_points == 75
     assert sum(r.award.points for r in resolution.contribution_results) == 75
-    assert resolution.total_xp_minted == 7
-    assert mgr.reconstruct_airspace_state().game_progression.get_total_xp_for_station(
-        StationID.MISSION_CONTROL
-    ) == 3
+
+    # XP minting is station-local: each contributor crosses only the whole
+    # 10-point thresholds represented by that station's cumulative Points.
+    assert resolution.total_xp_minted == 6
+    state = mgr.reconstruct_airspace_state()
+    assert state.game_progression.get_total_xp_for_station(StationID.MISSION_CONTROL) == 3
+    assert state.game_progression.get_total_xp_for_station(StationID.ENGINEERING_FLIGHT) == 3
+
+    # Preserve each station's sub-10-point remainder rather than truncating it
+    # into a global XP award: 38 = 3*10 + 8 and 37 = 3*10 + 7.
+    projections = {
+        StationID.MISSION_CONTROL: engine.project_station(StationID.MISSION_CONTROL),
+        StationID.ENGINEERING_FLIGHT: engine.project_station(StationID.ENGINEERING_FLIGHT),
+    }
+    assert projections[StationID.MISSION_CONTROL].points == 38
+    assert projections[StationID.ENGINEERING_FLIGHT].points == 37
+    assert projections[StationID.MISSION_CONTROL].career_xp == 3
+    assert projections[StationID.ENGINEERING_FLIGHT].career_xp == 3
+    assert projections[StationID.MISSION_CONTROL].points - 10 * projections[StationID.MISSION_CONTROL].career_xp == 8
+    assert projections[StationID.ENGINEERING_FLIGHT].points - 10 * projections[StationID.ENGINEERING_FLIGHT].career_xp == 7
+
+    # Economic conservation holds independently for each station.
+    for result in resolution.contribution_results:
+        projection = projections[result.contribution.station_id]
+        remainder = projection.points - 10 * projection.career_xp
+        assert 0 <= remainder < 10
+        assert 10 * projection.career_xp + remainder == projection.points
+
     assert "POINTS 38" in engine.render_hud(StationID.MISSION_CONTROL)
     assert "XP 3" in engine.render_hud(StationID.MISSION_CONTROL)
 
