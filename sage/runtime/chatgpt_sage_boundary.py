@@ -46,8 +46,18 @@ class SAGEChatGPTBoundary:
         model_role: str,
         immersion_state: ImmersionState,
         live_capability: Any | None = None,
+        organism_manager: Any | None = None,
+        station_id: Any = None,
+        state_label: str = "READY",
+        organism_projection: Any | None = None,
+        organism_tag: str | None = None,
+        manager: Any | None = None,
     ) -> tuple[str, ModelResponse]:
-        """Run one model turn and expose only the SAGE-rendered response."""
+        """Run one model turn and expose only the SAGE-rendered response.
+
+        Organism projection/tag inputs are presentation-only and remain behind
+        the same fail-closed governance boundary as the model response.
+        """
         try:
             response = self._runtime.invoke(
                 self._adapter,
@@ -68,6 +78,12 @@ class SAGEChatGPTBoundary:
         rendered = render_chatgpt_c2_response(
             immersion_state,
             body=self._display_text(response),
+            organism_manager=organism_manager,
+            station_id=station_id,
+            state_label=state_label,
+            organism_projection=organism_projection,
+            organism_tag=organism_tag,
+            manager=manager,
         )
         return rendered, response
 

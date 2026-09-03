@@ -36,3 +36,32 @@ def test_runtime_exposes_structured_read_only_response() -> None:
     assert response.immersion_envelope.read_only is True
     assert response.immersion_envelope.authority == "canonical_immersion_state"
     assert response.station_header == "[SAGE::C2::CHATGPT] **C2 Mission Control**"
+
+
+def test_runtime_preserves_direct_organism_tag_and_projection_inputs() -> None:
+    tag = "[SAGE::C2::CHATGPT] ◈ GPT // CQL-1 // SQL-0 // POINTS 50 // XP 5 // BOSS ⭐×0 ⭐⭐×0 // ⚔️ 0 // ┃ 0 // READY"
+    projection = object()
+
+    response = build_chatgpt_c2_response(
+        _state(),
+        "Turn message",
+        organism_projection=projection,
+        organism_tag=tag,
+    )
+
+    assert response.organism_projection is projection
+    assert response.organism_tag == tag
+    assert tag in response.render()
+
+
+def test_runtime_manager_alias_is_forwarded(tmp_path) -> None:
+    from sage.experimental.airspace.manager import AirspaceManager
+
+    rendered = render_chatgpt_c2_response(
+        _state(),
+        "Manager alias",
+        manager=AirspaceManager(tmp_path / "ledger.json"),
+    )
+
+    assert "POINTS 0" in rendered
+    assert "Manager alias" in rendered
