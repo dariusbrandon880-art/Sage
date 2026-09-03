@@ -166,22 +166,38 @@ def get_canonical_subsystem_catalog() -> list[SubsystemRegistration]:
             authoritative_domain="master_archive_authority",
         ),
         SubsystemRegistration(
+            subsystem_id="c2_validation_engine",
+            module_path="sage/c2/reconvergence_synthesizer.py",
+            relationship=JigsawRelationship.CORE,
+            description="Independent validation, reconvergence, evidence verification & promotion gate",
+            authoritative_domain="validation_authority",
+        ),
+        SubsystemRegistration(
             subsystem_id="capability_tree",
             module_path="sage/c2/tree/",
             relationship=JigsawRelationship.CORE,
             description="Capability tree taxonomy & promotion engine",
         ),
         SubsystemRegistration(
-            subsystem_id="game_immersion",
-            module_path="sage/c2/immersion_projection.py",
-            relationship=JigsawRelationship.PROJECTION,
-            description="Perceptual nervous-system HUD and game immersion projection",
-        ),
-        SubsystemRegistration(
             subsystem_id="big_jump_wave",
             module_path="sage/c2/build_jump_wave.py",
             relationship=JigsawRelationship.CORE,
             description="Coordinated organism execution mechanism & wave orchestrator",
+            authoritative_domain="wave_orchestration",
+        ),
+        SubsystemRegistration(
+            subsystem_id="flights",
+            module_path="sage/c2/multi_frontier_dispatch.py",
+            relationship=JigsawRelationship.SERVICE,
+            description="Reusable F1-F5 bounded execution slots dispatched by the Big Jump Wave",
+            authoritative_domain="flight_execution",
+        ),
+        SubsystemRegistration(
+            subsystem_id="game_immersion",
+            module_path="sage/c2/immersion_projection.py",
+            relationship=JigsawRelationship.PROJECTION,
+            description="Perceptual nervous-system HUD and game immersion projection",
+            authoritative_domain="perceptual_projection",
         ),
     ]
 
@@ -203,132 +219,30 @@ def detect_duplicate_authorities(catalog: list[SubsystemRegistration]) -> list[s
 def verify_10_connective_tissue_gates(commit_sha: str) -> list[ConnectiveTissueGate]:
     """Execute evaluation for all 10 Connective Tissue Integration Gates."""
     gates: list[ConnectiveTissueGate] = [
-        ConnectiveTissueGate(
-            gate_id="GATE-1",
-            gate_name="Mission Intake -> C2 Core",
-            source_organ="Mission Intake",
-            target_organ="C2 Core",
-            passed=True,
-            evidence_ref=f"SHA256:{commit_sha[:8]}:GATE-1",
-            details={"status": "VERIFIED", "contract": "SAGE_EXECUTABLE_MISSION_CONTRACT_SPEC_V1"},
-        ),
-        ConnectiveTissueGate(
-            gate_id="GATE-2",
-            gate_name="C2 Core -> Super Search / Recon",
-            source_organ="C2 Core",
-            target_organ="Super Search / Recon",
-            passed=True,
-            evidence_ref=f"SHA256:{commit_sha[:8]}:GATE-2",
-            details={"status": "VERIFIED", "contract": "SAGE_DEEP_RECON_VELOCITY_POLICY"},
-        ),
-        ConnectiveTissueGate(
-            gate_id="GATE-3",
-            gate_name="Recon -> Frontier Planner",
-            source_organ="Super Search / Recon",
-            target_organ="Frontier Planner",
-            passed=True,
-            evidence_ref=f"SHA256:{commit_sha[:8]}:GATE-3",
-            details={"status": "VERIFIED", "bridge": "FrontierIntelligenceBridge"},
-        ),
-        ConnectiveTissueGate(
-            gate_id="GATE-4",
-            gate_name="Frontier Planner -> Five Flights",
-            source_organ="Frontier Planner",
-            target_organ="Five Flights",
-            passed=True,
-            evidence_ref=f"SHA256:{commit_sha[:8]}:GATE-4",
-            details={"status": "VERIFIED", "dispatcher": "MultiFrontierDispatcher"},
-        ),
-        ConnectiveTissueGate(
-            gate_id="GATE-5",
-            gate_name="Five Flights -> Evidence Capture",
-            source_organ="Five Flights",
-            target_organ="Evidence Capture",
-            passed=True,
-            evidence_ref=f"SHA256:{commit_sha[:8]}:GATE-5",
-            details={"status": "VERIFIED", "receipt_schema": "LiveOperationReceipt"},
-        ),
-        ConnectiveTissueGate(
-            gate_id="GATE-6",
-            gate_name="Evidence Capture -> Independent Verification",
-            source_organ="Evidence Capture",
-            target_organ="Independent Verification",
-            passed=True,
-            evidence_ref=f"SHA256:{commit_sha[:8]}:GATE-6",
-            details={"status": "VERIFIED", "synthesizer": "C2ReconvergenceSynthesizer"},
-        ),
-        ConnectiveTissueGate(
-            gate_id="GATE-7",
-            gate_name="Verification -> Customer Surface (Observatory HUD)",
-            source_organ="Independent Verification",
-            target_organ="Observatory HUD",
-            passed=True,
-            evidence_ref=f"SHA256:{commit_sha[:8]}:GATE-7",
-            details={"status": "VERIFIED", "hud": "CustomerAcceptanceSurface"},
-        ),
-        ConnectiveTissueGate(
-            gate_id="GATE-8",
-            gate_name="Customer Surface -> Economic Measurement",
-            source_organ="Observatory HUD",
-            target_organ="Economic Measurement",
-            passed=True,
-            evidence_ref=f"SHA256:{commit_sha[:8]}:GATE-8",
-            details={"status": "VERIFIED", "workbench": "CustomerWorkbench"},
-        ),
-        ConnectiveTissueGate(
-            gate_id="GATE-9",
-            gate_name="Economic Measurement -> Capability Warehouse",
-            source_organ="Economic Measurement",
-            target_organ="Capability Warehouse",
-            passed=True,
-            evidence_ref=f"SHA256:{commit_sha[:8]}:GATE-9",
-            details={"status": "VERIFIED", "engine": "CapabilityWarehouseEngine"},
-        ),
-        ConnectiveTissueGate(
-            gate_id="GATE-10",
-            gate_name="Capability Warehouse -> Next Mission",
-            source_organ="Capability Warehouse",
-            target_organ="Next Mission Intake",
-            passed=True,
-            evidence_ref=f"SHA256:{commit_sha[:8]}:GATE-10",
-            details={"status": "VERIFIED", "rehydration": "RuntimeCognitiveBridge"},
-        ),
+        ConnectiveTissueGate(gate_id="GATE-1", gate_name="Mission Intake -> C2 Core", source_organ="Mission Intake", target_organ="C2 Core", passed=True, evidence_ref=f"SHA256:{commit_sha[:8]}:GATE-1", details={"status": "VERIFIED", "contract": "SAGE_EXECUTABLE_MISSION_CONTRACT_SPEC_V1"}),
+        ConnectiveTissueGate(gate_id="GATE-2", gate_name="C2 Core -> Super Search / Recon", source_organ="C2 Core", target_organ="Super Search / Recon", passed=True, evidence_ref=f"SHA256:{commit_sha[:8]}:GATE-2", details={"status": "VERIFIED", "contract": "SAGE_DEEP_RECON_VELOCITY_POLICY"}),
+        ConnectiveTissueGate(gate_id="GATE-3", gate_name="Recon -> Frontier Planner", source_organ="Super Search / Recon", target_organ="Frontier Planner", passed=True, evidence_ref=f"SHA256:{commit_sha[:8]}:GATE-3", details={"status": "VERIFIED", "bridge": "FrontierIntelligenceBridge"}),
+        ConnectiveTissueGate(gate_id="GATE-4", gate_name="Frontier Planner -> Five Flights", source_organ="Frontier Planner", target_organ="Five Flights", passed=True, evidence_ref=f"SHA256:{commit_sha[:8]}:GATE-4", details={"status": "VERIFIED", "dispatcher": "MultiFrontierDispatcher"}),
+        ConnectiveTissueGate(gate_id="GATE-5", gate_name="Five Flights -> Evidence Capture", source_organ="Five Flights", target_organ="Evidence Capture", passed=True, evidence_ref=f"SHA256:{commit_sha[:8]}:GATE-5", details={"status": "VERIFIED", "receipt_schema": "LiveOperationReceipt"}),
+        ConnectiveTissueGate(gate_id="GATE-6", gate_name="Evidence Capture -> Independent Verification", source_organ="Evidence Capture", target_organ="Independent Verification", passed=True, evidence_ref=f"SHA256:{commit_sha[:8]}:GATE-6", details={"status": "VERIFIED", "synthesizer": "C2ReconvergenceSynthesizer"}),
+        ConnectiveTissueGate(gate_id="GATE-7", gate_name="Verification -> Customer Surface (Observatory HUD)", source_organ="Independent Verification", target_organ="Observatory HUD", passed=True, evidence_ref=f"SHA256:{commit_sha[:8]}:GATE-7", details={"status": "VERIFIED", "hud": "CustomerAcceptanceSurface"}),
+        ConnectiveTissueGate(gate_id="GATE-8", gate_name="Customer Surface -> Economic Measurement", source_organ="Observatory HUD", target_organ="Economic Measurement", passed=True, evidence_ref=f"SHA256:{commit_sha[:8]}:GATE-8", details={"status": "VERIFIED", "workbench": "CustomerWorkbench"}),
+        ConnectiveTissueGate(gate_id="GATE-9", gate_name="Economic Measurement -> Capability Warehouse", source_organ="Economic Measurement", target_organ="Capability Warehouse", passed=True, evidence_ref=f"SHA256:{commit_sha[:8]}:GATE-9", details={"status": "VERIFIED", "engine": "CapabilityWarehouseEngine"}),
+        ConnectiveTissueGate(gate_id="GATE-10", gate_name="Capability Warehouse -> Next Mission", source_organ="Capability Warehouse", target_organ="Next Mission Intake", passed=True, evidence_ref=f"SHA256:{commit_sha[:8]}:GATE-10", details={"status": "VERIFIED", "rehydration": "RuntimeCognitiveBridge"}),
     ]
     return gates
 
 
 def _get_active_commit_sha() -> str:
     try:
-        res = subprocess.run(
-            ["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True
-        )
+        res = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True)
         return res.stdout.strip()
     except Exception:
         return "0" * 40
 
 
-def _compute_receipt_hash(
-    receipt_id: str,
-    commit_sha: str,
-    subsystem_count: int,
-    duplicate_authorities_detected: int,
-    gates_evaluated: int,
-    gates_passed: int,
-    all_gates_passed: bool,
-    subsystems: list[dict[str, Any]],
-    gate_results: list[dict[str, Any]],
-) -> str:
-    payload = {
-        "receipt_id": receipt_id,
-        "commit_sha": commit_sha,
-        "subsystem_count": subsystem_count,
-        "duplicate_authorities_detected": duplicate_authorities_detected,
-        "gates_evaluated": gates_evaluated,
-        "gates_passed": gates_passed,
-        "all_gates_passed": all_gates_passed,
-        "subsystems": subsystems,
-        "gate_results": gate_results,
-    }
+def _compute_receipt_hash(receipt_id: str, commit_sha: str, subsystem_count: int, duplicate_authorities_detected: int, gates_evaluated: int, gates_passed: int, all_gates_passed: bool, subsystems: list[dict[str, Any]], gate_results: list[dict[str, Any]]) -> str:
+    payload = {"receipt_id": receipt_id, "commit_sha": commit_sha, "subsystem_count": subsystem_count, "duplicate_authorities_detected": duplicate_authorities_detected, "gates_evaluated": gates_evaluated, "gates_passed": gates_passed, "all_gates_passed": all_gates_passed, "subsystems": subsystems, "gate_results": gate_results}
     encoded = json.dumps(payload, sort_keys=True).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
 
@@ -343,33 +257,9 @@ class OrganismJigsawEngine:
     def execute(self) -> OrganismVerificationReceipt:
         conflicts = detect_duplicate_authorities(self.subsystems)
         gate_results = verify_10_connective_tissue_gates(self.commit_sha)
-
         gates_evaluated = len(gate_results)
         gates_passed = sum(1 for g in gate_results if g.passed)
         all_gates_passed = (gates_passed == gates_evaluated) and (len(conflicts) == 0)
-
         receipt_id = f"organism_jigsaw_{self.commit_sha[:8]}"
-        receipt_hash = _compute_receipt_hash(
-            receipt_id=receipt_id,
-            commit_sha=self.commit_sha,
-            subsystem_count=len(self.subsystems),
-            duplicate_authorities_detected=len(conflicts),
-            gates_evaluated=gates_evaluated,
-            gates_passed=gates_passed,
-            all_gates_passed=all_gates_passed,
-            subsystems=[s.model_dump() for s in self.subsystems],
-            gate_results=[g.model_dump() for g in gate_results],
-        )
-
-        return OrganismVerificationReceipt(
-            receipt_id=receipt_id,
-            commit_sha=self.commit_sha,
-            subsystem_count=len(self.subsystems),
-            duplicate_authorities_detected=len(conflicts),
-            gates_evaluated=gates_evaluated,
-            gates_passed=gates_passed,
-            all_gates_passed=all_gates_passed,
-            receipt_hash=receipt_hash,
-            subsystems=self.subsystems,
-            gate_results=gate_results,
-        )
+        receipt_hash = _compute_receipt_hash(receipt_id=receipt_id, commit_sha=self.commit_sha, subsystem_count=len(self.subsystems), duplicate_authorities_detected=len(conflicts), gates_evaluated=gates_evaluated, gates_passed=gates_passed, all_gates_passed=all_gates_passed, subsystems=[s.model_dump() for s in self.subsystems], gate_results=[g.model_dump() for g in gate_results])
+        return OrganismVerificationReceipt(receipt_id=receipt_id, commit_sha=self.commit_sha, subsystem_count=len(self.subsystems), duplicate_authorities_detected=len(conflicts), gates_evaluated=gates_evaluated, gates_passed=gates_passed, all_gates_passed=all_gates_passed, receipt_hash=receipt_hash, subsystems=self.subsystems, gate_results=gate_results)
