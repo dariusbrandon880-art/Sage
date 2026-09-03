@@ -14,10 +14,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from sage.experimental.airspace.boss_progression import BossProgressionAuthority
 from sage.experimental.airspace.models import AirspaceState, StationID
 from sage.experimental.airspace.organism_projection import OrganismProjection
-from sage.experimental.airspace.points_xp_economy import PointsXPEconomy
 
 
 STATION_ICONS = {
@@ -122,12 +120,7 @@ def render_organism_nameplate(
     compact: bool = True,
     state_label: str = "READY",
 ) -> str:
-    """Render the full organism identity from canonical persisted state.
-
-    This is the preferred progression-aware nameplate for operational use.
-    Points and Boss outcomes are reconstructed from the same AirspaceManager
-    ledger used by the canonical economy; no display-side state is created.
-    """
+    """Render the full organism identity from canonical persisted state."""
     state = manager.reconstruct_airspace_state()
     projection = OrganismProjection.project_station(
         manager, state, station_id, status=state_label
