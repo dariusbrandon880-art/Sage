@@ -45,7 +45,7 @@ def test_piecewise_band_curve_is_monotonic():
 
 def test_hybrid_rejects_non_monotonic_corrections():
     base = IncreasingDeltaCurve(start_threshold=10, first_delta=5, delta_growth=1)
-    curve = HybridCurve(base=base, corrections={3: -100})
+    curve = HybridCurve(base=base, corrections={3: -20})
     with pytest.raises(ValueError, match="non-monotonic"):
         curve.thresholds(1, 5)
 
