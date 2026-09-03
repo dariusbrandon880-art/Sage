@@ -21,12 +21,15 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import re
+import subprocess
 import time
 from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 
 from sage.experimental.airspace.boss_progression import (
+    BOSS_BADGE_CADENCE,
     BossClass,
     BossOutcome,
     BossProgressionAuthority,
@@ -45,6 +48,7 @@ SAGE_SEP_VERSION: str = "SAGE-SEP/1"
 POINTS_PER_XP: int = 10
 
 HEX_SHA40 = re.compile(r"^[0-9a-fA-F]{40}$")
+SHA256_DIGEST_PATTERN = re.compile(r"^sha256:[0-9a-fA-F]{64}$")
 
 
 def resolve_station_id(val: Any) -> StationID:
@@ -72,6 +76,22 @@ def resolve_station_id(val: Any) -> StationID:
         return StationID.MISSION_CONTROL
 
 
+def verify_git_commit_exists(commit_sha: str) -> bool:
+    """Independently verify that a 40-character commit SHA exists in git object database."""
+    if not HEX_SHA40.fullmatch(commit_sha):
+        return False
+    try:
+        res = subprocess.run(
+            ["git", "cat-file", "-e", f"{commit_sha}^{{commit}}"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=2.0,
+        )
+        return res.returncode == 0
+    except Exception:
+        return False
+
+
 @dataclass(frozen=True)
 class ContributionUnit:
     """Demonstrable contribution toward an outcome."""
@@ -86,15 +106,24 @@ class ContributionUnit:
     def __post_init__(self) -> None:
         if not self.actor_nameplate:
             object.__setattr__(self, "actor_nameplate", str(self.actor))
-        resolved = resolve_station_id(self.actor)
-        object.__setattr__(self, "actor", resolved)
+
+        if not math.isfinite(self.share_weight) or self.share_weight <= 0.0:
+            raise ValueError(f"ContributionUnit share_weight must be a positive finite number, got {self.share_weight}.")
+
+        resolved_from_actor = resolve_station_id(self.actor)
+        resolved_from_nameplate = resolve_station_id(self.actor_nameplate)
+        if resolved_from_actor != resolved_from_nameplate:
+            raise ValueError(
+                f"Attribution mismatch: actor '{self.actor}' ({resolved_from_actor.value}) "
+                f"conflicts with nameplate '{self.actor_nameplate}' ({resolved_from_nameplate.value})."
+            )
+
+        object.__setattr__(self, "actor", resolved_from_actor)
 
         if not self.role.strip():
             raise ValueError("ContributionUnit requires a non-empty role.")
         if not self.contribution_type.strip():
             raise ValueError("ContributionUnit requires a non-empty contribution_type.")
-        if self.share_weight <= 0.0:
-            raise ValueError("ContributionUnit share_weight must be positive.")
         if not self.claim_ref.strip():
             raise ValueError("ContributionUnit claim_ref is required.")
 
@@ -144,6 +173,10 @@ class SAGEEvidencePacket:
         if self.target_sha != self.observed_sha:
             raise ValueError(f"SHA mismatch: target_sha ({self.target_sha}) != observed_sha ({self.observed_sha})")
 
+        # Verify target SHA actually exists in git repository object database
+        if not verify_git_commit_exists(self.target_sha):
+            raise ValueError(f"Target commit SHA {self.target_sha} does not exist in repository history.")
+
         if not self.primary_actor_nameplate:
             object.__setattr__(self, "primary_actor_nameplate", str(self.primary_actor))
         resolved_primary = resolve_station_id(self.primary_actor)
@@ -152,11 +185,30 @@ class SAGEEvidencePacket:
         resolved_supporting = tuple(resolve_station_id(a) for a in self.supporting_agents)
         object.__setattr__(self, "supporting_agents", resolved_supporting)
 
+        # Validate contribution unit collisions
+        seen_stations = set()
+        seen_nameplates = set()
+        for c in self.contributions:
+            st = c.actor.value
+            np = c.actor_nameplate.upper().strip()
+            if st in seen_stations or np in seen_nameplates:
+                raise ValueError(f"Duplicate contribution unit collision for actor/nameplate: {c.actor_nameplate} ({st})")
+            seen_stations.add(st)
+            seen_nameplates.add(np)
+
         if not self.evidence_refs:
             raise ValueError("SAGEEvidencePacket evidence_refs must not be empty.")
+
+        # Compute canonical sha256: digest if empty
         if not self.integrity_digest:
-            digest = hashlib.sha256(f"{self.mission_id}:{self.target_sha}:{self.claim_statement}".encode()).hexdigest()
-            object.__setattr__(self, "integrity_digest", digest)
+            digest_str = hashlib.sha256(
+                f"{self.mission_id}:{self.target_sha}:{self.claim_statement}:{':'.join(self.evidence_refs)}".encode("utf-8")
+            ).hexdigest()
+            object.__setattr__(self, "integrity_digest", f"sha256:{digest_str}")
+
+        # Validate integrity digest uses strict sha256:<64 hex> format
+        if not SHA256_DIGEST_PATTERN.fullmatch(self.integrity_digest):
+            raise ValueError(f"Integrity digest must strictly match sha256:<64 hex chars>, got '{self.integrity_digest}'.")
 
     @classmethod
     def parse_report_payload(cls, raw: Dict[str, Any]) -> SAGEEvidencePacket:
@@ -368,7 +420,7 @@ class RewardAdjudicator:
             raise ValueError("Reward adjudication rejected: reward_requested is False.")
 
         # 2. Derive deterministic settlement ID
-        evidence_digest = pkt.integrity_digest or hashlib.sha256(":".join(pkt.evidence_refs).encode()).hexdigest()
+        evidence_digest = pkt.integrity_digest
         settlement_id = cls.calculate_settlement_id(
             protocol_version=request.protocol_version,
             mission_id=pkt.mission_id,
@@ -413,12 +465,14 @@ class RewardAdjudicator:
             attribution_status = "ATTRIBUTION_INDETERMINATE"
 
         conservation_passed = sum(attributed_points.values()) == outcome_pool
+        if not conservation_passed:
+            raise ValueError(f"CONSERVATION_VIOLATION: Attributed points sum {sum(attributed_points.values())} != outcome pool {outcome_pool}")
 
         # 6. Reconstruct pre-settlement state for primary actor
         current_state = manager.reconstruct_airspace_state()
         xp_before = current_state.game_progression.get_total_xp_for_station(pkt.primary_actor)
 
-        # 7. Persist verified point awards and update Boss outcomes if applicable
+        # 7. Persist verified point awards (exact allocated points per participant with multiplier 1.0)
         points_ref = f"{settlement_id}:{pkt.mission_id}"
         for nameplate_str, pts in attributed_points.items():
             station_enum = resolve_station_id(nameplate_str)
@@ -432,19 +486,21 @@ class RewardAdjudicator:
                 evidence_refs=pkt.evidence_refs,
                 reason=f"Adjudicated reward under {request.protocol_version} for mission {pkt.mission_id}",
                 category=XPCategory.MISSION_XP,
-                base_points=pts,
-                difficulty=1,
+                base_points=pts,  # Pass exact allocated share
+                difficulty=1,     # Multiplier dimensions set to 1 so VerifiedPointAward.points == pts exactly
                 verification_quality=1,
                 impact=1,
                 reuse=1,
             )
 
-        # Boss outcome recording
+        # 8. Boss outcome recording & Cadence-correct Badge Semantics
         badge_awards: List[str] = []
         if pkt.outcome_type in (PointEventType.BOSS_KILL, PointEventType.BOSS_CAPTURE):
             boss_class = pkt.boss_class or BossClass.BIG
             is_kill = pkt.outcome_type == PointEventType.BOSS_KILL
             is_capture = pkt.outcome_type == PointEventType.BOSS_CAPTURE
+
+            # Record outcome in ledger first
             boss_outcome = BossOutcome(
                 event_id=f"boss-{settlement_id}",
                 station_id=pkt.primary_actor,
@@ -460,15 +516,28 @@ class RewardAdjudicator:
                 outcome=boss_outcome,
                 reason=f"Verified Boss Outcome for mission {pkt.mission_id}",
             )
-            badge_awards.append(f"BOSS_{'KILL' if is_kill else 'CAPTURE'}_{boss_class.value}")
-            badge_awards.append("BOSS BREAKER")
 
-        # 8. Reconstruct post-settlement state
+            # Check cadence threshold using canonical BossProgressionAuthority
+            progression = BossProgressionAuthority.project_station(manager, pkt.primary_actor)
+            cadence_required = BOSS_BADGE_CADENCE[boss_class]
+            count = (progression.big_kills + progression.big_captures) if boss_class == BossClass.BIG else (progression.major_kills + progression.major_captures)
+            if count > 0 and (count % cadence_required) == 0:
+                badge_awards.append(f"BOSS_{boss_class.value}_BADGE")
+
+        # 9. Reconstruct post-settlement state
         post_state = manager.reconstruct_airspace_state()
         xp_after = post_state.game_progression.get_total_xp_for_station(pkt.primary_actor)
         xp_minted = max(0, xp_after - xp_before)
         station_obj = post_state.stations.get(pkt.primary_actor)
         rank = f"CQL-{station_obj.current_cql}" if station_obj else "OPERATIONAL"
+
+        # Promotion eligibility: Do NOT hardcode True. Query qualification registry or set False
+        promotion_eligibility = False
+        if station_obj:
+            current_cql = station_obj.current_cql
+            if current_cql < 7 and post_state.qualification_registry:
+                # Promotion requires explicit qualification advancement gate
+                promotion_eligibility = False
 
         # Record settlement event into AirspaceManager event log
         manager.record_event(
@@ -490,7 +559,7 @@ class RewardAdjudicator:
                 "xp_after": xp_after,
                 "badge_awards": badge_awards,
                 "rank": rank,
-                "promotion_eligibility": True,
+                "promotion_eligibility": promotion_eligibility,
                 "conservation_check_passed": conservation_passed,
                 "idempotency_check_passed": True,
                 "evidence_digest": evidence_digest,
@@ -525,7 +594,7 @@ class RewardAdjudicator:
             xp_after=xp_after,
             badge_awards=tuple(badge_awards),
             rank=rank,
-            promotion_eligibility=True,
+            promotion_eligibility=promotion_eligibility,
             conservation_check_passed=conservation_passed,
             idempotency_check_passed=True,
             evidence_digest=evidence_digest,
@@ -578,7 +647,7 @@ class RewardAdjudicator:
                     xp_after=int(p.get("xp_after", 0)),
                     badge_awards=tuple(p.get("badge_awards", [])),
                     rank=str(p.get("rank", "RECRUIT")),
-                    promotion_eligibility=bool(p.get("promotion_eligibility", True)),
+                    promotion_eligibility=bool(p.get("promotion_eligibility", False)),
                     conservation_check_passed=bool(p.get("conservation_check_passed", True)),
                     idempotency_check_passed=True,
                     evidence_digest=str(p.get("evidence_digest", "")),

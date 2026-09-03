@@ -127,8 +127,38 @@ def render_governed_chatgpt_turn(
     ), response
 
 
+def render_resolved_chatgpt_turn(
+    *,
+    manager: object,
+    immersion_state: ImmersionState,
+    resolution: Any,
+    station_id: Any,
+    body: str = "",
+    state_label: str = "READY",
+) -> str:
+    """Render a freshly reconciled HUD after SAGE closes a verified turn.
+
+    The runtime intentionally accepts a structural resolution object rather
+    than importing the experimental Turn Engine. This preserves the production
+    -> experimental one-way import boundary while still requiring a closed,
+    verified settlement before refreshing the presentation surface.
+    """
+    status = getattr(resolution, "status", None)
+    status_value = getattr(status, "value", status)
+    if status_value != "CLOSED" or not bool(getattr(resolution, "verified", False)):
+        raise ValueError("Only verified closed turns may refresh the organism HUD.")
+    return render_chatgpt_c2_response(
+        immersion_state,
+        body=body,
+        organism_manager=manager,
+        station_id=station_id,
+        state_label=state_label,
+    )
+
+
 __all__ = [
     "build_chatgpt_c2_response",
     "render_chatgpt_c2_response",
     "render_governed_chatgpt_turn",
+    "render_resolved_chatgpt_turn",
 ]

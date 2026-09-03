@@ -6,6 +6,7 @@ This script constructs the machine-readable SEP/1 Evidence Packet for Boss Fight
 prints the canonical SAGE REWARD RECEIPT, and persists evidence to evidence_capture/.
 """
 
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -19,13 +20,22 @@ from sage.experimental.airspace.reward_protocol import RewardAdjudicator, SAGEEv
 def main() -> None:
     print("=== SAGE REWARD ADJUDICATOR: BOSS FIGHT #1 (ISSUE #426) ===")
 
+    target_sha = "75c583db46bb90cc2af925f807e1809bd7023f12"
+    evidence_refs = [
+        "exact_head_ci",
+        "pull_request",
+        "repaired_test",
+        "canonical_points_xp_authority",
+    ]
+    digest_bytes = hashlib.sha256(f"BOSS-0001:{target_sha}:{':'.join(evidence_refs)}".encode("utf-8")).hexdigest()
+
     # 1. Construct Boss Fight #1 machine-readable evidence packet (SEP/1)
     report_payload = {
         "protocol": "SAGE-SEP/1",
         "mission_id": "BOSS-0001",
         "subject": {
             "repository": "dariusbrandon880-art/Sage",
-            "commit": "75c583db46bb90cc2af925f807e1809bd7023f12",
+            "commit": target_sha,
         },
         "claim": {
             "type": "verified_repair",
@@ -58,12 +68,7 @@ def main() -> None:
                 "claim_ref": "BOSS-0001:gemini",
             },
         ],
-        "evidence": [
-            "exact_head_ci",
-            "pull_request",
-            "repaired_test",
-            "canonical_points_xp_authority",
-        ],
+        "evidence": evidence_refs,
         "verification": {
             "status": "VERIFIED",
         },
@@ -72,7 +77,7 @@ def main() -> None:
             "boss_class": "BIG",
         },
         "integrity": {
-            "digest": "sha256:75c583db46bb90cc2af925f807e1809bd7023f12",
+            "digest": f"sha256:{digest_bytes}",
         },
         "reward": {
             "requested": True,
@@ -88,7 +93,7 @@ def main() -> None:
         reuse=1,
     )
 
-    manager = AirspaceManager()
+    manager = AirspaceManager(ledger_path=Path("evidence_capture/boss_fight_1_airspace_ledger.json"))
     decision = RewardAdjudicator.adjudicate(request, manager)
 
     print("\n" + decision.receipt_header_text + "\n")

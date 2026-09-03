@@ -21,7 +21,12 @@ from sage.c2.immersion_projection import (
     project_c2_response_contract,
 )
 from sage.c2.immersion_state import ImmersionState
-from sage.c2.response_envelope import c2_chatgpt_presentation, render_station_response
+from sage.c2.response_envelope import (
+    c2_chatgpt_presentation,
+    hud_update_key,
+    render_station_response,
+    should_render_hud,
+)
 
 
 def _load_airspace_manager() -> object:
@@ -45,12 +50,15 @@ def _get_station_id(station_id_val: Any) -> Any:
 
 def _render_organism_tag(manager: object, station_id: Any, state_label: str) -> str:
     nameplate_mod = importlib.import_module("sage.experimental.airspace.nameplate")
-    return nameplate_mod.render_organism_nameplate(
+    tag = nameplate_mod.render_organism_nameplate(
         manager,
         station_id,
         compact=True,
         state_label=state_label,
     )
+    if not isinstance(tag, str) or not tag.strip():
+        raise ValueError("SAGE organism name tag rendered empty")
+    return tag.strip()
 
 
 def _render_organism_projection(projection: Any) -> str | None:
@@ -61,15 +69,19 @@ def _render_organism_projection(projection: Any) -> str | None:
         renderer = getattr(projection, "render_agent_tag", None)
         if callable(renderer):
             try:
-                return str(renderer())
+                tag = str(renderer())
             except TypeError:
-                return str(renderer(projection))
-        projection_mod = importlib.import_module(
-            "sage.experimental.airspace.organism_projection"
-        )
-        return str(projection_mod.OrganismProjection.render_agent_tag(projection))
-    except Exception:
-        return None
+                tag = str(renderer(projection))
+        else:
+            projection_mod = importlib.import_module(
+                "sage.experimental.airspace.organism_projection"
+            )
+            tag = str(projection_mod.OrganismProjection.render_agent_tag(projection))
+    except Exception as exc:
+        raise ValueError("SAGE organism name tag projection failed") from exc
+    if not tag.strip():
+        raise ValueError("SAGE organism name tag projection rendered empty")
+    return tag.strip()
 
 
 @dataclass(frozen=True)
@@ -83,20 +95,45 @@ class ChatGPTImmersionResponse:
     strike_feed: StrikeFeedProjection | None = None
     organism_projection: Any | None = None
     organism_tag: str | None = None
+    hud_visible: bool = True
+    previous_hud_update_key: str | None = None
+    force_hud: bool = False
+
+    @property
+    def hud_update_key(self) -> str:
+        """Expose the exact visible HUD identity for host continuity tracking."""
+        return hud_update_key(self.immersion_envelope.hud)
+
+    @property
+    def should_render_hud(self) -> bool:
+        """Return whether this response must surface the HUD to the host."""
+        if not self.hud_visible:
+            return False
+        return should_render_hud(
+            self.hud_update_key,
+            previous_key=self.previous_hud_update_key,
+            force=self.force_hud,
+        )
 
     def render(self) -> str:
         """Render the complete response without creating canonical state."""
-        body = self.immersion_envelope.render_full_envelope(self.body)
         tag = self.organism_tag
         if not tag and self.organism_projection is not None:
             tag = _render_organism_projection(self.organism_projection)
-        header = self.station_header
-        if tag:
-            header = f"{tag}\n\n{header}"
-        return render_station_response(
-            f"{header}\n\n{body}",
-            c2_chatgpt_presentation(),
-        )
+        if not tag:
+            raise ValueError("SAGE organism name tag required for C2 immersion response")
+
+        # Preserve the established C2 station header while allowing the HUD
+        # continuity layer to suppress only the repeated HUD itself. The HUD
+        # remains the first operational layer after the organism identity;
+        # station identity stays durable on every rendered response.
+        parts = [tag, "", self.immersion_envelope.nameplate.render()]
+        if self.should_render_hud:
+            parts.extend(["", self.immersion_envelope.hud.render()])
+        parts.extend(["", self.station_header])
+        if self.body and self.body.strip():
+            parts.extend(["", self.body.strip()])
+        return render_station_response("\n".join(parts), c2_chatgpt_presentation())
 
 
 def project_chatgpt_immersion_response(
@@ -111,6 +148,9 @@ def project_chatgpt_immersion_response(
     organism_projection: Any | None = None,
     organism_tag: str | None = None,
     manager: Any | None = None,
+    hud_visible: bool = True,
+    previous_hud_update_key: str | None = None,
+    force_hud: bool = False,
 ) -> ChatGPTImmersionResponse:
     """Project canonical state into the ChatGPT C2 response surface.
 
@@ -118,10 +158,14 @@ def project_chatgpt_immersion_response(
     projection/tag injection capabilities from the original bridge. ``manager``
     is a compatibility alias for ``organism_manager``. Explicit inputs win;
     otherwise the canonical manager-backed projection is rendered read-only.
+
+    HUD visibility is host-controlled: unchanged HUDs may be suppressed to
+    avoid noise, but a changed HUD is surfaced deterministically from its
+    content key. Name-tag rendering is fail-closed rather than silently lost.
     """
     contract = project_c2_response_contract(state, strike_feed=strike_feed)
 
-    tag = organism_tag
+    tag = organism_tag.strip() if isinstance(organism_tag, str) else organism_tag
     projection = organism_projection
     mgr = organism_manager if organism_manager is not None else manager
 
@@ -129,17 +173,14 @@ def project_chatgpt_immersion_response(
         tag = _render_organism_projection(projection)
 
     if not tag and mgr is None:
-        try:
-            mgr = _load_airspace_manager()
-        except Exception:
-            mgr = None
+        mgr = _load_airspace_manager()
 
     if not tag and mgr is not None:
-        try:
-            target_station = _get_station_id(station_id)
-            tag = _render_organism_tag(mgr, target_station, state_label)
-        except Exception:
-            tag = None
+        target_station = _get_station_id(station_id)
+        tag = _render_organism_tag(mgr, target_station, state_label)
+
+    if not tag:
+        raise ValueError("SAGE organism name tag required for C2 immersion response")
 
     return ChatGPTImmersionResponse(
         station_header="[SAGE::C2::CHATGPT] **C2 Mission Control**",
@@ -149,4 +190,7 @@ def project_chatgpt_immersion_response(
         strike_feed=strike_feed or contract.hud.strike_feed,
         organism_projection=projection,
         organism_tag=tag,
+        hud_visible=hud_visible,
+        previous_hud_update_key=previous_hud_update_key,
+        force_hud=force_hud,
     )

@@ -55,7 +55,7 @@ The SAGE Reward & Evidence Protocol v1 (`SAGE-RP-1.0`) establishes a versioned, 
 1. **Protocol Versioning:** Reward formulas and event values are bound to protocol versions (e.g., `SAGE-RP-1.0`).
 2. **Historical Immutability:** Historical rewards are never recalculated under a newer formula version.
 3. **Explicit Version References:** Every reward decision and event payload MUST reference the active protocol version used.
-4. **Immutable Evidence Binding:** Every reward decision MUST reference immutable evidence artifacts and a 40-character commit SHA (`target_sha == observed_sha`).
+4. **Immutable Evidence Binding:** Every reward decision MUST reference immutable evidence artifacts and a 40-character commit SHA (`target_sha == observed_sha`), verified to exist in repository history.
 5. **Deterministic Settlement IDs:** Settlement IDs are computed via SHA-256 over protocol version, mission ID, target SHA, outcome type, primary actor, and evidence digest.
 6. **Anti-Duplication (Idempotency):** Re-submitting duplicate evidence yields the existing settlement receipt without double-minting points or XP.
 7. **No Direct C2 Minting:** C2 may request adjudication for evidence packets; C2 cannot directly assign or mint Points or XP.
@@ -156,12 +156,12 @@ Every settlement produces a formatted `SAGE REWARD RECEIPT` header for C2 HUDs:
 ║ Protocol: SAGE-RP-1.0               ║
 ║                                    ║
 ║ Verified Points: 100               ║
-║ XP Minted: 10                      ║
-║ Badge: BOSS_KILL_BIG | BOSS BREAKER ║
+║ XP Minted: 5                       ║
+║ Badge: NONE                        ║
 ║ Rank: CQL-4                        ║
 ║                                    ║
 ║ Evidence: VERIFIED                 ║
-║ Settlement: settlement:6a7044cb980 ║
+║ Settlement: settlement:beb3e9048c7 ║
 ╚════════════════════════════════════╝
 ```
 
@@ -175,7 +175,7 @@ The adjudicator automatically emits a `SAGI Learning Signal` payload feeding SAG
   "outcome_type": "BOSS_KILL",
   "outcome_point_pool": 100,
   "attribution_status": "VERIFIED_ATTRIBUTION",
-  "xp_minted": 10,
+  "xp_minted": 5,
   "conservation_verified": true,
   "metacognitive_feedback": {
     "performance_tier": "ELITE",
