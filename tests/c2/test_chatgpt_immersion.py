@@ -98,3 +98,30 @@ def test_chatgpt_organism_tag_rendered_by_default() -> None:
     assert rendered.startswith("[SAGE::C2::CHATGPT]")
     assert "POINTS" in rendered
     assert "C2 Mission Control" in rendered
+
+
+def test_chatgpt_organism_projection_is_rendered_when_tag_is_absent() -> None:
+    state = _state()
+    projection = type("Projection", (), {"render_agent_tag": lambda self: "[SAGE::C2::CHATGPT] ◈ GPT // CQL-1 // SQL-0 // POINTS 100 // XP 10 // BOSS ⭐×1 ⭐⭐×0 // ⚔️ 2 // ┃ 1 // READY"})()
+
+    response = project_chatgpt_immersion_response(
+        state,
+        body="Projection bridge",
+        organism_projection=projection,
+    )
+
+    assert response.organism_projection is projection
+    assert "POINTS 100" in response.organism_tag or "POINTS 100" in response.render()
+    assert response.render().index("POINTS 100") < response.render().index("C2 Mission Control")
+
+
+def test_chatgpt_legacy_manager_alias_is_preserved(tmp_path) -> None:
+    from sage.experimental.airspace.manager import AirspaceManager
+
+    response = project_chatgpt_immersion_response(
+        _state(),
+        manager=AirspaceManager(tmp_path / "ledger.json"),
+    )
+
+    assert response.organism_tag is not None
+    assert "POINTS 0" in response.organism_tag
