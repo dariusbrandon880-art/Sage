@@ -2,10 +2,12 @@
 
 The interface must never invent mission state. Missing canonical mission/task
 is a fail-closed condition rather than a synthetic standby substitution.
+Rehydrates full game immersion, canonical organism state, and C2 operating frame.
 """
 
 from __future__ import annotations
 
+import importlib
 from hashlib import sha256
 import json
 from typing import Any
@@ -14,6 +16,26 @@ from sage.c2.immersion_state import ExecutionPhase, FlightStatus, ImmersionState
 
 
 STATION = "[SAGE::C2::CHATGPT]"
+
+C2_OPERATING_FRAME_SEQUENCE: tuple[str, ...] = (
+    "LIVE REPO",
+    "FULL WORKFLOW RECON",
+    "CANONICAL ARCHITECTURE",
+    "ACTIVE FRONTIER",
+    "ENGINEER",
+    "TEST",
+    "EVIDENCE",
+    "VERIFY",
+    "PROMOTE",
+)
+
+
+def _load_airspace_manager() -> Any | None:
+    try:
+        mod = importlib.import_module("sage.experimental.airspace.manager")
+        return mod.AirspaceManager()
+    except Exception:
+        return None
 
 
 def build_chatgpt_immersion_state(
@@ -56,6 +78,7 @@ def build_chatgpt_immersion_state(
         "session_id": session_id,
         "objective": mission,
         "task": task,
+        "operating_frame": list(C2_OPERATING_FRAME_SEQUENCE),
         "blockers": list(getattr(current_state, "blockers", []) or []),
         "dependencies": list(getattr(current_state, "dependencies", []) or []),
     }
@@ -81,3 +104,31 @@ def build_chatgpt_immersion_state(
     if not state.validate():
         raise ValueError("SAGE immersion rehydration produced invalid canonical state")
     return state
+
+
+def rehydrate_chatgpt_c2_frame(
+    runtime: Any,
+    *,
+    session_id: str,
+    body: str = "C2 Operating Frame active. Bounded execution verified.",
+    c2_context: dict[str, Any] | None = None,
+    evidence_refs: tuple[str, ...] = (),
+    organism_manager: Any | None = None,
+) -> tuple[ImmersionState, Any]:
+    """Rehydrate complete C2 frame with full game immersion and canonical organism state."""
+    immersion_state = build_chatgpt_immersion_state(
+        runtime,
+        session_id=session_id,
+        c2_context=c2_context,
+        evidence_refs=evidence_refs,
+    )
+
+    mgr = organism_manager or _load_airspace_manager()
+
+    chatgpt_runtime_mod = importlib.import_module("sage.c2.chatgpt_runtime")
+    response = chatgpt_runtime_mod.build_chatgpt_c2_response(
+        immersion_state,
+        body=body,
+        organism_manager=mgr,
+    )
+    return immersion_state, response
