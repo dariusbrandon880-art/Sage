@@ -57,8 +57,7 @@ def _immersion_state() -> ImmersionState:
 def _valid_output(text: str = "SAGE-bound response") -> str:
     return (
         '{"station":"[SAGE::C2::CHATGPT]",'
-        '"reasoning_chain":[],'
-        '"proposed_actions":[],'
+        '"reasoning_chain":[],"proposed_actions":[],'
         '"epistemic_state":{"confidence_level":"HIGH",'
         '"validated_facts":[],"unverified_hypotheses":[],"known_unknowns":[]},'
         '"evidence_refs":["boundary-test"],'
@@ -133,3 +132,22 @@ def test_boundary_rejects_wrong_station() -> None:
         SAGEChatGPTBoundary(_runtime(), WrongStationAdapter()).respond(
             "status", model_role="chatgpt", immersion_state=_immersion_state()
         )
+
+
+def test_boundary_forwards_organism_projection_inputs() -> None:
+    class GoodAdapter:
+        model_id = "fake"
+        station = "[SAGE::C2::CHATGPT]"
+        def invoke(self, envelope, task):
+            return _bound_response(_runtime(), _valid_output("bridge"))
+
+    projection = type("Projection", (), {"render_agent_tag": lambda self: "[SAGE::C2::CHATGPT] ◈ GPT // CQL-1 // SQL-0 // POINTS 25 // XP 2 // BOSS ⭐×0 ⭐⭐×0 // ⚔️ 1 // ┃ 0 // READY"})()
+    rendered, _ = SAGEChatGPTBoundary(_runtime(), GoodAdapter()).respond(
+        "status",
+        model_role="chatgpt",
+        immersion_state=_immersion_state(),
+        organism_projection=projection,
+    )
+
+    assert "POINTS 25" in rendered
+    assert rendered.index("POINTS 25") < rendered.index("C2 Mission Control")
