@@ -47,7 +47,7 @@ class OrganismProjection:
             role=station.role_description,
             cql=station.current_cql,
             sql=station.current_sql,
-            points=PointsXPEconomy._historical_points(manager, station_id),
+            points=PointsXPEconomy.verified_points_for_station(manager, station_id),
             career_xp=state.game_progression.get_total_xp_for_station(station_id),
             boss=BossProgressionAuthority.project_station(manager, station_id),
             status=status,
