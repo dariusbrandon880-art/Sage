@@ -11,30 +11,32 @@ SAGE career progression should model exceptional milestones as **Boss Encounters
 
 A Boss is a meaningful challenge that tests demonstrated capability and creates a recognizable closure point in an agent's career progression.
 
+### Emergent Boss Classification Model
+
+We do **not** pre-manufacture or search for Bosses upfront.
+
+SAGE executes normally through the full Big Jump Wave / organism workflow (`MISSION → RECON → SUPER SEARCH → BOUND → BUILD → TEST → OBSERVE → REPAIR → VERIFY → EVIDENCE → RECONVERGE → COMPOUND`). When SAGE encounters a genuinely difficult architectural seam, persistent failure, or complex integration obstacle during real construction, that hurdle becomes an encounter that SAGE fights through.
+
+Upon verified breakthrough, the encounter is retrospectively classified as a **Big Boss** or **Major Boss** based on verified proof of the fight (capabilities involved, failure/recovery history, verification burden, and earned Points).
+
 ```text
-REAL VERIFIED WORK
+REAL WORK
         ↓
-MISSIONS / SORTIES
+REAL HURDLE / SEAM
         ↓
-   BOSS ENCOUNTER
+REAL FIGHT / ATTEMPTS
         ↓
- ┌──────┴──────┐
- ▼             ▼
-BIG           MAJOR
-BOSS          BOSS
+REAL BREAKTHROUGH
         ↓
- VERIFIED OUTCOME
+VERIFIED PROOF & EVIDENCE
         ↓
- ┌──────┴──────┐
- ▼             ▼
-KILL          CAPTURE
-│             │
-obstacle      capability
-eliminated    secured
+VERIFIED POINTS
         ↓
- VERIFIED CAREER EVENT
+XP / PROGRESSION
         ↓
- POINTS / XP / QUALIFICATION / BADGE
+RETROSPECTIVE BOSS CLASSIFICATION (BIG / MAJOR)
+        ↓
+PERSISTENT CAREER HISTORY
 ```
 
 ## 2. Boss Is an Encounter, Not a Currency
