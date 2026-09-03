@@ -7,15 +7,16 @@ mutate, authorize, or infer canonical state.
 Architecture:
     CANONICAL STATE -> PROJECTION -> CHATGPT PRESENTATION
 
-When an organism manager is supplied, the ChatGPT surface additionally
-renders the canonical organism tag from the persisted Airspace ledger. The
-manager-backed projection remains read-only; this adapter never creates a
-second progression source.
+The ChatGPT surface renders the canonical organism tag from the persisted
+Airspace ledger as its top-level immersion layer. The manager-backed projection
+remains read-only; this adapter never creates a second progression source.
 """
 
 from __future__ import annotations
 
+import importlib
 from dataclasses import dataclass
+from typing import Any
 
 from sage.c2.immersion_projection import (
     C2ResponseContract,
@@ -25,8 +26,35 @@ from sage.c2.immersion_projection import (
 )
 from sage.c2.immersion_state import ImmersionState
 from sage.c2.response_envelope import c2_chatgpt_presentation, render_station_response
-from sage.experimental.airspace.models import StationID
-from sage.experimental.airspace.nameplate import render_organism_nameplate
+
+
+def _load_airspace_manager() -> object:
+    manager_mod = importlib.import_module("sage.experimental.airspace.manager")
+    return manager_mod.AirspaceManager()
+
+
+def _get_station_id(station_id_val: Any) -> Any:
+    models_mod = importlib.import_module("sage.experimental.airspace.models")
+    if station_id_val is None:
+        return models_mod.StationID.MISSION_CONTROL
+    if isinstance(station_id_val, models_mod.StationID):
+        return station_id_val
+    if isinstance(station_id_val, str):
+        try:
+            return models_mod.StationID(station_id_val)
+        except ValueError:
+            return models_mod.StationID.MISSION_CONTROL
+    return station_id_val
+
+
+def _render_organism_tag(manager: object, station_id: Any, state_label: str) -> str:
+    nameplate_mod = importlib.import_module("sage.experimental.airspace.nameplate")
+    return nameplate_mod.render_organism_nameplate(
+        manager,
+        station_id,
+        compact=True,
+        state_label=state_label,
+    )
 
 
 @dataclass(frozen=True)
@@ -59,24 +87,30 @@ def project_chatgpt_immersion_response(
     strike_feed: StrikeFeedProjection | None = None,
     *,
     organism_manager: object | None = None,
-    station_id: StationID = StationID.MISSION_CONTROL,
+    station_id: Any = None,
     state_label: str = "READY",
 ) -> ChatGPTImmersionResponse:
     """Project canonical state into the ChatGPT C2 response surface.
 
-    ``organism_manager`` is optional for backwards compatibility. When
-    supplied, the exact canonical organism tag is rendered from the same
-    persisted AirspaceManager ledger used by the organism projection.
+    The organism manager defaults to canonical AirspaceManager so the top-level
+    organism tag is always rendered as the canonical top-level immersion header.
     """
     contract = project_c2_response_contract(state, strike_feed=strike_feed)
+    target_station = _get_station_id(station_id)
+    mgr = organism_manager
+    if mgr is None:
+        try:
+            mgr = _load_airspace_manager()
+        except Exception:
+            mgr = None
+
     organism_tag = None
-    if organism_manager is not None:
-        organism_tag = render_organism_nameplate(
-            organism_manager,
-            station_id,
-            compact=True,
-            state_label=state_label,
-        )
+    if mgr is not None:
+        try:
+            organism_tag = _render_organism_tag(mgr, target_station, state_label)
+        except Exception:
+            organism_tag = None
+
     return ChatGPTImmersionResponse(
         station_header="[SAGE::C2::CHATGPT] **C2 Mission Control**",
         immersion_envelope=contract,

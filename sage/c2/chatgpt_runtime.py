@@ -12,6 +12,7 @@ Architecture:
 from __future__ import annotations
 
 import json
+from typing import Any
 
 from sage.c2.chatgpt_immersion import (
     ChatGPTImmersionResponse,
@@ -19,7 +20,6 @@ from sage.c2.chatgpt_immersion import (
 )
 from sage.c2.immersion_projection import MilestoneStrike, StrikeFeedProjection
 from sage.c2.immersion_state import ImmersionState
-from sage.experimental.airspace.models import StationID
 from sage.runtime.model_gateway import ModelResponse, SAGERuntime, SAGEStateSnapshot
 
 
@@ -30,7 +30,7 @@ def render_chatgpt_c2_response(
     strike_feed: StrikeFeedProjection | None = None,
     *,
     organism_manager: object | None = None,
-    station_id: StationID = StationID.MISSION_CONTROL,
+    station_id: Any = None,
     state_label: str = "READY",
 ) -> str:
     """Render one canonical C2 response through the ChatGPT immersion surface."""
@@ -53,7 +53,7 @@ def build_chatgpt_c2_response(
     strike_feed: StrikeFeedProjection | None = None,
     *,
     organism_manager: object | None = None,
-    station_id: StationID = StationID.MISSION_CONTROL,
+    station_id: Any = None,
     state_label: str = "READY",
 ) -> ChatGPTImmersionResponse:
     """Return the structured read-only ChatGPT immersion response."""
@@ -90,7 +90,7 @@ def render_governed_chatgpt_turn(
     immersion_state: ImmersionState,
     live_capability: object | None = None,
     organism_manager: object | None = None,
-    station_id: StationID = StationID.MISSION_CONTROL,
+    station_id: Any = None,
     state_label: str = "READY",
 ) -> tuple[str, ModelResponse]:
     """Execute GPT through SAGE and render only the reconciled result.

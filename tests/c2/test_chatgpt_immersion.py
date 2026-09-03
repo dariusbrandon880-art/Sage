@@ -85,3 +85,16 @@ def test_chatgpt_organism_hud_is_first_layer_when_present() -> None:
 
     assert hud_index < mission_index < body_index
     assert rendered.startswith("[SAGE::C2::CHATGPT] ◈ GPT // CQL-?")
+
+
+def test_chatgpt_organism_tag_rendered_by_default() -> None:
+    state = _state()
+    response = project_chatgpt_immersion_response(state, "Turn body")
+    assert response.organism_tag is not None
+    assert "POINTS" in response.organism_tag
+    assert "BOSS" in response.organism_tag
+
+    rendered = response.render()
+    assert rendered.startswith("[SAGE::C2::CHATGPT]")
+    assert "POINTS" in rendered
+    assert "C2 Mission Control" in rendered
