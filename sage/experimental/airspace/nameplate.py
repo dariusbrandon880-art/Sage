@@ -4,16 +4,20 @@ The nameplate is a read-only projection over canonical AirspaceState. It never
 creates, promotes, or infers qualification. Rank/XP values come only from the
 persisted progression state already maintained by the Airspace subsystem.
 
-Milestone Strikes are likewise presentation-only: a validated upstream impact
-level is rendered as earned stars. This module never decides whether an impact
-is safe, validated, or promotion-worthy.
+Milestone Strikes are presentation-only and are distinct from the locked Boss
+badge/kill/capture model. Organism-wide Points and Boss state are available
+through the manager-backed projection below so the display does not invent a
+second source of truth.
 """
 
 from __future__ import annotations
 
 from typing import Any
 
+from sage.experimental.airspace.boss_progression import BossProgressionAuthority
 from sage.experimental.airspace.models import AirspaceState, StationID
+from sage.experimental.airspace.organism_projection import OrganismProjection
+from sage.experimental.airspace.points_xp_economy import PointsXPEconomy
 
 
 STATION_ICONS = {
@@ -34,13 +38,7 @@ MAX_MILESTONE_STRIKE_STARS = 5
 
 
 def render_milestone_strike(stars: int) -> str:
-    """Render an earned Milestone Strike from a validated impact level.
-
-    ``stars`` must already be produced by the governed evidence/validation
-    layer. This projection deliberately performs no scoring or qualification.
-    Zero stars renders an explicit unearned state; one through five stars show
-    increasing validated progress.
-    """
+    """Render an earned Milestone Strike from a validated impact level."""
     if not isinstance(stars, int) or isinstance(stars, bool):
         raise TypeError("milestone strike stars must be an integer")
     if not 0 <= stars <= MAX_MILESTONE_STRIKE_STARS:
@@ -86,12 +84,7 @@ def build_agent_identity(
     *,
     state_label: str,
 ) -> dict[str, Any]:
-    """Project identity, role, qualification, progression, and live state.
-
-    This function is deliberately presentation-only. Every displayed value is
-    sourced from canonical AirspaceState or the supplied read-only state
-    projection; it cannot award XP, change qualification, or grant authority.
-    """
+    """Project identity, role, qualification, progression, and live state."""
     station = state.stations[station_id]
     return {
         "nameplate": STATION_NAMEPLATES[station_id],
@@ -120,3 +113,47 @@ def render_agent_identity(
         f"{identity['nameplate']} • CQL-{identity['cql']}{sql} • "
         f"XP {identity['xp']} • {identity['state']}"
     )
+
+
+def render_organism_nameplate(
+    manager,
+    station_id: StationID,
+    *,
+    compact: bool = True,
+    state_label: str = "READY",
+) -> str:
+    """Render the full organism identity from canonical persisted state.
+
+    This is the preferred progression-aware nameplate for operational use.
+    Points and Boss outcomes are reconstructed from the same AirspaceManager
+    ledger used by the canonical economy; no display-side state is created.
+    """
+    state = manager.reconstruct_airspace_state()
+    projection = OrganismProjection.project_station(
+        manager, state, station_id, status=state_label
+    )
+    boss = projection.boss
+    identity = STATION_NAMEPLATES[station_id]
+    icon = STATION_ICONS.get(station_id, "▪")
+    sql = f" // SQL-{projection.sql}" if projection.sql > 0 else ""
+    tag = (
+        f"{identity} {icon} {projection.agent_name} // CQL-{projection.cql}{sql} // "
+        f"POINTS {projection.points} // XP {projection.career_xp} // "
+        f"BOSS ⭐×{boss.big_badges} ⭐⭐×{boss.major_badges} // "
+        f"⚔️ {boss.total_kills} // ┃ {boss.total_captures} // {projection.status}"
+    )
+    if compact:
+        return tag
+    return (
+        f"{tag}\n"
+        f"  ROLE   : {projection.role}\n"
+        f"  BADGES : {boss.badge_summary}\n"
+        f"  BIG    : ⭐ | ⚔️ {boss.big_kills} | ┃ {boss.big_captures}\n"
+        f"  MAJOR  : ⭐⭐ | ⚔️ {boss.major_kills} | ┃ {boss.major_captures}"
+    )
+
+
+def render_organism_roster(manager, *, state_label: str = "READY") -> str:
+    """Render all canonical SAGE agents with one shared progression vocabulary."""
+    state = manager.reconstruct_airspace_state()
+    return OrganismProjection.render_roster(manager, state, status=state_label)
