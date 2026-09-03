@@ -1,0 +1,719 @@
+[
+  {
+    "event_id": "evt_airspace_0001_0ba1e01e",
+    "event_type": "POINTS_AWARDED",
+    "timestamp": "2026-09-03T07:26:44.552358+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "event_id": "evt-settlement:397335d0ab7ddec307cec9bc81e08b2d3dffa86da5c91cb65ed5a16a7b605748-CHATGPT_C2",
+      "station_id": "MISSION_CONTROL",
+      "event_type": "BOSS_KILL",
+      "base_points": 100,
+      "difficulty": 2,
+      "verification_quality": 2,
+      "impact": 2,
+      "reuse": 2,
+      "verified_points": 200,
+      "verified_event_ref": "settlement:397335d0ab7ddec307cec9bc81e08b2d3dffa86da5c91cb65ed5a16a7b605748:BOSS-0001:CHATGPT_C2",
+      "reason": "Adjudicated reward under SAGE-RP-1.0 for mission BOSS-0001"
+    },
+    "evidence_refs": [
+      "ci_pass"
+    ],
+    "event_sha256": "c0de2f6c95fca481338601a99677f67d6dad28f534a7f59b02c19828b0951146"
+  },
+  {
+    "event_id": "evt_airspace_0002_d17f6ace",
+    "event_type": "XP_AWARDED",
+    "timestamp": "2026-09-03T07:26:44.553162+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "station_id": "MISSION_CONTROL",
+      "category": "MISSION_XP",
+      "amount": 20,
+      "reason": "Career XP minted from 200 verified Points (Adjudicated reward under SAGE-RP-1.0 for mission BOSS-0001)",
+      "verified_event_ref": "settlement:397335d0ab7ddec307cec9bc81e08b2d3dffa86da5c91cb65ed5a16a7b605748:BOSS-0001:CHATGPT_C2:xp:20"
+    },
+    "evidence_refs": [
+      "settlement:397335d0ab7ddec307cec9bc81e08b2d3dffa86da5c91cb65ed5a16a7b605748:BOSS-0001:CHATGPT_C2:xp:20"
+    ],
+    "event_sha256": "23f2927772c6f2987484aced2094adb799bbd28103e6b6adb9fcd48d3d5d5c17"
+  },
+  {
+    "event_id": "evt_airspace_0003_cb29417e",
+    "event_type": "POINTS_AWARDED",
+    "timestamp": "2026-09-03T07:26:44.553804+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "event_id": "evt-settlement:397335d0ab7ddec307cec9bc81e08b2d3dffa86da5c91cb65ed5a16a7b605748-JULES",
+      "station_id": "ENGINEERING_FLIGHT",
+      "event_type": "BOSS_KILL",
+      "base_points": 100,
+      "difficulty": 2,
+      "verification_quality": 2,
+      "impact": 2,
+      "reuse": 2,
+      "verified_points": 200,
+      "verified_event_ref": "settlement:397335d0ab7ddec307cec9bc81e08b2d3dffa86da5c91cb65ed5a16a7b605748:BOSS-0001:JULES",
+      "reason": "Adjudicated reward under SAGE-RP-1.0 for mission BOSS-0001"
+    },
+    "evidence_refs": [
+      "ci_pass"
+    ],
+    "event_sha256": "aad4eac4340e368047e84d1963187bc570590676af2912b8f1663f5f682379ad"
+  },
+  {
+    "event_id": "evt_airspace_0004_a6106b94",
+    "event_type": "XP_AWARDED",
+    "timestamp": "2026-09-03T07:26:44.554550+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "station_id": "ENGINEERING_FLIGHT",
+      "category": "MISSION_XP",
+      "amount": 20,
+      "reason": "Career XP minted from 200 verified Points (Adjudicated reward under SAGE-RP-1.0 for mission BOSS-0001)",
+      "verified_event_ref": "settlement:397335d0ab7ddec307cec9bc81e08b2d3dffa86da5c91cb65ed5a16a7b605748:BOSS-0001:JULES:xp:20"
+    },
+    "evidence_refs": [
+      "settlement:397335d0ab7ddec307cec9bc81e08b2d3dffa86da5c91cb65ed5a16a7b605748:BOSS-0001:JULES:xp:20"
+    ],
+    "event_sha256": "a40062dbf525776722d8e1795863e2cb6a847e6e6d0ac186386084e736232757"
+  },
+  {
+    "event_id": "evt_airspace_0005_2ee33750",
+    "event_type": "POINTS_AWARDED",
+    "timestamp": "2026-09-03T07:26:44.555216+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "event_id": "evt-settlement:397335d0ab7ddec307cec9bc81e08b2d3dffa86da5c91cb65ed5a16a7b605748-GEMINI",
+      "station_id": "INTEL_STATION",
+      "event_type": "BOSS_KILL",
+      "base_points": 100,
+      "difficulty": 2,
+      "verification_quality": 2,
+      "impact": 2,
+      "reuse": 2,
+      "verified_points": 200,
+      "verified_event_ref": "settlement:397335d0ab7ddec307cec9bc81e08b2d3dffa86da5c91cb65ed5a16a7b605748:BOSS-0001:GEMINI",
+      "reason": "Adjudicated reward under SAGE-RP-1.0 for mission BOSS-0001"
+    },
+    "evidence_refs": [
+      "ci_pass"
+    ],
+    "event_sha256": "bdf8ca77d9c9735e7f28424df92d43da36063c7ac810891fc399bf271689904e"
+  },
+  {
+    "event_id": "evt_airspace_0006_042e02ac",
+    "event_type": "XP_AWARDED",
+    "timestamp": "2026-09-03T07:26:44.556193+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "station_id": "INTEL_STATION",
+      "category": "MISSION_XP",
+      "amount": 20,
+      "reason": "Career XP minted from 200 verified Points (Adjudicated reward under SAGE-RP-1.0 for mission BOSS-0001)",
+      "verified_event_ref": "settlement:397335d0ab7ddec307cec9bc81e08b2d3dffa86da5c91cb65ed5a16a7b605748:BOSS-0001:GEMINI:xp:20"
+    },
+    "evidence_refs": [
+      "settlement:397335d0ab7ddec307cec9bc81e08b2d3dffa86da5c91cb65ed5a16a7b605748:BOSS-0001:GEMINI:xp:20"
+    ],
+    "event_sha256": "a3dbdd6e2c2b6a3d535879b285d7c31464ff97188809e381df3a228288bfd55b"
+  },
+  {
+    "event_id": "evt_airspace_0007_2a54f935",
+    "event_type": "BOSS_OUTCOME_VERIFIED",
+    "timestamp": "2026-09-03T07:26:44.556940+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "event_id": "boss-settlement:397335d0ab7ddec307cec9bc81e08b2d3dffa86da5c91cb65ed5a16a7b605748",
+      "station_id": "MISSION_CONTROL",
+      "boss_class": "BIG",
+      "verified_event_ref": "boss-ref-settlement:397335d0ab7ddec307cec9bc81e08b2d3dffa86da5c91cb65ed5a16a7b605748",
+      "kill": true,
+      "capture": false,
+      "reason": "Verified Boss Outcome for mission BOSS-0001"
+    },
+    "evidence_refs": [
+      "ci_pass"
+    ],
+    "event_sha256": "c48c0cf1bd8bfb6b44914051989072c64bd153e1431dcc71d463307742af393a"
+  },
+  {
+    "event_id": "evt_airspace_0008_ff656dab",
+    "event_type": "REWARD_SETTLED",
+    "timestamp": "2026-09-03T07:26:44.557870+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "protocol_version": "SAGE-RP-1.0",
+      "settlement_id": "settlement:397335d0ab7ddec307cec9bc81e08b2d3dffa86da5c91cb65ed5a16a7b605748",
+      "mission_id": "BOSS-0001",
+      "primary_actor": "MISSION_CONTROL",
+      "outcome_type": "BOSS_KILL",
+      "base_points": 100,
+      "multiplier": 2.0,
+      "outcome_point_pool": 200,
+      "attributed_points": {
+        "CHATGPT_C2": 100,
+        "JULES": 60,
+        "GEMINI": 40
+      },
+      "attribution_status": "VERIFIED_ATTRIBUTION",
+      "xp_before": 0,
+      "xp_minted": 20,
+      "xp_after": 20,
+      "badge_awards": [
+        "BOSS_KILL_BIG",
+        "BOSS BREAKER"
+      ],
+      "rank": "CQL-4",
+      "promotion_eligibility": true,
+      "conservation_check_passed": true,
+      "idempotency_check_passed": true,
+      "evidence_digest": "c2616de91e57207c757e64fd8ff0a5745f8cc61f309f424de05edc9d61d9a1d0"
+    },
+    "evidence_refs": [
+      "ci_pass"
+    ],
+    "event_sha256": "2d17cb3fa2a56cf066cd11d61e0446f0252a0c3cccd8edf9b8e5c55813641303"
+  },
+  {
+    "event_id": "evt_airspace_0009_908c650e",
+    "event_type": "POINTS_AWARDED",
+    "timestamp": "2026-09-03T07:26:44.604837+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "event_id": "evt-settlement:7886626e4cb700ed6c76953a61834176c78ed4d3a315c493aa09cced3f7477e3-CHATGPT_C2",
+      "station_id": "MISSION_CONTROL",
+      "event_type": "REPAIR",
+      "base_points": 25,
+      "difficulty": 1,
+      "verification_quality": 1,
+      "impact": 1,
+      "reuse": 1,
+      "verified_points": 25,
+      "verified_event_ref": "settlement:7886626e4cb700ed6c76953a61834176c78ed4d3a315c493aa09cced3f7477e3:M-IDEM-01:CHATGPT_C2",
+      "reason": "Adjudicated reward under SAGE-RP-1.0 for mission M-IDEM-01"
+    },
+    "evidence_refs": [
+      "ci_pass"
+    ],
+    "event_sha256": "87fec166e88dece049a377a8076be1f0a16762cdc7b323f5185e761583080c58"
+  },
+  {
+    "event_id": "evt_airspace_0010_1fb831bb",
+    "event_type": "XP_AWARDED",
+    "timestamp": "2026-09-03T07:26:44.606130+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "station_id": "MISSION_CONTROL",
+      "category": "MISSION_XP",
+      "amount": 2,
+      "reason": "Career XP minted from 225 verified Points (Adjudicated reward under SAGE-RP-1.0 for mission M-IDEM-01)",
+      "verified_event_ref": "settlement:7886626e4cb700ed6c76953a61834176c78ed4d3a315c493aa09cced3f7477e3:M-IDEM-01:CHATGPT_C2:xp:22"
+    },
+    "evidence_refs": [
+      "settlement:7886626e4cb700ed6c76953a61834176c78ed4d3a315c493aa09cced3f7477e3:M-IDEM-01:CHATGPT_C2:xp:22"
+    ],
+    "event_sha256": "59fec3a1133ba5170295ee584753f122580e141c9bc8cf5022ae62744a76bbdd"
+  },
+  {
+    "event_id": "evt_airspace_0011_9e675a26",
+    "event_type": "REWARD_SETTLED",
+    "timestamp": "2026-09-03T07:26:44.607267+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "protocol_version": "SAGE-RP-1.0",
+      "settlement_id": "settlement:7886626e4cb700ed6c76953a61834176c78ed4d3a315c493aa09cced3f7477e3",
+      "mission_id": "M-IDEM-01",
+      "primary_actor": "MISSION_CONTROL",
+      "outcome_type": "REPAIR",
+      "base_points": 25,
+      "multiplier": 1.0,
+      "outcome_point_pool": 25,
+      "attributed_points": {
+        "CHATGPT_C2": 25
+      },
+      "attribution_status": "ATTRIBUTION_INDETERMINATE",
+      "xp_before": 20,
+      "xp_minted": 2,
+      "xp_after": 22,
+      "badge_awards": [],
+      "rank": "CQL-4",
+      "promotion_eligibility": true,
+      "conservation_check_passed": true,
+      "idempotency_check_passed": true,
+      "evidence_digest": "84446a2f8636047ed57ec8015c031cce732ba2c596c5a735f870c63549f85331"
+    },
+    "evidence_refs": [
+      "ci_pass"
+    ],
+    "event_sha256": "c58ab4da0c2298eb1f796272199611b061458bae57a7cfdd0adc9dd1c60119c7"
+  },
+  {
+    "event_id": "evt_airspace_0012_e296334e",
+    "event_type": "POINTS_AWARDED",
+    "timestamp": "2026-09-03T07:26:44.616788+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "event_id": "evt-settlement:63d4c90cb1c1fec922c3b37dff82d4dadb0c66da88fc32fcd5981fa0d7a165fb-CHATGPT_C2",
+      "station_id": "MISSION_CONTROL",
+      "event_type": "RECON",
+      "base_points": 5,
+      "difficulty": 1,
+      "verification_quality": 1,
+      "impact": 1,
+      "reuse": 1,
+      "verified_points": 5,
+      "verified_event_ref": "settlement:63d4c90cb1c1fec922c3b37dff82d4dadb0c66da88fc32fcd5981fa0d7a165fb:M-INDET-01:CHATGPT_C2",
+      "reason": "Adjudicated reward under SAGE-RP-1.0 for mission M-INDET-01"
+    },
+    "evidence_refs": [
+      "ci_pass"
+    ],
+    "event_sha256": "f986b11bea7929ee301c87a6c7947fca87eaddd00b9db7e15d9211a8ed7d3d96"
+  },
+  {
+    "event_id": "evt_airspace_0013_876b7ad2",
+    "event_type": "XP_AWARDED",
+    "timestamp": "2026-09-03T07:26:44.618227+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "station_id": "MISSION_CONTROL",
+      "category": "MISSION_XP",
+      "amount": 1,
+      "reason": "Career XP minted from 230 verified Points (Adjudicated reward under SAGE-RP-1.0 for mission M-INDET-01)",
+      "verified_event_ref": "settlement:63d4c90cb1c1fec922c3b37dff82d4dadb0c66da88fc32fcd5981fa0d7a165fb:M-INDET-01:CHATGPT_C2:xp:23"
+    },
+    "evidence_refs": [
+      "settlement:63d4c90cb1c1fec922c3b37dff82d4dadb0c66da88fc32fcd5981fa0d7a165fb:M-INDET-01:CHATGPT_C2:xp:23"
+    ],
+    "event_sha256": "79f0947b26a5d98a9d3065f46a58641eff8df86310a79f0d9f4518e7ac3063cb"
+  },
+  {
+    "event_id": "evt_airspace_0014_48010355",
+    "event_type": "REWARD_SETTLED",
+    "timestamp": "2026-09-03T07:26:44.619593+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "protocol_version": "SAGE-RP-1.0",
+      "settlement_id": "settlement:63d4c90cb1c1fec922c3b37dff82d4dadb0c66da88fc32fcd5981fa0d7a165fb",
+      "mission_id": "M-INDET-01",
+      "primary_actor": "MISSION_CONTROL",
+      "outcome_type": "RECON",
+      "base_points": 5,
+      "multiplier": 1.0,
+      "outcome_point_pool": 5,
+      "attributed_points": {
+        "CHATGPT_C2": 5
+      },
+      "attribution_status": "ATTRIBUTION_INDETERMINATE",
+      "xp_before": 22,
+      "xp_minted": 1,
+      "xp_after": 23,
+      "badge_awards": [],
+      "rank": "CQL-4",
+      "promotion_eligibility": true,
+      "conservation_check_passed": true,
+      "idempotency_check_passed": true,
+      "evidence_digest": "16edadc97088dcf09f0674e84829b73428f655829bbb03683c1c7723047c04af"
+    },
+    "evidence_refs": [
+      "ci_pass"
+    ],
+    "event_sha256": "f68f8c11a470a818261b19858ca8ea1a5311f08afc43b1c6f151fd1a713f89b9"
+  },
+  {
+    "event_id": "evt_airspace_0015_424eecb5",
+    "event_type": "POINTS_AWARDED",
+    "timestamp": "2026-09-03T07:26:44.622702+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "event_id": "evt-settlement:6c0434472c1e242216af6c6443cb9f723885a3bd0c7c346a9781daeaaed8468e-CHATGPT_C2",
+      "station_id": "MISSION_CONTROL",
+      "event_type": "BUILD",
+      "base_points": 25,
+      "difficulty": 1,
+      "verification_quality": 1,
+      "impact": 1,
+      "reuse": 1,
+      "verified_points": 25,
+      "verified_event_ref": "settlement:6c0434472c1e242216af6c6443cb9f723885a3bd0c7c346a9781daeaaed8468e:C2-BRIDGE-01:CHATGPT_C2",
+      "reason": "Adjudicated reward under SAGE-RP-1.0 for mission C2-BRIDGE-01"
+    },
+    "evidence_refs": [
+      "ci"
+    ],
+    "event_sha256": "fdfc1e78935b2b505f4479cd152091200745941445f3ab997e45ec8df468f22c"
+  },
+  {
+    "event_id": "evt_airspace_0016_aa9cdb80",
+    "event_type": "XP_AWARDED",
+    "timestamp": "2026-09-03T07:26:44.624356+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "station_id": "MISSION_CONTROL",
+      "category": "MISSION_XP",
+      "amount": 2,
+      "reason": "Career XP minted from 255 verified Points (Adjudicated reward under SAGE-RP-1.0 for mission C2-BRIDGE-01)",
+      "verified_event_ref": "settlement:6c0434472c1e242216af6c6443cb9f723885a3bd0c7c346a9781daeaaed8468e:C2-BRIDGE-01:CHATGPT_C2:xp:25"
+    },
+    "evidence_refs": [
+      "settlement:6c0434472c1e242216af6c6443cb9f723885a3bd0c7c346a9781daeaaed8468e:C2-BRIDGE-01:CHATGPT_C2:xp:25"
+    ],
+    "event_sha256": "af9f60c78fe480fc4e54611773671a6f7ba8648b60e126ebfdfabfc5dca9288a"
+  },
+  {
+    "event_id": "evt_airspace_0017_b2a59edf",
+    "event_type": "REWARD_SETTLED",
+    "timestamp": "2026-09-03T07:26:44.625845+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "protocol_version": "SAGE-RP-1.0",
+      "settlement_id": "settlement:6c0434472c1e242216af6c6443cb9f723885a3bd0c7c346a9781daeaaed8468e",
+      "mission_id": "C2-BRIDGE-01",
+      "primary_actor": "MISSION_CONTROL",
+      "outcome_type": "BUILD",
+      "base_points": 25,
+      "multiplier": 1.0,
+      "outcome_point_pool": 25,
+      "attributed_points": {
+        "CHATGPT_C2": 25
+      },
+      "attribution_status": "ATTRIBUTION_INDETERMINATE",
+      "xp_before": 23,
+      "xp_minted": 2,
+      "xp_after": 25,
+      "badge_awards": [],
+      "rank": "CQL-4",
+      "promotion_eligibility": true,
+      "conservation_check_passed": true,
+      "idempotency_check_passed": true,
+      "evidence_digest": "1097b9dd5b738fdffac4ff453b166d197c803799612209ef123f6e369c467fa1"
+    },
+    "evidence_refs": [
+      "ci"
+    ],
+    "event_sha256": "a707a4bf63e4a205d008b031787aca086d278808219d106f0a1f6a34af32afca"
+  },
+  {
+    "event_id": "evt_airspace_0018_02fc552b",
+    "event_type": "POINTS_AWARDED",
+    "timestamp": "2026-09-03T07:26:44.629076+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "event_id": "evt-settlement:d0cdc7cffc81fb81da7961dc12ab4002e0a3e96ea2fc8ca0389b789d9dabf9f4-CHATGPT_C2",
+      "station_id": "MISSION_CONTROL",
+      "event_type": "BREAKTHROUGH",
+      "base_points": 50,
+      "difficulty": 1,
+      "verification_quality": 1,
+      "impact": 1,
+      "reuse": 1,
+      "verified_points": 50,
+      "verified_event_ref": "settlement:d0cdc7cffc81fb81da7961dc12ab4002e0a3e96ea2fc8ca0389b789d9dabf9f4:SAGI-SIG-01:CHATGPT_C2",
+      "reason": "Adjudicated reward under SAGE-RP-1.0 for mission SAGI-SIG-01"
+    },
+    "evidence_refs": [
+      "ci_pass"
+    ],
+    "event_sha256": "eb3096c275fb6016e5c355c1f56b214e7681c9fd1f3001385117fe18d5474ac5"
+  },
+  {
+    "event_id": "evt_airspace_0019_e5f1593a",
+    "event_type": "XP_AWARDED",
+    "timestamp": "2026-09-03T07:26:44.630898+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "station_id": "MISSION_CONTROL",
+      "category": "MISSION_XP",
+      "amount": 5,
+      "reason": "Career XP minted from 305 verified Points (Adjudicated reward under SAGE-RP-1.0 for mission SAGI-SIG-01)",
+      "verified_event_ref": "settlement:d0cdc7cffc81fb81da7961dc12ab4002e0a3e96ea2fc8ca0389b789d9dabf9f4:SAGI-SIG-01:CHATGPT_C2:xp:30"
+    },
+    "evidence_refs": [
+      "settlement:d0cdc7cffc81fb81da7961dc12ab4002e0a3e96ea2fc8ca0389b789d9dabf9f4:SAGI-SIG-01:CHATGPT_C2:xp:30"
+    ],
+    "event_sha256": "706322e41d93fc72d9148e1015d7ff4ef3910364f23664b4cd3c6c9fc0cb96a4"
+  },
+  {
+    "event_id": "evt_airspace_0020_70d13b5e",
+    "event_type": "REWARD_SETTLED",
+    "timestamp": "2026-09-03T07:26:44.632588+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "protocol_version": "SAGE-RP-1.0",
+      "settlement_id": "settlement:d0cdc7cffc81fb81da7961dc12ab4002e0a3e96ea2fc8ca0389b789d9dabf9f4",
+      "mission_id": "SAGI-SIG-01",
+      "primary_actor": "MISSION_CONTROL",
+      "outcome_type": "BREAKTHROUGH",
+      "base_points": 50,
+      "multiplier": 1.0,
+      "outcome_point_pool": 50,
+      "attributed_points": {
+        "CHATGPT_C2": 50
+      },
+      "attribution_status": "ATTRIBUTION_INDETERMINATE",
+      "xp_before": 25,
+      "xp_minted": 5,
+      "xp_after": 30,
+      "badge_awards": [],
+      "rank": "CQL-4",
+      "promotion_eligibility": true,
+      "conservation_check_passed": true,
+      "idempotency_check_passed": true,
+      "evidence_digest": "c2833d91e6155318d48c92a35fc178214a00996a67612d7a548e5d52257d9c60"
+    },
+    "evidence_refs": [
+      "ci_pass"
+    ],
+    "event_sha256": "095ecf6f4015043b51a32cd2c6863ec7cee22ffb5a9b29b70dba3b4a9af678c9"
+  },
+  {
+    "event_id": "evt_airspace_0021_e8e5397f",
+    "event_type": "POINTS_AWARDED",
+    "timestamp": "2026-09-03T07:34:00.090597+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "event_id": "evt-settlement:6a7044cb9804425d52512ed69d440d4aeacb3b0bfc0af7c6447e1d0bffc0520e-CHATGPT_C2",
+      "station_id": "MISSION_CONTROL",
+      "event_type": "BOSS_KILL",
+      "base_points": 50,
+      "difficulty": 1,
+      "verification_quality": 1,
+      "impact": 1,
+      "reuse": 1,
+      "verified_points": 50,
+      "verified_event_ref": "settlement:6a7044cb9804425d52512ed69d440d4aeacb3b0bfc0af7c6447e1d0bffc0520e:BOSS-0001:CHATGPT_C2",
+      "reason": "Adjudicated reward under SAGE-RP-1.0 for mission BOSS-0001"
+    },
+    "evidence_refs": [
+      "exact_head_ci",
+      "pull_request",
+      "repaired_test",
+      "canonical_points_xp_authority"
+    ],
+    "event_sha256": "5d80497d923c9604d982e07534a7c60eda671e9ce71b5c585cebe7df99a5a3ac"
+  },
+  {
+    "event_id": "evt_airspace_0022_ab17b67b",
+    "event_type": "XP_AWARDED",
+    "timestamp": "2026-09-03T07:34:00.093032+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "station_id": "MISSION_CONTROL",
+      "category": "MISSION_XP",
+      "amount": 5,
+      "reason": "Career XP minted from 355 verified Points (Adjudicated reward under SAGE-RP-1.0 for mission BOSS-0001)",
+      "verified_event_ref": "settlement:6a7044cb9804425d52512ed69d440d4aeacb3b0bfc0af7c6447e1d0bffc0520e:BOSS-0001:CHATGPT_C2:xp:35"
+    },
+    "evidence_refs": [
+      "settlement:6a7044cb9804425d52512ed69d440d4aeacb3b0bfc0af7c6447e1d0bffc0520e:BOSS-0001:CHATGPT_C2:xp:35"
+    ],
+    "event_sha256": "0ce07219f7e3032b31d32103927eb9b309114b1853c0e6fe1cc00b680be53c10"
+  },
+  {
+    "event_id": "evt_airspace_0023_eeaeff15",
+    "event_type": "POINTS_AWARDED",
+    "timestamp": "2026-09-03T07:34:00.094757+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "event_id": "evt-settlement:6a7044cb9804425d52512ed69d440d4aeacb3b0bfc0af7c6447e1d0bffc0520e-JULES",
+      "station_id": "ENGINEERING_FLIGHT",
+      "event_type": "BOSS_KILL",
+      "base_points": 30,
+      "difficulty": 1,
+      "verification_quality": 1,
+      "impact": 1,
+      "reuse": 1,
+      "verified_points": 30,
+      "verified_event_ref": "settlement:6a7044cb9804425d52512ed69d440d4aeacb3b0bfc0af7c6447e1d0bffc0520e:BOSS-0001:JULES",
+      "reason": "Adjudicated reward under SAGE-RP-1.0 for mission BOSS-0001"
+    },
+    "evidence_refs": [
+      "exact_head_ci",
+      "pull_request",
+      "repaired_test",
+      "canonical_points_xp_authority"
+    ],
+    "event_sha256": "7d693f1ec7d7348f0e647cf2b0a1c1fa11e1be64cae099ebc5a055381af522fd"
+  },
+  {
+    "event_id": "evt_airspace_0024_66f02a5d",
+    "event_type": "XP_AWARDED",
+    "timestamp": "2026-09-03T07:34:00.097337+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "station_id": "ENGINEERING_FLIGHT",
+      "category": "MISSION_XP",
+      "amount": 3,
+      "reason": "Career XP minted from 230 verified Points (Adjudicated reward under SAGE-RP-1.0 for mission BOSS-0001)",
+      "verified_event_ref": "settlement:6a7044cb9804425d52512ed69d440d4aeacb3b0bfc0af7c6447e1d0bffc0520e:BOSS-0001:JULES:xp:23"
+    },
+    "evidence_refs": [
+      "settlement:6a7044cb9804425d52512ed69d440d4aeacb3b0bfc0af7c6447e1d0bffc0520e:BOSS-0001:JULES:xp:23"
+    ],
+    "event_sha256": "4adbf8810591c21114d7ea344b7d12a46e423051154dcb4998b398204299b50e"
+  },
+  {
+    "event_id": "evt_airspace_0025_768012d3",
+    "event_type": "POINTS_AWARDED",
+    "timestamp": "2026-09-03T07:34:00.099156+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "event_id": "evt-settlement:6a7044cb9804425d52512ed69d440d4aeacb3b0bfc0af7c6447e1d0bffc0520e-GEMINI",
+      "station_id": "INTEL_STATION",
+      "event_type": "BOSS_KILL",
+      "base_points": 20,
+      "difficulty": 1,
+      "verification_quality": 1,
+      "impact": 1,
+      "reuse": 1,
+      "verified_points": 20,
+      "verified_event_ref": "settlement:6a7044cb9804425d52512ed69d440d4aeacb3b0bfc0af7c6447e1d0bffc0520e:BOSS-0001:GEMINI",
+      "reason": "Adjudicated reward under SAGE-RP-1.0 for mission BOSS-0001"
+    },
+    "evidence_refs": [
+      "exact_head_ci",
+      "pull_request",
+      "repaired_test",
+      "canonical_points_xp_authority"
+    ],
+    "event_sha256": "1e091eb85d280ee51f15b6ca622c7c28938c96dee1ea61cc77635d83adabc47e"
+  },
+  {
+    "event_id": "evt_airspace_0026_e0248486",
+    "event_type": "XP_AWARDED",
+    "timestamp": "2026-09-03T07:34:00.101571+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "station_id": "INTEL_STATION",
+      "category": "MISSION_XP",
+      "amount": 2,
+      "reason": "Career XP minted from 220 verified Points (Adjudicated reward under SAGE-RP-1.0 for mission BOSS-0001)",
+      "verified_event_ref": "settlement:6a7044cb9804425d52512ed69d440d4aeacb3b0bfc0af7c6447e1d0bffc0520e:BOSS-0001:GEMINI:xp:22"
+    },
+    "evidence_refs": [
+      "settlement:6a7044cb9804425d52512ed69d440d4aeacb3b0bfc0af7c6447e1d0bffc0520e:BOSS-0001:GEMINI:xp:22"
+    ],
+    "event_sha256": "b8643077c84ae7b1e3bf8a9bd137c7a40c5a09abc1986d8de92ab36def4f7349"
+  },
+  {
+    "event_id": "evt_airspace_0027_b3cb23a9",
+    "event_type": "BOSS_OUTCOME_VERIFIED",
+    "timestamp": "2026-09-03T07:34:00.103446+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "event_id": "boss-settlement:6a7044cb9804425d52512ed69d440d4aeacb3b0bfc0af7c6447e1d0bffc0520e",
+      "station_id": "MISSION_CONTROL",
+      "boss_class": "BIG",
+      "verified_event_ref": "boss-ref-settlement:6a7044cb9804425d52512ed69d440d4aeacb3b0bfc0af7c6447e1d0bffc0520e",
+      "kill": true,
+      "capture": false,
+      "reason": "Verified Boss Outcome for mission BOSS-0001"
+    },
+    "evidence_refs": [
+      "exact_head_ci",
+      "pull_request",
+      "repaired_test",
+      "canonical_points_xp_authority"
+    ],
+    "event_sha256": "1253dcfb729399c9a4e04fa710180bde06a8c8dc970478635b1bdb7d862da5a4"
+  },
+  {
+    "event_id": "evt_airspace_0028_420ed5e3",
+    "event_type": "REWARD_SETTLED",
+    "timestamp": "2026-09-03T07:34:00.105584+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "protocol_version": "SAGE-RP-1.0",
+      "settlement_id": "settlement:6a7044cb9804425d52512ed69d440d4aeacb3b0bfc0af7c6447e1d0bffc0520e",
+      "mission_id": "BOSS-0001",
+      "primary_actor": "MISSION_CONTROL",
+      "outcome_type": "BOSS_KILL",
+      "base_points": 100,
+      "multiplier": 1.0,
+      "outcome_point_pool": 100,
+      "attributed_points": {
+        "CHATGPT_C2": 50,
+        "JULES": 30,
+        "GEMINI": 20
+      },
+      "attribution_status": "VERIFIED_ATTRIBUTION",
+      "xp_before": 30,
+      "xp_minted": 5,
+      "xp_after": 35,
+      "badge_awards": [
+        "BOSS_KILL_BIG",
+        "BOSS BREAKER"
+      ],
+      "rank": "CQL-4",
+      "promotion_eligibility": true,
+      "conservation_check_passed": true,
+      "idempotency_check_passed": true,
+      "evidence_digest": "sha256:75c583db46bb90cc2af925f807e1809bd7023f12"
+    },
+    "evidence_refs": [
+      "exact_head_ci",
+      "pull_request",
+      "repaired_test",
+      "canonical_points_xp_authority"
+    ],
+    "event_sha256": "5c33ff264f3d050015b66fe0525aac65fafa9fbaee9f991ac504e6ea0a8a0bff"
+  }
+]

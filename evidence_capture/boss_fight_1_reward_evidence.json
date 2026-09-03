@@ -1,0 +1,46 @@
+{
+  "decision": {
+    "protocol_version": "SAGE-RP-1.0",
+    "settlement_id": "settlement:6a7044cb9804425d52512ed69d440d4aeacb3b0bfc0af7c6447e1d0bffc0520e",
+    "mission_id": "BOSS-0001",
+    "primary_actor": "MISSION_CONTROL",
+    "outcome_type": "BOSS_KILL",
+    "base_points": 100,
+    "multiplier": 1.0,
+    "outcome_point_pool": 100,
+    "attributed_points": {
+      "CHATGPT_C2": 50,
+      "JULES": 30,
+      "GEMINI": 20
+    },
+    "attribution_status": "VERIFIED_ATTRIBUTION",
+    "xp_before": 30,
+    "xp_minted": 0,
+    "xp_after": 35,
+    "badge_awards": [
+      "BOSS_KILL_BIG",
+      "BOSS BREAKER"
+    ],
+    "rank": "CQL-4",
+    "promotion_eligibility": true,
+    "conservation_check_passed": true,
+    "idempotency_check_passed": true,
+    "evidence_digest": "sha256:75c583db46bb90cc2af925f807e1809bd7023f12",
+    "timestamp": 1788420888.887162
+  },
+  "sagi_signal": {
+    "learning_signal_id": "sagi-sig:64d31882ca358799bf4bba0ef5e689e24da3c266d8f7a4483ca0f6a5f5ba1c9c",
+    "settlement_id": "settlement:6a7044cb9804425d52512ed69d440d4aeacb3b0bfc0af7c6447e1d0bffc0520e",
+    "mission_id": "BOSS-0001",
+    "outcome_type": "BOSS_KILL",
+    "outcome_point_pool": 100,
+    "attribution_status": "VERIFIED_ATTRIBUTION",
+    "xp_minted": 0,
+    "conservation_verified": true,
+    "metacognitive_feedback": {
+      "performance_tier": "ELITE",
+      "attribution_quality": "VERIFIED_ATTRIBUTION",
+      "multi_agent_collaboration": true
+    }
+  }
+}
