@@ -36,6 +36,23 @@ The bundled profile mixes are **simulation inputs, not production telemetry**. T
 
 No exact 30-rank threshold values are selected here. No rank mutation, qualification mutation, automatic promotion, or alternate Points/XP authority is introduced.
 
+## Organism-wide scoring direction
+
+The organism, not an individual agent, is the eventual scoring authority. Agents should never self-award, self-certify, or directly mutate their own SAGE Points, Career XP, rank, badges, or promotion state. A future governed scoring layer should evaluate **every participating agent through the same canonical evidence pipeline**, using attributable verified events and the existing scoring dimensions, while keeping scoring authority outside the scored agent.
+
+This is a **future architecture direction, not an implementation claim**. Queue #09 does not yet lock the scoring formula, exact thresholds, telemetry requirements, evaluator topology, or promotion policy needed to make organism-wide agent scoring authoritative. Those decisions require validation evidence and a Director decision record after calibration is complete.
+
+The eventual design should preserve these invariants:
+
+1. **Universal attribution:** every scored agent has an unambiguous agent identity and attributable evidence.
+2. **Evidence-first scoring:** Points originate only from verified events with required evidence references.
+3. **No self-scoring:** the scored agent cannot authoritatively assign its own Points or promotion state.
+4. **One canonical economy:** all agents use the same Points/XP authority rather than agent-specific scoring stores.
+5. **Comparable evaluation:** equivalent verified work is evaluated through the same bounded scoring dimensions and governance rules.
+6. **Append-only provenance:** scoring decisions remain reconstructable from the underlying verified events and evidence.
+7. **Governed progression:** Points/XP contribute to progression but do not bypass qualification, evidence, no-skipping, or other promotion gates.
+8. **Calibration before lock:** exact scoring weights, threshold values, and velocity targets remain provisional until supported by observed/replay evidence.
+
 ## External research synthesis
 
 External game-design and analytics research reinforces the chosen method:
@@ -55,6 +72,7 @@ These sources support **calibration against observed progression velocity and te
 3. Compare candidate curve families against routine, builder, breakthrough, elite, collaborative, and recovery-heavy profiles.
 4. Measure threshold-crossing velocity and sensitivity to exceptional events.
 5. Produce negative-case evidence showing that XP/Points/Boss outcomes/badges alone cannot satisfy promotion gates.
-6. Only then produce a Director decision record for exact numeric thresholds.
+6. Design and validate the universal agent-attribution/scoring substrate without creating a second scoring authority.
+7. Only then produce a Director decision record for exact numeric thresholds and the eventual organism-wide scoring policy.
 
 **Authoritative outcome remains HOLD until the required calibration evidence exists.**
