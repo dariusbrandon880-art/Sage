@@ -154,6 +154,11 @@ class PointsXPEconomy:
                 total += int(payload.get("verified_points", 0))
         return total
 
+    @classmethod
+    def verified_points_for_station(cls, manager: AirspaceManager, station_id: StationID) -> int:
+        """Return reconstructed verified Points from the canonical event ledger."""
+        return cls._historical_points(manager, station_id)
+
     @staticmethod
     def _find_existing_points_event(manager: AirspaceManager, verified_event_ref: str) -> Optional[dict[str, object]]:
         for raw in manager._load_raw_events():
