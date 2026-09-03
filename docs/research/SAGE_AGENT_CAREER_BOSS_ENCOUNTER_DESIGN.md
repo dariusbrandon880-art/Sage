@@ -12,36 +12,20 @@ SAGE career progression should model exceptional milestones as **Boss Encounters
 A Boss is a meaningful challenge that tests demonstrated capability and creates a recognizable closure point in an agent's career progression.
 
 ```text
-REAL VERIFIED WORK
-        ↓
-MISSIONS / SORTIES
-        ↓
-   BOSS ENCOUNTER
-        ↓
- ┌──────┴──────┐
- ▼             ▼
-BIG           MAJOR
-BOSS          BOSS
-        ↓
- VERIFIED OUTCOME
-        ↓
- ┌──────┴──────┐
- ▼             ▼
-KILL          CAPTURE
-│             │
-obstacle      capability
-eliminated    secured
-        ↓
- VERIFIED CAREER EVENT
-        ↓
- POINTS / XP / QUALIFICATION / BADGE
+REAL VERIFIED WORK → MISSIONS / SORTIES → BOSS ENCOUNTER
+                                      ↓
+                              BIG / MAJOR BOSS
+                                      ↓
+                              VERIFIED OUTCOME
+                               ↙             ↘
+                            KILL          CAPTURE
+                               ↘             ↙
+                         POINTS / XP / QUALIFICATION / BADGE
 ```
 
 ## 2. Boss Is an Encounter, Not a Currency
 
-A Boss must not simply mean “worth X XP.”
-
-The Boss represents a **difficulty-bearing challenge**. Its value is established through the verified characteristics of the encounter and its outcome.
+A Boss must not simply mean “worth X XP.” The Boss represents a **difficulty-bearing challenge**. Its value is established through verified characteristics of the encounter and its outcome.
 
 ```text
 Boss = meaningful challenge
@@ -51,17 +35,13 @@ CQL/SQL = formal capability qualification
 Badge = verified distinction
 ```
 
-This preserves the separation established in the historical career recon.
-
 ## 3. Why Bosses Fit SAGE
 
-Game-design research commonly treats bosses as milestone tests: they close a progression segment, test mastery, and create a meaningful transition point. Boss encounters can also be structured as multi-phase tests rather than a single undifferentiated difficulty value.
-
-The SAGE translation is not literal combat. The boss is a **governed challenge representation** over real work.
+Bosses are milestone tests: they close progression segments, test mastery, and can contain multiple phases. SAGE translates that pattern into a governed challenge representation over real work.
 
 ```text
-GAME:       learn → engage → defeat boss → unlock progress
-SAGE:       discover → bound → execute → verify → overcome → capture capability
+GAME: learn → engage → defeat boss → unlock progress
+SAGE: discover → bound → execute → verify → overcome → capture capability
 ```
 
 ## 4. Boss Classes
@@ -70,29 +50,15 @@ SAGE:       discover → bound → execute → verify → overcome → capture c
 
 A substantial challenge requiring multiple capabilities, sorties, evidence artifacts, or coordinated work.
 
-Examples:
-
-- subsystem-level capability delivery
-- multi-stage integration problem
-- difficult qualification challenge
-- significant frontier advancement
-- reusable capability brought into the fleet
+Examples include subsystem capability delivery, multi-stage integration, difficult qualification, significant frontier advancement, and reusable capability brought into the fleet.
 
 ### Major Boss
 
 A frontier-level or system-significant challenge whose verified outcome materially expands SAGE capability or removes a major structural obstacle.
 
-Examples:
+Examples include major runtime/control-plane breakthroughs, high-impact reusable capabilities, difficult multi-agent coordination, major frontier breakthroughs, and elimination of persistent high-impact failure modes.
 
-- major runtime/control-plane breakthrough
-- high-impact reusable capability
-- difficult multi-agent coordination challenge
-- major frontier breakthrough
-- elimination of a persistent high-impact failure mode
-
-**Important:** Big/Major are difficulty classes, not automatic XP amounts.
-
-No additional Boss tier is defined by this contract.
+**Big/Major are difficulty classes, not automatic XP amounts. No additional Boss tier is defined by this contract.**
 
 ## 5. Boss Outcomes
 
@@ -100,93 +66,35 @@ No additional Boss tier is defined by this contract.
 
 A verified Boss outcome where the primary accomplishment is **eliminating an obstacle, threat, blocker, defect, or failure mode**.
 
-```text
-BOSS → ENGAGE → VERIFY → KILL
-```
-
-Examples:
-
-- blocker eliminated
-- defect eliminated
-- regression source eliminated
-- security/control failure mode eliminated
-- frontier obstacle overcome
-
 ### Elite Capture
 
 A verified Boss outcome where the primary accomplishment is **securing a capability, qualification, intelligence finding, or reusable asset**.
-
-```text
-BOSS → ENGAGE → VERIFY → CAPTURE
-```
-
-Examples:
-
-- capability captured
-- qualification achieved
-- reusable component secured
-- validated intelligence captured
-- new frontier capability established
 
 A Boss may produce both a Kill and a Capture when the verified outcome supports both.
 
 ## 6. Boss Phases
 
-A Boss can contain phases. Phases are progression semantics, not a new authority system.
-
 Candidate phase model:
 
 ```text
-BOSS ENCOUNTER
-      ↓
-DISCOVER
-      ↓
-BOUND
-      ↓
-ENGAGE
-      ↓
-BREAKTHROUGH
-      ↓
-VERIFY
-      ↓
-CAPTURE / KILL
+BOSS ENCOUNTER → DISCOVER → BOUND → ENGAGE → BREAKTHROUGH → VERIFY → CAPTURE / KILL
 ```
 
-This intentionally echoes SAGE's existing governed continuous-intelligence loop rather than inventing a disconnected game lifecycle.
-
-Multi-phase boss design is useful because individual phases can test different capabilities and provide meaningful progression beats.
+Phases are progression semantics, not a new authority system. A Boss may span multiple sorties.
 
 ## 7. No Fake Health Bars
 
-A Boss must **not** receive arbitrary “health,” “damage,” or progress values solely for presentation.
-
-Any boss progress projection must be derived from canonical evidence/state.
+A Boss must **not** receive arbitrary “health,” “damage,” or progress values solely for presentation. Any Boss progress projection must be derived from canonical evidence/state.
 
 ```text
-CANONICAL STATE / EVIDENCE
-          ↓
-BOSS PROJECTION
-          ↓
-HUD / NAMEPLATE / CHAT
+CANONICAL STATE / EVIDENCE → BOSS PROJECTION → HUD / NAMEPLATE / CHAT
 ```
 
-Never:
-
-```text
-HUD / CHAT
-   ↓
-invent boss damage
-   ↓
-claim kill
-```
-
-This preserves the existing SAGE immersion rule: presentation is downstream of canonical state.
+Presentation cannot invent damage or claim a kill.
 
 ## 8. Boss Difficulty Profile
 
-The Boss class should eventually be derived from a structured difficulty profile rather than a subjective label.
-
-Candidate dimensions:
+Candidate dimensions for eventual structured classification:
 
 - capability breadth
 - capability depth
@@ -200,27 +108,139 @@ Candidate dimensions:
 
 These are design candidates, not locked scoring rules.
 
+## 8A. Emergent Boss Classification Model
+
+The Boss classification model is **emergent and retrospective**. SAGE should classify a Boss from the verified shape of real organism execution rather than declaring a tier solely from a task title, planned ticket size, expected XP, diff size, runtime, or other activity proxy.
+
+```text
+REAL ORGANISM EXECUTION
+        ↓
+VERIFIED EVENT / EVIDENCE HISTORY
+        ↓
+ENCOUNTER FEATURE PROFILE
+        ├─ capability breadth
+        ├─ capability depth
+        ├─ dependency / integration complexity
+        ├─ uncertainty / discovery load
+        ├─ verification burden
+        ├─ failure severity / recovery burden
+        ├─ reuse / system impact
+        ├─ coordination requirement
+        └─ frontier distance
+        ↓
+EMERGENT CLASSIFICATION
+        ├─ BIG BOSS
+        └─ MAJOR BOSS
+        ↓
+GOVERNED VERIFICATION
+        ↓
+CANONICAL BOSS OUTCOME
+```
+
+### 8A.1 Classification Principle
+
+The Boss class is an **evidence-backed conclusion about the encounter**, not an input that can manufacture its own evidence.
+
+```text
+PLAN / INTENT       → candidate
+EXECUTION           → observations
+VERIFIED EVIDENCE   → classification basis
+GOVERNED REVIEW     → Boss class
+CANONICAL OUTCOME   → career accounting
+```
+
+A planned task may be a provisional candidate, but final classification remains provisional until sufficient verified evidence exists.
+
+### 8A.2 Emergence From Multiple Signals
+
+No single dimension automatically creates a Major Boss. Classification emerges from the **joint profile** of the verified encounter plus its material verified consequence.
+
+A **Big Boss** is indicated when an encounter demonstrates substantial difficulty across material dimensions and produces a meaningful verified outcome.
+
+A **Major Boss** is indicated when the verified encounter demonstrates system-significant or frontier-level difficulty, impact, uncertainty, coordination, or structural consequence, with evidence showing that the outcome materially expands capability or removes a major obstacle.
+
+```text
+ONE LARGE NUMBER ≠ AUTOMATIC MAJOR
+
+MULTI-DIMENSIONAL VERIFIED PROFILE
+              +
+       MATERIAL OUTCOME
+              ↓
+      EMERGENT BOSS CLASS
+```
+
+Exact weighting, normalization, and thresholds remain HOLD until sufficient real execution history exists for calibration.
+
+### 8A.3 Retrospective Evidence Requirement
+
+Classification must be reconstructable from the evidence trail. A reviewer should be able to determine:
+
+1. what work actually occurred;
+2. what dependencies, uncertainty, and coordination were encountered;
+3. what failure/recovery burden was present;
+4. what capability or obstacle changed;
+5. what evidence verifies the outcome; and
+6. why the observed profile supports Big versus Major.
+
+If the record cannot support the classification, the encounter remains **unclassified / provisional** rather than being promoted by presentation pressure.
+
+### 8A.4 Anti-Gaming Rules
+
+The emergent model must not reward artificial complexity:
+
+- unnecessary subtasks do not increase Boss class;
+- evidence volume alone does not increase Boss class;
+- repeated work does not increase Boss class without new verified value;
+- large diffs, high token counts, and long runtimes are not Boss signals by themselves;
+- Points or XP awarded cannot prove that an encounter was a Boss;
+- UI presentation cannot promote an encounter to Boss status;
+- a declared Boss label cannot substitute for canonical evidence.
+
+The model measures **observed difficulty and verified consequence**, not activity theater.
+
+### 8A.5 Classification Confidence and Hold State
+
+Until evidence is sufficient, preserve a governed hold state instead of forcing a classification.
+
+```text
+PROVISIONAL
+    ↓
+EVIDENCE SUFFICIENT?
+  ┌───┴───┐
+  NO     YES
+  ↓       ↓
+HOLD   CLASSIFY
+          ├─ BIG
+          └─ MAJOR
+```
+
+A future confidence/evidence-completeness measure must derive from canonical evidence and must not become a hidden third Boss tier.
+
+### 8A.6 Learning Loop
+
+Emergent classification improves through observed history:
+
+```text
+CLASSIFY → VERIFY → ARCHIVE → OBSERVE MORE ENCOUNTERS
+                         ↓
+                 COMPARE OUTCOMES
+                         ↓
+                 RECALIBRATE MODEL
+```
+
+Historical classifications remain auditable. Recalibration must never rewrite the underlying append-only event ledger.
+
+**Current lock:** the emergent classification principle is adopted as the research direction. Exact feature weights, thresholds, normalization, confidence math, and automatic classification authority remain **HOLD** pending sufficient real organism execution history.
+
 ## 9. Career Economy
 
 The Boss is not the XP economy itself.
 
 ```text
-BOSS ENCOUNTER
-      ↓
-VERIFIED OUTCOME
-      ↓
-QUALIFIED PERFORMANCE
-      ↓
-POINTS
-      ↓
-XP CONVERSION
-      ↓
-CAREER XP
-      ↓
-RANK PROGRESS / ELIGIBILITY
+BOSS ENCOUNTER → VERIFIED OUTCOME → QUALIFIED PERFORMANCE → POINTS → XP CONVERSION → CAREER XP → RANK PROGRESS / ELIGIBILITY
 ```
 
-Qualification and promotion remain separate gates.
+Qualification and promotion remain separate gates:
 
 ```text
 XP → eligibility
@@ -228,35 +248,19 @@ QUALIFICATION + EVIDENCE + CAPABILITY → promotion decision
 PROMOTION GATE → PROMOTE / HOLD
 ```
 
-This prevents Boss farming from becoming a shortcut to rank.
+Boss farming must not become a shortcut to rank.
 
 ## 10. Bosses Should Be Persistent Career Objects
 
-A Boss should be capable of existing across multiple sorties when the challenge is genuinely multi-stage.
+A Boss may exist across multiple sorties when genuinely multi-stage:
 
 ```text
-BOSS CREATED
-    ↓
-ENGAGED
-    ↓
-PARTIALLY ADVANCED
-    ↓
-BLOCKED / RECOVERED / RE-ENGAGED
-    ↓
-VERIFIED
-    ↓
-DEFEATED / CAPTURED
-    ↓
-CLOSED
+BOSS CREATED → ENGAGED → PARTIALLY ADVANCED → BLOCKED / RECOVERED / RE-ENGAGED → VERIFIED → DEFEATED / CAPTURED → CLOSED
 ```
 
-Failed attempts should remain evidence/history rather than disappearing when the Boss is eventually defeated.
-
-This aligns with SAGE's existing persistence, append-only evidence/event, and failure-memory direction.
+Failed attempts remain evidence/history rather than disappearing when the Boss is defeated.
 
 ## 11. Bosses Are Not Five Flights
-
-Boss encounters must not redefine the Five-Flight operating model.
 
 ```text
 F1–F5 = reusable execution vehicles
@@ -264,11 +268,11 @@ BOSS   = challenge object
 RANK   = persistent career state
 ```
 
-A Boss can require one flight or several flights. A flight can participate in many different Boss encounters. No permanent mapping exists between flight identity and Boss category.
+A Boss can require one flight or several. A flight can participate in many Boss encounters. There is no permanent mapping between flight identity and Boss category.
 
 ## 12. Boss Rewards / Consequences
 
-Candidate post-Boss consequences include:
+Candidate consequences include:
 
 - verified Points
 - career XP
@@ -284,70 +288,55 @@ These are consequences of verified outcomes, not automatic rewards for merely re
 
 ## 13. Boss Farming Constraint
 
-A Boss should not be repeatable for unlimited career gain simply because the event can be replayed.
-
 Repeated work must produce additional progression only when it creates additional verified capability, impact, qualification, or materially new evidence.
 
 ```text
 REPEAT EVENT ≠ AUTOMATIC XP
-
 NEW VERIFIED VALUE → progression consequence
 NO NEW VERIFIED VALUE → no artificial career inflation
 ```
 
-This directly addresses known progression-system failure modes where repetitive activity can be farmed for guaranteed XP.
-
 ## 14. Proposed Career World
 
 ```text
-                    SAGE CAREER WORLD
-                           │
-                    REAL VERIFIED WORK
-                           │
-                     SORTIES / MISSIONS
-                           │
-                           ▼
-                    BOSS ENCOUNTERS
-                           │
-                  ┌────────┴────────┐
-                  ▼                 ▼
-                BIG               MAJOR
-                BOSS               BOSS
-                  │                 │
-                  └────────┬────────┘
-                           ▼
-                    VERIFIED OUTCOME
-                           │
-                    ┌──────┴──────┐
-                    ▼             ▼
-                  ELITE         ELITE
-                   KILL         CAPTURE
-                    │             │
-                    └──────┬──────┘
-                           ▼
-                    CAREER ACCOUNTING
-                    ├── POINTS
-                    ├── XP
-                    ├── QUALIFICATION
-                    ├── MASTERY
-                    └── BADGES
-                           ↓
-                    PROMOTION GATE
-                    ├── PROMOTE
-                    └── HOLD
-                           ↓
-                    SHARED AGENT ROSTER
-                           ↓
-                    IMMERSION / HUD / CHAT
+SAGE CAREER WORLD
+      ↓
+REAL VERIFIED WORK
+      ↓
+SORTIES / MISSIONS
+      ↓
+BOSS ENCOUNTERS
+      ↓
+EMERGENT CLASSIFICATION
+   ↙             ↘
+ BIG           MAJOR
+ BOSS           BOSS
+   ↘             ↙
+   VERIFIED OUTCOME
+       ↙     ↘
+     KILL   CAPTURE
+        ↓
+ CAREER ACCOUNTING
+ ├─ POINTS
+ ├─ XP
+ ├─ QUALIFICATION
+ ├─ MASTERY
+ └─ BADGES
+        ↓
+ PROMOTION GATE
+        ↓
+ SHARED AGENT ROSTER
+        ↓
+ IMMERSION / HUD / CHAT
 ```
 
 ## 15. Design Lock
 
-The following are now design findings for the Career Boss concept:
+The following are design findings for the Career Boss concept:
 
 - Milestones can be represented as Boss Encounters.
-- Big and Major represent the only defined challenge tiers, not fixed XP payouts.
-- A Boss is a test of demonstrated capability and a progression closure point.
+- Big and Major are the only defined challenge tiers and are not fixed XP payouts.
+- A Boss tests demonstrated capability and provides a progression closure point.
 - Elite Kill means verified elimination of a meaningful obstacle.
 - Elite Capture means verified acquisition/establishment of a meaningful capability, qualification, intelligence result, or reusable asset.
 - Boss outcomes must be evidence-backed.
@@ -356,6 +345,9 @@ The following are now design findings for the Career Boss concept:
 - Bosses are not Five-Flight identities or career classes.
 - Bosses feed career accounting; they do not replace XP, qualification, mastery, rank, or promotion gates.
 - Repeated Boss work must not create automatic career inflation without new verified value.
+- Boss classification should emerge retrospectively from the verified multi-dimensional encounter profile rather than task labels or reward size.
+- Classification remains provisional when evidence is insufficient.
+- Exact feature weights, thresholds, normalization, confidence math, and automatic classification authority remain HOLD pending real execution history.
 - No additional Boss tier is defined by this contract.
 
 ## 16. Still Open
@@ -374,6 +366,10 @@ Not locked:
 - Boss rewards
 - chapter/frontier relationships
 - UI/HUD presentation
+- exact emergent-classification feature weights
+- normalization and threshold calibration
+- confidence/evidence-completeness math
+- automatic versus governed classification authority
 
 ## 17. Implementation Boundary
 
