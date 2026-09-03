@@ -4,6 +4,7 @@ import pytest
 
 from sage.experimental.airspace.manager import AirspaceManager
 from sage.experimental.airspace.models import StationID
+from sage.experimental.airspace.organism_projection import OrganismProjection
 from sage.experimental.airspace.points_xp_economy import PointEventType
 from sage.experimental.airspace.turn_engine import TurnContribution, TurnEngine, TurnStatus
 
@@ -25,14 +26,8 @@ def contribution(contribution_id: str, station_id: StationID, role: str) -> Turn
 def test_turn_resolves_verified_points_xp_and_fresh_hud(tmp_path: Path) -> None:
     mgr = manager(tmp_path)
     engine = TurnEngine(mgr)
-
-    sequence = engine.open_turn(
-        actor="Mission Control",
-        turn_id="turn-001",
-        input_ref="input:001",
-    )
+    sequence = engine.open_turn(actor="Mission Control", turn_id="turn-001", input_ref="input:001")
     assert sequence == 1
-
     resolution = engine.resolve_turn(
         actor="Mission Control",
         turn_id="turn-001",
@@ -49,25 +44,17 @@ def test_turn_resolves_verified_points_xp_and_fresh_hud(tmp_path: Path) -> None:
         impact=3,
         reuse=2,
     )
-
     assert resolution.status is TurnStatus.CLOSED
     assert resolution.verified is True
-    # The canonical economy scores BUILD at 25 * (2 + 5 + 3 + 2) / 4 = 75.
     assert resolution.total_verified_points == 75
     assert sum(r.award.points for r in resolution.contribution_results) == 75
-
-    # XP minting is station-local: each contributor crosses only the whole
-    # 10-point thresholds represented by that station's cumulative Points.
     assert resolution.total_xp_minted == 6
     state = mgr.reconstruct_airspace_state()
     assert state.game_progression.get_total_xp_for_station(StationID.MISSION_CONTROL) == 3
     assert state.game_progression.get_total_xp_for_station(StationID.ENGINEERING_FLIGHT) == 3
-
-    # Preserve each station's sub-10-point remainder rather than truncating it
-    # into a global XP award: 38 = 3*10 + 8 and 37 = 3*10 + 7.
     projections = {
-        StationID.MISSION_CONTROL: engine.project_station(StationID.MISSION_CONTROL),
-        StationID.ENGINEERING_FLIGHT: engine.project_station(StationID.ENGINEERING_FLIGHT),
+        StationID.MISSION_CONTROL: OrganismProjection.project_station(mgr, state, StationID.MISSION_CONTROL),
+        StationID.ENGINEERING_FLIGHT: OrganismProjection.project_station(mgr, state, StationID.ENGINEERING_FLIGHT),
     }
     assert projections[StationID.MISSION_CONTROL].points == 38
     assert projections[StationID.ENGINEERING_FLIGHT].points == 37
@@ -75,14 +62,11 @@ def test_turn_resolves_verified_points_xp_and_fresh_hud(tmp_path: Path) -> None:
     assert projections[StationID.ENGINEERING_FLIGHT].career_xp == 3
     assert projections[StationID.MISSION_CONTROL].points - 10 * projections[StationID.MISSION_CONTROL].career_xp == 8
     assert projections[StationID.ENGINEERING_FLIGHT].points - 10 * projections[StationID.ENGINEERING_FLIGHT].career_xp == 7
-
-    # Economic conservation holds independently for each station.
     for result in resolution.contribution_results:
         projection = projections[result.contribution.station_id]
         remainder = projection.points - 10 * projection.career_xp
         assert 0 <= remainder < 10
         assert 10 * projection.career_xp + remainder == projection.points
-
     assert "POINTS 38" in engine.render_hud(StationID.MISSION_CONTROL)
     assert "XP 3" in engine.render_hud(StationID.MISSION_CONTROL)
 
@@ -91,7 +75,6 @@ def test_turn_requires_evidence(tmp_path: Path) -> None:
     mgr = manager(tmp_path)
     engine = TurnEngine(mgr)
     engine.open_turn(actor="Mission Control", turn_id="turn-002", input_ref="input:002")
-
     with pytest.raises(ValueError, match="verified event reference and evidence"):
         engine.resolve_turn(
             actor="Mission Control",
