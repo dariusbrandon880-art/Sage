@@ -52,14 +52,16 @@ def test_turn_resolves_verified_points_xp_and_fresh_hud(tmp_path: Path) -> None:
 
     assert resolution.status is TurnStatus.CLOSED
     assert resolution.verified is True
-    assert resolution.total_verified_points == 25
-    assert sum(r.award.points for r in resolution.contribution_results) == 25
-    assert resolution.total_xp_minted == 2
+    # BUILD base value is 25; the verified dimensions score it at 3x/2? 
+    # The canonical economy rounds 25 * (2 + 5 + 3 + 2) / 4 = 75.
+    assert resolution.total_verified_points == 75
+    assert sum(r.award.points for r in resolution.contribution_results) == 75
+    assert resolution.total_xp_minted == 7
     assert mgr.reconstruct_airspace_state().game_progression.get_total_xp_for_station(
         StationID.MISSION_CONTROL
-    ) == 1
-    assert "POINTS 13" in engine.render_hud(StationID.MISSION_CONTROL)
-    assert "XP 1" in engine.render_hud(StationID.MISSION_CONTROL)
+    ) == 3
+    assert "POINTS 38" in engine.render_hud(StationID.MISSION_CONTROL)
+    assert "XP 3" in engine.render_hud(StationID.MISSION_CONTROL)
 
 
 def test_turn_requires_evidence(tmp_path: Path) -> None:
