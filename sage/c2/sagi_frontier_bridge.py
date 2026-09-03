@@ -7,10 +7,9 @@ FrontierAdmissionEngine remains the admission authority.
 
 from __future__ import annotations
 
-import hashlib
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from sage.c2.frontier_admission import FrontierCandidate, FrontierState
 from sage.experimental.sagi.research_graph import SAGIResearchNode
@@ -45,9 +44,9 @@ class SAGIFrontierBridge:
         stop_condition: str,
         dependencies: Optional[List[str]] = None,
     ) -> SAGIFrontierCandidate:
-        """Fail closed unless the research node is internally valid and anchored."""
-        if not node.research_only:
-            raise ValueError("ResearchGraph node is not marked research_only")
+        """Fail closed unless the research node is verified, approved, and anchored."""
+        if node.guardian_result.upper() != "APPROVED":
+            raise ValueError("ResearchGraph node was not approved by the SAGI guardian")
         if node.identity_anchor != self.identity_anchor:
             raise ValueError("ResearchGraph identity anchor does not match C2 bridge anchor")
         if len(node.node_sha256) != 64 or node.node_sha256 != node.compute_sha256():
