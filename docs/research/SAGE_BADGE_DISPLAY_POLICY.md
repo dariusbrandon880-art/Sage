@@ -1,68 +1,62 @@
-# SAGE Badge Display Policy — Compact Organism Visibility
+# SAGE Boss Badge Display Policy — Organism Visibility
 
-**Status:** DESIGN / GOVERNANCE — IMPLEMENTATION PENDING
+**Status:** IMPLEMENTED PROJECTION / GOVERNED BY QUEUE #08
 **Scope:** agent identity tags, immersion HUDs, progression projections
 
-## Decision
+## Canonical rule
 
-SAGE badges are part of organism-wide agent visibility, but badges must **not stack without bound** in identity tags. The canonical badge ledger remains the future authority; the display layer is read-only.
+Queue #08 is the authority for the Boss badge cadence:
 
-Every agent identity may expose badge status, but the default compact tag should show a **bounded badge summary**, not the complete badge collection.
+- **Major Boss ⭐⭐:** every 20 verified Major Boss kills earns 1 badge and every 20 verified Major Boss captures earns 1 badge.
+- **Big Boss ⭐:** every 30 verified Big Boss kills earns 1 badge and every 30 verified Big Boss captures earns 1 badge.
+- Kill and capture are independent tallies; both may be recorded by one verified encounter.
+- Badges persist across rank-ups.
+- Badges remain separate from Points, Career XP, qualifications, rank, and promotion gates.
 
-## Compact display contract
+The renderer does not decide whether work is a Boss. Boss classification remains upstream, evidence-backed, and Mission-Director governed.
 
-Default identity/tag surfaces should use this order:
+## Canonical persistence boundary
 
-`IDENTITY // RANK/QUAL // POINTS // XP // BADGES // STATUS`
+Verified Boss outcomes are recorded as `BOSS_OUTCOME_VERIFIED` events in the existing append-only AirspaceManager ledger. The badge projection reconstructs the outcome history from that ledger and applies the locked cadence. No separate badge database or presentation-side badge state is created.
 
-The `BADGES` segment should be compact:
+This preserves the organism boundary:
 
-- show a small bounded set of **featured/active badges**;
-- show a count for the remaining earned badges;
-- never print an unbounded badge list into every tag;
-- provide a drill-down/detail surface for the complete badge inventory;
-- preserve badge provenance and exact definitions outside the presentation string.
+`Verified Evidence → Governed Boss Classification → Airspace Event Ledger → Boss/Badge Projection → Agent Tag / HUD`
 
-Recommended compact form:
+Points and Career XP remain on their existing canonical path:
 
-`BADGES ★◆◈ +7`
+`Verified Evidence → PointsXPEconomy → POINTS_AWARDED → Career XP`
 
-where the symbols represent the featured badges and `+7` means seven additional earned badges not expanded in the compact tag. Exact glyph semantics must come from the canonical badge registry rather than being inferred by the renderer.
+The two paths share the same verified-event/evidence boundary without collapsing badges into Points or XP.
 
-## Stacking rules
+## Compact organism tag
 
-1. **Bounded visible stack:** identity tags have a fixed maximum number of featured badge glyphs.
-2. **Overflow compression:** badges beyond the visible bound collapse into a count; they do not wrap the tag indefinitely.
-3. **Priority ordering:** featured badges are selected by governed display priority, not by whichever badge was most recently earned unless policy explicitly says so.
-4. **No badge inflation:** duplicate awards do not create duplicate visible glyphs unless the canonical badge definition explicitly supports tiers/stacks.
-5. **Tier compression:** tiered badges render as one badge with its current governed tier rather than one glyph per historical tier.
-6. **Cross-agent consistency:** every agent uses the same badge display policy and registry.
-7. **Read-only projection:** rendering cannot award, remove, reorder canonically, or mutate badges.
-8. **Full inventory remains accessible:** compactness must never destroy the ability to inspect the complete earned-badge ledger.
-9. **No self-award:** an agent cannot authoritatively grant itself a badge.
-10. **Space budget is part of the UI contract:** badge presentation must be evaluated against mobile-first tag width before universal rollout.
+The preferred compact projection is:
 
-## What this does NOT decide
+`IDENTITY // CQL/SQL // POINTS // XP // BOSS badges // ⚔️ kills // ┃ captures // STATUS`
 
-This policy does not yet define:
+Example:
 
-- the complete badge taxonomy;
-- badge earning criteria;
-- badge tier mathematics;
-- exact maximum featured-badge count;
-- canonical badge storage schema;
-- automatic badge issuance;
-- rank/promotion interaction;
-- numeric scoring thresholds.
+`GPT // CQL-4 // SQL-3 // POINTS 250 // XP 25 // BOSS ⭐×1 ⭐⭐×2 // ⚔️ 34 // ┃ 21 // READY`
 
-Those require a dedicated validated badge design frontier and Director decision record. The current repository search shows no authoritative badge registry implementation, so this document intentionally records the **display/governance requirement without inventing a production badge store**.
+The Boss stars identify class-earned badges; crossed swords are verified Boss kills; regular Stripes are verified Boss captures. These markers are not interchangeable.
 
-## Organism-wide relationship
+## Read-only rule
 
-The eventual universal agent projection should expose Points, Career XP, governed rank/qualification, badge summary, and operational status from canonical state. The projection must not create a second source of truth.
+The identity/HUD layer:
 
-The intended architecture is therefore:
+- reads canonical AirspaceState for qualification and Career XP;
+- reconstructs Points from the canonical `POINTS_AWARDED` ledger;
+- reconstructs Boss kills, captures, and earned badges from verified Boss outcome events;
+- never awards Points, XP, badges, rank, or qualifications;
+- never classifies an arbitrary task as a Boss;
+- never deletes historical outcomes;
+- exposes the same projection vocabulary to every participating SAGE agent.
 
-`Verified Evidence → Organism Scoring Authority → Points/XP + Qualification/Rank + Badge Authority → Read-Only Agent Projection → Compact Tag / HUD`
+## Rank-up semantics
 
-This keeps the operational picture legible while preserving full auditability underneath.
+Queue #02 requires XP and underlying verified Boss history to persist across rank-up. The visible kill/capture board cycle resets at rank-up, while badges persist. Until a canonical rank-transition event is available to the projection, the organism projection intentionally exposes the reconstructed verified totals rather than inventing a reset boundary.
+
+## Boundary
+
+This policy does not define rank thresholds, automatic promotion, Boss detection, or new Boss classes. Queue #09 calibration remains research-only for exact numeric rank thresholds. The implementation here only closes the already-locked Queue #08 badge accounting/display gap using the existing event ledger.
