@@ -10,11 +10,25 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 class AIQueryRequest(BaseModel):
-    prompt: str
+    prompt: str = ""
+    query: str | None = None
+    message: str | None = None
+    text: str | None = None
+    content: str | None = None
     session_id: str | None = None
     include_validated_memory: bool = True
     include_knowledge_state: bool = True
     response_override: str | None = None
+
+    def get_prompt(self) -> str:
+        return (
+            self.prompt
+            or self.query
+            or self.message
+            or self.text
+            or self.content
+            or "SAGE C2 query"
+        ).strip()
 
 class AIQueryResponse(BaseModel):
     response_text: str
@@ -109,7 +123,8 @@ class ChatGPTClient(BaseAIClient):
         return SAGERuntime(snapshot, policy_version=str(c2_context.get("policy_version") or "sage-runtime-v1"))
 
     def execute_query(self, request: AIQueryRequest) -> AIQueryResponse:
-        context = self.retrieve_context(request.prompt)
+        prompt_text = request.get_prompt()
+        context = self.retrieve_context(prompt_text)
         session_id = request.session_id or getattr(getattr(self.runtime, "context", None), "session_id", None) or f"session_{uuid.uuid4().hex[:8]}"
         c2_context = self._rehydrate_c2_context(session_id)
         referenced_ids = tuple([m["id"] for m in context["matched_memories"]] + [a["id"] for a in context["matched_archives"]])
@@ -136,9 +151,9 @@ class ChatGPTClient(BaseAIClient):
         from sage.c2.immersion_rehydration import build_chatgpt_immersion_state
         adapter = OpenAIResponsesAdapter(client=provider_client, model_id="gpt-4o-mini")
         immersion_state = build_chatgpt_immersion_state(self.runtime, session_id=session_id, c2_context=c2_context, evidence_refs=referenced_ids)
-        rendered_immersion, model_response = SAGEChatGPTBoundary(governed_runtime, adapter).respond(request.prompt, model_role="chatgpt", immersion_state=immersion_state)
+        rendered_immersion, model_response = SAGEChatGPTBoundary(governed_runtime, adapter).respond(prompt_text, model_role="chatgpt", immersion_state=immersion_state)
         from sage.models import ExternalSessionPayload
-        payload = ExternalSessionPayload(session_id=session_id, objective=str(c2_context.get("active_objective") or self.runtime.current_state.current_objective or "SAGE Runtime Standby"), task=f"ChatGPT Query: {request.prompt[:50]}...", memories=[{"id": f"ai_chatgpt_{uuid.uuid4().hex[:8]}", "object_type": "ai_query_interaction", "content": {"prompt": request.prompt, "response": model_response.raw_output, "rendered_immersion": rendered_immersion, "referenced_memories": list(referenced_ids), "client": "ChatGPT", "state_digest": model_response.input_state_digest, "station": model_response.station, "policy_version": model_response.policy_version, "provenance_digest": model_response.provenance_digest}, "tags": ["ai_query", "chatgpt", "sage_governed_boundary"], "confidence": "validated"}], decisions=[])
+        payload = ExternalSessionPayload(session_id=session_id, objective=str(c2_context.get("active_objective") or self.runtime.current_state.current_objective or "SAGE Runtime Standby"), task=f"ChatGPT Query: {prompt_text[:50]}...", memories=[{"id": f"ai_chatgpt_{uuid.uuid4().hex[:8]}", "object_type": "ai_query_interaction", "content": {"prompt": prompt_text, "response": model_response.raw_output, "rendered_immersion": rendered_immersion, "referenced_memories": list(referenced_ids), "client": "ChatGPT", "state_digest": model_response.input_state_digest, "station": model_response.station, "policy_version": model_response.policy_version, "provenance_digest": model_response.provenance_digest}, "tags": ["ai_query", "chatgpt", "sage_governed_boundary"], "confidence": "validated"}], decisions=[])
         self.runtime.ingest_session_payload(payload)
         return AIQueryResponse(response_text=rendered_immersion, reasoning_history=self.reasoning_history.copy(), referenced_memories=list(referenced_ids), session_id=session_id)
 

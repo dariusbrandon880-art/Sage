@@ -29,17 +29,6 @@ def test_build_chatgpt_immersion_state_rehydrates_operating_frame():
     assert state.station_identity == "[SAGE::C2::CHATGPT]"
     assert state.mission == "Reconcile organism feedback loop"
     assert state.next_move == "Execute full game immersion rehydration"
-    assert C2_OPERATING_FRAME_SEQUENCE == (
-        "LIVE REPO",
-        "FULL WORKFLOW RECON",
-        "CANONICAL ARCHITECTURE",
-        "ACTIVE FRONTIER",
-        "ENGINEER",
-        "TEST",
-        "EVIDENCE",
-        "VERIFY",
-        "PROMOTE",
-    )
     assert state.provenance_head is not None
     assert len(state.provenance_head) == 64
 

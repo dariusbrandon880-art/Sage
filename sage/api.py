@@ -58,6 +58,16 @@ tool_mgr = ToolIntegrationManager(runtime)
 workspace_sync_mgr = GoogleWorkspaceSyncManager(runtime)
 
 
+def _extract_api_key(x_api_key: str | None = None, authorization: str | None = None) -> str | None:
+    if x_api_key and x_api_key.strip():
+        return x_api_key.strip()
+    if authorization and authorization.strip():
+        if authorization.lower().startswith("bearer "):
+            return authorization[7:].strip()
+        return authorization.strip()
+    return None
+
+
 # Global Middleware for SAGE API Key Authentication Boundaries
 @app.middleware("http")
 async def api_key_auth_middleware(request: Request, call_next):
@@ -66,7 +76,10 @@ async def api_key_auth_middleware(request: Request, call_next):
 
     if require_auth and request.url.path not in bypass_paths:
         x_api_key = request.headers.get("x-api-key")
-        if not x_api_key or not lifecycle_mgr.authorize(x_api_key):
+        auth_header = request.headers.get("authorization") or request.headers.get("Authorization")
+        key = _extract_api_key(x_api_key, auth_header)
+
+        if not key or not lifecycle_mgr.authorize(key):
             return JSONResponse(
                 status_code=401, content={"detail": "Unauthorized: Invalid or missing API key."}
             )
@@ -386,15 +399,23 @@ async def restore_session(req: RestoreRequest):
 
 # Service lifecycle endpoints
 @app.post("/service/startup")
-async def service_startup(x_api_key: str | None = Header(None)):
-    if not x_api_key or not lifecycle_mgr.authorize(x_api_key):
+async def service_startup(
+    x_api_key: str | None = Header(None, alias="x-api-key"),
+    authorization: str | None = Header(None, alias="authorization"),
+):
+    key = _extract_api_key(x_api_key, authorization)
+    if not key or not lifecycle_mgr.authorize(key):
         raise HTTPException(status_code=401, detail="Unauthorized")
     return lifecycle_mgr.startup()
 
 
 @app.post("/service/shutdown")
-async def service_shutdown(x_api_key: str | None = Header(None)):
-    if not x_api_key or not lifecycle_mgr.authorize(x_api_key):
+async def service_shutdown(
+    x_api_key: str | None = Header(None, alias="x-api-key"),
+    authorization: str | None = Header(None, alias="authorization"),
+):
+    key = _extract_api_key(x_api_key, authorization)
+    if not key or not lifecycle_mgr.authorize(key):
         raise HTTPException(status_code=401, detail="Unauthorized")
     return lifecycle_mgr.shutdown()
 
@@ -564,8 +585,12 @@ async def list_snapshots():
 
 
 @app.get("/system-frame")
-async def get_system_frame(x_api_key: str | None = Header(None)):
-    if not x_api_key or not lifecycle_mgr.authorize(x_api_key):
+async def get_system_frame(
+    x_api_key: str | None = Header(None, alias="x-api-key"),
+    authorization: str | None = Header(None, alias="authorization"),
+):
+    key = _extract_api_key(x_api_key, authorization)
+    if not key or not lifecycle_mgr.authorize(key):
         raise HTTPException(status_code=401, detail="Unauthorized")
 
     from pathlib import Path

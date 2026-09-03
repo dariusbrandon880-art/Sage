@@ -17,11 +17,25 @@ from sage.models import ConfidenceLevel, MemoryObject
 
 
 class ChatRenderRequest(BaseModel):
-    prompt: str
+    prompt: str = ""
+    query: str | None = None
+    message: str | None = None
+    text: str | None = None
+    content: str | None = None
     session_id: str | None = None
     model: str | None = "gpt-4"
     bind_to_decision: str | None = None
     stream: bool | None = False
+
+    def get_prompt(self) -> str:
+        return (
+            self.prompt
+            or self.query
+            or self.message
+            or self.text
+            or self.content
+            or "SAGE ChatGPT C2 render request"
+        ).strip()
 
 
 class ChatRenderResponse(BaseModel):
@@ -51,6 +65,7 @@ class ChatGPTController:
         authenticated: bool = True,
     ) -> ChatRenderResponse:
         """Render a governed ChatGPT response and capture immutable evidence in memory."""
+        prompt = request.get_prompt()
         session_id = request.session_id or f"c2_session_{uuid.uuid4().hex[:8]}"
         model = request.model or "gpt-4"
 
@@ -58,7 +73,7 @@ class ChatGPTController:
             if not getattr(self.runtime.current_state, "current_objective", None) and hasattr(self.runtime, "set_objective"):
                 self.runtime.set_objective("SAGE Operational Continuity Baseline")
             if not getattr(self.runtime.current_state, "active_task", None) and hasattr(self.runtime, "set_task"):
-                self.runtime.set_task(f"ChatGPT Render: {request.prompt[:50]}")
+                self.runtime.set_task(f"ChatGPT Render: {prompt[:50]}")
 
         if response_override is not None:
             provider_execution = "override"
@@ -75,13 +90,13 @@ class ChatGPTController:
                     "known_unknowns": []
                 },
                 "evidence_refs": [],
-                "response_text": f"[SAGE::C2::CHATGPT] Governed response for prompt: {request.prompt[:100]}"
+                "response_text": f"[SAGE::C2::CHATGPT] Governed response for prompt: {prompt[:100]}"
             })
         else:
             provider_execution = "openai_provider"
 
         query_req = AIQueryRequest(
-            prompt=request.prompt,
+            prompt=prompt,
             session_id=session_id,
             response_override=response_override,
         )
@@ -92,7 +107,7 @@ class ChatGPTController:
         now_str = datetime.now(timezone.utc).isoformat()
 
         evidence_content = {
-            "prompt": request.prompt,
+            "prompt": prompt,
             "response": query_resp.response_text,
             "session_id": session_id,
             "model": model,
@@ -138,7 +153,7 @@ class ChatGPTController:
             timestamp=now_str,
             governed=True,
             provider_execution=provider_execution,
-            usage={"prompt_tokens": len(request.prompt.split()), "completion_tokens": len(query_resp.response_text.split())},
+            usage={"prompt_tokens": len(prompt.split()), "completion_tokens": len(query_resp.response_text.split())},
         )
 
     def render_stream(

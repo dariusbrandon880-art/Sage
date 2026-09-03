@@ -6,6 +6,10 @@ mutate, authorize, or infer canonical state.
 
 Architecture:
     CANONICAL STATE -> PROJECTION -> CHATGPT PRESENTATION
+
+The ChatGPT surface renders the canonical organism tag from the persisted
+Airspace ledger as its top-level immersion layer. The manager-backed projection
+remains read-only; this adapter never creates a second progression source.
 """
 
 from __future__ import annotations
@@ -53,25 +57,6 @@ def _render_organism_tag(manager: object, station_id: Any, state_label: str) -> 
     )
 
 
-def _render_organism_projection(projection: Any) -> str | None:
-    """Render an already-created OrganismAgentProjection without mutation."""
-    if projection is None:
-        return None
-    try:
-        renderer = getattr(projection, "render_agent_tag", None)
-        if callable(renderer):
-            try:
-                return str(renderer())
-            except TypeError:
-                return str(renderer(projection))
-        projection_mod = importlib.import_module(
-            "sage.experimental.airspace.organism_projection"
-        )
-        return str(projection_mod.OrganismProjection.render_agent_tag(projection))
-    except Exception:
-        return None
-
-
 @dataclass(frozen=True)
 class ChatGPTImmersionResponse:
     """Read-only response projection for the ChatGPT C2 station."""
@@ -81,18 +66,14 @@ class ChatGPTImmersionResponse:
     body: str
     milestone: MilestoneStrike | None = None
     strike_feed: StrikeFeedProjection | None = None
-    organism_projection: Any | None = None
     organism_tag: str | None = None
 
     def render(self) -> str:
         """Render the complete response without creating canonical state."""
         body = self.immersion_envelope.render_full_envelope(self.body)
-        tag = self.organism_tag
-        if not tag and self.organism_projection is not None:
-            tag = _render_organism_projection(self.organism_projection)
         header = self.station_header
-        if tag:
-            header = f"{tag}\n\n{header}"
+        if self.organism_tag:
+            header = f"{self.organism_tag}\n\n{header}"
         return render_station_response(
             f"{header}\n\n{body}",
             c2_chatgpt_presentation(),
@@ -108,38 +89,27 @@ def project_chatgpt_immersion_response(
     organism_manager: object | None = None,
     station_id: Any = None,
     state_label: str = "READY",
-    organism_projection: Any | None = None,
-    organism_tag: str | None = None,
-    manager: Any | None = None,
 ) -> ChatGPTImmersionResponse:
     """Project canonical state into the ChatGPT C2 response surface.
 
-    ``organism_projection`` and ``organism_tag`` preserve the explicit
-    projection/tag injection capabilities from the original bridge. ``manager``
-    is a compatibility alias for ``organism_manager``. Explicit inputs win;
-    otherwise the canonical manager-backed projection is rendered read-only.
+    The organism manager defaults to canonical AirspaceManager so the top-level
+    organism tag is always rendered as the canonical top-level immersion header.
     """
     contract = project_c2_response_contract(state, strike_feed=strike_feed)
-
-    tag = organism_tag
-    projection = organism_projection
-    mgr = organism_manager if organism_manager is not None else manager
-
-    if not tag and projection is not None:
-        tag = _render_organism_projection(projection)
-
-    if not tag and mgr is None:
+    target_station = _get_station_id(station_id)
+    mgr = organism_manager
+    if mgr is None:
         try:
             mgr = _load_airspace_manager()
         except Exception:
             mgr = None
 
-    if not tag and mgr is not None:
+    organism_tag = None
+    if mgr is not None:
         try:
-            target_station = _get_station_id(station_id)
-            tag = _render_organism_tag(mgr, target_station, state_label)
+            organism_tag = _render_organism_tag(mgr, target_station, state_label)
         except Exception:
-            tag = None
+            organism_tag = None
 
     return ChatGPTImmersionResponse(
         station_header="[SAGE::C2::CHATGPT] **C2 Mission Control**",
@@ -147,6 +117,5 @@ def project_chatgpt_immersion_response(
         body=body,
         milestone=milestone,
         strike_feed=strike_feed or contract.hud.strike_feed,
-        organism_projection=projection,
-        organism_tag=tag,
+        organism_tag=organism_tag,
     )

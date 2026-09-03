@@ -32,9 +32,6 @@ def render_chatgpt_c2_response(
     organism_manager: object | None = None,
     station_id: Any = None,
     state_label: str = "READY",
-    organism_projection: Any | None = None,
-    organism_tag: str | None = None,
-    manager: Any | None = None,
 ) -> str:
     """Render one canonical C2 response through the ChatGPT immersion surface."""
     response: ChatGPTImmersionResponse = project_chatgpt_immersion_response(
@@ -45,9 +42,6 @@ def render_chatgpt_c2_response(
         organism_manager=organism_manager,
         station_id=station_id,
         state_label=state_label,
-        organism_projection=organism_projection,
-        organism_tag=organism_tag,
-        manager=manager,
     )
     return response.render()
 
@@ -61,9 +55,6 @@ def build_chatgpt_c2_response(
     organism_manager: object | None = None,
     station_id: Any = None,
     state_label: str = "READY",
-    organism_projection: Any | None = None,
-    organism_tag: str | None = None,
-    manager: Any | None = None,
 ) -> ChatGPTImmersionResponse:
     """Return the structured read-only ChatGPT immersion response."""
     return project_chatgpt_immersion_response(
@@ -74,9 +65,6 @@ def build_chatgpt_c2_response(
         organism_manager=organism_manager,
         station_id=station_id,
         state_label=state_label,
-        organism_projection=organism_projection,
-        organism_tag=organism_tag,
-        manager=manager,
     )
 
 
@@ -104,11 +92,14 @@ def render_governed_chatgpt_turn(
     organism_manager: object | None = None,
     station_id: Any = None,
     state_label: str = "READY",
-    organism_projection: Any | None = None,
-    organism_tag: str | None = None,
-    manager: Any | None = None,
 ) -> tuple[str, ModelResponse]:
-    """Execute GPT through SAGE and render only the reconciled result."""
+    """Execute GPT through SAGE and render only the reconciled result.
+
+    The model cannot supply the immersion state or bypass ``SAGERuntime``.
+    ``SAGERuntime.invoke`` performs envelope construction, optional live
+    verification, response reconciliation, and model-output governance before
+    anything reaches the renderer.
+    """
     response = runtime.invoke(
         adapter,
         task,
@@ -121,9 +112,6 @@ def render_governed_chatgpt_turn(
         organism_manager=organism_manager,
         station_id=station_id,
         state_label=state_label,
-        organism_projection=organism_projection,
-        organism_tag=organism_tag,
-        manager=manager,
     ), response
 
 
