@@ -20,6 +20,7 @@ from sage.c2.chatgpt_immersion import (
 )
 from sage.c2.immersion_projection import MilestoneStrike, StrikeFeedProjection
 from sage.c2.immersion_state import ImmersionState
+from sage.experimental.airspace.turn_engine import TurnResolution, TurnStatus
 from sage.runtime.model_gateway import ModelResponse, SAGERuntime, SAGEStateSnapshot
 
 
@@ -127,8 +128,30 @@ def render_governed_chatgpt_turn(
     ), response
 
 
+def render_resolved_chatgpt_turn(
+    *,
+    manager: object,
+    immersion_state: ImmersionState,
+    resolution: TurnResolution,
+    station_id: Any,
+    body: str = "",
+    state_label: str = "READY",
+) -> str:
+    """Render a freshly reconciled HUD after SAGE closes a verified turn."""
+    if resolution.status is not TurnStatus.CLOSED or not resolution.verified:
+        raise ValueError("Only verified closed turns may refresh the organism HUD.")
+    return render_chatgpt_c2_response(
+        immersion_state,
+        body=body,
+        organism_manager=manager,
+        station_id=station_id,
+        state_label=state_label,
+    )
+
+
 __all__ = [
     "build_chatgpt_c2_response",
     "render_chatgpt_c2_response",
     "render_governed_chatgpt_turn",
+    "render_resolved_chatgpt_turn",
 ]
