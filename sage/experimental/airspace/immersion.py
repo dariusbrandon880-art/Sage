@@ -14,6 +14,7 @@ from __future__ import annotations
 
 from sage.experimental.airspace.models import AirspaceState, SortieState, StationID
 from sage.experimental.airspace.nameplate import STATION_ICONS, STATION_NAMEPLATES
+from sage.experimental.airspace.organism_projection import OrganismProjection
 
 
 CAPABILITY_GLYPHS = {
@@ -261,3 +262,14 @@ def render_four_layer_hud(state: AirspaceState) -> str:
     # 04 — STRIKE FEED
     lines.append("\n" + render_strike_feed(state))
     return "\n".join(lines)
+
+
+def render_four_layer_hud_from_manager(manager, *, status: str = "READY") -> str:
+    """Render the Four-Layer HUD plus one organism-wide progression roster."""
+    state = manager.reconstruct_airspace_state()
+    return (
+        f"{render_four_layer_hud(state)}\n\n"
+        "05 — ORGANISM PROGRESSION\n"
+        f"{'─' * 42}\n"
+        f"{OrganismProjection.render_roster(manager, state, status=status)}"
+    )
