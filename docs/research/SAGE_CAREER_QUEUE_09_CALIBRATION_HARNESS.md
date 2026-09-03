@@ -42,7 +42,19 @@ The organism, not an individual agent, is the eventual scoring authority. Agents
 
 This is a **future architecture direction, not an implementation claim**. Queue #09 does not yet lock the scoring formula, exact thresholds, telemetry requirements, evaluator topology, or promotion policy needed to make organism-wide agent scoring authoritative. Those decisions require validation evidence and a Director decision record after calibration is complete.
 
-The eventual design should preserve these invariants:
+## Universal identity projection
+
+The eventual read-only identity projection must make each agent's current governed progression legible to the whole organism. Every SAGE identity/agent tag should expose, in a compact form:
+
+`IDENTITY // RANK/QUAL // POINTS // XP // BADGES // STATUS`
+
+Points and Career XP must come from the canonical ledger. Badge state must come from the future canonical badge authority. The presentation layer must never infer, award, remove, or otherwise mutate progression.
+
+Badge visibility is intentionally **bounded**. The complete badge inventory should not be printed into every tag because badge accumulation can consume the operational display surface. Compact tags should show only a governed set of featured badges plus an overflow count, with the full inventory available through a detail/drill-down surface.
+
+The dedicated display policy is recorded in `docs/research/SAGE_BADGE_DISPLAY_POLICY.md`. It defines the current design boundary without pretending that a production badge registry already exists.
+
+## Scoring/progression invariants
 
 1. **Universal attribution:** every scored agent has an unambiguous agent identity and attributable evidence.
 2. **Evidence-first scoring:** Points originate only from verified events with required evidence references.
@@ -52,6 +64,8 @@ The eventual design should preserve these invariants:
 6. **Append-only provenance:** scoring decisions remain reconstructable from the underlying verified events and evidence.
 7. **Governed progression:** Points/XP contribute to progression but do not bypass qualification, evidence, no-skipping, or other promotion gates.
 8. **Calibration before lock:** exact scoring weights, threshold values, and velocity targets remain provisional until supported by observed/replay evidence.
+9. **Compact visibility:** badge accumulation cannot make identity tags unbounded; overflow is compressed and the full inventory remains inspectable.
+10. **Single projection boundary:** Points, XP, qualification/rank, badges, and status are displayed from canonical state rather than separate presentation stores.
 
 ## External research synthesis
 
@@ -73,6 +87,7 @@ These sources support **calibration against observed progression velocity and te
 4. Measure threshold-crossing velocity and sensitivity to exceptional events.
 5. Produce negative-case evidence showing that XP/Points/Boss outcomes/badges alone cannot satisfy promotion gates.
 6. Design and validate the universal agent-attribution/scoring substrate without creating a second scoring authority.
-7. Only then produce a Director decision record for exact numeric thresholds and the eventual organism-wide scoring policy.
+7. Validate the compact badge display policy against real mobile tag/HUD space.
+8. Only then produce a Director decision record for exact numeric thresholds and the eventual organism-wide scoring policy.
 
 **Authoritative outcome remains HOLD until the required calibration evidence exists.**
