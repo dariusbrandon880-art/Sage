@@ -6,7 +6,7 @@ mutation: callers provide the canonical state and this module only renders the
 already-governed projection.
 
 Architecture:
-    GPT -> SAGE RUNTIME -> GOVERNOR -> IMMERSION PROJECTION -> HOST RESPONSE
+    GPT -> SAGE RUNTIME -> GOVERNOR -> IMMERSION PROJECTION -> ORGANISM PROJECTION -> HOST RESPONSE
 """
 
 from __future__ import annotations
@@ -28,10 +28,10 @@ def render_chatgpt_c2_response(
     body: str = "",
     milestone: MilestoneStrike | None = None,
     strike_feed: StrikeFeedProjection | None = None,
-    organism_projection: Any | None = None,
-    organism_tag: str | None = None,
-    manager: Any | None = None,
-    station_id: Any | None = None,
+    *,
+    organism_manager: object | None = None,
+    station_id: Any = None,
+    state_label: str = "READY",
 ) -> str:
     """Render one canonical C2 response through the ChatGPT immersion surface."""
     response: ChatGPTImmersionResponse = project_chatgpt_immersion_response(
@@ -39,10 +39,9 @@ def render_chatgpt_c2_response(
         body=body,
         milestone=milestone,
         strike_feed=strike_feed,
-        organism_projection=organism_projection,
-        organism_tag=organism_tag,
-        manager=manager,
+        organism_manager=organism_manager,
         station_id=station_id,
+        state_label=state_label,
     )
     return response.render()
 
@@ -52,10 +51,10 @@ def build_chatgpt_c2_response(
     body: str = "",
     milestone: MilestoneStrike | None = None,
     strike_feed: StrikeFeedProjection | None = None,
-    organism_projection: Any | None = None,
-    organism_tag: str | None = None,
-    manager: Any | None = None,
-    station_id: Any | None = None,
+    *,
+    organism_manager: object | None = None,
+    station_id: Any = None,
+    state_label: str = "READY",
 ) -> ChatGPTImmersionResponse:
     """Return the structured read-only ChatGPT immersion response."""
     return project_chatgpt_immersion_response(
@@ -63,10 +62,9 @@ def build_chatgpt_c2_response(
         body=body,
         milestone=milestone,
         strike_feed=strike_feed,
-        organism_projection=organism_projection,
-        organism_tag=organism_tag,
-        manager=manager,
+        organism_manager=organism_manager,
         station_id=station_id,
+        state_label=state_label,
     )
 
 
@@ -91,10 +89,9 @@ def render_governed_chatgpt_turn(
     model_role: str,
     immersion_state: ImmersionState,
     live_capability: object | None = None,
-    organism_projection: Any | None = None,
-    organism_tag: str | None = None,
-    manager: Any | None = None,
-    station_id: Any | None = None,
+    organism_manager: object | None = None,
+    station_id: Any = None,
+    state_label: str = "READY",
 ) -> tuple[str, ModelResponse]:
     """Execute GPT through SAGE and render only the reconciled result.
 
@@ -112,10 +109,9 @@ def render_governed_chatgpt_turn(
     return render_chatgpt_c2_response(
         immersion_state,
         body=_model_display_text(response),
-        organism_projection=organism_projection,
-        organism_tag=organism_tag,
-        manager=manager,
+        organism_manager=organism_manager,
         station_id=station_id,
+        state_label=state_label,
     ), response
 
 

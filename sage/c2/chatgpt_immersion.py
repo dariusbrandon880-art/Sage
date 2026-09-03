@@ -6,12 +6,16 @@ mutate, authorize, or infer canonical state.
 
 Architecture:
     CANONICAL STATE -> PROJECTION -> CHATGPT PRESENTATION
+
+The ChatGPT surface renders the canonical organism tag from the persisted
+Airspace ledger as its top-level immersion layer. The manager-backed projection
+remains read-only; this adapter never creates a second progression source.
 """
 
 from __future__ import annotations
 
+import importlib
 from dataclasses import dataclass
-import sys
 from typing import Any
 
 from sage.c2.immersion_projection import (
@@ -24,22 +28,33 @@ from sage.c2.immersion_state import ImmersionState
 from sage.c2.response_envelope import c2_chatgpt_presentation, render_station_response
 
 
-def _render_organism_projection(proj: Any) -> str | None:
-    if proj is None:
-        return None
-    try:
-        if hasattr(proj, "render_agent_tag") and callable(getattr(proj, "render_agent_tag")):
-            try:
-                return str(proj.render_agent_tag())
-            except TypeError:
-                return str(proj.render_agent_tag(proj))
-        proj_mod = sys.modules.get("sage.experimental.airspace.organism_projection")
-        if proj_mod is None:
-            import importlib
-            proj_mod = importlib.import_module("sage.experimental.airspace.organism_projection")
-        return str(proj_mod.OrganismProjection.render_agent_tag(proj))
-    except Exception:
-        return None
+def _load_airspace_manager() -> object:
+    manager_mod = importlib.import_module("sage.experimental.airspace.manager")
+    return manager_mod.AirspaceManager()
+
+
+def _get_station_id(station_id_val: Any) -> Any:
+    models_mod = importlib.import_module("sage.experimental.airspace.models")
+    if station_id_val is None:
+        return models_mod.StationID.MISSION_CONTROL
+    if isinstance(station_id_val, models_mod.StationID):
+        return station_id_val
+    if isinstance(station_id_val, str):
+        try:
+            return models_mod.StationID(station_id_val)
+        except ValueError:
+            return models_mod.StationID.MISSION_CONTROL
+    return station_id_val
+
+
+def _render_organism_tag(manager: object, station_id: Any, state_label: str) -> str:
+    nameplate_mod = importlib.import_module("sage.experimental.airspace.nameplate")
+    return nameplate_mod.render_organism_nameplate(
+        manager,
+        station_id,
+        compact=True,
+        state_label=state_label,
+    )
 
 
 @dataclass(frozen=True)
@@ -51,17 +66,14 @@ class ChatGPTImmersionResponse:
     body: str
     milestone: MilestoneStrike | None = None
     strike_feed: StrikeFeedProjection | None = None
-    organism_projection: Any | None = None
     organism_tag: str | None = None
 
     def render(self) -> str:
         """Render the complete response without creating canonical state."""
         body = self.immersion_envelope.render_full_envelope(self.body)
-        tag = self.organism_tag
-        if not tag and self.organism_projection is not None:
-            tag = _render_organism_projection(self.organism_projection)
-
-        header = f"{self.station_header}\n{tag}" if tag else self.station_header
+        header = self.station_header
+        if self.organism_tag:
+            header = f"{self.organism_tag}\n\n{header}"
         return render_station_response(
             f"{header}\n\n{body}",
             c2_chatgpt_presentation(),
@@ -73,38 +85,31 @@ def project_chatgpt_immersion_response(
     body: str = "",
     milestone: MilestoneStrike | None = None,
     strike_feed: StrikeFeedProjection | None = None,
-    organism_projection: Any | None = None,
-    organism_tag: str | None = None,
-    manager: Any | None = None,
-    station_id: Any | None = None,
+    *,
+    organism_manager: object | None = None,
+    station_id: Any = None,
+    state_label: str = "READY",
 ) -> ChatGPTImmersionResponse:
-    """Project a canonical state into the ChatGPT C2 response surface."""
+    """Project canonical state into the ChatGPT C2 response surface.
+
+    The organism manager defaults to canonical AirspaceManager so the top-level
+    organism tag is always rendered as the canonical top-level immersion header.
+    """
     contract = project_c2_response_contract(state, strike_feed=strike_feed)
-
-    tag = organism_tag
-    if not tag and organism_projection is not None:
-        tag = _render_organism_projection(organism_projection)
-    elif not tag and manager is not None:
+    target_station = _get_station_id(station_id)
+    mgr = organism_manager
+    if mgr is None:
         try:
-            airspace_state = manager.reconstruct_airspace_state()
-            proj_mod = sys.modules.get("sage.experimental.airspace.organism_projection")
-            models_mod = sys.modules.get("sage.experimental.airspace.models")
-            if proj_mod is None:
-                import importlib
-                proj_mod = importlib.import_module("sage.experimental.airspace.organism_projection")
-            if models_mod is None:
-                import importlib
-                models_mod = importlib.import_module("sage.experimental.airspace.models")
-
-            st_id = station_id or models_mod.StationID.MISSION_CONTROL
-            proj = proj_mod.OrganismProjection.project_station(
-                manager, airspace_state, st_id
-            )
-            tag = _render_organism_projection(proj)
-            if organism_projection is None:
-                organism_projection = proj
+            mgr = _load_airspace_manager()
         except Exception:
-            pass
+            mgr = None
+
+    organism_tag = None
+    if mgr is not None:
+        try:
+            organism_tag = _render_organism_tag(mgr, target_station, state_label)
+        except Exception:
+            organism_tag = None
 
     return ChatGPTImmersionResponse(
         station_header="[SAGE::C2::CHATGPT] **C2 Mission Control**",
@@ -112,6 +117,5 @@ def project_chatgpt_immersion_response(
         body=body,
         milestone=milestone,
         strike_feed=strike_feed or contract.hud.strike_feed,
-        organism_projection=organism_projection,
-        organism_tag=tag,
+        organism_tag=organism_tag,
     )

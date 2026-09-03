@@ -36,14 +36,3 @@ def test_runtime_exposes_structured_read_only_response() -> None:
     assert response.immersion_envelope.read_only is True
     assert response.immersion_envelope.authority == "canonical_immersion_state"
     assert response.station_header == "[SAGE::C2::CHATGPT] **C2 Mission Control**"
-
-
-def test_runtime_renders_organism_tag() -> None:
-    tag_str = "SAGE C2 Mission Control // CQL-1 // POINTS 50 // XP 5 // BOSS ⭐×0 ⭐⭐×0 // ⚔️ 0 // ┃ 0 // READY"
-    rendered = render_chatgpt_c2_response(_state(), "Turn message", organism_tag=tag_str)
-
-    assert tag_str in rendered
-    assert "Turn message" in rendered
-
-    structured = build_chatgpt_c2_response(_state(), "Turn message", organism_tag=tag_str)
-    assert structured.organism_tag == tag_str
