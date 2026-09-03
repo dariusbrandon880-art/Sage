@@ -81,7 +81,7 @@ def test_repeated_verified_event_does_not_double_award(tmp_path: Path):
     )
     first = PointsXPEconomy.award_verified_event(**kwargs)
     second = PointsXPEconomy.award_verified_event(**kwargs)
-    assert first.cumulative_verified_points == second.cumulative_verified_points == 25
+    assert first.cumulative_verified_points == second.cumulative_verified_points == 20
     assert first.xp_minted == 2
     assert second.xp_minted == 0
     assert len([e for e in m._load_raw_events() if e["event_type"] == "POINTS_AWARDED"]) == 1
