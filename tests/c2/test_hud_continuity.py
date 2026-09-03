@@ -92,8 +92,7 @@ def test_hud_update_key_requires_renderable_hud() -> None:
 
 def test_explicit_bad_organism_projection_fails_closed_instead_of_dropping_tag() -> None:
     broken = SimpleNamespace(render_agent_tag=lambda: "")
-    response = project_chatgpt_immersion_response(
-        _state(), organism_projection=broken
-    )
     with pytest.raises(ValueError, match="name tag"):
-        response.render()
+        project_chatgpt_immersion_response(
+            _state(), organism_projection=broken
+        )
