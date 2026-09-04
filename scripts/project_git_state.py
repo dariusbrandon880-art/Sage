@@ -46,6 +46,17 @@ def get_active_state(state_file_path: Path = Path(".sage/sage_state.json")) -> t
     return active_task, active_pr, frontier
 
 
+def get_active_task_and_pr(state_file_path: Path = Path(".sage/sage_state.json")) -> tuple[str, str]:
+    """Compatibility API backed exclusively by canonical governed state.
+
+    This preserves the historical callable used by projection consumers without
+    restoring legacy hardcoded task/PR claims. Missing canonical values remain
+    explicit UNSPECIFIED/UNBOUND sentinels.
+    """
+    active_task, active_pr, _ = get_active_state(state_file_path)
+    return active_task, active_pr
+
+
 def main(target_dir_name: str = "SAGE", state_file_path_str: str = ".sage/sage_state.json"):
     print("Running SAGE Repository State Projector...")
     head_sha = run_command(["git", "rev-parse", "HEAD"]) or "unknown_head_sha"
