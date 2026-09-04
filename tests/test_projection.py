@@ -71,21 +71,37 @@ def test_git_projector_success(mock_run_cmd, temp_sage_dir):
             return "local_sha_123"
         if "status" in args:
             return ""
+        if "merge-base" in args:
+            return "mock_merge_base_sha"
         return ""
+
     mock_run_cmd.side_effect = cmd_side_effect
-    with patch("scripts.project_git_state.SAGE_ROOT", temp_sage_dir / "SAGE"):
-        run_git_projector()
-    output = (temp_sage_dir / "SAGE" / "PROJECT_STATUS.md").read_text()
-    assert "CURRENT_STATUS: UNSPECIFIED" in output
-    assert "Google Continuity" not in output
-    assert "PR #125" not in output
+    run_git_projector(
+        target_dir_name=str(temp_sage_dir / "SAGE"),
+        state_file_path_str=str(temp_sage_dir / ".sage" / "sage_state.json"),
+    )
+
+    active_work = (temp_sage_dir / "SAGE" / "05_ACTIVE_WORK.md").read_text()
+    frontier = (temp_sage_dir / "SAGE" / "03_CURRENT_FRONTIER.md").read_text()
+    assert "CURRENT_HEAD_SHA: local_sha_123" in active_work
+    assert "WORKTREE_STATUS: CLEAN" in active_work
+    assert "CURRENT_FRONTIER: UNSPECIFIED" in frontier
+    assert "Google Continuity" not in frontier
+    assert "PR #125" not in active_work
 
 
-@patch("scripts.project_telemetry.run_command")
+@patch("scripts.project_telemetry.run_command_with_output")
 def test_telemetry_projector(mock_run_cmd, temp_sage_dir):
-    mock_run_cmd.return_value = "123 passed, 2 failed"
-    result = run_telemetry_projector()
-    assert result is not None
+    mock_run_cmd.return_value = (0, "123 passed, 2 failed")
+    with patch.object(sys, "argv", ["project_telemetry.py", "pytest", "-q"]):
+        with pytest.raises(SystemExit) as exc_info:
+            run_telemetry_projector(target_dir_name=str(temp_sage_dir / "SAGE"))
+    assert exc_info.value.code == 0
+    mock_run_cmd.assert_called_once_with(["pytest", "-q"])
+    report = (temp_sage_dir / "SAGE" / "06_LATEST_EXECUTION_REPORT.md").read_text()
+    assert "EXECUTION_TYPE: TEST_SUITE_RUN" in report
+    assert "ACTUAL_TEST_COUNT: 123" in report
+    assert "EXECUTION_STATUS: PASS" in report
 
 
 def test_parse_pytest_count():
