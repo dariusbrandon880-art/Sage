@@ -263,12 +263,18 @@ class PredictionBatchEngine:
         for leg in leg_list:
             combined_probability *= leg.predicted_probability
         first = leg_list[0]
+        # Include each leg's stable prediction identity in the parent selection so
+        # different combinations remain distinguishable in every canonical identity
+        # surface, not only through the parlay prediction_id.
+        parlay_selection = " + ".join(
+            f"{leg.event_id}:{leg.selection}" for leg in leg_list
+        )
         parlay = PredictionRecord(
             prediction_id=f"parlay_{parent_id}",
             cycle_id=first.cycle_id,
             event_id=first.event_id,
             market="parlay",
-            selection=" + ".join(leg.selection for leg in leg_list),
+            selection=parlay_selection,
             model_version=first.model_version,
             predicted_probability=combined_probability,
             market_probability=1.0,
