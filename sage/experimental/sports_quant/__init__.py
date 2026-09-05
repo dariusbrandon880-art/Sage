@@ -13,6 +13,7 @@ from .prediction import (
     FanDuelPlayerPropAnalyzer,
     evaluate_sgp_boost,
 )
+from .portfolio import DailyPortfolio, DailySportsPortfolioEngine
 from .evaluation import (
     EvaluationResult,
     calculate_clv,
@@ -31,6 +32,8 @@ __all__ = [
     "PropEdgeResult",
     "FanDuelPlayerPropAnalyzer",
     "evaluate_sgp_boost",
+    "DailyPortfolio",
+    "DailySportsPortfolioEngine",
     "EvaluationResult",
     "calculate_clv",
     "calculate_ev",
