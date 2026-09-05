@@ -17,9 +17,15 @@ from sage.runtime.model_gateway import ModelAdapter, ModelResponse, SAGERuntime,
 class SAGEChatGPTBoundary:
     """Execute a ChatGPT model only through the SAGE runtime and renderer."""
 
-    def __init__(self, runtime: SAGERuntime, adapter: ModelAdapter) -> None:
+    def __init__(
+        self,
+        runtime: SAGERuntime,
+        adapter: ModelAdapter,
+        operational_runtime: Any | None = None,
+    ) -> None:
         self._runtime = runtime
         self._adapter = adapter
+        self._operational_runtime = operational_runtime
 
     @staticmethod
     def _display_text(response: ModelResponse) -> str:
@@ -52,6 +58,7 @@ class SAGEChatGPTBoundary:
         organism_projection: Any | None = None,
         organism_tag: str | None = None,
         manager: Any | None = None,
+        session_id: str | None = None,
     ) -> tuple[str, ModelResponse]:
         """Run one model turn and expose only the SAGE-rendered response.
 
