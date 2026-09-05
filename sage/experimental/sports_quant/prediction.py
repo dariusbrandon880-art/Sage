@@ -262,7 +262,6 @@ class PredictionBatchEngine:
     def _generate_one(self, snapshot: MarketSnapshot, selection: str, cycle_id: str) -> PredictionRecord:
         market_probs = FanDuelSnapshotAdapter.normalized_probabilities(snapshot)
         market_probability = market_probs[selection]
-        # Baseline model is deliberately conservative: market probability shrunk toward 0.5.
         predicted = 0.5 + 0.85 * (market_probability - 0.5)
         market_type = snapshot.canonical_market_type
         line_value = snapshot.line_value
@@ -305,12 +304,13 @@ class PredictionBatchEngine:
         for leg in leg_list:
             combined_probability *= leg.predicted_probability
         first = leg_list[0]
+        parlay_selection = " + ".join(leg.prediction_id for leg in leg_list)
         parlay = PredictionRecord(
             prediction_id=f"parlay_{parent_id}",
             cycle_id=first.cycle_id,
             event_id=first.event_id,
             market="parlay",
-            selection=" + ".join(leg.selection for leg in leg_list),
+            selection=parlay_selection,
             model_version=first.model_version,
             predicted_probability=combined_probability,
             market_probability=1.0,
