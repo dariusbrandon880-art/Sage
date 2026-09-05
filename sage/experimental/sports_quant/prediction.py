@@ -162,19 +162,19 @@ class FanDuelPlayerPropAnalyzer:
         edge_result: PropEdgeResult,
         cycle_id: str,
     ) -> "PredictionRecord":
-        safe_player = snapshot.player_name.replace(" ", "_")
+        prop_selection = f"{snapshot.prop_category}:{snapshot.player_name} - {edge_result.selection}"
         record = PredictionRecord(
             prediction_id=PredictionRecord.build_prediction_id(
                 cycle_id=cycle_id,
                 event_id=snapshot.event_id,
                 market_type="player_prop",
-                selection=f"{snapshot.player_name} - {edge_result.selection}",
+                selection=prop_selection,
                 line_value=snapshot.threshold,
             ),
             cycle_id=cycle_id,
             event_id=snapshot.event_id,
             market=snapshot.prop_category,
-            selection=f"{snapshot.player_name} - {edge_result.selection}",
+            selection=prop_selection,
             model_version=self.model_version,
             predicted_probability=edge_result.projected_prob,
             market_probability=edge_result.fanduel_implied_prob,
