@@ -55,6 +55,11 @@ def test_daily_engine_reaches_50_without_duplicate_prediction_identity():
     assert all(record.verify_lock() for record in portfolio.records)
     assert all(not record.wagering_executed for record in portfolio.records)
 
+    parlay_selections = {
+        record.selection for record in portfolio.records if record.is_parlay
+    }
+    assert len(parlay_selections) == portfolio.parlay_count
+
 
 def test_daily_engine_builds_only_three_to_six_leg_parlays():
     snapshots = [
@@ -67,6 +72,7 @@ def test_daily_engine_builds_only_three_to_six_leg_parlays():
     assert portfolio.parlay_count == 10
     assert all(3 <= len(record.legs) <= 6 for record in portfolio.records if record.is_parlay)
     assert all(record.market == "parlay" for record in portfolio.records if record.is_parlay)
+    assert len({record.selection for record in portfolio.records if record.is_parlay}) == 10
 
 
 def test_daily_engine_rejects_unknown_sports():
