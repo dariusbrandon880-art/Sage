@@ -1,4 +1,5 @@
 from sage.experimental.sports_quant import FanDuelSnapshotAdapter, MarketSnapshot
+from sage.experimental.sports_quant.portfolio import DailySportsPortfolioEngine
 from sage.experimental.sports_quant.prediction import PredictionBatchEngine, PredictionRecord
 
 
@@ -8,40 +9,19 @@ START = "2026-09-05T20:00:00+00:00"
 
 def test_same_event_distinguishes_market_type_and_line_value():
     moneyline = MarketSnapshot(
-        event_id="mlb-001",
-        sport="MLB",
-        league="MLB",
-        event_start_utc=START,
-        observed_at_utc=BEFORE,
-        market="moneyline",
-        market_type="moneyline",
-        line_value=None,
-        prices={"home": 2.0, "away": 2.0},
-        source="test",
+        event_id="mlb-001", sport="MLB", league="MLB", event_start_utc=START,
+        observed_at_utc=BEFORE, market="moneyline", market_type="moneyline",
+        line_value=None, prices={"home": 2.0, "away": 2.0}, source="test",
     )
     run_line = MarketSnapshot(
-        event_id="mlb-001",
-        sport="MLB",
-        league="MLB",
-        event_start_utc=START,
-        observed_at_utc=BEFORE,
-        market="run_line",
-        market_type="spread",
-        line_value=-1.5,
-        prices={"home": 1.9, "away": 1.9},
-        source="test",
+        event_id="mlb-001", sport="MLB", league="MLB", event_start_utc=START,
+        observed_at_utc=BEFORE, market="run_line", market_type="spread",
+        line_value=-1.5, prices={"home": 1.9, "away": 1.9}, source="test",
     )
     team_total = MarketSnapshot(
-        event_id="mlb-001",
-        sport="MLB",
-        league="MLB",
-        event_start_utc=START,
-        observed_at_utc=BEFORE,
-        market="team_total",
-        market_type="team_total",
-        line_value=4.5,
-        prices={"over": 1.9, "under": 1.9},
-        source="test",
+        event_id="mlb-001", sport="MLB", league="MLB", event_start_utc=START,
+        observed_at_utc=BEFORE, market="team_total", market_type="team_total",
+        line_value=4.5, prices={"over": 1.9, "under": 1.9}, source="test",
     )
 
     assert moneyline.market_identity != run_line.market_identity
@@ -55,9 +35,7 @@ def test_mapping_parses_explicit_market_type_and_line_value():
     snapshot = FanDuelSnapshotAdapter.from_mapping({
         "event": {"id": "nba-001", "sport": "NBA", "league": "NBA", "start_utc": START},
         "market": {
-            "name": "alternate_spread",
-            "type": "spread",
-            "line_value": -3.5,
+            "name": "alternate_spread", "type": "spread", "line_value": -3.5,
             "prices": {"home": 1.91, "away": 1.91},
         },
         "observed_at_utc": BEFORE,
@@ -70,16 +48,9 @@ def test_mapping_parses_explicit_market_type_and_line_value():
 
 def _snapshot(market: str, market_type: str, line_value: float | None) -> MarketSnapshot:
     return MarketSnapshot(
-        event_id="nba-002",
-        sport="NBA",
-        league="NBA",
-        event_start_utc=START,
-        observed_at_utc=BEFORE,
-        market=market,
-        market_type=market_type,
-        line_value=line_value,
-        prices={"home": 1.91, "away": 1.91},
-        source="test",
+        event_id="nba-002", sport="NBA", league="NBA", event_start_utc=START,
+        observed_at_utc=BEFORE, market=market, market_type=market_type,
+        line_value=line_value, prices={"home": 1.91, "away": 1.91}, source="test",
     )
 
 
@@ -104,11 +75,60 @@ def test_prediction_ids_are_distinct_for_market_type_and_line():
 
 def test_prediction_identity_builder_normalizes_market_type_and_line():
     prediction_id = PredictionRecord.build_prediction_id(
-        cycle_id="cycle-002",
-        event_id="nba-003",
-        market_type=" SPREAD ",
-        selection="home",
-        line_value=-3.5,
+        cycle_id="cycle-002", event_id="nba-003", market_type=" SPREAD ",
+        selection="home", line_value=-3.5,
     )
-
     assert prediction_id == "pred_cycle-002_nba-003_spread_home_-3.5"
+
+
+def test_portfolio_dedup_keeps_distinct_lines_on_same_event():
+    snapshots = [
+        _snapshot("spread", "spread", -3.5),
+        _snapshot("spread", "spread", -1.5),
+    ]
+    engine = PredictionBatchEngine(model_version="portfolio-identity")
+    records = [engine._generate_one(snapshot, "home", "cycle-003") for snapshot in snapshots]
+
+    unique, rejected = DailySportsPortfolioEngine._dedupe(records)
+
+    assert len(unique) == 2
+    assert rejected == 0
+    assert {record.canonical_line_value for record in unique} == {"-3.5", "-1.5"}
+
+
+def test_portfolio_dedup_rejects_exact_duplicate_only():
+    snapshot = _snapshot("spread", "spread", -3.5)
+    engine = PredictionBatchEngine(model_version="portfolio-identity")
+    record = engine._generate_one(snapshot, "home", "cycle-004")
+
+    unique, rejected = DailySportsPortfolioEngine._dedupe([record, record])
+
+    assert len(unique) == 1
+    assert rejected == 1
+
+
+def test_player_prop_identity_separates_prop_category_and_threshold():
+    from sage.experimental.sports_quant import PlayerPropSnapshot
+    from sage.experimental.sports_quant.prediction import FanDuelPlayerPropAnalyzer
+
+    points = PlayerPropSnapshot(
+        event_id="nba-prop-001", sport="NBA", league="NBA", event_start_utc=START,
+        observed_at_utc=BEFORE, player_name="Player A", prop_category="points",
+        threshold=20.0, prices={"over": 1.9, "under": 1.9},
+    )
+    rebounds = PlayerPropSnapshot(
+        event_id="nba-prop-001", sport="NBA", league="NBA", event_start_utc=START,
+        observed_at_utc=BEFORE, player_name="Player A", prop_category="rebounds",
+        threshold=20.0, prices={"over": 1.9, "under": 1.9},
+    )
+    analyzer = FanDuelPlayerPropAnalyzer(model_version="prop-identity")
+    points_result = analyzer.analyze_prop(points)
+    rebounds_result = analyzer.analyze_prop(rebounds)
+    points_record = analyzer.generate_prop_prediction(points, points_result, "cycle-prop")
+    rebounds_record = analyzer.generate_prop_prediction(rebounds, rebounds_result, "cycle-prop")
+
+    assert points_record.prediction_id != rebounds_record.prediction_id
+    assert points_record.market_type == rebounds_record.market_type == "player_prop"
+    assert points_record.line_value == rebounds_record.line_value == 20.0
+    assert points_record.selection != rebounds_record.selection
+    assert points_record.verify_lock() and rebounds_record.verify_lock()
