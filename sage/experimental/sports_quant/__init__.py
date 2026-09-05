@@ -14,6 +14,7 @@ from .prediction import (
     evaluate_sgp_boost,
 )
 from .portfolio import DailyPortfolio, DailySportsPortfolioEngine
+from .portfolio_audit import PortfolioDiversityReport, build_diversity_report, render_receipt
 from .evaluation import (
     EvaluationResult,
     calculate_clv,
@@ -34,6 +35,9 @@ __all__ = [
     "evaluate_sgp_boost",
     "DailyPortfolio",
     "DailySportsPortfolioEngine",
+    "PortfolioDiversityReport",
+    "build_diversity_report",
+    "render_receipt",
     "EvaluationResult",
     "calculate_clv",
     "calculate_ev",
