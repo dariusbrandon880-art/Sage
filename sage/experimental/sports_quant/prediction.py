@@ -164,7 +164,13 @@ class FanDuelPlayerPropAnalyzer:
     ) -> "PredictionRecord":
         safe_player = snapshot.player_name.replace(" ", "_")
         record = PredictionRecord(
-            prediction_id=f"pred_prop_{cycle_id}_{snapshot.event_id}_{safe_player}_{edge_result.selection}",
+            prediction_id=PredictionRecord.build_prediction_id(
+                cycle_id=cycle_id,
+                event_id=snapshot.event_id,
+                market_type="player_prop",
+                selection=f"{snapshot.player_name} - {edge_result.selection}",
+                line_value=snapshot.threshold,
+            ),
             cycle_id=cycle_id,
             event_id=snapshot.event_id,
             market=snapshot.prop_category,
@@ -174,6 +180,8 @@ class FanDuelPlayerPropAnalyzer:
             market_probability=edge_result.fanduel_implied_prob,
             observed_at_utc=snapshot.observed_at_utc,
             event_start_utc=snapshot.event_start_utc,
+            market_type="player_prop",
+            line_value=snapshot.threshold,
         )
         return record.sign()
 
@@ -196,6 +204,8 @@ class PredictionRecord:
     legs: tuple[str, ...] = field(default_factory=tuple)
     lock_hash: str = ""
     wagering_executed: bool = False
+    market_type: str = ""
+    line_value: float | None = None
 
     def __post_init__(self) -> None:
         if self.wagering_executed:
@@ -208,6 +218,28 @@ class PredictionRecord:
             self.event_start_utc.replace("Z", "+00:00")
         ):
             raise ValueError("TEMPORAL_LOCK_VIOLATION")
+
+    @property
+    def canonical_market_type(self) -> str:
+        return (self.market_type or self.market).strip().lower()
+
+    @property
+    def canonical_line_value(self) -> str:
+        return "" if self.line_value is None else format(self.line_value, ".12g")
+
+    @classmethod
+    def build_prediction_id(
+        cls,
+        *,
+        cycle_id: str,
+        event_id: str,
+        market_type: str,
+        selection: str,
+        line_value: float | None,
+    ) -> str:
+        canonical_type = market_type.strip().lower()
+        canonical_line = "" if line_value is None else format(line_value, ".12g")
+        return f"pred_{cycle_id}_{event_id}_{canonical_type}_{selection}_{canonical_line}"
 
     def sign(self) -> "PredictionRecord":
         payload = {k: v for k, v in self.__dict__.items() if k != "lock_hash"}
@@ -232,8 +264,16 @@ class PredictionBatchEngine:
         market_probability = market_probs[selection]
         # Baseline model is deliberately conservative: market probability shrunk toward 0.5.
         predicted = 0.5 + 0.85 * (market_probability - 0.5)
+        market_type = snapshot.canonical_market_type
+        line_value = snapshot.line_value
         record = PredictionRecord(
-            prediction_id=f"pred_{cycle_id}_{snapshot.event_id}_{selection}",
+            prediction_id=PredictionRecord.build_prediction_id(
+                cycle_id=cycle_id,
+                event_id=snapshot.event_id,
+                market_type=market_type,
+                selection=selection,
+                line_value=line_value,
+            ),
             cycle_id=cycle_id,
             event_id=snapshot.event_id,
             market=snapshot.market,
@@ -243,6 +283,8 @@ class PredictionBatchEngine:
             market_probability=market_probability,
             observed_at_utc=snapshot.observed_at_utc,
             event_start_utc=snapshot.event_start_utc,
+            market_type=market_type,
+            line_value=line_value,
         )
         return record.sign()
 
@@ -278,5 +320,6 @@ class PredictionBatchEngine:
             is_parlay=True,
             parent_prediction_id=parent_id,
             legs=tuple(leg.prediction_id for leg in leg_list),
+            market_type="parlay",
         )
         return parlay.sign()
