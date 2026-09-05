@@ -16,14 +16,30 @@ class MarketSnapshot:
     source: str
     source_url: str = ""
     metadata: Mapping[str, Any] = field(default_factory=dict)
+    market_type: str = ""
+    line_value: float | None = None
 
     def __post_init__(self) -> None:
         if not self.event_id or not self.event_start_utc or not self.observed_at_utc:
             raise ValueError("MARKET_SNAPSHOT_INVALID: event identity and timestamps are required")
+        if not self.market:
+            raise ValueError("MARKET_SNAPSHOT_INVALID: market is required")
         if not self.prices:
             raise ValueError("MARKET_SNAPSHOT_INVALID: at least one market price is required")
         if any(price <= 0 for price in self.prices.values()):
             raise ValueError("MARKET_SNAPSHOT_INVALID: prices must be positive")
+
+    @property
+    def canonical_market_type(self) -> str:
+        return (self.market_type or self.market).strip().lower()
+
+    @property
+    def canonical_line_value(self) -> str:
+        return "" if self.line_value is None else format(self.line_value, ".12g")
+
+    @property
+    def market_identity(self) -> tuple[str, str, str, str]:
+        return (self.event_id, self.canonical_market_type, self.canonical_line_value, self.observed_at_utc)
 
 
 @dataclass(frozen=True)
@@ -52,6 +68,18 @@ class PlayerPropSnapshot:
         if any(price <= 0 for price in self.prices.values()):
             raise ValueError("PLAYER_PROP_SNAPSHOT_INVALID: prices must be positive")
 
+    @property
+    def canonical_market_type(self) -> str:
+        return "player_prop"
+
+    @property
+    def canonical_line_value(self) -> str:
+        return "" if self.threshold is None else format(self.threshold, ".12g")
+
+    @property
+    def market_identity(self) -> tuple[str, str, str, str, str]:
+        return (self.event_id, self.canonical_market_type, self.prop_category.strip().lower(), self.canonical_line_value, self.observed_at_utc)
+
 
 class FanDuelSnapshotAdapter:
     """Parse a FanDuel-shaped read-only snapshot; never places or authenticates wagers."""
@@ -64,8 +92,7 @@ class FanDuelSnapshotAdapter:
             raise ValueError("INVALID_AMERICAN_ODDS: odds cannot be zero")
         if american_odds > 0:
             return round(1.0 + (american_odds / 100.0), 4)
-        else:
-            return round(1.0 + (100.0 / abs(american_odds)), 4)
+        return round(1.0 + (100.0 / abs(american_odds)), 4)
 
     @classmethod
     def parse_player_prop(cls, payload: Mapping[str, Any]) -> PlayerPropSnapshot:
@@ -73,19 +100,15 @@ class FanDuelSnapshotAdapter:
         prop = payload.get("prop") or payload
         market = payload.get("market") or {}
         raw_prices = prop.get("prices") or market.get("prices") or payload.get("prices") or {}
-
         american_prices = prop.get("american_prices") or payload.get("american_prices")
         if american_prices and not raw_prices:
             prices = {str(k): cls.american_to_decimal(v) for k, v in american_prices.items()}
         else:
             prices = {str(k): float(v) for k, v in raw_prices.items()}
-
         raw_thresh = prop.get("threshold") if "threshold" in prop else payload.get("threshold")
         threshold = float(raw_thresh) if raw_thresh is not None else None
-
         sharp_ref = prop.get("sharp_reference_price") if "sharp_reference_price" in prop else payload.get("sharp_reference_price")
         sharp_price = float(sharp_ref) if sharp_ref is not None else None
-
         return PlayerPropSnapshot(
             event_id=str(event.get("id") or payload.get("event_id") or ""),
             sport=str(event.get("sport") or payload.get("sport") or ""),
@@ -107,17 +130,23 @@ class FanDuelSnapshotAdapter:
         event = payload.get("event") or {}
         market = payload.get("market") or {}
         prices = market.get("prices") or payload.get("prices") or {}
+        raw_line = market.get("line_value") if market.get("line_value") is not None else payload.get("line_value")
+        line_value = float(raw_line) if raw_line is not None else None
+        market_name = str(market.get("name") or payload.get("market_name") or "")
+        market_type = str(market.get("type") or payload.get("market_type") or "")
         return MarketSnapshot(
             event_id=str(event.get("id") or payload.get("event_id") or ""),
             sport=str(event.get("sport") or payload.get("sport") or ""),
             league=str(event.get("league") or payload.get("league") or ""),
             event_start_utc=str(event.get("start_utc") or payload.get("event_start_utc") or ""),
             observed_at_utc=str(payload.get("observed_at_utc") or ""),
-            market=str(market.get("name") or payload.get("market_name") or ""),
+            market=market_name,
             prices={str(k): float(v) for k, v in prices.items()},
             source=str(payload.get("source") or cls.SOURCE_NAME),
             source_url=str(payload.get("source_url") or ""),
             metadata=dict(payload.get("metadata") or {}),
+            market_type=market_type,
+            line_value=line_value,
         )
 
     @staticmethod

@@ -38,6 +38,33 @@ jobs:
       - name: Run pytest
         run: pytest -v --tb=short
 
+  portfolio-diversity:
+    name: "C2 Sports Portfolio Diversity Receipt"
+    if: ${{ always() }}
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Generate portfolio diversity receipt
+        run: python scripts/execute_sports_portfolio_diversity.py
+      - name: Upload portfolio diversity receipt artifact
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: sage-portfolio-diversity-receipt-${{ github.sha }}
+          path: |
+            evidence_capture/sports_portfolio_diversity_receipt.json
+            portfolio_diversity_receipt.json
+          if-no-files-found: error
+
   five-front-full-engine:
     name: "C2 Full Engine / Flight ${{ matrix.flight }}"
     if: ${{ always() }}
@@ -238,7 +265,7 @@ jobs:
   reconverge:
     name: C2 Five-Flight Fail-Closed Reconvergence
     if: ${{ always() }}
-    needs: [test, five-front-full-engine]
+    needs: [test, portfolio-diversity, five-front-full-engine]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
