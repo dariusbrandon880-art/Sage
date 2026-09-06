@@ -56,7 +56,7 @@ def test_diversity_receipt_counts_canonical_market_universe_and_parlays_separate
 
 def test_receipt_render_is_deterministic_json():
     report = build_diversity_report([], {})
-    assert render_receipt(report) == '{"parlay_count":0,"single_count":0,"single_unique_event_market_lines":0,"single_unique_event_market_types":0,"single_unique_events":0,"single_unique_market_types":0,"single_unique_prediction_ids":0,"single_unique_sports":0,"total_records":0,"unique_event_market_lines":0,"unique_event_market_types":0,"unique_events":0,"unique_market_types":0,"unique_prediction_ids":0,"unique_sports":0}'
+    assert render_receipt(report) == '{"parlay_count":0,"provenance_summary":{"adapter_version":"1.0.0","normalized_payload_hash":"","provenance_class":"synthetic","provider":"fanduel","raw_payload_hash":"","snapshot_count":0,"source_endpoint":"synthetic_market_universe"},"single_count":0,"single_unique_event_market_lines":0,"single_unique_event_market_types":0,"single_unique_events":0,"single_unique_market_types":0,"single_unique_prediction_ids":0,"single_unique_sports":0,"total_records":0,"unique_event_market_lines":0,"unique_event_market_types":0,"unique_events":0,"unique_market_types":0,"unique_prediction_ids":0,"unique_sports":0}'
 
 
 def test_execute_sports_portfolio_diversity_script_produces_valid_receipt_artifacts():
@@ -90,6 +90,7 @@ def test_execute_sports_portfolio_diversity_script_produces_valid_receipt_artifa
         "single_unique_event_market_types",
         "single_unique_event_market_lines",
         "single_unique_prediction_ids",
+        "provenance_summary",
     }
     assert set(d1.keys()) == expected_keys
     assert d1["total_records"] == 50
