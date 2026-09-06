@@ -20,6 +20,7 @@ if str(repo_root) not in sys.path:
 from sage.experimental.sports_quant import (  # noqa: E402
     DailySportsPortfolioEngine,
     MarketSnapshot,
+    ProvenanceClass,
 )
 from sage.experimental.sports_quant.portfolio_audit import (  # noqa: E402
     build_diversity_report,
@@ -104,6 +105,9 @@ def main() -> int:
 
     sport_by_event = {s.event_id: s.sport for s in snapshots}
     report = build_diversity_report(portfolio.records, sport_by_event)
+
+    # Validate provenance summary
+    assert report.provenance_summary.get("provenance_class") == ProvenanceClass.SYNTHETIC.value
 
     # Validate eight metrics across overall portfolio
     assert report.total_records == 50, f"Expected 50 total records, got {report.total_records}"

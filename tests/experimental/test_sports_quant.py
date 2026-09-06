@@ -1,12 +1,16 @@
 import pytest
 from sage.experimental.sports_quant import (
+    DailySportsPortfolioEngine,
     FanDuelPlayerPropAnalyzer,
     FanDuelSnapshotAdapter,
+    MarketProvenance,
     MarketSnapshot,
     PlayerPropSnapshot,
     PredictionBatchEngine,
     PredictionRecord,
     PropEdgeResult,
+    ProvenanceClass,
+    build_diversity_report,
     build_failure_clusters,
     calculate_ev,
     calculate_kelly_stake,
@@ -167,3 +171,82 @@ def test_fanduel_player_prop_analyzer_nfl_atd_and_sgp_evaluation():
     sgp_result = evaluate_sgp_boost([res], boosted_decimal_price=3.0)
     assert sgp_result["recommendation"] == "GRAVY"
     assert sgp_result["all_legs_positive_ev"] is True
+
+
+def test_market_provenance_and_raw_feed_parsing():
+    raw_payload = [
+        {
+            "event": {"id": "mlb_001", "sport": "MLB", "league": "MLB", "start_utc": START},
+            "market": {"name": "moneyline", "type": "moneyline", "prices": {"home": 1.9, "away": 1.9}},
+            "observed_at_utc": BEFORE,
+            "source": "fanduel",
+        },
+        {
+            "event": {"id": "nba_001", "sport": "NBA", "league": "NBA", "start_utc": START},
+            "market": {"name": "spread", "type": "spread", "line_value": -3.5, "prices": {"home": 1.91, "away": 1.91}},
+            "observed_at_utc": BEFORE,
+            "source": "fanduel",
+        },
+    ]
+
+    snapshots, provenance = FanDuelSnapshotAdapter.parse_raw_feed(
+        raw_payload,
+        provenance_class=ProvenanceClass.FIXTURE,
+        source_endpoint="https://api.fanduel.com/sports/v1/markets",
+        provider="fanduel",
+        retrieved_at_utc=BEFORE,
+    )
+
+    assert len(snapshots) == 2
+    assert provenance.provenance_class == "fixture"
+    assert provenance.provider == "fanduel"
+    assert provenance.snapshot_count == 2
+    assert set(provenance.event_ids) == {"mlb_001", "nba_001"}
+    assert provenance.raw_payload_hash != ""
+    assert provenance.normalized_payload_hash != ""
+    assert snapshots[0].provenance == provenance
+
+
+def test_external_live_provenance_validation_fail_closed():
+    with pytest.raises(ValueError, match="external_live provenance requires"):
+        MarketProvenance(
+            provenance_class="external_live",
+            provider="fanduel",
+            source_endpoint="",
+            retrieved_at_utc="",
+            source_observed_at_utc=BEFORE,
+            raw_payload_hash="",
+            normalized_payload_hash="hash123",
+        )
+
+
+def test_end_to_end_provenance_aware_portfolio_diversity_audit():
+    raw_payload = [
+        {
+            "event": {"id": f"evt_{i}", "sport": "MLB" if i % 2 == 0 else "NBA", "league": "TEST", "start_utc": START},
+            "market": {"name": "moneyline", "type": "moneyline", "prices": {"home": 1.95, "away": 1.90}},
+            "observed_at_utc": BEFORE,
+            "source": "fanduel",
+        }
+        for i in range(10)
+    ]
+
+    snapshots, provenance = FanDuelSnapshotAdapter.parse_raw_feed(
+        raw_payload,
+        provenance_class=ProvenanceClass.FIXTURE,
+        source_endpoint="https://api.fanduel.com/sports/v1/markets",
+        provider="fanduel",
+        retrieved_at_utc=BEFORE,
+    )
+
+    engine = DailySportsPortfolioEngine(target=10, parlay_share=0.20)
+    portfolio = engine.build(snapshots, cycle_id="cycle-provenance-test")
+    sport_by_event = {s.event_id: s.sport for s in snapshots}
+
+    report = build_diversity_report(portfolio.records, sport_by_event, provenance=provenance)
+    rep_dict = report.to_dict()
+
+    assert rep_dict["provenance_summary"]["provenance_class"] == "fixture"
+    assert rep_dict["provenance_summary"]["provider"] == "fanduel"
+    assert rep_dict["provenance_summary"]["snapshot_count"] == 10
+    assert rep_dict["total_records"] == 10

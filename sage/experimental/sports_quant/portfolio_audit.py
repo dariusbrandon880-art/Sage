@@ -1,8 +1,9 @@
 """Deterministic diversity receipt for Sports/RCE shadow portfolios."""
 
-from dataclasses import asdict, dataclass
-from typing import Iterable, Mapping
+from dataclasses import asdict, dataclass, field
+from typing import Any, Iterable, Mapping
 
+from .ingestion import MarketProvenance, ProvenanceClass
 from .prediction import PredictionRecord
 
 
@@ -29,9 +30,21 @@ class PortfolioDiversityReport:
     single_unique_event_market_types: int
     single_unique_event_market_lines: int
     single_unique_prediction_ids: int
+    provenance_summary: Mapping[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> dict[str, int]:
-        return asdict(self)
+    def to_dict(self) -> dict[str, Any]:
+        d = asdict(self)
+        if not d.get("provenance_summary"):
+            d["provenance_summary"] = {
+                "provenance_class": ProvenanceClass.SYNTHETIC.value,
+                "provider": "fanduel",
+                "source_endpoint": "synthetic_market_universe",
+                "raw_payload_hash": "",
+                "normalized_payload_hash": "",
+                "adapter_version": "1.0.0",
+                "snapshot_count": self.total_records,
+            }
+        return d
 
 
 def _identity(record: PredictionRecord) -> tuple[str, str, str, str]:
@@ -64,6 +77,7 @@ def _metrics(records: tuple[PredictionRecord, ...], sport_by_event: Mapping[str,
 def build_diversity_report(
     records: Iterable[PredictionRecord],
     sport_by_event: Mapping[str, str],
+    provenance: MarketProvenance | None = None,
 ) -> PortfolioDiversityReport:
     """Build the canonical eight-metric diversity receipt from portfolio records."""
 
@@ -71,8 +85,20 @@ def build_diversity_report(
     singles = tuple(r for r in all_records if not r.is_parlay)
     all_metrics = _metrics(all_records, sport_by_event)
     single_metrics = _metrics(singles, sport_by_event)
+
+    prov_summary = provenance.to_dict() if provenance else {
+        "provenance_class": ProvenanceClass.SYNTHETIC.value,
+        "provider": "fanduel",
+        "source_endpoint": "synthetic_market_universe",
+        "raw_payload_hash": "",
+        "normalized_payload_hash": "",
+        "adapter_version": "1.0.0",
+        "snapshot_count": len(all_records),
+    }
+
     return PortfolioDiversityReport(
         total_records=len(all_records),
+        provenance_summary=prov_summary,
         unique_events=all_metrics["events"],
         unique_sports=all_metrics["sports"],
         unique_market_types=all_metrics["market_types"],

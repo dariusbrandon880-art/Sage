@@ -1,7 +1,55 @@
 """Read-only market ingestion boundary for the sports quantitative lane."""
 
+import hashlib
+import json
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import Any, Mapping
+
+
+class ProvenanceClass(str, Enum):
+    SYNTHETIC = "synthetic"
+    FIXTURE = "fixture"
+    EXTERNAL_LIVE = "external_live"
+    HISTORICAL_EXTERNAL = "historical_external"
+
+
+@dataclass(frozen=True)
+class MarketProvenance:
+    provenance_class: str
+    provider: str
+    source_endpoint: str
+    retrieved_at_utc: str
+    source_observed_at_utc: str
+    raw_payload_hash: str
+    normalized_payload_hash: str
+    adapter_version: str = "1.0.0"
+    snapshot_count: int = 1
+    event_ids: tuple[str, ...] = field(default_factory=tuple)
+
+    def __post_init__(self) -> None:
+        if not self.provenance_class:
+            raise ValueError("MARKET_PROVENANCE_INVALID: provenance_class is required")
+        valid_classes = {c.value for c in ProvenanceClass}
+        if self.provenance_class not in valid_classes:
+            raise ValueError(f"MARKET_PROVENANCE_INVALID: unknown provenance_class '{self.provenance_class}'")
+        if self.provenance_class == ProvenanceClass.EXTERNAL_LIVE.value:
+            if not self.raw_payload_hash or not self.source_endpoint or not self.retrieved_at_utc:
+                raise ValueError("MARKET_PROVENANCE_INVALID: external_live provenance requires raw_payload_hash, source_endpoint, and retrieved_at_utc")
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "provenance_class": self.provenance_class,
+            "provider": self.provider,
+            "source_endpoint": self.source_endpoint,
+            "retrieved_at_utc": self.retrieved_at_utc,
+            "source_observed_at_utc": self.source_observed_at_utc,
+            "raw_payload_hash": self.raw_payload_hash,
+            "normalized_payload_hash": self.normalized_payload_hash,
+            "adapter_version": self.adapter_version,
+            "snapshot_count": self.snapshot_count,
+            "event_ids": list(self.event_ids),
+        }
 
 
 @dataclass(frozen=True)
@@ -18,6 +66,7 @@ class MarketSnapshot:
     metadata: Mapping[str, Any] = field(default_factory=dict)
     market_type: str = ""
     line_value: float | None = None
+    provenance: MarketProvenance | None = None
 
     def __post_init__(self) -> None:
         if not self.event_id or not self.event_start_utc or not self.observed_at_utc:
@@ -28,6 +77,9 @@ class MarketSnapshot:
             raise ValueError("MARKET_SNAPSHOT_INVALID: at least one market price is required")
         if any(price <= 0 for price in self.prices.values()):
             raise ValueError("MARKET_SNAPSHOT_INVALID: prices must be positive")
+        if self.provenance and self.provenance.provenance_class == ProvenanceClass.EXTERNAL_LIVE.value:
+            if not self.source_url and not self.provenance.source_endpoint:
+                raise ValueError("MARKET_SNAPSHOT_INVALID: external_live snapshot requires source_url or provenance source_endpoint")
 
     @property
     def canonical_market_type(self) -> str:
@@ -126,7 +178,7 @@ class FanDuelSnapshotAdapter:
         )
 
     @classmethod
-    def from_mapping(cls, payload: Mapping[str, Any]) -> MarketSnapshot:
+    def from_mapping(cls, payload: Mapping[str, Any], provenance: MarketProvenance | None = None) -> MarketSnapshot:
         event = payload.get("event") or {}
         market = payload.get("market") or {}
         prices = market.get("prices") or payload.get("prices") or {}
@@ -147,7 +199,67 @@ class FanDuelSnapshotAdapter:
             metadata=dict(payload.get("metadata") or {}),
             market_type=market_type,
             line_value=line_value,
+            provenance=provenance,
         )
+
+    @classmethod
+    def parse_raw_feed(
+        cls,
+        raw_data: str | bytes | Mapping[str, Any] | list[Any],
+        provenance_class: ProvenanceClass | str = ProvenanceClass.FIXTURE,
+        source_endpoint: str = "https://api.fanduel.com/sports/v1/markets",
+        provider: str = "fanduel",
+        retrieved_at_utc: str = "2026-09-06T00:00:00Z",
+    ) -> tuple[list[MarketSnapshot], MarketProvenance]:
+        if isinstance(raw_data, (str, bytes)):
+            raw_bytes = raw_data.encode("utf-8") if isinstance(raw_data, str) else raw_data
+            parsed = json.loads(raw_bytes.decode("utf-8"))
+        elif isinstance(raw_data, (dict, list)):
+            raw_bytes = json.dumps(raw_data, sort_keys=True).encode("utf-8")
+            parsed = raw_data
+        else:
+            raise ValueError("INVALID_RAW_FEED: raw_data must be str, bytes, dict, or list")
+
+        raw_hash = hashlib.sha256(raw_bytes).hexdigest()
+
+        items = parsed if isinstance(parsed, list) else parsed.get("markets") or parsed.get("data") or [parsed]
+        p_class_str = provenance_class.value if isinstance(provenance_class, ProvenanceClass) else str(provenance_class)
+
+        temp_snapshots: list[MarketSnapshot] = []
+        event_ids: set[str] = set()
+        observed_timestamps: set[str] = set()
+
+        for item in items:
+            snap = cls.from_mapping(item)
+            temp_snapshots.append(snap)
+            if snap.event_id:
+                event_ids.add(snap.event_id)
+            if snap.observed_at_utc:
+                observed_timestamps.add(snap.observed_at_utc)
+
+        norm_dump = json.dumps([s.market_identity for s in temp_snapshots], sort_keys=True).encode("utf-8")
+        norm_hash = hashlib.sha256(norm_dump).hexdigest()
+
+        obs_at = sorted(observed_timestamps)[0] if observed_timestamps else retrieved_at_utc
+
+        provenance = MarketProvenance(
+            provenance_class=p_class_str,
+            provider=provider,
+            source_endpoint=source_endpoint,
+            retrieved_at_utc=retrieved_at_utc,
+            source_observed_at_utc=obs_at,
+            raw_payload_hash=raw_hash,
+            normalized_payload_hash=norm_hash,
+            adapter_version="1.0.0",
+            snapshot_count=len(temp_snapshots),
+            event_ids=tuple(sorted(event_ids)),
+        )
+
+        snapshots = [
+            cls.from_mapping(item, provenance=provenance)
+            for item in items
+        ]
+        return snapshots, provenance
 
     @staticmethod
     def implied_probability(decimal_price: float) -> float:
