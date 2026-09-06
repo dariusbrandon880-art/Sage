@@ -1,7 +1,9 @@
 """Read-only market ingestion boundary for the sports quantitative lane."""
 
 from dataclasses import dataclass, field
-from typing import Any, Mapping
+import hashlib
+import json
+from typing import Any, Mapping, Sequence
 
 
 @dataclass(frozen=True)
@@ -162,3 +164,137 @@ class FanDuelSnapshotAdapter:
         if total <= 0:
             raise ValueError("MARKET_NORMALIZATION_FAILED")
         return {key: value / total for key, value in implied.items()}
+
+
+class TheOddsApiAdapter:
+    """Adapter parsing live or historical The Odds API market payloads into standardized MarketSnapshot instances.
+
+    Establishes the evidence chain:
+    RAW RESPONSE -> SHA-256 PROVENANCE HASH -> OBSERVED_AT TIMESTAMP -> MARKET SNAPSHOT
+    """
+
+    SOURCE_NAME = "The Odds API (live_market_feed)"
+
+    SPORT_KEY_MAP = {
+        "americanfootball_nfl": "NFL",
+        "basketball_nba": "NBA",
+        "baseball_mlb": "MLB",
+        "icehockey_nhl": "NHL",
+    }
+
+    MARKET_KEY_MAP = {
+        "h2h": ("moneyline", "moneyline"),
+        "spreads": ("spread", "spread"),
+        "totals": ("total", "total"),
+    }
+
+    @classmethod
+    def parse_response(
+        cls,
+        payload: Sequence[Mapping[str, Any]],
+        bookmaker_key: str = "fanduel",
+    ) -> tuple[list[MarketSnapshot], str]:
+        """Parses a list of The Odds API event dicts into MarketSnapshots and computes SHA-256 provenance hash."""
+        if not isinstance(payload, (list, tuple)):
+            raise ValueError("THE_ODDS_API_INVALID_PAYLOAD: payload must be a sequence of events")
+
+        raw_json_bytes = json.dumps(payload, sort_keys=True).encode("utf-8")
+        raw_payload_hash = hashlib.sha256(raw_json_bytes).hexdigest()
+
+        snapshots: list[MarketSnapshot] = []
+
+        for event in payload:
+            event_id = str(event.get("id") or "")
+            sport_key = str(event.get("sport_key") or "")
+            sport = cls.SPORT_KEY_MAP.get(sport_key, sport_key.split("_")[-1].upper() if "_" in sport_key else sport_key.upper())
+            commence_time = str(event.get("commence_time") or "")
+
+            if not event_id or not commence_time:
+                continue
+
+            bookmakers = event.get("bookmakers") or []
+            selected_bookmaker = None
+            for b in bookmakers:
+                if str(b.get("key")).lower() == bookmaker_key.lower():
+                    selected_bookmaker = b
+                    break
+            if not selected_bookmaker and bookmakers:
+                selected_bookmaker = bookmakers[0]
+
+            if not selected_bookmaker:
+                continue
+
+            observed_at_utc = str(selected_bookmaker.get("last_update") or event.get("commence_time") or "")
+            markets = selected_bookmaker.get("markets") or []
+
+            for market_obj in markets:
+                m_key = str(market_obj.get("key") or "").lower()
+                market_name, market_type = cls.MARKET_KEY_MAP.get(m_key, (m_key, m_key))
+
+                outcomes = market_obj.get("outcomes") or []
+                if not outcomes:
+                    continue
+
+                prices: dict[str, float] = {}
+                line_value: float | None = None
+
+                for outcome in outcomes:
+                    name = str(outcome.get("name") or "")
+                    price_val = outcome.get("price")
+                    if price_val is None:
+                        continue
+
+                    if isinstance(price_val, (int, float)):
+                        if price_val > 10 or price_val < -10:
+                            decimal_p = FanDuelSnapshotAdapter.american_to_decimal(price_val)
+                        else:
+                            decimal_p = float(price_val)
+                    else:
+                        decimal_p = float(price_val)
+
+                    selection_key = name.lower()
+                    if "over" in selection_key:
+                        selection_key = "over"
+                    elif "under" in selection_key:
+                        selection_key = "under"
+                    elif name == event.get("home_team"):
+                        selection_key = "home"
+                    elif name == event.get("away_team"):
+                        selection_key = "away"
+                    else:
+                        selection_key = name
+
+                    prices[selection_key] = decimal_p
+
+                    if "point" in outcome and outcome["point"] is not None:
+                        raw_point = outcome["point"]
+                        if m_key == "spreads" and selection_key == "home":
+                            line_value = float(raw_point)
+                        elif m_key == "totals" and line_value is None:
+                            line_value = abs(float(raw_point))
+                        elif line_value is None:
+                            line_value = float(raw_point)
+
+                if prices:
+                    snapshot = MarketSnapshot(
+                        event_id=event_id,
+                        sport=sport,
+                        league=sport,
+                        event_start_utc=commence_time,
+                        observed_at_utc=observed_at_utc,
+                        market=market_name,
+                        prices=prices,
+                        source=cls.SOURCE_NAME,
+                        source_url="https://api.the-odds-api.com/v4/sports",
+                        metadata={
+                            "raw_payload_hash": raw_payload_hash,
+                            "bookmaker": selected_bookmaker.get("key"),
+                            "home_team": event.get("home_team"),
+                            "away_team": event.get("away_team"),
+                        },
+                        market_type=market_type,
+                        line_value=line_value,
+                    )
+                    snapshots.append(snapshot)
+
+        return snapshots, raw_payload_hash

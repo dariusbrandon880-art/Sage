@@ -1,7 +1,7 @@
 """Deterministic diversity receipt for Sports/RCE shadow portfolios."""
 
 from dataclasses import asdict, dataclass
-from typing import Iterable, Mapping
+from typing import Any, Iterable, Mapping
 
 from .prediction import PredictionRecord
 
@@ -29,8 +29,10 @@ class PortfolioDiversityReport:
     single_unique_event_market_types: int
     single_unique_event_market_lines: int
     single_unique_prediction_ids: int
+    feed_provenance_hash: str = ""
+    feed_source: str = ""
 
-    def to_dict(self) -> dict[str, int]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
@@ -64,6 +66,8 @@ def _metrics(records: tuple[PredictionRecord, ...], sport_by_event: Mapping[str,
 def build_diversity_report(
     records: Iterable[PredictionRecord],
     sport_by_event: Mapping[str, str],
+    feed_provenance_hash: str = "",
+    feed_source: str = "",
 ) -> PortfolioDiversityReport:
     """Build the canonical eight-metric diversity receipt from portfolio records."""
 
@@ -87,6 +91,8 @@ def build_diversity_report(
         single_unique_event_market_types=single_metrics["event_market_types"],
         single_unique_event_market_lines=single_metrics["event_market_lines"],
         single_unique_prediction_ids=single_metrics["prediction_ids"],
+        feed_provenance_hash=feed_provenance_hash,
+        feed_source=feed_source,
     )
 
 
