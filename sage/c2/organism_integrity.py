@@ -44,7 +44,7 @@ class _DiscoveredModule:
 
 
 def _python_modules(root: Path) -> tuple[_DiscoveredModule, ...]:
-    """Discover executable Python organs from the repository, excluding caches."""
+    """Inventory executable Python implementation files, not semantic organs."""
     modules: list[_DiscoveredModule] = []
     sage_root = root / "sage"
     if not sage_root.exists():
@@ -82,11 +82,25 @@ def _normalize_declared_path(module_path: str, root: Path) -> str:
 
 
 def _declares_path(module_path: str, actual_path: str, root: Path) -> bool:
-    """Return whether a registration covers a file or a registered package tree."""
+    """Return whether a catalog registration owns an exact file or package tree."""
     path = root / module_path
     if path.is_dir():
-        return actual_path == module_path.rstrip("/") or actual_path.startswith(module_path.rstrip("/") + "/")
+        boundary = module_path.rstrip("/")
+        return actual_path == boundary or actual_path.startswith(boundary + "/")
     return _normalize_declared_path(module_path, root) == actual_path
+
+
+def _registration_for_path(
+    module_path: str,
+    catalog: list[SubsystemRegistration],
+    root: Path,
+) -> SubsystemRegistration | None:
+    """Resolve the semantic organ registration covering an implementation file."""
+    matches = [sub for sub in catalog if _declares_path(sub.module_path, module_path, root)]
+    if not matches:
+        return None
+    # A file registration is more specific than a package-tree registration.
+    return min(matches, key=lambda sub: (len(sub.module_path.rstrip("/")), sub.subsystem_id),)
 
 
 def _module_name(path: str) -> str:
@@ -94,16 +108,16 @@ def _module_name(path: str) -> str:
 
 
 def _resolve_import(import_name: str, actual: set[str]) -> str | None:
-    candidates = [import_name, f"{import_name}.__init__"]
-    for candidate in candidates:
-        if f"{candidate}.py" in {_module_name(p) + ".py" for p in actual}:
-            return candidate
-    # Normalise a package import to its package __init__.py representation.
-    package = import_name.replace(".", "/")
-    if f"{package}/__init__.py" in actual:
-        return f"{package}/__init__.py"
-    if f"{package}.py" in actual:
-        return f"{package}.py"
+    """Resolve a repository-local import to the implementation file it targets."""
+    actual_by_name = {_module_name(path): path for path in actual}
+    if import_name in actual_by_name:
+        return actual_by_name[import_name]
+    package_init = f"{import_name}/__init__.py"
+    if package_init in actual:
+        return package_init
+    module_path = f"{import_name}.py".replace(".", "/")
+    if module_path in actual:
+        return module_path
     return None
 
 
@@ -128,7 +142,7 @@ def evaluate_organism_integrity(
     root_dir: str = ".",
     catalog: list[SubsystemRegistration] | None = None,
 ) -> OrganismIntegrityReport:
-    """Compare repository organs, dependency structure, and authority boundaries."""
+    """Compare semantic organs, dependency structure, and authority boundaries."""
     root = Path(root_dir).resolve()
     discovered = _python_modules(root)
     actual = {m.path for m in discovered}
@@ -143,23 +157,28 @@ def evaluate_organism_integrity(
             detail=f"Evaluated repository HEAD is {observed_head}, not the supplied exact Git HEAD.",
         ))
 
-    declared = {
-        _normalize_declared_path(sub.module_path, root)
-        for sub in catalog
-    }
-    for path in sorted(actual):
-        if not any(_declares_path(sub.module_path, path, root) for sub in catalog):
+    # A catalog file registration defines a file-level organ. A catalog directory
+    # registration defines the whole package tree as one organ; its child .py files
+    # are implementation surfaces, not additional organs.
+    declared = {_normalize_declared_path(sub.module_path, root) for sub in catalog}
+    observed_organ_paths: set[str] = set()
+    for module in discovered:
+        registration = _registration_for_path(module.path, catalog, root)
+        if registration is not None:
+            observed_organ_paths.add(registration.module_path.rstrip("/"))
+        else:
             findings.append(OrganismIntegrityFinding(
                 kind="UNDECLARED_ORGAN",
-                subject=path,
-                detail="Executable Python organ exists on disk but is absent from the canonical Jigsaw catalog.",
+                subject=module.path,
+                detail="Executable Python implementation is outside every canonical Jigsaw organ boundary.",
             ))
+
     for sub in catalog:
         if not any(_declares_path(sub.module_path, path, root) for path in actual):
             findings.append(OrganismIntegrityFinding(
                 kind="MISSING_ORGAN",
                 subject=_normalize_declared_path(sub.module_path, root),
-                detail="Canonical Jigsaw registration has no matching executable Python organ on disk.",
+                detail="Canonical Jigsaw registration has no matching executable Python implementation on disk.",
             ))
 
     domain_map: dict[str, list[str]] = {}
@@ -174,17 +193,7 @@ def evaluate_organism_integrity(
                 detail=f"Multiple canonical subsystems claim the same authoritative domain: {subsystem_ids}.",
             ))
 
-    registration_by_path = {
-        sub.module_path: sub for sub in catalog
-        if not (root / sub.module_path).is_dir()
-    }
-    core_paths = {
-        _normalize_declared_path(sub.module_path, root)
-        for sub in catalog if sub.relationship.value == "CORE"
-    }
-
     adjacency: dict[str, set[str]] = {module.path: set() for module in discovered}
-    module_by_name = {_module_name(module.path): module.path for module in discovered}
     for module in discovered:
         for imported in module.imports:
             target = _resolve_import(imported, actual)
@@ -192,17 +201,12 @@ def evaluate_organism_integrity(
                 findings.append(OrganismIntegrityFinding(
                     kind="INVALID_DEPENDENCY_EDGE",
                     subject=module.path,
-                    detail=f"Repository-local import does not resolve to an executable organ: {imported}.",
+                    detail=f"Repository-local import does not resolve to an executable implementation: {imported}.",
                 ))
                 continue
-            target_path = target if target in actual else module_by_name.get(target)
-            if target_path:
-                adjacency[module.path].add(target_path)
+            adjacency[module.path].add(target)
 
-        registration = next(
-            (sub for sub in catalog if _declares_path(sub.module_path, module.path, root)),
-            None,
-        )
+        registration = _registration_for_path(module.path, catalog, root)
         if registration and registration.relationship.value == "PROJECTION" and module.writes:
             findings.append(OrganismIntegrityFinding(
                 kind="PROJECTION_MUTATION_SURFACE",
@@ -210,24 +214,25 @@ def evaluate_organism_integrity(
                 detail=f"Projection contains filesystem mutation calls: {module.writes}",
             ))
         if module.path.startswith("sage/experimental/"):
-            for target in adjacency[module.path]:
-                if target in core_paths:
+            for target in sorted(adjacency[module.path]):
+                target_registration = _registration_for_path(target, catalog, root)
+                if target_registration and target_registration.relationship.value == "CORE":
                     findings.append(OrganismIntegrityFinding(
                         kind="EXPERIMENTAL_TO_CORE_COUPLING",
                         subject=module.path,
-                        detail=f"Experimental organ imports canonical CORE organ {target}.",
+                        detail=(
+                            f"Experimental implementation imports canonical CORE organ "
+                            f"{target_registration.subsystem_id} ({target})."
+                        ),
                     ))
-            if any(write in module.writes for write in ("write_text", "write_bytes", "unlink", "replace", "rename")) and (
-                "/cognitive/" in module.path or "/sagi/" in module.path
-            ):
+            if module.writes and ("/cognitive/" in module.path or "/sagi/" in module.path):
                 findings.append(OrganismIntegrityFinding(
                     kind="COGNITION_CANONICAL_MUTATION",
                     subject=module.path,
                     detail="Experimental cognition surface contains direct filesystem mutation calls.",
                 ))
 
-    # Tarjan-style SCC detection identifies actual import cycles while keeping the
-    # evaluator deterministic and independent of import-time side effects.
+    # Tarjan SCC detection finds actual implementation import cycles without imports.
     index = 0
     indices: dict[str, int] = {}
     lowlinks: dict[str, int] = {}
@@ -256,10 +261,9 @@ def evaluate_organism_integrity(
                 if target == node:
                     break
             if len(component) > 1 or node in adjacency[node]:
-                cycle = ",".join(sorted(component))
                 findings.append(OrganismIntegrityFinding(
                     kind="DEPENDENCY_CYCLE",
-                    subject=cycle,
+                    subject=",".join(sorted(component)),
                     detail="Repository-local import graph contains a cycle.",
                 ))
 
