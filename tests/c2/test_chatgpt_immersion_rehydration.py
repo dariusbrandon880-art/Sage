@@ -106,7 +106,7 @@ def test_rehydration_fails_closed_when_git_head_is_invalid(monkeypatch):
 
 def test_rehydration_binds_explicit_git_head():
     runtime = _mock_runtime()
-    valid_sha = "d4ac70e672bb9874f0e70cbc58502f28238c6ed9"
+    valid_sha = "b44adda0f24f74f3994999d5421a6024fd7c9764"
     state = build_chatgpt_immersion_state(
         runtime, session_id="test_sess", c2_context={"canonical_git_sha": valid_sha}
     )
