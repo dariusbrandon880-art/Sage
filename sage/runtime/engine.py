@@ -9,7 +9,7 @@ from typing import Any
 from pydantic import BaseModel
 
 from sage.acr.bridge import ACRBridge
-from sage.runtime.c2_bootstrap import C2Bootstrap
+from sage.runtime.c2_bootstrap import C2BootResult, C2Bootstrap
 from sage.acr.session import (
     CheckpointManager,
     ContextTracker,
@@ -97,15 +97,14 @@ class SageRuntime:
 
         # Initialize C2 Bootstrap control contract
         self.c2_bootstrap = C2Bootstrap(
-            available_surfaces=("acr", "memory", "archive", "decisions", "validation", "hypervisor", "authority_gate"),
-            acr_bridge=self.acr,
-            session_manager=self.session_manager,
+            available_surfaces=("acr", "memory", "archive", "decisions", "validation", "hypervisor", "authority_gate")
         )
-        self.c2_boot_result = self.c2_bootstrap.boot()
 
         # Load existing state if available, otherwise init fresh
         self.current_state = RuntimeState()
+        self.state_restored = True
         self._load_state()
+        self.refresh_c2_bootstrap()
 
         # Initialize SAGE Bond Manager for Phase 2 Runtime Hooks Connection
         import os
@@ -461,6 +460,8 @@ class SageRuntime:
         """
         path = Path(handoff_path)
         if not path.exists():
+            self.state_restored = False
+            self.refresh_c2_bootstrap()
             return False
 
         try:
@@ -509,19 +510,63 @@ class SageRuntime:
                     turn_number=self.acr.get_session_depth() + 1,
                     metadata={"objective": self.current_state.current_objective},
                 )
+            self.state_restored = True
+            self.refresh_c2_bootstrap()
             return True
         except Exception:
+            self.state_restored = False
+            self.refresh_c2_bootstrap()
             return False
 
-    def _load_state(self) -> None:
+    def refresh_c2_bootstrap(self) -> C2BootResult:
+        """Re-verify C2 bootstrap readiness and update c2_boot_result."""
+        integrity_res = self.verify_integrity()
+        restoration_evidence = {
+            "state_file": str(self.state_file),
+            "state_exists": self.state_file.exists(),
+            "state_restored": getattr(self, "state_restored", True),
+            "current_objective": self.current_state.current_objective,
+            "active_task": self.current_state.active_task,
+        }
+        readiness_evidence = {
+            "integrity_is_valid": integrity_res.get("is_valid", False),
+            "structural_valid": integrity_res.get("structural_valid", True),
+            "lineage_valid": integrity_res.get("lineage_valid", True),
+            "issues_count": len(integrity_res.get("issues", [])),
+            "available_surfaces": list(self.c2_bootstrap.available_surfaces),
+        }
+        self.c2_boot_result = self.c2_bootstrap.boot(
+            state_restored=getattr(self, "state_restored", True),
+            runtime_validated=integrity_res.get("structural_valid", integrity_res.get("is_valid", False)),
+            session_lineage_valid=integrity_res.get("lineage_valid", True),
+            restoration_evidence=restoration_evidence,
+            readiness_evidence=readiness_evidence,
+        )
+        return self.c2_boot_result
+
+    def verify_execution_permitted(self) -> bool:
+        """Verify that runtime execution is permitted under governed C2 boot readiness contract.
+
+        Enforces the invariant:
+        surface discovered → state restored → runtime validated → execution permitted
+        """
+        self.refresh_c2_bootstrap()
+        if not self.c2_boot_result.direct_execution_available:
+            blocker = self.c2_boot_result.blocker or "Execution readiness validation failed"
+            raise RuntimeError(f"SAGE Governed Execution Blocked: {blocker}")
+        return True
+
+    def _load_state(self) -> bool:
         """Load state.json from workspace."""
+        self.state_restored = True
         if self.state_file.exists():
             try:
                 with open(self.state_file, "r") as f:
                     data = json.load(f)
                     self.current_state = RuntimeState(**data)
             except Exception:
-                pass
+                self.state_restored = False
+        return self.state_restored
 
     def _save_state(self) -> None:
         """Save state.json to workspace."""
@@ -794,6 +839,8 @@ class SageRuntime:
                 metadata={"objective": self.current_state.current_objective},
             )
 
+        self.state_restored = True
+        self.refresh_c2_bootstrap()
         return True
 
     def ingest_session_payload(self, payload: ExternalSessionPayload) -> dict[str, Any]:
@@ -985,6 +1032,9 @@ class SageRuntime:
             {"session_id": session_id, "checkpoint_id": checkpoint_id, "snapshot_id": snapshot_id},
         )
 
+        self.state_restored = True
+        self.refresh_c2_bootstrap()
+
         return {
             "session_id": session_id,
             "checkpoint_id": checkpoint_id,
@@ -1096,8 +1146,10 @@ class SageRuntime:
             lineage_valid = False
             issues.append("Lineage is empty but an active objective is set.")
 
+        structural_issues = [i for i in issues if not i.startswith("Lineage is empty")]
         return {
             "is_valid": len(issues) == 0,
+            "structural_valid": len(structural_issues) == 0,
             "loaded_files_count": loaded_files_count,
             "corrupted_files": corrupted_files,
             "referential_integrity": {

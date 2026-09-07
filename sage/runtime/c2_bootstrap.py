@@ -5,12 +5,8 @@ rehydrate governed state before entering model execution.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, Iterable
-
-if TYPE_CHECKING:
-    from sage.acr.bridge import ACRBridge
-    from sage.acr.session.session_state import SessionStateManager
+from dataclasses import dataclass, field
+from typing import Any, Iterable
 
 
 @dataclass(frozen=True)
@@ -21,78 +17,77 @@ class C2BootResult:
     execution_surface_checked: bool
     direct_execution_available: bool
     blocker: str | None = None
+    restoration_evidence: dict[str, Any] = field(default_factory=dict)
+    readiness_evidence: dict[str, Any] = field(default_factory=dict)
 
 
 class C2Bootstrap:
-    """Mandatory entry gate before SAGE execution begins.
+    """Mandatory entry gate before SAGE execution begins."""
 
-    Corrects the false inference:
-      surfaces != rehydrated
-      surfaces != execution readiness
-    """
-
-    def __init__(
-        self,
-        available_surfaces: Iterable[str],
-        acr_bridge: ACRBridge | None = None,
-        session_manager: SessionStateManager | None = None,
-        required_session_id: str | None = None,
-    ):
+    def __init__(self, available_surfaces: Iterable[str]):
         self.available_surfaces = tuple(available_surfaces)
-        self.acr_bridge = acr_bridge
-        self.session_manager = session_manager
-        self.required_session_id = required_session_id
 
-    def boot(self) -> C2BootResult:
+    def boot(
+        self,
+        state_restored: bool = False,
+        runtime_validated: bool = False,
+        session_lineage_valid: bool = False,
+        restoration_evidence: dict[str, Any] | None = None,
+        readiness_evidence: dict[str, Any] | None = None,
+    ) -> C2BootResult:
         """Perform the non-negotiable C2 entry sequence.
 
-        The caller supplies actual available execution surfaces and state bridges.
-        Surface presence alone does not imply rehydration or execution readiness.
+        Execution readiness follows a strict fail-closed chain:
+        surface discovered → state restored → runtime validated → execution permitted.
         """
+        rest_ev = dict(restoration_evidence or {})
+        read_ev = dict(readiness_evidence or {})
+
         if not self.available_surfaces:
             return C2BootResult(
                 rehydrated=False,
                 execution_surface_checked=True,
                 direct_execution_available=False,
                 blocker="No execution surface available",
+                restoration_evidence=rest_ev,
+                readiness_evidence=read_ev,
             )
 
-        rehydrated = False
-        blocker = None
-
-        if self.session_manager is not None:
-            if self.required_session_id:
-                session = self.session_manager.retrieve_session(self.required_session_id)
-                if session is not None:
-                    rehydrated = True
-                else:
-                    blocker = f"Required session '{self.required_session_id}' not found in SessionStateManager"
-            else:
-                sessions = self.session_manager.list_all()
-                if sessions:
-                    rehydrated = True
-                else:
-                    blocker = "SessionStateManager contains no persisted sessions"
-        elif self.acr_bridge is not None:
-            state = self.acr_bridge.load_state()
-            lineage = self.acr_bridge.get_lineage()
-            if state or lineage:
-                rehydrated = True
-            else:
-                blocker = "ACRBridge contains no persisted continuity state or lineage"
-        else:
-            blocker = "Governed state rehydration not verified (no ACRBridge or SessionStateManager supplied)"
-
-        if not rehydrated:
+        if not state_restored:
             return C2BootResult(
                 rehydrated=False,
                 execution_surface_checked=True,
                 direct_execution_available=False,
-                blocker=blocker,
+                blocker="State restoration evidence missing or invalid",
+                restoration_evidence=rest_ev,
+                readiness_evidence=read_ev,
+            )
+
+        if not runtime_validated:
+            return C2BootResult(
+                rehydrated=True,
+                execution_surface_checked=True,
+                direct_execution_available=False,
+                blocker="Runtime state integrity check failed",
+                restoration_evidence=rest_ev,
+                readiness_evidence=read_ev,
+            )
+
+        if not session_lineage_valid:
+            return C2BootResult(
+                rehydrated=True,
+                execution_surface_checked=True,
+                direct_execution_available=False,
+                blocker="Session lineage continuity broken or missing",
+                restoration_evidence=rest_ev,
+                readiness_evidence=read_ev,
             )
 
         return C2BootResult(
             rehydrated=True,
             execution_surface_checked=True,
             direct_execution_available=True,
+            blocker=None,
+            restoration_evidence=rest_ev,
+            readiness_evidence=read_ev,
         )

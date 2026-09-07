@@ -13,6 +13,7 @@ from sage.experimental.sports_quant import (
 from sage.experimental.sports_quant.portfolio_audit import build_diversity_report, render_receipt
 
 FIXTURE_PATH = Path(__file__).resolve().parent.parent / "fixtures" / "sports_real_feed_response.json"
+MULTI_FIXTURE_PATH = Path(__file__).resolve().parent.parent / "fixtures" / "sports_real_multi_sport_feed_response.json"
 
 
 def test_real_market_feed_adapter_parses_recorded_fixture():
@@ -41,7 +42,6 @@ def test_real_market_feed_adapter_parses_recorded_fixture():
 
 
 def test_provenance_integrity_enforcements_for_external_live():
-    # Valid external live provenance
     valid_live = MarketProvenance(
         provider="The Odds API",
         endpoint="https://api.the-odds-api.com/v4/sports/upcoming/odds",
@@ -55,7 +55,6 @@ def test_provenance_integrity_enforcements_for_external_live():
     )
     assert valid_live.provenance_class == "external_live"
 
-    # Fails closed if synthetic endpoint claimed as live
     with pytest.raises(ValueError, match="PROVENANCE_INTEGRITY_VIOLATION"):
         MarketProvenance(
             provider="The Odds API",
@@ -69,7 +68,6 @@ def test_provenance_integrity_enforcements_for_external_live():
             provenance_class=ProvenanceClass.EXTERNAL_LIVE.value,
         )
 
-    # Fails closed if raw payload hash missing for live
     with pytest.raises(ValueError, match="PROVENANCE_INTEGRITY_VIOLATION"):
         MarketProvenance(
             provider="The Odds API",
@@ -83,7 +81,6 @@ def test_provenance_integrity_enforcements_for_external_live():
             provenance_class=ProvenanceClass.EXTERNAL_LIVE.value,
         )
 
-    # Fails closed if synthetic generator claims external_live
     with pytest.raises(ValueError, match="PROVENANCE_INTEGRITY_VIOLATION"):
         MarketProvenance(
             provider="synthetic_generator",
@@ -144,12 +141,39 @@ def test_live_probe_success_emits_external_live_receipt(monkeypatch, tmp_path):
         staticmethod(lambda **_: (snapshots, live_provenance)),
     )
     monkeypatch.setattr(probe, "repo_root", tmp_path)
-    monkeypatch.setattr(probe.sys, "argv", ["probe_live_sports_feed.py", "--live", "--api-key", "test-key"])
+    monkeypatch.setattr(
+        probe.sys,
+        "argv",
+        ["probe_live_sports_feed.py", "--live", "--api-key", "test-key", "--target", "10"],
+    )
 
     assert probe.main() == 0
 
     receipt = json.loads((tmp_path / "evidence_capture" / "sports_live_probe_receipt.json").read_text())
     assert receipt["provenance_summary"]["provenance_class"] == ProvenanceClass.EXTERNAL_LIVE.value
+
+
+def test_live_probe_default_target_fails_closed_when_live_capacity_is_insufficient(monkeypatch, tmp_path):
+    import scripts.probe_live_sports_feed as probe
+
+    raw_payload = FIXTURE_PATH.read_text(encoding="utf-8")
+    snapshots, live_provenance = RealMarketFeedAdapter.parse_raw_feed(
+        raw_payload=raw_payload,
+        provider="The Odds API",
+        endpoint="https://api.the-odds-api.com/v4/sports/upcoming/odds",
+        provenance_class=ProvenanceClass.EXTERNAL_LIVE.value,
+    )
+
+    monkeypatch.setattr(
+        probe.RealMarketFeedAdapter,
+        "fetch_live_feed",
+        staticmethod(lambda **_: (snapshots, live_provenance)),
+    )
+    monkeypatch.setattr(probe, "repo_root", tmp_path)
+    monkeypatch.setattr(probe.sys, "argv", ["probe_live_sports_feed.py", "--live", "--api-key", "test-key"])
+
+    assert probe.main() == 1
+    assert not (tmp_path / "evidence_capture" / "sports_live_probe_receipt.json").exists()
 
 
 def test_live_probe_failure_is_nonzero_and_does_not_emit_receipt(monkeypatch, tmp_path):
@@ -169,7 +193,6 @@ def test_live_probe_failure_is_nonzero_and_does_not_emit_receipt(monkeypatch, tm
 def test_e2e_raw_feed_to_provenance_receipt():
     raw_payload = FIXTURE_PATH.read_text(encoding="utf-8")
 
-    # 1. Adapter parses raw payload -> MarketSnapshot list + MarketProvenance
     snapshots, provenance = RealMarketFeedAdapter.parse_raw_feed(
         raw_payload=raw_payload,
         provider="FanDuel Odds Feed",
@@ -177,25 +200,20 @@ def test_e2e_raw_feed_to_provenance_receipt():
         provenance_class=ProvenanceClass.FIXTURE.value,
     )
 
-    # 2. Prediction Engine generates paper predictions
     batch_engine = PredictionBatchEngine(model_version="shadow-v1")
     predictions = batch_engine.generate(snapshots, cycle_id="e2e-provenance-test")
     assert len(predictions) > 0
 
-    # 3. Portfolio Engine constructs portfolio
     portfolio_engine = DailySportsPortfolioEngine(target=10, parlay_share=0.30)
     portfolio = portfolio_engine.build(snapshots, cycle_id="e2e-provenance-test")
     assert portfolio.count == 10
 
-    # 4. Portfolio Diversity Audit builds report with provenance
     sport_by_event = {s.event_id: s.sport for s in snapshots}
     report = build_diversity_report(portfolio.records, sport_by_event, provenance=provenance)
 
-    # 5. Render JSON receipt
     receipt_str = render_receipt(report)
     receipt_dict = json.loads(receipt_str)
 
-    # 6. Verify receipt contains all provenance summary fields and matching hashes
     prov_summary = receipt_dict["provenance_summary"]
     assert prov_summary["source_provider"] == "FanDuel Odds Feed"
     assert prov_summary["source_endpoint"] == "https://sportsbook.fanduel.com/api/sports"
@@ -204,3 +222,56 @@ def test_e2e_raw_feed_to_provenance_receipt():
     assert prov_summary["raw_payload_hash"] == provenance.raw_payload_hash
     assert prov_summary["normalized_payload_hash"] == provenance.normalized_payload_hash
     assert prov_summary["adapter_version"] == "1.0.0"
+
+
+def test_probe_live_sports_feed_multi_sport_target_50(monkeypatch, tmp_path):
+    import scripts.probe_live_sports_feed as probe
+
+    monkeypatch.setattr(probe, "repo_root", tmp_path)
+    (tmp_path / "tests" / "fixtures").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "tests" / "fixtures" / "sports_real_multi_sport_feed_response.json").write_text(
+        MULTI_FIXTURE_PATH.read_text(encoding="utf-8")
+    )
+    monkeypatch.setattr(probe.sys, "argv", ["probe_live_sports_feed.py", "--target", "50"])
+
+    assert probe.main() == 0
+
+    receipt_file = tmp_path / "evidence_capture" / "sports_live_probe_receipt.json"
+    assert receipt_file.exists()
+    receipt = json.loads(receipt_file.read_text(encoding="utf-8"))
+
+    assert receipt["total_records"] == 50
+    assert receipt["single_count"] == 35
+    assert receipt["parlay_count"] == 15
+    assert receipt["unique_prediction_ids"] == 50
+    assert receipt["provenance_summary"]["provenance_class"] == "fixture"
+    assert receipt["provenance_summary"]["snapshot_count"] == 60
+
+
+def test_e2e_multi_sport_target_50_portfolio():
+    raw_payload = MULTI_FIXTURE_PATH.read_text(encoding="utf-8")
+
+    snapshots, provenance = RealMarketFeedAdapter.parse_raw_feed(
+        raw_payload=raw_payload,
+        provider="The Odds API Multi-Sport Fixture",
+        endpoint=str(MULTI_FIXTURE_PATH),
+        provenance_class=ProvenanceClass.FIXTURE.value,
+    )
+
+    assert len(snapshots) == 60
+    assert len(provenance.event_ids) == 20
+
+    portfolio_engine = DailySportsPortfolioEngine(target=50, parlay_share=0.30)
+    portfolio = portfolio_engine.build(snapshots, cycle_id="e2e-multi-sport-50-test")
+
+    assert portfolio.count == 50
+    assert portfolio.single_count == 35
+    assert portfolio.parlay_count == 15
+
+    sport_by_event = {s.event_id: s.sport for s in snapshots}
+    report = build_diversity_report(portfolio.records, sport_by_event, provenance=provenance)
+
+    assert report.total_records == 50
+    assert report.single_count == 35
+    assert report.parlay_count == 15
+    assert report.provenance_summary["snapshot_count"] == 60

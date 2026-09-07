@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from itertools import combinations
-from typing import Iterable, Sequence
+from typing import Iterable, Mapping, Sequence
 import hashlib
 
 from .ingestion import MarketSnapshot
@@ -71,6 +71,76 @@ class DailySportsPortfolioEngine:
             unique.append(record)
         return unique, rejected
 
+    @staticmethod
+    def _select_diverse_singles(records: Sequence[PredictionRecord], target: int, sport_by_event: Mapping[str, str] | None = None) -> list[PredictionRecord]:
+        """Select singles round-robin by event while rotating market types.
+
+        Feed order is not allowed to let an early league or market exhaust the daily
+        target. The deterministic selector first distributes records across every
+        available event and rotates the market index by event position, then consumes
+        additional records in the same event-diverse order until the requested single
+        count is reached.
+        """
+        if target <= 0:
+            return []
+
+        by_event: dict[str, list[PredictionRecord]] = {}
+        for record in records:
+            by_event.setdefault(record.event_id, []).append(record)
+
+        if sport_by_event:
+            events_by_sport: dict[str, list[str]] = {}
+            for event_id in sorted(by_event):
+                sport = sport_by_event.get(event_id, "UNKNOWN").upper()
+                events_by_sport.setdefault(sport, []).append(event_id)
+
+            ordered_event_ids: list[str] = []
+            sports = sorted(events_by_sport)
+            max_events = max(len(evs) for evs in events_by_sport.values()) if events_by_sport else 0
+            for idx in range(max_events):
+                for sport in sports:
+                    ev_list = events_by_sport[sport]
+                    if idx < len(ev_list):
+                        ordered_event_ids.append(ev_list[idx])
+            event_ids = ordered_event_ids
+        else:
+            event_ids = sorted(by_event)
+
+        if not event_ids:
+            return []
+
+        selected: list[PredictionRecord] = []
+        selected_keys: set[tuple[str, str, str, str, str, str]] = set()
+        round_index = 0
+        while len(selected) < target:
+            made_progress = False
+            for event_position, event_id in enumerate(event_ids):
+                event_records = by_event[event_id]
+                if round_index >= len(event_records):
+                    continue
+                record_index = (event_position + round_index) % len(event_records)
+                record = event_records[record_index]
+                key = DailySportsPortfolioEngine._identity(record)
+                if key in selected_keys:
+                    for candidate in event_records:
+                        candidate_key = DailySportsPortfolioEngine._identity(candidate)
+                        if candidate_key not in selected_keys:
+                            record = candidate
+                            key = candidate_key
+                            break
+                    else:
+                        continue
+                selected.append(record)
+                selected_keys.add(key)
+                made_progress = True
+                if len(selected) >= target:
+                    break
+            if not made_progress:
+                break
+            round_index += 1
+
+        return selected
+
     def _build_parlays(self, singles: Sequence[PredictionRecord], target_parlays: int) -> list[PredictionRecord]:
         if target_parlays <= 0:
             return []
@@ -105,14 +175,14 @@ class DailySportsPortfolioEngine:
             raise ValueError("NO_MARKET_SNAPSHOTS")
         generated = self.batch_engine.generate(snapshot_list, cycle_id)
         singles, duplicate_rejections = self._dedupe(generated)
+        sport_by_event = {snapshot.event_id: self._sport(snapshot) for snapshot in snapshot_list}
         target_parlays = min(int(round(self.target * self.parlay_share)), max(0, self.target - 1))
         parlays = self._build_parlays(singles, target_parlays)
         remaining = max(0, self.target - len(parlays))
-        selected_singles = singles[:remaining]
+        selected_singles = self._select_diverse_singles(singles, remaining, sport_by_event)
         records = selected_singles + parlays[: max(0, self.target - len(selected_singles))]
         if len(records) < self.target:
             raise ValueError(f"DAILY_TARGET_UNMET: requested={self.target} available={len(records)}")
-        sport_by_event = {snapshot.event_id: self._sport(snapshot) for snapshot in snapshot_list}
         sport_counts: dict[str, int] = {sport: 0 for sport in sorted(SUPPORTED_SPORTS)}
         for record in records:
             sport = sport_by_event.get(record.event_id)
