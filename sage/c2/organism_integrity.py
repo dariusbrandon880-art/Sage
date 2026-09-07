@@ -99,8 +99,7 @@ def _registration_for_path(
     matches = [sub for sub in catalog if _declares_path(sub.module_path, module_path, root)]
     if not matches:
         return None
-    # A file registration is more specific than a package-tree registration.
-    return min(matches, key=lambda sub: (len(sub.module_path.rstrip("/")), sub.subsystem_id),)
+    return min(matches, key=lambda sub: (len(sub.module_path.rstrip("/")), sub.subsystem_id))
 
 
 def _module_name(path: str) -> str:
@@ -112,10 +111,10 @@ def _resolve_import(import_name: str, actual: set[str]) -> str | None:
     actual_by_name = {_module_name(path): path for path in actual}
     if import_name in actual_by_name:
         return actual_by_name[import_name]
-    package_init = f"{import_name}/__init__.py"
+    package_init = f"{import_name.replace('.', '/')}/__init__.py"
     if package_init in actual:
         return package_init
-    module_path = f"{import_name}.py".replace(".", "/")
+    module_path = f"{import_name.replace('.', '/')}.py"
     if module_path in actual:
         return module_path
     return None
@@ -157,16 +156,10 @@ def evaluate_organism_integrity(
             detail=f"Evaluated repository HEAD is {observed_head}, not the supplied exact Git HEAD.",
         ))
 
-    # A catalog file registration defines a file-level organ. A catalog directory
-    # registration defines the whole package tree as one organ; its child .py files
-    # are implementation surfaces, not additional organs.
     declared = {_normalize_declared_path(sub.module_path, root) for sub in catalog}
-    observed_organ_paths: set[str] = set()
     for module in discovered:
         registration = _registration_for_path(module.path, catalog, root)
-        if registration is not None:
-            observed_organ_paths.add(registration.module_path.rstrip("/"))
-        else:
+        if registration is None:
             findings.append(OrganismIntegrityFinding(
                 kind="UNDECLARED_ORGAN",
                 subject=module.path,
@@ -232,7 +225,6 @@ def evaluate_organism_integrity(
                     detail="Experimental cognition surface contains direct filesystem mutation calls.",
                 ))
 
-    # Tarjan SCC detection finds actual implementation import cycles without imports.
     index = 0
     indices: dict[str, int] = {}
     lowlinks: dict[str, int] = {}
