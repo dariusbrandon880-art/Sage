@@ -59,3 +59,4 @@ def test_target_unmet_is_fail_closed_in_engine():
         assert "DAILY_TARGET_UNMET" in str(exc)
     else:
         raise AssertionError("Expected DAILY_TARGET_UNMET fail-closed behavior")
+
