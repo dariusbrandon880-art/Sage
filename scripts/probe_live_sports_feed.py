@@ -91,21 +91,12 @@ def main() -> int:
     print(f"[✓] Normalized Payload SHA-256: {provenance.normalized_payload_hash}")
 
     # Build predictions and portfolio audit
-    target = args.target
     try:
-        engine = DailySportsPortfolioEngine(target=target, parlay_share=args.parlay_share)
+        engine = DailySportsPortfolioEngine(target=args.target, parlay_share=args.parlay_share)
         portfolio = engine.build(snapshots, cycle_id="sports-feed-probe-2026")
     except ValueError as err:
-        if "DAILY_TARGET_UNMET" in str(err):
-            achievable_target = min(len(snapshots), target)
-            if achievable_target >= 1:
-                print(f"[!] Requested target {target} unmet for snapshot count ({len(snapshots)} snapshots); adapting target to {achievable_target}")
-                engine = DailySportsPortfolioEngine(target=achievable_target, parlay_share=args.parlay_share)
-                portfolio = engine.build(snapshots, cycle_id="sports-feed-probe-2026")
-            else:
-                raise
-        else:
-            raise
+        print(f"[X] Portfolio construction failed closed: {err}")
+        return 1
     sport_by_event = {s.event_id: s.sport for s in snapshots}
     report = build_diversity_report(portfolio.records, sport_by_event, provenance=provenance)
 

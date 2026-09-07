@@ -145,7 +145,7 @@ def test_live_probe_success_emits_external_live_receipt(monkeypatch, tmp_path):
         staticmethod(lambda **_: (snapshots, live_provenance)),
     )
     monkeypatch.setattr(probe, "repo_root", tmp_path)
-    monkeypatch.setattr(probe.sys, "argv", ["probe_live_sports_feed.py", "--live", "--api-key", "test-key"])
+    monkeypatch.setattr(probe.sys, "argv", ["probe_live_sports_feed.py", "--live", "--api-key", "test-key", "--target", "10"])
 
     assert probe.main() == 0
 
@@ -226,6 +226,10 @@ def test_probe_live_sports_feed_multi_sport_target_50(monkeypatch, tmp_path):
     assert receipt["total_records"] == 50
     assert receipt["single_count"] == 35
     assert receipt["parlay_count"] == 15
+    assert receipt["unique_sports"] == 4
+    assert receipt["single_unique_sports"] == 4
+    assert receipt["unique_events"] == 20
+    assert receipt["single_unique_events"] == 20
     assert receipt["unique_prediction_ids"] == 50
     assert receipt["provenance_summary"]["provenance_class"] == "fixture"
     assert receipt["provenance_summary"]["snapshot_count"] == 60
@@ -257,4 +261,8 @@ def test_e2e_multi_sport_target_50_portfolio():
     assert report.total_records == 50
     assert report.single_count == 35
     assert report.parlay_count == 15
+    assert report.unique_sports == 4
+    assert report.single_unique_sports == 4
+    assert report.unique_events == 20
+    assert report.single_unique_events == 20
     assert report.provenance_summary["snapshot_count"] == 60

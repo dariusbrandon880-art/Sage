@@ -108,7 +108,21 @@ class DailySportsPortfolioEngine:
         target_parlays = min(int(round(self.target * self.parlay_share)), max(0, self.target - 1))
         parlays = self._build_parlays(singles, target_parlays)
         remaining = max(0, self.target - len(parlays))
-        selected_singles = singles[:remaining]
+
+        # Round-robin event-diverse single selection across unique events
+        by_event: dict[str, list[PredictionRecord]] = {}
+        for record in singles:
+            by_event.setdefault(record.event_id, []).append(record)
+
+        selected_singles: list[PredictionRecord] = []
+        event_ids = list(by_event.keys())
+        idx = 0
+        while len(selected_singles) < remaining and any(by_event.values()):
+            event_id = event_ids[idx % len(event_ids)]
+            if by_event[event_id]:
+                selected_singles.append(by_event[event_id].pop(0))
+            idx += 1
+
         records = selected_singles + parlays[: max(0, self.target - len(selected_singles))]
         if len(records) < self.target:
             raise ValueError(f"DAILY_TARGET_UNMET: requested={self.target} available={len(records)}")
