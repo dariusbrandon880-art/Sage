@@ -34,8 +34,10 @@ def test_undeclared_organ_is_detected(tmp_path: Path):
 def test_missing_organ_is_detected(tmp_path: Path):
     (tmp_path / "sage").mkdir()
     catalog = _catalog(SubsystemRegistration(
-        subsystem_id="missing", module_path="sage/missing.py",
-        relationship=JigsawRelationship.CORE, description="missing organ",
+        subsystem_id="missing",
+        module_path="sage/missing.py",
+        relationship=JigsawRelationship.CORE,
+        description="missing organ",
     ))
     report = evaluate_organism_integrity(HEAD, root_dir=str(tmp_path), catalog=catalog)
     assert any(f.kind == "MISSING_ORGAN" and f.subject == "sage/missing.py" for f in report.findings)
@@ -50,8 +52,10 @@ def test_projection_filesystem_mutation_is_detected(tmp_path: Path):
         "    Path('state.txt').write_text('bad')\n", encoding="utf-8",
     )
     catalog = _catalog(SubsystemRegistration(
-        subsystem_id="projection", module_path="sage/projection.py",
-        relationship=JigsawRelationship.PROJECTION, description="projection",
+        subsystem_id="projection",
+        module_path="sage/projection.py",
+        relationship=JigsawRelationship.PROJECTION,
+        description="projection",
     ))
     report = evaluate_organism_integrity(HEAD, root_dir=str(tmp_path), catalog=catalog)
     assert any(f.kind == "PROJECTION_MUTATION_SURFACE" for f in report.findings)
@@ -62,8 +66,20 @@ def test_duplicate_authority_is_detected(tmp_path: Path):
     organ.parent.mkdir(parents=True)
     organ.write_text("VALUE = 1\n", encoding="utf-8")
     catalog = _catalog(
-        SubsystemRegistration("a", "sage/authority.py", JigsawRelationship.CORE, "a", "state"),
-        SubsystemRegistration("b", "sage/authority.py", JigsawRelationship.CORE, "b", "state"),
+        SubsystemRegistration(
+            subsystem_id="a",
+            module_path="sage/authority.py",
+            relationship=JigsawRelationship.CORE,
+            description="a",
+            authoritative_domain="state",
+        ),
+        SubsystemRegistration(
+            subsystem_id="b",
+            module_path="sage/authority.py",
+            relationship=JigsawRelationship.CORE,
+            description="b",
+            authoritative_domain="state",
+        ),
     )
     report = evaluate_organism_integrity(HEAD, root_dir=str(tmp_path), catalog=catalog)
     assert any(f.kind == "DUPLICATE_AUTHORITY" and f.subject == "state" for f in report.findings)
@@ -94,8 +110,18 @@ def test_experimental_to_core_coupling_is_detected(tmp_path: Path):
     core.write_text("VALUE = 1\n", encoding="utf-8")
     experimental.write_text("from sage.core import VALUE\n", encoding="utf-8")
     catalog = _catalog(
-        SubsystemRegistration("core", "sage/core.py", JigsawRelationship.CORE, "core"),
-        SubsystemRegistration("probe", "sage/experimental/probe.py", JigsawRelationship.SERVICE, "probe"),
+        SubsystemRegistration(
+            subsystem_id="core",
+            module_path="sage/core.py",
+            relationship=JigsawRelationship.CORE,
+            description="core",
+        ),
+        SubsystemRegistration(
+            subsystem_id="probe",
+            module_path="sage/experimental/probe.py",
+            relationship=JigsawRelationship.SERVICE,
+            description="probe",
+        ),
     )
     report = evaluate_organism_integrity(HEAD, root_dir=str(tmp_path), catalog=catalog)
     assert any(f.kind == "EXPERIMENTAL_TO_CORE_COUPLING" for f in report.findings)
