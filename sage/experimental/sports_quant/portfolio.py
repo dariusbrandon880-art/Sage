@@ -73,69 +73,55 @@ class DailySportsPortfolioEngine:
 
     @staticmethod
     def _select_diverse_singles(records: Sequence[PredictionRecord], target: int) -> list[PredictionRecord]:
-        """Select singles round-robin by sport and event before consuming a target.
+        """Select singles round-robin by event while rotating market types.
 
-        This preserves the engine's deterministic ordering while preventing an input
-        feed ordered by one league from exhausting the daily target before later sports
-        can enter the portfolio. Each event contributes at most one record per round,
-        so a sufficiently rich multi-sport feed reaches all available sports/events
-        before taking additional markets from earlier events.
+        Feed order is not allowed to let an early league or market exhaust the daily
+        target. The deterministic selector first distributes records across every
+        available event and rotates the market index by event position, then consumes
+        additional records in the same event-diverse order until the requested single
+        count is reached.
         """
         if target <= 0:
             return []
 
-        by_sport_event: dict[str, dict[str, list[PredictionRecord]]] = {}
+        by_event: dict[str, list[PredictionRecord]] = {}
         for record in records:
-            sport = record.metadata.get("sport") if hasattr(record, "metadata") else None
-            sport_key = str(sport or "").upper()
-            if not sport_key:
-                # PredictionRecord may not carry sport metadata; caller supplies the
-                # canonical event ordering through record order in that case.
-                sport_key = "UNKNOWN"
-            by_sport_event.setdefault(sport_key, {}).setdefault(record.event_id, []).append(record)
+            by_event.setdefault(record.event_id, []).append(record)
 
-        if "UNKNOWN" in by_sport_event:
-            # The canonical prediction record does not currently guarantee sport
-            # metadata, so fall back to deterministic event interleaving rather than
-            # inventing a sport classification.
-            by_event: dict[str, list[PredictionRecord]] = {}
-            for record in records:
-                by_event.setdefault(record.event_id, []).append(record)
-            event_records = [by_event[event_id] for event_id in sorted(by_event)]
-            selected: list[PredictionRecord] = []
-            round_index = 0
-            while len(selected) < target and any(round_index < len(group) for group in event_records):
-                for group in event_records:
-                    if round_index < len(group):
-                        selected.append(group[round_index])
-                        if len(selected) >= target:
+        event_ids = sorted(by_event)
+        if not event_ids:
+            return []
+
+        selected: list[PredictionRecord] = []
+        selected_keys: set[tuple[str, str, str, str, str, str]] = set()
+        round_index = 0
+        while len(selected) < target:
+            made_progress = False
+            for event_position, event_id in enumerate(event_ids):
+                event_records = by_event[event_id]
+                if round_index >= len(event_records):
+                    continue
+                record_index = (event_position + round_index) % len(event_records)
+                record = event_records[record_index]
+                key = DailySportsPortfolioEngine._identity(record)
+                if key in selected_keys:
+                    for candidate in event_records:
+                        candidate_key = DailySportsPortfolioEngine._identity(candidate)
+                        if candidate_key not in selected_keys:
+                            record = candidate
+                            key = candidate_key
                             break
-                round_index += 1
-            return selected
+                    else:
+                        continue
+                selected.append(record)
+                selected_keys.add(key)
+                made_progress = True
+                if len(selected) >= target:
+                    break
+            if not made_progress:
+                break
+            round_index += 1
 
-        selected = []
-        sport_queues: dict[str, list[list[PredictionRecord]]] = {
-            sport: [by_sport_event[sport][event_id] for event_id in sorted(by_sport_event[sport])]
-            for sport in sorted(by_sport_event)
-        }
-        sport_round = 0
-        while len(selected) < target and any(sport_queues.values()):
-            for sport in sorted(sport_queues):
-                queues = sport_queues[sport]
-                if sport_round < len(queues):
-                    selected.append(queues[sport_round][0])
-                    if len(selected) >= target:
-                        break
-            sport_round += 1
-
-        # Fill remaining target slots from the unused deterministic record stream.
-        if len(selected) < target:
-            selected_ids = {id(record) for record in selected}
-            for record in records:
-                if id(record) not in selected_ids:
-                    selected.append(record)
-                    if len(selected) >= target:
-                        break
         return selected
 
     def _build_parlays(self, singles: Sequence[PredictionRecord], target_parlays: int) -> list[PredictionRecord]:
