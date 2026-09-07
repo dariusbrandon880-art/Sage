@@ -71,6 +71,73 @@ class DailySportsPortfolioEngine:
             unique.append(record)
         return unique, rejected
 
+    @staticmethod
+    def _select_diverse_singles(records: Sequence[PredictionRecord], target: int) -> list[PredictionRecord]:
+        """Select singles round-robin by sport and event before consuming a target.
+
+        This preserves the engine's deterministic ordering while preventing an input
+        feed ordered by one league from exhausting the daily target before later sports
+        can enter the portfolio. Each event contributes at most one record per round,
+        so a sufficiently rich multi-sport feed reaches all available sports/events
+        before taking additional markets from earlier events.
+        """
+        if target <= 0:
+            return []
+
+        by_sport_event: dict[str, dict[str, list[PredictionRecord]]] = {}
+        for record in records:
+            sport = record.metadata.get("sport") if hasattr(record, "metadata") else None
+            sport_key = str(sport or "").upper()
+            if not sport_key:
+                # PredictionRecord may not carry sport metadata; caller supplies the
+                # canonical event ordering through record order in that case.
+                sport_key = "UNKNOWN"
+            by_sport_event.setdefault(sport_key, {}).setdefault(record.event_id, []).append(record)
+
+        if "UNKNOWN" in by_sport_event:
+            # The canonical prediction record does not currently guarantee sport
+            # metadata, so fall back to deterministic event interleaving rather than
+            # inventing a sport classification.
+            by_event: dict[str, list[PredictionRecord]] = {}
+            for record in records:
+                by_event.setdefault(record.event_id, []).append(record)
+            event_records = [by_event[event_id] for event_id in sorted(by_event)]
+            selected: list[PredictionRecord] = []
+            round_index = 0
+            while len(selected) < target and any(round_index < len(group) for group in event_records):
+                for group in event_records:
+                    if round_index < len(group):
+                        selected.append(group[round_index])
+                        if len(selected) >= target:
+                            break
+                round_index += 1
+            return selected
+
+        selected = []
+        sport_queues: dict[str, list[list[PredictionRecord]]] = {
+            sport: [by_sport_event[sport][event_id] for event_id in sorted(by_sport_event[sport])]
+            for sport in sorted(by_sport_event)
+        }
+        sport_round = 0
+        while len(selected) < target and any(sport_queues.values()):
+            for sport in sorted(sport_queues):
+                queues = sport_queues[sport]
+                if sport_round < len(queues):
+                    selected.append(queues[sport_round][0])
+                    if len(selected) >= target:
+                        break
+            sport_round += 1
+
+        # Fill remaining target slots from the unused deterministic record stream.
+        if len(selected) < target:
+            selected_ids = {id(record) for record in selected}
+            for record in records:
+                if id(record) not in selected_ids:
+                    selected.append(record)
+                    if len(selected) >= target:
+                        break
+        return selected
+
     def _build_parlays(self, singles: Sequence[PredictionRecord], target_parlays: int) -> list[PredictionRecord]:
         if target_parlays <= 0:
             return []
@@ -108,7 +175,7 @@ class DailySportsPortfolioEngine:
         target_parlays = min(int(round(self.target * self.parlay_share)), max(0, self.target - 1))
         parlays = self._build_parlays(singles, target_parlays)
         remaining = max(0, self.target - len(parlays))
-        selected_singles = singles[:remaining]
+        selected_singles = self._select_diverse_singles(singles, remaining)
         records = selected_singles + parlays[: max(0, self.target - len(selected_singles))]
         if len(records) < self.target:
             raise ValueError(f"DAILY_TARGET_UNMET: requested={self.target} available={len(records)}")
