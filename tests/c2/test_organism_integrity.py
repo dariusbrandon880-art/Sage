@@ -31,6 +31,39 @@ def test_undeclared_organ_is_detected(tmp_path: Path):
     assert any(f.kind == "UNDECLARED_ORGAN" and f.subject == "sage/new_organ.py" for f in report.findings)
 
 
+def test_registered_package_tree_is_one_organ(tmp_path: Path):
+    package = tmp_path / "sage" / "c2"
+    package.mkdir(parents=True)
+    (package / "__init__.py").write_text("VALUE = 1\n", encoding="utf-8")
+    (package / "helper.py").write_text("VALUE = 2\n", encoding="utf-8")
+    catalog = _catalog(SubsystemRegistration(
+        subsystem_id="c2",
+        module_path="sage/c2/",
+        relationship=JigsawRelationship.CORE,
+        description="C2 package boundary",
+    ))
+    report = evaluate_organism_integrity(HEAD, root_dir=str(tmp_path), catalog=catalog)
+    assert not any(f.kind == "UNDECLARED_ORGAN" for f in report.findings)
+    assert not any(f.kind == "MISSING_ORGAN" for f in report.findings)
+
+
+def test_file_outside_registered_package_is_an_organ_candidate(tmp_path: Path):
+    package = tmp_path / "sage" / "c2"
+    package.mkdir(parents=True)
+    (package / "__init__.py").write_text("VALUE = 1\n", encoding="utf-8")
+    (package / "helper.py").write_text("VALUE = 2\n", encoding="utf-8")
+    (tmp_path / "sage" / "orphan.py").write_text("VALUE = 3\n", encoding="utf-8")
+    catalog = _catalog(SubsystemRegistration(
+        subsystem_id="c2",
+        module_path="sage/c2/",
+        relationship=JigsawRelationship.CORE,
+        description="C2 package boundary",
+    ))
+    report = evaluate_organism_integrity(HEAD, root_dir=str(tmp_path), catalog=catalog)
+    assert any(f.kind == "UNDECLARED_ORGAN" and f.subject == "sage/orphan.py" for f in report.findings)
+    assert not any(f.kind == "UNDECLARED_ORGAN" and f.subject == "sage/c2/helper.py" for f in report.findings)
+
+
 def test_missing_organ_is_detected(tmp_path: Path):
     (tmp_path / "sage").mkdir()
     catalog = _catalog(SubsystemRegistration(
@@ -115,6 +148,32 @@ def test_experimental_to_core_coupling_is_detected(tmp_path: Path):
             module_path="sage/core.py",
             relationship=JigsawRelationship.CORE,
             description="core",
+        ),
+        SubsystemRegistration(
+            subsystem_id="probe",
+            module_path="sage/experimental/probe.py",
+            relationship=JigsawRelationship.SERVICE,
+            description="probe",
+        ),
+    )
+    report = evaluate_organism_integrity(HEAD, root_dir=str(tmp_path), catalog=catalog)
+    assert any(f.kind == "EXPERIMENTAL_TO_CORE_COUPLING" for f in report.findings)
+
+
+def test_experimental_to_core_package_coupling_is_detected(tmp_path: Path):
+    core = tmp_path / "sage" / "core"
+    experimental = tmp_path / "sage" / "experimental" / "probe.py"
+    core.mkdir(parents=True)
+    experimental.parent.mkdir(parents=True)
+    (core / "__init__.py").write_text("VALUE = 1\n", encoding="utf-8")
+    (core / "helper.py").write_text("VALUE = 2\n", encoding="utf-8")
+    experimental.write_text("from sage.core.helper import VALUE\n", encoding="utf-8")
+    catalog = _catalog(
+        SubsystemRegistration(
+            subsystem_id="core",
+            module_path="sage/core/",
+            relationship=JigsawRelationship.CORE,
+            description="core package",
         ),
         SubsystemRegistration(
             subsystem_id="probe",
