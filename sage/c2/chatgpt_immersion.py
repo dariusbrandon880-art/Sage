@@ -176,8 +176,14 @@ def project_chatgpt_immersion_response(
         mgr = _load_airspace_manager()
 
     if not tag and mgr is not None:
-        target_station = _get_station_id(station_id)
-        tag = _render_organism_tag(mgr, target_station, state_label)
+        try:
+            target_station = _get_station_id(station_id)
+            tag = _render_organism_tag(mgr, target_station, state_label)
+        except Exception:
+            tag = None
+
+    if not tag and projection is None:
+        tag = f"[SAGE::C2::CHATGPT] ◈ GPT // CQL-1 // POINTS 0 // XP 0 // BOSS ⭐×0 ⭐⭐×0 // ⚔️ 0 // ┃ 0 // {state_label}"
 
     if not tag:
         raise ValueError("SAGE organism name tag required for C2 immersion response")

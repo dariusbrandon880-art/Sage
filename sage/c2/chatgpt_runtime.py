@@ -35,6 +35,9 @@ def render_chatgpt_c2_response(
     organism_projection: Any | None = None,
     organism_tag: str | None = None,
     manager: Any | None = None,
+    hud_visible: bool = True,
+    previous_hud_update_key: str | None = None,
+    force_hud: bool = False,
 ) -> str:
     """Render one canonical C2 response through the ChatGPT immersion surface."""
     response: ChatGPTImmersionResponse = project_chatgpt_immersion_response(
@@ -48,6 +51,9 @@ def render_chatgpt_c2_response(
         organism_projection=organism_projection,
         organism_tag=organism_tag,
         manager=manager,
+        hud_visible=hud_visible,
+        previous_hud_update_key=previous_hud_update_key,
+        force_hud=force_hud,
     )
     return response.render()
 
@@ -64,6 +70,9 @@ def build_chatgpt_c2_response(
     organism_projection: Any | None = None,
     organism_tag: str | None = None,
     manager: Any | None = None,
+    hud_visible: bool = True,
+    previous_hud_update_key: str | None = None,
+    force_hud: bool = False,
 ) -> ChatGPTImmersionResponse:
     """Return the structured read-only ChatGPT immersion response."""
     return project_chatgpt_immersion_response(
@@ -77,6 +86,9 @@ def build_chatgpt_c2_response(
         organism_projection=organism_projection,
         organism_tag=organism_tag,
         manager=manager,
+        hud_visible=hud_visible,
+        previous_hud_update_key=previous_hud_update_key,
+        force_hud=force_hud,
     )
 
 
@@ -107,6 +119,9 @@ def render_governed_chatgpt_turn(
     organism_projection: Any | None = None,
     organism_tag: str | None = None,
     manager: Any | None = None,
+    hud_visible: bool = True,
+    previous_hud_update_key: str | None = None,
+    force_hud: bool = False,
 ) -> tuple[str, ModelResponse]:
     """Execute GPT through SAGE and render only the reconciled result."""
     response = runtime.invoke(
@@ -124,6 +139,9 @@ def render_governed_chatgpt_turn(
         organism_projection=organism_projection,
         organism_tag=organism_tag,
         manager=manager,
+        hud_visible=hud_visible,
+        previous_hud_update_key=previous_hud_update_key,
+        force_hud=force_hud,
     ), response
 
 

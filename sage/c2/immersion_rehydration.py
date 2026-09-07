@@ -154,6 +154,7 @@ def rehydrate_chatgpt_c2_frame(
     c2_context: dict[str, Any] | None = None,
     evidence_refs: tuple[str, ...] = (),
     organism_manager: Any | None = None,
+    force_hud: bool = True,
 ) -> tuple[ImmersionState, Any]:
     """Rehydrate complete C2 frame with full game immersion and canonical organism state."""
     immersion_state = build_chatgpt_immersion_state(
@@ -170,6 +171,7 @@ def rehydrate_chatgpt_c2_frame(
         immersion_state,
         body=body,
         organism_manager=mgr,
+        force_hud=force_hud,
     )
     return immersion_state, response
 

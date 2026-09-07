@@ -133,10 +133,12 @@ class ChatGPTClient(BaseAIClient):
             self.reasoning_history.append(f"ChatGPT executed through the governed OpenAI adapter for session '{session_id}'.")
         from sage.runtime.chatgpt_sage_boundary import SAGEChatGPTBoundary
         from sage.runtime.model_adapters import OpenAIResponsesAdapter
-        from sage.c2.immersion_rehydration import build_chatgpt_immersion_state
+        from sage.c2.immersion_rehydration import build_chatgpt_immersion_state, is_rehydrate_hud_command
+        from sage.c2.chatgpt_c2_contract import classify_directive
         adapter = OpenAIResponsesAdapter(client=provider_client, model_id="gpt-4o-mini")
         immersion_state = build_chatgpt_immersion_state(self.runtime, session_id=session_id, c2_context=c2_context, evidence_refs=referenced_ids)
-        rendered_immersion, model_response = SAGEChatGPTBoundary(governed_runtime, adapter, operational_runtime=self.runtime).respond(request.prompt, model_role="chatgpt", immersion_state=immersion_state, session_id=session_id)
+        force_hud = is_rehydrate_hud_command(request.prompt) or classify_directive(request.prompt).requires_rehydration
+        rendered_immersion, model_response = SAGEChatGPTBoundary(governed_runtime, adapter, operational_runtime=self.runtime).respond(request.prompt, model_role="chatgpt", immersion_state=immersion_state, session_id=session_id, force_hud=force_hud)
         from sage.models import ExternalSessionPayload
         payload = ExternalSessionPayload(session_id=session_id, objective=str(c2_context.get("active_objective") or self.runtime.current_state.current_objective or "SAGE Runtime Standby"), task=f"ChatGPT Query: {request.prompt[:50]}...", memories=[{"id": f"ai_chatgpt_{uuid.uuid4().hex[:8]}", "object_type": "ai_query_interaction", "content": {"prompt": request.prompt, "response": model_response.raw_output, "rendered_immersion": rendered_immersion, "referenced_memories": list(referenced_ids), "client": "ChatGPT", "state_digest": model_response.input_state_digest, "station": model_response.station, "policy_version": model_response.policy_version, "provenance_digest": model_response.provenance_digest}, "tags": ["ai_query", "chatgpt", "sage_governed_boundary"], "confidence": "validated"}], decisions=[])
         self.runtime.ingest_session_payload(payload)
