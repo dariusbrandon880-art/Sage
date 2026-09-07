@@ -394,184 +394,34 @@
       "sha256_receipt_hash": "f201afef212b6f4c16826a42e082009f91c01d730516ecfa4f526dc0363de46d"
     },
     {
-      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_mlb_nyy_bos_moneyline_new york yankees_",
+      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_mlb_hou_tex_moneyline_houston astros_",
       "cycle_id": "sports-feed-probe-50-20260907",
       "event_observation": {
-        "event_id": "e2026_mlb_nyy_bos",
+        "event_id": "e2026_mlb_hou_tex",
         "sport": "MLB",
         "league": "BASEBALL_MLB",
         "home_team": "Home Team",
         "away_team": "Away Team",
-        "event_start_time_utc": "2026-09-10T19:05:00Z",
+        "event_start_time_utc": "2026-09-10T23:05:00Z",
         "observation_timestamp_utc": "2026-09-10T12:00:00Z",
         "source_name": "FanDuel / Odds API Fixture",
         "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
         "market_name": "moneyline",
         "observed_odds": {
-          "market_probability": 0.5194805194805195
+          "market_probability": 0.5324675324675325
         },
         "event_status": "PRE_GAME_LOCKED"
       },
-      "selected_prediction": "new york yankees",
-      "odds_at_lock": "1.92",
-      "implied_probability": 0.5195,
-      "model_predicted_probability": 0.5166,
+      "selected_prediction": "houston astros",
+      "odds_at_lock": "1.88",
+      "implied_probability": 0.5325,
+      "model_predicted_probability": 0.5276,
       "lock_timestamp_utc": "2026-09-10T12:00:00Z",
       "model_state_rationale": "Model version shadow-v1 single prediction",
       "is_parlay": false,
       "parlay_legs": [],
       "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "82e60cb7a14a2a3537854bd2300cf39ef30ecbf00d833e83c05c1d967f7d6631"
-    },
-    {
-      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_mlb_nyy_bos_moneyline_boston red sox_",
-      "cycle_id": "sports-feed-probe-50-20260907",
-      "event_observation": {
-        "event_id": "e2026_mlb_nyy_bos",
-        "sport": "MLB",
-        "league": "BASEBALL_MLB",
-        "home_team": "Home Team",
-        "away_team": "Away Team",
-        "event_start_time_utc": "2026-09-10T19:05:00Z",
-        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
-        "source_name": "FanDuel / Odds API Fixture",
-        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
-        "market_name": "moneyline",
-        "observed_odds": {
-          "market_probability": 0.4805194805194806
-        },
-        "event_status": "PRE_GAME_LOCKED"
-      },
-      "selected_prediction": "boston red sox",
-      "odds_at_lock": "2.08",
-      "implied_probability": 0.4805,
-      "model_predicted_probability": 0.4834,
-      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
-      "model_state_rationale": "Model version shadow-v1 single prediction",
-      "is_parlay": false,
-      "parlay_legs": [],
-      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "02d6d3dcb0b8fd06f90184ae289c6fea8bfc383acbcdabeca31a47655f8ed463"
-    },
-    {
-      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_mlb_nyy_bos_spreads_new york yankees_1.5",
-      "cycle_id": "sports-feed-probe-50-20260907",
-      "event_observation": {
-        "event_id": "e2026_mlb_nyy_bos",
-        "sport": "MLB",
-        "league": "BASEBALL_MLB",
-        "home_team": "Home Team",
-        "away_team": "Away Team",
-        "event_start_time_utc": "2026-09-10T19:05:00Z",
-        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
-        "source_name": "FanDuel / Odds API Fixture",
-        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
-        "market_name": "spreads",
-        "observed_odds": {
-          "market_probability": 0.5
-        },
-        "event_status": "PRE_GAME_LOCKED"
-      },
-      "selected_prediction": "new york yankees",
-      "odds_at_lock": "2.00",
-      "implied_probability": 0.5,
-      "model_predicted_probability": 0.5,
-      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
-      "model_state_rationale": "Model version shadow-v1 single prediction",
-      "is_parlay": false,
-      "parlay_legs": [],
-      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "cedc40a340d5d1ff347345e24f34a4afe68604fdb037a9944ba3794f463f02bf"
-    },
-    {
-      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_mlb_nyy_bos_spreads_boston red sox_1.5",
-      "cycle_id": "sports-feed-probe-50-20260907",
-      "event_observation": {
-        "event_id": "e2026_mlb_nyy_bos",
-        "sport": "MLB",
-        "league": "BASEBALL_MLB",
-        "home_team": "Home Team",
-        "away_team": "Away Team",
-        "event_start_time_utc": "2026-09-10T19:05:00Z",
-        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
-        "source_name": "FanDuel / Odds API Fixture",
-        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
-        "market_name": "spreads",
-        "observed_odds": {
-          "market_probability": 0.5
-        },
-        "event_status": "PRE_GAME_LOCKED"
-      },
-      "selected_prediction": "boston red sox",
-      "odds_at_lock": "2.00",
-      "implied_probability": 0.5,
-      "model_predicted_probability": 0.5,
-      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
-      "model_state_rationale": "Model version shadow-v1 single prediction",
-      "is_parlay": false,
-      "parlay_legs": [],
-      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "7aa821d15425bc6292100bf7f5e482c8b4f224f49b857e1fdd42d51d45d3805d"
-    },
-    {
-      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_mlb_nyy_bos_totals_over_8.5",
-      "cycle_id": "sports-feed-probe-50-20260907",
-      "event_observation": {
-        "event_id": "e2026_mlb_nyy_bos",
-        "sport": "MLB",
-        "league": "BASEBALL_MLB",
-        "home_team": "Home Team",
-        "away_team": "Away Team",
-        "event_start_time_utc": "2026-09-10T19:05:00Z",
-        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
-        "source_name": "FanDuel / Odds API Fixture",
-        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
-        "market_name": "totals",
-        "observed_odds": {
-          "market_probability": 0.4895287958115184
-        },
-        "event_status": "PRE_GAME_LOCKED"
-      },
-      "selected_prediction": "over",
-      "odds_at_lock": "2.04",
-      "implied_probability": 0.4895,
-      "model_predicted_probability": 0.4911,
-      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
-      "model_state_rationale": "Model version shadow-v1 single prediction",
-      "is_parlay": false,
-      "parlay_legs": [],
-      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "4032b1fadf584af16a876971366267592111c9217d82d8f508651ac5b1b67a09"
-    },
-    {
-      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_mlb_nyy_bos_totals_under_8.5",
-      "cycle_id": "sports-feed-probe-50-20260907",
-      "event_observation": {
-        "event_id": "e2026_mlb_nyy_bos",
-        "sport": "MLB",
-        "league": "BASEBALL_MLB",
-        "home_team": "Home Team",
-        "away_team": "Away Team",
-        "event_start_time_utc": "2026-09-10T19:05:00Z",
-        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
-        "source_name": "FanDuel / Odds API Fixture",
-        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
-        "market_name": "totals",
-        "observed_odds": {
-          "market_probability": 0.5104712041884817
-        },
-        "event_status": "PRE_GAME_LOCKED"
-      },
-      "selected_prediction": "under",
-      "odds_at_lock": "1.96",
-      "implied_probability": 0.5105,
-      "model_predicted_probability": 0.5089,
-      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
-      "model_state_rationale": "Model version shadow-v1 single prediction",
-      "is_parlay": false,
-      "parlay_legs": [],
-      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "f1e1d756e3d83f85f8fd20d067f51748865a9d2eec96eb6123493f40c328db88"
+      "sha256_receipt_hash": "f740711e8d625a345ec9646007b045582ee15c407a7508910ecf2b4b2a3b465e"
     },
     {
       "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_mlb_lad_sd_moneyline_los angeles dodgers_",
@@ -604,334 +454,34 @@
       "sha256_receipt_hash": "ebc3c1538469f3c36b5bcae80f33f5dd37ebf331a16c38d77c44bc3a4235fb7f"
     },
     {
-      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_mlb_lad_sd_moneyline_san diego padres_",
+      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_mlb_nyy_bos_moneyline_new york yankees_",
       "cycle_id": "sports-feed-probe-50-20260907",
       "event_observation": {
-        "event_id": "e2026_mlb_lad_sd",
+        "event_id": "e2026_mlb_nyy_bos",
         "sport": "MLB",
         "league": "BASEBALL_MLB",
         "home_team": "Home Team",
         "away_team": "Away Team",
-        "event_start_time_utc": "2026-09-10T21:10:00Z",
+        "event_start_time_utc": "2026-09-10T19:05:00Z",
         "observation_timestamp_utc": "2026-09-10T12:00:00Z",
         "source_name": "FanDuel / Odds API Fixture",
         "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
         "market_name": "moneyline",
         "observed_odds": {
-          "market_probability": 0.4545454545454546
+          "market_probability": 0.5194805194805195
         },
         "event_status": "PRE_GAME_LOCKED"
       },
-      "selected_prediction": "san diego padres",
-      "odds_at_lock": "2.20",
-      "implied_probability": 0.4545,
-      "model_predicted_probability": 0.4614,
+      "selected_prediction": "new york yankees",
+      "odds_at_lock": "1.92",
+      "implied_probability": 0.5195,
+      "model_predicted_probability": 0.5166,
       "lock_timestamp_utc": "2026-09-10T12:00:00Z",
       "model_state_rationale": "Model version shadow-v1 single prediction",
       "is_parlay": false,
       "parlay_legs": [],
       "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "5328a25398b2245bdd0ebbccc213b21f064a394d943395330cf80e3b5a17a5e2"
-    },
-    {
-      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_mlb_lad_sd_spreads_los angeles dodgers_1.5",
-      "cycle_id": "sports-feed-probe-50-20260907",
-      "event_observation": {
-        "event_id": "e2026_mlb_lad_sd",
-        "sport": "MLB",
-        "league": "BASEBALL_MLB",
-        "home_team": "Home Team",
-        "away_team": "Away Team",
-        "event_start_time_utc": "2026-09-10T21:10:00Z",
-        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
-        "source_name": "FanDuel / Odds API Fixture",
-        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
-        "market_name": "spreads",
-        "observed_odds": {
-          "market_probability": 0.5
-        },
-        "event_status": "PRE_GAME_LOCKED"
-      },
-      "selected_prediction": "los angeles dodgers",
-      "odds_at_lock": "2.00",
-      "implied_probability": 0.5,
-      "model_predicted_probability": 0.5,
-      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
-      "model_state_rationale": "Model version shadow-v1 single prediction",
-      "is_parlay": false,
-      "parlay_legs": [],
-      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "e7e4c422c8fc58f67cbcf67bfddf4b915e363495bdadec09984eadc9431b0268"
-    },
-    {
-      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_mlb_lad_sd_spreads_san diego padres_1.5",
-      "cycle_id": "sports-feed-probe-50-20260907",
-      "event_observation": {
-        "event_id": "e2026_mlb_lad_sd",
-        "sport": "MLB",
-        "league": "BASEBALL_MLB",
-        "home_team": "Home Team",
-        "away_team": "Away Team",
-        "event_start_time_utc": "2026-09-10T21:10:00Z",
-        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
-        "source_name": "FanDuel / Odds API Fixture",
-        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
-        "market_name": "spreads",
-        "observed_odds": {
-          "market_probability": 0.5
-        },
-        "event_status": "PRE_GAME_LOCKED"
-      },
-      "selected_prediction": "san diego padres",
-      "odds_at_lock": "2.00",
-      "implied_probability": 0.5,
-      "model_predicted_probability": 0.5,
-      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
-      "model_state_rationale": "Model version shadow-v1 single prediction",
-      "is_parlay": false,
-      "parlay_legs": [],
-      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "146a2e0376d0fc295f56244352706b184d87175e8d0923eba3a1996db46cd248"
-    },
-    {
-      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_mlb_lad_sd_totals_over_8",
-      "cycle_id": "sports-feed-probe-50-20260907",
-      "event_observation": {
-        "event_id": "e2026_mlb_lad_sd",
-        "sport": "MLB",
-        "league": "BASEBALL_MLB",
-        "home_team": "Home Team",
-        "away_team": "Away Team",
-        "event_start_time_utc": "2026-09-10T21:10:00Z",
-        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
-        "source_name": "FanDuel / Odds API Fixture",
-        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
-        "market_name": "totals",
-        "observed_odds": {
-          "market_probability": 0.5
-        },
-        "event_status": "PRE_GAME_LOCKED"
-      },
-      "selected_prediction": "over",
-      "odds_at_lock": "2.00",
-      "implied_probability": 0.5,
-      "model_predicted_probability": 0.5,
-      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
-      "model_state_rationale": "Model version shadow-v1 single prediction",
-      "is_parlay": false,
-      "parlay_legs": [],
-      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "016e6a512eaf417e042773315f0725f672e3ec966f198a104b030ff014755439"
-    },
-    {
-      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_mlb_lad_sd_totals_under_8",
-      "cycle_id": "sports-feed-probe-50-20260907",
-      "event_observation": {
-        "event_id": "e2026_mlb_lad_sd",
-        "sport": "MLB",
-        "league": "BASEBALL_MLB",
-        "home_team": "Home Team",
-        "away_team": "Away Team",
-        "event_start_time_utc": "2026-09-10T21:10:00Z",
-        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
-        "source_name": "FanDuel / Odds API Fixture",
-        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
-        "market_name": "totals",
-        "observed_odds": {
-          "market_probability": 0.5
-        },
-        "event_status": "PRE_GAME_LOCKED"
-      },
-      "selected_prediction": "under",
-      "odds_at_lock": "2.00",
-      "implied_probability": 0.5,
-      "model_predicted_probability": 0.5,
-      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
-      "model_state_rationale": "Model version shadow-v1 single prediction",
-      "is_parlay": false,
-      "parlay_legs": [],
-      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "a29af61ee9e488510ac50ac797aafff7dfd305bcf755c3c37cdc4eb107de651a"
-    },
-    {
-      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_mlb_hou_tex_moneyline_houston astros_",
-      "cycle_id": "sports-feed-probe-50-20260907",
-      "event_observation": {
-        "event_id": "e2026_mlb_hou_tex",
-        "sport": "MLB",
-        "league": "BASEBALL_MLB",
-        "home_team": "Home Team",
-        "away_team": "Away Team",
-        "event_start_time_utc": "2026-09-10T23:05:00Z",
-        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
-        "source_name": "FanDuel / Odds API Fixture",
-        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
-        "market_name": "moneyline",
-        "observed_odds": {
-          "market_probability": 0.5324675324675325
-        },
-        "event_status": "PRE_GAME_LOCKED"
-      },
-      "selected_prediction": "houston astros",
-      "odds_at_lock": "1.88",
-      "implied_probability": 0.5325,
-      "model_predicted_probability": 0.5276,
-      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
-      "model_state_rationale": "Model version shadow-v1 single prediction",
-      "is_parlay": false,
-      "parlay_legs": [],
-      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "f740711e8d625a345ec9646007b045582ee15c407a7508910ecf2b4b2a3b465e"
-    },
-    {
-      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_mlb_hou_tex_moneyline_texas rangers_",
-      "cycle_id": "sports-feed-probe-50-20260907",
-      "event_observation": {
-        "event_id": "e2026_mlb_hou_tex",
-        "sport": "MLB",
-        "league": "BASEBALL_MLB",
-        "home_team": "Home Team",
-        "away_team": "Away Team",
-        "event_start_time_utc": "2026-09-10T23:05:00Z",
-        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
-        "source_name": "FanDuel / Odds API Fixture",
-        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
-        "market_name": "moneyline",
-        "observed_odds": {
-          "market_probability": 0.4675324675324676
-        },
-        "event_status": "PRE_GAME_LOCKED"
-      },
-      "selected_prediction": "texas rangers",
-      "odds_at_lock": "2.14",
-      "implied_probability": 0.4675,
-      "model_predicted_probability": 0.4724,
-      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
-      "model_state_rationale": "Model version shadow-v1 single prediction",
-      "is_parlay": false,
-      "parlay_legs": [],
-      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "10624b429e0d72c2620bea9a993213067141565c81528be5f8e97819d1d947b2"
-    },
-    {
-      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_mlb_hou_tex_spreads_houston astros_1.5",
-      "cycle_id": "sports-feed-probe-50-20260907",
-      "event_observation": {
-        "event_id": "e2026_mlb_hou_tex",
-        "sport": "MLB",
-        "league": "BASEBALL_MLB",
-        "home_team": "Home Team",
-        "away_team": "Away Team",
-        "event_start_time_utc": "2026-09-10T23:05:00Z",
-        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
-        "source_name": "FanDuel / Odds API Fixture",
-        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
-        "market_name": "spreads",
-        "observed_odds": {
-          "market_probability": 0.5
-        },
-        "event_status": "PRE_GAME_LOCKED"
-      },
-      "selected_prediction": "houston astros",
-      "odds_at_lock": "2.00",
-      "implied_probability": 0.5,
-      "model_predicted_probability": 0.5,
-      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
-      "model_state_rationale": "Model version shadow-v1 single prediction",
-      "is_parlay": false,
-      "parlay_legs": [],
-      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "e4f56a180d92570e44d3d0895bf6932da26c114ced1b7daf891beb9e81792d7a"
-    },
-    {
-      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_mlb_hou_tex_spreads_texas rangers_1.5",
-      "cycle_id": "sports-feed-probe-50-20260907",
-      "event_observation": {
-        "event_id": "e2026_mlb_hou_tex",
-        "sport": "MLB",
-        "league": "BASEBALL_MLB",
-        "home_team": "Home Team",
-        "away_team": "Away Team",
-        "event_start_time_utc": "2026-09-10T23:05:00Z",
-        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
-        "source_name": "FanDuel / Odds API Fixture",
-        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
-        "market_name": "spreads",
-        "observed_odds": {
-          "market_probability": 0.5
-        },
-        "event_status": "PRE_GAME_LOCKED"
-      },
-      "selected_prediction": "texas rangers",
-      "odds_at_lock": "2.00",
-      "implied_probability": 0.5,
-      "model_predicted_probability": 0.5,
-      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
-      "model_state_rationale": "Model version shadow-v1 single prediction",
-      "is_parlay": false,
-      "parlay_legs": [],
-      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "c7bf28781716ec484491c7851ca9529a1ab36997be500756c487883754b121c9"
-    },
-    {
-      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_mlb_hou_tex_totals_over_9",
-      "cycle_id": "sports-feed-probe-50-20260907",
-      "event_observation": {
-        "event_id": "e2026_mlb_hou_tex",
-        "sport": "MLB",
-        "league": "BASEBALL_MLB",
-        "home_team": "Home Team",
-        "away_team": "Away Team",
-        "event_start_time_utc": "2026-09-10T23:05:00Z",
-        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
-        "source_name": "FanDuel / Odds API Fixture",
-        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
-        "market_name": "totals",
-        "observed_odds": {
-          "market_probability": 0.5104712041884817
-        },
-        "event_status": "PRE_GAME_LOCKED"
-      },
-      "selected_prediction": "over",
-      "odds_at_lock": "1.96",
-      "implied_probability": 0.5105,
-      "model_predicted_probability": 0.5089,
-      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
-      "model_state_rationale": "Model version shadow-v1 single prediction",
-      "is_parlay": false,
-      "parlay_legs": [],
-      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "d20bf621d6901b067d62e07a57b9539c6e297f07041cb76f7497c3dc6a55260f"
-    },
-    {
-      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_mlb_hou_tex_totals_under_9",
-      "cycle_id": "sports-feed-probe-50-20260907",
-      "event_observation": {
-        "event_id": "e2026_mlb_hou_tex",
-        "sport": "MLB",
-        "league": "BASEBALL_MLB",
-        "home_team": "Home Team",
-        "away_team": "Away Team",
-        "event_start_time_utc": "2026-09-10T23:05:00Z",
-        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
-        "source_name": "FanDuel / Odds API Fixture",
-        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
-        "market_name": "totals",
-        "observed_odds": {
-          "market_probability": 0.4895287958115184
-        },
-        "event_status": "PRE_GAME_LOCKED"
-      },
-      "selected_prediction": "under",
-      "odds_at_lock": "2.04",
-      "implied_probability": 0.4895,
-      "model_predicted_probability": 0.4911,
-      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
-      "model_state_rationale": "Model version shadow-v1 single prediction",
-      "is_parlay": false,
-      "parlay_legs": [],
-      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "7324b8a0a3dfe5b563505bd48e825e68503b964ff9cdef96833270ed4b4a3db4"
+      "sha256_receipt_hash": "82e60cb7a14a2a3537854bd2300cf39ef30ecbf00d833e83c05c1d967f7d6631"
     },
     {
       "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nba_bos_lal_moneyline_los angeles lakers_",
@@ -964,156 +514,6 @@
       "sha256_receipt_hash": "00a48c6dfa2c35ecf06bc2cd8961423de6a1d40d9ab38186f233b4fafa6d966b"
     },
     {
-      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nba_bos_lal_moneyline_boston celtics_",
-      "cycle_id": "sports-feed-probe-50-20260907",
-      "event_observation": {
-        "event_id": "e2026_nba_bos_lal",
-        "sport": "NBA",
-        "league": "BASKETBALL_NBA",
-        "home_team": "Home Team",
-        "away_team": "Away Team",
-        "event_start_time_utc": "2026-09-10T22:00:00Z",
-        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
-        "source_name": "FanDuel / Odds API Fixture",
-        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
-        "market_name": "moneyline",
-        "observed_odds": {
-          "market_probability": 0.5454545454545455
-        },
-        "event_status": "PRE_GAME_LOCKED"
-      },
-      "selected_prediction": "boston celtics",
-      "odds_at_lock": "1.83",
-      "implied_probability": 0.5455,
-      "model_predicted_probability": 0.5386,
-      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
-      "model_state_rationale": "Model version shadow-v1 single prediction",
-      "is_parlay": false,
-      "parlay_legs": [],
-      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "b15fa87b3bdb08ad8b65dec2704ce4996f564c5caa516a51e6aa5414078e5f73"
-    },
-    {
-      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nba_bos_lal_spreads_los angeles lakers_-3.5",
-      "cycle_id": "sports-feed-probe-50-20260907",
-      "event_observation": {
-        "event_id": "e2026_nba_bos_lal",
-        "sport": "NBA",
-        "league": "BASKETBALL_NBA",
-        "home_team": "Home Team",
-        "away_team": "Away Team",
-        "event_start_time_utc": "2026-09-10T22:00:00Z",
-        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
-        "source_name": "FanDuel / Odds API Fixture",
-        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
-        "market_name": "spreads",
-        "observed_odds": {
-          "market_probability": 0.5
-        },
-        "event_status": "PRE_GAME_LOCKED"
-      },
-      "selected_prediction": "los angeles lakers",
-      "odds_at_lock": "2.00",
-      "implied_probability": 0.5,
-      "model_predicted_probability": 0.5,
-      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
-      "model_state_rationale": "Model version shadow-v1 single prediction",
-      "is_parlay": false,
-      "parlay_legs": [],
-      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "7325b3a15295f6ff3cfac400c2a57688076e55f50de253ee9cdc02e8a7e661eb"
-    },
-    {
-      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nba_bos_lal_spreads_boston celtics_-3.5",
-      "cycle_id": "sports-feed-probe-50-20260907",
-      "event_observation": {
-        "event_id": "e2026_nba_bos_lal",
-        "sport": "NBA",
-        "league": "BASKETBALL_NBA",
-        "home_team": "Home Team",
-        "away_team": "Away Team",
-        "event_start_time_utc": "2026-09-10T22:00:00Z",
-        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
-        "source_name": "FanDuel / Odds API Fixture",
-        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
-        "market_name": "spreads",
-        "observed_odds": {
-          "market_probability": 0.5
-        },
-        "event_status": "PRE_GAME_LOCKED"
-      },
-      "selected_prediction": "boston celtics",
-      "odds_at_lock": "2.00",
-      "implied_probability": 0.5,
-      "model_predicted_probability": 0.5,
-      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
-      "model_state_rationale": "Model version shadow-v1 single prediction",
-      "is_parlay": false,
-      "parlay_legs": [],
-      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "c2b741a1d0eec18bb1cb70c01b6a542059a4e1bcd350ceb916fb37c9f28d3e53"
-    },
-    {
-      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nba_bos_lal_totals_over_224.5",
-      "cycle_id": "sports-feed-probe-50-20260907",
-      "event_observation": {
-        "event_id": "e2026_nba_bos_lal",
-        "sport": "NBA",
-        "league": "BASKETBALL_NBA",
-        "home_team": "Home Team",
-        "away_team": "Away Team",
-        "event_start_time_utc": "2026-09-10T22:00:00Z",
-        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
-        "source_name": "FanDuel / Odds API Fixture",
-        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
-        "market_name": "totals",
-        "observed_odds": {
-          "market_probability": 0.5
-        },
-        "event_status": "PRE_GAME_LOCKED"
-      },
-      "selected_prediction": "over",
-      "odds_at_lock": "2.00",
-      "implied_probability": 0.5,
-      "model_predicted_probability": 0.5,
-      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
-      "model_state_rationale": "Model version shadow-v1 single prediction",
-      "is_parlay": false,
-      "parlay_legs": [],
-      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "6f9d404dcd595615ef3adc24f52f3952afc786f77a01a44ac3e97a8d9df25439"
-    },
-    {
-      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nba_bos_lal_totals_under_224.5",
-      "cycle_id": "sports-feed-probe-50-20260907",
-      "event_observation": {
-        "event_id": "e2026_nba_bos_lal",
-        "sport": "NBA",
-        "league": "BASKETBALL_NBA",
-        "home_team": "Home Team",
-        "away_team": "Away Team",
-        "event_start_time_utc": "2026-09-10T22:00:00Z",
-        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
-        "source_name": "FanDuel / Odds API Fixture",
-        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
-        "market_name": "totals",
-        "observed_odds": {
-          "market_probability": 0.5
-        },
-        "event_status": "PRE_GAME_LOCKED"
-      },
-      "selected_prediction": "under",
-      "odds_at_lock": "2.00",
-      "implied_probability": 0.5,
-      "model_predicted_probability": 0.5,
-      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
-      "model_state_rationale": "Model version shadow-v1 single prediction",
-      "is_parlay": false,
-      "parlay_legs": [],
-      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "4f4c4d36784a2e5078da9c56250d90ed17e9c07218ce8dda8edc7de81cefc977"
-    },
-    {
       "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nba_gsw_phx_moneyline_golden state warriors_",
       "cycle_id": "sports-feed-probe-50-20260907",
       "event_observation": {
@@ -1142,156 +542,6 @@
       "parlay_legs": [],
       "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
       "sha256_receipt_hash": "984debd634752bb7da3a29d6da674e02188541d4794d92ac16a9221feed31107"
-    },
-    {
-      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nba_gsw_phx_moneyline_phoenix suns_",
-      "cycle_id": "sports-feed-probe-50-20260907",
-      "event_observation": {
-        "event_id": "e2026_nba_gsw_phx",
-        "sport": "NBA",
-        "league": "BASKETBALL_NBA",
-        "home_team": "Home Team",
-        "away_team": "Away Team",
-        "event_start_time_utc": "2026-09-10T22:30:00Z",
-        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
-        "source_name": "FanDuel / Odds API Fixture",
-        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
-        "market_name": "moneyline",
-        "observed_odds": {
-          "market_probability": 0.5064935064935064
-        },
-        "event_status": "PRE_GAME_LOCKED"
-      },
-      "selected_prediction": "phoenix suns",
-      "odds_at_lock": "1.97",
-      "implied_probability": 0.5065,
-      "model_predicted_probability": 0.5055,
-      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
-      "model_state_rationale": "Model version shadow-v1 single prediction",
-      "is_parlay": false,
-      "parlay_legs": [],
-      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "2cea5955bd6f5e1d5b945b9297b10d56809d8da2b82b8663aaa299f66a694ba7"
-    },
-    {
-      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nba_gsw_phx_spreads_golden state warriors_1.5",
-      "cycle_id": "sports-feed-probe-50-20260907",
-      "event_observation": {
-        "event_id": "e2026_nba_gsw_phx",
-        "sport": "NBA",
-        "league": "BASKETBALL_NBA",
-        "home_team": "Home Team",
-        "away_team": "Away Team",
-        "event_start_time_utc": "2026-09-10T22:30:00Z",
-        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
-        "source_name": "FanDuel / Odds API Fixture",
-        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
-        "market_name": "spreads",
-        "observed_odds": {
-          "market_probability": 0.5
-        },
-        "event_status": "PRE_GAME_LOCKED"
-      },
-      "selected_prediction": "golden state warriors",
-      "odds_at_lock": "2.00",
-      "implied_probability": 0.5,
-      "model_predicted_probability": 0.5,
-      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
-      "model_state_rationale": "Model version shadow-v1 single prediction",
-      "is_parlay": false,
-      "parlay_legs": [],
-      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "646be16053e0528f73f54e5f2995758e494c2ccd17e8a7bbf052a64db0999514"
-    },
-    {
-      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nba_gsw_phx_spreads_phoenix suns_1.5",
-      "cycle_id": "sports-feed-probe-50-20260907",
-      "event_observation": {
-        "event_id": "e2026_nba_gsw_phx",
-        "sport": "NBA",
-        "league": "BASKETBALL_NBA",
-        "home_team": "Home Team",
-        "away_team": "Away Team",
-        "event_start_time_utc": "2026-09-10T22:30:00Z",
-        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
-        "source_name": "FanDuel / Odds API Fixture",
-        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
-        "market_name": "spreads",
-        "observed_odds": {
-          "market_probability": 0.5
-        },
-        "event_status": "PRE_GAME_LOCKED"
-      },
-      "selected_prediction": "phoenix suns",
-      "odds_at_lock": "2.00",
-      "implied_probability": 0.5,
-      "model_predicted_probability": 0.5,
-      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
-      "model_state_rationale": "Model version shadow-v1 single prediction",
-      "is_parlay": false,
-      "parlay_legs": [],
-      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "88e51fb7602f0e671e502c447cc0de951b10f4782a799a066afa8c8b83f6764b"
-    },
-    {
-      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nba_gsw_phx_totals_over_230.5",
-      "cycle_id": "sports-feed-probe-50-20260907",
-      "event_observation": {
-        "event_id": "e2026_nba_gsw_phx",
-        "sport": "NBA",
-        "league": "BASKETBALL_NBA",
-        "home_team": "Home Team",
-        "away_team": "Away Team",
-        "event_start_time_utc": "2026-09-10T22:30:00Z",
-        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
-        "source_name": "FanDuel / Odds API Fixture",
-        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
-        "market_name": "totals",
-        "observed_odds": {
-          "market_probability": 0.5
-        },
-        "event_status": "PRE_GAME_LOCKED"
-      },
-      "selected_prediction": "over",
-      "odds_at_lock": "2.00",
-      "implied_probability": 0.5,
-      "model_predicted_probability": 0.5,
-      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
-      "model_state_rationale": "Model version shadow-v1 single prediction",
-      "is_parlay": false,
-      "parlay_legs": [],
-      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "b66568c64c8491a2bfb6ffd92ff666b4f574397d49d9707a3580da65695bad75"
-    },
-    {
-      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nba_gsw_phx_totals_under_230.5",
-      "cycle_id": "sports-feed-probe-50-20260907",
-      "event_observation": {
-        "event_id": "e2026_nba_gsw_phx",
-        "sport": "NBA",
-        "league": "BASKETBALL_NBA",
-        "home_team": "Home Team",
-        "away_team": "Away Team",
-        "event_start_time_utc": "2026-09-10T22:30:00Z",
-        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
-        "source_name": "FanDuel / Odds API Fixture",
-        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
-        "market_name": "totals",
-        "observed_odds": {
-          "market_probability": 0.5
-        },
-        "event_status": "PRE_GAME_LOCKED"
-      },
-      "selected_prediction": "under",
-      "odds_at_lock": "2.00",
-      "implied_probability": 0.5,
-      "model_predicted_probability": 0.5,
-      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
-      "model_state_rationale": "Model version shadow-v1 single prediction",
-      "is_parlay": false,
-      "parlay_legs": [],
-      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "eb96c3712736c0500b37a842dc5181bb5b0fa909f88667acad963b49310669e9"
     },
     {
       "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nba_mil_mia_moneyline_milwaukee bucks_",
@@ -1324,6 +574,276 @@
       "sha256_receipt_hash": "dc4f864ed4ac0672413ca3c4b14ba5c93fd56add9d6c9e8ca8b98059cdc13e64"
     },
     {
+      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nfl_kc_sf_moneyline_kansas city chiefs_",
+      "cycle_id": "sports-feed-probe-50-20260907",
+      "event_observation": {
+        "event_id": "e2026_nfl_kc_sf",
+        "sport": "NFL",
+        "league": "AMERICANFOOTBALL_NFL",
+        "home_team": "Home Team",
+        "away_team": "Away Team",
+        "event_start_time_utc": "2026-09-11T00:20:00Z",
+        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
+        "source_name": "FanDuel / Odds API Fixture",
+        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
+        "market_name": "moneyline",
+        "observed_odds": {
+          "market_probability": 0.548469387755102
+        },
+        "event_status": "PRE_GAME_LOCKED"
+      },
+      "selected_prediction": "kansas city chiefs",
+      "odds_at_lock": "1.82",
+      "implied_probability": 0.5485,
+      "model_predicted_probability": 0.5412,
+      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
+      "model_state_rationale": "Model version shadow-v1 single prediction",
+      "is_parlay": false,
+      "parlay_legs": [],
+      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+      "sha256_receipt_hash": "0b01a153c45c52e21e08d9e1933a4fd8fdc4e69063f7909d514d92cdb599ea0e"
+    },
+    {
+      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nfl_phi_dal_moneyline_philadelphia eagles_",
+      "cycle_id": "sports-feed-probe-50-20260907",
+      "event_observation": {
+        "event_id": "e2026_nfl_phi_dal",
+        "sport": "NFL",
+        "league": "AMERICANFOOTBALL_NFL",
+        "home_team": "Home Team",
+        "away_team": "Away Team",
+        "event_start_time_utc": "2026-09-11T01:15:00Z",
+        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
+        "source_name": "FanDuel / Odds API Fixture",
+        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
+        "market_name": "moneyline",
+        "observed_odds": {
+          "market_probability": 0.569620253164557
+        },
+        "event_status": "PRE_GAME_LOCKED"
+      },
+      "selected_prediction": "philadelphia eagles",
+      "odds_at_lock": "1.76",
+      "implied_probability": 0.5696,
+      "model_predicted_probability": 0.5592,
+      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
+      "model_state_rationale": "Model version shadow-v1 single prediction",
+      "is_parlay": false,
+      "parlay_legs": [],
+      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+      "sha256_receipt_hash": "9c6a3f6e97f27855a650315e8ca582b119f73dfbeacd4b40d2418a550a3add54"
+    },
+    {
+      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nhl_edm_fla_moneyline_florida panthers_",
+      "cycle_id": "sports-feed-probe-50-20260907",
+      "event_observation": {
+        "event_id": "e2026_nhl_edm_fla",
+        "sport": "NHL",
+        "league": "ICEHOCKEY_NHL",
+        "home_team": "Home Team",
+        "away_team": "Away Team",
+        "event_start_time_utc": "2026-09-10T23:00:00Z",
+        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
+        "source_name": "FanDuel / Odds API Fixture",
+        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
+        "market_name": "moneyline",
+        "observed_odds": {
+          "market_probability": 0.5064935064935064
+        },
+        "event_status": "PRE_GAME_LOCKED"
+      },
+      "selected_prediction": "florida panthers",
+      "odds_at_lock": "1.97",
+      "implied_probability": 0.5065,
+      "model_predicted_probability": 0.5055,
+      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
+      "model_state_rationale": "Model version shadow-v1 single prediction",
+      "is_parlay": false,
+      "parlay_legs": [],
+      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+      "sha256_receipt_hash": "3cda1854f1c4669318b1cfb1853aafb28b180d405528b828fbfaa851b837840e"
+    },
+    {
+      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nhl_tor_mtl_moneyline_toronto maple leafs_",
+      "cycle_id": "sports-feed-probe-50-20260907",
+      "event_observation": {
+        "event_id": "e2026_nhl_tor_mtl",
+        "sport": "NHL",
+        "league": "ICEHOCKEY_NHL",
+        "home_team": "Home Team",
+        "away_team": "Away Team",
+        "event_start_time_utc": "2026-09-10T23:30:00Z",
+        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
+        "source_name": "FanDuel / Odds API Fixture",
+        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
+        "market_name": "moneyline",
+        "observed_odds": {
+          "market_probability": 0.5919395465994962
+        },
+        "event_status": "PRE_GAME_LOCKED"
+      },
+      "selected_prediction": "toronto maple leafs",
+      "odds_at_lock": "1.69",
+      "implied_probability": 0.5919,
+      "model_predicted_probability": 0.5781,
+      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
+      "model_state_rationale": "Model version shadow-v1 single prediction",
+      "is_parlay": false,
+      "parlay_legs": [],
+      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+      "sha256_receipt_hash": "d98d779f1d8479a65ee86fb7b466c8f7fbe429362fdae9429362ae78838cdf90"
+    },
+    {
+      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_mlb_hou_tex_moneyline_texas rangers_",
+      "cycle_id": "sports-feed-probe-50-20260907",
+      "event_observation": {
+        "event_id": "e2026_mlb_hou_tex",
+        "sport": "MLB",
+        "league": "BASEBALL_MLB",
+        "home_team": "Home Team",
+        "away_team": "Away Team",
+        "event_start_time_utc": "2026-09-10T23:05:00Z",
+        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
+        "source_name": "FanDuel / Odds API Fixture",
+        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
+        "market_name": "moneyline",
+        "observed_odds": {
+          "market_probability": 0.4675324675324676
+        },
+        "event_status": "PRE_GAME_LOCKED"
+      },
+      "selected_prediction": "texas rangers",
+      "odds_at_lock": "2.14",
+      "implied_probability": 0.4675,
+      "model_predicted_probability": 0.4724,
+      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
+      "model_state_rationale": "Model version shadow-v1 single prediction",
+      "is_parlay": false,
+      "parlay_legs": [],
+      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+      "sha256_receipt_hash": "10624b429e0d72c2620bea9a993213067141565c81528be5f8e97819d1d947b2"
+    },
+    {
+      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_mlb_lad_sd_moneyline_san diego padres_",
+      "cycle_id": "sports-feed-probe-50-20260907",
+      "event_observation": {
+        "event_id": "e2026_mlb_lad_sd",
+        "sport": "MLB",
+        "league": "BASEBALL_MLB",
+        "home_team": "Home Team",
+        "away_team": "Away Team",
+        "event_start_time_utc": "2026-09-10T21:10:00Z",
+        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
+        "source_name": "FanDuel / Odds API Fixture",
+        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
+        "market_name": "moneyline",
+        "observed_odds": {
+          "market_probability": 0.4545454545454546
+        },
+        "event_status": "PRE_GAME_LOCKED"
+      },
+      "selected_prediction": "san diego padres",
+      "odds_at_lock": "2.20",
+      "implied_probability": 0.4545,
+      "model_predicted_probability": 0.4614,
+      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
+      "model_state_rationale": "Model version shadow-v1 single prediction",
+      "is_parlay": false,
+      "parlay_legs": [],
+      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+      "sha256_receipt_hash": "5328a25398b2245bdd0ebbccc213b21f064a394d943395330cf80e3b5a17a5e2"
+    },
+    {
+      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_mlb_nyy_bos_moneyline_boston red sox_",
+      "cycle_id": "sports-feed-probe-50-20260907",
+      "event_observation": {
+        "event_id": "e2026_mlb_nyy_bos",
+        "sport": "MLB",
+        "league": "BASEBALL_MLB",
+        "home_team": "Home Team",
+        "away_team": "Away Team",
+        "event_start_time_utc": "2026-09-10T19:05:00Z",
+        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
+        "source_name": "FanDuel / Odds API Fixture",
+        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
+        "market_name": "moneyline",
+        "observed_odds": {
+          "market_probability": 0.4805194805194806
+        },
+        "event_status": "PRE_GAME_LOCKED"
+      },
+      "selected_prediction": "boston red sox",
+      "odds_at_lock": "2.08",
+      "implied_probability": 0.4805,
+      "model_predicted_probability": 0.4834,
+      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
+      "model_state_rationale": "Model version shadow-v1 single prediction",
+      "is_parlay": false,
+      "parlay_legs": [],
+      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+      "sha256_receipt_hash": "02d6d3dcb0b8fd06f90184ae289c6fea8bfc383acbcdabeca31a47655f8ed463"
+    },
+    {
+      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nba_bos_lal_moneyline_boston celtics_",
+      "cycle_id": "sports-feed-probe-50-20260907",
+      "event_observation": {
+        "event_id": "e2026_nba_bos_lal",
+        "sport": "NBA",
+        "league": "BASKETBALL_NBA",
+        "home_team": "Home Team",
+        "away_team": "Away Team",
+        "event_start_time_utc": "2026-09-10T22:00:00Z",
+        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
+        "source_name": "FanDuel / Odds API Fixture",
+        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
+        "market_name": "moneyline",
+        "observed_odds": {
+          "market_probability": 0.5454545454545455
+        },
+        "event_status": "PRE_GAME_LOCKED"
+      },
+      "selected_prediction": "boston celtics",
+      "odds_at_lock": "1.83",
+      "implied_probability": 0.5455,
+      "model_predicted_probability": 0.5386,
+      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
+      "model_state_rationale": "Model version shadow-v1 single prediction",
+      "is_parlay": false,
+      "parlay_legs": [],
+      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+      "sha256_receipt_hash": "b15fa87b3bdb08ad8b65dec2704ce4996f564c5caa516a51e6aa5414078e5f73"
+    },
+    {
+      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nba_gsw_phx_moneyline_phoenix suns_",
+      "cycle_id": "sports-feed-probe-50-20260907",
+      "event_observation": {
+        "event_id": "e2026_nba_gsw_phx",
+        "sport": "NBA",
+        "league": "BASKETBALL_NBA",
+        "home_team": "Home Team",
+        "away_team": "Away Team",
+        "event_start_time_utc": "2026-09-10T22:30:00Z",
+        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
+        "source_name": "FanDuel / Odds API Fixture",
+        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
+        "market_name": "moneyline",
+        "observed_odds": {
+          "market_probability": 0.5064935064935064
+        },
+        "event_status": "PRE_GAME_LOCKED"
+      },
+      "selected_prediction": "phoenix suns",
+      "odds_at_lock": "1.97",
+      "implied_probability": 0.5065,
+      "model_predicted_probability": 0.5055,
+      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
+      "model_state_rationale": "Model version shadow-v1 single prediction",
+      "is_parlay": false,
+      "parlay_legs": [],
+      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+      "sha256_receipt_hash": "2cea5955bd6f5e1d5b945b9297b10d56809d8da2b82b8663aaa299f66a694ba7"
+    },
+    {
       "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nba_mil_mia_moneyline_miami heat_",
       "cycle_id": "sports-feed-probe-50-20260907",
       "event_observation": {
@@ -1352,6 +872,276 @@
       "parlay_legs": [],
       "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
       "sha256_receipt_hash": "53dcfcb046ad3372c41ce6d35d0b6332b2ac52a078730eb586f88266a7860595"
+    },
+    {
+      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nfl_kc_sf_moneyline_san francisco 49ers_",
+      "cycle_id": "sports-feed-probe-50-20260907",
+      "event_observation": {
+        "event_id": "e2026_nfl_kc_sf",
+        "sport": "NFL",
+        "league": "AMERICANFOOTBALL_NFL",
+        "home_team": "Home Team",
+        "away_team": "Away Team",
+        "event_start_time_utc": "2026-09-11T00:20:00Z",
+        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
+        "source_name": "FanDuel / Odds API Fixture",
+        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
+        "market_name": "moneyline",
+        "observed_odds": {
+          "market_probability": 0.45153061224489793
+        },
+        "event_status": "PRE_GAME_LOCKED"
+      },
+      "selected_prediction": "san francisco 49ers",
+      "odds_at_lock": "2.21",
+      "implied_probability": 0.4515,
+      "model_predicted_probability": 0.4588,
+      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
+      "model_state_rationale": "Model version shadow-v1 single prediction",
+      "is_parlay": false,
+      "parlay_legs": [],
+      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+      "sha256_receipt_hash": "592de3122183b0bf6d78bd5c094664bacb8efeab1abd33e319d5bf54e50e2aac"
+    },
+    {
+      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nfl_phi_dal_moneyline_dallas cowboys_",
+      "cycle_id": "sports-feed-probe-50-20260907",
+      "event_observation": {
+        "event_id": "e2026_nfl_phi_dal",
+        "sport": "NFL",
+        "league": "AMERICANFOOTBALL_NFL",
+        "home_team": "Home Team",
+        "away_team": "Away Team",
+        "event_start_time_utc": "2026-09-11T01:15:00Z",
+        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
+        "source_name": "FanDuel / Odds API Fixture",
+        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
+        "market_name": "moneyline",
+        "observed_odds": {
+          "market_probability": 0.43037974683544306
+        },
+        "event_status": "PRE_GAME_LOCKED"
+      },
+      "selected_prediction": "dallas cowboys",
+      "odds_at_lock": "2.32",
+      "implied_probability": 0.4304,
+      "model_predicted_probability": 0.4408,
+      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
+      "model_state_rationale": "Model version shadow-v1 single prediction",
+      "is_parlay": false,
+      "parlay_legs": [],
+      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+      "sha256_receipt_hash": "0c6e9960702ddaff97e5ed17e9aeea81a6f9b07187c794c8ef535fe6244fe591"
+    },
+    {
+      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nhl_edm_fla_moneyline_edmonton oilers_",
+      "cycle_id": "sports-feed-probe-50-20260907",
+      "event_observation": {
+        "event_id": "e2026_nhl_edm_fla",
+        "sport": "NHL",
+        "league": "ICEHOCKEY_NHL",
+        "home_team": "Home Team",
+        "away_team": "Away Team",
+        "event_start_time_utc": "2026-09-10T23:00:00Z",
+        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
+        "source_name": "FanDuel / Odds API Fixture",
+        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
+        "market_name": "moneyline",
+        "observed_odds": {
+          "market_probability": 0.49350649350649356
+        },
+        "event_status": "PRE_GAME_LOCKED"
+      },
+      "selected_prediction": "edmonton oilers",
+      "odds_at_lock": "2.03",
+      "implied_probability": 0.4935,
+      "model_predicted_probability": 0.4945,
+      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
+      "model_state_rationale": "Model version shadow-v1 single prediction",
+      "is_parlay": false,
+      "parlay_legs": [],
+      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+      "sha256_receipt_hash": "a9d1c722f9bdde8d60649290e88378b1b97f368ba9cb8993b74720f00133f63a"
+    },
+    {
+      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nhl_tor_mtl_moneyline_montreal canadiens_",
+      "cycle_id": "sports-feed-probe-50-20260907",
+      "event_observation": {
+        "event_id": "e2026_nhl_tor_mtl",
+        "sport": "NHL",
+        "league": "ICEHOCKEY_NHL",
+        "home_team": "Home Team",
+        "away_team": "Away Team",
+        "event_start_time_utc": "2026-09-10T23:30:00Z",
+        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
+        "source_name": "FanDuel / Odds API Fixture",
+        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
+        "market_name": "moneyline",
+        "observed_odds": {
+          "market_probability": 0.4080604534005038
+        },
+        "event_status": "PRE_GAME_LOCKED"
+      },
+      "selected_prediction": "montreal canadiens",
+      "odds_at_lock": "2.45",
+      "implied_probability": 0.4081,
+      "model_predicted_probability": 0.4219,
+      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
+      "model_state_rationale": "Model version shadow-v1 single prediction",
+      "is_parlay": false,
+      "parlay_legs": [],
+      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+      "sha256_receipt_hash": "7e1ce12260b12eebd4660004f86fb6d4acf0ba34894883716d5dde9c6b3592fb"
+    },
+    {
+      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_mlb_hou_tex_spreads_houston astros_1.5",
+      "cycle_id": "sports-feed-probe-50-20260907",
+      "event_observation": {
+        "event_id": "e2026_mlb_hou_tex",
+        "sport": "MLB",
+        "league": "BASEBALL_MLB",
+        "home_team": "Home Team",
+        "away_team": "Away Team",
+        "event_start_time_utc": "2026-09-10T23:05:00Z",
+        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
+        "source_name": "FanDuel / Odds API Fixture",
+        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
+        "market_name": "spreads",
+        "observed_odds": {
+          "market_probability": 0.5
+        },
+        "event_status": "PRE_GAME_LOCKED"
+      },
+      "selected_prediction": "houston astros",
+      "odds_at_lock": "2.00",
+      "implied_probability": 0.5,
+      "model_predicted_probability": 0.5,
+      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
+      "model_state_rationale": "Model version shadow-v1 single prediction",
+      "is_parlay": false,
+      "parlay_legs": [],
+      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+      "sha256_receipt_hash": "e4f56a180d92570e44d3d0895bf6932da26c114ced1b7daf891beb9e81792d7a"
+    },
+    {
+      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_mlb_lad_sd_spreads_los angeles dodgers_1.5",
+      "cycle_id": "sports-feed-probe-50-20260907",
+      "event_observation": {
+        "event_id": "e2026_mlb_lad_sd",
+        "sport": "MLB",
+        "league": "BASEBALL_MLB",
+        "home_team": "Home Team",
+        "away_team": "Away Team",
+        "event_start_time_utc": "2026-09-10T21:10:00Z",
+        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
+        "source_name": "FanDuel / Odds API Fixture",
+        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
+        "market_name": "spreads",
+        "observed_odds": {
+          "market_probability": 0.5
+        },
+        "event_status": "PRE_GAME_LOCKED"
+      },
+      "selected_prediction": "los angeles dodgers",
+      "odds_at_lock": "2.00",
+      "implied_probability": 0.5,
+      "model_predicted_probability": 0.5,
+      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
+      "model_state_rationale": "Model version shadow-v1 single prediction",
+      "is_parlay": false,
+      "parlay_legs": [],
+      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+      "sha256_receipt_hash": "e7e4c422c8fc58f67cbcf67bfddf4b915e363495bdadec09984eadc9431b0268"
+    },
+    {
+      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_mlb_nyy_bos_spreads_new york yankees_1.5",
+      "cycle_id": "sports-feed-probe-50-20260907",
+      "event_observation": {
+        "event_id": "e2026_mlb_nyy_bos",
+        "sport": "MLB",
+        "league": "BASEBALL_MLB",
+        "home_team": "Home Team",
+        "away_team": "Away Team",
+        "event_start_time_utc": "2026-09-10T19:05:00Z",
+        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
+        "source_name": "FanDuel / Odds API Fixture",
+        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
+        "market_name": "spreads",
+        "observed_odds": {
+          "market_probability": 0.5
+        },
+        "event_status": "PRE_GAME_LOCKED"
+      },
+      "selected_prediction": "new york yankees",
+      "odds_at_lock": "2.00",
+      "implied_probability": 0.5,
+      "model_predicted_probability": 0.5,
+      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
+      "model_state_rationale": "Model version shadow-v1 single prediction",
+      "is_parlay": false,
+      "parlay_legs": [],
+      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+      "sha256_receipt_hash": "cedc40a340d5d1ff347345e24f34a4afe68604fdb037a9944ba3794f463f02bf"
+    },
+    {
+      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nba_bos_lal_spreads_los angeles lakers_-3.5",
+      "cycle_id": "sports-feed-probe-50-20260907",
+      "event_observation": {
+        "event_id": "e2026_nba_bos_lal",
+        "sport": "NBA",
+        "league": "BASKETBALL_NBA",
+        "home_team": "Home Team",
+        "away_team": "Away Team",
+        "event_start_time_utc": "2026-09-10T22:00:00Z",
+        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
+        "source_name": "FanDuel / Odds API Fixture",
+        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
+        "market_name": "spreads",
+        "observed_odds": {
+          "market_probability": 0.5
+        },
+        "event_status": "PRE_GAME_LOCKED"
+      },
+      "selected_prediction": "los angeles lakers",
+      "odds_at_lock": "2.00",
+      "implied_probability": 0.5,
+      "model_predicted_probability": 0.5,
+      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
+      "model_state_rationale": "Model version shadow-v1 single prediction",
+      "is_parlay": false,
+      "parlay_legs": [],
+      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+      "sha256_receipt_hash": "7325b3a15295f6ff3cfac400c2a57688076e55f50de253ee9cdc02e8a7e661eb"
+    },
+    {
+      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nba_gsw_phx_spreads_golden state warriors_1.5",
+      "cycle_id": "sports-feed-probe-50-20260907",
+      "event_observation": {
+        "event_id": "e2026_nba_gsw_phx",
+        "sport": "NBA",
+        "league": "BASKETBALL_NBA",
+        "home_team": "Home Team",
+        "away_team": "Away Team",
+        "event_start_time_utc": "2026-09-10T22:30:00Z",
+        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
+        "source_name": "FanDuel / Odds API Fixture",
+        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
+        "market_name": "spreads",
+        "observed_odds": {
+          "market_probability": 0.5
+        },
+        "event_status": "PRE_GAME_LOCKED"
+      },
+      "selected_prediction": "golden state warriors",
+      "odds_at_lock": "2.00",
+      "implied_probability": 0.5,
+      "model_predicted_probability": 0.5,
+      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
+      "model_state_rationale": "Model version shadow-v1 single prediction",
+      "is_parlay": false,
+      "parlay_legs": [],
+      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+      "sha256_receipt_hash": "646be16053e0528f73f54e5f2995758e494c2ccd17e8a7bbf052a64db0999514"
     },
     {
       "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nba_mil_mia_spreads_milwaukee bucks_5.5",
@@ -1384,15 +1174,15 @@
       "sha256_receipt_hash": "b714ceae57b30e322b15bb6cdedda50aa26f7f397ad390219307404adfc8d57b"
     },
     {
-      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nba_mil_mia_spreads_miami heat_5.5",
+      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nfl_kc_sf_spreads_kansas city chiefs_2.5",
       "cycle_id": "sports-feed-probe-50-20260907",
       "event_observation": {
-        "event_id": "e2026_nba_mil_mia",
-        "sport": "NBA",
-        "league": "BASKETBALL_NBA",
+        "event_id": "e2026_nfl_kc_sf",
+        "sport": "NFL",
+        "league": "AMERICANFOOTBALL_NFL",
         "home_team": "Home Team",
         "away_team": "Away Team",
-        "event_start_time_utc": "2026-09-10T23:00:00Z",
+        "event_start_time_utc": "2026-09-11T00:20:00Z",
         "observation_timestamp_utc": "2026-09-10T12:00:00Z",
         "source_name": "FanDuel / Odds API Fixture",
         "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
@@ -1402,7 +1192,7 @@
         },
         "event_status": "PRE_GAME_LOCKED"
       },
-      "selected_prediction": "miami heat",
+      "selected_prediction": "kansas city chiefs",
       "odds_at_lock": "2.00",
       "implied_probability": 0.5,
       "model_predicted_probability": 0.5,
@@ -1411,28 +1201,118 @@
       "is_parlay": false,
       "parlay_legs": [],
       "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "d6bc0c3fc133ffe08cf6d8ac965e5b76d0cb08c8156edbcd9251de708f7591f8"
+      "sha256_receipt_hash": "8cc29c9a1bc281bfa2b5f5a9b50d2e6ce06830e4b233b10199f224dd5b2459e0"
     },
     {
-      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nba_mil_mia_totals_over_218.5",
+      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nfl_phi_dal_spreads_philadelphia eagles_3.5",
       "cycle_id": "sports-feed-probe-50-20260907",
       "event_observation": {
-        "event_id": "e2026_nba_mil_mia",
-        "sport": "NBA",
-        "league": "BASKETBALL_NBA",
+        "event_id": "e2026_nfl_phi_dal",
+        "sport": "NFL",
+        "league": "AMERICANFOOTBALL_NFL",
+        "home_team": "Home Team",
+        "away_team": "Away Team",
+        "event_start_time_utc": "2026-09-11T01:15:00Z",
+        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
+        "source_name": "FanDuel / Odds API Fixture",
+        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
+        "market_name": "spreads",
+        "observed_odds": {
+          "market_probability": 0.5
+        },
+        "event_status": "PRE_GAME_LOCKED"
+      },
+      "selected_prediction": "philadelphia eagles",
+      "odds_at_lock": "2.00",
+      "implied_probability": 0.5,
+      "model_predicted_probability": 0.5,
+      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
+      "model_state_rationale": "Model version shadow-v1 single prediction",
+      "is_parlay": false,
+      "parlay_legs": [],
+      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+      "sha256_receipt_hash": "c5a4d87e9324111fc0e25cdf5368526ba42bbe7ed3065fb4c20ad5883004cab0"
+    },
+    {
+      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nhl_edm_fla_spreads_florida panthers_1.5",
+      "cycle_id": "sports-feed-probe-50-20260907",
+      "event_observation": {
+        "event_id": "e2026_nhl_edm_fla",
+        "sport": "NHL",
+        "league": "ICEHOCKEY_NHL",
         "home_team": "Home Team",
         "away_team": "Away Team",
         "event_start_time_utc": "2026-09-10T23:00:00Z",
         "observation_timestamp_utc": "2026-09-10T12:00:00Z",
         "source_name": "FanDuel / Odds API Fixture",
         "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
-        "market_name": "totals",
+        "market_name": "spreads",
+        "observed_odds": {
+          "market_probability": 0.39698492462311563
+        },
+        "event_status": "PRE_GAME_LOCKED"
+      },
+      "selected_prediction": "florida panthers",
+      "odds_at_lock": "2.52",
+      "implied_probability": 0.397,
+      "model_predicted_probability": 0.4124,
+      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
+      "model_state_rationale": "Model version shadow-v1 single prediction",
+      "is_parlay": false,
+      "parlay_legs": [],
+      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+      "sha256_receipt_hash": "bb597184d847873901d0f0ffadf1fbde6789f0ca9cb3379266028fd232c8fd17"
+    },
+    {
+      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nhl_tor_mtl_spreads_toronto maple leafs_1.5",
+      "cycle_id": "sports-feed-probe-50-20260907",
+      "event_observation": {
+        "event_id": "e2026_nhl_tor_mtl",
+        "sport": "NHL",
+        "league": "ICEHOCKEY_NHL",
+        "home_team": "Home Team",
+        "away_team": "Away Team",
+        "event_start_time_utc": "2026-09-10T23:30:00Z",
+        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
+        "source_name": "FanDuel / Odds API Fixture",
+        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
+        "market_name": "spreads",
+        "observed_odds": {
+          "market_probability": 0.4358974358974359
+        },
+        "event_status": "PRE_GAME_LOCKED"
+      },
+      "selected_prediction": "toronto maple leafs",
+      "odds_at_lock": "2.29",
+      "implied_probability": 0.4359,
+      "model_predicted_probability": 0.4455,
+      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
+      "model_state_rationale": "Model version shadow-v1 single prediction",
+      "is_parlay": false,
+      "parlay_legs": [],
+      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+      "sha256_receipt_hash": "be9554fb97a4572095ff066e9e8b54541affd68ae26855f578f371332bdcc1de"
+    },
+    {
+      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_mlb_hou_tex_spreads_texas rangers_1.5",
+      "cycle_id": "sports-feed-probe-50-20260907",
+      "event_observation": {
+        "event_id": "e2026_mlb_hou_tex",
+        "sport": "MLB",
+        "league": "BASEBALL_MLB",
+        "home_team": "Home Team",
+        "away_team": "Away Team",
+        "event_start_time_utc": "2026-09-10T23:05:00Z",
+        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
+        "source_name": "FanDuel / Odds API Fixture",
+        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
+        "market_name": "spreads",
         "observed_odds": {
           "market_probability": 0.5
         },
         "event_status": "PRE_GAME_LOCKED"
       },
-      "selected_prediction": "over",
+      "selected_prediction": "texas rangers",
       "odds_at_lock": "2.00",
       "implied_probability": 0.5,
       "model_predicted_probability": 0.5,
@@ -1441,7 +1321,127 @@
       "is_parlay": false,
       "parlay_legs": [],
       "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
-      "sha256_receipt_hash": "ebb4dbf2e80484354c687d8fb479dc8f414dba5987c8ef811bcc64a33d633945"
+      "sha256_receipt_hash": "c7bf28781716ec484491c7851ca9529a1ab36997be500756c487883754b121c9"
+    },
+    {
+      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_mlb_lad_sd_spreads_san diego padres_1.5",
+      "cycle_id": "sports-feed-probe-50-20260907",
+      "event_observation": {
+        "event_id": "e2026_mlb_lad_sd",
+        "sport": "MLB",
+        "league": "BASEBALL_MLB",
+        "home_team": "Home Team",
+        "away_team": "Away Team",
+        "event_start_time_utc": "2026-09-10T21:10:00Z",
+        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
+        "source_name": "FanDuel / Odds API Fixture",
+        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
+        "market_name": "spreads",
+        "observed_odds": {
+          "market_probability": 0.5
+        },
+        "event_status": "PRE_GAME_LOCKED"
+      },
+      "selected_prediction": "san diego padres",
+      "odds_at_lock": "2.00",
+      "implied_probability": 0.5,
+      "model_predicted_probability": 0.5,
+      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
+      "model_state_rationale": "Model version shadow-v1 single prediction",
+      "is_parlay": false,
+      "parlay_legs": [],
+      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+      "sha256_receipt_hash": "146a2e0376d0fc295f56244352706b184d87175e8d0923eba3a1996db46cd248"
+    },
+    {
+      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_mlb_nyy_bos_spreads_boston red sox_1.5",
+      "cycle_id": "sports-feed-probe-50-20260907",
+      "event_observation": {
+        "event_id": "e2026_mlb_nyy_bos",
+        "sport": "MLB",
+        "league": "BASEBALL_MLB",
+        "home_team": "Home Team",
+        "away_team": "Away Team",
+        "event_start_time_utc": "2026-09-10T19:05:00Z",
+        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
+        "source_name": "FanDuel / Odds API Fixture",
+        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
+        "market_name": "spreads",
+        "observed_odds": {
+          "market_probability": 0.5
+        },
+        "event_status": "PRE_GAME_LOCKED"
+      },
+      "selected_prediction": "boston red sox",
+      "odds_at_lock": "2.00",
+      "implied_probability": 0.5,
+      "model_predicted_probability": 0.5,
+      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
+      "model_state_rationale": "Model version shadow-v1 single prediction",
+      "is_parlay": false,
+      "parlay_legs": [],
+      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+      "sha256_receipt_hash": "7aa821d15425bc6292100bf7f5e482c8b4f224f49b857e1fdd42d51d45d3805d"
+    },
+    {
+      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nba_bos_lal_spreads_boston celtics_-3.5",
+      "cycle_id": "sports-feed-probe-50-20260907",
+      "event_observation": {
+        "event_id": "e2026_nba_bos_lal",
+        "sport": "NBA",
+        "league": "BASKETBALL_NBA",
+        "home_team": "Home Team",
+        "away_team": "Away Team",
+        "event_start_time_utc": "2026-09-10T22:00:00Z",
+        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
+        "source_name": "FanDuel / Odds API Fixture",
+        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
+        "market_name": "spreads",
+        "observed_odds": {
+          "market_probability": 0.5
+        },
+        "event_status": "PRE_GAME_LOCKED"
+      },
+      "selected_prediction": "boston celtics",
+      "odds_at_lock": "2.00",
+      "implied_probability": 0.5,
+      "model_predicted_probability": 0.5,
+      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
+      "model_state_rationale": "Model version shadow-v1 single prediction",
+      "is_parlay": false,
+      "parlay_legs": [],
+      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+      "sha256_receipt_hash": "c2b741a1d0eec18bb1cb70c01b6a542059a4e1bcd350ceb916fb37c9f28d3e53"
+    },
+    {
+      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nba_gsw_phx_spreads_phoenix suns_1.5",
+      "cycle_id": "sports-feed-probe-50-20260907",
+      "event_observation": {
+        "event_id": "e2026_nba_gsw_phx",
+        "sport": "NBA",
+        "league": "BASKETBALL_NBA",
+        "home_team": "Home Team",
+        "away_team": "Away Team",
+        "event_start_time_utc": "2026-09-10T22:30:00Z",
+        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
+        "source_name": "FanDuel / Odds API Fixture",
+        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
+        "market_name": "spreads",
+        "observed_odds": {
+          "market_probability": 0.5
+        },
+        "event_status": "PRE_GAME_LOCKED"
+      },
+      "selected_prediction": "phoenix suns",
+      "odds_at_lock": "2.00",
+      "implied_probability": 0.5,
+      "model_predicted_probability": 0.5,
+      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
+      "model_state_rationale": "Model version shadow-v1 single prediction",
+      "is_parlay": false,
+      "parlay_legs": [],
+      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+      "sha256_receipt_hash": "88e51fb7602f0e671e502c447cc0de951b10f4782a799a066afa8c8b83f6764b"
     },
     {
       "prediction_id": "parlay_daily-8028fe380b9c136f0fea9b32f0b06ff2",
@@ -2042,6 +2042,156 @@
       ],
       "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
       "sha256_receipt_hash": "cf9ce9355f83b60bde5d8e9ac1d6821941ecb3deeeb2c35eea413c5f12c4eaa7"
+    },
+    {
+      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nfl_kc_sf_spreads_san francisco 49ers_2.5",
+      "cycle_id": "sports-feed-probe-50-20260907",
+      "event_observation": {
+        "event_id": "e2026_nfl_kc_sf",
+        "sport": "NFL",
+        "league": "AMERICANFOOTBALL_NFL",
+        "home_team": "Home Team",
+        "away_team": "Away Team",
+        "event_start_time_utc": "2026-09-11T00:20:00Z",
+        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
+        "source_name": "FanDuel / Odds API Fixture",
+        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
+        "market_name": "spreads",
+        "observed_odds": {
+          "market_probability": 0.5
+        },
+        "event_status": "PRE_GAME_LOCKED"
+      },
+      "selected_prediction": "san francisco 49ers",
+      "odds_at_lock": "2.00",
+      "implied_probability": 0.5,
+      "model_predicted_probability": 0.5,
+      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
+      "model_state_rationale": "Model version shadow-v1 single prediction",
+      "is_parlay": false,
+      "parlay_legs": [],
+      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+      "sha256_receipt_hash": "b049f0cb77066578d63e71e7882cb7d3d682b9fc84b90c00cdcd78de32e33120"
+    },
+    {
+      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nhl_edm_fla_spreads_edmonton oilers_1.5",
+      "cycle_id": "sports-feed-probe-50-20260907",
+      "event_observation": {
+        "event_id": "e2026_nhl_edm_fla",
+        "sport": "NHL",
+        "league": "ICEHOCKEY_NHL",
+        "home_team": "Home Team",
+        "away_team": "Away Team",
+        "event_start_time_utc": "2026-09-10T23:00:00Z",
+        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
+        "source_name": "FanDuel / Odds API Fixture",
+        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
+        "market_name": "spreads",
+        "observed_odds": {
+          "market_probability": 0.6030150753768844
+        },
+        "event_status": "PRE_GAME_LOCKED"
+      },
+      "selected_prediction": "edmonton oilers",
+      "odds_at_lock": "1.66",
+      "implied_probability": 0.603,
+      "model_predicted_probability": 0.5876,
+      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
+      "model_state_rationale": "Model version shadow-v1 single prediction",
+      "is_parlay": false,
+      "parlay_legs": [],
+      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+      "sha256_receipt_hash": "552507825e33250f84c22384413f07b965d1e756c23e867b42f801a1b010f698"
+    },
+    {
+      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nfl_phi_dal_spreads_dallas cowboys_3.5",
+      "cycle_id": "sports-feed-probe-50-20260907",
+      "event_observation": {
+        "event_id": "e2026_nfl_phi_dal",
+        "sport": "NFL",
+        "league": "AMERICANFOOTBALL_NFL",
+        "home_team": "Home Team",
+        "away_team": "Away Team",
+        "event_start_time_utc": "2026-09-11T01:15:00Z",
+        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
+        "source_name": "FanDuel / Odds API Fixture",
+        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
+        "market_name": "spreads",
+        "observed_odds": {
+          "market_probability": 0.5
+        },
+        "event_status": "PRE_GAME_LOCKED"
+      },
+      "selected_prediction": "dallas cowboys",
+      "odds_at_lock": "2.00",
+      "implied_probability": 0.5,
+      "model_predicted_probability": 0.5,
+      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
+      "model_state_rationale": "Model version shadow-v1 single prediction",
+      "is_parlay": false,
+      "parlay_legs": [],
+      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+      "sha256_receipt_hash": "a92671e8b2b89981beb7ab9bb4666ca4b54626608cf8a5e9c912c0a24b78f5cd"
+    },
+    {
+      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nhl_tor_mtl_spreads_montreal canadiens_1.5",
+      "cycle_id": "sports-feed-probe-50-20260907",
+      "event_observation": {
+        "event_id": "e2026_nhl_tor_mtl",
+        "sport": "NHL",
+        "league": "ICEHOCKEY_NHL",
+        "home_team": "Home Team",
+        "away_team": "Away Team",
+        "event_start_time_utc": "2026-09-10T23:30:00Z",
+        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
+        "source_name": "FanDuel / Odds API Fixture",
+        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
+        "market_name": "spreads",
+        "observed_odds": {
+          "market_probability": 0.5641025641025641
+        },
+        "event_status": "PRE_GAME_LOCKED"
+      },
+      "selected_prediction": "montreal canadiens",
+      "odds_at_lock": "1.77",
+      "implied_probability": 0.5641,
+      "model_predicted_probability": 0.5545,
+      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
+      "model_state_rationale": "Model version shadow-v1 single prediction",
+      "is_parlay": false,
+      "parlay_legs": [],
+      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+      "sha256_receipt_hash": "7caefc064e2318a6e536dc821bee0e9be130c64fd3e3bdaa7fff3e19bb284ac9"
+    },
+    {
+      "prediction_id": "pred_sports-feed-probe-50-20260907_e2026_nfl_kc_sf_totals_over_47.5",
+      "cycle_id": "sports-feed-probe-50-20260907",
+      "event_observation": {
+        "event_id": "e2026_nfl_kc_sf",
+        "sport": "NFL",
+        "league": "AMERICANFOOTBALL_NFL",
+        "home_team": "Home Team",
+        "away_team": "Away Team",
+        "event_start_time_utc": "2026-09-11T00:20:00Z",
+        "observation_timestamp_utc": "2026-09-10T12:00:00Z",
+        "source_name": "FanDuel / Odds API Fixture",
+        "source_url": "/app/tests/fixtures/sports_real_feed_response.json",
+        "market_name": "totals",
+        "observed_odds": {
+          "market_probability": 0.5
+        },
+        "event_status": "PRE_GAME_LOCKED"
+      },
+      "selected_prediction": "over",
+      "odds_at_lock": "2.00",
+      "implied_probability": 0.5,
+      "model_predicted_probability": 0.5,
+      "lock_timestamp_utc": "2026-09-10T12:00:00Z",
+      "model_state_rationale": "Model version shadow-v1 single prediction",
+      "is_parlay": false,
+      "parlay_legs": [],
+      "classification": "REAL-WORLD OBSERVATION / REAL-WORLD RESEARCH PREDICTION",
+      "sha256_receipt_hash": "d1a1f303f38f623cd2f14be453fa79f9828aed93b965d641518ba46457f7332f"
     }
   ],
   "outcomes": [

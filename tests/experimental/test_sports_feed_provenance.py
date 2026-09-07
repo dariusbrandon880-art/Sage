@@ -221,6 +221,17 @@ def test_50_record_operational_portfolio_wiring_and_longitudinal_retrieval(tmp_p
     assert portfolio.single_count == 35
     assert portfolio.parlay_count == 15
 
+    # Diversity audit verification: must preserve all 10 unique source events and 4 unique sports
+    sport_by_event = {s.event_id: s.sport for s in snapshots}
+    report = build_diversity_report(portfolio.records, sport_by_event, provenance=provenance)
+    assert report.total_records == 50
+    assert report.single_count == 35
+    assert report.parlay_count == 15
+    assert report.unique_events == 10
+    assert report.unique_sports == 4
+    assert report.single_unique_events == 10
+    assert report.single_unique_sports == 4
+
     ledger_file = tmp_path / "sports_longitudinal_ledger.json"
     ledger = SportsLongitudinalLedger(storage_path=ledger_file)
 

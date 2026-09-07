@@ -128,21 +128,21 @@ def main() -> int:
 
     # Validate eight metrics across overall portfolio
     assert report.total_records == 50, f"Expected 50 total records, got {report.total_records}"
-    assert report.unique_events == 18, f"Expected 18 unique events, got {report.unique_events}"
+    assert report.unique_events == 35, f"Expected 35 unique events, got {report.unique_events}"
     assert report.unique_sports == 4, f"Expected 4 unique sports, got {report.unique_sports}"
     assert report.unique_market_types == 4, f"Expected 4 market types (3 single + parlay), got {report.unique_market_types}"
-    assert report.unique_event_market_types == 19, f"Expected 19 event market types, got {report.unique_event_market_types}"
-    assert report.unique_event_market_lines == 19, f"Expected 19 event market lines, got {report.unique_event_market_lines}"
+    assert report.unique_event_market_types == 36, f"Expected 36 event market types, got {report.unique_event_market_types}"
+    assert report.unique_event_market_lines == 36, f"Expected 36 event market lines, got {report.unique_event_market_lines}"
     assert report.unique_prediction_ids == 50, f"Expected 50 unique prediction IDs, got {report.unique_prediction_ids}"
     assert report.single_count == 35, f"Expected 35 single predictions, got {report.single_count}"
     assert report.parlay_count == 15, f"Expected 15 parlay predictions, got {report.parlay_count}"
 
     # Single-only diversity assertions (distinguishing singles from parlays)
-    assert report.single_unique_events == 18, f"Expected 18 single unique events, got {report.single_unique_events}"
+    assert report.single_unique_events == 35, f"Expected 35 single unique events, got {report.single_unique_events}"
     assert report.single_unique_sports == 4, f"Expected 4 single unique sports, got {report.single_unique_sports}"
     assert report.single_unique_market_types == 3, f"Expected 3 single market types, got {report.single_unique_market_types}"
-    assert report.single_unique_event_market_types == 18, f"Expected 18 single event market types, got {report.single_unique_event_market_types}"
-    assert report.single_unique_event_market_lines == 18, f"Expected 18 single event market lines, got {report.single_unique_event_market_lines}"
+    assert report.single_unique_event_market_types == 35, f"Expected 35 single event market types, got {report.single_unique_event_market_types}"
+    assert report.single_unique_event_market_lines == 35, f"Expected 35 single event market lines, got {report.single_unique_event_market_lines}"
     assert report.single_unique_prediction_ids == 35, f"Expected 35 single prediction IDs, got {report.single_unique_prediction_ids}"
 
     # Provenance summary assertions

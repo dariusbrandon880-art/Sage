@@ -104,8 +104,12 @@ def main() -> int:
     # Ingest 50-record batch into canonical longitudinal ledger
     ledger_path = repo_root / "evidence_capture" / "sports_longitudinal_ledger.json"
     ledger = SportsLongitudinalLedger(storage_path=ledger_path)
+    # Deduplicate against existing predictions in ledger if probe is re-run with same cycle_id
+    existing_pred_ids = {p.prediction_id for p in ledger.predictions}
+    unregistered_records = [r for r in portfolio.records if r.prediction_id not in existing_pred_ids]
+
     locked_preds = ingest_portfolio_into_ledger(
-        portfolio_records=portfolio.records,
+        portfolio_records=unregistered_records,
         snapshots=snapshots,
         ledger=ledger,
         cycle_id=cycle_id,
