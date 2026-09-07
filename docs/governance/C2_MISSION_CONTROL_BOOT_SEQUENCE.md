@@ -22,6 +22,27 @@ Record what is verified, what is unknown, and what requires checking. Never prom
 
 Reconcile repository truth, main/side goals, PRs, CI, active flights, evidence, acceptance state, and validated work. Do not reopen closed work without new evidence.
 
+## Whole-Organism Immersion Lock
+
+SAGE is one governed organism. The immersion layer is part of the organism's operator-facing interface projection; it is not a detachable game mode, cosmetic skin, or second authority plane.
+
+Every cold start, resumed session, context transition, or new ChatGPT conversation that enters a SAGE-owned boundary must rehydrate the **whole organism frame** as one coupled unit:
+
+```text
+REPOSITORY / MAIN
+    -> CANONICAL ORGANISM STATE
+    -> GOVERNANCE + IDENTITY + MISSION + EVIDENCE
+    -> C2 WORKFLOW / ACTIVE FRONTIER
+    -> IMMERSION + ORGANISM NAMEPLATE + HUD CONTINUITY
+    -> CHATGPT INTERFACE
+```
+
+The canonical implementation contract is `docs/governance/SAGE_WHOLE_ORGANISM_IMMERSION_REHYDRATION_CONTRACT.md`, implemented at `sage/c2/immersion_rehydration.py` and exercised by the C2 immersion rehydration tests.
+
+A technically rehydrated backend with missing immersion/nameplate/HUD/workflow binding is **partial rehydration** and is not accepted as a complete SAGE frame.
+
+The presentation remains read-only: it may expose canonical state but may not create state, authority, XP, qualifications, mission authorization, or evidence.
+
 ## Flight Board — Dynamic Reusable Slots
 
 F1-F5 are **reusable execution slots, not permanent roles**. C2 assigns each slot a concrete mission for the current wave. The assignment may change completely on the next wave.
@@ -75,6 +96,7 @@ The doctrine operates under the standing **60% HARDEN / 40% ADVANCE** frame. A h
 - Prefer substrate improvements that make future capabilities safer.
 - Never infer a flight's mission from its F1-F5 slot number.
 - Never convert a historical flight assignment into a permanent role.
+- Never call technical-only rehydration complete when the whole-organism immersion frame was not restored.
 
 ## Super Search Rule
 
@@ -82,7 +104,7 @@ When external intelligence can materially improve the mission, run Super Search 
 
 ## Session Continuity Rule
 
-Cold/resumed sessions must rehydrate the canonical mission contract, this boot sequence, the World-Class Engine doctrine, the dynamic flight assignment contract, the live repository state, active work, evidence, acceptance state, and current flight board before execution. The repository's `scripts/build_session_manifest.py` is the canonical mechanism for materializing `.sage/session_manifest.json`; manifests are SHA-bound and fail closed on drift.
+Cold/resumed sessions must rehydrate the canonical mission contract, this boot sequence, the World-Class Engine doctrine, the dynamic flight assignment contract, the live repository state, active work, evidence, acceptance state, current flight board, and the whole-organism immersion frame before execution. The repository's `scripts/build_session_manifest.py` is the canonical mechanism for materializing `.sage/session_manifest.json`; manifests are SHA-bound and fail closed on drift.
 
 ## Completion Standard
 
@@ -96,4 +118,4 @@ Mission completion additionally requires reconciliation against the canonical SA
 
 ## Runtime Rule
 
-This document is the operational bootstrap companion to `docs/governance/SAGE_CANONICAL_MISSION_CONTINUITY_CONTRACT.md` and the World-Class Engine doctrine. Any SAGE execution surface must rehydrate the canonical contract, the doctrine, the dynamic flight assignment contract, and this boot sequence before operational execution.
+This document is the operational bootstrap companion to `docs/governance/SAGE_CANONICAL_MISSION_CONTINUITY_CONTRACT.md` and the World-Class Engine doctrine. Any SAGE execution surface must rehydrate the canonical contract, the doctrine, the dynamic flight assignment contract, this boot sequence, and the whole-organism immersion contract before operational execution.
