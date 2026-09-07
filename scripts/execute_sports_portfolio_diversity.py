@@ -39,58 +39,34 @@ def make_market_universe() -> list[MarketSnapshot]:
     for i in range(20):
         snapshots.append(
             MarketSnapshot(
-                event_id=f"mlb-2026-{i:03d}",
-                sport="MLB",
-                league="MLB",
-                event_start_utc=START,
-                observed_at_utc=BEFORE,
-                market="moneyline",
-                market_type="moneyline",
-                line_value=None,
-                prices={"home": 1.95, "away": 1.90},
-                source="synthetic_fanduel",
+                event_id=f"mlb-2026-{i:03d}", sport="MLB", league="MLB",
+                event_start_utc=START, observed_at_utc=BEFORE, market="moneyline",
+                market_type="moneyline", line_value=None,
+                prices={"home": 1.95, "away": 1.90}, source="synthetic_fanduel",
             )
         )
         snapshots.append(
             MarketSnapshot(
-                event_id=f"nba-2026-{i:03d}",
-                sport="NBA",
-                league="NBA",
-                event_start_utc=START,
-                observed_at_utc=BEFORE,
-                market="spread",
-                market_type="spread",
-                line_value=-4.5 + (i % 5),
-                prices={"home": 1.91, "away": 1.91},
-                source="synthetic_fanduel",
+                event_id=f"nba-2026-{i:03d}", sport="NBA", league="NBA",
+                event_start_utc=START, observed_at_utc=BEFORE, market="spread",
+                market_type="spread", line_value=-4.5 + (i % 5),
+                prices={"home": 1.91, "away": 1.91}, source="synthetic_fanduel",
             )
         )
         snapshots.append(
             MarketSnapshot(
-                event_id=f"nfl-2026-{i:03d}",
-                sport="NFL",
-                league="NFL",
-                event_start_utc=START,
-                observed_at_utc=BEFORE,
-                market="total",
-                market_type="total",
-                line_value=42.5 + (i % 7),
-                prices={"over": 1.91, "under": 1.91},
-                source="synthetic_fanduel",
+                event_id=f"nfl-2026-{i:03d}", sport="NFL", league="NFL",
+                event_start_utc=START, observed_at_utc=BEFORE, market="total",
+                market_type="total", line_value=42.5 + (i % 7),
+                prices={"over": 1.91, "under": 1.91}, source="synthetic_fanduel",
             )
         )
         snapshots.append(
             MarketSnapshot(
-                event_id=f"nhl-2026-{i:03d}",
-                sport="NHL",
-                league="NHL",
-                event_start_utc=START,
-                observed_at_utc=BEFORE,
-                market="moneyline",
-                market_type="moneyline",
-                line_value=None,
-                prices={"home": 2.10, "away": 1.75},
-                source="synthetic_fanduel",
+                event_id=f"nhl-2026-{i:03d}", sport="NHL", league="NHL",
+                event_start_utc=START, observed_at_utc=BEFORE, market="moneyline",
+                market_type="moneyline", line_value=None,
+                prices={"home": 2.10, "away": 1.75}, source="synthetic_fanduel",
             )
         )
     return snapshots
@@ -112,37 +88,32 @@ def main() -> int:
     norm_hash = RealMarketFeedAdapter.compute_normalized_hash(snapshots)
 
     provenance = MarketProvenance(
-        provider="synthetic_generator",
-        endpoint="synthetic://market_universe",
-        retrieved_at_utc=BEFORE,
-        source_observed_at_utc=BEFORE,
-        event_ids=event_ids,
-        snapshot_count=len(snapshots),
-        raw_payload_hash=raw_hash,
-        normalized_payload_hash=norm_hash,
-        provenance_class=ProvenanceClass.SYNTHETIC.value,
+        provider="synthetic_generator", endpoint="synthetic://market_universe",
+        retrieved_at_utc=BEFORE, source_observed_at_utc=BEFORE,
+        event_ids=event_ids, snapshot_count=len(snapshots), raw_payload_hash=raw_hash,
+        normalized_payload_hash=norm_hash, provenance_class=ProvenanceClass.SYNTHETIC.value,
         adapter_version="1.0.0",
     )
 
     report = build_diversity_report(portfolio.records, sport_by_event, provenance=provenance)
 
-    # Validate eight metrics across overall portfolio
+    # Validate the portfolio contract produced by deterministic event-diverse selection.
     assert report.total_records == 50, f"Expected 50 total records, got {report.total_records}"
-    assert report.unique_events == 18, f"Expected 18 unique events, got {report.unique_events}"
+    assert report.unique_events == 35, f"Expected 35 unique events, got {report.unique_events}"
     assert report.unique_sports == 4, f"Expected 4 unique sports, got {report.unique_sports}"
     assert report.unique_market_types == 4, f"Expected 4 market types (3 single + parlay), got {report.unique_market_types}"
-    assert report.unique_event_market_types == 19, f"Expected 19 event market types, got {report.unique_event_market_types}"
-    assert report.unique_event_market_lines == 19, f"Expected 19 event market lines, got {report.unique_event_market_lines}"
+    assert report.unique_event_market_types == 35, f"Expected 35 event market types, got {report.unique_event_market_types}"
+    assert report.unique_event_market_lines == 35, f"Expected 35 event market lines, got {report.unique_event_market_lines}"
     assert report.unique_prediction_ids == 50, f"Expected 50 unique prediction IDs, got {report.unique_prediction_ids}"
     assert report.single_count == 35, f"Expected 35 single predictions, got {report.single_count}"
     assert report.parlay_count == 15, f"Expected 15 parlay predictions, got {report.parlay_count}"
 
     # Single-only diversity assertions (distinguishing singles from parlays)
-    assert report.single_unique_events == 18, f"Expected 18 single unique events, got {report.single_unique_events}"
+    assert report.single_unique_events == 35, f"Expected 35 single unique events, got {report.single_unique_events}"
     assert report.single_unique_sports == 4, f"Expected 4 single unique sports, got {report.single_unique_sports}"
     assert report.single_unique_market_types == 3, f"Expected 3 single market types, got {report.single_unique_market_types}"
-    assert report.single_unique_event_market_types == 18, f"Expected 18 single event market types, got {report.single_unique_event_market_types}"
-    assert report.single_unique_event_market_lines == 18, f"Expected 18 single event market lines, got {report.single_unique_event_market_lines}"
+    assert report.single_unique_event_market_types == 35, f"Expected 35 single event market types, got {report.single_unique_event_market_types}"
+    assert report.single_unique_event_market_lines == 35, f"Expected 35 single event market lines, got {report.single_unique_event_market_lines}"
     assert report.single_unique_prediction_ids == 35, f"Expected 35 single prediction IDs, got {report.single_unique_prediction_ids}"
 
     # Provenance summary assertions
