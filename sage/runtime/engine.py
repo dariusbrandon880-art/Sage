@@ -97,7 +97,9 @@ class SageRuntime:
 
         # Initialize C2 Bootstrap control contract
         self.c2_bootstrap = C2Bootstrap(
-            available_surfaces=("acr", "memory", "archive", "decisions", "validation", "hypervisor", "authority_gate")
+            available_surfaces=("acr", "memory", "archive", "decisions", "validation", "hypervisor", "authority_gate"),
+            acr_bridge=self.acr,
+            session_manager=self.session_manager,
         )
         self.c2_boot_result = self.c2_bootstrap.boot()
 
