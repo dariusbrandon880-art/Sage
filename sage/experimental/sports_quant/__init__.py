@@ -5,7 +5,14 @@ paper predictions, lock them before event start, resolve outcomes, score calibra
 and learn from failures. It has no wagering or account-execution surface.
 """
 
-from .ingestion import MarketSnapshot, PlayerPropSnapshot, FanDuelSnapshotAdapter
+from .ingestion import (
+    MarketSnapshot,
+    PlayerPropSnapshot,
+    FanDuelSnapshotAdapter,
+    ProvenanceClass,
+    MarketProvenance,
+    RealMarketFeedAdapter,
+)
 from .prediction import (
     PredictionRecord,
     PredictionBatchEngine,
@@ -28,6 +35,9 @@ __all__ = [
     "MarketSnapshot",
     "PlayerPropSnapshot",
     "FanDuelSnapshotAdapter",
+    "ProvenanceClass",
+    "MarketProvenance",
+    "RealMarketFeedAdapter",
     "PredictionRecord",
     "PredictionBatchEngine",
     "PropEdgeResult",
