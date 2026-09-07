@@ -95,11 +95,11 @@ def _registration_for_path(
     catalog: list[SubsystemRegistration],
     root: Path,
 ) -> SubsystemRegistration | None:
-    """Resolve the semantic organ registration covering an implementation file."""
+    """Resolve the most-specific semantic organ registration covering an implementation file."""
     matches = [sub for sub in catalog if _declares_path(sub.module_path, module_path, root)]
     if not matches:
         return None
-    return min(matches, key=lambda sub: (len(sub.module_path.rstrip("/")), sub.subsystem_id))
+    return max(matches, key=lambda sub: (len(sub.module_path.rstrip("/")), sub.subsystem_id))
 
 
 def _module_name(path: str) -> str:
