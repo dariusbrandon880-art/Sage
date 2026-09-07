@@ -95,3 +95,20 @@ def test_rehydration_fails_closed_when_runtime_is_not_rehydrated():
     runtime.get_status = lambda: {"c2_status": {"rehydrated": False}}
     with pytest.raises(ValueError, match="not rehydrated"):
         build_chatgpt_immersion_state(runtime, session_id="test_sess")
+
+
+def test_rehydration_fails_closed_when_git_head_is_invalid(monkeypatch):
+    runtime = _mock_runtime()
+    monkeypatch.setattr("sage.c2.immersion_rehydration._get_git_head", lambda: "invalid_sha")
+    with pytest.raises(ValueError, match="requires valid canonical git_head SHA"):
+        build_chatgpt_immersion_state(runtime, session_id="test_sess")
+
+
+def test_rehydration_binds_explicit_git_head():
+    runtime = _mock_runtime()
+    valid_sha = "d4ac70e672bb9874f0e70cbc58502f28238c6ed9"
+    state = build_chatgpt_immersion_state(
+        runtime, session_id="test_sess", c2_context={"canonical_git_sha": valid_sha}
+    )
+    assert state.provenance_head is not None
+    assert len(state.provenance_head) == 64
