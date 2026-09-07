@@ -127,6 +127,45 @@ def test_live_vs_synthetic_provenance_distinction():
     assert hist.provenance_class == "historical_external"
 
 
+def test_live_probe_success_emits_external_live_receipt(monkeypatch, tmp_path):
+    import scripts.probe_live_sports_feed as probe
+
+    raw_payload = FIXTURE_PATH.read_text(encoding="utf-8")
+    snapshots, live_provenance = RealMarketFeedAdapter.parse_raw_feed(
+        raw_payload=raw_payload,
+        provider="The Odds API",
+        endpoint="https://api.the-odds-api.com/v4/sports/upcoming/odds",
+        provenance_class=ProvenanceClass.EXTERNAL_LIVE.value,
+    )
+
+    monkeypatch.setattr(
+        probe.RealMarketFeedAdapter,
+        "fetch_live_feed",
+        staticmethod(lambda **_: (snapshots, live_provenance)),
+    )
+    monkeypatch.setattr(probe, "repo_root", tmp_path)
+    monkeypatch.setattr(probe.sys, "argv", ["probe_live_sports_feed.py", "--live", "--api-key", "test-key"])
+
+    assert probe.main() == 0
+
+    receipt = json.loads((tmp_path / "evidence_capture" / "sports_live_probe_receipt.json").read_text())
+    assert receipt["provenance_summary"]["provenance_class"] == ProvenanceClass.EXTERNAL_LIVE.value
+
+
+def test_live_probe_failure_is_nonzero_and_does_not_emit_receipt(monkeypatch, tmp_path):
+    import scripts.probe_live_sports_feed as probe
+
+    def fail_fetch(**_):
+        raise RuntimeError("simulated live fetch failure")
+
+    monkeypatch.setattr(probe.RealMarketFeedAdapter, "fetch_live_feed", staticmethod(fail_fetch))
+    monkeypatch.setattr(probe, "repo_root", tmp_path)
+    monkeypatch.setattr(probe.sys, "argv", ["probe_live_sports_feed.py", "--live", "--api-key", "test-key"])
+
+    assert probe.main() == 1
+    assert not (tmp_path / "evidence_capture" / "sports_live_probe_receipt.json").exists()
+
+
 def test_e2e_raw_feed_to_provenance_receipt():
     raw_payload = FIXTURE_PATH.read_text(encoding="utf-8")
 
