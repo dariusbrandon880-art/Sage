@@ -26,16 +26,12 @@ def test_real_market_feed_adapter_parses_recorded_fixture():
         provenance_class=ProvenanceClass.FIXTURE.value,
     )
 
-    assert len(snapshots) == 11
-    assert len(provenance.event_ids) == 4
-    assert set(provenance.event_ids) == {
-        "e2026_mlb_nyy_bos",
-        "e2026_nba_bos_lal",
-        "e2026_nfl_kc_sf",
-        "e2026_nhl_edm_fla",
-    }
+    assert len(snapshots) == 30
+    assert len(provenance.event_ids) == 10
+    assert "e2026_mlb_nyy_bos" in provenance.event_ids
+    assert "e2026_nba_bos_lal" in provenance.event_ids
     assert provenance.provenance_class == "fixture"
-    assert provenance.snapshot_count == 11
+    assert provenance.snapshot_count == 30
     assert len(provenance.raw_payload_hash) == 64
     assert len(provenance.normalized_payload_hash) == 64
 
@@ -200,7 +196,74 @@ def test_e2e_raw_feed_to_provenance_receipt():
     assert prov_summary["source_provider"] == "FanDuel Odds Feed"
     assert prov_summary["source_endpoint"] == "https://sportsbook.fanduel.com/api/sports"
     assert prov_summary["provenance_class"] == "fixture"
-    assert prov_summary["snapshot_count"] == 11
+    assert prov_summary["snapshot_count"] == 30
     assert prov_summary["raw_payload_hash"] == provenance.raw_payload_hash
     assert prov_summary["normalized_payload_hash"] == provenance.normalized_payload_hash
     assert prov_summary["adapter_version"] == "1.0.0"
+
+
+def test_50_record_operational_portfolio_wiring_and_longitudinal_retrieval(tmp_path):
+    from sage.experimental.sports_longitudinal import SportsLongitudinalLedger, ingest_portfolio_into_ledger
+
+    raw_payload = FIXTURE_PATH.read_text(encoding="utf-8")
+    snapshots, provenance = RealMarketFeedAdapter.parse_raw_feed(
+        raw_payload=raw_payload,
+        provider="The Odds API Fixture",
+        endpoint=str(FIXTURE_PATH),
+        provenance_class=ProvenanceClass.FIXTURE.value,
+    )
+
+    cycle_id = "test-50-batch-cycle-2026"
+    engine = DailySportsPortfolioEngine(target=50, parlay_share=0.30)
+    portfolio = engine.build(snapshots, cycle_id=cycle_id)
+
+    assert portfolio.count == 50
+    assert portfolio.single_count == 35
+    assert portfolio.parlay_count == 15
+
+    ledger_file = tmp_path / "sports_longitudinal_ledger.json"
+    ledger = SportsLongitudinalLedger(storage_path=ledger_file)
+
+    locked_preds = ingest_portfolio_into_ledger(
+        portfolio_records=portfolio.records,
+        snapshots=snapshots,
+        ledger=ledger,
+        cycle_id=cycle_id,
+        provenance=provenance,
+    )
+
+    assert len(locked_preds) == 50
+    assert len(ledger.predictions) == 50
+
+    # Verify reloading ledger retrieves exact batch by cycle_id
+    reloaded_ledger = SportsLongitudinalLedger(storage_path=ledger_file)
+    batch_preds = [p for p in reloaded_ledger.get_pending_predictions() if p.cycle_id == cycle_id]
+    assert len(batch_preds) == 50
+
+    singles = [p for p in batch_preds if not p.is_parlay]
+    parlays = [p for p in batch_preds if p.is_parlay]
+    assert len(singles) == 35
+    assert len(parlays) == 15
+
+    # Verify hash integrity on all locked predictions
+    for p in batch_preds:
+        assert p.compute_sha256_hash() == p.sha256_receipt_hash
+
+
+def test_portfolio_engine_fails_closed_when_snapshots_insufficient():
+    # Only 1 event snapshot -> cannot produce 50 target
+    small_snapshots = [
+        MarketSnapshot(
+            event_id="e_small",
+            sport="MLB",
+            league="MLB",
+            event_start_utc="2026-09-10T19:00:00Z",
+            observed_at_utc="2026-09-10T12:00:00Z",
+            market="moneyline",
+            prices={"home": 1.9, "away": 1.9},
+            source="test",
+        )
+    ]
+    engine = DailySportsPortfolioEngine(target=50, parlay_share=0.30)
+    with pytest.raises(ValueError, match="DAILY_TARGET_UNMET"):
+        engine.build(small_snapshots, cycle_id="fail-closed-cycle")

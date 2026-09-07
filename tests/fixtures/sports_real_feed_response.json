@@ -38,6 +38,82 @@
     ]
   },
   {
+    "id": "e2026_mlb_lad_sd",
+    "sport_key": "baseball_mlb",
+    "sport_title": "MLB",
+    "commence_time": "2026-09-10T21:10:00Z",
+    "home_team": "Los Angeles Dodgers",
+    "away_team": "San Diego Padres",
+    "bookmakers": [
+      {
+        "key": "fanduel",
+        "title": "FanDuel",
+        "last_update": "2026-09-10T12:00:00Z",
+        "markets": [
+          {
+            "key": "h2h",
+            "outcomes": [
+              { "name": "Los Angeles Dodgers", "price": 1.75 },
+              { "name": "San Diego Padres", "price": 2.10 }
+            ]
+          },
+          {
+            "key": "spreads",
+            "outcomes": [
+              { "name": "Los Angeles Dodgers", "price": 1.91, "point": -1.5 },
+              { "name": "San Diego Padres", "price": 1.91, "point": 1.5 }
+            ]
+          },
+          {
+            "key": "totals",
+            "outcomes": [
+              { "name": "Over", "price": 1.90, "point": 8.0 },
+              { "name": "Under", "price": 1.90, "point": 8.0 }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "e2026_mlb_hou_tex",
+    "sport_key": "baseball_mlb",
+    "sport_title": "MLB",
+    "commence_time": "2026-09-10T23:05:00Z",
+    "home_team": "Houston Astros",
+    "away_team": "Texas Rangers",
+    "bookmakers": [
+      {
+        "key": "fanduel",
+        "title": "FanDuel",
+        "last_update": "2026-09-10T12:00:00Z",
+        "markets": [
+          {
+            "key": "h2h",
+            "outcomes": [
+              { "name": "Houston Astros", "price": 1.80 },
+              { "name": "Texas Rangers", "price": 2.05 }
+            ]
+          },
+          {
+            "key": "spreads",
+            "outcomes": [
+              { "name": "Houston Astros", "price": 1.91, "point": -1.5 },
+              { "name": "Texas Rangers", "price": 1.91, "point": 1.5 }
+            ]
+          },
+          {
+            "key": "totals",
+            "outcomes": [
+              { "name": "Over", "price": 1.87, "point": 9.0 },
+              { "name": "Under", "price": 1.95, "point": 9.0 }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
     "id": "e2026_nba_bos_lal",
     "sport_key": "basketball_nba",
     "sport_title": "NBA",
@@ -69,6 +145,82 @@
             "outcomes": [
               { "name": "Over", "price": 1.91, "point": 224.5 },
               { "name": "Under", "price": 1.91, "point": 224.5 }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "e2026_nba_gsw_phx",
+    "sport_key": "basketball_nba",
+    "sport_title": "NBA",
+    "commence_time": "2026-09-10T22:30:00Z",
+    "home_team": "Golden State Warriors",
+    "away_team": "Phoenix Suns",
+    "bookmakers": [
+      {
+        "key": "fanduel",
+        "title": "FanDuel",
+        "last_update": "2026-09-10T12:00:00Z",
+        "markets": [
+          {
+            "key": "h2h",
+            "outcomes": [
+              { "name": "Golden State Warriors", "price": 1.95 },
+              { "name": "Phoenix Suns", "price": 1.90 }
+            ]
+          },
+          {
+            "key": "spreads",
+            "outcomes": [
+              { "name": "Golden State Warriors", "price": 1.91, "point": -1.5 },
+              { "name": "Phoenix Suns", "price": 1.91, "point": 1.5 }
+            ]
+          },
+          {
+            "key": "totals",
+            "outcomes": [
+              { "name": "Over", "price": 1.91, "point": 230.5 },
+              { "name": "Under", "price": 1.91, "point": 230.5 }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "e2026_nba_mil_mia",
+    "sport_key": "basketball_nba",
+    "sport_title": "NBA",
+    "commence_time": "2026-09-10T23:00:00Z",
+    "home_team": "Milwaukee Bucks",
+    "away_team": "Miami Heat",
+    "bookmakers": [
+      {
+        "key": "fanduel",
+        "title": "FanDuel",
+        "last_update": "2026-09-10T12:00:00Z",
+        "markets": [
+          {
+            "key": "h2h",
+            "outcomes": [
+              { "name": "Milwaukee Bucks", "price": 1.65 },
+              { "name": "Miami Heat", "price": 2.30 }
+            ]
+          },
+          {
+            "key": "spreads",
+            "outcomes": [
+              { "name": "Milwaukee Bucks", "price": 1.91, "point": -5.5 },
+              { "name": "Miami Heat", "price": 1.91, "point": 5.5 }
+            ]
+          },
+          {
+            "key": "totals",
+            "outcomes": [
+              { "name": "Over", "price": 1.91, "point": 218.5 },
+              { "name": "Under", "price": 1.91, "point": 218.5 }
             ]
           }
         ]
@@ -114,6 +266,44 @@
     ]
   },
   {
+    "id": "e2026_nfl_phi_dal",
+    "sport_key": "americanfootball_nfl",
+    "sport_title": "NFL",
+    "commence_time": "2026-09-11T01:15:00Z",
+    "home_team": "Philadelphia Eagles",
+    "away_team": "Dallas Cowboys",
+    "bookmakers": [
+      {
+        "key": "fanduel",
+        "title": "FanDuel",
+        "last_update": "2026-09-10T12:00:00Z",
+        "markets": [
+          {
+            "key": "h2h",
+            "outcomes": [
+              { "name": "Philadelphia Eagles", "price": 1.70 },
+              { "name": "Dallas Cowboys", "price": 2.25 }
+            ]
+          },
+          {
+            "key": "spreads",
+            "outcomes": [
+              { "name": "Philadelphia Eagles", "price": 1.91, "point": -3.5 },
+              { "name": "Dallas Cowboys", "price": 1.91, "point": 3.5 }
+            ]
+          },
+          {
+            "key": "totals",
+            "outcomes": [
+              { "name": "Over", "price": 1.91, "point": 48.0 },
+              { "name": "Under", "price": 1.91, "point": 48.0 }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
     "id": "e2026_nhl_edm_fla",
     "sport_key": "icehockey_nhl",
     "sport_title": "NHL",
@@ -134,10 +324,55 @@
             ]
           },
           {
+            "key": "spreads",
+            "outcomes": [
+              { "name": "Florida Panthers", "price": 2.40, "point": -1.5 },
+              { "name": "Edmonton Oilers", "price": 1.58, "point": 1.5 }
+            ]
+          },
+          {
             "key": "totals",
             "outcomes": [
               { "name": "Over", "price": 1.87, "point": 6.5 },
               { "name": "Under", "price": 1.95, "point": 6.5 }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "e2026_nhl_tor_mtl",
+    "sport_key": "icehockey_nhl",
+    "sport_title": "NHL",
+    "commence_time": "2026-09-10T23:30:00Z",
+    "home_team": "Toronto Maple Leafs",
+    "away_team": "Montreal Canadiens",
+    "bookmakers": [
+      {
+        "key": "fanduel",
+        "title": "FanDuel",
+        "last_update": "2026-09-10T12:00:00Z",
+        "markets": [
+          {
+            "key": "h2h",
+            "outcomes": [
+              { "name": "Toronto Maple Leafs", "price": 1.62 },
+              { "name": "Montreal Canadiens", "price": 2.35 }
+            ]
+          },
+          {
+            "key": "spreads",
+            "outcomes": [
+              { "name": "Toronto Maple Leafs", "price": 2.20, "point": -1.5 },
+              { "name": "Montreal Canadiens", "price": 1.70, "point": 1.5 }
+            ]
+          },
+          {
+            "key": "totals",
+            "outcomes": [
+              { "name": "Over", "price": 1.91, "point": 6.0 },
+              { "name": "Under", "price": 1.91, "point": 6.0 }
             ]
           }
         ]
