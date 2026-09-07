@@ -10,6 +10,8 @@ from __future__ import annotations
 import importlib
 from hashlib import sha256
 import json
+import re
+import subprocess
 from typing import Any
 
 from sage.c2.immersion_state import ExecutionPhase, FlightStatus, ImmersionState, TrustStatus
@@ -52,6 +54,19 @@ def _load_airspace_manager() -> Any | None:
         return None
 
 
+def _get_git_head() -> str:
+    try:
+        res = subprocess.run(
+            ["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True
+        )
+        sha = res.stdout.strip()
+        if re.fullmatch(r"[0-9a-fA-F]{40}", sha):
+            return sha
+    except Exception:
+        pass
+    return ""
+
+
 def build_chatgpt_immersion_state(
     runtime: Any,
     *,
@@ -88,10 +103,19 @@ def build_chatgpt_immersion_state(
     if c2_status and c2_status.get("rehydrated") is False:
         raise ValueError("SAGE immersion rehydration blocked: C2 runtime is not rehydrated")
 
+    git_head = (
+        getattr(current_state, "canonical_git_sha", None)
+        or context.get("canonical_git_sha")
+        or _get_git_head()
+    )
+    if not git_head or not re.fullmatch(r"[0-9a-fA-F]{40}", str(git_head)):
+        raise ValueError("SAGE immersion rehydration requires valid canonical git_head SHA")
+
     canonical_payload = {
         "contract_version": REHYDRATION_CONTRACT_VERSION,
         "command": REHYDRATE_HUD_COMMAND,
         "session_id": session_id,
+        "git_head": str(git_head),
         "objective": mission,
         "task": task,
         "operating_frame": list(C2_OPERATING_FRAME_SEQUENCE),
