@@ -1,6 +1,6 @@
 """Whole-organism structural integrity checks for the SAGE Jigsaw model.
 
-Jigsaw is the structural self-model; it is not C2 authority.  This module compares
+Jigsaw is the structural self-model; it is not C2 authority. This module compares
 repository reality with the canonical Jigsaw catalog and reports structural gaps
 without promoting the report into runtime state.
 """
@@ -9,10 +9,10 @@ from __future__ import annotations
 
 import ast
 import hashlib
+import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
-from sage.c2.capability_graph import CapabilityGraphEngine
 from sage.c2.organism_jigsaw import SubsystemRegistration, get_canonical_subsystem_catalog
 
 
@@ -44,7 +44,7 @@ class _DiscoveredModule:
 
 
 def _python_modules(root: Path) -> tuple[_DiscoveredModule, ...]:
-    """Discover executable Python organs from the repository, excluding caches."""
+    """Inventory executable Python implementation files, not semantic organs."""
     modules: list[_DiscoveredModule] = []
     sage_root = root / "sage"
     if not sage_root.exists():
@@ -81,24 +81,59 @@ def _normalize_declared_path(module_path: str, root: Path) -> str:
     return path.relative_to(root).as_posix()
 
 
+def _declares_path(module_path: str, actual_path: str, root: Path) -> bool:
+    """Return whether a catalog registration owns an exact file or package tree."""
+    path = root / module_path
+    if path.is_dir():
+        boundary = module_path.rstrip("/")
+        return actual_path == boundary or actual_path.startswith(boundary + "/")
+    return _normalize_declared_path(module_path, root) == actual_path
+
+
+def _registration_for_path(
+    module_path: str,
+    catalog: list[SubsystemRegistration],
+    root: Path,
+) -> SubsystemRegistration | None:
+    """Resolve the most-specific semantic organ registration covering an implementation file."""
+    matches = [sub for sub in catalog if _declares_path(sub.module_path, module_path, root)]
+    if not matches:
+        return None
+    return max(matches, key=lambda sub: (len(sub.module_path.rstrip("/")), sub.subsystem_id))
+
+
+def _module_name(path: str) -> str:
+    return path.removesuffix(".py").replace("/", ".")
+
+
+def _resolve_import(import_name: str, actual: set[str]) -> str | None:
+    """Resolve a repository-local import to the implementation file it targets."""
+    actual_by_name = {_module_name(path): path for path in actual}
+    if import_name in actual_by_name:
+        return actual_by_name[import_name]
+    package_init = f"{import_name.replace('.', '/')}/__init__.py"
+    if package_init in actual:
+        return package_init
+    module_path = f"{import_name.replace('.', '/')}.py"
+    if module_path in actual:
+        return module_path
+    return None
+
+
 def _finding_digest(findings: tuple[OrganismIntegrityFinding, ...]) -> str:
     material = "|".join(f"{f.kind}:{f.subject}:{f.detail}" for f in findings)
     return hashlib.sha256(material.encode("utf-8")).hexdigest()
 
 
-def discover_repository_organs(root_dir: str = ".") -> tuple[str, ...]:
-    """Return deterministic repository Python-organ paths.
-
-    The existing capability graph remains the discovery intelligence for its
-    supported surfaces; this integrity layer additionally inventories the full
-    executable ``sage`` tree because Jigsaw completeness cannot be inferred from
-    a partial capability surface.
-    """
-    root = Path(root_dir).resolve()
-    # Instantiate the existing graph engine so discovery remains connected to the
-    # repository-native capability inventory rather than creating another graph.
-    CapabilityGraphEngine(root).discover(exact_git_head="0" * 40)
-    return tuple(module.path for module in _python_modules(root))
+def _repository_head(root: Path) -> str | None:
+    try:
+        return subprocess.check_output(
+            ["git", "-C", str(root), "rev-parse", "HEAD"],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).strip()
+    except (OSError, subprocess.CalledProcessError):
+        return None
 
 
 def evaluate_organism_integrity(
@@ -106,47 +141,129 @@ def evaluate_organism_integrity(
     root_dir: str = ".",
     catalog: list[SubsystemRegistration] | None = None,
 ) -> OrganismIntegrityReport:
-    """Compare actual repository Python organs with the canonical Jigsaw map."""
+    """Compare semantic organs, dependency structure, and authority boundaries."""
     root = Path(root_dir).resolve()
     discovered = _python_modules(root)
     actual = {m.path for m in discovered}
     catalog = catalog if catalog is not None else get_canonical_subsystem_catalog()
-    declared = {
-        _normalize_declared_path(sub.module_path, root)
-        for sub in catalog
-    }
 
     findings: list[OrganismIntegrityFinding] = []
-    for path in sorted(actual - declared):
+    observed_head = _repository_head(root)
+    if observed_head is not None and observed_head != exact_git_head:
         findings.append(OrganismIntegrityFinding(
-            kind="UNDECLARED_ORGAN",
-            subject=path,
-            detail="Executable Python organ exists on disk but is absent from the canonical Jigsaw catalog.",
-        ))
-    for path in sorted(declared - actual):
-        findings.append(OrganismIntegrityFinding(
-            kind="MISSING_ORGAN",
-            subject=path,
-            detail="Canonical Jigsaw registration has no matching executable Python organ on disk.",
+            kind="HEAD_MISMATCH",
+            subject=exact_git_head,
+            detail=f"Evaluated repository HEAD is {observed_head}, not the supplied exact Git HEAD.",
         ))
 
-    declared_by_path = {
-        _normalize_declared_path(sub.module_path, root): sub for sub in catalog
-    }
+    declared = {_normalize_declared_path(sub.module_path, root) for sub in catalog}
     for module in discovered:
-        if module.path not in declared_by_path:
-            continue
-        # Projection organs must not directly encode filesystem mutation. This is
-        # a structural signal only; canonical state ownership remains elsewhere.
-        registration = declared_by_path[module.path]
-        if registration.relationship.value == "PROJECTION" and module.writes:
+        registration = _registration_for_path(module.path, catalog, root)
+        if registration is None:
+            findings.append(OrganismIntegrityFinding(
+                kind="UNDECLARED_ORGAN",
+                subject=module.path,
+                detail="Executable Python implementation is outside every canonical Jigsaw organ boundary.",
+            ))
+
+    for sub in catalog:
+        if not any(_declares_path(sub.module_path, path, root) for path in actual):
+            findings.append(OrganismIntegrityFinding(
+                kind="MISSING_ORGAN",
+                subject=_normalize_declared_path(sub.module_path, root),
+                detail="Canonical Jigsaw registration has no matching executable Python implementation on disk.",
+            ))
+
+    domain_map: dict[str, list[str]] = {}
+    for sub in catalog:
+        if sub.authoritative_domain:
+            domain_map.setdefault(sub.authoritative_domain, []).append(sub.subsystem_id)
+    for domain, subsystem_ids in sorted(domain_map.items()):
+        if len(subsystem_ids) > 1:
+            findings.append(OrganismIntegrityFinding(
+                kind="DUPLICATE_AUTHORITY",
+                subject=domain,
+                detail=f"Multiple canonical subsystems claim the same authoritative domain: {subsystem_ids}.",
+            ))
+
+    adjacency: dict[str, set[str]] = {module.path: set() for module in discovered}
+    for module in discovered:
+        for imported in module.imports:
+            target = _resolve_import(imported, actual)
+            if target is None:
+                findings.append(OrganismIntegrityFinding(
+                    kind="INVALID_DEPENDENCY_EDGE",
+                    subject=module.path,
+                    detail=f"Repository-local import does not resolve to an executable implementation: {imported}.",
+                ))
+                continue
+            adjacency[module.path].add(target)
+
+        registration = _registration_for_path(module.path, catalog, root)
+        if registration and registration.relationship.value == "PROJECTION" and module.writes:
             findings.append(OrganismIntegrityFinding(
                 kind="PROJECTION_MUTATION_SURFACE",
                 subject=module.path,
                 detail=f"Projection contains filesystem mutation calls: {module.writes}",
             ))
+        if module.path.startswith("sage/experimental/"):
+            for target in sorted(adjacency[module.path]):
+                target_registration = _registration_for_path(target, catalog, root)
+                if target_registration and target_registration.relationship.value == "CORE":
+                    findings.append(OrganismIntegrityFinding(
+                        kind="EXPERIMENTAL_TO_CORE_COUPLING",
+                        subject=module.path,
+                        detail=(
+                            f"Experimental implementation imports canonical CORE organ "
+                            f"{target_registration.subsystem_id} ({target})."
+                        ),
+                    ))
+            if module.writes and ("/cognitive/" in module.path or "/sagi/" in module.path):
+                findings.append(OrganismIntegrityFinding(
+                    kind="COGNITION_CANONICAL_MUTATION",
+                    subject=module.path,
+                    detail="Experimental cognition surface contains direct filesystem mutation calls.",
+                ))
 
-    finding_tuple = tuple(findings)
+    index = 0
+    indices: dict[str, int] = {}
+    lowlinks: dict[str, int] = {}
+    stack: list[str] = []
+    on_stack: set[str] = set()
+
+    def strongconnect(node: str) -> None:
+        nonlocal index
+        indices[node] = index
+        lowlinks[node] = index
+        index += 1
+        stack.append(node)
+        on_stack.add(node)
+        for target in sorted(adjacency[node]):
+            if target not in indices:
+                strongconnect(target)
+                lowlinks[node] = min(lowlinks[node], lowlinks[target])
+            elif target in on_stack:
+                lowlinks[node] = min(lowlinks[node], indices[target])
+        if lowlinks[node] == indices[node]:
+            component: list[str] = []
+            while True:
+                target = stack.pop()
+                on_stack.remove(target)
+                component.append(target)
+                if target == node:
+                    break
+            if len(component) > 1 or node in adjacency[node]:
+                findings.append(OrganismIntegrityFinding(
+                    kind="DEPENDENCY_CYCLE",
+                    subject=",".join(sorted(component)),
+                    detail="Repository-local import graph contains a cycle.",
+                ))
+
+    for node in sorted(adjacency):
+        if node not in indices:
+            strongconnect(node)
+
+    finding_tuple = tuple(sorted(findings, key=lambda f: (f.kind, f.subject, f.detail)))
     return OrganismIntegrityReport(
         exact_git_head=exact_git_head,
         discovered_modules=tuple(sorted(actual)),
