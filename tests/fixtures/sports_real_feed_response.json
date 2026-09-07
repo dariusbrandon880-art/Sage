@@ -1,0 +1,147 @@
+[
+  {
+    "id": "e2026_mlb_nyy_bos",
+    "sport_key": "baseball_mlb",
+    "sport_title": "MLB",
+    "commence_time": "2026-09-10T19:05:00Z",
+    "home_team": "New York Yankees",
+    "away_team": "Boston Red Sox",
+    "bookmakers": [
+      {
+        "key": "fanduel",
+        "title": "FanDuel",
+        "last_update": "2026-09-10T12:00:00Z",
+        "markets": [
+          {
+            "key": "h2h",
+            "outcomes": [
+              { "name": "New York Yankees", "price": 1.85 },
+              { "name": "Boston Red Sox", "price": 2.00 }
+            ]
+          },
+          {
+            "key": "spreads",
+            "outcomes": [
+              { "name": "New York Yankees", "price": 1.91, "point": -1.5 },
+              { "name": "Boston Red Sox", "price": 1.91, "point": 1.5 }
+            ]
+          },
+          {
+            "key": "totals",
+            "outcomes": [
+              { "name": "Over", "price": 1.95, "point": 8.5 },
+              { "name": "Under", "price": 1.87, "point": 8.5 }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "e2026_nba_bos_lal",
+    "sport_key": "basketball_nba",
+    "sport_title": "NBA",
+    "commence_time": "2026-09-10T22:00:00Z",
+    "home_team": "Los Angeles Lakers",
+    "away_team": "Boston Celtics",
+    "bookmakers": [
+      {
+        "key": "fanduel",
+        "title": "FanDuel",
+        "last_update": "2026-09-10T12:00:00Z",
+        "markets": [
+          {
+            "key": "h2h",
+            "outcomes": [
+              { "name": "Los Angeles Lakers", "price": 2.10 },
+              { "name": "Boston Celtics", "price": 1.75 }
+            ]
+          },
+          {
+            "key": "spreads",
+            "outcomes": [
+              { "name": "Los Angeles Lakers", "price": 1.91, "point": 3.5 },
+              { "name": "Boston Celtics", "price": 1.91, "point": -3.5 }
+            ]
+          },
+          {
+            "key": "totals",
+            "outcomes": [
+              { "name": "Over", "price": 1.91, "point": 224.5 },
+              { "name": "Under", "price": 1.91, "point": 224.5 }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "e2026_nfl_kc_sf",
+    "sport_key": "americanfootball_nfl",
+    "sport_title": "NFL",
+    "commence_time": "2026-09-11T00:20:00Z",
+    "home_team": "Kansas City Chiefs",
+    "away_team": "San Francisco 49ers",
+    "bookmakers": [
+      {
+        "key": "fanduel",
+        "title": "FanDuel",
+        "last_update": "2026-09-10T12:00:00Z",
+        "markets": [
+          {
+            "key": "h2h",
+            "outcomes": [
+              { "name": "Kansas City Chiefs", "price": 1.77 },
+              { "name": "San Francisco 49ers", "price": 2.15 }
+            ]
+          },
+          {
+            "key": "spreads",
+            "outcomes": [
+              { "name": "Kansas City Chiefs", "price": 1.91, "point": -2.5 },
+              { "name": "San Francisco 49ers", "price": 1.91, "point": 2.5 }
+            ]
+          },
+          {
+            "key": "totals",
+            "outcomes": [
+              { "name": "Over", "price": 1.91, "point": 47.5 },
+              { "name": "Under", "price": 1.91, "point": 47.5 }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "e2026_nhl_edm_fla",
+    "sport_key": "icehockey_nhl",
+    "sport_title": "NHL",
+    "commence_time": "2026-09-10T23:00:00Z",
+    "home_team": "Florida Panthers",
+    "away_team": "Edmonton Oilers",
+    "bookmakers": [
+      {
+        "key": "fanduel",
+        "title": "FanDuel",
+        "last_update": "2026-09-10T12:00:00Z",
+        "markets": [
+          {
+            "key": "h2h",
+            "outcomes": [
+              { "name": "Florida Panthers", "price": 1.90 },
+              { "name": "Edmonton Oilers", "price": 1.95 }
+            ]
+          },
+          {
+            "key": "totals",
+            "outcomes": [
+              { "name": "Over", "price": 1.87, "point": 6.5 },
+              { "name": "Under", "price": 1.95, "point": 6.5 }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

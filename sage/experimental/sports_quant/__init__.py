@@ -5,7 +5,14 @@ paper predictions, lock them before event start, resolve outcomes, score calibra
 and learn from failures. It has no wagering or account-execution surface.
 """
 
-from .ingestion import MarketSnapshot, PlayerPropSnapshot, FanDuelSnapshotAdapter, TheOddsApiAdapter
+from .ingestion import (
+    MarketSnapshot,
+    PlayerPropSnapshot,
+    FanDuelSnapshotAdapter,
+    ProvenanceClass,
+    MarketProvenance,
+    RealMarketFeedAdapter,
+)
 from .prediction import (
     PredictionRecord,
     PredictionBatchEngine,
@@ -23,12 +30,20 @@ from .evaluation import (
     score_predictions,
 )
 from .learning import FailureCluster, build_failure_clusters, validate_oos_candidate
+from .decision_bridge import (
+    SportsDecision,
+    build_sports_decision,
+    autopsy_sports_decision,
+    derive_sports_learning_signal,
+)
 
 __all__ = [
     "MarketSnapshot",
     "PlayerPropSnapshot",
     "FanDuelSnapshotAdapter",
-    "TheOddsApiAdapter",
+    "ProvenanceClass",
+    "MarketProvenance",
+    "RealMarketFeedAdapter",
     "PredictionRecord",
     "PredictionBatchEngine",
     "PropEdgeResult",
@@ -47,4 +62,8 @@ __all__ = [
     "FailureCluster",
     "build_failure_clusters",
     "validate_oos_candidate",
+    "SportsDecision",
+    "build_sports_decision",
+    "autopsy_sports_decision",
+    "derive_sports_learning_signal",
 ]
