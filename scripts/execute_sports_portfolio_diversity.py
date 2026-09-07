@@ -2,8 +2,8 @@
 """Execute SAGE Sports Portfolio Diversity Audit and Receipt Generation.
 
 Constructs a multi-sport market snapshot universe, builds a 50-prediction portfolio,
-audits the canonical eight diversity metrics and single-only diversity metrics, and
-persists deterministic JSON receipts to evidence_capture/sports_portfolio_diversity_receipt.json
+audits the canonical eight diversity metrics, single-only diversity metrics, and market provenance,
+and persists deterministic JSON receipts to evidence_capture/sports_portfolio_diversity_receipt.json
 and portfolio_diversity_receipt.json.
 """
 
@@ -20,6 +20,9 @@ if str(repo_root) not in sys.path:
 from sage.experimental.sports_quant import (  # noqa: E402
     DailySportsPortfolioEngine,
     MarketSnapshot,
+    MarketProvenance,
+    ProvenanceClass,
+    RealMarketFeedAdapter,
 )
 from sage.experimental.sports_quant.portfolio_audit import (  # noqa: E402
     build_diversity_report,
@@ -45,7 +48,7 @@ def make_market_universe() -> list[MarketSnapshot]:
                 market_type="moneyline",
                 line_value=None,
                 prices={"home": 1.95, "away": 1.90},
-                source="fanduel",
+                source="synthetic_fanduel",
             )
         )
         snapshots.append(
@@ -59,7 +62,7 @@ def make_market_universe() -> list[MarketSnapshot]:
                 market_type="spread",
                 line_value=-4.5 + (i % 5),
                 prices={"home": 1.91, "away": 1.91},
-                source="fanduel",
+                source="synthetic_fanduel",
             )
         )
         snapshots.append(
@@ -73,7 +76,7 @@ def make_market_universe() -> list[MarketSnapshot]:
                 market_type="total",
                 line_value=42.5 + (i % 7),
                 prices={"over": 1.91, "under": 1.91},
-                source="fanduel",
+                source="synthetic_fanduel",
             )
         )
         snapshots.append(
@@ -87,7 +90,7 @@ def make_market_universe() -> list[MarketSnapshot]:
                 market_type="moneyline",
                 line_value=None,
                 prices={"home": 2.10, "away": 1.75},
-                source="fanduel",
+                source="synthetic_fanduel",
             )
         )
     return snapshots
@@ -103,7 +106,25 @@ def main() -> int:
     portfolio = engine.build(snapshots, cycle_id="sports-diversity-audit-2026")
 
     sport_by_event = {s.event_id: s.sport for s in snapshots}
-    report = build_diversity_report(portfolio.records, sport_by_event)
+    event_ids = tuple(sorted({s.event_id for s in snapshots}))
+
+    raw_hash = RealMarketFeedAdapter.compute_raw_hash("synthetic://market_universe_payload_500")
+    norm_hash = RealMarketFeedAdapter.compute_normalized_hash(snapshots)
+
+    provenance = MarketProvenance(
+        provider="synthetic_generator",
+        endpoint="synthetic://market_universe",
+        retrieved_at_utc=BEFORE,
+        source_observed_at_utc=BEFORE,
+        event_ids=event_ids,
+        snapshot_count=len(snapshots),
+        raw_payload_hash=raw_hash,
+        normalized_payload_hash=norm_hash,
+        provenance_class=ProvenanceClass.SYNTHETIC.value,
+        adapter_version="1.0.0",
+    )
+
+    report = build_diversity_report(portfolio.records, sport_by_event, provenance=provenance)
 
     # Validate eight metrics across overall portfolio
     assert report.total_records == 50, f"Expected 50 total records, got {report.total_records}"
@@ -123,6 +144,11 @@ def main() -> int:
     assert report.single_unique_event_market_types == 18, f"Expected 18 single event market types, got {report.single_unique_event_market_types}"
     assert report.single_unique_event_market_lines == 18, f"Expected 18 single event market lines, got {report.single_unique_event_market_lines}"
     assert report.single_unique_prediction_ids == 35, f"Expected 35 single prediction IDs, got {report.single_unique_prediction_ids}"
+
+    # Provenance summary assertions
+    assert report.provenance_summary is not None, "Expected provenance summary to be present"
+    assert report.provenance_summary["provenance_class"] == "synthetic"
+    assert report.provenance_summary["source_provider"] == "synthetic_generator"
 
     receipt_json = render_receipt(report)
 

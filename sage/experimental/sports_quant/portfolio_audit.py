@@ -1,14 +1,15 @@
 """Deterministic diversity receipt for Sports/RCE shadow portfolios."""
 
 from dataclasses import asdict, dataclass
-from typing import Iterable, Mapping
+from typing import Any, Iterable, Mapping
 
+from .ingestion import MarketProvenance
 from .prediction import PredictionRecord
 
 
 @dataclass(frozen=True)
 class PortfolioDiversityReport:
-    """Auditable portfolio diversity metrics.
+    """Auditable portfolio diversity metrics and market provenance receipt.
 
     Parent parlays are reported separately from singles so parlay multiplication
     cannot masquerade as additional underlying market diversity.
@@ -29,9 +30,13 @@ class PortfolioDiversityReport:
     single_unique_event_market_types: int
     single_unique_event_market_lines: int
     single_unique_prediction_ids: int
+    provenance_summary: dict[str, Any] | None = None
 
-    def to_dict(self) -> dict[str, int]:
-        return asdict(self)
+    def to_dict(self) -> dict[str, Any]:
+        res = asdict(self)
+        if self.provenance_summary is None:
+            res.pop("provenance_summary", None)
+        return res
 
 
 def _identity(record: PredictionRecord) -> tuple[str, str, str, str]:
@@ -64,13 +69,16 @@ def _metrics(records: tuple[PredictionRecord, ...], sport_by_event: Mapping[str,
 def build_diversity_report(
     records: Iterable[PredictionRecord],
     sport_by_event: Mapping[str, str],
+    provenance: MarketProvenance | None = None,
 ) -> PortfolioDiversityReport:
-    """Build the canonical eight-metric diversity receipt from portfolio records."""
+    """Build the canonical eight-metric diversity receipt with provenance summary from portfolio records."""
 
     all_records = tuple(records)
     singles = tuple(r for r in all_records if not r.is_parlay)
     all_metrics = _metrics(all_records, sport_by_event)
     single_metrics = _metrics(singles, sport_by_event)
+    prov_dict = provenance.to_dict() if provenance is not None else None
+
     return PortfolioDiversityReport(
         total_records=len(all_records),
         unique_events=all_metrics["events"],
@@ -87,6 +95,7 @@ def build_diversity_report(
         single_unique_event_market_types=single_metrics["event_market_types"],
         single_unique_event_market_lines=single_metrics["event_market_lines"],
         single_unique_prediction_ids=single_metrics["prediction_ids"],
+        provenance_summary=prov_dict,
     )
 
 

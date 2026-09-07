@@ -90,6 +90,7 @@ def test_execute_sports_portfolio_diversity_script_produces_valid_receipt_artifa
         "single_unique_event_market_types",
         "single_unique_event_market_lines",
         "single_unique_prediction_ids",
+        "provenance_summary",
     }
     assert set(d1.keys()) == expected_keys
     assert d1["total_records"] == 50
@@ -97,3 +98,4 @@ def test_execute_sports_portfolio_diversity_script_produces_valid_receipt_artifa
     assert d1["parlay_count"] == 15
     assert d1["single_unique_sports"] == 4
     assert d1["single_unique_market_types"] == 3
+    assert d1["provenance_summary"]["provenance_class"] == "synthetic"
