@@ -13,6 +13,7 @@ from sage.experimental.sports_quant import (
 from sage.experimental.sports_quant.portfolio_audit import build_diversity_report, render_receipt
 
 FIXTURE_PATH = Path(__file__).resolve().parent.parent / "fixtures" / "sports_real_feed_response.json"
+MULTI_FIXTURE_PATH = Path(__file__).resolve().parent.parent / "fixtures" / "sports_real_multi_sport_feed_response.json"
 
 
 def test_real_market_feed_adapter_parses_recorded_fixture():
@@ -204,3 +205,56 @@ def test_e2e_raw_feed_to_provenance_receipt():
     assert prov_summary["raw_payload_hash"] == provenance.raw_payload_hash
     assert prov_summary["normalized_payload_hash"] == provenance.normalized_payload_hash
     assert prov_summary["adapter_version"] == "1.0.0"
+
+
+def test_probe_live_sports_feed_multi_sport_target_50(monkeypatch, tmp_path):
+    import scripts.probe_live_sports_feed as probe
+
+    monkeypatch.setattr(probe, "repo_root", tmp_path)
+    (tmp_path / "tests" / "fixtures").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "tests" / "fixtures" / "sports_real_multi_sport_feed_response.json").write_text(
+        MULTI_FIXTURE_PATH.read_text(encoding="utf-8")
+    )
+    monkeypatch.setattr(probe.sys, "argv", ["probe_live_sports_feed.py", "--target", "50"])
+
+    assert probe.main() == 0
+
+    receipt_file = tmp_path / "evidence_capture" / "sports_live_probe_receipt.json"
+    assert receipt_file.exists()
+    receipt = json.loads(receipt_file.read_text(encoding="utf-8"))
+
+    assert receipt["total_records"] == 50
+    assert receipt["single_count"] == 35
+    assert receipt["parlay_count"] == 15
+    assert receipt["unique_prediction_ids"] == 50
+    assert receipt["provenance_summary"]["provenance_class"] == "fixture"
+    assert receipt["provenance_summary"]["snapshot_count"] == 60
+
+
+def test_e2e_multi_sport_target_50_portfolio():
+    raw_payload = MULTI_FIXTURE_PATH.read_text(encoding="utf-8")
+
+    snapshots, provenance = RealMarketFeedAdapter.parse_raw_feed(
+        raw_payload=raw_payload,
+        provider="The Odds API Multi-Sport Fixture",
+        endpoint=str(MULTI_FIXTURE_PATH),
+        provenance_class=ProvenanceClass.FIXTURE.value,
+    )
+
+    assert len(snapshots) == 60
+    assert len(provenance.event_ids) == 20
+
+    portfolio_engine = DailySportsPortfolioEngine(target=50, parlay_share=0.30)
+    portfolio = portfolio_engine.build(snapshots, cycle_id="e2e-multi-sport-50-test")
+
+    assert portfolio.count == 50
+    assert portfolio.single_count == 35
+    assert portfolio.parlay_count == 15
+
+    sport_by_event = {s.event_id: s.sport for s in snapshots}
+    report = build_diversity_report(portfolio.records, sport_by_event, provenance=provenance)
+
+    assert report.total_records == 50
+    assert report.single_count == 35
+    assert report.parlay_count == 15
+    assert report.provenance_summary["snapshot_count"] == 60
