@@ -87,6 +87,24 @@ def test_chatgpt_interface_fails_closed_when_canonical_mission_is_missing():
         )
 
 
+def test_rehydration_directive_forces_hud_and_preserves_full_interface_layer():
+    runtime = _Runtime()
+    client = ChatGPTClient(runtime)
+
+    response = client.execute_query(
+        AIQueryRequest(prompt="rehydrate C2 and lock repo truth", response_override=_governed_output())
+    )
+
+    rendered = response.response_text
+    assert "[SAGE::C2::CHATGPT]" in rendered
+    assert "C2 Mission Control" in rendered
+    assert "SAGE MISSION CONTROL HUD" in rendered
+    assert "CQL-" in rendered
+    assert "POINTS" in rendered
+    assert "BOSS" in rendered
+    assert "C2 Mission Control remains locked to canonical SAGE state." in rendered
+
+
 def test_chatgpt_interface_fails_closed_when_canonical_task_is_missing():
     runtime = _Runtime(objective="Canonical mission", task=None)
     with pytest.raises(ValueError, match="canonical active task"):

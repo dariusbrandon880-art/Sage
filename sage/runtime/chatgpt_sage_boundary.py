@@ -59,6 +59,9 @@ class SAGEChatGPTBoundary:
         organism_tag: str | None = None,
         manager: Any | None = None,
         session_id: str | None = None,
+        hud_visible: bool = True,
+        previous_hud_update_key: str | None = None,
+        force_hud: bool = False,
     ) -> tuple[str, ModelResponse]:
         """Run one model turn and expose only the SAGE-rendered response.
 
@@ -91,6 +94,9 @@ class SAGEChatGPTBoundary:
             organism_projection=organism_projection,
             organism_tag=organism_tag,
             manager=manager,
+            hud_visible=hud_visible,
+            previous_hud_update_key=previous_hud_update_key,
+            force_hud=force_hud,
         )
         return rendered, response
 

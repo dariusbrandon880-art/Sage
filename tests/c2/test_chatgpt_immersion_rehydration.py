@@ -68,6 +68,20 @@ def test_rehydrate_chatgpt_c2_frame_builds_full_immersion_response():
     assert "C2 operating frame locked onto live repo truth." in rendered
 
 
+def test_rehydrate_chatgpt_c2_frame_forces_hud_rendering():
+    runtime = _mock_runtime()
+    _, response = rehydrate_chatgpt_c2_frame(
+        runtime,
+        session_id="test_session_hud_force",
+        body="Rehydrated frame HUD forced.",
+    )
+
+    assert response.force_hud is True
+    assert response.should_render_hud is True
+    rendered = response.render()
+    assert "SAGE MISSION CONTROL HUD" in rendered
+
+
 def test_rehydrate_hud_command_is_canonical_and_whitespace_tolerant():
     assert REHYDRATE_HUD_COMMAND == "rehydrate hud"
     assert REHYDRATION_CONTRACT_VERSION == "1"
