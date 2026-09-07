@@ -6,7 +6,7 @@ Protected Sports/RCE Research Lane Governance.
 """
 
 from dataclasses import dataclass, field, asdict
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Sequence
 from datetime import datetime, timezone
 from pathlib import Path
 import json
@@ -474,6 +474,100 @@ class SportsLongitudinalLedger:
                 "ACTUAL MONEY WAGERS": 0
             }
         }
+
+def ingest_portfolio_into_ledger(
+    portfolio_records: Sequence[Any],
+    snapshots: Sequence[Any],
+    ledger: SportsLongitudinalLedger,
+    cycle_id: str,
+    provenance: Optional[Any] = None,
+) -> List[LockedResearchPrediction]:
+    """Bridges PredictionRecord portfolio instances into LockedResearchPrediction ledger records."""
+    snapshot_by_event: Dict[str, Any] = {}
+    for s in snapshots:
+        if hasattr(s, "event_id") and s.event_id not in snapshot_by_event:
+            snapshot_by_event[s.event_id] = s
+
+    added_preds: List[LockedResearchPrediction] = []
+
+    for rec in portfolio_records:
+        if getattr(rec, "is_parlay", False):
+            # Construct synthetic/parlay observation
+            obs = RealSportsEventObservation(
+                event_id=f"parlay_{rec.event_id}",
+                sport="multi_sport",
+                league="parlay",
+                home_team="Multi-Leg Parlay",
+                away_team="Multi-Leg Parlay",
+                event_start_time_utc=rec.event_start_utc,
+                observation_timestamp_utc=rec.observed_at_utc,
+                source_name=provenance.provider if provenance else "DailySportsPortfolioEngine",
+                source_url=provenance.endpoint if provenance else "sports_quant://portfolio",
+                market_name="parlay",
+                observed_odds={"market_probability": rec.market_probability},
+                event_status="PRE_GAME_LOCKED",
+            )
+            parlay_legs = [{"prediction_id": leg_id} for leg_id in getattr(rec, "legs", ())]
+            locked_pred = LockedResearchPrediction(
+                prediction_id=rec.prediction_id,
+                cycle_id=cycle_id,
+                event_observation=obs,
+                selected_prediction=rec.selection,
+                odds_at_lock=format(1.0 / rec.market_probability, ".2f") if rec.market_probability > 0 else "N/A",
+                implied_probability=round(rec.market_probability, 4),
+                model_predicted_probability=round(rec.predicted_probability, 4),
+                lock_timestamp_utc=rec.observed_at_utc,
+                model_state_rationale=f"Model version {rec.model_version} parlay recommendation",
+                is_parlay=True,
+                parlay_legs=parlay_legs,
+            )
+        else:
+            snap = snapshot_by_event.get(rec.event_id)
+            sport = snap.sport if snap and hasattr(snap, "sport") else "unknown"
+            league = snap.league if snap and hasattr(snap, "league") else sport
+            source = snap.source if snap and hasattr(snap, "source") else "Market Feed"
+            source_url = snap.source_url if snap and hasattr(snap, "source_url") else ""
+
+            # Extract team names or fallback from event_id / selection
+            home_team = "Home Team"
+            away_team = "Away Team"
+            if snap and hasattr(snap, "metadata") and isinstance(snap.metadata, dict):
+                home_team = snap.metadata.get("home_team", home_team)
+                away_team = snap.metadata.get("away_team", away_team)
+
+            obs = RealSportsEventObservation(
+                event_id=rec.event_id,
+                sport=sport,
+                league=league,
+                home_team=home_team,
+                away_team=away_team,
+                event_start_time_utc=rec.event_start_utc,
+                observation_timestamp_utc=rec.observed_at_utc,
+                source_name=provenance.provider if provenance else source,
+                source_url=provenance.endpoint if provenance else source_url,
+                market_name=rec.market,
+                observed_odds={"market_probability": rec.market_probability},
+                event_status="PRE_GAME_LOCKED",
+            )
+            locked_pred = LockedResearchPrediction(
+                prediction_id=rec.prediction_id,
+                cycle_id=cycle_id,
+                event_observation=obs,
+                selected_prediction=rec.selection,
+                odds_at_lock=format(1.0 / rec.market_probability, ".2f") if rec.market_probability > 0 else "N/A",
+                implied_probability=round(rec.market_probability, 4),
+                model_predicted_probability=round(rec.predicted_probability, 4),
+                lock_timestamp_utc=rec.observed_at_utc,
+                model_state_rationale=f"Model version {rec.model_version} single prediction",
+                is_parlay=False,
+            )
+
+        locked_pred.lock_and_sign()
+        ledger.add_prediction(locked_pred)
+        added_preds.append(locked_pred)
+
+    return added_preds
+
 
 def persist_flight_artifact(flight_artifact: Dict[str, Any], output_path: Path) -> Path:
     if output_path.exists():

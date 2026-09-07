@@ -96,6 +96,42 @@ class DailySportsPortfolioEngine:
                     return parlays
         return parlays
 
+    @classmethod
+    def _select_singles_round_robin(cls, singles: Sequence[PredictionRecord], target_singles: int, snapshots: Sequence[MarketSnapshot]) -> list[PredictionRecord]:
+        if target_singles <= 0:
+            return []
+        sport_by_event = {s.event_id: cls._sport(s) for s in snapshots}
+        by_sport_event: dict[str, dict[str, list[PredictionRecord]]] = {}
+        for record in singles:
+            sport = sport_by_event.get(record.event_id, "UNKNOWN")
+            by_sport_event.setdefault(sport, {}).setdefault(record.event_id, []).append(record)
+
+        sports = sorted(by_sport_event.keys())
+        events_by_sport = {s: sorted(by_sport_event[s].keys()) for s in sports}
+        event_idx_by_sport = {s: 0 for s in sports}
+
+        selected: list[PredictionRecord] = []
+        while len(selected) < target_singles:
+            any_added = False
+            for s in sports:
+                if len(selected) >= target_singles:
+                    break
+                ev_list = events_by_sport[s]
+                if not ev_list:
+                    continue
+                e_idx = event_idx_by_sport[s] % len(ev_list)
+                target_eid = ev_list[e_idx]
+                pred_list = by_sport_event[s][target_eid]
+                if pred_list:
+                    selected.append(pred_list.pop(0))
+                    any_added = True
+                event_idx_by_sport[s] += 1
+                if not pred_list:
+                    ev_list.remove(target_eid)
+            if not any_added:
+                break
+        return selected
+
     def build(self, snapshots: Iterable[MarketSnapshot], cycle_id: str) -> DailyPortfolio:
         snapshot_list = list(snapshots)
         invalid_sports = sorted({self._sport(s) for s in snapshot_list if self._sport(s) not in SUPPORTED_SPORTS})
@@ -107,8 +143,8 @@ class DailySportsPortfolioEngine:
         singles, duplicate_rejections = self._dedupe(generated)
         target_parlays = min(int(round(self.target * self.parlay_share)), max(0, self.target - 1))
         parlays = self._build_parlays(singles, target_parlays)
-        remaining = max(0, self.target - len(parlays))
-        selected_singles = singles[:remaining]
+        remaining_singles = max(0, self.target - len(parlays))
+        selected_singles = self._select_singles_round_robin(singles, remaining_singles, snapshot_list)
         records = selected_singles + parlays[: max(0, self.target - len(selected_singles))]
         if len(records) < self.target:
             raise ValueError(f"DAILY_TARGET_UNMET: requested={self.target} available={len(records)}")

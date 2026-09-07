@@ -24,6 +24,12 @@ repo_root = Path(__file__).resolve().parent.parent
 if str(repo_root) not in sys.path:
     sys.path.insert(0, str(repo_root))
 
+from datetime import datetime, timezone
+
+from sage.experimental.sports_longitudinal import (  # noqa: E402
+    SportsLongitudinalLedger,
+    ingest_portfolio_into_ledger,
+)
 from sage.experimental.sports_quant import (  # noqa: E402
     DailySportsPortfolioEngine,
     MarketProvenance,
@@ -83,9 +89,35 @@ def main() -> int:
     print(f"[✓] Raw Payload SHA-256: {provenance.raw_payload_hash}")
     print(f"[✓] Normalized Payload SHA-256: {provenance.normalized_payload_hash}")
 
-    # Build predictions and portfolio audit
-    engine = DailySportsPortfolioEngine(target=10, parlay_share=0.30)
-    portfolio = engine.build(snapshots, cycle_id="sports-feed-probe-2026")
+    # Build 50-record prediction portfolio
+    cycle_id = f"sports-feed-probe-50-{datetime.now(timezone.utc).strftime('%Y%m%d')}"
+    engine = DailySportsPortfolioEngine(target=50, parlay_share=0.30)
+    try:
+        portfolio = engine.build(snapshots, cycle_id=cycle_id)
+    except Exception as e:
+        print(f"[X] Portfolio construction failed: {e}")
+        print("[X] Live probe aborted; failing closed without synthetic fallback")
+        return 1
+
+    print(f"[✓] 50-Record Portfolio Built: {len(portfolio.records)} records ({portfolio.single_count} singles, {portfolio.parlay_count} parlays)")
+
+    # Ingest 50-record batch into canonical longitudinal ledger
+    ledger_path = repo_root / "evidence_capture" / "sports_longitudinal_ledger.json"
+    ledger = SportsLongitudinalLedger(storage_path=ledger_path)
+    # Deduplicate against existing predictions in ledger if probe is re-run with same cycle_id
+    existing_pred_ids = {p.prediction_id for p in ledger.predictions}
+    unregistered_records = [r for r in portfolio.records if r.prediction_id not in existing_pred_ids]
+
+    locked_preds = ingest_portfolio_into_ledger(
+        portfolio_records=unregistered_records,
+        snapshots=snapshots,
+        ledger=ledger,
+        cycle_id=cycle_id,
+        provenance=provenance,
+    )
+    print(f"[✓] Persisted {len(locked_preds)} locked predictions into longitudinal ledger at {ledger_path}")
+
+    # Build and write portfolio audit report receipt
     sport_by_event = {s.event_id: s.sport for s in snapshots}
     report = build_diversity_report(portfolio.records, sport_by_event, provenance=provenance)
 
