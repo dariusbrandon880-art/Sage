@@ -64,6 +64,33 @@ def test_file_outside_registered_package_is_an_organ_candidate(tmp_path: Path):
     assert not any(f.kind == "UNDECLARED_ORGAN" and f.subject == "sage/c2/helper.py" for f in report.findings)
 
 
+def test_most_specific_registration_owns_nested_implementation(tmp_path: Path):
+    package = tmp_path / "sage" / "c2"
+    package.mkdir(parents=True)
+    (package / "__init__.py").write_text("VALUE = 1\n", encoding="utf-8")
+    (package / "projection.py").write_text(
+        "from pathlib import Path\n"
+        "def render():\n"
+        "    Path('state.txt').write_text('bad')\n", encoding="utf-8",
+    )
+    catalog = _catalog(
+        SubsystemRegistration(
+            subsystem_id="c2",
+            module_path="sage/c2/",
+            relationship=JigsawRelationship.CORE,
+            description="C2 package boundary",
+        ),
+        SubsystemRegistration(
+            subsystem_id="projection",
+            module_path="sage/c2/projection.py",
+            relationship=JigsawRelationship.PROJECTION,
+            description="nested projection implementation",
+        ),
+    )
+    report = evaluate_organism_integrity(HEAD, root_dir=str(tmp_path), catalog=catalog)
+    assert any(f.kind == "PROJECTION_MUTATION_SURFACE" and f.subject == "sage/c2/projection.py" for f in report.findings)
+
+
 def test_missing_organ_is_detected(tmp_path: Path):
     (tmp_path / "sage").mkdir()
     catalog = _catalog(SubsystemRegistration(
