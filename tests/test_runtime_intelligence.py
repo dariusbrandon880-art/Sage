@@ -86,6 +86,19 @@ class TestRuntimeIntelligence:
         assert res["runtime"] == "inactive"
         assert res["components"]["acr"] == "unavailable"
 
+    def test_health_system_performance_and_latency(self):
+        """Verify check_health executes within strict 50ms threshold for fast health probes."""
+        import time
+        runtime = SageRuntime()
+        runtime.start()
+
+        start = time.perf_counter()
+        res = check_health(runtime)
+        elapsed = time.perf_counter() - start
+
+        assert res["status"] == "healthy"
+        assert elapsed < 0.05, f"check_health took {elapsed*1000:.2f}ms, exceeding 50ms threshold"
+
     def test_diagnostics_engine_report(self):
         """Test diagnostic report generation with a valid runtime."""
         runtime = SageRuntime()
