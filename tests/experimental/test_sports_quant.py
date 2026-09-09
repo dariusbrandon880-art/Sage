@@ -1,5 +1,6 @@
 import pytest
 from sage.experimental.sports_quant import (
+    DailySportsPortfolioEngine,
     FanDuelPlayerPropAnalyzer,
     FanDuelSnapshotAdapter,
     MarketSnapshot,
@@ -167,3 +168,61 @@ def test_fanduel_player_prop_analyzer_nfl_atd_and_sgp_evaluation():
     sgp_result = evaluate_sgp_boost([res], boosted_decimal_price=3.0)
     assert sgp_result["recommendation"] == "GRAVY"
     assert sgp_result["all_legs_positive_ev"] is True
+
+
+def test_portfolio_engine_deduplication_and_player_prop_integration():
+
+    # 1. Verify deduplication across different cycle IDs and observation timestamps
+    snap1 = MarketSnapshot(
+        event_id="e_dedupe_1",
+        sport="MLB",
+        league="MLB",
+        event_start_utc=START,
+        observed_at_utc=BEFORE,
+        market="moneyline",
+        prices={"home": 1.90, "away": 2.10},
+        source="FanDuel",
+    )
+    snap2 = MarketSnapshot(
+        event_id="e_dedupe_1",
+        sport="MLB",
+        league="MLB",
+        event_start_utc=START,
+        observed_at_utc="2026-08-30T19:00:00+00:00",  # Different timestamp!
+        market="moneyline",
+        prices={"home": 1.90, "away": 2.10},
+        source="FanDuel",
+    )
+
+    batch_engine = PredictionBatchEngine()
+    recs_c1 = batch_engine.generate([snap1], cycle_id="cycle_A")
+    recs_c2 = batch_engine.generate([snap2], cycle_id="cycle_B")
+
+    # Both cycles generate predictions for the same event + market + selection
+    combined = recs_c1 + recs_c2
+    unique, rejected = DailySportsPortfolioEngine._dedupe(combined)
+
+    # Must reject the 2 records from cycle_B as duplicates of cycle_A
+    assert len(unique) == 2
+    assert rejected == 2
+
+    # 2. Verify PlayerPropSnapshot integration into portfolio engine
+    prop_snap = PlayerPropSnapshot(
+        event_id="e_prop_1",
+        sport="NFL",
+        league="NFL",
+        event_start_utc=START,
+        observed_at_utc=BEFORE,
+        player_name="Patrick Mahomes",
+        prop_category="passing_tds",
+        threshold=2.5,
+        prices={"over": 2.10, "under": 1.75},
+        source="FanDuel",
+    )
+
+    # Build portfolio with target=2
+    engine = DailySportsPortfolioEngine(target=2, parlay_share=0.0)
+    portfolio = engine.build(snapshots=[snap1], cycle_id="cycle_props", prop_snapshots=[prop_snap])
+
+    assert portfolio.count == 2
+    assert any("Mahomes" in r.selection for r in portfolio.records)

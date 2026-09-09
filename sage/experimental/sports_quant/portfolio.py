@@ -2,11 +2,11 @@
 
 from dataclasses import dataclass
 from itertools import combinations
-from typing import Iterable, Sequence
+from typing import Iterable, Mapping, Sequence
 import hashlib
 
-from .ingestion import MarketSnapshot
-from .prediction import PredictionBatchEngine, PredictionRecord
+from .ingestion import MarketSnapshot, PlayerPropSnapshot
+from .prediction import FanDuelPlayerPropAnalyzer, PredictionBatchEngine, PredictionRecord
 
 SUPPORTED_SPORTS = frozenset({"MLB", "NBA", "NFL", "NHL"})
 MIN_PARLAY_LEGS = 3
@@ -54,12 +54,12 @@ class DailySportsPortfolioEngine:
         return snapshot.sport.upper()
 
     @staticmethod
-    def _identity(record: PredictionRecord) -> tuple[str, str, str, str, str, str]:
-        return (record.event_id, record.canonical_market_type, record.selection.strip().lower(), record.canonical_line_value, record.model_version, record.observed_at_utc)
+    def _identity(record: PredictionRecord) -> tuple[str, str, str, str, str]:
+        return (record.event_id, record.canonical_market_type, record.selection.strip().lower(), record.canonical_line_value, record.model_version)
 
     @classmethod
     def _dedupe(cls, records: Iterable[PredictionRecord]) -> tuple[list[PredictionRecord], int]:
-        seen: set[tuple[str, str, str, str, str, str]] = set()
+        seen: set[tuple[str, str, str, str, str]] = set()
         unique: list[PredictionRecord] = []
         rejected = 0
         for record in records:
@@ -97,13 +97,12 @@ class DailySportsPortfolioEngine:
         return parlays
 
     @classmethod
-    def _select_singles_round_robin(cls, singles: Sequence[PredictionRecord], target_singles: int, snapshots: Sequence[MarketSnapshot]) -> list[PredictionRecord]:
+    def _select_singles_round_robin_with_props(cls, singles: Sequence[PredictionRecord], target_singles: int, sport_by_event: Mapping[str, str]) -> list[PredictionRecord]:
         if target_singles <= 0:
             return []
-        sport_by_event = {s.event_id: cls._sport(s) for s in snapshots}
         by_sport_event: dict[str, dict[str, list[PredictionRecord]]] = {}
         for record in singles:
-            sport = sport_by_event.get(record.event_id, "UNKNOWN")
+            sport = sport_by_event.get(record.event_id, "UNKNOWN").upper()
             by_sport_event.setdefault(sport, {}).setdefault(record.event_id, []).append(record)
 
         sports = sorted(by_sport_event.keys())
@@ -132,19 +131,43 @@ class DailySportsPortfolioEngine:
                 break
         return selected
 
-    def build(self, snapshots: Iterable[MarketSnapshot], cycle_id: str) -> DailyPortfolio:
+    @classmethod
+    def _select_singles_round_robin(cls, singles: Sequence[PredictionRecord], target_singles: int, snapshots: Sequence[MarketSnapshot]) -> list[PredictionRecord]:
+        sport_by_event = {s.event_id: cls._sport(s) for s in snapshots}
+        return cls._select_singles_round_robin_with_props(singles, target_singles, sport_by_event)
+
+    def build(
+        self,
+        snapshots: Iterable[MarketSnapshot],
+        cycle_id: str,
+        prop_snapshots: Iterable[PlayerPropSnapshot] | None = None,
+    ) -> DailyPortfolio:
         snapshot_list = list(snapshots)
-        invalid_sports = sorted({self._sport(s) for s in snapshot_list if self._sport(s) not in SUPPORTED_SPORTS})
+        prop_list = list(prop_snapshots) if prop_snapshots else []
+
+        all_sports = {self._sport(s) for s in snapshot_list} | {p.sport.upper() for p in prop_list}
+        invalid_sports = sorted({s for s in all_sports if s not in SUPPORTED_SPORTS})
         if invalid_sports:
             raise ValueError(f"UNSUPPORTED_SPORTS: {','.join(invalid_sports)}")
-        if not snapshot_list:
+        if not snapshot_list and not prop_list:
             raise ValueError("NO_MARKET_SNAPSHOTS")
-        generated = self.batch_engine.generate(snapshot_list, cycle_id)
+
+        generated = self.batch_engine.generate(snapshot_list, cycle_id) if snapshot_list else []
+        if prop_list:
+            prop_analyzer = FanDuelPlayerPropAnalyzer()
+            for p_snap in prop_list:
+                edge_res = prop_analyzer.analyze_prop(p_snap)
+                prop_rec = prop_analyzer.generate_prop_prediction(p_snap, edge_res, cycle_id=cycle_id)
+                generated.append(prop_rec)
+
         singles, duplicate_rejections = self._dedupe(generated)
+        sport_by_event = {snapshot.event_id: self._sport(snapshot) for snapshot in snapshot_list}
+        for p in prop_list:
+            sport_by_event[p.event_id] = p.sport.upper()
         target_parlays = min(int(round(self.target * self.parlay_share)), max(0, self.target - 1))
         parlays = self._build_parlays(singles, target_parlays)
         remaining_singles = max(0, self.target - len(parlays))
-        selected_singles = self._select_singles_round_robin(singles, remaining_singles, snapshot_list)
+        selected_singles = self._select_singles_round_robin_with_props(singles, remaining_singles, sport_by_event)
         records = selected_singles + parlays[: max(0, self.target - len(selected_singles))]
         if len(records) < self.target:
             raise ValueError(f"DAILY_TARGET_UNMET: requested={self.target} available={len(records)}")
