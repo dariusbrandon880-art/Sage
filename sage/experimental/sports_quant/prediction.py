@@ -149,7 +149,7 @@ class PredictionRecord:
         return "" if self.line_value is None else format(self.line_value, ".12g")
 
     @classmethod
-    def build_prediction_id(cls, *, event_id: str, market_type: str, selection: str, line_value: float | None, cycle_id: str = "") -> str:
+    def build_prediction_id(cls, *, event_id: str, market_type: str, selection: str, line_value: float | None) -> str:
         canonical_type = market_type.strip().lower()
         canonical_line = "" if line_value is None else format(line_value, ".12g")
         return f"pred_{event_id}_{canonical_type}_{selection}_{canonical_line}"

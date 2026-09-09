@@ -33,8 +33,14 @@ def test_prediction_ids_are_distinct_for_market_type_and_line():
 
 
 def test_prediction_identity_builder_normalizes_market_type_and_line():
-    prediction_id = PredictionRecord.build_prediction_id(cycle_id="cycle-002", event_id="nba-003", market_type=" SPREAD ", selection="home", line_value=-3.5)
+    prediction_id = PredictionRecord.build_prediction_id(event_id="nba-003", market_type=" SPREAD ", selection="home", line_value=-3.5)
     assert prediction_id == "pred_nba-003_spread_home_-3.5"
+
+
+def test_prediction_id_is_strictly_independent_of_cycle_id():
+    rec_c1 = PredictionRecord.build_prediction_id(event_id="nfl-100", market_type="moneyline", selection="home", line_value=None)
+    rec_c2 = PredictionRecord.build_prediction_id(event_id="nfl-100", market_type="moneyline", selection="home", line_value=None)
+    assert rec_c1 == rec_c2 == "pred_nfl-100_moneyline_home_"
 
 
 def test_portfolio_dedup_keeps_distinct_lines_and_rejects_exact_duplicates():
