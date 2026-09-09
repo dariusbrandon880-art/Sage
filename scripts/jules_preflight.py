@@ -58,7 +58,7 @@ def run_command(cmd: List[str], check: bool = False) -> subprocess.CompletedProc
 
 
 def check_session_rehydration() -> bool:
-    """Enforces Automatic Session Rehydration (Step 0)."""
+    """Enforces Automatic Session Rehydration and Session Manifest Materialization (Step 0)."""
     print("\n--- Checking Automatic Session Rehydration (Step 0) ---")
 
     head_res = run_command(["git", "rev-parse", "HEAD"])
@@ -74,6 +74,29 @@ def check_session_rehydration() -> bool:
         return False
 
     print_success(f"Canonical git HEAD SHA rehydrated: {sha[:8]}...{sha[-8:]}")
+
+    # Materialize and validate session manifest (.sage/session_manifest.json)
+    try:
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+        from scripts.build_session_manifest import materialize
+        from scripts.verify_session_rehydration_contract import main as verify_manifest
+
+        manifest_path = Path(".sage/session_manifest.json")
+        materialize(
+            mission="GOVERNED_CONTINUOUS_INTELLIGENCE",
+            interfaces=["CHATGPT_C2", "JULES_ENGINEER"],
+            output=manifest_path,
+        )
+        print_success(f"Session manifest materialized cleanly at {manifest_path}")
+
+        if verify_manifest() != 0:
+            print_error("Session manifest contract verification failed.")
+            return False
+        print_success("Session manifest contract verified fail-closed.")
+    except Exception as exc:
+        print_error(f"Failed to materialize or verify session manifest: {exc}")
+        return False
+
     print_success("Station identity rehydrated: [SAGE::ENGINEER::JULES]")
     print_success(
         "C2 9-stage workflow sequence rehydrated: REHYDRATE -> RECON -> DESIGN -> BUILD -> TEST -> OBSERVE -> REPAIR -> VERIFY -> PROMOTE"
@@ -317,9 +340,9 @@ def run_formatting_checks() -> bool:
     else:
         print_success("Black formatting check passed.")
 
-    ruff_res = run_command(["poetry", "run", "ruff", "check", "scripts/jules_preflight.py"])
+    ruff_res = run_command(["poetry", "run", "ruff", "check", "sage", "tests", "scripts"])
     if ruff_res.returncode != 0:
-        print_warn("Ruff lint check found potential issues in scripts/jules_preflight.py:")
+        print_warn("Ruff lint check found potential issues:")
         print(ruff_res.stdout)
     else:
         print_success("Ruff linter check passed.")
