@@ -123,29 +123,13 @@ def check_health(runtime: Any | None = None) -> dict[str, Any]:
                 components["acr"] = f"error: {e!s}"
                 metrics.record_event("health_check.acr_error", {"error": str(e)})
 
-        # Check Archive Availability
+        # Check Archive Availability without disk traversal.
         if hasattr(runtime, "archive") and runtime.archive is not None:
-            try:
-                # Lightweight fast availability check
-                if hasattr(runtime.archive, "entries") or hasattr(runtime.archive, "storage_path"):
-                    components["archive"] = "available"
-                else:
-                    components["archive"] = "available"
-            except Exception as e:
-                components["archive"] = f"error: {e!s}"
-                metrics.record_event("health_check.archive_error", {"error": str(e)})
+            components["archive"] = "available"
 
-        # Check Memory Availability
+        # Check Memory Availability without disk traversal.
         if hasattr(runtime, "memory") and runtime.memory is not None:
-            try:
-                # Lightweight fast availability check
-                if hasattr(runtime.memory, "objects") or hasattr(runtime.memory, "storage_path"):
-                    components["memory"] = "available"
-                else:
-                    components["memory"] = "available"
-            except Exception as e:
-                components["memory"] = f"error: {e!s}"
-                metrics.record_event("health_check.memory_error", {"error": str(e)})
+            components["memory"] = "available"
 
         # Check Configuration Availability
         if hasattr(runtime, "config") and runtime.config is not None:
