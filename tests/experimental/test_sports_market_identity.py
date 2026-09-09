@@ -34,7 +34,7 @@ def test_prediction_ids_are_distinct_for_market_type_and_line():
 
 def test_prediction_identity_builder_normalizes_market_type_and_line():
     prediction_id = PredictionRecord.build_prediction_id(cycle_id="cycle-002", event_id="nba-003", market_type=" SPREAD ", selection="home", line_value=-3.5)
-    assert prediction_id == "pred_cycle-002_nba-003_spread_home_-3.5"
+    assert prediction_id == "pred_nba-003_spread_home_-3.5"
 
 
 def test_portfolio_dedup_keeps_distinct_lines_and_rejects_exact_duplicates():

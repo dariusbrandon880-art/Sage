@@ -103,7 +103,7 @@ class FanDuelPlayerPropAnalyzer:
     def generate_prop_prediction(self, snapshot: PlayerPropSnapshot, edge_result: PropEdgeResult, cycle_id: str) -> "PredictionRecord":
         prop_selection = f"{snapshot.prop_category}:{snapshot.player_name} - {edge_result.selection}"
         record = PredictionRecord(
-            prediction_id=PredictionRecord.build_prediction_id(cycle_id=cycle_id, event_id=snapshot.event_id, market_type="player_prop", selection=prop_selection, line_value=snapshot.threshold),
+            prediction_id=PredictionRecord.build_prediction_id(event_id=snapshot.event_id, market_type="player_prop", selection=prop_selection, line_value=snapshot.threshold),
             cycle_id=cycle_id, event_id=snapshot.event_id, market=snapshot.prop_category, selection=prop_selection,
             model_version=self.model_version, predicted_probability=edge_result.projected_prob, market_probability=edge_result.fanduel_implied_prob,
             observed_at_utc=snapshot.observed_at_utc, event_start_utc=snapshot.event_start_utc, market_type="player_prop", line_value=snapshot.threshold,
@@ -149,11 +149,9 @@ class PredictionRecord:
         return "" if self.line_value is None else format(self.line_value, ".12g")
 
     @classmethod
-    def build_prediction_id(cls, *, cycle_id: str = "", event_id: str, market_type: str, selection: str, line_value: float | None) -> str:
+    def build_prediction_id(cls, *, event_id: str, market_type: str, selection: str, line_value: float | None, cycle_id: str = "") -> str:
         canonical_type = market_type.strip().lower()
         canonical_line = "" if line_value is None else format(line_value, ".12g")
-        if cycle_id:
-            return f"pred_{cycle_id}_{event_id}_{canonical_type}_{selection}_{canonical_line}"
         return f"pred_{event_id}_{canonical_type}_{selection}_{canonical_line}"
 
     def sign(self) -> "PredictionRecord":
@@ -178,7 +176,7 @@ class PredictionBatchEngine:
         market_type = snapshot.canonical_market_type
         line_value = snapshot.line_value
         record = PredictionRecord(
-            prediction_id=PredictionRecord.build_prediction_id(cycle_id=cycle_id, event_id=snapshot.event_id, market_type=market_type, selection=selection, line_value=line_value),
+            prediction_id=PredictionRecord.build_prediction_id(event_id=snapshot.event_id, market_type=market_type, selection=selection, line_value=line_value),
             cycle_id=cycle_id, event_id=snapshot.event_id, market=snapshot.market, selection=selection, model_version=self.model_version,
             predicted_probability=predicted, market_probability=market_probability, observed_at_utc=snapshot.observed_at_utc, event_start_utc=snapshot.event_start_utc,
             market_type=market_type, line_value=line_value,
