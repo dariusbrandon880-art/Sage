@@ -145,12 +145,14 @@ class DailySportsPortfolioEngine:
         snapshot_list = list(snapshots)
         prop_list = list(prop_snapshots) if prop_snapshots else []
 
+
         all_sports = {self._sport(s) for s in snapshot_list} | {p.sport.upper() for p in prop_list}
         invalid_sports = sorted({s for s in all_sports if s not in SUPPORTED_SPORTS})
         if invalid_sports:
             raise ValueError(f"UNSUPPORTED_SPORTS: {','.join(invalid_sports)}")
         if not snapshot_list and not prop_list:
             raise ValueError("NO_MARKET_SNAPSHOTS")
+
 
         generated = self.batch_engine.generate(snapshot_list, cycle_id) if snapshot_list else []
         if prop_list:
@@ -159,6 +161,7 @@ class DailySportsPortfolioEngine:
                 edge_res = prop_analyzer.analyze_prop(p_snap)
                 prop_rec = prop_analyzer.generate_prop_prediction(p_snap, edge_res, cycle_id=cycle_id)
                 generated.append(prop_rec)
+
 
         singles, duplicate_rejections = self._dedupe(generated)
         sport_by_event = {snapshot.event_id: self._sport(snapshot) for snapshot in snapshot_list}

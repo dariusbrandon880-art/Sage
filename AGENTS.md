@@ -269,6 +269,11 @@ Every development task MUST run through this precise assembly-line preflight seq
                      │
                      ▼
   ┌─────────────────────────────────────┐
+  │ 0. AUTO SESSION REHYDRATION Check   │ - Rehydrate main HEAD, session manifest & station frame.
+  └──────────────────┬──────────────────┘
+                     │
+                     ▼
+  ┌─────────────────────────────────────┐
   │ 1. FAILURE MEMORY Check             │ - Read AGENTS.md and verify no violations.
   └──────────────────┬──────────────────┘
                      │
