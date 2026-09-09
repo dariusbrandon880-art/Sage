@@ -19,6 +19,18 @@ def head() -> str:
     return value
 
 
+def canonical_main_head() -> str:
+    try:
+        value = subprocess.check_output(
+            ["git", "rev-parse", "refs/remotes/origin/main"], cwd=ROOT, text=True
+        ).strip()
+    except subprocess.CalledProcessError as exc:
+        raise SystemExit("FAIL_CLOSED: canonical origin/main ref is unavailable") from exc
+    if len(value) != SHA_LEN or any(c not in "0123456789abcdef" for c in value.lower()):
+        raise SystemExit("FAIL_CLOSED: invalid canonical main SHA")
+    return value
+
+
 def main() -> int:
     if not MANIFEST.is_file():
         raise SystemExit("FAIL_CLOSED: dynamic session manifest has not been materialized")
@@ -29,8 +41,11 @@ def main() -> int:
         raise SystemExit(f"FAIL_CLOSED: invalid session manifest: {exc}") from exc
 
     current_sha = head()
+    current_main_sha = canonical_main_head()
     if manifest.get("canonical_git_sha") != current_sha:
         raise SystemExit("FAIL_CLOSED: materialized manifest SHA does not match HEAD")
+    if manifest.get("canonical_main_sha") != current_main_sha:
+        raise SystemExit("FAIL_CLOSED: materialized manifest main SHA does not match origin/main")
     if manifest.get("active_mission") in (None, ""):
         raise SystemExit("FAIL_CLOSED: active mission is empty")
     interfaces = manifest.get("required_interfaces")
@@ -56,7 +71,7 @@ def main() -> int:
         raise SystemExit("FAIL_CLOSED: drift policy is not fail-closed")
     if schema.get("binding", {}).get("sha_required") is not True:
         raise SystemExit("FAIL_CLOSED: canonical schema does not require SHA binding")
-    print(json.dumps({"status": "PASS", "canonical_git_sha": current_sha, "manifest": str(MANIFEST)}))
+    print(json.dumps({"status": "PASS", "canonical_git_sha": current_sha, "canonical_main_sha": current_main_sha, "manifest": str(MANIFEST)}))
     return 0
 
 
