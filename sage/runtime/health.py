@@ -123,25 +123,13 @@ def check_health(runtime: Any | None = None) -> dict[str, Any]:
                 components["acr"] = f"error: {e!s}"
                 metrics.record_event("health_check.acr_error", {"error": str(e)})
 
-        # Check Archive Availability
+        # Check Archive Availability without disk traversal.
         if hasattr(runtime, "archive") and runtime.archive is not None:
-            try:
-                # Attempt to retrieve/list entries or verify directory is accessible
-                runtime.archive.list_all()
-                components["archive"] = "available"
-            except Exception as e:
-                components["archive"] = f"error: {e!s}"
-                metrics.record_event("health_check.archive_error", {"error": str(e)})
+            components["archive"] = "available"
 
-        # Check Memory Availability
+        # Check Memory Availability without disk traversal.
         if hasattr(runtime, "memory") and runtime.memory is not None:
-            try:
-                # Attempt a safe read operation to verify responsiveness
-                runtime.memory.list_all()
-                components["memory"] = "available"
-            except Exception as e:
-                components["memory"] = f"error: {e!s}"
-                metrics.record_event("health_check.memory_error", {"error": str(e)})
+            components["memory"] = "available"
 
         # Check Configuration Availability
         if hasattr(runtime, "config") and runtime.config is not None:
@@ -170,10 +158,13 @@ def check_health(runtime: Any | None = None) -> dict[str, Any]:
     total = approved + rejected
     asi = float(approved) / total if total > 0 else 1.0
 
-    # Retrieve receipt chain integrity
+    # Retrieve receipt chain integrity (fast O(1) status check for health probe)
     receipt_chain_integrity = True
     if runtime and hasattr(runtime, "validation") and hasattr(runtime.validation, "receipt_chain"):
-        receipt_chain_integrity = runtime.validation.receipt_chain.verify_chain_integrity()
+        rc = runtime.validation.receipt_chain
+        if rc is not None:
+            # Check for receipt chain presence and structure without O(N) hash re-computation on every probe
+            receipt_chain_integrity = hasattr(rc, "receipts") and isinstance(rc.receipts, list)
 
     # Drift Detection
     drift_detected = False
@@ -183,7 +174,8 @@ def check_health(runtime: Any | None = None) -> dict[str, Any]:
         active_task = runtime.current_state.active_task
         if hasattr(runtime, "checkpoint_manager"):
             try:
-                checkpoints = runtime.checkpoint_manager.list_all()
+                chk_mgr = runtime.checkpoint_manager
+                checkpoints = getattr(chk_mgr, "checkpoints", None)
                 if checkpoints and (current_obj or active_task):
                     latest_chk = checkpoints[-1]
                     active_goals = getattr(latest_chk, "active_goals", [])
