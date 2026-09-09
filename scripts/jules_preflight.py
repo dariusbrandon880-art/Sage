@@ -6,11 +6,10 @@ the One-Way Import Law, and repository state integrity before any submit.
 """
 
 import ast
-import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import List, Set
+from typing import List
 
 # Colors
 GREEN = "\033[92m"
@@ -21,7 +20,13 @@ RESET = "\033[0m"
 
 # Globals for core paths to support AST testing/mocking
 CORE_DIRS = ["sage/runtime", "sage/core", "sage/acr", "sage/agents", "sage/archive"]
-CORE_FILES = ["sage/api.py", "sage/cli.py", "sage/capability_registry.py", "sage/change_impact.py", "sage/mission_control.py"]
+CORE_FILES = [
+    "sage/api.py",
+    "sage/cli.py",
+    "sage/capability_registry.py",
+    "sage/change_impact.py",
+    "sage/mission_control.py",
+]
 
 
 def print_success(msg: str):
@@ -48,7 +53,55 @@ def run_command(cmd: List[str], check: bool = False) -> subprocess.CompletedProc
             returncode = 127
             stdout = ""
             stderr = f"Command not found: {cmd[0]}"
+
         return DummyProcess()
+
+
+def check_session_rehydration() -> bool:
+    """Enforces Automatic Session Rehydration and Session Manifest Materialization (Step 0)."""
+    print("\n--- Checking Automatic Session Rehydration (Step 0) ---")
+
+    head_res = run_command(["git", "rev-parse", "HEAD"])
+    if head_res.returncode != 0:
+        print_error("Failed to resolve canonical git HEAD SHA.")
+        return False
+
+    sha = head_res.stdout.strip()
+    import re
+
+    if len(sha) != 40 or not re.fullmatch(r"[0-9a-fA-F]{40}", sha):
+        print_error(f"Invalid git HEAD SHA format: '{sha}'")
+        return False
+
+    print_success(f"Canonical git HEAD SHA rehydrated: {sha[:8]}...{sha[-8:]}")
+
+    # Materialize and validate session manifest (.sage/session_manifest.json)
+    try:
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+        from scripts.build_session_manifest import materialize
+        from scripts.verify_session_rehydration_contract import main as verify_manifest
+
+        manifest_path = Path(".sage/session_manifest.json")
+        materialize(
+            mission="GOVERNED_CONTINUOUS_INTELLIGENCE",
+            interfaces=["CHATGPT_C2", "JULES_ENGINEER"],
+            output=manifest_path,
+        )
+        print_success(f"Session manifest materialized cleanly at {manifest_path}")
+
+        if verify_manifest() != 0:
+            print_error("Session manifest contract verification failed.")
+            return False
+        print_success("Session manifest contract verified fail-closed.")
+    except Exception as exc:
+        print_error(f"Failed to materialize or verify session manifest: {exc}")
+        return False
+
+    print_success("Station identity rehydrated: [SAGE::ENGINEER::JULES]")
+    print_success(
+        "C2 9-stage workflow sequence rehydrated: REHYDRATE -> RECON -> DESIGN -> BUILD -> TEST -> OBSERVE -> REPAIR -> VERIFY -> PROMOTE"
+    )
+    return True
 
 
 def check_repository_state() -> bool:
@@ -148,11 +201,17 @@ def check_one_way_import_law() -> bool:
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
                 for alias in node.names:
-                    if alias.name.startswith("sage.experimental") or alias.name.startswith("sage/experimental"):
+                    if alias.name.startswith("sage.experimental") or alias.name.startswith(
+                        "sage/experimental"
+                    ):
                         violations.append((py_file, node.lineno, f"import {alias.name}"))
             elif isinstance(node, ast.ImportFrom):
                 if node.module:
-                    if node.module.startswith("sage.experimental") or node.module.startswith("sage/experimental") or node.module == "experimental":
+                    if (
+                        node.module.startswith("sage.experimental")
+                        or node.module.startswith("sage/experimental")
+                        or node.module == "experimental"
+                    ):
                         violations.append((py_file, node.lineno, f"from {node.module} import ..."))
 
     if violations:
@@ -176,7 +235,9 @@ def check_protected_boundary(allow_core_modification: bool = False) -> bool:
 
     # Add staged files
     diff_staged = run_command(["git", "diff", "--cached", "--name-only"])
-    modified_files.extend([line.strip() for line in diff_staged.stdout.splitlines() if line.strip()])
+    modified_files.extend(
+        [line.strip() for line in diff_staged.stdout.splitlines() if line.strip()]
+    )
 
     modified_files = list(set(modified_files))
 
@@ -195,10 +256,14 @@ def check_protected_boundary(allow_core_modification: bool = False) -> bool:
             for f in violations:
                 print(f"  - {f} (MODIFIED - ALLOWED)")
         else:
-            print_error("PROTECTED-BOUNDARY VIOLATION DETECTED! Modifying frozen core directories without authorization:")
+            print_error(
+                "PROTECTED-BOUNDARY VIOLATION DETECTED! Modifying frozen core directories without authorization:"
+            )
             for f in violations:
                 print(f"  - {f}")
-            print_error("Please keep experimental developments in 'sage/experimental/' or request authorization.")
+            print_error(
+                "Please keep experimental developments in 'sage/experimental/' or request authorization."
+            )
             return False
     else:
         print_success("No protected-boundary violations found.")
@@ -218,17 +283,31 @@ def check_scope_drift(active_scope: str = "any") -> bool:
     modified_files = [line.strip() for line in diff_res.stdout.splitlines() if line.strip()]
 
     diff_staged = run_command(["git", "diff", "--cached", "--name-only"])
-    modified_files.extend([line.strip() for line in diff_staged.stdout.splitlines() if line.strip()])
+    modified_files.extend(
+        [line.strip() for line in diff_staged.stdout.splitlines() if line.strip()]
+    )
     modified_files = list(set(modified_files))
 
     if active_scope == "ci-only":
         forbidden = []
         for f in modified_files:
-            is_ci = any(f.startswith(p) for p in [".github/", "scripts/", "pyproject.toml", "poetry.lock", "Dockerfile", "docker-compose.yml"])
+            is_ci = any(
+                f.startswith(p)
+                for p in [
+                    ".github/",
+                    "scripts/",
+                    "pyproject.toml",
+                    "poetry.lock",
+                    "Dockerfile",
+                    "docker-compose.yml",
+                ]
+            )
             if not is_ci:
                 forbidden.append(f)
         if forbidden:
-            print_error(f"SCOPE DRIFT VIOLATION! Task is set to CI-ONLY, but non-CI files were modified:")
+            print_error(
+                "SCOPE DRIFT VIOLATION! Task is set to CI-ONLY, but non-CI files were modified:"
+            )
             for f in forbidden:
                 print(f"  - {f}")
             return False
@@ -240,7 +319,9 @@ def check_scope_drift(active_scope: str = "any") -> bool:
             if is_impl_or_test:
                 implementation_and_tests.append(f)
         if implementation_and_tests:
-            print_error(f"SCOPE DRIFT VIOLATION! Task is set to AUDIT-ONLY, but workspace files were modified:")
+            print_error(
+                "SCOPE DRIFT VIOLATION! Task is set to AUDIT-ONLY, but workspace files were modified:"
+            )
             for f in implementation_and_tests:
                 print(f"  - {f}")
             return False
@@ -276,21 +357,26 @@ def run_assembly_line_preflight(active_scope: str = "any", allow_core: bool = Fa
     print("=" * 60)
 
     checks = [
+        check_session_rehydration(),
         check_repository_state(),
         check_historical_evidence(),
         check_one_way_import_law(),
         check_protected_boundary(allow_core_modification=allow_core),
         check_scope_drift(active_scope=active_scope),
-        run_formatting_checks()
+        run_formatting_checks(),
     ]
 
     print("\n" + "=" * 60)
     if all(checks):
-        print(f"{GREEN}{BOLD}PREFLIGHT SUCCESSFUL! All safety and quality constraints are SATISFIED.{RESET}")
+        print(
+            f"{GREEN}{BOLD}PREFLIGHT SUCCESSFUL! All safety and quality constraints are SATISFIED.{RESET}"
+        )
         print("=" * 60)
         return True
     else:
-        print(f"{RED}{BOLD}PREFLIGHT FAILED! One or more critical constraints were VIOLATED.{RESET}")
+        print(
+            f"{RED}{BOLD}PREFLIGHT FAILED! One or more critical constraints were VIOLATED.{RESET}"
+        )
         print("Please correct the issues listed above before executing or submitting work.")
         print("=" * 60)
         return False

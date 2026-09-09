@@ -1,17 +1,57 @@
-import ast
-import sys
-from pathlib import Path
-import pytest
 from unittest.mock import MagicMock
 
 from scripts.jules_preflight import (
+    check_session_rehydration,
     check_repository_state,
     check_historical_evidence,
     check_one_way_import_law,
     check_protected_boundary,
     check_scope_drift,
-    run_assembly_line_preflight,
 )
+
+
+def test_check_session_rehydration_valid(monkeypatch):
+    """Test session rehydration passes when HEAD SHA is valid and manifest verifies cleanly."""
+    mock_run = MagicMock()
+    mock_run.returncode = 0
+    mock_run.stdout = "36c866249d505b7710d2ed100bae1bbc42485da0\n"
+    monkeypatch.setattr("scripts.jules_preflight.run_command", lambda cmd, **kwargs: mock_run)
+    monkeypatch.setattr("scripts.build_session_manifest.materialize", lambda *args, **kwargs: {})
+    monkeypatch.setattr("scripts.verify_session_rehydration_contract.main", lambda: 0)
+
+    assert check_session_rehydration() is True
+
+
+def test_check_session_rehydration_manifest_verification_failed(monkeypatch):
+    """Test session rehydration fails when manifest verification contract returns non-zero."""
+    mock_run = MagicMock()
+    mock_run.returncode = 0
+    mock_run.stdout = "36c866249d505b7710d2ed100bae1bbc42485da0\n"
+    monkeypatch.setattr("scripts.jules_preflight.run_command", lambda cmd, **kwargs: mock_run)
+    monkeypatch.setattr("scripts.build_session_manifest.materialize", lambda *args, **kwargs: {})
+    monkeypatch.setattr("scripts.verify_session_rehydration_contract.main", lambda: 1)
+
+    assert check_session_rehydration() is False
+
+
+def test_check_session_rehydration_invalid_sha(monkeypatch):
+    """Test session rehydration fails when HEAD SHA is invalid."""
+    mock_run = MagicMock()
+    mock_run.returncode = 0
+    mock_run.stdout = "invalid-sha-123\n"
+    monkeypatch.setattr("scripts.jules_preflight.run_command", lambda cmd, **kwargs: mock_run)
+
+    assert check_session_rehydration() is False
+
+
+def test_check_session_rehydration_command_failure(monkeypatch):
+    """Test session rehydration fails when git command fails."""
+    mock_run = MagicMock()
+    mock_run.returncode = 128
+    mock_run.stdout = ""
+    monkeypatch.setattr("scripts.jules_preflight.run_command", lambda cmd, **kwargs: mock_run)
+
+    assert check_session_rehydration() is False
 
 
 def test_check_repository_state_clean(monkeypatch):

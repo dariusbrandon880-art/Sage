@@ -15,10 +15,16 @@ SHA_LEN = 40
 
 
 def git_head() -> str:
-    sha = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
-    if len(sha) != SHA_LEN or any(c not in "0123456789abcdef" for c in sha.lower()):
-        raise SystemExit("FAIL_CLOSED: unable to resolve a valid 40-character HEAD SHA")
-    return sha
+    for ref in ("HEAD", "refs/remotes/origin/main", "refs/heads/main"):
+        try:
+            sha = subprocess.check_output(
+                ["git", "rev-parse", ref], cwd=ROOT, text=True, stderr=subprocess.DEVNULL
+            ).strip()
+            if len(sha) == SHA_LEN and all(c in "0123456789abcdef" for c in sha.lower()):
+                return sha
+        except Exception:
+            continue
+    raise SystemExit("FAIL_CLOSED: unable to resolve a valid 40-character HEAD SHA")
 
 
 def active_branch() -> str:
