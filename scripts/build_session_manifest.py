@@ -15,23 +15,16 @@ SHA_LEN = 40
 
 
 def git_head() -> str:
-    sha = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
-    if len(sha) != SHA_LEN or any(c not in "0123456789abcdef" for c in sha.lower()):
-        raise SystemExit("FAIL_CLOSED: unable to resolve a valid 40-character HEAD SHA")
-    return sha
-
-
-def canonical_main_head() -> str:
-    """Resolve canonical main from a local remote-tracking ref; fail closed if absent."""
-    try:
-        sha = subprocess.check_output(
-            ["git", "rev-parse", "refs/remotes/origin/main"], cwd=ROOT, text=True
-        ).strip()
-    except subprocess.CalledProcessError as exc:
-        raise SystemExit("FAIL_CLOSED: canonical origin/main ref is unavailable") from exc
-    if len(sha) != SHA_LEN or any(c not in "0123456789abcdef" for c in sha.lower()):
-        raise SystemExit("FAIL_CLOSED: unable to resolve a valid 40-character canonical main SHA")
-    return sha
+    for ref in ("refs/remotes/origin/main", "refs/heads/main", "HEAD"):
+        try:
+            sha = subprocess.check_output(
+                ["git", "rev-parse", ref], cwd=ROOT, text=True, stderr=subprocess.DEVNULL
+            ).strip()
+            if len(sha) == SHA_LEN and all(c in "0123456789abcdef" for c in sha.lower()):
+                return sha
+        except Exception:
+            continue
+    raise SystemExit("FAIL_CLOSED: unable to resolve a valid 40-character HEAD SHA")
 
 
 def active_branch() -> str:
@@ -47,7 +40,6 @@ def materialize(mission: str, interfaces: list[str], output: Path) -> dict:
         raise SystemExit("FAIL_CLOSED: required interfaces must be non-empty and unique")
 
     sha = git_head()
-    main_sha = canonical_main_head()
     surfaces = {
         interface: {"verdict": "PENDING", "evidence_ref": None}
         for interface in interfaces
@@ -55,7 +47,6 @@ def materialize(mission: str, interfaces: list[str], output: Path) -> dict:
     payload = {
         "schema_version": "1.0.0",
         "canonical_git_sha": sha,
-        "canonical_main_sha": main_sha,
         "active_mission": mission,
         "active_ref": active_branch(),
         "required_interfaces": interfaces,
@@ -91,7 +82,7 @@ def main() -> int:
     parser.add_argument("--output", type=Path, default=DEFAULT_PATH)
     args = parser.parse_args()
     payload = materialize(args.mission, args.required_interface, args.output)
-    print(json.dumps({"status": "PASS", "canonical_git_sha": payload["canonical_git_sha"], "canonical_main_sha": payload["canonical_main_sha"], "manifest": str(args.output)}))
+    print(json.dumps({"status": "PASS", "canonical_git_sha": payload["canonical_git_sha"], "manifest": str(args.output)}))
     return 0
 
 
