@@ -517,7 +517,7 @@ Therefore:
 
 ---
 
-## 21. C2 ↔ JULES OPERATING CONTRACT
+## 21. C2 ↔ JULES OPERATING CONTRACT & CROSS-REPORT ALIGNMENT PROTOCOL
 
 C2 owns:
 
@@ -539,6 +539,18 @@ Jules owns:
 - reporting exact artifacts and failures
 
 Jules must not silently reinterpret architecture.
+
+### Automatic Session Rehydration Invariant
+Every Jules session (new, resumed, or long-running) automatically executes repository rehydration upon task intake without requiring manual operator prompts or reminders. Preflight checks verify that:
+1. Exact 40-character `main` HEAD SHA is resolved from local git truth.
+2. SAGE session manifest (`.sage/session_manifest.json`) is materialized and bound.
+3. Station identity (`[SAGE::ENGINEER::JULES]`) and 9-stage workflow sequence (`REHYDRATE -> RECON -> DESIGN -> BUILD -> TEST -> OBSERVE -> REPAIR -> VERIFY -> PROMOTE`) are locked.
+
+### Cross-Report Alignment Payload Protocol
+When Jules returns execution reports to C2 or when reports are transferred across surfaces, the report format acts as a cryptographically verifiable rehydration payload for ChatGPT C2:
+- `[SAGE::ENGINEER::JULES] ▣` header guarantees station provenance.
+- Exact `REPO HEAD` SHA bridges repository truth directly into ChatGPT C2 context.
+- Structured fields (`CANONICAL SEAM`, `EVIDENCE`, `BOUNDED NEXT ACTION`) allow ChatGPT C2 to immediately rehydrate without state drift or requiring the operator to re-explain context.
 
 If C2 can execute safely and directly, do so. Otherwise use bounded Jules execution followed by independent C2 verification.
 
