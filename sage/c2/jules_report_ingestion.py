@@ -119,7 +119,7 @@ def ingest_jules_report(
                     "evidence_digest": digest,
                 },
                 "tags": ["jules", "execution_report", "c2_ingestion", parsed.status.lower()],
-                "confidence": "validated",
+                "confidence": "hypothesis",
             }
         ],
         decisions=[],
