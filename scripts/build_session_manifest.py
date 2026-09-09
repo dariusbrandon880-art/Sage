@@ -15,7 +15,7 @@ SHA_LEN = 40
 
 
 def git_head() -> str:
-    for ref in ("refs/remotes/origin/main", "refs/heads/main", "HEAD"):
+    for ref in ("HEAD", "refs/remotes/origin/main", "refs/heads/main"):
         try:
             sha = subprocess.check_output(
                 ["git", "rev-parse", ref], cwd=ROOT, text=True, stderr=subprocess.DEVNULL
