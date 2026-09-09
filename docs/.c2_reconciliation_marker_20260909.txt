@@ -1,1 +1,0 @@
-C2 reconciliation marker: sports branch recovery work is being evaluated against current main. This marker is temporary and must not be promoted as product evidence.
