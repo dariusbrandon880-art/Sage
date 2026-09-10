@@ -226,3 +226,33 @@ def test_portfolio_engine_deduplication_and_player_prop_integration():
 
     assert portfolio.count == 2
     assert any("Mahomes" in r.selection for r in portfolio.records)
+
+
+def test_portfolio_engine_tennis_and_soccer_support():
+    soccer_snap = MarketSnapshot(
+        event_id="soc_1001",
+        sport="SOCCER",
+        league="CHAMPIONS_LEAGUE",
+        event_start_utc=START,
+        observed_at_utc=BEFORE,
+        market="moneyline",
+        prices={"home": 2.10, "draw": 3.20, "away": 3.50},
+        source="FanDuel",
+    )
+    tennis_snap = MarketSnapshot(
+        event_id="ten_2001",
+        sport="TENNIS",
+        league="US_OPEN",
+        event_start_utc=START,
+        observed_at_utc=BEFORE,
+        market="moneyline",
+        prices={"player_1": 1.70, "player_2": 2.20},
+        source="FanDuel",
+    )
+
+    engine = DailySportsPortfolioEngine(target=4, parlay_share=0.0)
+    portfolio = engine.build(snapshots=[soccer_snap, tennis_snap], cycle_id="cycle_expansion")
+
+    assert portfolio.count == 4
+    assert portfolio.sport_counts["SOCCER"] == 2
+    assert portfolio.sport_counts["TENNIS"] == 2
