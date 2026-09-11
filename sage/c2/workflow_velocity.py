@@ -123,22 +123,39 @@ class MultiSessionVelocityEngine:
             tracker["max_active"] = max(tracker["max_active"], tracker["active"])
         try:
             executor = flight.get("executor")
-            if executor is not None:
+            blocker: Optional[str] = None
+            if executor is None:
+                execution_result = "BLOCKED_NO_EXECUTOR"
+                tests_passed = 0
+                blocker = f"Missing executor for flight {flight_id}"
+                is_success = False
+            else:
                 if not callable(executor):
                     raise TypeError(f"executor for {flight_id} must be callable")
-                execution = executor()
-            else:
-                execution = None
-            execution_result = flight.get("execution_result", "PASS")
-            tests_passed = flight.get("tests_passed", 10)
-            if isinstance(execution, dict):
-                execution_result = execution.get("execution_result", execution_result)
-                tests_passed = execution.get("tests_passed", tests_passed)
+                try:
+                    execution = executor()
+                    if isinstance(execution, dict):
+                        execution_result = execution.get("execution_result", "PASS")
+                        tests_passed = execution.get("tests_passed", flight.get("tests_passed", 1))
+                        blocker = execution.get("blocker", None)
+                    elif isinstance(execution, str):
+                        execution_result = execution
+                        tests_passed = flight.get("tests_passed", 1)
+                    else:
+                        execution_result = flight.get("execution_result", "PASS")
+                        tests_passed = flight.get("tests_passed", 1)
+                    is_success = execution_result.upper() in ("PASS", "SUCCESS", "EXECUTED") and blocker is None
+                except Exception as exc:
+                    execution_result = f"FAIL_EXCEPTION_{type(exc).__name__}"
+                    tests_passed = 0
+                    blocker = str(exc)
+                    is_success = False
+
             milestones = [
                 LifecycleMilestoneRecord(stage=LifecycleStage.INTAKE_RECON, passed=True, evidence_ref=f"evidence/{wave_id}_{flight_id}_stage1.json"),
-                LifecycleMilestoneRecord(stage=LifecycleStage.BOUNDED_BUILD, passed=True, evidence_ref=f"evidence/{wave_id}_{flight_id}_stage2.json"),
-                LifecycleMilestoneRecord(stage=LifecycleStage.VERIFY_PROOF, passed=True, evidence_ref=f"evidence/{wave_id}_{flight_id}_stage3.json"),
-                LifecycleMilestoneRecord(stage=LifecycleStage.WAREHOUSE_PROMOTE, passed=True, evidence_ref=f"evidence/{wave_id}_{flight_id}_stage4.json"),
+                LifecycleMilestoneRecord(stage=LifecycleStage.BOUNDED_BUILD, passed=is_success, evidence_ref=f"evidence/{wave_id}_{flight_id}_stage2.json"),
+                LifecycleMilestoneRecord(stage=LifecycleStage.VERIFY_PROOF, passed=is_success and tests_passed > 0, evidence_ref=f"evidence/{wave_id}_{flight_id}_stage3.json"),
+                LifecycleMilestoneRecord(stage=LifecycleStage.WAREHOUSE_PROMOTE, passed=is_success and tests_passed > 0, evidence_ref=f"evidence/{wave_id}_{flight_id}_stage4.json"),
             ]
             return FlightExecutionSummary(
                 flight_id=flight_id,
@@ -150,6 +167,7 @@ class MultiSessionVelocityEngine:
                 evidence_ref=f"evidence_capture/{wave_id}_{flight_id}_evidence.json",
                 pr_or_change=flight.get("pr_or_change", f"PR #{260 + idx}"),
                 lifecycle_milestones=milestones,
+                blocker=blocker,
             )
         finally:
             release_lock(session_id, flight_id)
