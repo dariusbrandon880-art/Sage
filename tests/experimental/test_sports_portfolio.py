@@ -76,7 +76,7 @@ def test_daily_engine_reaches_50_without_duplicate_prediction_identity():
     )
 
 
-def test_daily_engine_builds_only_three_to_six_leg_parlays():
+def test_daily_engine_builds_only_three_to_seven_leg_parlays():
     snapshots = [
         market(f"event-{i}", "NBA", "moneyline", {"home": 2.0, "away": 2.0}) for i in range(10)
     ]
@@ -84,7 +84,7 @@ def test_daily_engine_builds_only_three_to_six_leg_parlays():
         snapshots, "daily-parlay-range"
     )
     assert portfolio.parlay_count == 10
-    assert all(3 <= len(record.legs) <= 6 for record in portfolio.records if record.is_parlay)
+    assert all(3 <= len(record.legs) <= 7 for record in portfolio.records if record.is_parlay)
     assert all(record.market == "parlay" for record in portfolio.records if record.is_parlay)
     assert len({record.selection for record in portfolio.records if record.is_parlay}) == 10
 

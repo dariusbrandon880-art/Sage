@@ -10,7 +10,7 @@ from .prediction import FanDuelPlayerPropAnalyzer, PredictionBatchEngine, Predic
 
 SUPPORTED_SPORTS = frozenset({"MLB", "NBA", "NFL", "NHL", "SOCCER", "TENNIS"})
 MIN_PARLAY_LEGS = 3
-MAX_PARLAY_LEGS = 6
+MAX_PARLAY_LEGS = 7
 DEFAULT_DAILY_TARGET = 50
 
 
