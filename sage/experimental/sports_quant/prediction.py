@@ -2,10 +2,10 @@
 
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime
 import hashlib
 import json
-from typing import Iterable, Mapping, Sequence, Any
+from typing import Iterable, Sequence, Any
 
 from .ingestion import MarketSnapshot, PlayerPropSnapshot, FanDuelSnapshotAdapter
 from .evaluation import calculate_ev, calculate_kelly_stake
@@ -27,7 +27,9 @@ class PropEdgeResult:
     rationale: str
 
 
-def evaluate_sgp_boost(legs: Sequence[PropEdgeResult], boosted_decimal_price: float) -> dict[str, Any]:
+def evaluate_sgp_boost(
+    legs: Sequence[PropEdgeResult], boosted_decimal_price: float
+) -> dict[str, Any]:
     if not legs:
         raise ValueError("SGP_REQUIRES_LEGS: at least one leg is required")
     if boosted_decimal_price <= 1.0:
@@ -39,25 +41,56 @@ def evaluate_sgp_boost(legs: Sequence[PropEdgeResult], boosted_decimal_price: fl
         fair_prob_product *= leg.projected_prob
         fd_implied_product *= leg.fanduel_implied_prob
     boosted_ev = (fair_prob_product * boosted_decimal_price) - 1.0
-    all_overs = all("over" in leg.selection.lower() or "yes" in leg.selection.lower() for leg in legs)
+    all_overs = all(
+        "over" in leg.selection.lower() or "yes" in leg.selection.lower() for leg in legs
+    )
     if all_individual_positive and boosted_ev > 0:
-        recommendation, assessment = "GRAVY", "Positive individual leg EV combined with boost enhancement."
+        recommendation, assessment = (
+            "GRAVY",
+            "Positive individual leg EV combined with boost enhancement.",
+        )
     elif boosted_ev > 0 and not all_overs:
-        recommendation, assessment = "GENUINE_PLUS_EV", "Boost overcomes un-correlated or negatively correlated leg combination."
+        recommendation, assessment = (
+            "GENUINE_PLUS_EV",
+            "Boost overcomes un-correlated or negatively correlated leg combination.",
+        )
     elif all_overs and boosted_ev <= 0.05:
-        recommendation, assessment = "BOOST_TRAP", "Positively correlated all-over SGP where boost fails to compensate joint risk."
+        recommendation, assessment = (
+            "BOOST_TRAP",
+            "Positively correlated all-over SGP where boost fails to compensate joint risk.",
+        )
     elif boosted_ev <= 0:
         recommendation, assessment = "BOOST_TRAP", "Negative EV parlay despite boosted pricing."
     else:
-        recommendation, assessment = "CONDITIONAL_ACCEPT", "Moderate boost value subject to strict bankroll controls."
-    return {"leg_count": len(legs), "all_legs_positive_ev": all_individual_positive, "joint_fair_probability": round(fair_prob_product, 6), "joint_fd_implied_probability": round(fd_implied_product, 6), "boosted_decimal_price": boosted_decimal_price, "boosted_expected_value": round(boosted_ev, 4), "recommendation": recommendation, "assessment": assessment}
+        recommendation, assessment = (
+            "CONDITIONAL_ACCEPT",
+            "Moderate boost value subject to strict bankroll controls.",
+        )
+    return {
+        "leg_count": len(legs),
+        "all_legs_positive_ev": all_individual_positive,
+        "joint_fair_probability": round(fair_prob_product, 6),
+        "joint_fd_implied_probability": round(fd_implied_product, 6),
+        "boosted_decimal_price": boosted_decimal_price,
+        "boosted_expected_value": round(boosted_ev, 4),
+        "recommendation": recommendation,
+        "assessment": assessment,
+    }
 
 
 class FanDuelPlayerPropAnalyzer:
     def __init__(self, model_version: str = "propsbot-ai-v1") -> None:
         self.model_version = model_version
 
-    def analyze_prop(self, snapshot: PlayerPropSnapshot, selection: str = "over", red_zone_touch_share: float | None = None, game_script_bias: float | None = None, usage_rate: float | None = None, shot_volume_expectation: float | None = None) -> PropEdgeResult:
+    def analyze_prop(
+        self,
+        snapshot: PlayerPropSnapshot,
+        selection: str = "over",
+        red_zone_touch_share: float | None = None,
+        game_script_bias: float | None = None,
+        usage_rate: float | None = None,
+        shot_volume_expectation: float | None = None,
+    ) -> PropEdgeResult:
         if selection not in snapshot.prices:
             if selection == "over" and "yes" in snapshot.prices:
                 selection = "yes"
@@ -102,15 +135,45 @@ class FanDuelPlayerPropAnalyzer:
         rationale_text = f"Prop {snapshot.player_name} ({snapshot.prop_category}): FD implied {fd_implied:.1%}, model projected {projected_prob:.1%}."
         if rationales:
             rationale_text += " " + "; ".join(rationales)
-        return PropEdgeResult(snapshot.player_name, snapshot.prop_category, selection, fd_price, round(fd_implied, 4), round(projected_prob, 4), round(edge_score, 4), round(ev, 4), round(confidence, 4), ev > 0, round(kelly, 4), rationale_text)
+        return PropEdgeResult(
+            snapshot.player_name,
+            snapshot.prop_category,
+            selection,
+            fd_price,
+            round(fd_implied, 4),
+            round(projected_prob, 4),
+            round(edge_score, 4),
+            round(ev, 4),
+            round(confidence, 4),
+            ev > 0,
+            round(kelly, 4),
+            rationale_text,
+        )
 
-    def generate_prop_prediction(self, snapshot: PlayerPropSnapshot, edge_result: PropEdgeResult, cycle_id: str) -> "PredictionRecord":
-        prop_selection = f"{snapshot.prop_category}:{snapshot.player_name} - {edge_result.selection}"
+    def generate_prop_prediction(
+        self, snapshot: PlayerPropSnapshot, edge_result: PropEdgeResult, cycle_id: str
+    ) -> "PredictionRecord":
+        prop_selection = (
+            f"{snapshot.prop_category}:{snapshot.player_name} - {edge_result.selection}"
+        )
         record = PredictionRecord(
-            prediction_id=PredictionRecord.build_prediction_id(event_id=snapshot.event_id, market_type="player_prop", selection=prop_selection, line_value=snapshot.threshold),
-            cycle_id=cycle_id, event_id=snapshot.event_id, market=snapshot.prop_category, selection=prop_selection,
-            model_version=self.model_version, predicted_probability=edge_result.projected_prob, market_probability=edge_result.fanduel_implied_prob,
-            observed_at_utc=snapshot.observed_at_utc, event_start_utc=snapshot.event_start_utc, market_type="player_prop", line_value=snapshot.threshold,
+            prediction_id=PredictionRecord.build_prediction_id(
+                event_id=snapshot.event_id,
+                market_type="player_prop",
+                selection=prop_selection,
+                line_value=snapshot.threshold,
+            ),
+            cycle_id=cycle_id,
+            event_id=snapshot.event_id,
+            market=snapshot.prop_category,
+            selection=prop_selection,
+            model_version=self.model_version,
+            predicted_probability=edge_result.projected_prob,
+            market_probability=edge_result.fanduel_implied_prob,
+            observed_at_utc=snapshot.observed_at_utc,
+            event_start_utc=snapshot.event_start_utc,
+            market_type="player_prop",
+            line_value=snapshot.threshold,
         )
         return record.sign()
 
@@ -139,9 +202,14 @@ class PredictionRecord:
     def __post_init__(self) -> None:
         if self.wagering_executed:
             raise ValueError("SHADOW_BOUNDARY_VIOLATION: wagering execution is prohibited")
-        if not 0.0 <= self.predicted_probability <= 1.0 or not 0.0 <= self.market_probability <= 1.0:
+        if (
+            not 0.0 <= self.predicted_probability <= 1.0
+            or not 0.0 <= self.market_probability <= 1.0
+        ):
             raise ValueError("INVALID_PROBABILITY")
-        if datetime.fromisoformat(self.observed_at_utc.replace("Z", "+00:00")) >= datetime.fromisoformat(self.event_start_utc.replace("Z", "+00:00")):
+        if datetime.fromisoformat(
+            self.observed_at_utc.replace("Z", "+00:00")
+        ) >= datetime.fromisoformat(self.event_start_utc.replace("Z", "+00:00")):
             raise ValueError("TEMPORAL_LOCK_VIOLATION")
 
     @property
@@ -153,7 +221,9 @@ class PredictionRecord:
         return "" if self.line_value is None else format(self.line_value, ".12g")
 
     @classmethod
-    def build_prediction_id(cls, *, event_id: str, market_type: str, selection: str, line_value: float | None) -> str:
+    def build_prediction_id(
+        cls, *, event_id: str, market_type: str, selection: str, line_value: float | None
+    ) -> str:
         canonical_type = market_type.strip().lower()
         canonical_line = "" if line_value is None else format(line_value, ".12g")
         return f"pred_{event_id}_{canonical_type}_{selection}_{canonical_line}"
@@ -165,7 +235,10 @@ class PredictionRecord:
 
     def verify_lock(self) -> bool:
         payload = {k: v for k, v in self.__dict__.items() if k != "lock_hash"}
-        return hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest() == self.lock_hash
+        return (
+            hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
+            == self.lock_hash
+        )
 
 
 class PredictionBatchEngine:
@@ -173,24 +246,44 @@ class PredictionBatchEngine:
         self.model_version = model_version
         self.max_workers = max_workers
 
-    def _generate_one(self, snapshot: MarketSnapshot, selection: str, cycle_id: str) -> PredictionRecord:
+    def _generate_one(
+        self, snapshot: MarketSnapshot, selection: str, cycle_id: str
+    ) -> PredictionRecord:
         market_probs = FanDuelSnapshotAdapter.normalized_probabilities(snapshot)
         market_probability = market_probs[selection]
         predicted = 0.5 + 0.85 * (market_probability - 0.5)
         market_type = snapshot.canonical_market_type
         line_value = snapshot.line_value
         record = PredictionRecord(
-            prediction_id=PredictionRecord.build_prediction_id(event_id=snapshot.event_id, market_type=market_type, selection=selection, line_value=line_value),
-            cycle_id=cycle_id, event_id=snapshot.event_id, market=snapshot.market, selection=selection, model_version=self.model_version,
-            predicted_probability=predicted, market_probability=market_probability, observed_at_utc=snapshot.observed_at_utc, event_start_utc=snapshot.event_start_utc,
-            market_type=market_type, line_value=line_value,
+            prediction_id=PredictionRecord.build_prediction_id(
+                event_id=snapshot.event_id,
+                market_type=market_type,
+                selection=selection,
+                line_value=line_value,
+            ),
+            cycle_id=cycle_id,
+            event_id=snapshot.event_id,
+            market=snapshot.market,
+            selection=selection,
+            model_version=self.model_version,
+            predicted_probability=predicted,
+            market_probability=market_probability,
+            observed_at_utc=snapshot.observed_at_utc,
+            event_start_utc=snapshot.event_start_utc,
+            market_type=market_type,
+            line_value=line_value,
         )
         return record.sign()
 
-    def generate(self, snapshots: Iterable[MarketSnapshot], cycle_id: str) -> list[PredictionRecord]:
+    def generate(
+        self, snapshots: Iterable[MarketSnapshot], cycle_id: str
+    ) -> list[PredictionRecord]:
         tasks = [(snapshot, selection) for snapshot in snapshots for selection in snapshot.prices]
         with ThreadPoolExecutor(max_workers=self.max_workers) as pool:
-            futures = [pool.submit(self._generate_one, snapshot, selection, cycle_id) for snapshot, selection in tasks]
+            futures = [
+                pool.submit(self._generate_one, snapshot, selection, cycle_id)
+                for snapshot, selection in tasks
+            ]
             return [future.result() for future in futures]
 
     @staticmethod
@@ -206,9 +299,20 @@ class PredictionBatchEngine:
         first = leg_list[0]
         parlay_selection = " + ".join(leg.prediction_id for leg in leg_list)
         parlay = PredictionRecord(
-            prediction_id=f"parlay_{parent_id}", cycle_id=first.cycle_id, event_id=first.event_id, market="parlay", selection=parlay_selection,
-            model_version=first.model_version, predicted_probability=combined_probability, market_probability=1.0,
-            observed_at_utc=first.observed_at_utc, event_start_utc=first.event_start_utc, is_oos=all(leg.is_oos for leg in leg_list),
-            is_parlay=True, parent_prediction_id=parent_id, legs=tuple(leg.prediction_id for leg in leg_list), market_type="parlay",
+            prediction_id=f"parlay_{parent_id}",
+            cycle_id=first.cycle_id,
+            event_id=first.event_id,
+            market="parlay",
+            selection=parlay_selection,
+            model_version=first.model_version,
+            predicted_probability=combined_probability,
+            market_probability=1.0,
+            observed_at_utc=first.observed_at_utc,
+            event_start_utc=first.event_start_utc,
+            is_oos=all(leg.is_oos for leg in leg_list),
+            is_parlay=True,
+            parent_prediction_id=parent_id,
+            legs=tuple(leg.prediction_id for leg in leg_list),
+            market_type="parlay",
         )
         return parlay.sign()

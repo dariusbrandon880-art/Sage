@@ -36,7 +36,14 @@ class DailyPortfolio:
 class DailySportsPortfolioEngine:
     """Build a high-volume, non-duplicated, multi-sport shadow prediction portfolio."""
 
-    def __init__(self, target: int = DEFAULT_DAILY_TARGET, min_parlay_legs: int = MIN_PARLAY_LEGS, max_parlay_legs: int = MAX_PARLAY_LEGS, parlay_share: float = 0.30, max_workers: int = 8) -> None:
+    def __init__(
+        self,
+        target: int = DEFAULT_DAILY_TARGET,
+        min_parlay_legs: int = MIN_PARLAY_LEGS,
+        max_parlay_legs: int = MAX_PARLAY_LEGS,
+        parlay_share: float = 0.30,
+        max_workers: int = 8,
+    ) -> None:
         if target < 1:
             raise ValueError("INVALID_DAILY_TARGET")
         if not MIN_PARLAY_LEGS <= min_parlay_legs <= max_parlay_legs <= MAX_PARLAY_LEGS:
@@ -55,7 +62,13 @@ class DailySportsPortfolioEngine:
 
     @staticmethod
     def _identity(record: PredictionRecord) -> tuple[str, str, str, str, str]:
-        return (record.event_id, record.canonical_market_type, record.selection.strip().lower(), record.canonical_line_value, record.model_version)
+        return (
+            record.event_id,
+            record.canonical_market_type,
+            record.selection.strip().lower(),
+            record.canonical_line_value,
+            record.model_version,
+        )
 
     @classmethod
     def _dedupe(cls, records: Iterable[PredictionRecord]) -> tuple[list[PredictionRecord], int]:
@@ -71,7 +84,9 @@ class DailySportsPortfolioEngine:
             unique.append(record)
         return unique, rejected
 
-    def _build_parlays(self, singles: Sequence[PredictionRecord], target_parlays: int) -> list[PredictionRecord]:
+    def _build_parlays(
+        self, singles: Sequence[PredictionRecord], target_parlays: int
+    ) -> list[PredictionRecord]:
         if target_parlays <= 0:
             return []
         by_event: dict[str, list[PredictionRecord]] = {}
@@ -97,7 +112,12 @@ class DailySportsPortfolioEngine:
         return parlays
 
     @classmethod
-    def _select_singles_round_robin_with_props(cls, singles: Sequence[PredictionRecord], target_singles: int, sport_by_event: Mapping[str, str]) -> list[PredictionRecord]:
+    def _select_singles_round_robin_with_props(
+        cls,
+        singles: Sequence[PredictionRecord],
+        target_singles: int,
+        sport_by_event: Mapping[str, str],
+    ) -> list[PredictionRecord]:
         if target_singles <= 0:
             return []
         by_sport_event: dict[str, dict[str, list[PredictionRecord]]] = {}
@@ -132,7 +152,12 @@ class DailySportsPortfolioEngine:
         return selected
 
     @classmethod
-    def _select_singles_round_robin(cls, singles: Sequence[PredictionRecord], target_singles: int, snapshots: Sequence[MarketSnapshot]) -> list[PredictionRecord]:
+    def _select_singles_round_robin(
+        cls,
+        singles: Sequence[PredictionRecord],
+        target_singles: int,
+        snapshots: Sequence[MarketSnapshot],
+    ) -> list[PredictionRecord]:
         sport_by_event = {s.event_id: cls._sport(s) for s in snapshots}
         return cls._select_singles_round_robin_with_props(singles, target_singles, sport_by_event)
 
@@ -157,7 +182,9 @@ class DailySportsPortfolioEngine:
             prop_analyzer = FanDuelPlayerPropAnalyzer()
             for p_snap in prop_list:
                 edge_res = prop_analyzer.analyze_prop(p_snap)
-                prop_rec = prop_analyzer.generate_prop_prediction(p_snap, edge_res, cycle_id=cycle_id)
+                prop_rec = prop_analyzer.generate_prop_prediction(
+                    p_snap, edge_res, cycle_id=cycle_id
+                )
                 generated.append(prop_rec)
 
         singles, duplicate_rejections = self._dedupe(generated)
@@ -167,14 +194,26 @@ class DailySportsPortfolioEngine:
         target_parlays = min(int(round(self.target * self.parlay_share)), max(0, self.target - 1))
         parlays = self._build_parlays(singles, target_parlays)
         remaining_singles = max(0, self.target - len(parlays))
-        selected_singles = self._select_singles_round_robin_with_props(singles, remaining_singles, sport_by_event)
+        selected_singles = self._select_singles_round_robin_with_props(
+            singles, remaining_singles, sport_by_event
+        )
         records = selected_singles + parlays[: max(0, self.target - len(selected_singles))]
         if len(records) < self.target:
-            raise ValueError(f"DAILY_TARGET_UNMET: requested={self.target} available={len(records)}")
+            raise ValueError(
+                f"DAILY_TARGET_UNMET: requested={self.target} available={len(records)}"
+            )
         sport_by_event = {snapshot.event_id: self._sport(snapshot) for snapshot in snapshot_list}
         sport_counts: dict[str, int] = {sport: 0 for sport in sorted(SUPPORTED_SPORTS)}
         for record in records:
             sport = sport_by_event.get(record.event_id)
             if sport in sport_counts:
                 sport_counts[sport] += 1
-        return DailyPortfolio(cycle_id=cycle_id, records=tuple(records), duplicate_rejections=duplicate_rejections, sport_counts=sport_counts, single_count=sum(not r.is_parlay for r in records), parlay_count=sum(r.is_parlay for r in records), target=self.target)
+        return DailyPortfolio(
+            cycle_id=cycle_id,
+            records=tuple(records),
+            duplicate_rejections=duplicate_rejections,
+            sport_counts=sport_counts,
+            single_count=sum(not r.is_parlay for r in records),
+            parlay_count=sum(r.is_parlay for r in records),
+            target=self.target,
+        )
