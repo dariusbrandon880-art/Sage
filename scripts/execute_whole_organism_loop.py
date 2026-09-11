@@ -4,11 +4,25 @@
 from __future__ import annotations
 
 import json
+import re
+import subprocess
 import sys
 import time
 from pathlib import Path
 
 from sage.c2.whole_organism_loop import WholeOrganismLoopEngine
+
+
+def run_pytest_executor(test_file: str) -> dict[str, object]:
+    """Execute real pytest suite for a flight target and extract genuine pass counts."""
+    res = subprocess.run([sys.executable, "-m", "pytest", test_file], capture_output=True, text=True)
+    tests_passed = 0
+    if res.returncode == 0:
+        match = re.search(r"(\d+)\s+passed", res.stdout)
+        if match:
+            tests_passed = int(match.group(1))
+        return {"execution_result": "PASS", "tests_passed": tests_passed}
+    return {"execution_result": "FAIL", "tests_passed": 0, "blocker": res.stderr or res.stdout}
 
 
 def main() -> int:
@@ -29,7 +43,7 @@ def main() -> int:
             "target_files": ["sage/c2/capability_graph.py"],
             "target_namespaces": ["sage.c2.capability_graph"],
             "pr_or_change": "PR #380",
-            "executor": lambda: {"execution_result": "PASS", "tests_passed": 18},
+            "executor": lambda: run_pytest_executor("tests/c2/test_capability_graph.py"),
         },
         {
             "flight_id": "F2",
@@ -38,7 +52,7 @@ def main() -> int:
             "target_files": ["sage/c2/governance_intelligence.py"],
             "target_namespaces": ["sage.c2.governance"],
             "pr_or_change": "PR #381",
-            "executor": lambda: {"execution_result": "PASS", "tests_passed": 22},
+            "executor": lambda: run_pytest_executor("tests/c2/test_governance_intelligence_wave.py"),
         },
         {
             "flight_id": "F3",
@@ -47,7 +61,7 @@ def main() -> int:
             "target_files": ["sage/c2/reconvergence_synthesizer.py"],
             "target_namespaces": ["sage.c2.reconvergence"],
             "pr_or_change": "PR #382",
-            "executor": lambda: {"execution_result": "PASS", "tests_passed": 16},
+            "executor": lambda: run_pytest_executor("tests/c2/test_reconvergence_synthesizer.py"),
         },
         {
             "flight_id": "F4",
@@ -56,7 +70,7 @@ def main() -> int:
             "target_files": ["sage/c2/organism_jigsaw.py"],
             "target_namespaces": ["sage.c2.organism_jigsaw"],
             "pr_or_change": "PR #383",
-            "executor": lambda: {"execution_result": "PASS", "tests_passed": 25},
+            "executor": lambda: run_pytest_executor("tests/c2/test_organism_jigsaw.py"),
         },
         {
             "flight_id": "F5",
@@ -65,7 +79,7 @@ def main() -> int:
             "target_files": ["sage/c2/whole_organism_loop.py"],
             "target_namespaces": ["sage.c2.whole_organism_loop"],
             "pr_or_change": "PR #384",
-            "executor": lambda: {"execution_result": "PASS", "tests_passed": 30},
+            "executor": lambda: run_pytest_executor("tests/c2/test_whole_organism_loop.py"),
         },
     ]
 

@@ -78,8 +78,8 @@
   "mission_id": "test_whole_organism_001",
   "next_frontier": "FRONTIER_NEXT_ED41B7C8",
   "outcome_quality_score": 1.0,
-  "receipt_hash": "cfbbc490994e6f5129cd66b8ffd0c0fa1d09550802bc2f63da6ef00346cb4bb6",
-  "receipt_id": "wo_rec_c0e3752642b8",
+  "receipt_hash": "d3a0332b362262722932401854b2e704d195ad58eaa0629fd70be3b0829dc458",
+  "receipt_id": "wo_rec_b4cba8cf4661",
   "session_id": "jules_test_session",
-  "timestamp": 1789150169.366365
+  "timestamp": 1789151683.089946
 }
