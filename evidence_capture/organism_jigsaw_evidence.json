@@ -1,12 +1,12 @@
 {
-  "receipt_id": "organism_jigsaw_fcf7d0c5",
-  "commit_sha": "fcf7d0c5f0345d9293bb8c15b402b7b20edf3bad",
-  "subsystem_count": 11,
+  "receipt_id": "organism_jigsaw_fc768ee9",
+  "commit_sha": "fc768ee91d0d8ee8c153a1bd647f3b784dbccf1c",
+  "subsystem_count": 21,
   "duplicate_authorities_detected": 0,
   "gates_evaluated": 10,
   "gates_passed": 10,
   "all_gates_passed": true,
-  "receipt_hash": "ad2a2f727c195bda5be6924df60b644fbd2b39e7c14f94a3586f39f8fc591963",
+  "receipt_hash": "075cc32737042318d8e7ca90acc4746a7d44fa3ca438db0935d8e5e8ac25407b",
   "subsystems": [
     {
       "subsystem_id": "sage_runtime",
@@ -30,6 +30,34 @@
       "authoritative_domain": "frontier_admission"
     },
     {
+      "subsystem_id": "frontier_intelligence_bridge",
+      "module_path": "sage/c2/frontier_intelligence_bridge.py",
+      "relationship": "CORE",
+      "description": "Frontier intelligence bridge and mission plan synthesis",
+      "authoritative_domain": null
+    },
+    {
+      "subsystem_id": "multi_frontier_dispatch",
+      "module_path": "sage/c2/multi_frontier_dispatch.py",
+      "relationship": "CORE",
+      "description": "Multi-frontier dispatcher for parallel flight execution",
+      "authoritative_domain": null
+    },
+    {
+      "subsystem_id": "chatgpt_c2_contract",
+      "module_path": "sage/c2/chatgpt_c2_contract.py",
+      "relationship": "CORE",
+      "description": "ChatGPT C2 governance contract and operational protocol",
+      "authoritative_domain": null
+    },
+    {
+      "subsystem_id": "sagi_metacognition",
+      "module_path": "sage/experimental/sagi/metacognition.py",
+      "relationship": "CORE",
+      "description": "SAGI metacognition, decision autopsy, and self-model",
+      "authoritative_domain": null
+    },
+    {
       "subsystem_id": "super_search_recon",
       "module_path": "sage/c2/frontier_scanner.py",
       "relationship": "SERVICE",
@@ -44,10 +72,31 @@
       "authoritative_domain": null
     },
     {
-      "subsystem_id": "supply_chain_attestation",
-      "module_path": "sage/c2/supply_chain_attestation.py",
+      "subsystem_id": "capability_graph",
+      "module_path": "sage/c2/capability_graph.py",
       "relationship": "SERVICE",
-      "description": "SBOM and SLSA v1.1 attestation fabric",
+      "description": "AST-driven capability graph discovery and expansion",
+      "authoritative_domain": null
+    },
+    {
+      "subsystem_id": "execution_cell_attestation",
+      "module_path": "sage/c2/execution_cell_contract.py",
+      "relationship": "SERVICE",
+      "description": "Execution cell contract and cryptographic attestation fabric",
+      "authoritative_domain": null
+    },
+    {
+      "subsystem_id": "chatgpt_immersion",
+      "module_path": "sage/c2/chatgpt_immersion.py",
+      "relationship": "PROJECTION",
+      "description": "ChatGPT C2 immersion response adapter and organism tag",
+      "authoritative_domain": null
+    },
+    {
+      "subsystem_id": "chatgpt_runtime",
+      "module_path": "sage/c2/chatgpt_runtime.py",
+      "relationship": "PROJECTION",
+      "description": "ChatGPT C2 runtime entry point and response builder",
       "authoritative_domain": null
     },
     {
@@ -72,6 +121,27 @@
       "authoritative_domain": null
     },
     {
+      "subsystem_id": "experiment_ledger",
+      "module_path": "sage/c2/experiment_ledger.py",
+      "relationship": "EVIDENCE_LEARNING",
+      "description": "Orthogonal experiment ledger and verification evidence store",
+      "authoritative_domain": null
+    },
+    {
+      "subsystem_id": "live_operation_receipt",
+      "module_path": "sage/c2/live_operation_receipt.py",
+      "relationship": "EVIDENCE_LEARNING",
+      "description": "Cryptographic live operation receipts and verification",
+      "authoritative_domain": null
+    },
+    {
+      "subsystem_id": "airspace_manager",
+      "module_path": "sage/experimental/airspace/manager.py",
+      "relationship": "EVIDENCE_LEARNING",
+      "description": "Airspace manager event ledger and state reconstruction",
+      "authoritative_domain": null
+    },
+    {
       "subsystem_id": "fleet_qualification_ledger",
       "module_path": "sage/experimental/airspace/fleet_qualification_ledger.py",
       "relationship": "EVIDENCE_LEARNING",
@@ -93,10 +163,11 @@
       "source_organ": "Mission Intake",
       "target_organ": "C2 Core",
       "passed": true,
-      "evidence_ref": "SHA256:fcf7d0c5:GATE-1",
+      "evidence_ref": "SHA256:fc768ee9:GATE-1",
       "details": {
         "status": "VERIFIED",
-        "contract": "SAGE_EXECUTABLE_MISSION_CONTRACT_SPEC_V1"
+        "contract": "SAGE_EXECUTABLE_MISSION_CONTRACT_SPEC_V1",
+        "symbol_found": "FrontierAdmissionEngine"
       }
     },
     {
@@ -105,10 +176,11 @@
       "source_organ": "C2 Core",
       "target_organ": "Super Search / Recon",
       "passed": true,
-      "evidence_ref": "SHA256:fcf7d0c5:GATE-2",
+      "evidence_ref": "SHA256:fc768ee9:GATE-2",
       "details": {
         "status": "VERIFIED",
-        "contract": "SAGE_DEEP_RECON_VELOCITY_POLICY"
+        "contract": "SAGE_DEEP_RECON_VELOCITY_POLICY",
+        "symbol_found": "scan_python_frontier"
       }
     },
     {
@@ -117,10 +189,11 @@
       "source_organ": "Super Search / Recon",
       "target_organ": "Frontier Planner",
       "passed": true,
-      "evidence_ref": "SHA256:fcf7d0c5:GATE-3",
+      "evidence_ref": "SHA256:fc768ee9:GATE-3",
       "details": {
         "status": "VERIFIED",
-        "bridge": "FrontierIntelligenceBridge"
+        "contract": "SAGE_FRONTIER_PLANNING_CONTRACT",
+        "symbol_found": "FrontierIntelligenceBridge"
       }
     },
     {
@@ -129,10 +202,11 @@
       "source_organ": "Frontier Planner",
       "target_organ": "Five Flights",
       "passed": true,
-      "evidence_ref": "SHA256:fcf7d0c5:GATE-4",
+      "evidence_ref": "SHA256:fc768ee9:GATE-4",
       "details": {
         "status": "VERIFIED",
-        "dispatcher": "MultiFrontierDispatcher"
+        "contract": "SAGE_FIVE_FLIGHT_DISPATCH_CONTRACT",
+        "symbol_found": "MultiFrontierDispatcher"
       }
     },
     {
@@ -141,10 +215,11 @@
       "source_organ": "Five Flights",
       "target_organ": "Evidence Capture",
       "passed": true,
-      "evidence_ref": "SHA256:fcf7d0c5:GATE-5",
+      "evidence_ref": "SHA256:fc768ee9:GATE-5",
       "details": {
         "status": "VERIFIED",
-        "receipt_schema": "LiveOperationReceipt"
+        "contract": "SAGE_EVIDENCE_RECEIPT_SPEC",
+        "symbol_found": "LiveOperationReceipt"
       }
     },
     {
@@ -153,10 +228,11 @@
       "source_organ": "Evidence Capture",
       "target_organ": "Independent Verification",
       "passed": true,
-      "evidence_ref": "SHA256:fcf7d0c5:GATE-6",
+      "evidence_ref": "SHA256:fc768ee9:GATE-6",
       "details": {
         "status": "VERIFIED",
-        "synthesizer": "C2ReconvergenceSynthesizer"
+        "contract": "SAGE_INDEPENDENT_VERIFICATION_CONTRACT",
+        "symbol_found": "C2DirectiveDecision"
       }
     },
     {
@@ -165,10 +241,11 @@
       "source_organ": "Independent Verification",
       "target_organ": "Observatory HUD",
       "passed": true,
-      "evidence_ref": "SHA256:fcf7d0c5:GATE-7",
+      "evidence_ref": "SHA256:fc768ee9:GATE-7",
       "details": {
         "status": "VERIFIED",
-        "hud": "CustomerAcceptanceSurface"
+        "contract": "SAGE_OBSERVATORY_SURFACE_CONTRACT",
+        "symbol_found": "app"
       }
     },
     {
@@ -177,10 +254,11 @@
       "source_organ": "Observatory HUD",
       "target_organ": "Economic Measurement",
       "passed": true,
-      "evidence_ref": "SHA256:fcf7d0c5:GATE-8",
+      "evidence_ref": "SHA256:fc768ee9:GATE-8",
       "details": {
         "status": "VERIFIED",
-        "workbench": "CustomerWorkbench"
+        "contract": "SAGE_WORKBENCH_MEASUREMENT_CONTRACT",
+        "symbol_found": "CustomerWorkbench"
       }
     },
     {
@@ -189,10 +267,11 @@
       "source_organ": "Economic Measurement",
       "target_organ": "Capability Warehouse",
       "passed": true,
-      "evidence_ref": "SHA256:fcf7d0c5:GATE-9",
+      "evidence_ref": "SHA256:fc768ee9:GATE-9",
       "details": {
         "status": "VERIFIED",
-        "engine": "CapabilityWarehouseEngine"
+        "contract": "SAGE_CAPABILITY_WAREHOUSE_CONTRACT",
+        "symbol_found": "CapabilityWarehouseEngine"
       }
     },
     {
@@ -201,10 +280,11 @@
       "source_organ": "Capability Warehouse",
       "target_organ": "Next Mission Intake",
       "passed": true,
-      "evidence_ref": "SHA256:fcf7d0c5:GATE-10",
+      "evidence_ref": "SHA256:fc768ee9:GATE-10",
       "details": {
         "status": "VERIFIED",
-        "rehydration": "RuntimeCognitiveBridge"
+        "contract": "SAGE_COGNITIVE_REHYDRATION_CONTRACT",
+        "symbol_found": "MetacognitiveEngine"
       }
     }
   ]

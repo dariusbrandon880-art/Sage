@@ -131,7 +131,7 @@ def main() -> int:
                 flight_id=f"F{index}",
                 frontier_name=candidate.description,
                 target_path=target_path,
-                collision_zone=target_path.rsplit("/", 1)[0].replace("/", "."),
+                collision_zone=target_path.removesuffix(".py").replace("/", "."),
                 evidence_ref=f"adaptive:{candidate.candidate_id}",
                 pr_or_change="adaptive-frontier-selection",
             )
