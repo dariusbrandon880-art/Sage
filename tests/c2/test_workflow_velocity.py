@@ -51,10 +51,9 @@ def _flight_payloads():
             "flight_id": f"F{i}",
             "target": f"Frontier Path {i}",
             "classification": "ACTIVE",
-            "execution_result": "PASS",
-            "tests_passed": 10 + i,
             "target_files": [f"sage/module_{i}.py"],
             "target_namespaces": [f"sage.ns_{i}"],
+            "executor": (lambda i=i: {"execution_result": "PASS", "tests_passed": 10 + i}),
         }
         for i in range(1, 6)
     ]
@@ -107,6 +106,33 @@ def test_velocity_wave_has_real_parallel_overlap(velocity_engine, valid_git_head
 def test_invalid_sha_rejection(velocity_engine):
     with pytest.raises(ValueError, match="Invalid exact git HEAD commit SHA"):
         velocity_engine.execute_velocity_wave("invalid_sha_wave", "jules-session-1", [{"flight_id": "F1", "target_files": [], "target_namespaces": []}], "shortsha123")
+
+
+def test_missing_executor_fails_closed_without_synthetic_pass(velocity_engine, valid_git_head):
+    payloads = [
+        {
+            "flight_id": "F1",
+            "target": "Unexecuted Flight",
+            "classification": "ACTIVE",
+            "target_files": ["sage/unexecuted.py"],
+            "target_namespaces": ["sage.unexecuted"],
+        },
+        *[
+            {
+                "flight_id": f"F{i}",
+                "target": f"Executed Flight {i}",
+                "classification": "ACTIVE",
+                "target_files": [f"sage/exec_{i}.py"],
+                "target_namespaces": [f"sage.exec_{i}"],
+                "executor": lambda: {"execution_result": "PASS", "tests_passed": 10},
+            }
+            for i in range(2, 6)
+        ],
+    ]
+    receipt = velocity_engine.execute_velocity_wave("no_executor_wave_001", "jules-session-1", payloads, valid_git_head)
+    assert receipt.successful_flights < 5
+    assert receipt.rolls_royce_quality_passed is False
+    assert receipt.reconvergence_verdict == "FAIL_CLOSED"
 
 
 def test_lock_collision_fails_closed(velocity_engine, valid_git_head):
