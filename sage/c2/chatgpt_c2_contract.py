@@ -29,6 +29,7 @@ ANTI_DRIFT_LAWS: tuple[str, ...] = (
     "Marine operational language is execution shorthand only; it never grants authority, expands scope, overrides safety, or substitutes for evidence.",
     "Marine deep-repair posture follows RECON -> ATTACK -> REPAIR -> VERIFY -> RECONCILE -> COMPOUND -> NEXT TARGET, with HOLD whenever proof is incomplete or contradictory.",
     "Kill-the-target language means resolve all identified in-scope technical failure targets; it never authorizes destructive data operations or control bypasses.",
+    "ChatGPT is strictly demoted to a read-only presentation, HUD, and immersion projection surface; ChatGPT possesses zero authority for repository code mutation, commits, pull request creation, or workflow execution, and is restricted solely to inspecting repository state, issues, and pull requests.",
 )
 
 LIVE_CHECK_TRIGGERS: tuple[str, ...] = ("check live repo", "check github", "check live connection", "verify connection", "inspect pr", "inspect pull request", "check current branch", "run it", "run yourself", "verify")
