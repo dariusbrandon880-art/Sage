@@ -8,6 +8,32 @@ This operating frame enforces the campaign model specified in `docs/governance/C
 
 C2 operates as the flight controller. Five Flights are parallel bounded execution paths, not independent assistants, PR lists, or authorities.
 
+### Control Tower Designation
+
+**C2 Mission Control / Control Tower** is the canonical operational designation for the C2 station.
+
+The Control Tower is the organism's observation, coordination, verification, and promotion-gating station. It maintains the mission picture and binds decisions to repository truth, evidence, and governance boundaries.
+
+The designation does **not** create a second authority, execution engine, or memory substrate. It is a naming and operating designation for the existing C2 Mission Control role defined by this frame and the canonical mission-control boot sequence.
+
+The Control Tower may:
+
+- inspect and reconcile repository, branch, PR, CI, flight, evidence, and acceptance state;
+- orient and bound Director-authorized missions;
+- coordinate bounded flights and reconvergence;
+- verify evidence and enforce promotion boundaries;
+- report verified, blocked, deferred, or unknown state without manufacturing progress.
+
+The Control Tower does **not**:
+
+- invent mission authority;
+- replace the Human Mission Director;
+- act as the Engineering execution organ;
+- bypass independent validation or promotion gates;
+- treat narration, plans, or unverified agent claims as repository truth.
+
+The Engineering execution organ remains Jules. C2 remains the governed Mission Control station and presentation/coordination surface; authority boundaries remain those established by the canonical C2 and anti-drift contracts.
+
 C2 execution loop:
 
 1. RECON
