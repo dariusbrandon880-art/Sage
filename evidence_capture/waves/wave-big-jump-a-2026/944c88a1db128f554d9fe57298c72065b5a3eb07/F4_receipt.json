@@ -1,0 +1,10 @@
+{
+  "blocker": null,
+  "executed_head": "944c88a1db128f554d9fe57298c72065b5a3eb07",
+  "flight_id": "F4",
+  "frontier_name": "Airspace Points & XP Economy",
+  "status": "PASS",
+  "target_path": "sage/experimental/airspace/points_economy.py",
+  "timestamp": 1789148546.050791,
+  "wave_id": "wave-big-jump-a-2026"
+}
