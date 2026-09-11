@@ -1,9 +1,9 @@
 {
-  "commit_sha": "ed7c57745407fde446a03c7a3f960beedcdf5719",
+  "commit_sha": "1b5ec2cfe54f1937e2a599a8b276f067c092a081",
   "intake_submission": {
     "accepted": true,
     "status": "ACCEPTED",
-    "mission_id": "msn-intake-1607369cf7ef3eb1",
+    "mission_id": "msn-intake-5a235161bb87e935",
     "current_state": "MISSION_PROPOSED",
     "queue_position": 0,
     "authorized": false,
@@ -11,7 +11,7 @@
   },
   "packages": [
     {
-      "package_id": "auth_pkg_5f44fd9197ce",
+      "package_id": "auth_pkg_d18c5335a60b",
       "candidate_id": "cand_consequent_adaptive_01",
       "risk_surface": {
         "candidate_id": "cand_consequent_adaptive_01",
@@ -28,11 +28,11 @@
       "is_authorized": true,
       "authorization_status": "AUTHORIZED_BY_C2",
       "authorization_token": "auth_token_c2_adaptive_cand_consequent_adaptive_01",
-      "package_hash": "0042d781844483a412340a2484b8793df66cfe623f2222488634882b173ff119",
-      "commit_sha": "ed7c57745407fde446a03c7a3f960beedcdf5719"
+      "package_hash": "54366f416589230617bc17ea378a6f582d07b1c7461e2e744db69559231d2557",
+      "commit_sha": "1b5ec2cfe54f1937e2a599a8b276f067c092a081"
     },
     {
-      "package_id": "auth_pkg_b0b28c1c6d09",
+      "package_id": "auth_pkg_0b2b384b6753",
       "candidate_id": "cand_info_gain_adaptive_02",
       "risk_surface": {
         "candidate_id": "cand_info_gain_adaptive_02",
@@ -49,11 +49,11 @@
       "is_authorized": true,
       "authorization_status": "AUTHORIZED_BY_C2",
       "authorization_token": "auth_token_c2_adaptive_cand_info_gain_adaptive_02",
-      "package_hash": "6af574a769e81ccb207585865011d5f5d47bdae8bc43101b08415dab7a73f39f",
-      "commit_sha": "ed7c57745407fde446a03c7a3f960beedcdf5719"
+      "package_hash": "688ba41685d332995aee74120370f2c801c82f347d2f51286d1dbaf94df07147",
+      "commit_sha": "1b5ec2cfe54f1937e2a599a8b276f067c092a081"
     },
     {
-      "package_id": "auth_pkg_7d4e90272f95",
+      "package_id": "auth_pkg_3919fcc03508",
       "candidate_id": "cand_falsification_adaptive_03",
       "risk_surface": {
         "candidate_id": "cand_falsification_adaptive_03",
@@ -70,11 +70,11 @@
       "is_authorized": true,
       "authorization_status": "AUTHORIZED_BY_C2",
       "authorization_token": "auth_token_c2_adaptive_cand_falsification_adaptive_03",
-      "package_hash": "0c6e03c53cb83811863a07c329be5168fe13fe5fc9b6734db2a928c86b729567",
-      "commit_sha": "ed7c57745407fde446a03c7a3f960beedcdf5719"
+      "package_hash": "94bac0c901cc5f5517bf8a6da5f93d7f2341334ab6939cdd64e5c22f2b7eed27",
+      "commit_sha": "1b5ec2cfe54f1937e2a599a8b276f067c092a081"
     },
     {
-      "package_id": "auth_pkg_8faf67d8a59b",
+      "package_id": "auth_pkg_4a9fee8782c2",
       "candidate_id": "cand_recovery_adaptive_04",
       "risk_surface": {
         "candidate_id": "cand_recovery_adaptive_04",
@@ -91,11 +91,11 @@
       "is_authorized": true,
       "authorization_status": "AUTHORIZED_BY_C2",
       "authorization_token": "auth_token_c2_adaptive_cand_recovery_adaptive_04",
-      "package_hash": "1695ffb54341373b304c323e8a8d50130ec7da20de77892af773c1ea3c5b792a",
-      "commit_sha": "ed7c57745407fde446a03c7a3f960beedcdf5719"
+      "package_hash": "3eeccd80c8c7fd4cef3fa09e4c5439231d6954f34ad1fbbfa05b272e17ac997a",
+      "commit_sha": "1b5ec2cfe54f1937e2a599a8b276f067c092a081"
     },
     {
-      "package_id": "auth_pkg_34b0723c5a40",
+      "package_id": "auth_pkg_3e1d62298e81",
       "candidate_id": "cand_transfer_adaptive_05",
       "risk_surface": {
         "candidate_id": "cand_transfer_adaptive_05",
@@ -112,8 +112,8 @@
       "is_authorized": true,
       "authorization_status": "AUTHORIZED_BY_C2",
       "authorization_token": "auth_token_c2_adaptive_cand_transfer_adaptive_05",
-      "package_hash": "47789493dbf5a256ee19c74ea200061c271555c0a9e64f85c42c4994853500c7",
-      "commit_sha": "ed7c57745407fde446a03c7a3f960beedcdf5719"
+      "package_hash": "c2637ccefbbba5e42abe0ff5c4c1198290fb3a48dd60c9e43b8e416cb1ec549c",
+      "commit_sha": "1b5ec2cfe54f1937e2a599a8b276f067c092a081"
     }
   ],
   "proposal_selection_digest": "ec5df6f50a7394531154a08df7a605e342b91e82e88642da5cb100908de8838f",

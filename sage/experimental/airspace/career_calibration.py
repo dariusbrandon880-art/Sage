@@ -36,6 +36,8 @@ class CalibrationEvent:
     impact: int = 1
     reuse: int = 1
     volume: int = 1
+    momentum: float = 1.0
+    breakthrough_bonus: int | None = None
 
     def __post_init__(self) -> None:
         if self.volume <= 0:
@@ -164,6 +166,8 @@ def replay_events(events: Iterable[CalibrationEvent]) -> tuple[ReplayStep, ...]:
                 verification_quality=event.verification_quality,
                 impact=event.impact,
                 reuse=event.reuse,
+                momentum=event.momentum,
+                breakthrough_bonus=event.breakthrough_bonus,
             )
             cumulative_points += award.points
             cumulative_xp = cumulative_points // PointsXPEconomy.POINTS_PER_XP
@@ -212,13 +216,13 @@ def profile_events(profile: Profile) -> tuple[CalibrationEvent, ...]:
     if profile == Profile.BREAKTHROUGH:
         return (
             CalibrationEvent("breakthrough-build", PointEventType.BUILD, difficulty=3, verification_quality=4, impact=4, reuse=3, volume=10),
-            CalibrationEvent("breakthrough", PointEventType.BREAKTHROUGH, difficulty=4, verification_quality=5, impact=5, reuse=4, volume=2),
-            CalibrationEvent("breakthrough-capture", PointEventType.CAPABILITY_CAPTURE, difficulty=4, verification_quality=5, impact=5, reuse=5, volume=1),
+            CalibrationEvent("breakthrough", PointEventType.BREAKTHROUGH, difficulty=4, verification_quality=5, impact=5, reuse=4, volume=3),
+            CalibrationEvent("breakthrough-capture", PointEventType.CAPABILITY_CAPTURE, difficulty=5, verification_quality=5, impact=5, reuse=5, volume=2),
         )
     if profile == Profile.ELITE:
         return (
-            CalibrationEvent("elite-routine", PointEventType.BUILD, **common, volume=15),
-            CalibrationEvent("elite-boss", PointEventType.BOSS_CAPTURE, difficulty=5, verification_quality=5, impact=5, reuse=5, volume=1),
+            CalibrationEvent("elite-routine", PointEventType.BUILD, difficulty=3, verification_quality=4, impact=3, reuse=3, volume=15),
+            CalibrationEvent("elite-boss", PointEventType.BOSS_CAPTURE, difficulty=5, verification_quality=5, impact=5, reuse=5, volume=2),
             CalibrationEvent("elite-recovery", PointEventType.RECOVERY, **common, volume=3),
         )
     if profile == Profile.COLLABORATIVE:
@@ -228,9 +232,9 @@ def profile_events(profile: Profile) -> tuple[CalibrationEvent, ...]:
             CalibrationEvent("collab-reuse", PointEventType.REUSE, difficulty=3, verification_quality=5, impact=4, reuse=5, volume=4),
         )
     return (
-        CalibrationEvent("recovery-failure", PointEventType.RECOVERY, difficulty=4, verification_quality=4, impact=3, reuse=2, volume=12),
+        CalibrationEvent("recovery-failure", PointEventType.RECOVERY, difficulty=3, verification_quality=4, impact=3, reuse=2, volume=10),
         CalibrationEvent("recovery-repair", PointEventType.REPAIR, **common, volume=10),
-        CalibrationEvent("recovery-verification", PointEventType.VERIFICATION, **common, volume=10),
+        CalibrationEvent("recovery-verification", PointEventType.VERIFICATION, **common, volume=15),
     )
 
 

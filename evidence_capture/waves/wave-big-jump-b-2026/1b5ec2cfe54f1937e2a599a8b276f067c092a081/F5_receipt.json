@@ -1,0 +1,10 @@
+{
+  "blocker": null,
+  "executed_head": "1b5ec2cfe54f1937e2a599a8b276f067c092a081",
+  "flight_id": "F5",
+  "frontier_name": "Gemini Recon Probe",
+  "status": "PASS",
+  "target_path": "sage/c2/gemini_recon_probe.py",
+  "timestamp": 1789104594.8227172,
+  "wave_id": "wave-big-jump-b-2026"
+}

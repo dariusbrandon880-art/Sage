@@ -1,0 +1,10 @@
+{
+  "blocker": null,
+  "executed_head": "1b5ec2cfe54f1937e2a599a8b276f067c092a081",
+  "flight_id": "F2",
+  "frontier_name": "Governed Continuity Outcome Bridge",
+  "status": "PASS",
+  "target_path": "sage/c2/governed_continuity_outcome_bridge.py",
+  "timestamp": 1789104596.5061023,
+  "wave_id": "wave-big-jump-a-2026"
+}

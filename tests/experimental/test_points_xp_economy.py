@@ -31,11 +31,13 @@ def test_verified_points_use_bounded_average_multiplier():
         impact=5,
         reuse=5,
     )
-    assert award.points == 125
+    # Base 25 * Quality Mult (0.75 + 0.50*(5/5)=1.25) = 31.25 -> round = 31
+    assert award.points == 31
 
 
 def test_points_mint_xp_at_ten_to_one_and_persist(tmp_path: Path):
     m = manager(tmp_path)
+    # dim_avg = (4+4+1+1)/4 = 2.5 -> Quality mult = 0.75 + 0.50*(2.5/5) = 1.0 -> 10 * 1.0 = 10 pts
     result = PointsXPEconomy.award_verified_event(
         m,
         actor="Mission Control",
@@ -52,17 +54,18 @@ def test_points_mint_xp_at_ten_to_one_and_persist(tmp_path: Path):
         impact=1,
         reuse=1,
     )
-    assert result.award.points == 25
-    assert result.cumulative_verified_points == 25
-    assert result.cumulative_career_xp == 2
-    assert result.xp_minted == 2
+    assert result.award.points == 10
+    assert result.cumulative_verified_points == 10
+    assert result.cumulative_career_xp == 1
+    assert result.xp_minted == 1
 
     rebuilt = m.reconstruct_airspace_state()
-    assert rebuilt.game_progression.get_total_xp_for_station(StationID.MISSION_CONTROL) == 2
+    assert rebuilt.game_progression.get_total_xp_for_station(StationID.MISSION_CONTROL) == 1
 
 
 def test_repeated_verified_event_does_not_double_award(tmp_path: Path):
     m = manager(tmp_path)
+    # dim_avg = (1+5+1+1)/4 = 2.0 -> Quality mult = 0.75 + 0.50*(2/5) = 0.95 -> 10 * 0.95 = 9.5 -> round 10 pts
     kwargs = dict(
         manager=m,
         actor="Mission Control",
@@ -81,8 +84,8 @@ def test_repeated_verified_event_does_not_double_award(tmp_path: Path):
     )
     first = PointsXPEconomy.award_verified_event(**kwargs)
     second = PointsXPEconomy.award_verified_event(**kwargs)
-    assert first.cumulative_verified_points == second.cumulative_verified_points == 20
-    assert first.xp_minted == 2
+    assert first.cumulative_verified_points == second.cumulative_verified_points == 10
+    assert first.xp_minted == 1
     assert second.xp_minted == 0
     assert len([e for e in m._load_raw_events() if e["event_type"] == "POINTS_AWARDED"]) == 1
 
@@ -119,6 +122,7 @@ def test_evidence_is_required_for_points(tmp_path: Path):
 
 def test_points_can_accumulate_across_events_and_retain_remainder(tmp_path: Path):
     m = manager(tmp_path)
+    # RECON default diff/ver/imp/reuse=1 -> dim_avg=1 -> Quality mult = 0.75 + 0.5*(0.2) = 0.85 -> 5 * 0.85 = 4.25 -> 4 pts each. 3 * 4 = 12 pts
     for idx in range(3):
         PointsXPEconomy.award_verified_event(
             m,
@@ -133,5 +137,32 @@ def test_points_can_accumulate_across_events_and_retain_remainder(tmp_path: Path
         )
     raw = m._load_raw_events()
     points = sum(e["payload"]["verified_points"] for e in raw if e["event_type"] == "POINTS_AWARDED")
-    assert points == 15
+    assert points == 12
     assert m.reconstruct_airspace_state().game_progression.get_total_xp_for_station(StationID.MISSION_CONTROL) == 1
+
+
+def test_momentum_and_breakthrough_bonus():
+    # Base 50 * min(3.0, (0.75 + 0.50*(5/5)) * 1.2) + 25 = 50 * 1.5 + 25 = 100
+    award = PointsXPEconomy.score_verified_event(
+        event_id="evt-bt",
+        station_id=StationID.MISSION_CONTROL,
+        event_type=PointEventType.BREAKTHROUGH,
+        verified_event_ref="ref:bt",
+        evidence_refs=("ev:bt",),
+        difficulty=5,
+        verification_quality=5,
+        impact=5,
+        reuse=5,
+        momentum=1.2,
+    )
+    assert award.points == 100
+
+    with pytest.raises(ValueError, match="momentum must be between 1.0 and 1.25"):
+        PointsXPEconomy.score_verified_event(
+            event_id="evt-invalid",
+            station_id=StationID.MISSION_CONTROL,
+            event_type=PointEventType.RECON,
+            verified_event_ref="ref:inv",
+            evidence_refs=("ev:inv",),
+            momentum=1.5,
+        )
