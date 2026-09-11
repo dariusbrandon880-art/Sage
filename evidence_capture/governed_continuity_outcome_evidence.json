@@ -1,8 +1,8 @@
 {
-  "receipt_id": "gco_rcpt_81f1d4072cce",
+  "receipt_id": "gco_rcpt_5f1470ab437e",
   "frontier_chain": "Governed continuity -> measurable outcome improvement -> external benchmark evidence",
   "continuity_status": "VERIFIED_INTACT",
-  "continuity_checkpoint_hash": "d529dcb42806aa011188616e5e8b215e500b9beee747dd3b9f4f6035ec2700da",
+  "continuity_checkpoint_hash": "3dfb1d340aec8980abca10104a8b53d2b7987630b3cc7b8b4b375a07e8855053",
   "outcome_verdict": "PASS",
   "relative_success_gain": 1.0,
   "recovery_rate": 1.0,
@@ -11,7 +11,7 @@
   "benchmark_delta_score": 0.29999999999999993,
   "overall_frontier_verdict": "PASS",
   "fail_closed_reasons": [],
-  "git_head_sha": "a60da445dec0e309df2ccb1d932b505cd90c6bc5",
-  "timestamp_utc": "2026-09-11T02:28:34Z",
-  "receipt_hash": "a13bf00cdaba5ff27af1fcef061d3e93299cda5933842811258717e0fb20086a"
+  "git_head_sha": "256e0cb794f47b7b9ed08589b2d7bcdfd40194c5",
+  "timestamp_utc": "2026-09-11T03:07:51Z",
+  "receipt_hash": "ea8099592f581a6cfcb65db31de77aad30fbabda947a654b35c3052cb21ae179"
 }
