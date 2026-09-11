@@ -1,0 +1,10 @@
+{
+  "blocker": null,
+  "executed_head": "944c88a1db128f554d9fe57298c72065b5a3eb07",
+  "flight_id": "F2",
+  "frontier_name": "Information gain: intake lineage tracking",
+  "status": "PASS",
+  "target_path": "sage/mission_intake.py",
+  "timestamp": 1789148404.9796333,
+  "wave_id": "multi-frontier-dispatch"
+}

@@ -1,0 +1,10 @@
+{
+  "blocker": null,
+  "executed_head": "944c88a1db128f554d9fe57298c72065b5a3eb07",
+  "flight_id": "F5",
+  "frontier_name": "Falsification: risk surface error boundary testing",
+  "status": "PASS",
+  "target_path": "tests/test_authorization_package_synthesis.py",
+  "timestamp": 1789148404.9829857,
+  "wave_id": "multi-frontier-dispatch"
+}

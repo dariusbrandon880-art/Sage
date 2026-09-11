@@ -1,14 +1,14 @@
 {
   "wave_id": "wave_organism_growth_001",
-  "exact_git_head": "1b5ec2cfe54f1937e2a599a8b276f067c092a081",
+  "exact_git_head": "944c88a1db128f554d9fe57298c72065b5a3eb07",
   "velocity_receipt": {
-    "receipt_id": "rec_6a04f107880c",
+    "receipt_id": "rec_823e99e88e31",
     "wave_id": "wave_organism_growth_001",
     "active_sessions": [
       "session_organism_growth_primary",
       "c2-control-tower-primary"
     ],
-    "exact_git_head": "1b5ec2cfe54f1937e2a599a8b276f067c092a081",
+    "exact_git_head": "944c88a1db128f554d9fe57298c72065b5a3eb07",
     "total_flights": 5,
     "successful_flights": 5,
     "advancement_matrix_20_cells": {
@@ -38,19 +38,19 @@
     "concurrency_observed": true,
     "max_concurrent_flights": 5,
     "organism_growth_receipt": {
-      "receipt_id": "org_growth_e5043e140a75",
-      "commit_sha": "1b5ec2cfe54f1937e2a599a8b276f067c092a081",
+      "receipt_id": "org_growth_5b40ea2c2cfa",
+      "commit_sha": "944c88a1db128f554d9fe57298c72065b5a3eb07",
       "velocity_score": 1.0,
       "prediction_accuracy_score": 1.0,
       "wave_completion_rate": 1.0,
       "anti_drift_compliance_score": 1.0,
       "compound_growth_index": 1.0,
       "growth_verdict": "ACCELERATING",
-      "provenance_hash": "e5043e140a75cb86a4da6744078f0c51d604a0c274e201da9a90c2784485d118",
-      "timestamp": "2026-09-11T05:30:55.280427+00:00"
+      "provenance_hash": "5b40ea2c2cfa7e6c5404b77457eb40566df0c3004bf4116037ad9fcd97cc0e18",
+      "timestamp": "2026-09-11T17:40:06.928883+00:00"
     },
-    "timestamp": 1789104655.2805157,
-    "receipt_hash": "c997b9a5501c3a052ff1d1e6680b4badef6177b41d88dab2c54babbd5fc4c213"
+    "timestamp": 1789148406.9290676,
+    "receipt_hash": "20bb8423a84f8e6a04ad41df07c16e5bd95c976f066e3369b399acf832de4161"
   },
   "prediction_growth_delta": {
     "historical_brier": 0.25,
@@ -60,18 +60,18 @@
     "calibration_score": 0.98
   },
   "organism_growth_receipt": {
-    "receipt_id": "org_growth_c63d9cd96e3e",
-    "commit_sha": "1b5ec2cfe54f1937e2a599a8b276f067c092a081",
+    "receipt_id": "org_growth_42399f7028ca",
+    "commit_sha": "944c88a1db128f554d9fe57298c72065b5a3eb07",
     "velocity_score": 1.0,
     "prediction_accuracy_score": 0.855,
     "wave_completion_rate": 1.0,
     "anti_drift_compliance_score": 1.0,
     "compound_growth_index": 0.9637,
     "growth_verdict": "ACCELERATING",
-    "provenance_hash": "c63d9cd96e3ea24fb945827da5a38c5f771331b2853bd96de023de41b6ac1b0a",
-    "timestamp": "2026-09-11T05:30:55.280728+00:00"
+    "provenance_hash": "42399f7028ca5a449a376947c1aa32e92a778ebf41b5e554b6b0dd985d6c0262",
+    "timestamp": "2026-09-11T17:40:06.929361+00:00"
   },
   "reconvergence_verdict": "PASS",
   "status": "VALIDATED",
-  "timestamp": 1789104655.280764
+  "timestamp": 1789148406.929404
 }
