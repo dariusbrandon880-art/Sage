@@ -119,7 +119,10 @@ class FanDuelPlayerPropAnalyzer:
             if usage_rate is not None:
                 adjustment += (usage_rate - 0.22) * 0.30
                 rationales.append(f"Usage rate {usage_rate:.0%}")
-        elif any(x in category for x in ("shots", "sog", "saves", "goals", "passes")):
+        elif any(
+            x in category
+            for x in ("shots", "sog", "saves", "goals", "passes", "anytime_goalscorer")
+        ):
             if shot_volume_expectation is not None:
                 adjustment += (shot_volume_expectation - 2.5) * 0.04
                 rationales.append(f"Shot/stat volume expectancy {shot_volume_expectation:.1f}")
