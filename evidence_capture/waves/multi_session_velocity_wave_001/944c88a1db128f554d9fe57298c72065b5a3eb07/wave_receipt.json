@@ -1,0 +1,51 @@
+{
+  "active_sessions": [
+    "c2-control-tower-primary",
+    "jules-execution-session-01"
+  ],
+  "advancement_matrix_20_cells": {
+    "P1-S1": true,
+    "P1-S2": true,
+    "P1-S3": true,
+    "P1-S4": true,
+    "P2-S1": true,
+    "P2-S2": true,
+    "P2-S3": true,
+    "P2-S4": true,
+    "P3-S1": true,
+    "P3-S2": true,
+    "P3-S3": true,
+    "P3-S4": true,
+    "P4-S1": true,
+    "P4-S2": true,
+    "P4-S3": true,
+    "P4-S4": true,
+    "P5-S1": true,
+    "P5-S2": true,
+    "P5-S3": true,
+    "P5-S4": true
+  },
+  "concurrency_observed": false,
+  "exact_git_head": "944c88a1db128f554d9fe57298c72065b5a3eb07",
+  "max_concurrent_flights": 1,
+  "organism_growth_receipt": {
+    "anti_drift_compliance_score": 1.0,
+    "commit_sha": "944c88a1db128f554d9fe57298c72065b5a3eb07",
+    "compound_growth_index": 1.0,
+    "growth_verdict": "ACCELERATING",
+    "prediction_accuracy_score": 1.0,
+    "provenance_hash": "5b40ea2c2cfa7e6c5404b77457eb40566df0c3004bf4116037ad9fcd97cc0e18",
+    "receipt_id": "org_growth_5b40ea2c2cfa",
+    "timestamp": "2026-09-11T18:10:06.743645+00:00",
+    "velocity_score": 1.0,
+    "wave_completion_rate": 1.0
+  },
+  "receipt_hash": "4be2402010504fd4e5c630f58585498bc614a647bd8f9d2503ea787c465f6a08",
+  "receipt_id": "rec_0196a78c3a89",
+  "reconvergence_verdict": "PASS",
+  "rolls_royce_quality_passed": true,
+  "successful_flights": 5,
+  "timestamp": 1789150206.7437384,
+  "total_flights": 5,
+  "wave_id": "multi_session_velocity_wave_001"
+}

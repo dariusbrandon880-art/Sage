@@ -1,0 +1,85 @@
+{
+  "all_stages_completed": true,
+  "evidence_hashes": {
+    "F1": "00858a26ebb7e43fb81114b74df53d1d3fa7eff48509a543e91c046b4cf2e1ea",
+    "F2": "05b93193970f94d591af5435c278d4d906c9f8afdd14f43e8e05a63abbce5193",
+    "F3": "26ea8d5a4606c375026893a29da90fae05bfdd8e682bfc83e1774afb5eb401fb",
+    "F4": "1e895682e79b570f04e51a563cb3afb952b80bbf50aa9c73492a41d0a16d9147",
+    "F5": "fff446bd03de400fbe3fc521cd2b893d4b16e4b3f2406fc65e80e5cb6977d4cc"
+  },
+  "exact_git_head": "944c88a1db128f554d9fe57298c72065b5a3eb07",
+  "flight_receipts": [
+    {
+      "flight_id": "F1",
+      "hash": "00858a26ebb7e43fb81114b74df53d1d3fa7eff48509a543e91c046b4cf2e1ea",
+      "passed": true,
+      "target": "SAGI Cognition Nexus & Capability Graph Discovery"
+    },
+    {
+      "flight_id": "F2",
+      "hash": "05b93193970f94d591af5435c278d4d906c9f8afdd14f43e8e05a63abbce5193",
+      "passed": true,
+      "target": "Master Archive & Governance Intelligence Bridge"
+    },
+    {
+      "flight_id": "F3",
+      "hash": "26ea8d5a4606c375026893a29da90fae05bfdd8e682bfc83e1774afb5eb401fb",
+      "passed": true,
+      "target": "C2 Executive Mission Control & Reconvergence Synthesizer"
+    },
+    {
+      "flight_id": "F4",
+      "hash": "1e895682e79b570f04e51a563cb3afb952b80bbf50aa9c73492a41d0a16d9147",
+      "passed": true,
+      "target": "Validation Engine & Whole-Organism Jigsaw Verification"
+    },
+    {
+      "flight_id": "F5",
+      "hash": "fff446bd03de400fbe3fc521cd2b893d4b16e4b3f2406fc65e80e5cb6977d4cc",
+      "passed": true,
+      "target": "Five Flights Execution, Learning Feedback & Immersion Projection"
+    }
+  ],
+  "frontier_plan": [
+    {
+      "flight_id": "F1",
+      "target": "SAGI Cognition Nexus & Capability Graph Discovery"
+    },
+    {
+      "flight_id": "F2",
+      "target": "Master Archive & Governance Intelligence Bridge"
+    },
+    {
+      "flight_id": "F3",
+      "target": "C2 Executive Mission Control & Reconvergence Synthesizer"
+    },
+    {
+      "flight_id": "F4",
+      "target": "Validation Engine & Whole-Organism Jigsaw Verification"
+    },
+    {
+      "flight_id": "F5",
+      "target": "Five Flights Execution, Learning Feedback & Immersion Projection"
+    }
+  ],
+  "growth_verdict": "ACCELERATING",
+  "jigsaw_gates_passed": 10,
+  "jigsaw_total_gates": 10,
+  "learning_signal": {
+    "autopsy_classification": "WIN_GOOD_DECISION",
+    "calibration_error": 0.050000000000000044,
+    "outcome_confidence": 1.0,
+    "regret_score": 0.0
+  },
+  "metacognitive_delta": {
+    "calibration_error": 0.050000000000000044,
+    "confidence": 1.0
+  },
+  "mission_id": "mission_whole_organism_convergence_2026",
+  "next_frontier": "FRONTIER_NEXT_F7AE9062",
+  "outcome_quality_score": 1.0,
+  "receipt_hash": "588e38fb95327f48a4fd28140b149da529c34831222cd52d7544653de64beb11",
+  "receipt_id": "wo_rec_13bb9b7f3735",
+  "session_id": "jules_organism_session_001",
+  "timestamp": 1789151654.3490796
+}
