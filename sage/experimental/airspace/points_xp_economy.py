@@ -224,6 +224,8 @@ class PointsXPEconomy:
         verification_quality: int = 1,
         impact: int = 1,
         reuse: int = 1,
+        momentum: float = 1.0,
+        breakthrough_bonus: Optional[int] = None,
     ) -> PointsXPResult:
         """Persist one verified point event and mint only newly earned whole XP."""
         existing = cls._find_existing_points_event(manager, verified_event_ref)

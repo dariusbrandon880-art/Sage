@@ -100,6 +100,7 @@ def test_duplicate_boss_outcome_is_replay_safe(tmp_path):
 def test_organism_projection_joins_points_xp_and_boss_from_one_ledger(tmp_path):
     manager = AirspaceManager(tmp_path / "ledger.json")
     station = StationID.MISSION_CONTROL
+    # Base 25 * Quality Mult (0.75 + 0.50*(2/5) = 0.95) = 23.75 -> round = 24
     PointsXPEconomy.award_verified_event(
         manager,
         actor="C2",
@@ -130,10 +131,10 @@ def test_organism_projection_joins_points_xp_and_boss_from_one_ledger(tmp_path):
 
     state = manager.reconstruct_airspace_state()
     projection = OrganismProjection.project_station(manager, state, station)
-    assert projection.points == 25 * 2
-    assert projection.career_xp == 5
+    assert projection.points == 24
+    assert projection.career_xp == 2
     assert projection.boss.big_kills == 1
     assert projection.boss.total_captures == 0
-    assert "POINTS 50" in OrganismProjection.render_agent_tag(projection)
-    assert "XP 5" in OrganismProjection.render_agent_tag(projection)
+    assert "POINTS 24" in OrganismProjection.render_agent_tag(projection)
+    assert "XP 2" in OrganismProjection.render_agent_tag(projection)
     assert "⚔️ 1" in OrganismProjection.render_agent_tag(projection)
