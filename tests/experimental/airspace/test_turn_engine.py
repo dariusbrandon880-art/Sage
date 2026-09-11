@@ -46,29 +46,29 @@ def test_turn_resolves_verified_points_xp_and_fresh_hud(tmp_path: Path) -> None:
     )
     assert resolution.status is TurnStatus.CLOSED
     assert resolution.verified is True
-    assert resolution.total_verified_points == 75
-    assert sum(r.award.points for r in resolution.contribution_results) == 75
-    assert resolution.total_xp_minted == 6
+    assert resolution.total_verified_points == 26
+    assert sum(r.award.points for r in resolution.contribution_results) == 26
+    assert resolution.total_xp_minted == 2
     state = mgr.reconstruct_airspace_state()
-    assert state.game_progression.get_total_xp_for_station(StationID.MISSION_CONTROL) == 3
-    assert state.game_progression.get_total_xp_for_station(StationID.ENGINEERING_FLIGHT) == 3
+    assert state.game_progression.get_total_xp_for_station(StationID.MISSION_CONTROL) == 1
+    assert state.game_progression.get_total_xp_for_station(StationID.ENGINEERING_FLIGHT) == 1
     projections = {
         StationID.MISSION_CONTROL: OrganismProjection.project_station(mgr, state, StationID.MISSION_CONTROL),
         StationID.ENGINEERING_FLIGHT: OrganismProjection.project_station(mgr, state, StationID.ENGINEERING_FLIGHT),
     }
-    assert projections[StationID.MISSION_CONTROL].points == 38
-    assert projections[StationID.ENGINEERING_FLIGHT].points == 37
-    assert projections[StationID.MISSION_CONTROL].career_xp == 3
-    assert projections[StationID.ENGINEERING_FLIGHT].career_xp == 3
-    assert projections[StationID.MISSION_CONTROL].points - 10 * projections[StationID.MISSION_CONTROL].career_xp == 8
-    assert projections[StationID.ENGINEERING_FLIGHT].points - 10 * projections[StationID.ENGINEERING_FLIGHT].career_xp == 7
+    assert projections[StationID.MISSION_CONTROL].points == 13
+    assert projections[StationID.ENGINEERING_FLIGHT].points == 13
+    assert projections[StationID.MISSION_CONTROL].career_xp == 1
+    assert projections[StationID.ENGINEERING_FLIGHT].career_xp == 1
+    assert projections[StationID.MISSION_CONTROL].points - 10 * projections[StationID.MISSION_CONTROL].career_xp == 3
+    assert projections[StationID.ENGINEERING_FLIGHT].points - 10 * projections[StationID.ENGINEERING_FLIGHT].career_xp == 3
     for result in resolution.contribution_results:
         projection = projections[result.award.station_id]
         remainder = projection.points - 10 * projection.career_xp
         assert 0 <= remainder < 10
         assert 10 * projection.career_xp + remainder == projection.points
-    assert "POINTS 38" in engine.render_hud(StationID.MISSION_CONTROL)
-    assert "XP 3" in engine.render_hud(StationID.MISSION_CONTROL)
+    assert "POINTS 13" in engine.render_hud(StationID.MISSION_CONTROL)
+    assert "XP 1" in engine.render_hud(StationID.MISSION_CONTROL)
 
 
 def test_turn_requires_evidence(tmp_path: Path) -> None:

@@ -313,7 +313,7 @@ class RewardAdjudicator:
                 manager=manager, actor=actor, event_id=f"evt-{settlement_id}-{nameplate}", station_id=station,
                 event_type=pkt.outcome_type, verified_event_ref=f"{points_ref}:{nameplate}", evidence_refs=pkt.evidence_refs,
                 reason=f"Adjudicated reward under {request.protocol_version} for mission {pkt.mission_id}", category=XPCategory.MISSION_XP,
-                base_points=points, difficulty=1, verification_quality=1, impact=1, reuse=1,
+                base_points=points, difficulty=1, verification_quality=1, impact=1, reuse=1, momentum=1.0, breakthrough_bonus=0,
             )
             if result.award.points != points:
                 raise ValueError("PointsXPEconomy re-multiplied an attributed allocation; settlement aborted.")

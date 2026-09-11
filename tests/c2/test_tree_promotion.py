@@ -4,6 +4,7 @@ import time
 
 import pytest
 
+from sage.c2.tree.git_provider import SubprocessGitProvider
 from sage.c2.tree.promotion_engine import (
     EvidenceReceipt,
     PromotionCandidate,
@@ -149,3 +150,8 @@ def test_invalid_branch_and_sha_are_rejected():
     assert bad_sha.status == PromotionStatus.REJECTED
     assert engine.verify_candidate(bad_branch) == {}
     assert bad_branch.status == PromotionStatus.REJECTED
+
+
+def test_subprocess_git_provider_clean_status():
+    provider = SubprocessGitProvider(repo_path=".")
+    assert isinstance(provider.verify_clean_status(), bool)

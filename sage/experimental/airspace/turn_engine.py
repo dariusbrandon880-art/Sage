@@ -174,6 +174,8 @@ class TurnEngine:
                 verification_quality=1,
                 impact=1,
                 reuse=1,
+                momentum=1.0,
+                breakthrough_bonus=0,
             )
             results.append(result)
             self.manager.record_event(

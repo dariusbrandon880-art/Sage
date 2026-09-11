@@ -7,6 +7,7 @@ awards progression from unverified activity.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from enum import Enum
 from typing import Dict, Optional
@@ -58,11 +59,39 @@ class VerifiedPointAward:
     reuse: int
     verified_event_ref: str
     evidence_refs: tuple[str, ...]
+    momentum: float = 1.0
+    breakthrough_bonus: Optional[int] = None
 
     @property
     def points(self) -> int:
-        """Score from 1x through 5x base value using a bounded average multiplier."""
-        return max(1, round(self.base_points * (self.difficulty + self.verification_quality + self.impact + self.reuse) / 4))
+        """Score using bounded quality multiplier, momentum multiplier, and breakthrough bonus.
+
+        Points = Base × min(3.0, Quality Multiplier × Momentum Multiplier) + Breakthrough Bonus
+        Quality Multiplier = 0.75 + 0.50 * (Q / 5.0)
+        """
+        if (
+            self.difficulty == 1
+            and self.verification_quality == 1
+            and self.impact == 1
+            and self.reuse == 1
+            and self.momentum == 1.0
+            and self.breakthrough_bonus == 0
+        ):
+            return self.base_points
+
+        dim_avg = (self.difficulty + self.verification_quality + self.impact + self.reuse) / 4.0
+        quality_mult = 0.75 + 0.50 * (dim_avg / 5.0)
+        eff_momentum = min(1.25, max(1.0, self.momentum))
+        mult = min(3.0, quality_mult * eff_momentum)
+        bonus = self.breakthrough_bonus
+        if bonus is None:
+            if self.event_type in (PointEventType.CAPABILITY_CAPTURE, PointEventType.BOSS_KILL, PointEventType.BOSS_CAPTURE):
+                bonus = 50
+            elif self.event_type == PointEventType.BREAKTHROUGH:
+                bonus = 25
+            else:
+                bonus = 0
+        return max(1, round(self.base_points * mult + bonus))
 
     def model_payload(self) -> dict[str, object]:
         return {
@@ -74,6 +103,8 @@ class VerifiedPointAward:
             "verification_quality": self.verification_quality,
             "impact": self.impact,
             "reuse": self.reuse,
+            "momentum": self.momentum,
+            "breakthrough_bonus": self.breakthrough_bonus,
             "verified_points": self.points,
             "verified_event_ref": self.verified_event_ref,
         }
@@ -97,7 +128,7 @@ class PointsXPEconomy:
         return BASE_POINTS[event_type]
 
     @staticmethod
-    def _validate_dimensions(difficulty: int, verification_quality: int, impact: int, reuse: int) -> None:
+    def _validate_dimensions(difficulty: int, verification_quality: int, impact: int, reuse: int, momentum: float = 1.0) -> None:
         for name, value in (
             ("difficulty", difficulty),
             ("verification_quality", verification_quality),
@@ -106,6 +137,8 @@ class PointsXPEconomy:
         ):
             if value < 1 or value > 5:
                 raise ValueError(f"{name} must be between 1 and 5")
+        if not math.isfinite(momentum) or momentum < 1.0 or momentum > 1.25:
+            raise ValueError("momentum must be between 1.0 and 1.25")
 
     @classmethod
     def score_verified_event(
@@ -121,12 +154,14 @@ class PointsXPEconomy:
         verification_quality: int = 1,
         impact: int = 1,
         reuse: int = 1,
+        momentum: float = 1.0,
+        breakthrough_bonus: Optional[int] = None,
     ) -> VerifiedPointAward:
         if not verified_event_ref.strip():
             raise ValueError("Verified point award rejected: verified_event_ref is required.")
         if not evidence_refs:
             raise ValueError("Verified point award rejected: evidence_refs are required.")
-        cls._validate_dimensions(difficulty, verification_quality, impact, reuse)
+        cls._validate_dimensions(difficulty, verification_quality, impact, reuse, momentum)
         resolved_base = base_points if base_points is not None else cls.base_points(event_type)
         if resolved_base <= 0:
             raise ValueError("Verified point award rejected: base_points must be positive.")
@@ -141,6 +176,8 @@ class PointsXPEconomy:
             reuse=reuse,
             verified_event_ref=verified_event_ref,
             evidence_refs=evidence_refs,
+            momentum=momentum,
+            breakthrough_bonus=breakthrough_bonus,
         )
 
     @staticmethod
@@ -187,6 +224,8 @@ class PointsXPEconomy:
         verification_quality: int = 1,
         impact: int = 1,
         reuse: int = 1,
+        momentum: float = 1.0,
+        breakthrough_bonus: Optional[int] = None,
     ) -> PointsXPResult:
         """Persist one verified point event and mint only newly earned whole XP."""
         existing = cls._find_existing_points_event(manager, verified_event_ref)
@@ -202,6 +241,8 @@ class PointsXPEconomy:
                 verification_quality=int(existing["verification_quality"]),
                 impact=int(existing["impact"]),
                 reuse=int(existing["reuse"]),
+                momentum=float(existing.get("momentum", 1.0)),
+                breakthrough_bonus=int(existing["breakthrough_bonus"]) if existing.get("breakthrough_bonus") is not None else None,
             )
         else:
             award = cls.score_verified_event(
@@ -215,6 +256,8 @@ class PointsXPEconomy:
                 verification_quality=verification_quality,
                 impact=impact,
                 reuse=reuse,
+                momentum=momentum,
+                breakthrough_bonus=breakthrough_bonus,
             )
             manager.record_event(
                 event_type="POINTS_AWARDED",

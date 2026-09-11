@@ -1,0 +1,124 @@
+{
+  "waves": [
+    {
+      "wave_id": "wave-big-jump-a-2026",
+      "missions": [
+        {
+          "flight_id": "F1",
+          "frontier_name": "Multi-Frontier Dispatch Engine",
+          "target_path": "sage/c2/multi_frontier_dispatch.py",
+          "collision_zone": "sage.c2.multi_frontier_dispatch",
+          "evidence_ref": "evidence:multi_frontier_dispatch",
+          "pr_or_change": "double-big-jump-wave-a",
+          "test_references": [
+            "tests/c2/test_multi_frontier_dispatch.py"
+          ]
+        },
+        {
+          "flight_id": "F2",
+          "frontier_name": "Governed Continuity Outcome Bridge",
+          "target_path": "sage/c2/governed_continuity_outcome_bridge.py",
+          "collision_zone": "sage.c2.governed_continuity_outcome_bridge",
+          "evidence_ref": "evidence:governed_continuity_outcome_bridge",
+          "pr_or_change": "double-big-jump-wave-a",
+          "test_references": [
+            "tests/c2/test_governed_continuity_outcome_bridge.py"
+          ]
+        },
+        {
+          "flight_id": "F3",
+          "frontier_name": "Tree Promotion Engine",
+          "target_path": "sage/c2/tree/promotion_engine.py",
+          "collision_zone": "sage.c2.tree.promotion_engine",
+          "evidence_ref": "evidence:tree_promotion_engine",
+          "pr_or_change": "double-big-jump-wave-a",
+          "test_references": [
+            "tests/c2/test_tree_promotion.py"
+          ]
+        },
+        {
+          "flight_id": "F4",
+          "frontier_name": "Airspace Points & XP Economy",
+          "target_path": "sage/experimental/airspace/points_economy.py",
+          "collision_zone": "sage.experimental.airspace.points_economy",
+          "evidence_ref": "evidence:points_xp_economy",
+          "pr_or_change": "double-big-jump-wave-a",
+          "test_references": [
+            "tests/experimental/test_points_xp_economy.py"
+          ]
+        },
+        {
+          "flight_id": "F5",
+          "frontier_name": "Sports Portfolio Engine",
+          "target_path": "sage/experimental/sports_quant/portfolio.py",
+          "collision_zone": "sage.experimental.sports_quant.portfolio",
+          "evidence_ref": "evidence:sports_portfolio",
+          "pr_or_change": "double-big-jump-wave-a",
+          "test_references": [
+            "tests/experimental/test_sports_portfolio.py"
+          ]
+        }
+      ]
+    },
+    {
+      "wave_id": "wave-big-jump-b-2026",
+      "missions": [
+        {
+          "flight_id": "F1",
+          "frontier_name": "Organism Jigsaw Engine",
+          "target_path": "sage/c2/organism_jigsaw.py",
+          "collision_zone": "sage.c2.organism_jigsaw",
+          "evidence_ref": "evidence:organism_jigsaw",
+          "pr_or_change": "double-big-jump-wave-b",
+          "test_references": [
+            "tests/c2/test_organism_jigsaw.py"
+          ]
+        },
+        {
+          "flight_id": "F2",
+          "frontier_name": "Jules Report Ingestion",
+          "target_path": "sage/c2/jules_report_ingestion.py",
+          "collision_zone": "sage.c2.jules_report_ingestion",
+          "evidence_ref": "evidence:jules_report_ingestion",
+          "pr_or_change": "double-big-jump-wave-b",
+          "test_references": [
+            "tests/c2/test_jules_report_ingestion.py"
+          ]
+        },
+        {
+          "flight_id": "F3",
+          "frontier_name": "ChatGPT Controller",
+          "target_path": "sage/c2/chatgpt_controller.py",
+          "collision_zone": "sage.c2.chatgpt_controller",
+          "evidence_ref": "evidence:chatgpt_controller",
+          "pr_or_change": "double-big-jump-wave-b",
+          "test_references": [
+            "tests/experimental/test_chatgpt_controller.py"
+          ]
+        },
+        {
+          "flight_id": "F4",
+          "frontier_name": "Workflow Velocity Controller",
+          "target_path": "sage/c2/workflow_velocity.py",
+          "collision_zone": "sage.c2.workflow_velocity",
+          "evidence_ref": "evidence:workflow_velocity",
+          "pr_or_change": "double-big-jump-wave-b",
+          "test_references": [
+            "tests/c2/test_workflow_velocity.py"
+          ]
+        },
+        {
+          "flight_id": "F5",
+          "frontier_name": "Gemini Recon Probe",
+          "target_path": "sage/c2/gemini_recon_probe.py",
+          "collision_zone": "sage.c2.gemini_recon_probe",
+          "evidence_ref": "evidence:gemini_recon_probe",
+          "pr_or_change": "double-big-jump-wave-b",
+          "test_references": [
+            "tests/c2/test_gemini_recon_probe.py"
+          ]
+        }
+      ]
+    }
+  ]
+}
