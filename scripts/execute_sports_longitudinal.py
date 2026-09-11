@@ -185,13 +185,8 @@ def main():
     ledger_path = Path("evidence_capture/sports_longitudinal_ledger.json")
     ledger = SportsLongitudinalLedger(storage_path=ledger_path)
 
-    # 5. Add a multi-leg parlay and pending predictions to demonstrate durable pending queue
-    leg1_pred_id = f"pred_parlay_leg_1_{game_id}"
-    leg2_pred_id = f"pred_parlay_leg_2_{game_id}"
-    parlay_pred_id = f"pred_parlay_parent_{game_id}"
-
-    # Clean existing flight entries in durable ledger for script re-run idempotency
-    target_ids = {locked_pred.prediction_id, leg1_pred_id, leg2_pred_id, parlay_pred_id}
+    # 5. Clean existing flight entry in durable ledger for script re-run idempotency
+    target_ids = {locked_pred.prediction_id}
     ledger.predictions = [p for p in ledger.predictions if p.prediction_id not in target_ids]
     ledger.outcomes = [o for o in ledger.outcomes if o.prediction_id not in target_ids]
     ledger.scores = [s for s in ledger.scores if s.prediction_id not in target_ids]
@@ -200,64 +195,12 @@ def main():
 
     ledger.add_prediction(locked_pred)
 
-    if not any(p.prediction_id == leg1_pred_id for p in ledger.predictions):
-        obs_leg1 = RealSportsEventObservation(
-            event_id=f"mlb_game_leg1_{game_id}",
-            sport="baseball", league="mlb", home_team="NYY", away_team="BOS",
-            event_start_time_utc=game_date, observation_timestamp_utc=obs_ts,
-            source_name="Official MLB Stats API", source_url=MLB_STATS_API_URL,
-            market_name="Moneyline", observed_odds=observed_odds, event_status=event_status
-        )
-        pred_leg1 = LockedResearchPrediction(
-            prediction_id=leg1_pred_id, cycle_id=cycle_id, event_observation=obs_leg1,
-            selected_prediction="NYY Moneyline", odds_at_lock=odds_at_lock,
-            implied_probability=0.5200, model_predicted_probability=0.5800,
-            lock_timestamp_utc=lock_ts, model_state_rationale="Leg 1 baseline rating"
-        )
-        ledger.add_prediction(pred_leg1)
-
-    if not any(p.prediction_id == leg2_pred_id for p in ledger.predictions):
-        obs_leg2 = RealSportsEventObservation(
-            event_id=f"mlb_game_leg2_{game_id}",
-            sport="baseball", league="mlb", home_team="LAD", away_team="SF",
-            event_start_time_utc=game_date, observation_timestamp_utc=obs_ts,
-            source_name="Official MLB Stats API", source_url=MLB_STATS_API_URL,
-            market_name="Moneyline", observed_odds=observed_odds, event_status=event_status
-        )
-        pred_leg2 = LockedResearchPrediction(
-            prediction_id=leg2_pred_id, cycle_id=cycle_id, event_observation=obs_leg2,
-            selected_prediction="LAD Moneyline", odds_at_lock=odds_at_lock,
-            implied_probability=0.6000, model_predicted_probability=0.6500,
-            lock_timestamp_utc=lock_ts, model_state_rationale="Leg 2 baseline rating"
-        )
-        ledger.add_prediction(pred_leg2)
-
-    if not any(p.prediction_id == parlay_pred_id for p in ledger.predictions):
-        obs_parlay = RealSportsEventObservation(
-            event_id=f"mlb_parlay_{game_id}",
-            sport="baseball", league="mlb", home_team="Multi-Team", away_team="Multi-Team",
-            event_start_time_utc=game_date, observation_timestamp_utc=obs_ts,
-            source_name="Official MLB Stats API", source_url=MLB_STATS_API_URL,
-            market_name="2-Leg Parlay", observed_odds=observed_odds, event_status=event_status
-        )
-        pred_parlay = LockedResearchPrediction(
-            prediction_id=parlay_pred_id, cycle_id=cycle_id, event_observation=obs_parlay,
-            selected_prediction="2-Leg MLB Parlay (NYY + LAD)", odds_at_lock=odds_at_lock,
-            implied_probability=0.3120, model_predicted_probability=0.3770,
-            lock_timestamp_utc=lock_ts, model_state_rationale="2-Leg Parlay composite rating",
-            is_parlay=True,
-            parlay_legs=[{"prediction_id": leg1_pred_id}, {"prediction_id": leg2_pred_id}]
-        )
-        ledger.add_prediction(pred_parlay)
-
     # 6. Simulate Process Termination and Restart
     print("[+] Simulating process termination & fresh process restart...")
     fresh_ledger = SportsLongitudinalLedger(storage_path=ledger_path)
 
     pending_list = fresh_ledger.get_pending_predictions()
     print(f"[+] Restart Recovery Successful! Discovered {len(pending_list)} pending predictions in queue.")
-    for p in pending_list:
-        print(f"    - Pending ID: {p.prediction_id} (Is Parlay: {p.is_parlay})")
 
     # 7. Execute Resolution in fresh ledger
     if outcome and outcome_status in ["WIN", "LOSS", "PUSH"]:
@@ -267,39 +210,6 @@ def main():
         if learning:
             fresh_ledger.add_learning(learning)
         print(f"[+] Resolved single game prediction '{locked_pred.prediction_id}' -> Status: {outcome_status}")
-
-    # Resolve parlay legs to test parlay resolution
-    leg1_out, leg1_score, leg1_learn = resolve_sports_prediction(
-        prediction=next(p for p in fresh_ledger.predictions if p.prediction_id == leg1_pred_id),
-        verification_source_name="Official MLB Stats API", verification_source_url=MLB_STATS_API_URL,
-        actual_home_score=5, actual_away_score=3, actual_result_text="NYY defeated BOS 5-3",
-        outcome_status="WIN", verification_timestamp_utc=verif_ts
-    )
-    if not any(o.prediction_id == leg1_pred_id for o in fresh_ledger.outcomes):
-        fresh_ledger.add_outcome(leg1_out)
-        fresh_ledger.add_score(leg1_score)
-        fresh_ledger.add_learning(leg1_learn)
-
-    leg2_out, leg2_score, leg2_learn = resolve_sports_prediction(
-        prediction=next(p for p in fresh_ledger.predictions if p.prediction_id == leg2_pred_id),
-        verification_source_name="Official MLB Stats API", verification_source_url=MLB_STATS_API_URL,
-        actual_home_score=4, actual_away_score=1, actual_result_text="LAD defeated SF 4-1",
-        outcome_status="WIN", verification_timestamp_utc=verif_ts
-    )
-    if not any(o.prediction_id == leg2_pred_id for o in fresh_ledger.outcomes):
-        fresh_ledger.add_outcome(leg2_out)
-        fresh_ledger.add_score(leg2_score)
-        fresh_ledger.add_learning(leg2_learn)
-
-    parlay_res = fresh_ledger.resolve_parlay_if_legs_complete(
-        parlay_prediction_id=parlay_pred_id,
-        verification_source_name="Official MLB Stats API",
-        verification_source_url=MLB_STATS_API_URL,
-        verification_timestamp_utc=verif_ts
-    )
-    if parlay_res:
-        parlay_out, parlay_sc, parlay_lrn = parlay_res
-        print(f"[+] Parlay ID '{parlay_pred_id}' resolved after all legs verified -> Status: {parlay_out.outcome_status}")
 
     summary_report = fresh_ledger.generate_summary_report()
 
