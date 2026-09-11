@@ -1,0 +1,93 @@
+{
+  "receipt_id": "aiet_rcpt_1789166032",
+  "mission_id": "aiet_frozen_trials_wave_2026",
+  "trials_count": 10,
+  "scenarios_evaluated": [
+    "blind_scenario_01_recon_synthesis",
+    "blind_scenario_02_continuity_recovery"
+  ],
+  "perturbations_injected": [
+    "pert_01_input_noise",
+    "pert_02_environment_drift"
+  ],
+  "baseline_technique_id": "fixture_baseline_v1",
+  "candidate_technique_id": "fixture_candidate_v2",
+  "adaptation_gain": 3.2455,
+  "recovery_rate": 0.9474,
+  "transfer_efficiency": 1.0,
+  "resilience_score": 0.4788,
+  "evolution_decision": "HOLD",
+  "overall_verdict": "AUTOMATION",
+  "isolation_status": "UNVERIFIED",
+  "initial_state_hash": "e95e7835ef324ee33045cdfc3f3c444392375648980722ae8add46bbe150c0c4",
+  "scenario_hash": "3c0811aad827b2c3fd8d62c4cfde1f37c7371762cfefbe7c84039304acf5a717",
+  "observations": [
+    "SELF_CORRECTION",
+    "BASELINE_DISCOVERY",
+    "STRATEGY_TRANSFER",
+    "ACTIVE_DISRUPTION",
+    "NOVEL_SYNTHESIS",
+    "SELF_CORRECTION",
+    "BASELINE_DISCOVERY",
+    "STRATEGY_TRANSFER",
+    "ACTIVE_DISRUPTION",
+    "NOVEL_SYNTHESIS"
+  ],
+  "decisions": [
+    "SELF_CORRECTION",
+    "BASELINE_DISCOVERY",
+    "STRATEGY_TRANSFER",
+    "ACTIVE_DISRUPTION",
+    "NOVEL_SYNTHESIS",
+    "SELF_CORRECTION",
+    "BASELINE_DISCOVERY",
+    "STRATEGY_TRANSFER",
+    "ACTIVE_DISRUPTION",
+    "NOVEL_SYNTHESIS"
+  ],
+  "actions": [
+    "SELF_CORRECTION",
+    "BASELINE_DISCOVERY",
+    "STRATEGY_TRANSFER",
+    "INJECTED_DRIFT:0.25",
+    "ACTIVE_DISRUPTION",
+    "NOVEL_SYNTHESIS",
+    "SELF_CORRECTION",
+    "BASELINE_DISCOVERY",
+    "STRATEGY_TRANSFER",
+    "INJECTED_NOISE:session_id",
+    "INJECTED_DRIFT:0.25",
+    "ACTIVE_DISRUPTION",
+    "NOVEL_SYNTHESIS"
+  ],
+  "failures": [
+    "blind_scenario_01_recon_synthesis:BASELINE_DISCOVERY:INVARIANT_BELOW_THRESHOLD:score<0.85",
+    "NON_EXTERNAL_EXECUTION:fixture"
+  ],
+  "adaptations": [],
+  "constraint_integrity": false,
+  "verification_integrity": true,
+  "human_intervention_count": 0,
+  "unscripted_discovery": true,
+  "adaptation_latency_steps": 0,
+  "knowledge_delta_retained": [],
+  "transfer_result": {
+    "target_domains": [
+      "GOVERNANCE_AUDIT",
+      "DISASTER_RECOVERY"
+    ],
+    "transfer_efficiency": 1.0,
+    "retained_knowledge_count": 0
+  },
+  "final_state_hash": "0b89cc081f125a1c7968e3f9ef6fbe69b74fd801879e75375a60b1f9fd7b6606",
+  "verdict": "AUTOMATION",
+  "execution_mode": "fixture",
+  "fail_closed_reasons": [
+    "blind_scenario_01_recon_synthesis:BASELINE_DISCOVERY:INVARIANT_BELOW_THRESHOLD:score<0.85",
+    "NON_EXTERNAL_EXECUTION:fixture"
+  ],
+  "git_head_sha": "ac34facea8378fc12a25b8c91aec442fd0326b86",
+  "timestamp_utc": "2026-09-11T22:33:52Z",
+  "evidence_proof_hash": "492f687bc1b6c882ed31b71f912bbe3caf4242d2b48d9a692dbcfedafd24255b",
+  "receipt_hash": "492f687bc1b6c882ed31b71f912bbe3caf4242d2b48d9a692dbcfedafd24255b"
+}
