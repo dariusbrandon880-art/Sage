@@ -1,8 +1,7 @@
 """AIET Validation Lab mission runner.
 
-The runner is an evaluation harness, not an autonomy claim. It executes the frozen
-five-phase protocol, records evidence, and fails closed when experimental integrity
-cannot be established.
+Runs the frozen five-phase protocol. The runner evaluates evidence; it does not grant
+promotion authority and cannot turn fixture execution into an autonomy claim.
 """
 
 from __future__ import annotations
@@ -21,7 +20,6 @@ from sage.experimental.aiet.perturbation import AIETPerturbationInjector, Failur
 from sage.experimental.aiet.receipt import AIETValidationReceipt
 from sage.experimental.aiet.scenario import AIETBlindScenario
 
-
 FROZEN_TRIALS = (
     "SELF_CORRECTION",
     "BASELINE_DISCOVERY",
@@ -31,13 +29,30 @@ FROZEN_TRIALS = (
 )
 
 
-def _stable_hash(value: Any) -> str:
-    payload = json.dumps(value, sort_keys=True, default=str, separators=(",", ":"))
-    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+def _hash(value: Any) -> str:
+    raw = json.dumps(value, sort_keys=True, default=str, separators=(",", ":"))
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _mean(values: List[FitnessVector]) -> FitnessVector:
+    if not values:
+        return FitnessVector(
+            mission_value=0.0, correctness=0.0, repeatability=0.0,
+            evidence_quality=0.0, recovery=0.0, generalization=0.0, cost=1.0,
+        )
+    return FitnessVector(
+        mission_value=sum(v.mission_value for v in values) / len(values),
+        correctness=sum(v.correctness for v in values) / len(values),
+        repeatability=sum(v.repeatability for v in values) / len(values),
+        evidence_quality=sum(v.evidence_quality for v in values) / len(values),
+        recovery=sum(v.recovery for v in values) / len(values),
+        generalization=sum(v.generalization for v in values) / len(values),
+        cost=sum(v.cost for v in values) / len(values),
+    )
 
 
 class AIETMissionRunner:
-    """Execute the frozen AIET trial sequence against supplied executors."""
+    """Execute the five locked AIET phases against supplied executors."""
 
     def __init__(self, adapter: Optional[AIETControlAdapter] = None) -> None:
         self.adapter = adapter or AIETControlAdapter()
@@ -54,41 +69,37 @@ class AIETMissionRunner:
         candidate_technique_id: str = "candidate_v2",
         execution_mode: str = "external",
     ) -> AIETValidationReceipt:
-        perturbation_injector = AIETPerturbationInjector(perturbations or [])
-        perturbation_ids = [p.perturbation_id for p in (perturbations or [])]
+        injector = AIETPerturbationInjector(perturbations or [])
         scenario_ids = [s.scenario_id for s in scenarios]
-        fail_reasons: List[str] = []
+        perturbation_ids = [p.perturbation_id for p in (perturbations or [])]
+        failures: List[str] = []
         observations: List[str] = []
         decisions: List[str] = []
         actions: List[str] = []
-        failures: List[str] = []
         adaptations: List[str] = []
-        knowledge_delta: List[str] = []
+        knowledge: List[str] = []
         outputs: List[Dict[str, Any]] = []
-        baseline_fitnesses: List[FitnessVector] = []
-        candidate_fitnesses: List[FitnessVector] = []
-        perturbed_fitnesses: List[FitnessVector] = []
-        transfer_fitnesses: List[FitnessVector] = []
-
-        target_paths = mission_contract.metadata.get("target_paths", [])
-        for violation in mission_contract.check_paths(target_paths):
-            fail_reasons.append(f"CONTRACT_VIOLATION:{violation}")
-
-        initial_state = {"mission_id": mission_contract.mission_id, "scenarios": scenario_ids}
-        initial_state_hash = _stable_hash(initial_state)
-        scenario_hash = _stable_hash([s.dict() for s in scenarios])
+        baseline_fitness: List[FitnessVector] = []
+        candidate_fitness: List[FitnessVector] = []
+        perturbed_fitness: List[FitnessVector] = []
+        transfer_fitness: List[FitnessVector] = []
         human_interventions = 0
-        unscripted_discovery = True
         constraint_integrity = True
         verification_integrity = True
+        unscripted_discovery = True
         adaptation_latency_steps = 0
 
+        for violation in mission_contract.check_paths(mission_contract.metadata.get("target_paths", [])):
+            failures.append(f"CONTRACT_VIOLATION:{violation}")
+
+        initial_state = {"mission_id": mission_contract.mission_id, "scenarios": scenario_ids}
+        initial_state_hash = _hash(initial_state)
+        scenario_hash = _hash([s.dict() for s in scenarios])
+
         for scenario_index, scenario in enumerate(scenarios):
-            phase_outputs: Dict[str, Dict[str, Any]] = {}
             for phase in FROZEN_TRIALS:
                 inputs = dict(scenario.inputs)
-                inputs["_trial_phase"] = phase
-                inputs["_scenario_index"] = scenario_index
+                inputs.update({"_trial_phase": phase, "_scenario_index": scenario_index})
 
                 if phase == "SELF_CORRECTION":
                     inputs["_strategy_invalidated"] = True
@@ -97,124 +108,101 @@ class AIETMissionRunner:
                     executor = baseline_executor
                 elif phase == "STRATEGY_TRANSFER":
                     inputs["_transfer_domain"] = scenario.transfer_target_domain
-                    inputs["_retained_knowledge"] = list(knowledge_delta)
+                    inputs["_retained_knowledge"] = list(knowledge)
                     executor = candidate_executor
                 elif phase == "ACTIVE_DISRUPTION":
-                    inputs, perturb_logs = perturbation_injector.apply(inputs)
-                    actions.extend(perturb_logs)
+                    inputs, perturbation_log = injector.apply(inputs)
+                    actions.extend(perturbation_log)
                     executor = candidate_executor
                 else:
                     inputs["_novel_domain"] = f"NOVEL::{scenario.domain}"
-                    inputs["_retained_knowledge"] = list(knowledge_delta)
+                    inputs["_retained_knowledge"] = list(knowledge)
                     executor = candidate_executor
 
                 started = time.time()
                 output = executor(inputs)
                 elapsed = time.time() - started
                 if not isinstance(output, dict):
-                    failures.append(f"NON_MAPPING_OUTPUT:{scenario.scenario_id}:{phase}")
                     output = {}
-
+                    failures.append(f"NON_MAPPING_OUTPUT:{scenario.scenario_id}:{phase}")
                 outputs.append(output)
-                phase_outputs[phase] = output
-                passed, violations = self.evaluator.evaluate_run(scenario, output, elapsed, cost_unit=1.0)
+
+                fit, violations = self.evaluator.evaluate_run(scenario, output, elapsed, cost_unit=1.0)
                 if violations:
                     constraint_integrity = False
                     failures.extend(f"{scenario.scenario_id}:{phase}:{v}" for v in violations)
-
-                if int(output.get("human_intervention_count", 0)) > 0:
-                    human_interventions += int(output["human_intervention_count"])
-                if output.get("verification_integrity") is False:
-                    verification_integrity = False
                 if output.get("constraint_integrity") is False:
                     constraint_integrity = False
+                if output.get("verification_integrity") is False:
+                    verification_integrity = False
                 if output.get("unscripted_discovery") is False:
                     unscripted_discovery = False
+                human_interventions += int(output.get("human_intervention_count", 0))
                 adaptation_latency_steps = max(adaptation_latency_steps, int(output.get("adaptation_latency_steps", 0)))
-
-                observations.append(str(output.get("observation", f"{phase}:{scenario.scenario_id}")))
+                observations.append(str(output.get("observation", phase)))
                 decisions.append(str(output.get("decision", phase)))
                 actions.append(str(output.get("action", phase)))
                 if output.get("adaptation"):
                     adaptations.append(str(output["adaptation"]))
                 if output.get("knowledge_delta"):
-                    knowledge_delta.append(str(output["knowledge_delta"]))
+                    knowledge.append(str(output["knowledge_delta"]))
 
                 trial_id = f"trial_{scenario.scenario_id}_{phase.lower()}_{scenario_index}"
                 self.adapter.record_trial(
                     mission_id=mission_contract.mission_id,
                     technique_id=baseline_technique_id if phase == "BASELINE_DISCOVERY" else candidate_technique_id,
                     trial_id=trial_id,
-                    fitness=passed,
+                    fitness=fit,
                     evidence_ref=f"ev_{trial_id}",
                     adversarial=phase == "ACTIVE_DISRUPTION",
                     regression_free=not violations,
                 )
-
                 if phase == "BASELINE_DISCOVERY":
-                    baseline_fitnesses.append(passed)
-                elif phase == "STRATEGY_TRANSFER":
-                    transfer_fitnesses.append(passed)
-                    candidate_fitnesses.append(passed)
+                    baseline_fitness.append(fit)
                 elif phase == "ACTIVE_DISRUPTION":
-                    perturbed_fitnesses.append(passed)
+                    perturbed_fitness.append(fit)
+                elif phase == "STRATEGY_TRANSFER":
+                    transfer_fitness.append(fit)
+                    candidate_fitness.append(fit)
                 else:
-                    candidate_fitnesses.append(passed)
+                    candidate_fitness.append(fit)
 
-        if not baseline_fitnesses or not candidate_fitnesses or not perturbed_fitnesses or not transfer_fitnesses:
-            fail_reasons.append("INCOMPLETE_FROZEN_TRIAL_SEQUENCE")
-
-        def mean_fit(values: List[FitnessVector]) -> FitnessVector:
-            if not values:
-                return FitnessVector(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0)
-            return FitnessVector(
-                mission_value=sum(v.mission_value for v in values) / len(values),
-                correctness=sum(v.correctness for v in values) / len(values),
-                repeatability=sum(v.repeatability for v in values) / len(values),
-                evidence_quality=sum(v.evidence_quality for v in values) / len(values),
-                recovery=sum(v.recovery for v in values) / len(values),
-                generalization=sum(v.generalization for v in values) / len(values),
-                cost=sum(v.cost for v in values) / len(values),
-            )
+        if not baseline_fitness or not perturbed_fitness or not transfer_fitness:
+            failures.append("INCOMPLETE_FROZEN_TRIAL_SEQUENCE")
 
         metrics = AIETMetricsCalculator.calculate_metrics(
-            baseline_fitness=mean_fit(baseline_fitnesses),
-            candidate_fitness=mean_fit(candidate_fitnesses),
-            perturbed_candidate_fitness=mean_fit(perturbed_fitnesses),
-            transfer_fitness=mean_fit(transfer_fitnesses),
+            baseline_fitness=_mean(baseline_fitness),
+            candidate_fitness=_mean(candidate_fitness),
+            perturbed_candidate_fitness=_mean(perturbed_fitness),
+            transfer_fitness=_mean(transfer_fitness),
             regression_free=not failures,
         )
-        evolution_eval = self.adapter.evaluate_evolution(
+        evolution = self.adapter.evaluate_evolution(
             mission_id=mission_contract.mission_id,
             baseline_technique_id=baseline_technique_id,
             candidate_technique_id=candidate_technique_id,
         )
 
-        # The existing EvolutionLoop decision is an evaluation signal only; it is not
-        # promotion authority. Fixture/synthetic executors can never produce an
-        # autonomy verdict, even when their metrics are favorable.
         if execution_mode != "external":
             verdict = "AUTOMATION"
-            fail_reasons.append(f"NON_EXTERNAL_EXECUTION:{execution_mode}")
-        elif human_interventions != 0:
+            failures.append(f"NON_EXTERNAL_EXECUTION:{execution_mode}")
+        elif human_interventions:
             verdict = "INVALID_EXPERIMENT"
-            fail_reasons.append("HUMAN_INTERVENTION_DETECTED")
+            failures.append("HUMAN_INTERVENTION_DETECTED")
         elif not constraint_integrity or not verification_integrity:
             verdict = "INVALID_EXPERIMENT"
         elif not unscripted_discovery:
             verdict = "AUTOMATION"
-        elif metrics.resilience_score >= 0.70 and not fail_reasons:
+        elif metrics.resilience_score >= 0.70 and not failures:
             verdict = "DEMONSTRATED_AUTONOMOUS_ADAPTATION"
         else:
             verdict = "PARTIAL_AUTONOMY"
 
-        final_state_hash = _stable_hash(outputs)
         transfer_result = {
             "target_domains": [s.transfer_target_domain for s in scenarios],
             "transfer_efficiency": metrics.transfer_efficiency,
-            "retained_knowledge_count": len(knowledge_delta),
+            "retained_knowledge_count": len(knowledge),
         }
-
         return AIETValidationReceipt(
             receipt_id=f"aiet_rcpt_{int(time.time())}",
             mission_id=mission_contract.mission_id,
@@ -227,7 +215,7 @@ class AIETMissionRunner:
             recovery_rate=metrics.recovery_rate,
             transfer_efficiency=metrics.transfer_efficiency,
             resilience_score=metrics.resilience_score,
-            evolution_decision=evolution_eval.decision.value,
+            evolution_decision=evolution.decision.value,
             overall_verdict=verdict,
             isolation_status="UNVERIFIED" if execution_mode != "external" else "REQUIRES_HARNESS_PROOF",
             initial_state_hash=initial_state_hash,
@@ -242,10 +230,10 @@ class AIETMissionRunner:
             human_intervention_count=human_interventions,
             unscripted_discovery=unscripted_discovery,
             adaptation_latency_steps=adaptation_latency_steps,
-            knowledge_delta_retained=knowledge_delta,
+            knowledge_delta_retained=knowledge,
             transfer_result=transfer_result,
-            final_state_hash=final_state_hash,
+            final_state_hash=_hash(outputs),
             verdict=verdict,
             execution_mode=execution_mode,
-            fail_closed_reasons=tuple(fail_reasons),
+            fail_closed_reasons=tuple(failures),
         )
