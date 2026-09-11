@@ -1,22 +1,14 @@
 """Control/Baseline Adapter for AIET.
 
-Interfaces cleanly with existing SAGE C2 mechanisms (`MissionContract`,
-`ExperimentLedger`, `EvolutionLoop`, `GovernedContinuityOutcomeBridge`) without
-usurping distributed C2 or Master Archive authority.
+Interfaces with bounded SAGE C2 mechanisms without creating a second authority layer.
 """
 
 from __future__ import annotations
 
 import subprocess
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Optional, Sequence, Tuple
 
-from sage.c2.evolution_loop import (
-    EvolutionBaseline,
-    EvolutionCandidate,
-    EvolutionEvaluation,
-    EvolutionLoop,
-    FitnessVector,
-)
+from sage.c2.evolution_loop import EvolutionEvaluation, EvolutionLoop, FitnessVector
 from sage.c2.experiment_ledger import ExperimentLedger, ExperimentTrial
 from sage.c2.governed_continuity_outcome_bridge import (
     GovernedContinuityOutcomeBridge,
@@ -37,7 +29,7 @@ def _get_current_head() -> str:
 
 
 class AIETControlAdapter:
-    """Adapter bridging AIET evaluation trials to SAGE C2 ExperimentLedger & EvolutionLoop."""
+    """Bridge AIET trials to existing bounded C2 evaluation infrastructure."""
 
     def __init__(self, ledger: Optional[ExperimentLedger] = None) -> None:
         self.ledger = ledger or ExperimentLedger()
@@ -45,12 +37,10 @@ class AIETControlAdapter:
         self.continuity_bridge = GovernedContinuityOutcomeBridge()
 
     def load_mission_contract(self, payload_or_path: Any) -> MissionContract:
-        """Load and validate an immutable MissionContract."""
-        if isinstance(payload_or_path, (str, dict)):
-            if isinstance(payload_or_path, str) and payload_or_path.endswith(".json"):
-                return validate_contract_file(payload_or_path)
-            elif isinstance(payload_or_path, dict):
-                return MissionContract.from_mapping(payload_or_path)
+        if isinstance(payload_or_path, str) and payload_or_path.endswith(".json"):
+            return validate_contract_file(payload_or_path)
+        if isinstance(payload_or_path, dict):
+            return MissionContract.from_mapping(payload_or_path)
         raise ValueError("Invalid mission contract payload or path")
 
     def record_trial(
@@ -64,18 +54,17 @@ class AIETControlAdapter:
         regression_free: bool = True,
         git_head: Optional[str] = None,
     ) -> str:
-        """Record a measured trial into the append-only ExperimentLedger."""
-        exact_head = git_head or _get_current_head()
+        """Record a trial without asserting that a human reviewed it."""
         trial = ExperimentTrial(
             mission_id=mission_id,
             technique_id=technique_id,
             trial_id=trial_id,
             fitness=fitness,
             evidence_ref=evidence_ref,
-            exact_git_head=exact_head,
+            exact_git_head=git_head or _get_current_head(),
             adversarial=adversarial,
             regression_free=regression_free,
-            human_reviewed=True,
+            human_reviewed=False,
         )
         return self.ledger.append(trial)
 
@@ -85,7 +74,6 @@ class AIETControlAdapter:
         baseline_technique_id: str,
         candidate_technique_id: str,
     ) -> EvolutionEvaluation:
-        """Derive baseline and candidate evaluations from the ledger and execute EvolutionLoop."""
         baseline = self.ledger.build_baseline(mission_id, baseline_technique_id)
         candidate = self.ledger.build_candidate(mission_id, candidate_technique_id)
         return self.evolution_loop.evaluate(mission_id, baseline, [candidate])
@@ -101,7 +89,6 @@ class AIETControlAdapter:
         benchmark_intervention: Any,
         benchmark_observation: Any,
     ) -> GovernedContinuityOutcomeReceipt:
-        """Delegate continuity, outcome, and benchmark evaluation to existing C2 bridge."""
         return self.continuity_bridge.execute_frontier_evaluation(
             main_goals=main_goals,
             session_id=session_id,
