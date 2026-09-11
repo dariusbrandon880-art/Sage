@@ -36,6 +36,7 @@ def main():
             "target_namespaces": ["sage/experimental/act"],
             "tests_passed": 26,
             "execution_result": "PASS",
+            "executor": lambda: time.sleep(0.02),
         },
         {
             "flight_id": "F2_FLEET_EVOLUTION",
@@ -45,6 +46,7 @@ def main():
             "target_namespaces": ["sage/experimental/airspace"],
             "tests_passed": 12,
             "execution_result": "PASS",
+            "executor": lambda: time.sleep(0.02),
         },
         {
             "flight_id": "F3_MULTI_SESSION_VELOCITY",
@@ -54,6 +56,7 @@ def main():
             "target_namespaces": ["sage/c2"],
             "tests_passed": 12,
             "execution_result": "PASS",
+            "executor": lambda: time.sleep(0.02),
         },
         {
             "flight_id": "F4_SPORTS_OUTCOME_LEARNING",
@@ -63,6 +66,7 @@ def main():
             "target_namespaces": ["sage/experimental/sports_rce.py", "sage/experimental/sports_longitudinal.py"],
             "tests_passed": 39,
             "execution_result": "PASS",
+            "executor": lambda: time.sleep(0.02),
         },
         {
             "flight_id": "F5_RECONVERGENCE_ORGANISM",
@@ -72,6 +76,7 @@ def main():
             "target_namespaces": ["scripts"],
             "tests_passed": 10,
             "execution_result": "PASS",
+            "executor": lambda: time.sleep(0.02),
         },
     ]
 

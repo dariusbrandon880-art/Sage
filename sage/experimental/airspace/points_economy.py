@@ -27,57 +27,16 @@ class PointEventType(str, Enum):
     RECOVERY = "RECOVERY"
 
 
-BASE_POINT_VALUES: Dict[PointEventType, int] = {
-    PointEventType.RECON: 5,
-    PointEventType.ANALYSIS: 10,
-    PointEventType.BUILD: 25,
-    PointEventType.REPAIR: 25,
-    PointEventType.VERIFICATION: 10,
-    PointEventType.BREAKTHROUGH: 50,
-    PointEventType.CAPABILITY_CAPTURE: 100,
-    PointEventType.BOSS_KILL: 100,
-    PointEventType.BOSS_CAPTURE: 100,
-    PointEventType.COLLABORATION: 10,
-    PointEventType.REUSE: 50,
-    PointEventType.RECOVERY: 25,
-}
+from sage.experimental.airspace.points_xp_economy import (
+    BASE_POINTS as BASE_POINT_VALUES,
+    PointEventType,
+    PointsXPEconomy,
+    VerifiedPointAward as PointAward,
+)
 
 
 def base_points_for(event_type: PointEventType) -> int:
     return BASE_POINT_VALUES[event_type]
-
-
-@dataclass(frozen=True)
-class PointAward:
-    """Immutable verified point award attached to one unique evidence event."""
-
-    event_id: str
-    agent_id: str
-    event_type: PointEventType
-    base_points: int
-    difficulty: int
-    verification_quality: int
-    impact: int
-    reuse: int
-    verified_event_ref: str
-    evidence_refs: tuple[str, ...]
-
-    def __post_init__(self) -> None:
-        if self.base_points <= 0:
-            raise ValueError("Point award rejected: base_points must be positive.")
-        for name, value in (("difficulty", self.difficulty), ("verification_quality", self.verification_quality), ("impact", self.impact), ("reuse", self.reuse)):
-            if value < 1 or value > 5:
-                raise ValueError(f"Point award rejected: {name} must be between 1 and 5.")
-        if not self.agent_id.strip():
-            raise ValueError("Point award rejected: agent_id is required.")
-        if not self.verified_event_ref.strip():
-            raise ValueError("Point award rejected: verified_event_ref is required.")
-        if not self.evidence_refs:
-            raise ValueError("Point award rejected: evidence_refs are required.")
-
-    @property
-    def verified_points(self) -> int:
-        return self.base_points
 
 
 class PointsLedger:
@@ -103,10 +62,17 @@ class PointsLedger:
         return tuple(self._awards.values())
 
     def verified_points_for_agent(self, agent_id: str) -> int:
-        return sum(a.verified_points for a in self._awards.values() if a.agent_id == agent_id)
+        def _match(award: PointAward) -> bool:
+            st = getattr(award, "station_id", None)
+            st_str = st.value if hasattr(st, "value") else str(st or "")
+            ag_str = str(getattr(award, "agent_id", ""))
+            target = agent_id.value if hasattr(agent_id, "value") else str(agent_id)
+            return st_str == target or ag_str == target
+
+        return sum(a.points for a in self._awards.values() if _match(a))
 
     def verified_points_total(self) -> int:
-        return sum(a.verified_points for a in self._awards.values())
+        return sum(a.points for a in self._awards.values())
 
     def career_xp_for_agent(self, agent_id: str) -> int:
         return self.verified_points_for_agent(agent_id) // self.POINTS_PER_XP
@@ -116,3 +82,13 @@ class PointsLedger:
 
     def unconverted_points_for_agent(self, agent_id: str) -> int:
         return self.verified_points_for_agent(agent_id) % self.POINTS_PER_XP
+
+
+__all__ = [
+    "PointEventType",
+    "BASE_POINT_VALUES",
+    "base_points_for",
+    "PointAward",
+    "PointsLedger",
+    "PointsXPEconomy",
+]

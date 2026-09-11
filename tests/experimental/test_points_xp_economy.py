@@ -4,6 +4,7 @@ import pytest
 
 from sage.experimental.airspace.manager import AirspaceManager
 from sage.experimental.airspace.models import StationID, XPCategory
+from sage.experimental.airspace.points_economy import PointAward, PointsLedger, base_points_for
 from sage.experimental.airspace.points_xp_economy import PointEventType, PointsXPEconomy
 
 
@@ -135,3 +136,33 @@ def test_points_can_accumulate_across_events_and_retain_remainder(tmp_path: Path
     points = sum(e["payload"]["verified_points"] for e in raw if e["event_type"] == "POINTS_AWARDED")
     assert points == 15
     assert m.reconstruct_airspace_state().game_progression.get_total_xp_for_station(StationID.MISSION_CONTROL) == 1
+
+
+def test_points_economy_unified_ledger():
+    award1 = PointsXPEconomy.score_verified_event(
+        event_id="evt-001",
+        station_id=StationID.MISSION_CONTROL,
+        event_type=PointEventType.BUILD,
+        verified_event_ref="commit:001",
+        evidence_refs=("evidence:001",),
+        difficulty=2,
+        verification_quality=2,
+        impact=2,
+        reuse=2,
+    )
+    award2 = PointsXPEconomy.score_verified_event(
+        event_id="evt-002",
+        station_id=StationID.MISSION_CONTROL,
+        event_type=PointEventType.REPAIR,
+        verified_event_ref="commit:002",
+        evidence_refs=("evidence:002",),
+        difficulty=3,
+        verification_quality=3,
+        impact=3,
+        reuse=3,
+    )
+    ledger = PointsLedger([award1, award2])
+    assert base_points_for(PointEventType.BUILD) == 25
+    assert ledger.verified_points_total() == 125
+    assert ledger.career_xp_total() == 12
+    assert ledger.unconverted_points_for_agent("MISSION_CONTROL") == 5
