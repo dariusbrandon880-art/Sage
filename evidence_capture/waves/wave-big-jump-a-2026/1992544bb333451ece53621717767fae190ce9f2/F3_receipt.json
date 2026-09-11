@@ -1,0 +1,10 @@
+{
+  "blocker": null,
+  "executed_head": "1992544bb333451ece53621717767fae190ce9f2",
+  "flight_id": "F3",
+  "frontier_name": "Tree Promotion Engine",
+  "status": "PASS",
+  "target_path": "sage/c2/tree/promotion_engine.py",
+  "timestamp": 1789103240.287322,
+  "wave_id": "wave-big-jump-a-2026"
+}

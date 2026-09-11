@@ -1,0 +1,10 @@
+{
+  "blocker": null,
+  "executed_head": "1992544bb333451ece53621717767fae190ce9f2",
+  "flight_id": "F5",
+  "frontier_name": "Sports Portfolio Engine",
+  "status": "PASS",
+  "target_path": "sage/experimental/sports_quant/portfolio.py",
+  "timestamp": 1789103242.0549908,
+  "wave_id": "wave-big-jump-a-2026"
+}
