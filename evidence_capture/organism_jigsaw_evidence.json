@@ -1,12 +1,12 @@
 {
-  "receipt_id": "organism_jigsaw_256e0cb7",
-  "commit_sha": "256e0cb794f47b7b9ed08589b2d7bcdfd40194c5",
+  "receipt_id": "organism_jigsaw_61a4cc97",
+  "commit_sha": "61a4cc979a5901693094db927df55d6415087cb5",
   "subsystem_count": 21,
   "duplicate_authorities_detected": 0,
   "gates_evaluated": 10,
   "gates_passed": 10,
   "all_gates_passed": true,
-  "receipt_hash": "7319f736bed012319a6391ba8a895c731a3846456402b0b98e9191651642c48d",
+  "receipt_hash": "2b385d11ec7c7cebfe4aa6623d6959b37a46a2681389761ec98f8f4c3621bb16",
   "subsystems": [
     {
       "subsystem_id": "sage_runtime",
@@ -163,7 +163,7 @@
       "source_organ": "Mission Intake",
       "target_organ": "C2 Core",
       "passed": true,
-      "evidence_ref": "SHA256:256e0cb7:GATE-1",
+      "evidence_ref": "SHA256:61a4cc97:GATE-1",
       "details": {
         "status": "VERIFIED",
         "contract": "SAGE_EXECUTABLE_MISSION_CONTRACT_SPEC_V1",
@@ -176,7 +176,7 @@
       "source_organ": "C2 Core",
       "target_organ": "Super Search / Recon",
       "passed": true,
-      "evidence_ref": "SHA256:256e0cb7:GATE-2",
+      "evidence_ref": "SHA256:61a4cc97:GATE-2",
       "details": {
         "status": "VERIFIED",
         "contract": "SAGE_DEEP_RECON_VELOCITY_POLICY",
@@ -189,7 +189,7 @@
       "source_organ": "Super Search / Recon",
       "target_organ": "Frontier Planner",
       "passed": true,
-      "evidence_ref": "SHA256:256e0cb7:GATE-3",
+      "evidence_ref": "SHA256:61a4cc97:GATE-3",
       "details": {
         "status": "VERIFIED",
         "contract": "SAGE_FRONTIER_PLANNING_CONTRACT",
@@ -202,7 +202,7 @@
       "source_organ": "Frontier Planner",
       "target_organ": "Five Flights",
       "passed": true,
-      "evidence_ref": "SHA256:256e0cb7:GATE-4",
+      "evidence_ref": "SHA256:61a4cc97:GATE-4",
       "details": {
         "status": "VERIFIED",
         "contract": "SAGE_FIVE_FLIGHT_DISPATCH_CONTRACT",
@@ -215,7 +215,7 @@
       "source_organ": "Five Flights",
       "target_organ": "Evidence Capture",
       "passed": true,
-      "evidence_ref": "SHA256:256e0cb7:GATE-5",
+      "evidence_ref": "SHA256:61a4cc97:GATE-5",
       "details": {
         "status": "VERIFIED",
         "contract": "SAGE_EVIDENCE_RECEIPT_SPEC",
@@ -228,7 +228,7 @@
       "source_organ": "Evidence Capture",
       "target_organ": "Independent Verification",
       "passed": true,
-      "evidence_ref": "SHA256:256e0cb7:GATE-6",
+      "evidence_ref": "SHA256:61a4cc97:GATE-6",
       "details": {
         "status": "VERIFIED",
         "contract": "SAGE_INDEPENDENT_VERIFICATION_CONTRACT",
@@ -241,7 +241,7 @@
       "source_organ": "Independent Verification",
       "target_organ": "Observatory HUD",
       "passed": true,
-      "evidence_ref": "SHA256:256e0cb7:GATE-7",
+      "evidence_ref": "SHA256:61a4cc97:GATE-7",
       "details": {
         "status": "VERIFIED",
         "contract": "SAGE_OBSERVATORY_SURFACE_CONTRACT",
@@ -254,7 +254,7 @@
       "source_organ": "Observatory HUD",
       "target_organ": "Economic Measurement",
       "passed": true,
-      "evidence_ref": "SHA256:256e0cb7:GATE-8",
+      "evidence_ref": "SHA256:61a4cc97:GATE-8",
       "details": {
         "status": "VERIFIED",
         "contract": "SAGE_WORKBENCH_MEASUREMENT_CONTRACT",
@@ -267,7 +267,7 @@
       "source_organ": "Economic Measurement",
       "target_organ": "Capability Warehouse",
       "passed": true,
-      "evidence_ref": "SHA256:256e0cb7:GATE-9",
+      "evidence_ref": "SHA256:61a4cc97:GATE-9",
       "details": {
         "status": "VERIFIED",
         "contract": "SAGE_CAPABILITY_WAREHOUSE_CONTRACT",
@@ -280,7 +280,7 @@
       "source_organ": "Capability Warehouse",
       "target_organ": "Next Mission Intake",
       "passed": true,
-      "evidence_ref": "SHA256:256e0cb7:GATE-10",
+      "evidence_ref": "SHA256:61a4cc97:GATE-10",
       "details": {
         "status": "VERIFIED",
         "contract": "SAGE_COGNITIVE_REHYDRATION_CONTRACT",
