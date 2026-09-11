@@ -8,7 +8,7 @@ import hashlib
 from .ingestion import MarketSnapshot, PlayerPropSnapshot
 from .prediction import FanDuelPlayerPropAnalyzer, PredictionBatchEngine, PredictionRecord
 
-SUPPORTED_SPORTS = frozenset({"MLB", "NBA", "NFL", "NHL"})
+SUPPORTED_SPORTS = frozenset({"MLB", "NBA", "NFL", "NHL", "SOCCER", "TENNIS"})
 MIN_PARLAY_LEGS = 3
 MAX_PARLAY_LEGS = 6
 DEFAULT_DAILY_TARGET = 50

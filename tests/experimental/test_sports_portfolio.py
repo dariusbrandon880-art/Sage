@@ -37,9 +37,18 @@ def test_daily_engine_builds_only_three_to_six_leg_parlays():
     assert len({record.selection for record in portfolio.records if record.is_parlay}) == 10
 
 
+def test_daily_engine_supports_soccer_and_tennis():
+    snapshots = [market(f"soccer-{i}", "SOCCER", "moneyline", {"home": 2.1, "draw": 3.2, "away": 3.4}) for i in range(10)]
+    snapshots += [market(f"tennis-{i}", "TENNIS", "moneyline", {"player1": 1.8, "player2": 2.1}) for i in range(10)]
+    portfolio = DailySportsPortfolioEngine(target=20, parlay_share=0.25).build(snapshots, "daily-multi-sport")
+    assert portfolio.count == 20
+    assert portfolio.sport_counts["SOCCER"] > 0
+    assert portfolio.sport_counts["TENNIS"] > 0
+
+
 def test_daily_engine_rejects_unknown_sports():
     with pytest.raises(ValueError, match="UNSUPPORTED_SPORTS"):
-        DailySportsPortfolioEngine(target=1).build([market("soccer-1", "MLS", "moneyline", {"home": 2.0, "away": 2.0})], "daily-invalid")
+        DailySportsPortfolioEngine(target=1).build([market("cricket-1", "CRICKET", "moneyline", {"home": 2.0, "away": 2.0})], "daily-invalid")
 
 
 def test_daily_engine_fails_closed_when_market_universe_cannot_reach_target():

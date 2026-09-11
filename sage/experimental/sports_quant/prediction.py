@@ -86,10 +86,14 @@ class FanDuelPlayerPropAnalyzer:
             if usage_rate is not None:
                 adjustment += (usage_rate - 0.22) * 0.30
                 rationales.append(f"Usage rate {usage_rate:.0%}")
-        elif any(x in category for x in ("shots", "sog", "saves")):
+        elif any(x in category for x in ("shots", "sog", "saves", "goals", "passes")):
             if shot_volume_expectation is not None:
                 adjustment += (shot_volume_expectation - 2.5) * 0.04
-                rationales.append(f"Shot volume expectancy {shot_volume_expectation:.1f}")
+                rationales.append(f"Shot/stat volume expectancy {shot_volume_expectation:.1f}")
+        elif any(x in category for x in ("aces", "double_faults", "games", "sets")):
+            if shot_volume_expectation is not None:
+                adjustment += (shot_volume_expectation - 5.0) * 0.02
+                rationales.append(f"Tennis stat volume expectancy {shot_volume_expectation:.1f}")
         projected_prob = min(0.95, max(0.05, base_prob + adjustment))
         edge_score = projected_prob - fd_implied
         ev = calculate_ev(projected_prob, fd_price)
