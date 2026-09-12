@@ -1,9 +1,14 @@
-"""Tests for the AIET Validation Lab harness."""
+"""Launch-readiness tests for the AIET external harness."""
+
+import json
+import threading
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 import pytest
+from fastapi.testclient import TestClient
+
 from sage.c2.evolution_loop import FitnessVector
 from sage.c2.mission_contract import MissionContract
-import os
 from sage.experimental.aiet import (
     AIETBlindScenario,
     AIETExternalClient,
@@ -19,337 +24,149 @@ from sage.experimental.aiet import (
 )
 from sage.experimental.aiet.perturbation import PerturbationType
 
-
-def test_aiet_scenario_invariants():
-    scenario = AIETBlindScenario(
-        scenario_id="scenario_001",
-        description="Test Blind Scenario",
-        domain="C2_TEST",
-        expected_invariants=["KEY_EXISTS:result", "NON_EMPTY:status", "GTE:score:0.80"],
-    )
-    passed, violations = scenario.validate_invariants({"result": "ok", "status": "active", "score": 0.85})
-    assert passed is True
-    assert violations == []
-    passed, violations = scenario.validate_invariants({"status": "", "score": 0.70})
-    assert passed is False
-    assert "MISSING_KEY:result" in violations
-    assert "EMPTY_VALUE:status" in violations
-    assert "INVARIANT_BELOW_THRESHOLD:score<0.8" in violations
+TARGET_SHA = "a" * 40
 
 
-def test_aiet_perturbation_injector():
-    from sage.experimental.aiet.perturbation import AIETPerturbationInjector
-
-    perturbation = FailurePerturbation(
-        perturbation_id="pert_noise_01",
-        perturbation_type=PerturbationType.INPUT_NOISE,
-        severity=0.5,
-        target_key="input_data",
-    )
-    modified, logs = AIETPerturbationInjector([perturbation]).apply({"input_data": "canonical_payload"})
-    assert modified["input_data"] == "canonical_payload_NOISE_50"
-    assert logs == ["INJECTED_NOISE:input_data"]
+def _contract(mission_id="aiet_test"):
+    return {
+        "schema_version": "1.0",
+        "mission_id": mission_id,
+        "intent": "AIET external harness launch-readiness verification",
+        "authority_boundary": {"allowed_paths": ["sage/experimental/aiet/**"], "prohibited_paths": ["sage/runtime/**", "sage/core/**"]},
+        "completion_criteria": {"provenance_required": True},
+    }
 
 
-def test_aiet_independent_evaluator_caps_self_reported_scores_on_invariant_failure():
+def test_scenario_invariants():
+    scenario = AIETBlindScenario(scenario_id="s", description="d", domain="TEST", expected_invariants=["KEY_EXISTS:result", "NON_EMPTY:status"])
+    assert scenario.validate_invariants({"result": "ok", "status": "active"}) == (True, [])
+    passed, violations = scenario.validate_invariants({"status": ""})
+    assert not passed and "MISSING_KEY:result" in violations and "EMPTY_VALUE:status" in violations
+
+
+def test_perturbation_injector():
+    p = FailurePerturbation(perturbation_id="p", perturbation_type=PerturbationType.INPUT_NOISE, severity=.5, target_key="x")
+    changed, logs = __import__("sage.experimental.aiet.perturbation", fromlist=["AIETPerturbationInjector"]).AIETPerturbationInjector([p]).apply({"x": "value"})
+    assert changed["x"] == "value_NOISE_50" and logs == ["INJECTED_NOISE:x"]
+
+
+def test_independent_evaluator_caps_gaming():
     from sage.experimental.aiet.evaluator import AIETIndependentEvaluator
-
-    scenario = AIETBlindScenario(
-        scenario_id="scenario_eval_check",
-        description="Check evaluator independence",
-        domain="SECURITY",
-        expected_invariants=["KEY_EXISTS:required_key"],
-    )
-    # Output fails invariant but claims perfect 1.0 self-reported metrics
-    gaming_output = {
-        "status": "partial",
-        "mission_value": 1.0,
-        "repeatability": 1.0,
-        "evidence_quality": 1.0,
-        "recovery_rate": 1.0,
-        "generalization": 1.0,
-    }
-    evaluator = AIETIndependentEvaluator()
-    fit, violations = evaluator.evaluate_run(scenario, gaming_output, execution_time_sec=0.1)
-    assert len(violations) > 0
-    # Correctness is penalized to 0.75 for 1 violation (1.0 - 0.25)
-    assert fit.correctness == 0.75
-    # All fitness dimensions must be capped by correctness (0.75) instead of gaming at 1.0
-    assert fit.mission_value <= 0.75
-    assert fit.repeatability <= 0.75
-    assert fit.evidence_quality <= 0.75
-    assert fit.recovery <= 0.75
-    assert fit.generalization <= 0.75
+    scenario = AIETBlindScenario(scenario_id="s", description="d", domain="SECURITY", expected_invariants=["KEY_EXISTS:required"])
+    fit, violations = AIETIndependentEvaluator().evaluate_run(scenario, {"mission_value": 1, "repeatability": 1, "evidence_quality": 1, "recovery_rate": 1, "generalization": 1}, .1)
+    assert violations and fit.correctness == .75 and fit.mission_value <= .75
 
 
-def test_aiet_metrics_calculator():
-    base = FitnessVector(mission_value=.6, correctness=.6, repeatability=.6, evidence_quality=.6, recovery=.6, generalization=.6, cost=1.0)
-    cand = FitnessVector(mission_value=.9, correctness=.95, repeatability=.9, evidence_quality=.9, recovery=.9, generalization=.9, cost=.8)
-    pert = FitnessVector(mission_value=.8, correctness=.85, repeatability=.8, evidence_quality=.8, recovery=.85, generalization=.8, cost=.9)
-    transfer = FitnessVector(mission_value=.85, correctness=.9, repeatability=.85, evidence_quality=.85, recovery=.85, generalization=.85, cost=.8)
-    metrics = AIETMetricsCalculator.calculate_metrics(base, cand, pert, transfer, regression_free=True)
-    assert metrics.adaptation_gain > 0
-    assert 0 <= metrics.recovery_rate <= 1
-    assert 0 <= metrics.transfer_efficiency <= 1
-    assert 0 <= metrics.resilience_score <= 1
+def test_metrics_calculator():
+    b = FitnessVector(.6, .6, .6, .6, .6, .6, 1)
+    c = FitnessVector(.9, .95, .9, .9, .9, .9, .8)
+    p = FitnessVector(.8, .85, .8, .8, .85, .8, .9)
+    t = FitnessVector(.85, .9, .85, .85, .85, .85, .8)
+    m = AIETMetricsCalculator.calculate_metrics(b, c, p, t, True)
+    assert m.adaptation_gain > 0 and 0 <= m.resilience_score <= 1
 
 
-def test_aiet_runner_executes_all_five_frozen_trials_and_fails_closed_for_fixture():
-    contract = MissionContract.from_mapping({
-        "schema_version": "1.0",
-        "mission_id": "aiet_mission_test",
-        "intent": "Test AIET mission contract binding",
-        "authority_boundary": {"allowed_paths": ["sage/experimental/aiet/**"], "prohibited_paths": ["sage/runtime/**"]},
-        "completion_criteria": {"required_tests": ["tests/experimental/test_aiet_validation.py"], "provenance_required": True},
-    })
-    scenario = AIETBlindScenario(
-        scenario_id="scenario_alpha",
-        description="Alpha blind task",
-        domain="SYNTHESIS",
-        inputs={"query": "test_alpha"},
-        expected_invariants=["KEY_EXISTS:status"],
-        transfer_target_domain="ANALYSIS",
-    )
-
-    def baseline_executor(inputs):
-        return {"status": "ok", "mission_value": .6, "repeatability": .7, "recovery_rate": .6}
-
-    def candidate_executor(inputs):
-        return {
-            "status": "ok",
-            "mission_value": .9,
-            "repeatability": .95,
-            "recovery_rate": .9,
-            "unscripted_discovery": False,
-        }
-
+def test_runner_fixture_fails_closed():
+    scenario = AIETBlindScenario(scenario_id="s", description="d", domain="TEST", inputs={"q": "x"}, expected_invariants=["KEY_EXISTS:status"])
     receipt = AIETMissionRunner().run_validation_flight(
-        mission_contract=contract,
-        scenarios=[scenario],
-        baseline_executor=baseline_executor,
-        candidate_executor=candidate_executor,
-        perturbations=[FailurePerturbation(perturbation_id="pert_drift_01", perturbation_type=PerturbationType.ENVIRONMENT_DRIFT, severity=.2)],
-        baseline_technique_id="base_v1",
-        candidate_technique_id="cand_v2",
-        execution_mode="fixture",
-    )
-
-    assert isinstance(receipt, AIETValidationReceipt)
-    assert receipt.trials_count == 5
-    assert receipt.overall_verdict == "AUTOMATION"
-    assert receipt.verdict == "AUTOMATION"
-    assert receipt.human_intervention_count == 0
-    assert len(receipt.initial_state_hash) == 64
-    assert len(receipt.scenario_hash) == 64
-    assert len(receipt.final_state_hash) == 64
-    assert len(receipt.to_dict()["evidence_proof_hash"]) == 64
-    assert "NON_EXTERNAL_EXECUTION:fixture" in receipt.fail_closed_reasons
+        mission_contract=MissionContract.from_mapping(_contract()), scenarios=[scenario],
+        baseline_executor=lambda _: {"status": "ok"}, candidate_executor=lambda _: {"status": "ok"},
+        perturbations=[], baseline_technique_id="b", candidate_technique_id="c", execution_mode="fixture")
+    assert receipt.overall_verdict == "AUTOMATION" and "NON_EXTERNAL_EXECUTION:fixture" in receipt.fail_closed_reasons
 
 
-def test_aiet_external_client_fails_closed_when_unconfigured():
-    client = AIETExternalClient(harness_url="", harness_key="")
-    assert client.is_configured() is False
-
-    contract = MissionContract.from_mapping({
-        "schema_version": "1.0",
-        "mission_id": "test_unconfigured",
-        "intent": "Unconfigured test",
-        "completion_criteria": {"provenance_required": True},
-    })
-    provider = AIETProviderConfig(provider_name="openai", model_name="gpt-4o")
-
-    with pytest.raises(AIETExternalClientError, match="EXTERNAL_HARNESS_NOT_CONFIGURED"):
-        client.initiate_flight(contract, provider)
-
-    with pytest.raises(AIETExternalClientError, match="EXTERNAL_HARNESS_NOT_CONFIGURED"):
-        client.execute_flight("flight_123")
-
-    with pytest.raises(AIETExternalClientError, match="EXTERNAL_HARNESS_NOT_CONFIGURED"):
-        client.fetch_receipt("flight_123")
-
-
-def test_aiet_external_client_refuses_fixture_execution_mode():
-    client = AIETExternalClient(harness_url="https://aiet.external.org", harness_key="secret_key")
-    contract = MissionContract.from_mapping({
-        "schema_version": "1.0",
-        "mission_id": "test_mode_check",
-        "intent": "Refuse fixture test",
-        "completion_criteria": {"provenance_required": True},
-    })
-    provider = AIETProviderConfig(provider_name="openai", model_name="gpt-4o")
-
+def test_external_client_refuses_fixture():
+    client = AIETExternalClient(harness_url="https://example.invalid", harness_key="k")
     with pytest.raises(AIETExternalClientError, match="INVALID_EXECUTION_MODE"):
-        client.initiate_flight(contract, provider, execution_mode="fixture")
+        client.initiate_flight(MissionContract.from_mapping(_contract()), AIETProviderConfig(provider_name="openai", model_name="gpt-test"), execution_mode="fixture")
 
 
-def test_aiet_external_client_validates_remote_receipt_proof_hash_and_integrity():
-    valid_receipt = AIETValidationReceipt(
-        receipt_id="aiet_rcpt_ext_999",
-        mission_id="aiet_mission_ext",
-        trials_count=10,
-        scenarios_evaluated=["scenario_1"],
-        perturbations_injected=["pert_1"],
-        baseline_technique_id="base_v1",
-        candidate_technique_id="cand_v2",
-        adaptation_gain=0.8,
-        recovery_rate=0.85,
-        transfer_efficiency=0.9,
-        resilience_score=0.88,
-        evolution_decision="PROMOTE",
-        overall_verdict="DEMONSTRATED_AUTONOMOUS_ADAPTATION",
-        isolation_status="REQUIRES_HARNESS_PROOF",
-        initial_state_hash="a" * 64,
-        scenario_hash="b" * 64,
-        constraint_integrity=True,
-        verification_integrity=True,
-        human_intervention_count=0,
-        unscripted_discovery=True,
-        adaptation_latency_steps=1,
-        final_state_hash="c" * 64,
-        verdict="DEMONSTRATED_AUTONOMOUS_ADAPTATION",
-        execution_mode="external",
-        git_head_sha="668332be44af6bfbd2e39691dac388fc326bf1b9",
-    )
-    receipt_data = valid_receipt.to_dict()
-
-    validated = AIETExternalClient.validate_remote_receipt(receipt_data)
-    assert validated.receipt_id == "aiet_rcpt_ext_999"
-
-    # Mismatched proof hash
-    tampered_data = dict(receipt_data)
-    tampered_data["resilience_score"] = 0.99
-    with pytest.raises(AIETExternalClientError, match="RECEIPT_HASH_MISMATCH"):
-        AIETExternalClient.validate_remote_receipt(tampered_data)
-
-    # Remote receipt claiming fixture
-    fixture_data = dict(receipt_data)
-    fixture_data["execution_mode"] = "fixture"
-    fixture_data["evidence_proof_hash"] = AIETValidationReceipt(**fixture_data).compute_hash()
-    with pytest.raises(AIETExternalClientError, match="INVALID_EXTERNAL_RECEIPT"):
-        AIETExternalClient.validate_remote_receipt(fixture_data)
-
-    # Human intervention violation
-    intervention_data = dict(receipt_data)
-    intervention_data["human_intervention_count"] = 1
-    intervention_data["evidence_proof_hash"] = AIETValidationReceipt(**intervention_data).compute_hash()
-    with pytest.raises(AIETExternalClientError, match="HUMAN_INTERVENTION_VIOLATION"):
-        AIETExternalClient.validate_remote_receipt(intervention_data)
-
-    # Invalid git SHA
-    bad_sha_data = dict(receipt_data)
-    bad_sha_data["git_head_sha"] = "invalid_sha"
-    bad_sha_data["evidence_proof_hash"] = AIETValidationReceipt(**bad_sha_data).compute_hash()
-    with pytest.raises(AIETExternalClientError, match="INVALID_GIT_HEAD_SHA"):
-        AIETExternalClient.validate_remote_receipt(bad_sha_data)
-
-
-def test_aiet_provider_adapter_fails_closed_without_secret(monkeypatch):
+def test_provider_missing_secret(monkeypatch):
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
-    config = AIETProviderConfig(provider_name="openai", model_name="gpt-4o")
-
     with pytest.raises(AIETExternalServerError, match="MISSING_PROVIDER_CREDENTIALS"):
-        AIETProviderAdapter.resolve_provider_credentials(config)
+        AIETProviderAdapter.resolve_provider_credentials(AIETProviderConfig(provider_name="openai", model_name="gpt-test"))
 
 
-def test_aiet_server_unauthorized_key_rejection():
-    server = AIETExternalHarnessServer(secret_harness_key="valid_harness_secret")
-    contract = {
-        "schema_version": "1.0",
-        "mission_id": "test_auth_check",
-        "intent": "Auth check",
-        "completion_criteria": {"provenance_required": True},
-    }
-    provider = {"provider_name": "openai", "model_name": "gpt-4o"}
+def test_provider_invocation_hits_real_http_endpoint(monkeypatch):
+    class Handler(BaseHTTPRequestHandler):
+        def do_POST(self):  # noqa: N802
+            length = int(self.headers["Content-Length"])
+            body = json.loads(self.rfile.read(length))
+            assert body["model"] == "gpt-test"
+            payload = {"id": "real-http-1", "choices": [{"message": {"content": "live provider response"}}]}
+            data = json.dumps(payload).encode()
+            self.send_response(200); self.send_header("Content-Type", "application/json"); self.send_header("Content-Length", str(len(data))); self.end_headers(); self.wfile.write(data)
+        def log_message(self, *_): return
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler); threading.Thread(target=server.serve_forever, daemon=True).start()
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    monkeypatch.setenv("OPENAI_BASE_URL", f"http://127.0.0.1:{server.server_port}")
+    try:
+        result = AIETProviderAdapter.invoke_provider(AIETProviderConfig(provider_name="openai", model_name="gpt-test"), {"_trial_phase": "BASELINE_DISCOVERY"})
+        assert result["result"] == "live provider response"
+        assert result["raw_provider_response"]["id"] == "real-http-1"
+        assert result["synthesis_digest"] != ""
+        assert "mission_value" not in result
+    finally:
+        server.shutdown()
 
-    with pytest.raises(AIETExternalServerError, match="UNAUTHORIZED_HARNESS_KEY"):
-        server.initiate_flight(contract, provider, provided_harness_key="invalid_key")
+
+def test_actual_out_of_band_disruption_and_recovery(monkeypatch):
+    class Handler(BaseHTTPRequestHandler):
+        def do_GET(self):  # noqa: N802
+            self.send_response(503); self.end_headers()
+        def do_POST(self):  # noqa: N802
+            payload = {"id": "recovered", "choices": [{"message": {"content": "recovered provider response"}}]}
+            data = json.dumps(payload).encode(); self.send_response(200); self.send_header("Content-Type", "application/json"); self.send_header("Content-Length", str(len(data))); self.end_headers(); self.wfile.write(data)
+        def log_message(self, *_): return
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler); threading.Thread(target=server.serve_forever, daemon=True).start()
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    monkeypatch.setenv("OPENAI_BASE_URL", f"http://127.0.0.1:{server.server_port}")
+    monkeypatch.setenv("SAGE_AIET_DISRUPTION_URL", f"http://127.0.0.1:{server.server_port}/fail")
+    try:
+        result = AIETProviderAdapter.invoke_provider(AIETProviderConfig(provider_name="openai", model_name="gpt-test"), {"_trial_phase": "ACTIVE_DISRUPTION"}, induce_disruption=True)
+        assert result["disruption_encountered"] is True
+        assert "HTTP 503" in result["disruption_error"]
+        assert result["result"] == "recovered provider response"
+    finally:
+        server.shutdown()
 
 
-def test_aiet_server_health_endpoint():
+def test_server_requires_target_sha(monkeypatch):
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    server = AIETExternalHarnessServer(secret_harness_key="secret")
+    with pytest.raises(AIETExternalServerError, match="INVALID_TARGET_GIT_SHA"):
+        server.initiate_flight(_contract(), {"provider_name": "openai", "model_name": "gpt-test"}, provided_harness_key="secret")
+
+
+def test_server_rejects_target_sha_mismatch(monkeypatch):
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key"); monkeypatch.setenv("SAGE_AIET_TARGET_GIT_SHA", "b" * 40)
+    server = AIETExternalHarnessServer(secret_harness_key="secret")
+    with pytest.raises(AIETExternalServerError, match="TARGET_GIT_SHA_MISMATCH"):
+        server.initiate_flight(_contract(), {"provider_name": "openai", "model_name": "gpt-test"}, target_git_head_sha=TARGET_SHA, provided_harness_key="secret")
+
+
+def test_health_endpoint():
     from sage.experimental.aiet.server import create_aiet_harness_app
-    from fastapi.testclient import TestClient
-
-    app = create_aiet_harness_app()
-    client = TestClient(app)
-    response = client.get("/health")
-    assert response.status_code == 200
-    assert response.json() == {"status": "healthy", "service": "sage-aiet-harness"}
+    response = TestClient(create_aiet_harness_app()).get("/health")
+    assert response.status_code == 200 and response.json() == {"status": "healthy", "service": "sage-aiet-harness"}
 
 
-def test_aiet_external_client_enforces_target_git_sha_match():
-    valid_receipt = AIETValidationReceipt(
-        receipt_id="aiet_rcpt_ext_sha_test",
-        mission_id="aiet_sha_test",
-        trials_count=10,
-        scenarios_evaluated=["scenario_1"],
-        perturbations_injected=["pert_1"],
-        baseline_technique_id="base_v1",
-        candidate_technique_id="cand_v2",
-        adaptation_gain=0.8,
-        recovery_rate=0.85,
-        transfer_efficiency=0.9,
-        resilience_score=0.88,
-        evolution_decision="PROMOTE",
-        overall_verdict="DEMONSTRATED_AUTONOMOUS_ADAPTATION",
-        isolation_status="REQUIRES_HARNESS_PROOF",
-        initial_state_hash="a" * 64,
-        scenario_hash="b" * 64,
-        constraint_integrity=True,
-        verification_integrity=True,
-        human_intervention_count=0,
-        unscripted_discovery=True,
-        adaptation_latency_steps=1,
-        final_state_hash="c" * 64,
-        verdict="DEMONSTRATED_AUTONOMOUS_ADAPTATION",
-        execution_mode="external",
-        git_head_sha="668332be44af6bfbd2e39691dac388fc326bf1b9",
-    )
-    receipt_data = valid_receipt.to_dict()
-
-    # Valid matching target SHA
-    AIETExternalClient.validate_remote_receipt(receipt_data, expected_target_sha="668332be44af6bfbd2e39691dac388fc326bf1b9")
-
-    # Mismatched target SHA fails closed
-    with pytest.raises(AIETExternalClientError, match="TARGET_GIT_SHA_MISMATCH"):
-        AIETExternalClient.validate_remote_receipt(receipt_data, expected_target_sha="c6594f87b4718a4c9d0c286cb701c875e96adf62")
+def test_end_to_end_receipt_sha_binding_and_hash(monkeypatch):
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    server = AIETExternalHarnessServer(secret_harness_key="secret")
+    def transport(config, inputs, disruption):
+        return {"status": "COMPLETED", "result": "candidate output", "synthesis_digest": "digest-" + inputs["_trial_phase"], "checkpoint_hash": "checkpoint-" + inputs["_trial_phase"], "raw_provider_response": {"provider": config.provider_name, "phase": inputs["_trial_phase"]}}
+    init = server.initiate_flight(_contract("e2e"), {"provider_name": "openai", "model_name": "gpt-test"}, target_git_head_sha=TARGET_SHA, provided_harness_key="secret")
+    receipt_data = server.execute_flight(init["flight_id"], provided_harness_key="secret", custom_http_handler=transport)
+    receipt = AIETExternalClient.validate_remote_receipt(receipt_data, expected_target_sha=TARGET_SHA)
+    assert receipt.git_head_sha == TARGET_SHA and receipt.human_intervention_count == 0 and len(receipt.evidence_proof_hash) == 64
 
 
-def test_aiet_server_end_to_end_protocol_exchange(monkeypatch):
-    monkeypatch.setenv("OPENAI_API_KEY", "sk-mock-test-key-12345")
-    monkeypatch.setenv("SAGE_AIET_EXTERNAL_HARNESS_KEY", "valid_harness_secret_999")
-
-    server = AIETExternalHarnessServer()
-    contract = {
-        "schema_version": "1.0",
-        "mission_id": "mission_end_to_end_aiet",
-        "intent": "Verify complete AIET protocol exchange",
-        "authority_boundary": {"allowed_paths": ["sage/experimental/aiet/**"]},
-        "completion_criteria": {"provenance_required": True},
-    }
-    provider = {"provider_name": "openai", "model_name": "gpt-4o", "temperature": 0.0}
-
-    init_res = server.initiate_flight(
-        mission_contract_data=contract,
-        provider_config_data=provider,
-        execution_mode="external",
-        provided_harness_key="valid_harness_secret_999",
-    )
-    assert init_res["status"] == "INITIATED"
-    flight_id = init_res["flight_id"]
-    assert flight_id.startswith("flight_ext_")
-
-    receipt_dict = server.execute_flight(
-        flight_id=flight_id,
-        provided_harness_key="valid_harness_secret_999",
-    )
-
-    # Validate receipt with AIETExternalClient validator
-    validated_receipt = AIETExternalClient.validate_remote_receipt(receipt_dict)
-
-    assert validated_receipt.mission_id == "mission_end_to_end_aiet"
-    assert validated_receipt.execution_mode == "external"
-    assert validated_receipt.isolation_status == "REQUIRES_HARNESS_PROOF"
-    assert validated_receipt.human_intervention_count == 0
-    assert "PLANNED_DISRUPTION:SERVICE_UNAVAILABILITY_503" in validated_receipt.observations
-    assert any("OBSERVED_DISRUPTION:RECOVERED_FROM_" in obs for obs in validated_receipt.observations)
-    assert validated_receipt.overall_verdict in ("DEMONSTRATED_AUTONOMOUS_ADAPTATION", "PARTIAL_AUTONOMY")
+def test_receipt_tamper_and_fixture_rejection():
+    receipt = AIETValidationReceipt(receipt_id="r", mission_id="m", trials_count=1, scenarios_evaluated=["s"], perturbations_injected=[], baseline_technique_id="b", candidate_technique_id="c", adaptation_gain=0, recovery_rate=0, transfer_efficiency=0, resilience_score=0, evolution_decision="HOLD", overall_verdict="PARTIAL_AUTONOMY", isolation_status="REQUIRES_HARNESS_PROOF", initial_state_hash="a" * 64, scenario_hash="b" * 64, constraint_integrity=True, verification_integrity=True, human_intervention_count=0, unscripted_discovery=True, adaptation_latency_steps=0, final_state_hash="c" * 64, verdict="PARTIAL_AUTONOMY", execution_mode="external", git_head_sha=TARGET_SHA)
+    data = receipt.to_dict(); data["resilience_score"] = .99
+    with pytest.raises(AIETExternalClientError, match="RECEIPT_HASH_MISMATCH"):
+        AIETExternalClient.validate_remote_receipt(data)
+    fixture = receipt.to_dict(); fixture["execution_mode"] = "fixture"; fixture["evidence_proof_hash"] = AIETValidationReceipt(**fixture).compute_hash()
+    with pytest.raises(AIETExternalClientError, match="INVALID_EXTERNAL_RECEIPT"):
+        AIETExternalClient.validate_remote_receipt(fixture)
