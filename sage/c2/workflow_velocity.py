@@ -222,6 +222,43 @@ class MultiSessionVelocityEngine:
             organism_growth_dict = org_growth.to_dict()
         except Exception:
             pass
+
+        # Adjudicate verified velocity wave completion into canonical progression
+        progression_reward = None
+        if rolls_royce_passed:
+            try:
+                import time
+                from sage.c2.reward_adjudication_bridge import request_c2_reward_adjudication
+                report_payload = {
+                    "evidence_packet_version": "SAGE-SEP/1",
+                    "mission_id": wave_id,
+                    "subject_repo": "dariusbrandon880-art/Sage",
+                    "target_sha": exact_git_head,
+                    "observed_sha": exact_git_head,
+                    "claim_type": "verified_build_wave",
+                    "claim_statement": f"Verified velocity wave execution for {wave_id}",
+                    "primary_actor": "ENGINEERING_FLIGHT",
+                    "outcome_type": "BUILD",
+                    "verification_status": "VERIFIED",
+                    "evidence_refs": [f"vw:{wave_id}:{exact_git_head}"],
+                    "verified_event_ref": f"velocity_wave:{wave_id}:{exact_git_head}",
+                    "evidence_digest": hashlib.sha256(f"vw:{wave_id}:{exact_git_head}".encode("utf-8")).hexdigest(),
+                    "base_points": 25,
+                    "timestamp": time.time(),
+                }
+                progression_reward = request_c2_reward_adjudication(
+                    report_payload,
+                    difficulty=3,
+                    verification_quality=4,
+                    impact=4,
+                    reuse=4,
+                )
+            except Exception:
+                progression_reward = None
+
+        if organism_growth_dict is not None and progression_reward is not None:
+            organism_growth_dict["progression_reward"] = progression_reward
+
         receipt = MultiSessionVelocityReceipt(
             receipt_id=f"rec_{hashlib.sha256(f'{wave_id}:{exact_git_head}'.encode('utf-8')).hexdigest()[:12]}",
             wave_id=wave_id,
