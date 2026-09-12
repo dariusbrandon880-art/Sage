@@ -163,8 +163,6 @@ def project_chatgpt_immersion_response(
     avoid noise, but a changed HUD is surfaced deterministically from its
     content key. Name-tag rendering is fail-closed rather than silently lost.
     """
-    contract = project_c2_response_contract(state, strike_feed=strike_feed)
-
     tag = organism_tag.strip() if isinstance(organism_tag, str) else organism_tag
     projection = organism_projection
     mgr = organism_manager if organism_manager is not None else manager
@@ -172,8 +170,11 @@ def project_chatgpt_immersion_response(
     if not tag and projection is not None:
         tag = _render_organism_projection(projection)
 
-    if not tag and mgr is None:
-        mgr = _load_airspace_manager()
+    if not tag and mgr is None and projection is None:
+        try:
+            mgr = _load_airspace_manager()
+        except Exception:
+            mgr = None
 
     if not tag and mgr is not None:
         try:
@@ -183,10 +184,18 @@ def project_chatgpt_immersion_response(
             tag = None
 
     if not tag and projection is None:
-        tag = f"[SAGE::C2::CHATGPT] ◈ GPT // CQL-1 // POINTS 0 // XP 0 // BOSS ⭐×0 ⭐⭐×0 // ⚔️ 0 // ┃ 0 // {state_label}"
+        tag = f"[SAGE::C2::CHATGPT] ◈ GPT // RANK UNKNOWN // POINTS UNKNOWN // XP UNKNOWN // BOSS UNKNOWN // {state_label}"
 
     if not tag:
         raise ValueError("SAGE organism name tag required for C2 immersion response")
+
+    contract = project_c2_response_contract(
+        state,
+        strike_feed=strike_feed,
+        organism_projection=projection,
+        organism_manager=mgr,
+        station_id=station_id,
+    )
 
     return ChatGPTImmersionResponse(
         station_header="[SAGE::C2::CHATGPT] **C2 Mission Control**",

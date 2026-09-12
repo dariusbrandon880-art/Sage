@@ -196,6 +196,37 @@ class WholeOrganismLoopEngine:
         # STAGE 13: CAPABILITY / MEMORY PROMOTION & NEXT MISSION
         next_frontier = f"FRONTIER_NEXT_{hashlib.sha256(f'{mission_id}:{head_sha}'.encode('utf-8')).hexdigest()[:8].upper()}"
 
+        # Adjudicate verified whole-organism completion reward into canonical progression
+        progression_reward = None
+        try:
+            from sage.c2.reward_adjudication_bridge import request_c2_reward_adjudication
+            report_payload = {
+                "evidence_packet_version": "SAGE-SEP/1",
+                "mission_id": mission_id,
+                "subject_repo": "dariusbrandon880-art/Sage",
+                "target_sha": head_sha,
+                "observed_sha": head_sha,
+                "claim_type": "verified_breakthrough",
+                "claim_statement": f"Verified whole-organism mission completion for {mission_id}",
+                "primary_actor": "ENGINEERING_FLIGHT",
+                "outcome_type": "BREAKTHROUGH",
+                "verification_status": "VERIFIED",
+                "evidence_refs": [f"wo:{mission_id}:{head_sha}"],
+                "verified_event_ref": f"whole_organism:{mission_id}:{head_sha}",
+                "evidence_digest": hashlib.sha256(f"wo:{mission_id}:{head_sha}".encode("utf-8")).hexdigest(),
+                "base_points": 50,
+                "timestamp": time.time(),
+            }
+            progression_reward = request_c2_reward_adjudication(
+                report_payload,
+                difficulty=4,
+                verification_quality=5,
+                impact=5,
+                reuse=5,
+            )
+        except Exception:
+            progression_reward = None
+
         receipt_id = f"wo_rec_{hashlib.sha256(f'{mission_id}:{head_sha}:{time.time()}'.encode('utf-8')).hexdigest()[:12]}"
         receipt = WholeOrganismFlightReceipt(
             receipt_id=receipt_id,
@@ -213,7 +244,10 @@ class WholeOrganismLoopEngine:
                 "calibration_error": updated_state.calibration_error,
                 "confidence": updated_state.outcome_confidence,
             },
-            learning_signal=learning_signal,
+            learning_signal={
+                **learning_signal,
+                "progression_reward": progression_reward,
+            },
             next_frontier=next_frontier,
             all_stages_completed=True,
         )

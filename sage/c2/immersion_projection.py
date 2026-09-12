@@ -6,6 +6,7 @@ Enforces strict one-way state architecture:
 
 from __future__ import annotations
 
+import importlib
 from dataclasses import dataclass
 from typing import Mapping, Sequence
 
@@ -125,6 +126,166 @@ class StrikeFeedProjection:
 
 
 @dataclass(frozen=True)
+class C2ProgressionProjection:
+    """Deterministic read-only C2 progression projection derived from canonical Airspace/organism state."""
+
+    rank_level: int | str = "UNKNOWN"
+    rank_title: str = "UNKNOWN"
+    points: int | str = "UNKNOWN"
+    career_xp: int | str = "UNKNOWN"
+    next_rank_xp: int | str | None = None
+    current_rank_xp: int | str | None = None
+    total_badges: int | str = "UNKNOWN"
+    big_badges: int | str = "UNKNOWN"
+    major_badges: int | str = "UNKNOWN"
+    total_kills: int | str = "UNKNOWN"
+    total_captures: int | str = "UNKNOWN"
+    badge_summary: str = "UNKNOWN"
+    latest_event: str | None = None
+    status: str = "UNVERIFIED"
+
+    def render_lines(self) -> tuple[str, ...]:
+        if self.status != "VERIFIED":
+            return (
+                "RANK     : UNKNOWN",
+                "POINTS   : UNKNOWN",
+                "XP       : UNKNOWN",
+                "PROGRESS : HOLD / UNVERIFIED",
+                "BADGES   : UNKNOWN",
+                "BOSS     : UNKNOWN",
+                "KILLS    : UNKNOWN",
+                "CAPTURES : UNKNOWN",
+            )
+
+        if isinstance(self.career_xp, int) and isinstance(self.next_rank_xp, int) and isinstance(self.current_rank_xp, int):
+            if self.next_rank_xp == self.current_rank_xp:
+                progress_str = "██████████ MAX RANK"
+            else:
+                needed = self.next_rank_xp - self.current_rank_xp
+                gained = self.career_xp - self.current_rank_xp
+                ratio = min(1.0, max(0.0, gained / max(1, needed)))
+                filled = int(round(ratio * 10))
+                bar = "█" * filled + "░" * (10 - filled)
+                progress_str = f"{bar} {self.career_xp} / {self.next_rank_xp} XP"
+        else:
+            progress_str = "HOLD / UNVERIFIED"
+
+        boss_str = f"⭐×{self.big_badges}  ⭐⭐×{self.major_badges}"
+        lines = [
+            f"RANK     : {self.rank_title} — L{self.rank_level}",
+            f"POINTS   : {self.points}",
+            f"XP       : {self.career_xp}",
+            f"PROGRESS : {progress_str}",
+            f"BADGES   : {self.total_badges} ({self.badge_summary})",
+            f"BOSS     : {boss_str}",
+            f"KILLS    : ⚔️ {self.total_kills}",
+            f"CAPTURES : ┃ {self.total_captures}",
+        ]
+        if self.latest_event:
+            lines.append(f"LATEST   : {self.latest_event}")
+        return tuple(lines)
+
+
+def _get_station_id(station_id_val: object) -> object:
+    models_mod = importlib.import_module("sage.experimental.airspace.models")
+    if station_id_val is None:
+        return models_mod.StationID.MISSION_CONTROL
+    if isinstance(station_id_val, models_mod.StationID):
+        return station_id_val
+    if isinstance(station_id_val, str):
+        try:
+            return models_mod.StationID(station_id_val)
+        except ValueError:
+            return models_mod.StationID.MISSION_CONTROL
+    return station_id_val
+
+
+def project_c2_progression(
+    organism_projection: object | None = None,
+    manager: object | None = None,
+    station_id: object | None = None,
+) -> C2ProgressionProjection:
+    """Project canonical progression from OrganismAgentProjection or AirspaceManager."""
+    proj = organism_projection
+
+    if proj is None and manager is not None:
+        try:
+            target_station = _get_station_id(station_id)
+            airspace_state = manager.reconstruct_airspace_state()
+            organism_mod = importlib.import_module("sage.experimental.airspace.organism_projection")
+            proj = organism_mod.OrganismProjection.project_station(manager, airspace_state, target_station)
+        except Exception:
+            proj = None
+
+    if proj is None:
+        return C2ProgressionProjection(status="UNVERIFIED")
+
+    rank_level = getattr(proj, "rank_level", "UNKNOWN")
+    rank_title = getattr(proj, "rank_title", "UNKNOWN")
+    points = getattr(proj, "points", "UNKNOWN")
+    career_xp = getattr(proj, "career_xp", "UNKNOWN")
+
+    boss = getattr(proj, "boss", None)
+    big_badges = getattr(boss, "big_badges", 0) if boss is not None else "UNKNOWN"
+    major_badges = getattr(boss, "major_badges", 0) if boss is not None else "UNKNOWN"
+    total_badges = getattr(boss, "total_badges", 0) if boss is not None else "UNKNOWN"
+    total_kills = getattr(boss, "total_kills", 0) if boss is not None else "UNKNOWN"
+    total_captures = getattr(boss, "total_captures", 0) if boss is not None else "UNKNOWN"
+    badge_summary = getattr(boss, "badge_summary", "—") if boss is not None else "—"
+
+    curr_thresh = None
+    next_thresh = None
+    if isinstance(career_xp, int):
+        try:
+            rank_mod = importlib.import_module("sage.experimental.airspace.rank_system")
+            curr_thresh, next_thresh = rank_mod.xp_for_next_rank(career_xp)
+        except Exception:
+            pass
+
+    latest_evt = None
+    mgr = manager
+    if mgr is None and hasattr(proj, "_manager"):
+        mgr = getattr(proj, "_manager")
+    if mgr is not None and hasattr(mgr, "_load_raw_events"):
+        try:
+            raw_events = mgr._load_raw_events()
+            for raw in reversed(raw_events):
+                evt_type = raw.get("event_type", "")
+                if evt_type in (
+                    "XP_AWARDED",
+                    "VERIFIED_POINT_AWARD",
+                    "REWARD_SETTLED",
+                    "QUALIFICATION_PROMOTED",
+                    "BOSS_OUTCOME_VERIFIED",
+                ):
+                    payload = raw.get("payload", {})
+                    reason = payload.get("reason") or payload.get("promotion_reason") or evt_type
+                    amt = payload.get("amount") or payload.get("points") or ""
+                    amt_str = f" (+{amt})" if amt else ""
+                    latest_evt = f"{evt_type}{amt_str} // {reason}"
+                    break
+        except Exception:
+            pass
+
+    return C2ProgressionProjection(
+        rank_level=rank_level,
+        rank_title=rank_title,
+        points=points,
+        career_xp=career_xp,
+        next_rank_xp=next_thresh,
+        current_rank_xp=curr_thresh,
+        total_badges=total_badges,
+        big_badges=big_badges,
+        major_badges=major_badges,
+        total_kills=total_kills,
+        total_captures=total_captures,
+        badge_summary=badge_summary,
+        latest_event=latest_evt,
+        status="VERIFIED",
+    )
+
+
+@dataclass(frozen=True)
 class MissionHUDProjection:
     """Deterministic mission control HUD projected from canonical ImmersionState."""
 
@@ -138,12 +299,20 @@ class MissionHUDProjection:
     evidence_summary: str
     next_move: str
     strike_feed: StrikeFeedProjection | None = None
+    progression: C2ProgressionProjection | None = None
 
     def render(self) -> str:
+        prog = self.progression or C2ProgressionProjection(status="UNVERIFIED")
         lines = [
             "==================================================",
             "01 — COMMAND BAND // SAGE MISSION CONTROL HUD",
             "==================================================",
+        ]
+        lines.extend(prog.render_lines())
+        lines.extend([
+            "--------------------------------------------------",
+            "02 — OPERATING PICTURE",
+            "--------------------------------------------------",
             f"MISSION  : {self.mission}",
             f"PHASE    : {self.phase}",
             f"FLIGHT   : {self.flight_id} ({self.flight_status})",
@@ -153,7 +322,7 @@ class MissionHUDProjection:
             f"EVIDENCE : {self.evidence_summary}",
             f"NEXT MOVE: {self.next_move}",
             "==================================================",
-        ]
+        ])
         if self.strike_feed and self.strike_feed.events:
             lines.extend(["", "04 — STRIKE FEED", self.strike_feed.render()])
         return "\n".join(lines)
@@ -260,6 +429,11 @@ def project_strike_feed_from_state(state: ImmersionState) -> StrikeFeedProjectio
 def project_mission_hud(
     state: ImmersionState,
     strike_feed: StrikeFeedProjection | None = None,
+    progression: C2ProgressionProjection | None = None,
+    *,
+    organism_projection: object | None = None,
+    organism_manager: object | None = None,
+    station_id: object | None = None,
 ) -> MissionHUDProjection:
     """Project a deterministic mission HUD from canonical state."""
     if not state.validate():
@@ -272,6 +446,13 @@ def project_mission_hud(
     if strike_feed is None:
         strike_feed = project_strike_feed_from_state(state)
 
+    if progression is None and (organism_projection is not None or organism_manager is not None):
+        progression = project_c2_progression(
+            organism_projection=organism_projection,
+            manager=organism_manager,
+            station_id=station_id,
+        )
+
     return MissionHUDProjection(
         mission=state.mission,
         phase=state.phase.value,
@@ -283,16 +464,29 @@ def project_mission_hud(
         evidence_summary=evidence_str,
         next_move=state.next_move,
         strike_feed=strike_feed,
+        progression=progression,
     )
 
 
 def project_c2_response_contract(
     state: ImmersionState,
     strike_feed: StrikeFeedProjection | None = None,
+    progression: C2ProgressionProjection | None = None,
+    *,
+    organism_projection: object | None = None,
+    organism_manager: object | None = None,
+    station_id: object | None = None,
 ) -> C2ResponseContract:
     """Project the complete C2 Response Contract from canonical state."""
     nameplate = project_immersion_nameplate(state)
-    hud = project_mission_hud(state, strike_feed=strike_feed)
+    hud = project_mission_hud(
+        state,
+        strike_feed=strike_feed,
+        progression=progression,
+        organism_projection=organism_projection,
+        organism_manager=organism_manager,
+        station_id=station_id,
+    )
     return C2ResponseContract(nameplate=nameplate, hud=hud)
 
 

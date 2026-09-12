@@ -78,7 +78,22 @@ class AIETExternalClient:
         endpoint = f"{harness_url}/aiet/v1/trials/initiate"
 
         payload = {
-            "mission_contract": mission_contract.canonical_payload(),
+            "mission_contract": {
+                "schema_version": "1.0",
+                "mission_id": mission_contract.mission_id,
+                "intent": mission_contract.intent,
+                "authority_boundary": {
+                    "allowed_paths": list(mission_contract.allowed_paths),
+                    "prohibited_paths": list(mission_contract.prohibited_paths),
+                },
+                "completion_criteria": {
+                    "required_tests": list(mission_contract.required_tests),
+                    "min_coverage_pct": mission_contract.min_coverage_pct,
+                    "provenance_required": mission_contract.provenance_required,
+                },
+                "stop_the_line_conditions": list(mission_contract.stop_the_line_conditions),
+                "metadata": dict(mission_contract.metadata),
+            },
             "provider_config": provider_config.model_dump(),
             "execution_mode": execution_mode,
             "target_git_head_sha": target_git_head_sha,

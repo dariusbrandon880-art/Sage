@@ -198,7 +198,7 @@ class AIETExternalHarnessServer:
     def _verify_secret_key(self, provided_key: Optional[str]) -> None:
         if not self.secret_harness_key:
             raise AIETExternalServerError("SERVER_NOT_CONFIGURED: SAGE_AIET_EXTERNAL_HARNESS_KEY is not set on harness server")
-        if provided_key != self.secret_harness_key:
+        if not provided_key or provided_key.strip() != self.secret_harness_key.strip():
             raise AIETExternalServerError("UNAUTHORIZED_HARNESS_KEY: Provided key is invalid or missing")
 
     @staticmethod
@@ -288,18 +288,35 @@ def create_aiet_harness_app(server_engine: Optional[AIETExternalHarnessServer] =
     @app.get("/")
     async def root_endpoint() -> Dict[str, str]:
         return {"service": "sage-aiet-harness", "status": "running"}
+    def _extract_request_key(request: Request, header_key: Optional[str] = None) -> Optional[str]:
+        if header_key and header_key.strip():
+            return header_key.strip()
+        auth = request.headers.get("Authorization", "")
+        if auth.lower().startswith("bearer "):
+            return auth[7:].strip()
+        for name in ("x-aiet-harness-key", "x-api-key", "harness-key", "x-harness-key"):
+            if name in request.headers:
+                return request.headers[name].strip()
+        return None
+
     @app.post("/aiet/v1/trials/initiate")
     async def initiate_endpoint(request: Request, x_aiet_harness_key: Optional[str] = Header(None, alias="X-AIET-Harness-Key")):
         try:
-            body = await request.json(); return engine.initiate_flight(body.get("mission_contract", {}), body.get("provider_config", {}), body.get("execution_mode", "external"), body.get("target_git_head_sha"), x_aiet_harness_key)
+            key = _extract_request_key(request, x_aiet_harness_key)
+            body = await request.json(); return engine.initiate_flight(body.get("mission_contract", {}), body.get("provider_config", {}), body.get("execution_mode", "external"), body.get("target_git_head_sha"), key)
         except AIETExternalServerError as exc: raise HTTPException(status_code=401 if "UNAUTHORIZED" in str(exc) else 400, detail=str(exc)) from exc
+
     @app.post("/aiet/v1/trials/execute")
     async def execute_endpoint(request: Request, x_aiet_harness_key: Optional[str] = Header(None, alias="X-AIET-Harness-Key")):
         try:
-            body = await request.json(); return engine.execute_flight(body.get("flight_id", ""), x_aiet_harness_key)
+            key = _extract_request_key(request, x_aiet_harness_key)
+            body = await request.json(); return engine.execute_flight(body.get("flight_id", ""), key)
         except AIETExternalServerError as exc: raise HTTPException(status_code=401 if "UNAUTHORIZED" in str(exc) else 400, detail=str(exc)) from exc
+
     @app.get("/aiet/v1/trials/receipt/{flight_id}")
-    async def receipt_endpoint(flight_id: str, x_aiet_harness_key: Optional[str] = Header(None, alias="X-AIET-Harness-Key")):
-        try: return engine.get_receipt(flight_id, x_aiet_harness_key)
+    async def receipt_endpoint(flight_id: str, request: Request, x_aiet_harness_key: Optional[str] = Header(None, alias="X-AIET-Harness-Key")):
+        try:
+            key = _extract_request_key(request, x_aiet_harness_key)
+            return engine.get_receipt(flight_id, key)
         except AIETExternalServerError as exc: raise HTTPException(status_code=401 if "UNAUTHORIZED" in str(exc) else 404, detail=str(exc)) from exc
     return app

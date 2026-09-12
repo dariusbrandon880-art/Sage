@@ -13,6 +13,7 @@ from typing import Dict
 from pydantic import BaseModel, Field
 
 from sage.experimental.airspace.models import AirspaceState, StationID
+from sage.experimental.airspace.rank_system import rank_for_xp
 
 
 class AgentIdentity(str, Enum):
@@ -55,15 +56,18 @@ class CareerEngine:
         if agent_id is None:
             raise ValueError(f"Unsupported career station: {station_id}")
 
+        career_xp = state.game_progression.get_total_xp_for_station(station_id)
+        rank_def = rank_for_xp(career_xp)
         return CareerProjection(
             agent_id=agent_id,
             station_id=station_id,
             role_description=station.role_description,
-            career_xp=state.game_progression.get_total_xp_for_station(station_id),
+            career_xp=career_xp,
             cql_level=state.qualification_registry.cql_levels.get(station_id, station.current_cql),
             sql_level=state.qualification_registry.sql_levels.get(station_id, station.current_sql),
             evidence_count=len(state.recent_evidence),
             qualification_evidence=list(state.recent_evidence),
+            rank=f"Level {rank_def.level} {rank_def.title}",
         )
 
     def reconcile(self, state: AirspaceState) -> Dict[AgentIdentity, CareerProjection]:
