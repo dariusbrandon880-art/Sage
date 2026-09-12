@@ -5,6 +5,7 @@ transfer, and resilience without creating a second C2 authority layer.
 """
 
 from sage.experimental.aiet.adapter import AIETControlAdapter
+from sage.experimental.aiet.client import AIETExternalClient, AIETExternalClientError, AIETProviderConfig
 from sage.experimental.aiet.evaluator import AIETIndependentEvaluator
 from sage.experimental.aiet.metrics import AIETMetricsCalculator, AIETPerformanceMetrics
 from sage.experimental.aiet.perturbation import AIETPerturbationInjector, FailurePerturbation
@@ -15,11 +16,14 @@ from sage.experimental.aiet.scenario import AIETBlindScenario
 __all__ = [
     "AIETBlindScenario",
     "AIETControlAdapter",
+    "AIETExternalClient",
+    "AIETExternalClientError",
     "AIETIndependentEvaluator",
     "AIETMetricsCalculator",
     "AIETMissionRunner",
     "AIETPerformanceMetrics",
     "AIETPerturbationInjector",
+    "AIETProviderConfig",
     "AIETValidationReceipt",
     "FailurePerturbation",
 ]
