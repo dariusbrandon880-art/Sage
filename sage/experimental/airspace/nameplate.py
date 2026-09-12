@@ -16,6 +16,7 @@ from typing import Any
 
 from sage.experimental.airspace.models import AirspaceState, StationID
 from sage.experimental.airspace.organism_projection import OrganismProjection
+from sage.experimental.airspace.rank_system import rank_for_xp
 
 
 STATION_ICONS = {
@@ -56,15 +57,20 @@ def render_agent_nameplate(
     """Render stable progression data from canonical state."""
     station = state.stations[station_id]
     xp = state.game_progression.get_total_xp_for_station(station_id)
+    rank_def = rank_for_xp(xp)
     icon = STATION_ICONS.get(station_id, "▪")
     sql = f" SQL-{station.current_sql}" if station.current_sql > 0 else ""
 
     if compact:
-        return f"{icon} {station.agent_name} // CQL-{station.current_cql}{sql} // XP {xp}"
+        return (
+            f"{icon} {station.agent_name} // RANK Lvl {rank_def.level} {rank_def.title} // "
+            f"CQL-{station.current_cql}{sql} // XP {xp}"
+        )
 
     return (
         f"{icon} {station.agent_name}\n"
         f"  STATION : {station_id.value}\n"
+        f"  RANK    : Level {rank_def.level} {rank_def.title}\n"
         f"  CQL     : CQL-{station.current_cql}\n"
         f"  SQL     : SQL-{station.current_sql}\n"
         f"  XP      : {xp}"
@@ -84,6 +90,8 @@ def build_agent_identity(
 ) -> dict[str, Any]:
     """Project identity, role, qualification, progression, and live state."""
     station = state.stations[station_id]
+    xp = state.game_progression.get_total_xp_for_station(station_id)
+    rank_def = rank_for_xp(xp)
     return {
         "nameplate": STATION_NAMEPLATES[station_id],
         "station_id": station_id.value,
@@ -91,7 +99,9 @@ def build_agent_identity(
         "role": station.role_description,
         "cql": station.current_cql,
         "sql": station.current_sql,
-        "xp": state.game_progression.get_total_xp_for_station(station_id),
+        "xp": xp,
+        "rank_level": rank_def.level,
+        "rank_title": rank_def.title,
         "state": state_label,
         "read_only": True,
         "authority": "canonical_airspace_state",
@@ -108,8 +118,8 @@ def render_agent_identity(
     identity = build_agent_identity(state, station_id, state_label=state_label)
     sql = f" • SQL-{identity['sql']}" if identity["sql"] > 0 else ""
     return (
-        f"{identity['nameplate']} • CQL-{identity['cql']}{sql} • "
-        f"XP {identity['xp']} • {identity['state']}"
+        f"{identity['nameplate']} • RANK Lvl {identity['rank_level']} {identity['rank_title']} • "
+        f"CQL-{identity['cql']}{sql} • XP {identity['xp']} • {identity['state']}"
     )
 
 
@@ -130,8 +140,9 @@ def render_organism_nameplate(
     icon = STATION_ICONS.get(station_id, "▪")
     sql = f" // SQL-{projection.sql}" if projection.sql > 0 else ""
     tag = (
-        f"{identity} {icon} {projection.agent_name} // CQL-{projection.cql}{sql} // "
-        f"POINTS {projection.points} // XP {projection.career_xp} // "
+        f"{identity} {icon} {projection.agent_name} // "
+        f"RANK Lvl {projection.rank_level} {projection.rank_title} // "
+        f"CQL-{projection.cql}{sql} // POINTS {projection.points} // XP {projection.career_xp} // "
         f"BOSS ⭐×{boss.big_badges} ⭐⭐×{boss.major_badges} // "
         f"⚔️ {boss.total_kills} // ┃ {boss.total_captures} // {projection.status}"
     )

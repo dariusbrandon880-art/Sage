@@ -1,6 +1,17 @@
 from sage.experimental.airspace.career_engine import AgentIdentity, CareerEngine
 from sage.experimental.airspace.models import AirspaceState, StationID, XPCategory
-from sage.experimental.airspace.rank_system import BossClass, BossDisplay, RANK_LADDER, is_c2_rank_title, validate_rank_progression
+from sage.experimental.airspace.nameplate import render_agent_nameplate, render_organism_nameplate
+from sage.experimental.airspace.rank_system import (
+    BossClass,
+    BossDisplay,
+    RANK_LADDER,
+    is_c2_rank_title,
+    rank_for_xp,
+    rank_level_for_xp,
+    validate_rank_progression,
+    xp_for_next_rank,
+    xp_threshold_for_level,
+)
 
 
 def test_career_reconciliation_reads_canonical_state_only():
@@ -17,7 +28,7 @@ def test_career_reconciliation_reads_canonical_state_only():
     assert projection.career_xp == 120
     assert projection.cql_level == state.qualification_registry.cql_levels[StationID.MISSION_CONTROL]
     assert projection.sql_level == state.qualification_registry.sql_levels[StationID.MISSION_CONTROL]
-    assert projection.rank is None
+    assert projection.rank == "Level 2 Private First Class"
 
 
 def test_career_reconciliation_is_read_only():
@@ -66,3 +77,25 @@ def test_boss_tallies_are_separate():
     display = BossDisplay(BossClass.BIG, boss_kill_count=3, boss_capture_count=2)
     assert display.kills == "⚔️⚔️⚔️"
     assert display.captures == "┃┃"
+
+
+def test_xp_to_rank_calculation_and_thresholds():
+    assert rank_level_for_xp(0) == 1
+    assert rank_for_xp(0).title == "Recruit"
+    assert rank_level_for_xp(99) == 1
+    assert rank_level_for_xp(100) == 2
+    assert rank_for_xp(100).title == "Private First Class"
+    assert rank_level_for_xp(250) == 3
+    assert rank_for_xp(250).title == "Lance Operator"
+
+    thresh_1 = xp_threshold_for_level(1)
+    thresh_2 = xp_threshold_for_level(2)
+    assert thresh_1 == 0
+    assert thresh_2 == 100
+    assert xp_for_next_rank(50) == (0, 100)
+
+
+def test_nameplates_render_rank_level_and_title():
+    state = AirspaceState()
+    nameplate = render_agent_nameplate(state, StationID.MISSION_CONTROL, compact=True)
+    assert "RANK Lvl 1 Recruit" in nameplate

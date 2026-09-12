@@ -110,3 +110,42 @@ def validate_rank_progression(current_level: int, target_level: int) -> None:
 def is_c2_rank_title(title: str) -> bool:
     normalized = title.strip().lower()
     return normalized == "c2" or normalized.startswith("c2 ") or normalized.endswith(" c2")
+
+
+def xp_threshold_for_level(level: int) -> int:
+    """Return the minimum lifetime career XP required for rank level (1..30)."""
+    if level < 1 or level > len(RANK_LADDER):
+        raise ValueError(f"Rank level must be between 1 and {len(RANK_LADDER)}")
+    if level == 1:
+        return 0
+    steps = level - 1
+    return 100 * steps + 50 * steps * (steps - 1) // 2
+
+
+def rank_level_for_xp(career_xp: int) -> int:
+    """Return the integer rank level (1..30) earned for a given career XP total."""
+    if isinstance(career_xp, bool) or not isinstance(career_xp, int) or career_xp < 0:
+        raise ValueError("career_xp must be a non-negative integer.")
+
+    achieved = 1
+    for lvl in range(1, len(RANK_LADDER) + 1):
+        if career_xp >= xp_threshold_for_level(lvl):
+            achieved = lvl
+        else:
+            break
+    return achieved
+
+
+def rank_for_xp(career_xp: int) -> RankDefinition:
+    """Return the RankDefinition earned for a given career XP total."""
+    return rank_for_level(rank_level_for_xp(career_xp))
+
+
+def xp_for_next_rank(career_xp: int) -> tuple[int, int]:
+    """Return (current_rank_threshold, next_rank_threshold) for career_xp."""
+    lvl = rank_level_for_xp(career_xp)
+    current_thresh = xp_threshold_for_level(lvl)
+    if lvl >= len(RANK_LADDER):
+        return (current_thresh, current_thresh)
+    next_thresh = xp_threshold_for_level(lvl + 1)
+    return (current_thresh, next_thresh)
