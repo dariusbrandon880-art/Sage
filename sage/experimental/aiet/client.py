@@ -66,6 +66,7 @@ class AIETExternalClient:
         mission_contract: MissionContract,
         provider_config: AIETProviderConfig,
         execution_mode: str = "external",
+        target_git_head_sha: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Initiate an external validation flight on the remote harness."""
         if execution_mode == "fixture":
@@ -80,6 +81,7 @@ class AIETExternalClient:
             "mission_contract": mission_contract.canonical_payload(),
             "provider_config": provider_config.model_dump(),
             "execution_mode": execution_mode,
+            "target_git_head_sha": target_git_head_sha,
         }
 
         req_data = json.dumps(payload, separators=(",", ":")).encode("utf-8")
@@ -161,7 +163,10 @@ class AIETExternalClient:
             raise AIETExternalClientError(f"UNEXPECTED_CLIENT_ERROR: {err}") from err
 
     @staticmethod
-    def validate_remote_receipt(receipt_payload: Dict[str, Any]) -> AIETValidationReceipt:
+    def validate_remote_receipt(
+        receipt_payload: Dict[str, Any],
+        expected_target_sha: Optional[str] = None,
+    ) -> AIETValidationReceipt:
         """Validate proof hashes, isolation status, and integrity rules of a remote receipt."""
         if not isinstance(receipt_payload, dict):
             raise AIETExternalClientError("MALFORMED_RECEIPT: Payload must be a dictionary")
@@ -191,6 +196,12 @@ class AIETExternalClient:
         if len(receipt.git_head_sha) != 40 or receipt.git_head_sha == "0" * 40:
             raise AIETExternalClientError(
                 f"INVALID_GIT_HEAD_SHA: Receipt git_head_sha is invalid ({receipt.git_head_sha})"
+            )
+
+        if expected_target_sha and receipt.git_head_sha != expected_target_sha:
+            raise AIETExternalClientError(
+                f"TARGET_GIT_SHA_MISMATCH: Receipt git_head_sha ({receipt.git_head_sha}) "
+                f"does not match expected target SHA ({expected_target_sha})"
             )
 
         return receipt

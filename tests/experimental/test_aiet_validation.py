@@ -265,6 +265,55 @@ def test_aiet_server_unauthorized_key_rejection():
         server.initiate_flight(contract, provider, provided_harness_key="invalid_key")
 
 
+def test_aiet_server_health_endpoint():
+    from sage.experimental.aiet.server import create_aiet_harness_app
+    from fastapi.testclient import TestClient
+
+    app = create_aiet_harness_app()
+    client = TestClient(app)
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.json() == {"status": "healthy", "service": "sage-aiet-harness"}
+
+
+def test_aiet_external_client_enforces_target_git_sha_match():
+    valid_receipt = AIETValidationReceipt(
+        receipt_id="aiet_rcpt_ext_sha_test",
+        mission_id="aiet_sha_test",
+        trials_count=10,
+        scenarios_evaluated=["scenario_1"],
+        perturbations_injected=["pert_1"],
+        baseline_technique_id="base_v1",
+        candidate_technique_id="cand_v2",
+        adaptation_gain=0.8,
+        recovery_rate=0.85,
+        transfer_efficiency=0.9,
+        resilience_score=0.88,
+        evolution_decision="PROMOTE",
+        overall_verdict="DEMONSTRATED_AUTONOMOUS_ADAPTATION",
+        isolation_status="REQUIRES_HARNESS_PROOF",
+        initial_state_hash="a" * 64,
+        scenario_hash="b" * 64,
+        constraint_integrity=True,
+        verification_integrity=True,
+        human_intervention_count=0,
+        unscripted_discovery=True,
+        adaptation_latency_steps=1,
+        final_state_hash="c" * 64,
+        verdict="DEMONSTRATED_AUTONOMOUS_ADAPTATION",
+        execution_mode="external",
+        git_head_sha="668332be44af6bfbd2e39691dac388fc326bf1b9",
+    )
+    receipt_data = valid_receipt.to_dict()
+
+    # Valid matching target SHA
+    AIETExternalClient.validate_remote_receipt(receipt_data, expected_target_sha="668332be44af6bfbd2e39691dac388fc326bf1b9")
+
+    # Mismatched target SHA fails closed
+    with pytest.raises(AIETExternalClientError, match="TARGET_GIT_SHA_MISMATCH"):
+        AIETExternalClient.validate_remote_receipt(receipt_data, expected_target_sha="c6594f87b4718a4c9d0c286cb701c875e96adf62")
+
+
 def test_aiet_server_end_to_end_protocol_exchange(monkeypatch):
     monkeypatch.setenv("OPENAI_API_KEY", "sk-mock-test-key-12345")
     monkeypatch.setenv("SAGE_AIET_EXTERNAL_HARNESS_KEY", "valid_harness_secret_999")
