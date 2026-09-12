@@ -1,0 +1,95 @@
+{
+  "protocol": "SAGE-ERIP",
+  "milestone": "MILESTONE_1_VALIDATION_CORE",
+  "executed_at": "2026-09-12T20:32:29.590823+00:00",
+  "validator_configuration": {
+    "mode": "SANDBOX_READ_ONLY",
+    "max_age_seconds": 86400.0,
+    "canonical_promotion_allowed": false,
+    "master_archive_writes_allowed": false
+  },
+  "primary_flight": {
+    "validation_id": "val_erip_f83ddd7e",
+    "timestamp": "2026-09-12T20:32:29.590208+00:00",
+    "actor_identity": {
+      "agent_id": "ENGINEERING_FLIGHT",
+      "name": "Jules SAGE Node",
+      "role": "execution",
+      "governance_tier": "canonical",
+      "signature": "sig_jules_actor_valid_key_8888",
+      "key_fingerprint": "key_fp_jules_canonical_2026"
+    },
+    "stages_executed": [
+      "INTAKE_VALIDATION",
+      "IDENTITY_VERIFICATION",
+      "INTEGRITY_VERIFICATION",
+      "RECEIPT_RECONCILIATION",
+      "CONTRADICTION_DETECTION",
+      "DETERMINISTIC_RESULT_GENERATION"
+    ],
+    "status": "PASS",
+    "failed_stage": null,
+    "failure_reason": null,
+    "contradiction_findings": [],
+    "integrity_root_verified": true,
+    "provenance_hash": "921017d034c5c88bce7242e7b778f2435b36dfcd3f6982be62becb3e00ef954e",
+    "promoted_to_canonical": false
+  },
+  "adversarial_probing_flights": [
+    {
+      "validation_id": "val_erip_faf958b2",
+      "timestamp": "2026-09-12T20:32:29.590496+00:00",
+      "actor_identity": {
+        "agent_id": "ENGINEERING_FLIGHT",
+        "name": "Jules SAGE Node",
+        "role": "execution",
+        "governance_tier": "canonical",
+        "signature": "sig_jules_actor_valid_key_8888",
+        "key_fingerprint": "key_fp_jules_canonical_2026"
+      },
+      "stages_executed": [
+        "INTAKE_VALIDATION",
+        "IDENTITY_VERIFICATION",
+        "INTEGRITY_VERIFICATION"
+      ],
+      "status": "REJECT",
+      "failed_stage": "INTEGRITY_VERIFICATION",
+      "failure_reason": "SAGE-CRC hash-chain tampering detected: computed root (ca4472ea4ed9a2b1f4d48b9f280128c08ea98fc4e3d04eea9282c2c68032b8ad) does not match pack terminal root (91dbf116b2c6c0be29a83f7f297a9a31ca6ac51f86d45be24487b8324dd5aaa4)",
+      "contradiction_findings": [],
+      "integrity_root_verified": false,
+      "provenance_hash": "7399bbb16fb7b020fd4830db137a6eb16d1358efa71c8d486a48534f98bfcc57",
+      "promoted_to_canonical": false
+    },
+    {
+      "validation_id": "val_erip_68a69ba4",
+      "timestamp": "2026-09-12T20:32:29.590771+00:00",
+      "actor_identity": {
+        "agent_id": "UNAUTHORIZED_MALICIOUS_AGENT",
+        "name": "Jules SAGE Node",
+        "role": "execution",
+        "governance_tier": "canonical",
+        "signature": "sig_jules_actor_valid_key_8888",
+        "key_fingerprint": "key_fp_jules_canonical_2026"
+      },
+      "stages_executed": [
+        "INTAKE_VALIDATION",
+        "IDENTITY_VERIFICATION"
+      ],
+      "status": "REJECT",
+      "failed_stage": "IDENTITY_VERIFICATION",
+      "failure_reason": "Fail closed: Unknown or unauthorized actor identity 'UNAUTHORIZED_MALICIOUS_AGENT'",
+      "contradiction_findings": [],
+      "integrity_root_verified": false,
+      "provenance_hash": "b99d038eeeaccf4521578a9f44bbef5c10b9baf41621e05057edaff9d7497ab9",
+      "promoted_to_canonical": false
+    }
+  ],
+  "summary": {
+    "valid_flight_status": "PASS",
+    "integrity_root_verified": true,
+    "tampered_flight_rejected": true,
+    "unknown_actor_rejected": true,
+    "promoted_to_canonical": false
+  },
+  "receipt_hash": "sha256:erip:921017d034c5c88bce7242e7b778f2435b36dfcd3f6982be62becb3e00ef954e"
+}
