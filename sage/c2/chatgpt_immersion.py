@@ -183,7 +183,7 @@ def project_chatgpt_immersion_response(
             tag = None
 
     if not tag and projection is None:
-        tag = f"[SAGE::C2::CHATGPT] ◈ GPT // CQL-1 // POINTS 0 // XP 0 // BOSS ⭐×0 ⭐⭐×0 // ⚔️ 0 // ┃ 0 // {state_label}"
+        tag = f"[SAGE::C2::CHATGPT] ◈ GPT // RANK Lvl 1 Recruit // CQL-1 // POINTS 0 // XP 0 // BOSS ⭐×0 ⭐⭐×0 // ⚔️ 0 // ┃ 0 // {state_label}"
 
     if not tag:
         raise ValueError("SAGE organism name tag required for C2 immersion response")

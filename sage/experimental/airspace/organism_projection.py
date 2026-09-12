@@ -14,6 +14,7 @@ from typing import Mapping
 from sage.experimental.airspace.boss_progression import BossProgression, BossProgressionAuthority
 from sage.experimental.airspace.models import AirspaceState, StationID
 from sage.experimental.airspace.points_xp_economy import PointsXPEconomy
+from sage.experimental.airspace.rank_system import RankDefinition, rank_for_xp
 
 
 @dataclass(frozen=True)
@@ -27,10 +28,19 @@ class OrganismAgentProjection:
     career_xp: int
     boss: BossProgression
     status: str
+    rank: RankDefinition | None = None
 
     @property
     def badge_summary(self) -> str:
         return self.boss.badge_summary
+
+    @property
+    def rank_level(self) -> int:
+        return self.rank.level if self.rank else 1
+
+    @property
+    def rank_title(self) -> str:
+        return self.rank.title if self.rank else "Recruit"
 
 
 class OrganismProjection:
@@ -41,6 +51,7 @@ class OrganismProjection:
         manager, state: AirspaceState, station_id: StationID, *, status: str = "READY"
     ) -> OrganismAgentProjection:
         station = state.stations[station_id]
+        career_xp = state.game_progression.get_total_xp_for_station(station_id)
         return OrganismAgentProjection(
             station_id=station_id,
             agent_name=station.agent_name,
@@ -48,9 +59,10 @@ class OrganismProjection:
             cql=station.current_cql,
             sql=station.current_sql,
             points=PointsXPEconomy.verified_points_for_station(manager, station_id),
-            career_xp=state.game_progression.get_total_xp_for_station(station_id),
+            career_xp=career_xp,
             boss=BossProgressionAuthority.project_station(manager, station_id),
             status=status,
+            rank=rank_for_xp(career_xp),
         )
 
     @classmethod
@@ -68,8 +80,8 @@ class OrganismProjection:
         sql = f" // SQL-{agent.sql}" if agent.sql > 0 else ""
         boss = agent.boss
         return (
-            f"{agent.agent_name} // CQL-{agent.cql}{sql} // "
-            f"POINTS {agent.points} // XP {agent.career_xp} // "
+            f"{agent.agent_name} // RANK Lvl {agent.rank_level} {agent.rank_title} // "
+            f"CQL-{agent.cql}{sql} // POINTS {agent.points} // XP {agent.career_xp} // "
             f"BOSS ⭐×{boss.big_badges} ⭐⭐×{boss.major_badges} // "
             f"⚔️ {boss.total_kills} // ┃ {boss.total_captures} // {agent.status}"
         )
