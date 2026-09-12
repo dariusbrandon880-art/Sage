@@ -28,7 +28,6 @@ KNOWN_SAGE_AGENT_IDS = set(CANONICAL_AUTHORIZED_AGENTS) | {
 }
 
 VALID_GOVERNANCE_TIERS = {"canonical", "experimental", "shadow"}
-SPEK_SIG_PREFIXES = ("mock_spek_sig_", "tpm_spek_sig_", "hsm_spek_sig_", "secureenclave_spek_sig_")
 
 
 class ERIPValidationCore:
@@ -36,9 +35,9 @@ class ERIPValidationCore:
 
     Enforces 6 sequential validation stages:
     1. Evidence-package intake & CMAPS boundary check
-    2. Identity verification (with cryptographic attestation checking)
+    2. Identity verification (strict cryptographic attestation verification)
     3. Integrity verification (SAGE-CRC SHA-256 linear hash chain)
-    4. Receipt reconciliation
+    4. Receipt reconciliation (strict parent receipt attestation verification)
     5. Contradiction detection
     6. Deterministic validation result generation
 
@@ -159,25 +158,25 @@ class ERIPValidationCore:
                 contradictions=contradictions,
             )
 
-        if not signature or not isinstance(signature, str) or len(signature.strip()) < 8:
+        if not signature or not isinstance(signature, str) or not signature.strip():
             return self._build_reject(
                 actor=actor,
                 stages=stages_executed,
                 failed_stage=stage_name,
-                reason="Fail closed: Missing or invalid cryptographic actor signature",
+                reason="Fail closed: Missing or empty cryptographic actor signature",
                 contradictions=contradictions,
             )
 
-        if not key_fingerprint or not isinstance(key_fingerprint, str) or len(key_fingerprint.strip()) < 8:
+        if not key_fingerprint or not isinstance(key_fingerprint, str) or not key_fingerprint.strip():
             return self._build_reject(
                 actor=actor,
                 stages=stages_executed,
                 failed_stage=stage_name,
-                reason="Fail closed: Missing or invalid cryptographic key fingerprint",
+                reason="Fail closed: Missing or empty cryptographic key fingerprint",
                 contradictions=contradictions,
             )
 
-        # Perform Cryptographic Attestation verification if cryptographic SPEK signature format is present
+        # Mandate strict Cryptographic Attestation verification for all actor identity signatures
         signing_payload = {
             "agent_id": agent_id,
             "name": actor.get("name"),
@@ -185,15 +184,14 @@ class ERIPValidationCore:
             "governance_tier": gov_tier,
             "key_fingerprint": key_fingerprint,
         }
-        if signature.startswith(SPEK_SIG_PREFIXES):
-            if not self.attestation_provider.verify(signing_payload, signature):
-                return self._build_reject(
-                    actor=actor,
-                    stages=stages_executed,
-                    failed_stage=stage_name,
-                    reason="Cryptographic signature verification failed: actor identity signature does not match payload digest",
-                    contradictions=contradictions,
-                )
+        if not self.attestation_provider.verify(signing_payload, signature):
+            return self._build_reject(
+                actor=actor,
+                stages=stages_executed,
+                failed_stage=stage_name,
+                reason="Cryptographic signature verification failed: actor identity signature is invalid or tampered",
+                contradictions=contradictions,
+            )
 
         # =====================================================================
         # STAGE 3: Integrity Verification (SAGE-CRC Hash Chain)
@@ -279,12 +277,12 @@ class ERIPValidationCore:
                     contradictions=contradictions,
                 )
 
-            if not p_sig or not isinstance(p_sig, str) or len(p_sig.strip()) < 8:
+            if not p_sig or not isinstance(p_sig, str) or not p_sig.strip():
                 return self._build_reject(
                     actor=actor,
                     stages=stages_executed,
                     failed_stage=stage_name,
-                    reason="Receipt mismatch: parent_receipt signature is missing or invalid",
+                    reason="Receipt mismatch: parent_receipt signature is missing or empty",
                     contradictions=contradictions,
                 )
 
@@ -292,15 +290,14 @@ class ERIPValidationCore:
                 "parent_task_id": p_task,
                 "parent_passport_hash": p_hash,
             }
-            if p_sig.startswith(SPEK_SIG_PREFIXES):
-                if not self.attestation_provider.verify(parent_signing_payload, p_sig):
-                    return self._build_reject(
-                        actor=actor,
-                        stages=stages_executed,
-                        failed_stage=stage_name,
-                        reason="Receipt mismatch: parent_receipt cryptographic signature verification failed",
-                        contradictions=contradictions,
-                    )
+            if not self.attestation_provider.verify(parent_signing_payload, p_sig):
+                return self._build_reject(
+                    actor=actor,
+                    stages=stages_executed,
+                    failed_stage=stage_name,
+                    reason="Receipt mismatch: parent_receipt cryptographic signature verification failed",
+                    contradictions=contradictions,
+                )
 
         # =====================================================================
         # STAGE 5: Contradiction Detection

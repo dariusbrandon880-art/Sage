@@ -1,7 +1,7 @@
 {
   "protocol": "SAGE-ERIP",
   "milestone": "MILESTONE_1_VALIDATION_CORE",
-  "executed_at": "2026-09-12T20:56:55.776561+00:00",
+  "executed_at": "2026-09-12T23:05:33.980915+00:00",
   "git_head_sha": "40cfd2dc54981638c680ba72a8c19324f99f8306",
   "validator_configuration": {
     "mode": "SANDBOX_READ_ONLY",
@@ -10,8 +10,8 @@
     "master_archive_writes_allowed": false
   },
   "primary_flight": {
-    "validation_id": "val_erip_efcbbc3a",
-    "timestamp": "2026-09-12T20:56:55.775551+00:00",
+    "validation_id": "val_erip_8989fd2a",
+    "timestamp": "2026-09-12T23:05:33.980121+00:00",
     "actor_identity": {
       "agent_id": "ENGINEERING_FLIGHT",
       "name": "Jules SAGE Node",
@@ -33,13 +33,13 @@
     "failure_reason": null,
     "contradiction_findings": [],
     "integrity_root_verified": true,
-    "provenance_hash": "53d56807982d2a58149a16dd43f6bf79ce7164f8c206ced54fea8af70798b0f6",
+    "provenance_hash": "8463714fea257c63f53b65883273018980f9e4b27c7e1b27756c7e1848d1cbce",
     "promoted_to_canonical": false
   },
   "adversarial_probing_flights": [
     {
-      "validation_id": "val_erip_e3919760",
-      "timestamp": "2026-09-12T20:56:55.775910+00:00",
+      "validation_id": "val_erip_267af31c",
+      "timestamp": "2026-09-12T23:05:33.980406+00:00",
       "actor_identity": {
         "agent_id": "ENGINEERING_FLIGHT",
         "name": "Jules SAGE Node",
@@ -58,19 +58,19 @@
       "failure_reason": "SAGE-CRC hash-chain tampering detected: computed root (ca4472ea4ed9a2b1f4d48b9f280128c08ea98fc4e3d04eea9282c2c68032b8ad) does not match pack terminal root (91dbf116b2c6c0be29a83f7f297a9a31ca6ac51f86d45be24487b8324dd5aaa4)",
       "contradiction_findings": [],
       "integrity_root_verified": false,
-      "provenance_hash": "01ffdcf1a7278e31f2c6c52558c9b9fc55bfa3d22eb7c6c77e883801f58efd5f",
+      "provenance_hash": "4179e08e2827d34ea8858131f8df256d964aaf52de40cbfc627a807b707dc88b",
       "promoted_to_canonical": false
     },
     {
-      "validation_id": "val_erip_f600edce",
-      "timestamp": "2026-09-12T20:56:55.776263+00:00",
+      "validation_id": "val_erip_4116e27c",
+      "timestamp": "2026-09-12T23:05:33.980610+00:00",
       "actor_identity": {
         "agent_id": "UNAUTHORIZED_MALICIOUS_AGENT",
         "name": "Jules SAGE Node",
         "role": "execution",
         "governance_tier": "canonical",
         "key_fingerprint": "key_fp_jules_canonical_2026",
-        "signature": "mock_spek_sig_9fcee375655e0148d14b355526db1085a6d3890cf0aaa321447ae83e8ef18672"
+        "signature": "mock_spek_sig_b273221eb4d5af05540deaa2abd967c083af33289b7436848e3dcc616a2706f1"
       },
       "stages_executed": [
         "INTAKE_VALIDATION",
@@ -81,12 +81,12 @@
       "failure_reason": "Fail closed: Unknown or unauthorized actor identity 'UNAUTHORIZED_MALICIOUS_AGENT'",
       "contradiction_findings": [],
       "integrity_root_verified": false,
-      "provenance_hash": "61d177c25d4a2e3d60bc58e1f0cb45b27699b9a5aaadbc15523b2d1f30515aca",
+      "provenance_hash": "a3a7ba2f046aa1f11ffeb8065a0df49db89f31bf5fbec6ac806ccdda769b7965",
       "promoted_to_canonical": false
     },
     {
-      "validation_id": "val_erip_32db44d9",
-      "timestamp": "2026-09-12T20:56:55.776520+00:00",
+      "validation_id": "val_erip_aa1ff3e0",
+      "timestamp": "2026-09-12T23:05:33.980880+00:00",
       "actor_identity": {
         "agent_id": "ENGINEERING_FLIGHT",
         "name": "Jules SAGE Node",
@@ -101,10 +101,10 @@
       ],
       "status": "REJECT",
       "failed_stage": "IDENTITY_VERIFICATION",
-      "failure_reason": "Cryptographic signature verification failed: actor identity signature does not match payload digest",
+      "failure_reason": "Cryptographic signature verification failed: actor identity signature is invalid or tampered",
       "contradiction_findings": [],
       "integrity_root_verified": false,
-      "provenance_hash": "5b40e986f89423a343f89ac8b4e8b8c38debda0bb499089bb6f8f97556f46da2",
+      "provenance_hash": "c6b0ba000c2c81ae985a7af65fe821c4016d6f643be4be5b9b933faef87b6688",
       "promoted_to_canonical": false
     }
   ],
@@ -116,5 +116,5 @@
     "cryptographic_signature_tampering_rejected": true,
     "promoted_to_canonical": false
   },
-  "receipt_hash": "sha256:40cfd2dc5498:53d56807982d2a58149a16dd43f6bf79ce7164f8c206ced54fea8af70798b0f6"
+  "receipt_hash": "sha256:40cfd2dc5498:8463714fea257c63f53b65883273018980f9e4b27c7e1b27756c7e1848d1cbce"
 }

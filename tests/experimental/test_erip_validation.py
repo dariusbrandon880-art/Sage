@@ -95,7 +95,7 @@ def test_erip_validation_invalid_signature():
 
     assert res.status == "REJECT"
     assert res.failed_stage == "IDENTITY_VERIFICATION"
-    assert "Missing or invalid cryptographic actor signature" in res.failure_reason
+    assert "Missing or empty cryptographic actor signature" in res.failure_reason
 
     # Missing key fingerprint
     pack2 = build_sample_valid_pack(nonce="nonce_test_sig_002")
@@ -104,7 +104,7 @@ def test_erip_validation_invalid_signature():
 
     assert res2.status == "REJECT"
     assert res2.failed_stage == "IDENTITY_VERIFICATION"
-    assert "Missing or invalid cryptographic key fingerprint" in res2.failure_reason
+    assert "Missing or empty cryptographic key fingerprint" in res2.failure_reason
 
 
 def test_erip_validation_cryptographic_attestation_failure():
