@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  aiet-disruption:
+    image: python:3.12-slim
+    container_name: sage-aiet-disruption
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./scripts/aiet_disruption_service.py:/app/aiet_disruption_service.py:ro
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8090
+    command: ["python", "/app/aiet_disruption_service.py"]
+
+  aiet-validation-harness:
+    build:
+      context: .
+      dockerfile: Dockerfile.aiet_harness
+    container_name: sage-aiet-external-harness
+    restart: unless-stopped
+    depends_on:
+      - aiet-disruption
+    ports:
+      - "8080:8080"
+    environment:
+      - SAGE_AIET_EXTERNAL_HARNESS_KEY=${SAGE_AIET_EXTERNAL_HARNESS_KEY}
+      - SAGE_AIET_TARGET_GIT_SHA=${SAGE_AIET_TARGET_GIT_SHA}
+      - SAGE_AIET_DISRUPTION_URL=http://aiet-disruption:8090/fail
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - LOCAL_LLM_URL=${LOCAL_LLM_URL}
+      - CUSTOM_LLM_URL=${CUSTOM_LLM_URL}
+      - PORT=8080
