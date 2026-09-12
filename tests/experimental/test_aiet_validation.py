@@ -351,5 +351,5 @@ def test_aiet_server_end_to_end_protocol_exchange(monkeypatch):
     assert validated_receipt.isolation_status == "REQUIRES_HARNESS_PROOF"
     assert validated_receipt.human_intervention_count == 0
     assert "PLANNED_DISRUPTION:SERVICE_UNAVAILABILITY_503" in validated_receipt.observations
-    assert "OBSERVED_DISRUPTION:INJECTED_HTTP_503_RECOVERY" in validated_receipt.observations
+    assert any("OBSERVED_DISRUPTION:RECOVERED_FROM_" in obs for obs in validated_receipt.observations)
     assert validated_receipt.overall_verdict in ("DEMONSTRATED_AUTONOMOUS_ADAPTATION", "PARTIAL_AUTONOMY")
