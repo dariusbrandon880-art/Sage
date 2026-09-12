@@ -1,6 +1,3 @@
-from pathlib import Path
-import pytest
-
 from sage.c2.whole_organism_loop import WholeOrganismLoopEngine
 from sage.c2.workflow_velocity import MultiSessionVelocityEngine
 from sage.experimental.airspace.manager import AirspaceManager
@@ -44,7 +41,32 @@ def test_workflow_completion_awards_points_and_mints_xp(tmp_path):
     assert reward is not None
     assert reward["base_points"] == 50
     assert sum(reward["attributed_points"].values()) > 0
-    assert reward["xp_minted"] >= 0
+    assert reward["xp_minted"] > 0
+
+
+def test_velocity_wave_completion_awards_points_and_mints_xp():
+    engine = MultiSessionVelocityEngine(max_workers=5)
+    head_sha = "a" * 40
+
+    receipt = engine.execute_velocity_wave(
+        wave_id="progression_velocity_integration_001",
+        session_id="session_velocity_progression_001",
+        flight_payloads=_valid_flight_payloads(),
+        exact_git_head=head_sha,
+    )
+
+    assert receipt.rolls_royce_quality_passed is True
+    assert receipt.reconvergence_verdict == "PASS"
+    assert receipt.successful_flights == receipt.total_flights == 5
+    assert receipt.concurrency_observed is True
+    assert receipt.organism_growth_receipt is not None
+    assert "progression_reward" in receipt.organism_growth_receipt
+
+    reward = receipt.organism_growth_receipt["progression_reward"]
+    assert reward is not None
+    assert reward["base_points"] == 25
+    assert sum(reward["attributed_points"].values()) > 0
+    assert reward["xp_minted"] > 0
 
 
 def test_duplicate_workflow_completion_is_idempotent(tmp_path):
