@@ -3,12 +3,16 @@
 import pytest
 from sage.c2.evolution_loop import FitnessVector
 from sage.c2.mission_contract import MissionContract
+import os
 from sage.experimental.aiet import (
     AIETBlindScenario,
     AIETExternalClient,
     AIETExternalClientError,
+    AIETExternalHarnessServer,
+    AIETExternalServerError,
     AIETMetricsCalculator,
     AIETMissionRunner,
+    AIETProviderAdapter,
     AIETProviderConfig,
     AIETValidationReceipt,
     FailurePerturbation,
@@ -237,3 +241,66 @@ def test_aiet_external_client_validates_remote_receipt_proof_hash_and_integrity(
     bad_sha_data["evidence_proof_hash"] = AIETValidationReceipt(**bad_sha_data).compute_hash()
     with pytest.raises(AIETExternalClientError, match="INVALID_GIT_HEAD_SHA"):
         AIETExternalClient.validate_remote_receipt(bad_sha_data)
+
+
+def test_aiet_provider_adapter_fails_closed_without_secret(monkeypatch):
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    config = AIETProviderConfig(provider_name="openai", model_name="gpt-4o")
+
+    with pytest.raises(AIETExternalServerError, match="MISSING_PROVIDER_CREDENTIALS"):
+        AIETProviderAdapter.resolve_provider_credentials(config)
+
+
+def test_aiet_server_unauthorized_key_rejection():
+    server = AIETExternalHarnessServer(secret_harness_key="valid_harness_secret")
+    contract = {
+        "schema_version": "1.0",
+        "mission_id": "test_auth_check",
+        "intent": "Auth check",
+        "completion_criteria": {"provenance_required": True},
+    }
+    provider = {"provider_name": "openai", "model_name": "gpt-4o"}
+
+    with pytest.raises(AIETExternalServerError, match="UNAUTHORIZED_HARNESS_KEY"):
+        server.initiate_flight(contract, provider, provided_harness_key="invalid_key")
+
+
+def test_aiet_server_end_to_end_protocol_exchange(monkeypatch):
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-mock-test-key-12345")
+    monkeypatch.setenv("SAGE_AIET_EXTERNAL_HARNESS_KEY", "valid_harness_secret_999")
+
+    server = AIETExternalHarnessServer()
+    contract = {
+        "schema_version": "1.0",
+        "mission_id": "mission_end_to_end_aiet",
+        "intent": "Verify complete AIET protocol exchange",
+        "authority_boundary": {"allowed_paths": ["sage/experimental/aiet/**"]},
+        "completion_criteria": {"provenance_required": True},
+    }
+    provider = {"provider_name": "openai", "model_name": "gpt-4o", "temperature": 0.0}
+
+    init_res = server.initiate_flight(
+        mission_contract_data=contract,
+        provider_config_data=provider,
+        execution_mode="external",
+        provided_harness_key="valid_harness_secret_999",
+    )
+    assert init_res["status"] == "INITIATED"
+    flight_id = init_res["flight_id"]
+    assert flight_id.startswith("flight_ext_")
+
+    receipt_dict = server.execute_flight(
+        flight_id=flight_id,
+        provided_harness_key="valid_harness_secret_999",
+    )
+
+    # Validate receipt with AIETExternalClient validator
+    validated_receipt = AIETExternalClient.validate_remote_receipt(receipt_dict)
+
+    assert validated_receipt.mission_id == "mission_end_to_end_aiet"
+    assert validated_receipt.execution_mode == "external"
+    assert validated_receipt.isolation_status == "REQUIRES_HARNESS_PROOF"
+    assert validated_receipt.human_intervention_count == 0
+    assert "PLANNED_DISRUPTION:SERVICE_UNAVAILABILITY_503" in validated_receipt.observations
+    assert "OBSERVED_DISRUPTION:INJECTED_HTTP_503_RECOVERY" in validated_receipt.observations
+    assert validated_receipt.overall_verdict in ("DEMONSTRATED_AUTONOMOUS_ADAPTATION", "PARTIAL_AUTONOMY")

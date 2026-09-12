@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  aiet-validation-harness:
+    build:
+      context: .
+      dockerfile: Dockerfile.aiet_harness
+    container_name: sage-aiet-external-harness
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - SAGE_AIET_EXTERNAL_HARNESS_KEY=${SAGE_AIET_EXTERNAL_HARNESS_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - PORT=8080
