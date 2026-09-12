@@ -37,6 +37,37 @@ def test_aiet_perturbation_injector():
     assert logs == ["INJECTED_NOISE:input_data"]
 
 
+def test_aiet_independent_evaluator_caps_self_reported_scores_on_invariant_failure():
+    from sage.experimental.aiet.evaluator import AIETIndependentEvaluator
+
+    scenario = AIETBlindScenario(
+        scenario_id="scenario_eval_check",
+        description="Check evaluator independence",
+        domain="SECURITY",
+        expected_invariants=["KEY_EXISTS:required_key"],
+    )
+    # Output fails invariant but claims perfect 1.0 self-reported metrics
+    gaming_output = {
+        "status": "partial",
+        "mission_value": 1.0,
+        "repeatability": 1.0,
+        "evidence_quality": 1.0,
+        "recovery_rate": 1.0,
+        "generalization": 1.0,
+    }
+    evaluator = AIETIndependentEvaluator()
+    fit, violations = evaluator.evaluate_run(scenario, gaming_output, execution_time_sec=0.1)
+    assert len(violations) > 0
+    # Correctness is penalized to 0.75 for 1 violation (1.0 - 0.25)
+    assert fit.correctness == 0.75
+    # All fitness dimensions must be capped by correctness (0.75) instead of gaming at 1.0
+    assert fit.mission_value <= 0.75
+    assert fit.repeatability <= 0.75
+    assert fit.evidence_quality <= 0.75
+    assert fit.recovery <= 0.75
+    assert fit.generalization <= 0.75
+
+
 def test_aiet_metrics_calculator():
     base = FitnessVector(mission_value=.6, correctness=.6, repeatability=.6, evidence_quality=.6, recovery=.6, generalization=.6, cost=1.0)
     cand = FitnessVector(mission_value=.9, correctness=.95, repeatability=.9, evidence_quality=.9, recovery=.9, generalization=.9, cost=.8)

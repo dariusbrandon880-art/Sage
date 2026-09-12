@@ -94,7 +94,7 @@ class AIETMissionRunner:
 
         initial_state = {"mission_id": mission_contract.mission_id, "scenarios": scenario_ids}
         initial_state_hash = _hash(initial_state)
-        scenario_hash = _hash([s.dict() for s in scenarios])
+        scenario_hash = _hash([s.model_dump() for s in scenarios])
 
         for scenario_index, scenario in enumerate(scenarios):
             for phase in FROZEN_TRIALS:
