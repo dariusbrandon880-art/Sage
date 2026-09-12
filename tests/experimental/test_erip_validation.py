@@ -107,6 +107,20 @@ def test_erip_validation_invalid_signature():
     assert "Missing or invalid cryptographic key fingerprint" in res2.failure_reason
 
 
+def test_erip_validation_cryptographic_attestation_failure():
+    """Verify fail-closed rejection when cryptographic attestation signature is tampered with or invalid."""
+    validator = ERIPValidationCore()
+
+    # Tampered SPEK signature
+    pack = build_sample_valid_pack(nonce="nonce_test_crypto_sig_001")
+    pack["actor_identity"]["signature"] = "mock_spek_sig_invalid_tampered_digest_00000"
+    res = validator.validate_compliance_pack(pack)
+
+    assert res.status == "REJECT"
+    assert res.failed_stage == "IDENTITY_VERIFICATION"
+    assert "Cryptographic signature verification failed" in res.failure_reason
+
+
 def test_erip_validation_hash_chain_success_and_tampering():
     """Verify reconstruction of SAGE-CRC SHA-256 linear hash chain and detection of terminal root tampering."""
     validator = ERIPValidationCore()

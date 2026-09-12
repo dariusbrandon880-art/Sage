@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Union
 
+from sage.core.attestation import CryptographicAttestationProvider
 from sage.experimental.act.contracts import CrossModelAuditPayloadValidator
 from sage.experimental.cognitive.state_schema import CANONICAL_AUTHORIZED_AGENTS
 from sage.experimental.erip.models import (
@@ -27,6 +28,7 @@ KNOWN_SAGE_AGENT_IDS = set(CANONICAL_AUTHORIZED_AGENTS) | {
 }
 
 VALID_GOVERNANCE_TIERS = {"canonical", "experimental", "shadow"}
+SPEK_SIG_PREFIXES = ("mock_spek_sig_", "tpm_spek_sig_", "hsm_spek_sig_", "secureenclave_spek_sig_")
 
 
 class ERIPValidationCore:
@@ -34,7 +36,7 @@ class ERIPValidationCore:
 
     Enforces 6 sequential validation stages:
     1. Evidence-package intake & CMAPS boundary check
-    2. Identity verification
+    2. Identity verification (with cryptographic attestation checking)
     3. Integrity verification (SAGE-CRC SHA-256 linear hash chain)
     4. Receipt reconciliation
     5. Contradiction detection
@@ -49,6 +51,7 @@ class ERIPValidationCore:
         self.max_age_seconds = max_age_seconds
         self.seen_nonces: Set[str] = set()
         self.cmaps_validator = CrossModelAuditPayloadValidator(validation_mode="strict")
+        self.attestation_provider = CryptographicAttestationProvider()
 
     @staticmethod
     def compute_sage_crc_hash_chain(payloads: List[str], seed_hash: Optional[str] = None) -> str:
@@ -174,6 +177,24 @@ class ERIPValidationCore:
                 contradictions=contradictions,
             )
 
+        # Perform Cryptographic Attestation verification if cryptographic SPEK signature format is present
+        signing_payload = {
+            "agent_id": agent_id,
+            "name": actor.get("name"),
+            "role": actor.get("role"),
+            "governance_tier": gov_tier,
+            "key_fingerprint": key_fingerprint,
+        }
+        if signature.startswith(SPEK_SIG_PREFIXES):
+            if not self.attestation_provider.verify(signing_payload, signature):
+                return self._build_reject(
+                    actor=actor,
+                    stages=stages_executed,
+                    failed_stage=stage_name,
+                    reason="Cryptographic signature verification failed: actor identity signature does not match payload digest",
+                    contradictions=contradictions,
+                )
+
         # =====================================================================
         # STAGE 3: Integrity Verification (SAGE-CRC Hash Chain)
         # =====================================================================
@@ -266,6 +287,20 @@ class ERIPValidationCore:
                     reason="Receipt mismatch: parent_receipt signature is missing or invalid",
                     contradictions=contradictions,
                 )
+
+            parent_signing_payload = {
+                "parent_task_id": p_task,
+                "parent_passport_hash": p_hash,
+            }
+            if p_sig.startswith(SPEK_SIG_PREFIXES):
+                if not self.attestation_provider.verify(parent_signing_payload, p_sig):
+                    return self._build_reject(
+                        actor=actor,
+                        stages=stages_executed,
+                        failed_stage=stage_name,
+                        reason="Receipt mismatch: parent_receipt cryptographic signature verification failed",
+                        contradictions=contradictions,
+                    )
 
         # =====================================================================
         # STAGE 5: Contradiction Detection
