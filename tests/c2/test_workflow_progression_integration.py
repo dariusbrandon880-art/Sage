@@ -25,6 +25,7 @@ def _valid_flight_payloads():
 def test_workflow_completion_awards_points_and_mints_xp(tmp_path):
     storage_dir = tmp_path / "evidence"
     storage_dir.mkdir(parents=True, exist_ok=True)
+    manager = AirspaceManager(tmp_path / "ledger.json")
     engine = WholeOrganismLoopEngine(storage_dir=str(storage_dir))
     head_sha = engine.get_current_head_sha()
 
@@ -33,6 +34,7 @@ def test_workflow_completion_awards_points_and_mints_xp(tmp_path):
         session_id="session_progression_001",
         flight_payloads=_valid_flight_payloads(),
         exact_git_head=head_sha,
+        manager=manager,
     )
 
     assert receipt.all_stages_completed is True
@@ -44,7 +46,29 @@ def test_workflow_completion_awards_points_and_mints_xp(tmp_path):
     assert reward["xp_minted"] > 0
 
 
+def test_require_progression_adjudication_fails_closed_on_error(tmp_path, monkeypatch):
+    import pytest
+    engine = MultiSessionVelocityEngine()
+    head_sha = "40cfd2dc54981638c680ba72a8c19324f99f8306"
+
+    # Simulate adjudication failure
+    def _failing_bridge(*args, **kwargs):
+        raise ValueError("Simulated adjudication bridge failure")
+
+    monkeypatch.setattr("sage.c2.reward_adjudication_bridge.request_c2_reward_adjudication", _failing_bridge)
+
+    with pytest.raises(RuntimeError, match="PROGRESSION_ADJUDICATION_FAILED"):
+        engine.execute_velocity_wave(
+            wave_id="velocity_fail_closed_001",
+            session_id="session_fail_001",
+            flight_payloads=_valid_flight_payloads(),
+            exact_git_head=head_sha,
+            require_progression_adjudication=True,
+        )
+
+
 def test_velocity_wave_completion_awards_progression_reward(tmp_path):
+    manager = AirspaceManager(tmp_path / "ledger.json")
     engine = MultiSessionVelocityEngine()
     head_sha = "40cfd2dc54981638c680ba72a8c19324f99f8306"
 
@@ -53,6 +77,7 @@ def test_velocity_wave_completion_awards_progression_reward(tmp_path):
         session_id="session_velocity_001",
         flight_payloads=_valid_flight_payloads(),
         exact_git_head=head_sha,
+        manager=manager,
     )
 
     assert receipt.rolls_royce_quality_passed is True

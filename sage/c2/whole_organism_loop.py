@@ -82,6 +82,8 @@ class WholeOrganismLoopEngine:
         session_id: str,
         flight_payloads: List[Dict[str, Any]],
         exact_git_head: Optional[str] = None,
+        require_progression_adjudication: bool = False,
+        manager: Optional[Any] = None,
     ) -> WholeOrganismFlightReceipt:
         """Executes all 13 stages of the behavioral organism loop with full evidence binding."""
         head_sha = exact_git_head or self.get_current_head_sha()
@@ -219,12 +221,16 @@ class WholeOrganismLoopEngine:
             }
             progression_reward = request_c2_reward_adjudication(
                 report_payload,
+                manager=manager,
                 difficulty=4,
                 verification_quality=5,
                 impact=5,
                 reuse=5,
             )
-        except Exception:
+        except Exception as exc:
+            logger.warning("Progression reward adjudication failed for mission %s: %s", mission_id, exc)
+            if require_progression_adjudication:
+                raise RuntimeError(f"PROGRESSION_ADJUDICATION_FAILED: {exc}") from exc
             progression_reward = None
 
         receipt_id = f"wo_rec_{hashlib.sha256(f'{mission_id}:{head_sha}:{time.time()}'.encode('utf-8')).hexdigest()[:12]}"
