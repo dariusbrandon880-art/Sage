@@ -244,6 +244,121 @@ def test_interface_transport_adapter_ingest_jules_report():
     assert projection.immersion["gate"] == "GOVERNED_EXECUTION"
 
 
+def test_chatgpt_client_execute_query_forces_hud_when_jules_report_present():
+    from unittest.mock import patch, MagicMock
+    from sage.c2.jules_report_ingestion import JulesReport, compute_hud_projection_key, ingest_jules_report
+    from sage.integration import ChatGPTClient, AIQueryRequest
+
+    SHA = "e8589d31629feb5ee6a5ea3f44f327f0b2c91885"
+
+    class MockMemory:
+        def __init__(self):
+            self.items = []
+
+        def list_all(self):
+            return self.items
+
+    class MockArchive:
+        def list_all(self):
+            return []
+
+    class MockRuntime:
+        def __init__(self):
+            self.state = type("State", (), {"session_id": "session-1"})()
+            self.current_state = type("State", (), {"current_objective": "Ingest Report Memory", "active_task": "Ingested task"})()
+            self.memory = MockMemory()
+            self.archive = MockArchive()
+
+        def ingest_session_payload(self, payload):
+            for m in payload.memories:
+                m_obj = type("MemItem", (), {
+                    "id": m["id"],
+                    "object_type": m["object_type"],
+                    "session_id": payload.session_id,
+                    "content": m["content"],
+                    "tags": m["tags"],
+                    "model_dump": lambda self: {"id": self.id, "object_type": self.object_type, "tags": self.tags},
+                })()
+                self.memory.items.append(m_obj)
+
+        def get_status(self):
+            return {"c2_status": {"rehydrated": True}}
+
+    r = MockRuntime()
+    client = ChatGPTClient(r)
+
+    # Query without Jules report -> force_hud should be False
+    with patch("sage.runtime.chatgpt_sage_boundary.SAGEChatGPTBoundary.respond") as mock_respond:
+        mock_response = MagicMock()
+        mock_response.raw_output = "Model answer"
+        mock_response.input_state_digest = "digest1"
+        mock_response.station = "[SAGE::C2::CHATGPT]"
+        mock_response.policy_version = "v1"
+        mock_response.provenance_digest = "prov1"
+        mock_respond.return_value = ("Rendered text without forced HUD", mock_response)
+
+        req = AIQueryRequest(prompt="Standard question", session_id="session-1", response_override="[SAGE::C2::CHATGPT] Answer")
+        client.execute_query(req)
+
+        assert mock_respond.called
+        _, kwargs = mock_respond.call_args
+        assert kwargs["force_hud"] is False
+
+    # Ingest Jules report for session-1
+    hud_proj = {
+        "frontier": "ingested-memory-frontier",
+        "gate": "VERIFIED_GATE",
+        "flight_id": "F1:ingested_01",
+    }
+    report = JulesReport.model_validate({
+        "session_id": "session-1",
+        "report_id": "rep_mem_01",
+        "git_sha": SHA,
+        "branch": "c2/ingested-memory",
+        "status": "VERIFIED",
+        "objective": "Ingest Report Memory",
+        "summary": "Ingested summary in memory",
+        "hud_projection": hud_proj,
+        "hud_update_key": compute_hud_projection_key(hud_proj),
+        "session_lineage": ["s_0", "session-1"],
+    })
+    ingest_jules_report(r, report, canonical_git_sha=SHA)
+
+    # Query WITH Jules report for session-1 -> force_hud should be True
+    with patch("sage.runtime.chatgpt_sage_boundary.SAGEChatGPTBoundary.respond") as mock_respond:
+        mock_response = MagicMock()
+        mock_response.raw_output = "Model answer"
+        mock_response.input_state_digest = "digest1"
+        mock_response.station = "[SAGE::C2::CHATGPT]"
+        mock_response.policy_version = "v1"
+        mock_response.provenance_digest = "prov1"
+        mock_respond.return_value = ("Rendered text WITH forced HUD", mock_response)
+
+        req = AIQueryRequest(prompt="Standard question after report", session_id="session-1", response_override="[SAGE::C2::CHATGPT] Answer")
+        client.execute_query(req)
+
+        assert mock_respond.called
+        _, kwargs = mock_respond.call_args
+        assert kwargs["force_hud"] is True
+
+    # Query for OTHER session (session-other) -> force_hud should be False (session matching enforced)
+    with patch("sage.runtime.chatgpt_sage_boundary.SAGEChatGPTBoundary.respond") as mock_respond:
+        mock_response = MagicMock()
+        mock_response.raw_output = "Model answer"
+        mock_response.input_state_digest = "digest1"
+        mock_response.station = "[SAGE::C2::CHATGPT]"
+        mock_response.policy_version = "v1"
+        mock_response.provenance_digest = "prov1"
+        mock_respond.return_value = ("Rendered text for other session", mock_response)
+
+        req = AIQueryRequest(prompt="Question for unrelated session", session_id="session-other", response_override="[SAGE::C2::CHATGPT] Answer")
+        client.execute_query(req)
+
+        assert mock_respond.called
+        _, kwargs = mock_respond.call_args
+        assert kwargs["force_hud"] is False
+
+
 def test_chatgpt_client_rehydrate_c2_context_extracts_ingested_jules_report():
     from sage.c2.jules_report_ingestion import JulesReport, compute_hud_projection_key, ingest_jules_report
     from sage.integration import ChatGPTClient
