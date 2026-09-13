@@ -89,10 +89,10 @@
       "protocol_version": "SAGE-RP-1.0",
       "rank": "CQL-4",
       "settlement_id": "settlement:2c08255a11346c00d1cc1d1b2af3683e095da277501573e8f207b5be7cc3e83c",
-      "timestamp": 1789255014.1991997,
+      "timestamp": 1789284926.2681603,
       "xp_after": 142,
       "xp_before": 118,
-      "xp_minted": 24
+      "xp_minted": 0
     },
     "regret_score": 0.0
   },
@@ -103,8 +103,8 @@
   "mission_id": "test_whole_organism_001",
   "next_frontier": "FRONTIER_NEXT_5C195E93",
   "outcome_quality_score": 1.0,
-  "receipt_hash": "24a26cf2f4ff60901d676ba5bf760c52f2a915be5859855ee1a2b271d0c5a4a7",
-  "receipt_id": "wo_rec_1913952533b1",
+  "receipt_hash": "35b7cf127bb78ea1c3cd81219cf7ce95a5b891f8956af8ed855d56b36a9fc06a",
+  "receipt_id": "wo_rec_d990a410593b",
   "session_id": "jules_test_session",
-  "timestamp": 1789255014.199483
+  "timestamp": 1789284926.2682345
 }
