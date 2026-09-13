@@ -1,6 +1,6 @@
 {
-  "receipt_id": "readiness_rcpt_f994e01d500c",
-  "commit_sha": "af4370abf5270bfdfec962da65ce4bcb40f575a8",
+  "receipt_id": "readiness_rcpt_9f4bed231e6c",
+  "commit_sha": "38be0c44af722efe261bcaa0d83a293f334738e9",
   "station_scores": {
     "MISSION_DIRECTOR": {
       "station_id": "MISSION_DIRECTOR",
@@ -49,6 +49,6 @@
   },
   "fleet_verdict": "READY",
   "overall_fleet_readiness": 0.7243,
-  "provenance_hash": "3c00869317006eb322d25125c8caff2d8f4b6afc3ddc71203d593637a179252d",
-  "timestamp": "2026-08-24T07:37:39.565526+00:00"
+  "provenance_hash": "b4fc1c0d732c81145f18d77b90869c667d3ac5587dc4035a9cf56de71aa3111b",
+  "timestamp": "2026-09-13T17:38:43.248502+00:00"
 }
