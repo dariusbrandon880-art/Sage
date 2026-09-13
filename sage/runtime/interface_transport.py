@@ -48,8 +48,8 @@ class InterfaceProjection:
 
     @classmethod
     def from_immersion(cls, session_id: str, state: ImmersionState) -> "InterfaceProjection":
-        if state.station_identity != "[SAGE::C2::CHATGPT]":
-            raise ValueError("interface projection requires canonical ChatGPT station")
+        if not state.station_identity.startswith("[SAGE::C2::"):
+            raise ValueError("interface projection requires canonical C2 station")
         if not state.validate():
             raise ValueError("interface projection requires valid immersion state")
         return cls(
@@ -104,6 +104,34 @@ class InterfaceTransportAdapter:
         if not command.strip():
             raise ValueError("interface command cannot be empty")
         return self._command_authorizer(session_id, command)
+
+    def ingest_jules_report(
+        self,
+        report: Any,
+        *,
+        canonical_git_sha: str,
+        organism_manager: Any | None = None,
+        previous_hud_update_key: str | None = None,
+        force_hud: bool = False,
+    ) -> InterfaceProjection:
+        """Ingest a Jules report into runtime memory and return an updated interface projection."""
+        session_id = getattr(report, "session_id", None) or (report.get("session_id") if isinstance(report, Mapping) else None)
+        if not session_id:
+            raise ValueError("Jules report must contain session_id")
+        self._validate_session(session_id)
+
+        from sage.c2.jules_report_ingestion import rehydrate_c2_from_jules_report
+
+        rehydrate_c2_from_jules_report(
+            self._runtime,
+            report,
+            canonical_git_sha=canonical_git_sha,
+            organism_manager=organism_manager,
+            previous_hud_update_key=previous_hud_update_key,
+            force_hud=force_hud,
+        )
+        state = self._immersion_projector(session_id)
+        return InterfaceProjection.from_immersion(session_id, state)
 
 
 __all__ = [

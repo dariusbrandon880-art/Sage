@@ -72,22 +72,65 @@ class ChatGPTClient(BaseAIClient):
         )
 
     def _rehydrate_c2_context(self, session_id: str) -> dict[str, Any]:
+        base_context = None
         if self.c2_provider and callable(self.c2_provider):
             context = self.c2_provider()
             if context is None:
                 raise ValueError("SAGE C2 provider returned no canonical context")
-            return dict(context)
-        if hasattr(self.runtime, "get_c2_context") and callable(self.runtime.get_c2_context):
+            base_context = dict(context)
+        elif hasattr(self.runtime, "get_c2_context") and callable(self.runtime.get_c2_context):
             context = self.runtime.get_c2_context(session_id)
             if context is None:
                 raise ValueError("SAGE runtime returned no canonical C2 context")
-            return dict(context)
-        if hasattr(self.runtime, "get_status"):
+            base_context = dict(context)
+        elif hasattr(self.runtime, "get_status"):
             status = self.runtime.get_status()
             obj = status.get("current_objective") or getattr(getattr(self.runtime, "current_state", None), "current_objective", None)
             tsk = status.get("active_task") or getattr(getattr(self.runtime, "current_state", None), "active_task", None)
-            return {"c2_identity": "ChatGPT", "master_archive_authority": True, "active_objective": obj, "active_task": tsk, "governance_status": "ACTIVE", "c2_status": status.get("c2_status", {}), "active_frontier": "c2-runtime-boundary", "gate": "GOVERNED_EXECUTION"}
-        raise ValueError("SAGE runtime cannot rehydrate canonical C2 context")
+            base_context = {
+                "c2_identity": "ChatGPT",
+                "master_archive_authority": True,
+                "active_objective": obj,
+                "active_task": tsk,
+                "governance_status": "ACTIVE",
+                "c2_status": status.get("c2_status", {}),
+                "active_frontier": "c2-runtime-boundary",
+                "gate": "GOVERNED_EXECUTION",
+            }
+        else:
+            raise ValueError("SAGE runtime cannot rehydrate canonical C2 context")
+
+        memory_store = getattr(self.runtime, "memory", None)
+        if memory_store and hasattr(memory_store, "list_all"):
+            try:
+                reports = [
+                    m for m in memory_store.list_all()
+                    if getattr(m, "object_type", None) == "jules_execution_report"
+                ]
+                if reports:
+                    session_reports = [
+                        r for r in reports
+                        if getattr(r, "session_id", None) == session_id
+                        or (isinstance(getattr(r, "content", None), dict) and r.content.get("session_id") == session_id)
+                    ]
+                    report = session_reports[-1] if session_reports else reports[-1]
+                    content = getattr(report, "content", {}) or {}
+                    hud_proj = content.get("hud_projection")
+                    if isinstance(hud_proj, dict):
+                        if "frontier" in hud_proj:
+                            base_context["active_frontier"] = hud_proj["frontier"]
+                        if "gate" in hud_proj:
+                            base_context["gate"] = hud_proj["gate"]
+                        if "flight_id" in hud_proj:
+                            base_context["flight_id"] = hud_proj["flight_id"]
+                    if content.get("summary"):
+                        base_context["active_task"] = content["summary"]
+                    if content.get("session_lineage"):
+                        base_context["session_lineage"] = content["session_lineage"]
+            except Exception:
+                pass
+
+        return base_context
 
     def _build_governed_runtime(self, *, session_id: str, c2_context: dict[str, Any], evidence_refs: tuple[str, ...]):
         from hashlib import sha256
