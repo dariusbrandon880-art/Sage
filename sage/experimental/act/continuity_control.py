@@ -1332,7 +1332,7 @@ class DeveloperWorkflowOrchestrator:
                 protected_prefixes = ("sage/runtime/", "sage/core/", "sage/acr/", "sage/agents/")
                 modified_files = [
                     f for f in modified_files
-                    if not any(f.startswith(p) or f.startswith("./" + p) for p in protected_prefixes)
+                    if not any(f.startswith((p, "./" + p)) for p in protected_prefixes)
                 ]
 
             # Fallback if no files are modified/git status is clean
