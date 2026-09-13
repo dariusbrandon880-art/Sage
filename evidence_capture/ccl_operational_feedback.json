@@ -1,20 +1,20 @@
 {
-  "orchestrator_run_id": "orch_run_e2c37bc7c614",
-  "timestamp": "2026-09-13T17:44:07.328274Z",
+  "orchestrator_run_id": "orch_run_7ba470bb14b9",
+  "timestamp": "2026-09-12T23:30:23.482483Z",
   "session_id": "session_non_reexec_001",
   "session_objectives": [
     "obj_autonomous_mission_continuity"
   ],
   "status": "VALIDATED",
   "ccl_record": {
-    "record_id": "CCL-REC-20260913-d722df5d-96f3-481f-b6bb-d507c9fdc7ba",
+    "record_id": "CCL-REC-20260912-d248909d-eecc-494d-b562-5450ab10b844",
     "session_id": "session_non_reexec_001",
     "event_type": "state_transition",
-    "timestamp": 1789321447.328431,
+    "timestamp": 1789255823.482641,
     "action_taken": "Successfully revalidated workspace capabilities for files: ['sage/experimental/act/continuity_control.py']",
     "decision_reasoning": "Governed workspace revalidation executed cleanly; capability status updated and promoted to Master Archive",
     "evidence_payload": {
-      "git_commit": "bb05adc6cccfae6e32f85abc63c7ca28c41a9812",
+      "git_commit": "40cfd2dc54981638c680ba72a8c19324f99f8306",
       "protection_report": {
         "is_violation_found": false,
         "violations_found": 0,
@@ -22,7 +22,7 @@
         "violations": [],
         "status": "CLEAN_WORKSPACE"
       },
-      "cmaps_audit_id": "audit_5fb8df76b275434e9910d097997718b1",
+      "cmaps_audit_id": "audit_a5920dd4a1b74192abbb6dd6bda91fa0",
       "revalidated_capabilities": [
         "CAP-PML-RELIABILITY"
       ],
@@ -31,12 +31,12 @@
       ],
       "session_completed_actions": [],
       "session_pending_actions": [],
-      "enrichment_timestamp": 1789321447.32839,
+      "enrichment_timestamp": 1789255823.4826164,
       "human_approval_record": {
         "supervisor_id": "supervisor_jules",
-        "signature": "sig_jules_ada86072868d",
+        "signature": "sig_jules_5b24db483d04",
         "decision": "APPROVED",
-        "approved_at": 1789321447.328946
+        "approved_at": 1789255823.4835675
       }
     },
     "failure_context": null,
@@ -46,8 +46,8 @@
     "improvement_opportunities": []
   },
   "cmaps_payload": {
-    "audit_id": "audit_5fb8df76b275434e9910d097997718b1",
-    "timestamp": "2026-09-13T17:44:07.328274Z",
+    "audit_id": "audit_a5920dd4a1b74192abbb6dd6bda91fa0",
+    "timestamp": "2026-09-12T23:30:23.482483Z",
     "agent_identity": {
       "agent_id": "agent_jules_sage",
       "name": "Jules",
@@ -60,11 +60,11 @@
       "temperature": 0.2
     },
     "execution_state": {
-      "run_id": "run_03270f1c2838413daa23",
+      "run_id": "run_b7e04e59108b4e849d44",
       "status": "completed",
       "step_counter": 1,
-      "started_at": "2026-09-13T17:44:07.328274Z",
-      "updated_at": "2026-09-13T17:44:07.328274Z"
+      "started_at": "2026-09-12T23:30:23.482483Z",
+      "updated_at": "2026-09-12T23:30:23.482483Z"
     },
     "task_lineage": {
       "session_id": "session_effddef5",
@@ -74,7 +74,7 @@
     "decision_events": [
       {
         "decision_id": "decision_coordinate_dev_loop",
-        "timestamp": "2026-09-13T17:44:07.328274Z",
+        "timestamp": "2026-09-12T23:30:23.482483Z",
         "summary": "Successfully revalidated workspace capabilities for files: ['sage/experimental/act/continuity_control.py']",
         "reasoning": "Governed workspace revalidation executed cleanly; capability status updated and promoted to Master Archive",
         "confidence": 1.0
@@ -84,34 +84,24 @@
     "recovery_checkpoints": [],
     "evidence_relationships": [
       {
-        "artifact_path": "evidence_capture/airspace_ledger.json",
-        "git_commit": "bb05adc6cccfae6e32f85abc63c7ca28c41a9812",
-        "sha256_checksum": "023c6372b91ead5744ec8f5e35b6c9261aa9f959dfea2fea88b4a37be60458a5"
-      },
-      {
         "artifact_path": "evidence_capture/whole_organism_flight_receipt.json",
-        "git_commit": "bb05adc6cccfae6e32f85abc63c7ca28c41a9812",
-        "sha256_checksum": "1689c89800c3584b46ec3f97727f4c67836fecba949432ecb663bf8ebc27210b"
+        "git_commit": "40cfd2dc54981638c680ba72a8c19324f99f8306",
+        "sha256_checksum": "9dc7375c25d196e00e23258b572d546bc4f8af8cdaa906c1a1cdd50c6601fa08"
       },
       {
-        "artifact_path": "sage/c2/jules_report_ingestion.py",
-        "git_commit": "bb05adc6cccfae6e32f85abc63c7ca28c41a9812",
-        "sha256_checksum": "45fd2696758921ed2cc9817c9e965b5439110d68bad47a952feb5f5d37f5031d"
+        "artifact_path": "evidence_capture/airspace_ledger.json",
+        "git_commit": "40cfd2dc54981638c680ba72a8c19324f99f8306",
+        "sha256_checksum": "8bf455dc2016f09332e8b4d92f364d1fe8cddef4424a046e2547f5b52e65a5d5"
       },
       {
-        "artifact_path": "tests/c2/test_jules_report_ingestion.py",
-        "git_commit": "bb05adc6cccfae6e32f85abc63c7ca28c41a9812",
-        "sha256_checksum": "5a409c67d6dc4bfac799bc61cfc6ded22b17aa2ddc05800bbb49b7e0cae7b3fe"
-      },
-      {
-        "artifact_path": "evidence_capture/waves/whole_organism_test_whole_organism_001/bb05adc6cccfae6e32f85abc63c7ca28c41a9812/",
-        "git_commit": "bb05adc6cccfae6e32f85abc63c7ca28c41a9812",
-        "sha256_checksum": "e8128c17fd37d5b270a6c028922d2d8471a76e16bcda904d5f9b8fcd962aab01"
+        "artifact_path": "evidence_capture/waves/whole_organism_test_whole_organism_001/40cfd2dc54981638c680ba72a8c19324f99f8306/",
+        "git_commit": "40cfd2dc54981638c680ba72a8c19324f99f8306",
+        "sha256_checksum": "a9e90f7994896b272ef31077791f2951089f7f25a3e2e7931aea0e5451f487ba"
       }
     ],
     "attestation": {
-      "nonce": "9cad866926594eab",
-      "signature": "sig_jules_ada86072868d",
+      "nonce": "6bf18058f9ac4b3f",
+      "signature": "sig_jules_5b24db483d04",
       "signer_identity": "supervisor_jules"
     }
   },
@@ -126,7 +116,7 @@
       "evidence_completeness": 1.0,
       "decision_trace_completeness": 1.0,
       "workflow_state_accuracy": 1.0,
-      "execution_cycle_duration": 0.06490874290466309,
+      "execution_cycle_duration": 0.05762124061584473,
       "context_preservation_score": 1.0,
       "unnecessary_reassessment_events": 0,
       "repeated_execution_prevention": true,
