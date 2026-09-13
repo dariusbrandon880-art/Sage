@@ -45,9 +45,20 @@ class InterfaceProjection:
     station_identity: str
     immersion: Mapping[str, object]
     provenance_head: str
+    field_c2_envelope: Mapping[str, object] | None = None
+    hud_update_key: str | None = None
+    rendered_response: str | None = None
 
     @classmethod
-    def from_immersion(cls, session_id: str, state: ImmersionState) -> "InterfaceProjection":
+    def from_immersion(
+        cls,
+        session_id: str,
+        state: ImmersionState,
+        *,
+        field_c2_envelope: Mapping[str, object] | None = None,
+        hud_update_key: str | None = None,
+        rendered_response: str | None = None,
+    ) -> "InterfaceProjection":
         if state.station_identity != "[SAGE::C2::CHATGPT]":
             raise ValueError("interface projection requires canonical ChatGPT station")
         if not state.validate():
@@ -57,6 +68,9 @@ class InterfaceProjection:
             station_identity=state.station_identity,
             immersion=state.to_dict(),
             provenance_head=state.provenance_head,
+            field_c2_envelope=field_c2_envelope,
+            hud_update_key=hud_update_key,
+            rendered_response=rendered_response,
         )
 
 
@@ -104,6 +118,37 @@ class InterfaceTransportAdapter:
         if not command.strip():
             raise ValueError("interface command cannot be empty")
         return self._command_authorizer(session_id, command)
+
+    def ingest_jules_report(
+        self,
+        report: Any,
+        *,
+        canonical_git_sha: str,
+        organism_manager: Any | None = None,
+        previous_hud_update_key: str | None = None,
+        force_hud: bool = False,
+    ) -> InterfaceProjection:
+        """Ingest a Jules report and return a read-only InterfaceProjection driving Tower-C2 HUD."""
+        import importlib
+        ingestion_mod = importlib.import_module("sage.c2.jules_report_ingestion")
+
+        immersion_state, response, result = ingestion_mod.rehydrate_c2_from_jules_report(
+            self._runtime,
+            report,
+            canonical_git_sha=canonical_git_sha,
+            organism_manager=organism_manager,
+            previous_hud_update_key=previous_hud_update_key,
+            force_hud=force_hud,
+        )
+
+        session_id = str(getattr(report, "session_id", None) or getattr(result, "session_id", "session"))
+        return InterfaceProjection.from_immersion(
+            session_id=session_id,
+            state=immersion_state,
+            field_c2_envelope=result.field_c2_envelope,
+            hud_update_key=result.hud_update_key,
+            rendered_response=response.render() if hasattr(response, "render") else str(response),
+        )
 
 
 __all__ = [

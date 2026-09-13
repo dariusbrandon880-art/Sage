@@ -126,3 +126,86 @@ def test_observation_never_mutates_canonical_runtime_state():
 
     assert r.state.digest() == before_digest
     assert r.state.active_frontier == "chatgpt-boundary"
+
+
+def test_interface_transport_ingest_jules_report_updates_tower_hud():
+    from sage.c2.jules_report_ingestion import JulesReport, compute_hud_projection_key
+    from sage.runtime.engine import SageRuntime
+
+    SHA = "e8589d31629feb5ee6a5ea3f44f327f0b2c91885"
+    runtime_engine = SageRuntime()
+    view = RuntimeView()
+    view.canonical_git_sha = SHA
+
+    adapter = InterfaceTransportAdapter(
+        runtime_engine,
+        immersion_projector=lambda session_id: build_chatgpt_immersion_state(
+            view, session_id=session_id, c2_context={"active_objective": "Obj", "active_task": "Task"}
+        ),
+    )
+
+    hud_proj = {
+        "frontier": "live-transport-frontier",
+        "gate": "GOVERNED_EXECUTION",
+        "flight_id": "F1:transport_flight",
+    }
+    hud_key = compute_hud_projection_key(hud_proj)
+
+    report = JulesReport.model_validate({
+        "session_id": "session-1",
+        "report_id": "report-transport-1",
+        "git_sha": SHA,
+        "branch": "main",
+        "status": "VERIFIED",
+        "objective": "Verify interface transport HUD update",
+        "summary": "Interface transport Jules report ingested.",
+        "hud_projection": hud_proj,
+        "hud_update_key": hud_key,
+    })
+
+    projection = adapter.ingest_jules_report(report, canonical_git_sha=SHA, force_hud=True)
+
+    assert projection.session_id == "session-1"
+    assert projection.station_identity == "[SAGE::C2::CHATGPT]"
+    assert projection.hud_update_key == hud_key
+    assert projection.field_c2_envelope["hud_projection"]["frontier"] == "live-transport-frontier"
+    assert "Interface transport Jules report ingested." in projection.rendered_response
+    assert "01 — COMMAND BAND // SAGE MISSION CONTROL HUD" in projection.rendered_response
+
+
+def test_chatgpt_client_rehydrates_c2_context_from_jules_report_memory(tmp_path):
+    from sage.c2.jules_report_ingestion import JulesReport, compute_hud_projection_key, ingest_jules_report
+    from sage.integration import ChatGPTClient
+    from sage.runtime.engine import SageRuntime
+
+    SHA = "e8589d31629feb5ee6a5ea3f44f327f0b2c91885"
+    runtime_engine = SageRuntime(str(tmp_path / "sage_data"))
+
+    hud_proj = {
+        "frontier": "memory-extracted-frontier",
+        "gate": "MEMORY_GATE",
+        "flight_id": "F1:mem_flight",
+    }
+    hud_key = compute_hud_projection_key(hud_proj)
+
+    report = JulesReport.model_validate({
+        "session_id": "session-mem-1",
+        "report_id": "report-mem-1",
+        "git_sha": SHA,
+        "branch": "main",
+        "status": "VERIFIED",
+        "objective": "Verify ChatGPTClient context extraction",
+        "summary": "Extract context from report memory.",
+        "hud_projection": hud_proj,
+        "hud_update_key": hud_key,
+    })
+
+    ingest_jules_report(runtime_engine, report, canonical_git_sha=SHA)
+
+    client = ChatGPTClient(runtime_engine)
+    context = client._rehydrate_c2_context("session-mem-1")
+
+    assert context["active_frontier"] == "memory-extracted-frontier"
+    assert context["gate"] == "MEMORY_GATE"
+    assert context["hud_update_key"] == hud_key
+    assert context["hud_projection"] == hud_proj

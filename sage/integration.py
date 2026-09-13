@@ -82,11 +82,48 @@ class ChatGPTClient(BaseAIClient):
             if context is None:
                 raise ValueError("SAGE runtime returned no canonical C2 context")
             return dict(context)
+        context = {
+            "c2_identity": "ChatGPT",
+            "master_archive_authority": True,
+            "governance_status": "ACTIVE",
+            "active_frontier": "c2-runtime-boundary",
+            "gate": "GOVERNED_EXECUTION",
+        }
+
         if hasattr(self.runtime, "get_status"):
             status = self.runtime.get_status()
             obj = status.get("current_objective") or getattr(getattr(self.runtime, "current_state", None), "current_objective", None)
             tsk = status.get("active_task") or getattr(getattr(self.runtime, "current_state", None), "active_task", None)
-            return {"c2_identity": "ChatGPT", "master_archive_authority": True, "active_objective": obj, "active_task": tsk, "governance_status": "ACTIVE", "c2_status": status.get("c2_status", {}), "active_frontier": "c2-runtime-boundary", "gate": "GOVERNED_EXECUTION"}
+            context.update({
+                "active_objective": obj,
+                "active_task": tsk,
+                "c2_status": status.get("c2_status", {}),
+            })
+
+        # Enrich C2 context from recent Jules report memories in runtime memory
+        memory_store = getattr(self.runtime, "memory", None)
+        if memory_store and hasattr(memory_store, "list_all"):
+            try:
+                for obj in reversed(memory_store.list_all()):
+                    if getattr(obj, "object_type", None) == "jules_execution_report":
+                        content = getattr(obj, "content", {}) or {}
+                        hud_proj = content.get("hud_projection") or {}
+                        if hud_proj:
+                            if hud_proj.get("frontier"):
+                                context["active_frontier"] = hud_proj["frontier"]
+                            if hud_proj.get("gate"):
+                                context["gate"] = hud_proj["gate"]
+                            if hud_proj.get("flight_id"):
+                                context["flight_id"] = hud_proj["flight_id"]
+                            context["hud_projection"] = hud_proj
+                            context["hud_update_key"] = content.get("hud_update_key")
+                            break
+            except Exception:
+                pass
+
+        if "active_objective" in context or "active_task" in context:
+            return context
+
         raise ValueError("SAGE runtime cannot rehydrate canonical C2 context")
 
     def _build_governed_runtime(self, *, session_id: str, c2_context: dict[str, Any], evidence_refs: tuple[str, ...]):
