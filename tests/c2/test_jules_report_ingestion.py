@@ -70,3 +70,26 @@ def test_invalid_report_sha_is_rejected_before_runtime_write():
     else:
         raise AssertionError("invalid report SHA must be rejected")
     assert runtime.payloads == []
+
+
+def test_omitted_canonical_git_sha_resolves_dynamically():
+    runtime = FakeRuntime()
+    import subprocess
+    active_head = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+    report = make_report(git_sha=active_head, pr_head_sha=active_head)
+
+    result = ingest_jules_report(runtime, report)
+    assert result.accepted is True
+    assert result.canonical_git_sha == active_head
+    assert len(runtime.payloads) == 1
+
+
+def test_invalid_provided_canonical_git_sha_fails_closed():
+    runtime = FakeRuntime()
+    try:
+        ingest_jules_report(runtime, make_report(), canonical_git_sha="invalid-sha")
+    except ValueError as exc:
+        assert "canonical_git_sha must be exactly 40 lowercase hexadecimal characters" in str(exc)
+    else:
+        raise AssertionError("invalid canonical_git_sha must raise ValueError")
+    assert runtime.payloads == []

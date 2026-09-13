@@ -10,6 +10,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import subprocess
 from typing import Any, Mapping
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -18,6 +19,23 @@ from sage.c2.response_envelope import FieldC2ProjectionEnvelope
 from sage.models import ExternalSessionPayload
 
 _SHA40 = re.compile(r"^[0-9a-f]{40}$")
+
+
+def resolve_canonical_git_sha(provided_sha: str | None = None) -> str:
+    """Resolve exact 40-character canonical Git HEAD SHA."""
+    if provided_sha is not None:
+        if not _SHA40.fullmatch(provided_sha):
+            raise ValueError("canonical_git_sha must be exactly 40 lowercase hexadecimal characters")
+        return provided_sha
+    try:
+        raw_head = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], stderr=subprocess.DEVNULL, text=True
+        ).strip()
+        if not _SHA40.fullmatch(raw_head):
+            raise ValueError(f"Resolved git HEAD '{raw_head}' is not a valid 40-character SHA")
+        return raw_head
+    except Exception as exc:
+        raise ValueError(f"Failed to resolve canonical Git HEAD SHA: {exc}") from exc
 
 
 def compute_hud_projection_key(hud_projection: Mapping[str, Any]) -> str:
@@ -89,35 +107,34 @@ def ingest_jules_report(
     runtime: Any,
     report: JulesReport | Mapping[str, Any],
     *,
-    canonical_git_sha: str,
+    canonical_git_sha: str | None = None,
 ) -> JulesReportIngestionResult:
     """Validate lineage and ingest a Jules report as an observed payload.
 
-    The report must match the exact canonical Git HEAD supplied by the caller.
-    A PR head SHA, when present, must match that same canonical SHA. Any
-    mismatch is rejected before touching runtime memory.
+    The report must match the exact canonical Git HEAD supplied by the caller or
+    dynamically resolved from active repository truth. Any mismatch is rejected before
+    touching runtime memory.
     """
 
     parsed = report if isinstance(report, JulesReport) else JulesReport.model_validate(report)
-    if not _SHA40.fullmatch(canonical_git_sha):
-        raise ValueError("canonical_git_sha must be exactly 40 lowercase hexadecimal characters")
+    resolved_sha = resolve_canonical_git_sha(canonical_git_sha)
 
-    if parsed.git_sha != canonical_git_sha:
+    if parsed.git_sha != resolved_sha:
         return JulesReportIngestionResult(
             accepted=False,
             report_id=parsed.report_id,
             session_id=parsed.session_id,
-            canonical_git_sha=canonical_git_sha,
+            canonical_git_sha=resolved_sha,
             evidence_digest=_evidence_digest(parsed),
             rejection_reason="report Git SHA does not match canonical Git HEAD",
         )
 
-    if parsed.pr_head_sha is not None and parsed.pr_head_sha != canonical_git_sha:
+    if parsed.pr_head_sha is not None and parsed.pr_head_sha != resolved_sha:
         return JulesReportIngestionResult(
             accepted=False,
             report_id=parsed.report_id,
             session_id=parsed.session_id,
-            canonical_git_sha=canonical_git_sha,
+            canonical_git_sha=resolved_sha,
             evidence_digest=_evidence_digest(parsed),
             rejection_reason="PR head SHA does not match canonical Git HEAD",
         )
@@ -133,7 +150,7 @@ def ingest_jules_report(
     envelope = FieldC2ProjectionEnvelope(
         session_id=parsed.session_id,
         report_id=parsed.report_id,
-        canonical_git_sha=canonical_git_sha,
+        canonical_git_sha=resolved_sha,
         hud_projection=parsed.hud_projection,
         hud_update_key=calculated_hud_key,
         session_lineage=tuple(parsed.session_lineage),
@@ -152,7 +169,7 @@ def ingest_jules_report(
                     "status": parsed.status,
                     "summary": parsed.summary,
                     "branch": parsed.branch,
-                    "canonical_git_sha": canonical_git_sha,
+                    "canonical_git_sha": resolved_sha,
                     "pr_number": parsed.pr_number,
                     "state_deltas": parsed.state_deltas,
                     "evidence": parsed.evidence,
@@ -170,7 +187,7 @@ def ingest_jules_report(
         metadata={
             "source": "jules",
             "provenance": "exact_git_head",
-            "canonical_git_sha": canonical_git_sha,
+            "canonical_git_sha": resolved_sha,
             "evidence_digest": digest,
             "hud_update_key": calculated_hud_key,
             "session_lineage": parsed.session_lineage,
@@ -181,7 +198,7 @@ def ingest_jules_report(
         accepted=True,
         report_id=parsed.report_id,
         session_id=parsed.session_id,
-        canonical_git_sha=canonical_git_sha,
+        canonical_git_sha=resolved_sha,
         evidence_digest=digest,
         hud_update_key=calculated_hud_key,
         field_c2_envelope=envelope.as_dict(),
@@ -192,7 +209,7 @@ def rehydrate_c2_from_jules_report(
     runtime: Any,
     report: JulesReport | Mapping[str, Any],
     *,
-    canonical_git_sha: str,
+    canonical_git_sha: str | None = None,
     organism_manager: Any | None = None,
     previous_hud_update_key: str | None = None,
     force_hud: bool = False,
@@ -205,7 +222,8 @@ def rehydrate_c2_from_jules_report(
     import importlib
     immersion_rehydrate_mod = importlib.import_module("sage.c2.immersion_rehydration")
 
-    ingestion_result = ingest_jules_report(runtime, report, canonical_git_sha=canonical_git_sha)
+    resolved_sha = resolve_canonical_git_sha(canonical_git_sha)
+    ingestion_result = ingest_jules_report(runtime, report, canonical_git_sha=resolved_sha)
     if not ingestion_result.accepted:
         raise ValueError(f"C2 rehydration blocked: Jules report rejected ({ingestion_result.rejection_reason})")
 
@@ -214,7 +232,7 @@ def rehydrate_c2_from_jules_report(
     c2_context: dict[str, Any] = {
         "active_objective": parsed.objective,
         "active_task": parsed.summary,
-        "canonical_git_sha": canonical_git_sha,
+        "canonical_git_sha": resolved_sha,
         "session_lineage": parsed.session_lineage,
     }
     if parsed.hud_projection:
