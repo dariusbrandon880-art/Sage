@@ -43,6 +43,21 @@ def test_matching_head_ingests_observation_only():
     assert payload.memories[0]["object_type"] == "jules_execution_report"
 
 
+def test_matching_head_with_hud_projection_ingests_successfully():
+    runtime = FakeRuntime()
+    hud_data = {"mission": "Test Mission", "flight_status": "ACTIVE", "trust_status": "VERIFIED"}
+    update_key = "a1b2c3d4e5f67890"
+    report = make_report(hud_projection=hud_data, hud_update_key=update_key)
+
+    result = ingest_jules_report(runtime, report, canonical_git_sha=SHA)
+    assert result.accepted is True
+    payload = runtime.payloads[0]
+    memory_content = payload.memories[0]["content"]
+    assert memory_content["hud_projection"] == hud_data
+    assert memory_content["hud_update_key"] == update_key
+    assert payload.metadata["hud_update_key"] == update_key
+
+
 def test_report_head_mismatch_fails_closed_without_ingestion():
     runtime = FakeRuntime()
     result = ingest_jules_report(runtime, make_report(git_sha=OTHER_SHA, pr_head_sha=OTHER_SHA), canonical_git_sha=SHA)

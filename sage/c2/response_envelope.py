@@ -14,6 +14,28 @@ from typing import Any
 
 
 @dataclass(frozen=True)
+class FieldC2ProjectionEnvelope:
+    """Read-only structured projection envelope emitted by Field-C2 (Jules)."""
+
+    station: str
+    session_id: str
+    mission_hud: dict[str, Any]
+    provenance_head: str
+    progression_hud: dict[str, Any] | None = None
+    hud_update_key: str | None = None
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "station": self.station,
+            "session_id": self.session_id,
+            "mission_hud": self.mission_hud,
+            "progression_hud": self.progression_hud,
+            "hud_update_key": self.hud_update_key,
+            "provenance_head": self.provenance_head,
+        }
+
+
+@dataclass(frozen=True)
 class StationPresentation:
     """Immutable presentation contract for one SAGE station response."""
 
@@ -71,12 +93,23 @@ def render_station_response(text: str, presentation: StationPresentation) -> str
     return f"{prefix} {presentation.display_name}\n\n{body}"
 
 
-def build_response_envelope(text: str, presentation: StationPresentation) -> dict[str, Any]:
+def build_response_envelope(
+    text: str,
+    presentation: StationPresentation,
+    *,
+    projection_envelope: FieldC2ProjectionEnvelope | dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """Build structured metadata plus the canonical rendered response."""
-    return {
+    envelope = {
         "presentation": presentation.as_dict(),
         "response_text": render_station_response(text, presentation),
     }
+    if projection_envelope is not None:
+        if isinstance(projection_envelope, FieldC2ProjectionEnvelope):
+            envelope["projection_envelope"] = projection_envelope.as_dict()
+        else:
+            envelope["projection_envelope"] = dict(projection_envelope)
+    return envelope
 
 
 def hud_update_key(hud: object) -> str:

@@ -34,6 +34,8 @@ class JulesReport(BaseModel):
     state_deltas: dict[str, Any] = Field(default_factory=dict)
     pr_number: int | None = Field(default=None, ge=1)
     pr_head_sha: str | None = None
+    hud_projection: dict[str, Any] | None = None
+    hud_update_key: str | None = None
 
     @field_validator("git_sha", "pr_head_sha")
     @classmethod
@@ -117,6 +119,8 @@ def ingest_jules_report(
                     "state_deltas": parsed.state_deltas,
                     "evidence": parsed.evidence,
                     "evidence_digest": digest,
+                    "hud_projection": parsed.hud_projection,
+                    "hud_update_key": parsed.hud_update_key,
                 },
                 "tags": ["jules", "execution_report", "c2_ingestion", parsed.status.lower()],
                 "confidence": "hypothesis",
@@ -128,6 +132,7 @@ def ingest_jules_report(
             "provenance": "exact_git_head",
             "canonical_git_sha": canonical_git_sha,
             "evidence_digest": digest,
+            "hud_update_key": parsed.hud_update_key,
         },
     )
     runtime.ingest_session_payload(payload)
