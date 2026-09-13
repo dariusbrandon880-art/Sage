@@ -10,7 +10,7 @@ from hashlib import sha256
 import json
 from typing import Any, Mapping, Protocol
 
-from sage.c2.chatgpt_c2_contract import classify_directive, validate_report_claims
+from sage.c2.chatgpt_c2_contract import validate_directive_compliance, validate_report_claims
 from sage.c2.live_operation_receipt import LiveCapability, LiveOperationReceipt, execute_live_capability
 
 
@@ -243,7 +243,7 @@ class SAGERuntime:
             raise ValueError("SAGE structured response station mismatch")
 
     def invoke(self, adapter: ModelAdapter, task: str, *, model_role: str, live_capability: LiveCapability | None = None) -> ModelResponse:
-        decision = classify_directive(task)
+        decision = validate_directive_compliance(task)
         receipt: LiveOperationReceipt | None = None
         if decision.requires_live_verification:
             if live_capability is None:
@@ -256,6 +256,11 @@ class SAGERuntime:
         if receipt is not None:
             evidence_refs = tuple(dict.fromkeys((*response.evidence_refs, receipt.receipt_hash)))
             response = replace(response, evidence_refs=evidence_refs, live_operation_receipt=receipt)
-            validate_report_claims(receipt=receipt, claim=str(response.raw_output), expected_target_resource=receipt.target_resource, evidence_refs=evidence_refs)
+        validate_report_claims(
+            receipt=response.live_operation_receipt,
+            claim=str(response.raw_output),
+            expected_target_resource=response.live_operation_receipt.target_resource if response.live_operation_receipt else None,
+            evidence_refs=response.evidence_refs,
+        )
         self.reconcile(response, expected_station=expected_station, model_role=model_role)
         return response

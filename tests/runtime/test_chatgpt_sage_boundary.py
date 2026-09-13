@@ -88,7 +88,20 @@ def test_openai_adapter_wraps_model_output_in_sage_contract() -> None:
     assert response.structured_response is not None
     assert response.model_id == "gpt-5.6-luna"
     assert client.responses.calls[0]["model"] == "gpt-5.6-luna"
-    assert "SAGE ENVELOPE" in str(client.responses.calls[0]["instructions"])
+    instructions = str(client.responses.calls[0]["instructions"])
+    assert "SAGE ENVELOPE" in instructions
+    assert "SAGE C2 CONTRACT: CHATGPT_C2_EXACT_ORDER_ANTI_DRIFT" in instructions
+
+
+def test_runtime_rejects_unbacked_live_claim_without_receipt() -> None:
+    class LiveClaimAdapter:
+        model_id = "fake"
+        station = "[SAGE::C2::CHATGPT]"
+        def invoke(self, envelope, task):
+            return _bound_response(_runtime(), _valid_output("Verified live repository state"))
+
+    with pytest.raises(ValueError, match="C2 anti-drift contract violation"):
+        _runtime().invoke(LiveClaimAdapter(), "status", model_role="chatgpt")
 
 
 def test_boundary_renders_only_after_sage_reconciliation() -> None:
