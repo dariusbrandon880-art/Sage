@@ -1,4 +1,11 @@
-from sage.c2.jules_report_ingestion import JulesReport, ingest_jules_report
+import subprocess
+import pytest
+from sage.c2.jules_report_ingestion import (
+    JulesReport,
+    ingest_jules_report,
+    rehydrate_c2_from_jules_report,
+    resolve_canonical_git_sha,
+)
 
 
 SHA = "e8589d31629feb5ee6a5ea3f44f327f0b2c91885"
@@ -70,3 +77,35 @@ def test_invalid_report_sha_is_rejected_before_runtime_write():
     else:
         raise AssertionError("invalid report SHA must be rejected")
     assert runtime.payloads == []
+
+
+def test_resolve_canonical_git_sha_explicit():
+    res = resolve_canonical_git_sha(SHA)
+    assert res == SHA
+
+    with pytest.raises(ValueError, match="canonical_git_sha must be exactly 40 lowercase hexadecimal characters"):
+        resolve_canonical_git_sha("invalid_sha")
+
+
+def test_resolve_canonical_git_sha_dynamic():
+    res = resolve_canonical_git_sha()
+    assert len(res) == 40
+    # Verify matches git rev-parse HEAD
+    expected = subprocess.run(
+        ["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True
+    ).stdout.strip()
+    assert res == expected
+
+
+def test_ingest_jules_report_dynamic_sha_resolution():
+    current_head = resolve_canonical_git_sha()
+    runtime = FakeRuntime()
+    report = make_report(git_sha=current_head, pr_head_sha=current_head)
+
+    # Ingest without providing canonical_git_sha explicitly
+    result = ingest_jules_report(runtime, report)
+
+    assert result.accepted is True
+    assert result.canonical_git_sha == current_head
+    assert len(runtime.payloads) == 1
+    assert runtime.payloads[0].metadata["canonical_git_sha"] == current_head

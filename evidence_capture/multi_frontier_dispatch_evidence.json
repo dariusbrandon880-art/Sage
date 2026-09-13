@@ -1,5 +1,5 @@
 {
-  "commit_sha": "7e2f32963d4b8eb66fb3d903c154e2812a776b6e",
+  "commit_sha": "15a369b5035c50f25526738a25f11f3bcc55e0d3",
   "flight_receipts": [
     {
       "flight_id": "F1",
@@ -7,12 +7,12 @@
       "frontier_name": "Multi-Frontier Dispatcher",
       "boundary_scope": "sage.c2.multi_frontier_dispatch",
       "status": "PASS",
-      "commit_sha": "7e2f32963d4b8eb66fb3d903c154e2812a776b6e",
+      "commit_sha": "15a369b5035c50f25526738a25f11f3bcc55e0d3",
       "proof_type": "governed_wave_execution_summary",
       "proof_data": {
         "target": "sage/c2/multi_frontier_dispatch.py",
         "tests_passed": 5,
-        "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/7e2f32963d4b8eb66fb3d903c154e2812a776b6e/F1_receipt.json",
+        "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/15a369b5035c50f25526738a25f11f3bcc55e0d3/F1_receipt.json",
         "pr_or_change": "adaptive-parallel-frontier-convergence",
         "lifecycle_milestones": [
           {
@@ -33,11 +33,11 @@
           {
             "stage": "STAGE_4_WAREHOUSE_PROMOTE",
             "passed": true,
-            "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/7e2f32963d4b8eb66fb3d903c154e2812a776b6e/F1_receipt.json"
+            "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/15a369b5035c50f25526738a25f11f3bcc55e0d3/F1_receipt.json"
           }
         ]
       },
-      "receipt_hash": "70c36a2110360177e0d28916fd8c2f73eb7d42f88beb296411036a09ccbdb8d6"
+      "receipt_hash": "bd7b65a0b858ee5aa6d0a1e60c6659397eb1eedae7f2d398ecb81c3a3f1ab436"
     },
     {
       "flight_id": "F2",
@@ -45,12 +45,12 @@
       "frontier_name": "Frontier Intelligence Bridge",
       "boundary_scope": "sage.c2.frontier_intelligence_bridge",
       "status": "PASS",
-      "commit_sha": "7e2f32963d4b8eb66fb3d903c154e2812a776b6e",
+      "commit_sha": "15a369b5035c50f25526738a25f11f3bcc55e0d3",
       "proof_type": "governed_wave_execution_summary",
       "proof_data": {
         "target": "sage/c2/frontier_intelligence_bridge.py",
         "tests_passed": 2,
-        "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/7e2f32963d4b8eb66fb3d903c154e2812a776b6e/F2_receipt.json",
+        "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/15a369b5035c50f25526738a25f11f3bcc55e0d3/F2_receipt.json",
         "pr_or_change": "adaptive-parallel-frontier-convergence",
         "lifecycle_milestones": [
           {
@@ -71,11 +71,11 @@
           {
             "stage": "STAGE_4_WAREHOUSE_PROMOTE",
             "passed": true,
-            "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/7e2f32963d4b8eb66fb3d903c154e2812a776b6e/F2_receipt.json"
+            "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/15a369b5035c50f25526738a25f11f3bcc55e0d3/F2_receipt.json"
           }
         ]
       },
-      "receipt_hash": "c59066bac7f0ef291f69c9d37d5d8105890fd07591a292d2766d47b60163734e"
+      "receipt_hash": "5b566f3043339e277b5b4553031f2d9469ee23bb6d6a4db1143cd5445aa997a2"
     },
     {
       "flight_id": "F3",
@@ -83,12 +83,12 @@
       "frontier_name": "Parallel Frontier Supervisor",
       "boundary_scope": "sage.experimental.parallel_frontier_supervisor",
       "status": "PASS",
-      "commit_sha": "7e2f32963d4b8eb66fb3d903c154e2812a776b6e",
+      "commit_sha": "15a369b5035c50f25526738a25f11f3bcc55e0d3",
       "proof_type": "governed_wave_execution_summary",
       "proof_data": {
         "target": "sage/experimental/parallel_frontier_supervisor.py",
         "tests_passed": 5,
-        "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/7e2f32963d4b8eb66fb3d903c154e2812a776b6e/F3_receipt.json",
+        "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/15a369b5035c50f25526738a25f11f3bcc55e0d3/F3_receipt.json",
         "pr_or_change": "adaptive-parallel-frontier-convergence",
         "lifecycle_milestones": [
           {
@@ -109,11 +109,11 @@
           {
             "stage": "STAGE_4_WAREHOUSE_PROMOTE",
             "passed": true,
-            "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/7e2f32963d4b8eb66fb3d903c154e2812a776b6e/F3_receipt.json"
+            "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/15a369b5035c50f25526738a25f11f3bcc55e0d3/F3_receipt.json"
           }
         ]
       },
-      "receipt_hash": "814b00f4c4f8a1cdac30cd02b35780742887dafa14c411472f4c23a302d3ae19"
+      "receipt_hash": "a0e4dc1b8066288f672696b63f20766ae6252287d4738d0a3583409a13fe7fc4"
     },
     {
       "flight_id": "F4",
@@ -121,12 +121,12 @@
       "frontier_name": "Coherent Frontier Engine",
       "boundary_scope": "sage.experimental.coherent_frontier",
       "status": "PASS",
-      "commit_sha": "7e2f32963d4b8eb66fb3d903c154e2812a776b6e",
+      "commit_sha": "15a369b5035c50f25526738a25f11f3bcc55e0d3",
       "proof_type": "governed_wave_execution_summary",
       "proof_data": {
         "target": "sage/experimental/coherent_frontier.py",
         "tests_passed": 4,
-        "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/7e2f32963d4b8eb66fb3d903c154e2812a776b6e/F4_receipt.json",
+        "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/15a369b5035c50f25526738a25f11f3bcc55e0d3/F4_receipt.json",
         "pr_or_change": "adaptive-parallel-frontier-convergence",
         "lifecycle_milestones": [
           {
@@ -147,11 +147,11 @@
           {
             "stage": "STAGE_4_WAREHOUSE_PROMOTE",
             "passed": true,
-            "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/7e2f32963d4b8eb66fb3d903c154e2812a776b6e/F4_receipt.json"
+            "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/15a369b5035c50f25526738a25f11f3bcc55e0d3/F4_receipt.json"
           }
         ]
       },
-      "receipt_hash": "74131b30f1c51c8f4d8310561c0fa4907e994974e1a0b9884c78ce970bae31f7"
+      "receipt_hash": "5da1f22865daa9491d0165b13e55bfd7c73ced3942cd25a2e013eb6172f4e30b"
     },
     {
       "flight_id": "F5",
@@ -159,12 +159,12 @@
       "frontier_name": "Frontier Tree Engine",
       "boundary_scope": "sage.experimental.frontier_tree",
       "status": "PASS",
-      "commit_sha": "7e2f32963d4b8eb66fb3d903c154e2812a776b6e",
+      "commit_sha": "15a369b5035c50f25526738a25f11f3bcc55e0d3",
       "proof_type": "governed_wave_execution_summary",
       "proof_data": {
         "target": "sage/experimental/frontier_tree.py",
         "tests_passed": 5,
-        "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/7e2f32963d4b8eb66fb3d903c154e2812a776b6e/F5_receipt.json",
+        "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/15a369b5035c50f25526738a25f11f3bcc55e0d3/F5_receipt.json",
         "pr_or_change": "adaptive-parallel-frontier-convergence",
         "lifecycle_milestones": [
           {
@@ -185,11 +185,11 @@
           {
             "stage": "STAGE_4_WAREHOUSE_PROMOTE",
             "passed": true,
-            "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/7e2f32963d4b8eb66fb3d903c154e2812a776b6e/F5_receipt.json"
+            "evidence_ref": "evidence_capture/waves/multi-frontier-dispatch/15a369b5035c50f25526738a25f11f3bcc55e0d3/F5_receipt.json"
           }
         ]
       },
-      "receipt_hash": "755d3fa7dbcccf2e6b50849df9456a53e840683b192519c6d664e79a36f6a3ba"
+      "receipt_hash": "2f38127e9ad04e67cbb147e0f262ba74821227509d75e112671ffd8d578747cf"
     }
   ],
   "collision_count": 0,
