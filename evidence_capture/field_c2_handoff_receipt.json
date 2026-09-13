@@ -1,0 +1,15 @@
+{
+  "flight_id": "FIELD_C2_TOWER_C2_HANDOFF_FLIGHT_2026",
+  "status": "VERIFIED",
+  "canonical_git_sha": "b01ff31267a99fa130f7a20b87cdd36fcc68c6f4",
+  "turn1_ingestion_accepted": true,
+  "turn1_hud_key": "f1eacd6d3a4d632f96d073c530a70c973d10e592955cd31c7152c6175410fb64",
+  "turn1_hud_rendered": true,
+  "turn2_hud_suppressed": true,
+  "turn3_changed_hud_rendered": true,
+  "turn3_hud_key": "ee6c793299cc609f604ac5d4724d084c5f12f79e28ea3652d6f653f7b30efeb2",
+  "fail_closed_stale_head_verified": true,
+  "prose_preserved": true,
+  "evidence_digest": "cd60f777a7bf72c09e9db6352d8e2fdfaab2f9f08f4d15d01598f342be02cee6",
+  "field_c2_envelope_authority": "field_c2_jules_report"
+}
