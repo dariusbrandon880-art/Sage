@@ -74,6 +74,16 @@ def test_empty_receipts_returns_stable_baseline():
     assert receipt.growth_index == 0.5
 
 
+def test_organism_growth_rate_unmeasured_inputs_fail_closed_to_degraded():
+    engine = FleetEvolutionIntelligence(commit_sha="commit_sha_unmeasured")
+    # All parameters unsupplied default to 0.0
+    receipt = engine.evaluate_organism_growth_rate()
+
+    assert receipt.compound_growth_index == 0.0
+    assert receipt.growth_verdict == "DEGRADED"
+    assert len(receipt.provenance_hash) == 64
+
+
 def test_provenance_hash_determinism():
     engine = FleetEvolutionIntelligence(commit_sha="commit_sha_100")
     receipts = [{"receipt_id": "r1", "status": "PASS", "commit_sha": "commit_sha_100"}]

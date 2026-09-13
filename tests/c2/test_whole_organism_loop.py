@@ -43,7 +43,8 @@ def test_whole_organism_loop_execution_and_receipt_verification(valid_head_sha):
     assert receipt.mission_id == "test_whole_organism_001"
     assert receipt.exact_git_head == valid_head_sha
     assert len(receipt.flight_receipts) == 5
-    assert len(receipt.evidence_hashes) == 5
+    assert "organism_growth" in receipt.evidence_hashes
+    assert len(receipt.evidence_hashes["organism_growth"]) == 64
     assert receipt.jigsaw_gates_passed > 0
     assert receipt.outcome_quality_score == 1.0
     assert receipt.all_stages_completed is True

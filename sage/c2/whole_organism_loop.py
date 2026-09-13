@@ -172,9 +172,11 @@ class WholeOrganismLoopEngine:
         fleet_intel = FleetEvolutionIntelligence(commit_sha=head_sha)
         growth_eval = fleet_intel.evaluate_organism_growth_rate(
             velocity_score=velocity_receipt.successful_flights / velocity_receipt.total_flights,
+            prediction_accuracy_score=actual_quality,
             wave_completion_rate=len(velocity_receipt.advancement_matrix_20_cells) / 20.0,
             anti_drift_compliance_score=1.0 if velocity_receipt.rolls_royce_quality_passed else 0.0,
         )
+        evidence_hashes["organism_growth"] = growth_eval.provenance_hash
 
         # STAGE 12: LEARNING FEEDBACK & METACOGNITION
         meta_mod = importlib.import_module("sage.experimental.sagi.metacognition")
