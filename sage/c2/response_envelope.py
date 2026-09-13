@@ -71,12 +71,48 @@ def render_station_response(text: str, presentation: StationPresentation) -> str
     return f"{prefix} {presentation.display_name}\n\n{body}"
 
 
-def build_response_envelope(text: str, presentation: StationPresentation) -> dict[str, Any]:
+@dataclass(frozen=True)
+class FieldC2ProjectionEnvelope:
+    """Read-only Field-C2 projection envelope derived from structured report ingestion."""
+
+    session_id: str
+    report_id: str
+    canonical_git_sha: str
+    hud_projection: dict[str, Any] | None = None
+    hud_update_key: str | None = None
+    session_lineage: tuple[str, ...] = ()
+    read_only: bool = True
+    authority: str = "field_c2_jules_report"
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "session_id": self.session_id,
+            "report_id": self.report_id,
+            "canonical_git_sha": self.canonical_git_sha,
+            "hud_projection": self.hud_projection,
+            "hud_update_key": self.hud_update_key,
+            "session_lineage": list(self.session_lineage),
+            "read_only": self.read_only,
+            "authority": self.authority,
+        }
+
+
+def build_response_envelope(
+    text: str,
+    presentation: StationPresentation,
+    field_c2_envelope: FieldC2ProjectionEnvelope | dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """Build structured metadata plus the canonical rendered response."""
-    return {
+    envelope = {
         "presentation": presentation.as_dict(),
         "response_text": render_station_response(text, presentation),
     }
+    if field_c2_envelope is not None:
+        if isinstance(field_c2_envelope, FieldC2ProjectionEnvelope):
+            envelope["field_c2_envelope"] = field_c2_envelope.as_dict()
+        else:
+            envelope["field_c2_envelope"] = dict(field_c2_envelope)
+    return envelope
 
 
 def hud_update_key(hud: object) -> str:
