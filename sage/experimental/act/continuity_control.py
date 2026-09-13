@@ -988,8 +988,6 @@ class DeveloperWorkflowOrchestrator:
 
     def detect_external_workspace_drift(self) -> bool:
         """Automatically scans the repository for untracked or unauthorized changes to frozen core production namespaces."""
-        if os.environ.get("SAGE_ALLOW_PROTECTED_DRIFT") == "1":
-            return False
         workspace = self.scan_git_workspace()
         modified_files = workspace.get("modified_files", [])
 
@@ -1328,13 +1326,6 @@ class DeveloperWorkflowOrchestrator:
                     if diff_res.returncode == 0:
                         diffs[filepath] = diff_res.stdout
 
-            if os.environ.get("PYTEST_CURRENT_TEST"):
-                protected_prefixes = ("sage/runtime/", "sage/core/", "sage/acr/", "sage/agents/")
-                modified_files = [
-                    f for f in modified_files
-                    if not any(f.startswith((p, "./" + p)) for p in protected_prefixes)
-                ]
-
             # Fallback if no files are modified/git status is clean
             if not modified_files:
                 modified_files = ["sage/experimental/act/continuity_control.py"]
@@ -1373,13 +1364,6 @@ class DeveloperWorkflowOrchestrator:
         workspace = self.scan_git_workspace()
         modified_files = workspace["modified_files"]
         _diffs = workspace["diffs"]
-
-        if task:
-            task_targets = getattr(task, "target_files", None) or (
-                task.metadata.get("target_files") if task.metadata else None
-            )
-            if task_targets:
-                modified_files = [str(f) for f in task_targets]
 
         # 2. Protected Namespace Audit
         detector = ProtectedChangeDetector()
@@ -1585,11 +1569,6 @@ class DeveloperWorkflowOrchestrator:
             comments = "Operational active-development coordinate loop failed due to protected path violation."
         signature = f"sig_jules_{uuid.uuid4().hex[:12]}"
 
-        if task and getattr(task, "authorized", False) and not reval_failed:
-            if not ("prot_violation" in getattr(task, "task_id", "") or "illegal" in action_taken.lower()):
-                decision = "APPROVED"
-                comments = "Authorized task execution approved."
-
         if supervisor_override:
             decision = supervisor_override.get("decision", decision)
             supervisor_id = supervisor_override.get("supervisor_id", supervisor_id)
@@ -1655,7 +1634,7 @@ class DeveloperWorkflowOrchestrator:
         if reval_failed:
             raise RuntimeError(f"Workspace revalidation linter checks failed: {reval_error_msg}")
 
-        if protection_report.get("is_violation_found", False) and decision != "APPROVED":
+        if protection_report.get("is_violation_found", False):
             violation_reasons = "; ".join(
                 [v["reason"] for v in protection_report.get("violations", [])]
             )
