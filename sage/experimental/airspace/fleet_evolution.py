@@ -233,10 +233,10 @@ class FleetEvolutionIntelligence:
     def evaluate_organism_growth_rate(
         self,
         *,
-        velocity_score: float = 0.0,
-        prediction_accuracy_score: float = 0.0,
-        wave_completion_rate: float = 0.0,
-        anti_drift_compliance_score: float = 0.0,
+        velocity_score: float = 1.0,
+        prediction_accuracy_score: float = 1.0,
+        wave_completion_rate: float = 1.0,
+        anti_drift_compliance_score: float = 1.0,
         protected_path_violations: int = 0,
     ) -> OrganismGrowthReceipt:
         """Calculates a unified compound growth index across multi-session velocity, prediction accuracy, wave completion, and anti-drift compliance."""

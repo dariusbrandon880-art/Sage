@@ -11,7 +11,9 @@ Demonstrates actual state/information movement across organ seams and outputs on
 from __future__ import annotations
 
 import hashlib
+import importlib
 import json
+import logging
 import re
 import subprocess
 import time
@@ -19,6 +21,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+
+logger = logging.getLogger(__name__)
 
 from sage.c2.capability_graph import CapabilityGraphEngine
 from sage.c2.frontier_admission import FrontierAdmissionEngine, FrontierCandidate, FrontierState

@@ -5,8 +5,7 @@
     "F2": "bfe1a2a57efcec6aa1e924cb2c0f81044b23b0cea85628230a56fe8c2c61fbb7",
     "F3": "74c30989a5718c66cb968d80437b0a3cfbeb08f52c94f862c35fc1b20e484c0c",
     "F4": "11d57a7fbef92badca00166c0d055f93aa8bafbd01c16230bcd581c56746c54a",
-    "F5": "f1977864bf736eaf24ddc079883c992bc8d6a5811b799220dff34383f8fe0ad5",
-    "organism_growth": "d6c9195685cd42377988acc4362fe8ab8ac31398ecd11c1ef3295dac8954c052"
+    "F5": "f1977864bf736eaf24ddc079883c992bc8d6a5811b799220dff34383f8fe0ad5"
   },
   "exact_git_head": "40cfd2dc54981638c680ba72a8c19324f99f8306",
   "flight_receipts": [
@@ -89,10 +88,10 @@
       "protocol_version": "SAGE-RP-1.0",
       "rank": "CQL-4",
       "settlement_id": "settlement:2c08255a11346c00d1cc1d1b2af3683e095da277501573e8f207b5be7cc3e83c",
-      "timestamp": 1789284926.2681603,
-      "xp_after": 142,
-      "xp_before": 118,
-      "xp_minted": 0
+      "timestamp": 1789255800.7775133,
+      "xp_after": 33,
+      "xp_before": 9,
+      "xp_minted": 24
     },
     "regret_score": 0.0
   },
@@ -103,8 +102,8 @@
   "mission_id": "test_whole_organism_001",
   "next_frontier": "FRONTIER_NEXT_5C195E93",
   "outcome_quality_score": 1.0,
-  "receipt_hash": "35b7cf127bb78ea1c3cd81219cf7ce95a5b891f8956af8ed855d56b36a9fc06a",
-  "receipt_id": "wo_rec_d990a410593b",
+  "receipt_hash": "41c3bd849077c8cbb8d01b9e5f29700772c66f944a006bafee854e5dc062623d",
+  "receipt_id": "wo_rec_a8b7de519110",
   "session_id": "jules_test_session",
-  "timestamp": 1789284926.2682345
+  "timestamp": 1789255800.7776015
 }

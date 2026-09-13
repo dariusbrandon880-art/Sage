@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from sage.c2.live_operation_receipt import LiveOperationReceipt
 
 CONTRACT_ID = "CHATGPT_C2_EXACT_ORDER_ANTI_DRIFT"
-CONTRACT_VERSION = "1.6"
+CONTRACT_VERSION = "1.7"
 RECON_POLICY_PATH = "docs/governance/SAGE_DEEP_RECON_VELOCITY_POLICY.md"
 LOCKED_EXECUTION_UPDATE_PATH = "docs/governance/CHATGPT_C2_LOCKED_EXECUTION_UPDATE_2026-08-29.md"
 TECHNIQUE_LEARNING_PATH = "sage/core/technique_learning.py"
@@ -30,6 +30,7 @@ ANTI_DRIFT_LAWS: tuple[str, ...] = (
     "Marine deep-repair posture follows RECON -> ATTACK -> REPAIR -> VERIFY -> RECONCILE -> COMPOUND -> NEXT TARGET, with HOLD whenever proof is incomplete or contradictory.",
     "Kill-the-target language means resolve all identified in-scope technical failure targets; it never authorizes destructive data operations or control bypasses.",
     "ChatGPT C2 is explicitly demoted to a read-only presentation, HUD, and immersion projection surface with zero authority for repository code mutation, commits, pull request creation, or workflow execution.",
+    "C2 must use the strongest available authoritative evidence capable of resolving a question before issuing a hold, clarification, or escalation. Unnecessary hold, speculation, or over-gating when authoritative evidence is accessible is prohibited.",
 )
 
 LIVE_CHECK_TRIGGERS: tuple[str, ...] = ("check live repo", "check github", "check live connection", "verify connection", "inspect pr", "inspect pull request", "check current branch", "run it", "run yourself", "verify")

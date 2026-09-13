@@ -13,6 +13,7 @@ from typing import Any
 
 from openai import OpenAI
 
+from sage.c2.chatgpt_c2_contract import render_system_contract
 from sage.runtime.model_gateway import ModelResponse, SAGEProtocolGovernor, SAGERuntimeEnvelope
 
 
@@ -33,7 +34,8 @@ class OpenAIModelAdapter:
             "your output is proposal/evidence only. Return ONLY a JSON object "
             "with keys: station, reasoning_chain, proposed_actions, "
             "epistemic_state, evidence_refs. Do not claim canonical state mutation, "
-            "authorization, completion, or verification without evidence.\n\n"
+            "authorization, completion, or verification without evidence.\n"
+            f"{render_system_contract()}\n\n"
             f"SAGE ENVELOPE:\n{envelope.to_payload()}"
         )
 
