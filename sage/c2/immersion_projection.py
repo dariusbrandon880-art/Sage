@@ -300,8 +300,16 @@ class MissionHUDProjection:
     next_move: str
     strike_feed: StrikeFeedProjection | None = None
     progression: C2ProgressionProjection | None = None
+    organism_manager: object | None = None
 
     def render(self) -> str:
+        if self.organism_manager is not None:
+            try:
+                renderer_mod = importlib.import_module("sage.experimental.airspace.renderer")
+                return renderer_mod.AirspaceRenderer.render_c2_board_from_manager(self.organism_manager)
+            except Exception:
+                pass
+
         prog = self.progression or C2ProgressionProjection(status="UNVERIFIED")
         lines = [
             "==================================================",
@@ -465,6 +473,7 @@ def project_mission_hud(
         next_move=state.next_move,
         strike_feed=strike_feed,
         progression=progression,
+        organism_manager=organism_manager,
     )
 
 

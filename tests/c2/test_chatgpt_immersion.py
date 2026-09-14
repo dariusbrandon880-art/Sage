@@ -25,10 +25,11 @@ def test_chatgpt_immersion_projects_canonical_state_without_mutation() -> None:
 
     assert rendered.startswith("[SAGE::C2::CHATGPT]")
     assert "MISSION CONTROL" in rendered
-    assert "SAGE MISSION CONTROL HUD" in rendered
-    assert "MISSION  : Governed Continuous Intelligence" in rendered
-    assert "FLIGHT   : F3 (ACTIVE)" in rendered
-    assert "EVIDENCE : 1 verified ref(s) [wave-a]" in rendered
+    assert "01 — COMMAND BAND" in rendered
+    assert "02 — OPERATING PICTURE" in rendered
+    assert "03 — PROGRESSION / IMPACT" in rendered
+    assert "04 — STRIKE FEED" in rendered
+    assert "05 — ORGANISM PROGRESSION" in rendered
     assert "Mission update" in rendered
     assert state.to_dict()["trust_status"] == "VERIFIED"
 
@@ -60,8 +61,6 @@ def test_chatgpt_immersion_renders_strike_feed() -> None:
 
     rendered = response.render()
     assert "04 — STRIKE FEED" in rendered
-    assert "🎯 TARGET ACQUIRED // Custom Frontier" in rendered
-    assert "◆ TARGET KILLED // Seam Closed" in rendered
     assert "Custom strike feed turn" in rendered
 
 

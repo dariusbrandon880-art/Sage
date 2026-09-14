@@ -64,7 +64,11 @@ def test_rehydrate_chatgpt_c2_frame_builds_full_immersion_response():
     rendered = response.render()
     assert rendered.startswith("[SAGE::C2::CHATGPT]")
     assert "C2 Mission Control" in rendered
-    assert "SAGE MISSION CONTROL HUD" in rendered
+    assert "01 — COMMAND BAND" in rendered
+    assert "02 — OPERATING PICTURE" in rendered
+    assert "03 — PROGRESSION / IMPACT" in rendered
+    assert "04 — STRIKE FEED" in rendered
+    assert "05 — ORGANISM PROGRESSION" in rendered
     assert "C2 operating frame locked onto live repo truth." in rendered
 
 
@@ -79,7 +83,11 @@ def test_rehydrate_chatgpt_c2_frame_forces_hud_rendering():
     assert response.force_hud is True
     assert response.should_render_hud is True
     rendered = response.render()
-    assert "SAGE MISSION CONTROL HUD" in rendered
+    assert "01 — COMMAND BAND" in rendered
+    assert "02 — OPERATING PICTURE" in rendered
+    assert "03 — PROGRESSION / IMPACT" in rendered
+    assert "04 — STRIKE FEED" in rendered
+    assert "05 — ORGANISM PROGRESSION" in rendered
 
 
 def test_rehydrate_hud_command_is_canonical_and_whitespace_tolerant():
