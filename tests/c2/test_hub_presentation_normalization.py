@@ -5,6 +5,7 @@ from sage.c2.hub_presentation_boundary import (
     normalize_hub_presentation,
     recognize_hub,
 )
+from sage.c2.immersion_rehydration import is_rehydrate_hud_command
 
 
 HUB = """🛰️ SAGE C2 HUD & Organism Agent Projection // LIVE
@@ -95,3 +96,9 @@ def test_normalization_never_echoes_transport_representation(monkeypatch):
 def test_missing_manager_fails_closed_after_recognition():
     with pytest.raises(ValueError, match="Airspace manager"):
         normalize_hub_presentation(HUB, None)
+
+
+def test_pasted_hub_is_an_immersion_trigger_not_transport_instruction():
+    assert is_rehydrate_hud_command(f"```text\n{HUB}\n```") is True
+    assert is_rehydrate_hud_command(HUB) is True
+    assert is_rehydrate_hud_command("ordinary SAGE task") is False
