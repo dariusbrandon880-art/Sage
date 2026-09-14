@@ -86,8 +86,8 @@
     "blind_scenario_01_recon_synthesis:BASELINE_DISCOVERY:INVARIANT_BELOW_THRESHOLD:score<0.85",
     "NON_EXTERNAL_EXECUTION:fixture"
   ],
-  "git_head_sha": "668332be44af6bfbd2e39691dac388fc326bf1b9",
-  "timestamp_utc": "2026-09-12T15:01:50Z",
-  "evidence_proof_hash": "d718cae782725aed700216cdb3f099f3ed841a2136de2dec095275eff11b6292",
-  "receipt_hash": "d718cae782725aed700216cdb3f099f3ed841a2136de2dec095275eff11b6292"
+  "git_head_sha": "c38b0445574fe280517dd54927a7655f3fa6372d",
+  "timestamp_utc": "2026-09-14T05:29:00Z",
+  "evidence_proof_hash": "a1fd00405bf1aad916b1183f769ceb495fa46bc32524861cc2add1ba3012d0f6",
+  "receipt_hash": "a1fd00405bf1aad916b1183f769ceb495fa46bc32524861cc2add1ba3012d0f6"
 }
