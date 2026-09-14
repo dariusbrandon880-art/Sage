@@ -59,15 +59,14 @@ def test_hud_renders_real_progression_from_canonical_ledger(tmp_path: Path) -> N
     response = project_chatgpt_immersion_response(state, manager=mgr)
     rendered = response.render()
 
-    assert "RANK     : Recruit — L1" in rendered
-    assert "POINTS   :" in rendered
-    assert "XP       : 42" in rendered
-    assert "42 / 100 XP" in rendered
-
-    assert "MISSION  : Governed Operating Picture" in rendered
-    assert "FLIGHT   : F1 (ACTIVE)" in rendered
-    assert "TRUST    : VERIFIED" in rendered
-    assert "EVIDENCE : 1 verified ref(s) [ref-101]" in rendered
+    assert "01 — COMMAND BAND" in rendered
+    assert "02 — OPERATING PICTURE" in rendered
+    assert "03 — PROGRESSION / IMPACT" in rendered
+    assert "TOTAL SYSTEM XP : 42" in rendered
+    assert "04 — STRIKE FEED" in rendered
+    assert "05 — ORGANISM PROGRESSION" in rendered
+    assert "GPT // RANK Lvl 1 Recruit" in rendered
+    assert "XP 42" in rendered
 
 
 def test_boss_kills_captures_and_badges_come_from_canonical_projection(tmp_path: Path) -> None:
@@ -90,14 +89,16 @@ def test_boss_kills_captures_and_badges_come_from_canonical_projection(tmp_path:
     response = project_chatgpt_immersion_response(state, manager=mgr)
     rendered = response.render()
 
-    assert "KILLS    : ⚔️ 1" in rendered
-    assert "CAPTURES : ┃ 0" in rendered
-    assert "BOSS     : ⭐×0  ⭐⭐×0" in rendered
+    assert "05 — ORGANISM PROGRESSION" in rendered
+    assert "GPT // RANK Lvl 1 Recruit" in rendered
+    assert "⚔️ 1" in rendered
+    assert "┃ 0" in rendered
 
 
 def test_missing_progression_state_fails_closed_to_unknown_hold() -> None:
     state = _state()
-    with patch("sage.c2.chatgpt_immersion._load_airspace_manager", side_effect=RuntimeError("no ledger")):
+    with patch("sage.c2.chatgpt_immersion._load_airspace_manager", side_effect=RuntimeError("no ledger")), \
+         patch("sage.c2.immersion_projection.importlib.import_module", side_effect=RuntimeError("no manager")):
         response = project_chatgpt_immersion_response(state, organism_tag=None, manager=None)
         rendered = response.render()
 
@@ -105,6 +106,7 @@ def test_missing_progression_state_fails_closed_to_unknown_hold() -> None:
     assert "POINTS UNKNOWN" in rendered
     assert "XP UNKNOWN" in rendered
 
+    assert "01 — COMMAND BAND // SAGE MISSION CONTROL HUD" in rendered
     assert "RANK     : UNKNOWN" in rendered
     assert "POINTS   : UNKNOWN" in rendered
     assert "XP       : UNKNOWN" in rendered

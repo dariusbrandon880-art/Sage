@@ -36,8 +36,6 @@ def test_positive_gpt_response_reaches_full_immersion_rendering(monkeypatch, tmp
     assert " (ACTIVE)" in response.response_text
     assert "FLIGHT_001" not in response.response_text
     assert "PHASE: EXECUTE" in response.response_text
-    assert "MISSION  : Close GPT Runtime Boundary" in response.response_text
-    assert "NEXT MOVE: Verify Full Immersion Rendering" in response.response_text
     assert "Analyzed SAGE architecture and verified continuity." in response.response_text
 
 

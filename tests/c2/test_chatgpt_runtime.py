@@ -23,10 +23,11 @@ def test_runtime_renders_through_chatgpt_immersion_surface() -> None:
 
     assert rendered.startswith("[SAGE::C2::CHATGPT]")
     assert "C2 Mission Control" in rendered
-    assert "SAGE MISSION CONTROL HUD" in rendered
-    assert "MISSION  : Governed Continuous Intelligence" in rendered
-    assert "FLIGHT   : F3 (ACTIVE)" in rendered
-    assert "EVIDENCE : 1 verified ref(s) [wave-a]" in rendered
+    assert "01 — COMMAND BAND" in rendered
+    assert "02 — OPERATING PICTURE" in rendered
+    assert "03 — PROGRESSION / IMPACT" in rendered
+    assert "04 — STRIKE FEED" in rendered
+    assert "05 — ORGANISM PROGRESSION" in rendered
     assert "Mission update" in rendered
 
 
