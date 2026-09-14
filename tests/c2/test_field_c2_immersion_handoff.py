@@ -224,3 +224,23 @@ def test_jules_prose_report_remains_untouched():
 
     assert custom_summary in response.body
     assert custom_summary in env["response_text"]
+
+
+def test_pasted_report_normalizes_transport_to_canonical_hud_presentation():
+    """Verify input transport formats (e.g. code blocks or raw reports) are normalized to native HUD output."""
+    runtime = FakeRuntime()
+    # Pasted report transport containing code blocks or raw text formatting
+    pasted_transport_summary = "```text\n01 — COMMAND BAND // PASTED HUD CODE BLOCK CONTAINER\n```\nReport analysis."
+    report = make_report_with_hud(summary=pasted_transport_summary)
+
+    _, response, result = rehydrate_c2_from_jules_report(
+        runtime, report, canonical_git_sha=SHA, force_hud=True
+    )
+    rendered = response.render()
+
+    # Native SAGE Hub visual surface is rendered without being wrapped as a code block
+    assert "01 — COMMAND BAND" in rendered
+    assert "02 — OPERATING PICTURE" in rendered
+    assert "04 — STRIKE FEED" in rendered
+    assert "[SAGE::C2::CHATGPT]" in rendered
+    assert result.accepted is True

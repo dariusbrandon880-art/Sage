@@ -89,6 +89,12 @@ The contract therefore explicitly binds the anchor `5x4 means five paths x four 
 
 ## Enforcement boundary
 
+## Presentation-Normalization Boundary (Input transport ≠ Output presentation)
+
+Any recognized SAGE Hub or execution report supplied through pasted text, Markdown code blocks, Jules reports, archived context, old-chat context, or new-chat context MUST be parsed into structured Hub state and presented through the canonical SAGE Hub presentation path (`render_four_layer_hud_from_manager()`).
+
+Transport formatting (e.g. code blocks or raw text containers) MUST NOT dictate output presentation format. C2 MUST NOT echo or reproduce a recognized SAGE Hub as a code block or plain bulleted list; it MUST render the living SAGE visual surface natively and present analytical C2 governance separately below.
+
 The contract is enforced inside SAGE-owned model adapters and clients through injected instructions plus post-response validation. It constrains requests that actually traverse the SAGE boundary.
 
 It does **not** claim that a repository file can directly rewrite every standalone ChatGPT host session or unrelated new ChatGPT window. The doctrine becomes enforceable for interface exchanges only when the interface is routed through the governed SAGE runtime boundary.

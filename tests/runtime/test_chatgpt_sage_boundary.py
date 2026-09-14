@@ -165,3 +165,26 @@ def test_boundary_forwards_organism_projection_inputs() -> None:
 
     assert "POINTS 25" in rendered
     assert rendered.index("POINTS 25") < rendered.index("C2 Mission Control")
+
+
+def test_runtime_boundary_normalizes_hub_transport_presentation() -> None:
+    """Verify runtime boundary renders canonical HUD structure when input task contains code blocks or raw reports."""
+    class GoodAdapter:
+        model_id = "fake"
+        station = "[SAGE::C2::CHATGPT]"
+        def invoke(self, envelope, task):
+            return _bound_response(_runtime(), _valid_output("Rehydrated C2 analysis"))
+
+    pasted_input_task = "```text\n01 — COMMAND BAND // PASTED HUD TRANSPORT\n```\nPasted report details."
+    rendered, _ = SAGEChatGPTBoundary(_runtime(), GoodAdapter()).respond(
+        pasted_input_task,
+        model_role="chatgpt",
+        immersion_state=_immersion_state(),
+    )
+
+    # Native SAGE visual surface is produced and structured rather than raw code block
+    assert "01 — COMMAND BAND" in rendered
+    assert "02 — OPERATING PICTURE" in rendered
+    assert "04 — STRIKE FEED" in rendered
+    assert "[SAGE::C2::CHATGPT]" in rendered
+    assert "Rehydrated C2 analysis" in rendered
