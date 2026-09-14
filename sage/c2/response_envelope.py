@@ -115,14 +115,106 @@ def build_response_envelope(
     return envelope
 
 
-def hud_update_key(hud: object) -> str:
+REQUIRED_HUD_LAYERS = (
+    "01 — COMMAND BAND",
+    "02 — OPERATING PICTURE",
+    "04 — STRIKE FEED",
+)
+LAYER_03_PREFIX = "03 — PROGRESSION / IMPACT"
+ORGANISM_PROGRESSION_LAYER = "05 — ORGANISM PROGRESSION"
+
+
+def validate_hud_presentation_structure(
+    hud: object, *, organism_present: bool = False
+) -> str:
+    """Validate canonical HUD presentation structure fail-closed under Failure Class P.
+
+    Requirements:
+    - Must be a non-empty string or renderable object producing non-empty text.
+    - Must contain required canonical layers in exact sequence:
+      01 — COMMAND BAND
+      02 — OPERATING PICTURE
+      03 — PROGRESSION / IMPACT (when present in AirspaceRenderer HUD)
+      04 — STRIKE FEED
+      05 — ORGANISM PROGRESSION (when organism_present=True or layer 05 present)
+    - Reordered, missing, renamed, or reformatted layer headers fail closed.
+    - Omission of layer 05 when an organism projection is present fails closed.
+    """
+    if isinstance(hud, str):
+        text = hud
+    elif hasattr(hud, "render") and callable(getattr(hud, "render")):
+        text = str(getattr(hud, "render")())
+    else:
+        raise ValueError(
+            "HUD structural validation failed: HUD projection must be non-empty text or renderable HUD projection"
+        )
+
+    if not text or not text.strip():
+        raise ValueError("HUD structural validation failed: HUD projection is empty")
+
+    lines = text.splitlines()
+
+    layer_indices: dict[str, int] = {}
+    for idx, line in enumerate(lines):
+        line_s = line.strip()
+
+        matched_layer = None
+        if line_s.startswith("01 — COMMAND BAND"):
+            matched_layer = "01 — COMMAND BAND"
+        elif line_s.startswith("02 — OPERATING PICTURE"):
+            matched_layer = "02 — OPERATING PICTURE"
+        elif line_s.startswith(LAYER_03_PREFIX):
+            matched_layer = LAYER_03_PREFIX
+        elif line_s.startswith("04 — STRIKE FEED") or line_s.startswith(
+            "⚡ HIGH-TEMPO STRIKE FEED"
+        ):
+            matched_layer = "04 — STRIKE FEED"
+        elif line_s.startswith(ORGANISM_PROGRESSION_LAYER):
+            matched_layer = ORGANISM_PROGRESSION_LAYER
+
+        if matched_layer is not None:
+            if matched_layer in layer_indices:
+                if matched_layer == "04 — STRIKE FEED":
+                    continue
+                raise ValueError(
+                    f"HUD structural validation failed: duplicate layer header {matched_layer}"
+                )
+            layer_indices[matched_layer] = idx
+
+    for req in REQUIRED_HUD_LAYERS:
+        if req not in layer_indices:
+            raise ValueError(
+                f"HUD structural validation failed: missing required layer {req}"
+            )
+
+    if organism_present and ORGANISM_PROGRESSION_LAYER not in layer_indices:
+        raise ValueError(
+            f"HUD structural validation failed: missing required layer {ORGANISM_PROGRESSION_LAYER} when organism projection is present"
+        )
+
+    canonical_order = (
+        "01 — COMMAND BAND",
+        "02 — OPERATING PICTURE",
+        LAYER_03_PREFIX,
+        "04 — STRIKE FEED",
+        ORGANISM_PROGRESSION_LAYER,
+    )
+
+    ordered_present = [layer for layer in canonical_order if layer in layer_indices]
+    for i in range(len(ordered_present) - 1):
+        curr_layer = ordered_present[i]
+        next_layer = ordered_present[i + 1]
+        if layer_indices[curr_layer] >= layer_indices[next_layer]:
+            raise ValueError(
+                f"HUD structural validation failed: reordered layers ({next_layer} appears before {curr_layer})"
+            )
+
+    return text
+
+
+def hud_update_key(hud: object, *, organism_present: bool = False) -> str:
     """Return a deterministic key for the exact visible HUD projection."""
-    rendered = getattr(hud, "render", None)
-    if not callable(rendered):
-        raise ValueError("HUD continuity requires a renderable HUD projection")
-    text = str(rendered())
-    if not text.strip():
-        raise ValueError("HUD continuity requires non-empty HUD output")
+    text = validate_hud_presentation_structure(hud, organism_present=organism_present)
     return sha256(text.encode("utf-8")).hexdigest()
 
 

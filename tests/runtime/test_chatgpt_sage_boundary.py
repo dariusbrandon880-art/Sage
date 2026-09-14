@@ -165,3 +165,29 @@ def test_boundary_forwards_organism_projection_inputs() -> None:
 
     assert "POINTS 25" in rendered
     assert rendered.index("POINTS 25") < rendered.index("C2 Mission Control")
+
+
+from unittest.mock import patch
+
+
+def test_boundary_rejects_malformed_hud_projection() -> None:
+    class GoodAdapter:
+        model_id = "fake"
+        station = "[SAGE::C2::CHATGPT]"
+
+        def invoke(self, envelope, task):
+            return _bound_response(_runtime(), _valid_output())
+
+    with patch(
+        "sage.runtime.chatgpt_sage_boundary.render_chatgpt_c2_response",
+        side_effect=ValueError(
+            "HUD structural validation failed: missing required layer 03 — PROGRESSION / IMPACT"
+        ),
+    ):
+        with pytest.raises(
+            ValueError,
+            match="SAGE boundary rejection: HUD structural validation failed",
+        ):
+            SAGEChatGPTBoundary(_runtime(), GoodAdapter()).respond(
+                "status", model_role="chatgpt", immersion_state=_immersion_state()
+            )
