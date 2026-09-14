@@ -117,19 +117,23 @@ class SAGEChatGPTBoundary:
                 except Exception as exc:
                     self._reject(f"post-transition immersion rehydration failed: {exc}")
 
-        rendered = render_chatgpt_c2_response(
-            immersion_state,
-            body=self._display_text(response),
-            organism_manager=organism_manager,
-            station_id=station_id,
-            state_label=state_label,
-            organism_projection=organism_projection,
-            organism_tag=organism_tag,
-            manager=manager,
-            hud_visible=hud_visible,
-            previous_hud_update_key=previous_hud_update_key,
-            force_hud=force_hud,
-        )
+        try:
+            rendered = render_chatgpt_c2_response(
+                immersion_state,
+                body=self._display_text(response),
+                organism_manager=organism_manager,
+                station_id=station_id,
+                state_label=state_label,
+                organism_projection=organism_projection,
+                organism_tag=organism_tag,
+                manager=manager,
+                hud_visible=hud_visible,
+                previous_hud_update_key=previous_hud_update_key,
+                force_hud=force_hud,
+            )
+        except ValueError as exc:
+            self._reject(str(exc))
+
         return rendered, response
 
 
