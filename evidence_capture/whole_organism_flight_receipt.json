@@ -1,41 +1,41 @@
 {
   "all_stages_completed": true,
   "evidence_hashes": {
-    "F1": "5bc41026ec0950b3242cbde3df43111f19cb9460740e876eab318ff4ed21f4ab",
-    "F2": "dacb0e6da37052b0997cde0387d0648e8118557f91d264fd0adc2772bc593b34",
-    "F3": "1a1cf09d3c3580d0006aa5944f0811578aa50544d149748b75a66485f84d36bb",
-    "F4": "a51bfb7a71633e54797fd08f915c35ce89ed936b44676fc08293ff5e25c35e06",
-    "F5": "11f25fd33d0344b904159bc10db8065fd249145c9b077aa495757edafae4f468"
+    "F1": "4377c91b587b9e6b0d2c6ca77eedf609722703c801dec2eb0391439f8ff4a728",
+    "F2": "18c1ab707be3eee2235ec70f3a5d611a944f11265e4ba942dfe40fd3902674ac",
+    "F3": "a2a1aa5d4ae4bb8a7e6c33d6fda119894ac5320a1b9cbc833a96ab99e4964229",
+    "F4": "dd33a4270793a770dda96bdf40e718a93921b9d4de61475d6acec37ea51e37af",
+    "F5": "122ec21c22037ec4d2793d577ffebb36fed4c33ecedfc25e42a3539598cf663e"
   },
-  "exact_git_head": "c38b0445574fe280517dd54927a7655f3fa6372d",
+  "exact_git_head": "38be0c44af722efe261bcaa0d83a293f334738e9",
   "flight_receipts": [
     {
       "flight_id": "F1",
-      "hash": "5bc41026ec0950b3242cbde3df43111f19cb9460740e876eab318ff4ed21f4ab",
+      "hash": "4377c91b587b9e6b0d2c6ca77eedf609722703c801dec2eb0391439f8ff4a728",
       "passed": true,
       "target": "Target Subsystem 1"
     },
     {
       "flight_id": "F2",
-      "hash": "dacb0e6da37052b0997cde0387d0648e8118557f91d264fd0adc2772bc593b34",
+      "hash": "18c1ab707be3eee2235ec70f3a5d611a944f11265e4ba942dfe40fd3902674ac",
       "passed": true,
       "target": "Target Subsystem 2"
     },
     {
       "flight_id": "F3",
-      "hash": "1a1cf09d3c3580d0006aa5944f0811578aa50544d149748b75a66485f84d36bb",
+      "hash": "a2a1aa5d4ae4bb8a7e6c33d6fda119894ac5320a1b9cbc833a96ab99e4964229",
       "passed": true,
       "target": "Target Subsystem 3"
     },
     {
       "flight_id": "F4",
-      "hash": "a51bfb7a71633e54797fd08f915c35ce89ed936b44676fc08293ff5e25c35e06",
+      "hash": "dd33a4270793a770dda96bdf40e718a93921b9d4de61475d6acec37ea51e37af",
       "passed": true,
       "target": "Target Subsystem 4"
     },
     {
       "flight_id": "F5",
-      "hash": "11f25fd33d0344b904159bc10db8065fd249145c9b077aa495757edafae4f468",
+      "hash": "122ec21c22037ec4d2793d577ffebb36fed4c33ecedfc25e42a3539598cf663e",
       "passed": true,
       "target": "Target Subsystem 5"
     }
@@ -77,7 +77,7 @@
       "badge_awards": [],
       "base_points": 50,
       "conservation_check_passed": true,
-      "evidence_digest": "c9ae4fd331c407dcc9f31539e8ceb36cb6fc9f37c3866b677972ea75458aec0d",
+      "evidence_digest": "72cf6c1b61121286ee0e53c9e119d2b74f374bd0f67fff71b9dad6681b07c617",
       "idempotency_check_passed": true,
       "mission_id": "test_whole_organism_001",
       "multiplier": 4.75,
@@ -87,11 +87,11 @@
       "promotion_eligibility": false,
       "protocol_version": "SAGE-RP-1.0",
       "rank": "CQL-4",
-      "settlement_id": "settlement:1b160e16f81e6ac80a7bbb14625fe9018e686d9e56d7466831e0f2085d5c3e73",
-      "timestamp": 1789363183.8395364,
-      "xp_after": 350,
-      "xp_before": 327,
-      "xp_minted": 23
+      "settlement_id": "settlement:94f117133d53002aa12b5487d6948df0821cc45ec5a8f35041189d53bb3c07a6",
+      "timestamp": 1789320757.3800387,
+      "xp_after": 251,
+      "xp_before": 227,
+      "xp_minted": 24
     },
     "regret_score": 0.0
   },
@@ -100,10 +100,10 @@
     "confidence": 1.0
   },
   "mission_id": "test_whole_organism_001",
-  "next_frontier": "FRONTIER_NEXT_D87D4605",
+  "next_frontier": "FRONTIER_NEXT_9C2F8C76",
   "outcome_quality_score": 1.0,
-  "receipt_hash": "3eb9c5e2acf059bd1029f6e715a194de58a61275b5a2a06fc1c86052c00578aa",
-  "receipt_id": "wo_rec_16edbbdc300a",
+  "receipt_hash": "e7ee17d22b627695a063396572c949fb9058dc70416fc5433c77268d3186043d",
+  "receipt_id": "wo_rec_8449f303b6ed",
   "session_id": "jules_test_session",
-  "timestamp": 1789363183.8396409
+  "timestamp": 1789320757.3801682
 }

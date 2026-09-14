@@ -116,7 +116,8 @@ def test_boundary_renders_only_after_sage_reconciliation() -> None:
     )
     assert "[SAGE::C2::CHATGPT]" in rendered
     assert "C2 Mission Control" in rendered
-    assert "SAGE MISSION CONTROL HUD" in rendered
+    assert "01 — COMMAND BAND" in rendered
+    assert "02 — OPERATING PICTURE" in rendered
     assert "SAGE-bound response" in rendered
     assert response.model_id == "fake"
 
