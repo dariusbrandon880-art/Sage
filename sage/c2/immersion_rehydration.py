@@ -42,8 +42,19 @@ def normalize_c2_command(command: str) -> str:
 
 
 def is_rehydrate_hud_command(command: str) -> bool:
-    """Return whether input is the canonical REHYDRATE HUD command."""
-    return normalize_c2_command(command) == REHYDRATE_HUD_COMMAND
+    """Return whether input requires the canonical Hub presentation path.
+
+    The exact REHYDRATE HUD command remains canonical. A semantically recognized
+    pasted Hub is also an immersion trigger: Markdown fences, indentation, and
+    surrounding Jules/report prose are transport framing, not presentation authority.
+    """
+    if normalize_c2_command(command) == REHYDRATE_HUD_COMMAND:
+        return True
+    try:
+        from sage.c2.hub_presentation_boundary import recognize_hub
+        return recognize_hub(command) is not None
+    except Exception:
+        return False
 
 
 def _load_airspace_manager() -> Any | None:

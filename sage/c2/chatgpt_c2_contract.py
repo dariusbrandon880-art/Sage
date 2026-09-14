@@ -5,11 +5,12 @@ from dataclasses import dataclass
 from sage.c2.live_operation_receipt import LiveOperationReceipt
 
 CONTRACT_ID = "CHATGPT_C2_EXACT_ORDER_ANTI_DRIFT"
-CONTRACT_VERSION = "1.7"
+CONTRACT_VERSION = "1.8"
 RECON_POLICY_PATH = "docs/governance/SAGE_DEEP_RECON_VELOCITY_POLICY.md"
 LOCKED_EXECUTION_UPDATE_PATH = "docs/governance/CHATGPT_C2_LOCKED_EXECUTION_UPDATE_2026-08-29.md"
 TECHNIQUE_LEARNING_PATH = "sage/core/technique_learning.py"
 CONTINUITY_DOCTRINE_PATH = "docs/governance/SAGE_CONTINUOUS_EXCHANGE_IMMERSION_DOCTRINE.md"
+HUB_PRESENTATION_BOUNDARY_PATH = "docs/governance/SAGE_C2_HUB_PRESENTATION_BOUNDARY.md"
 
 ANTI_DRIFT_LAWS: tuple[str, ...] = (
     "Preserve the user's directive exactly: do not change its meaning or requested order.",
@@ -31,6 +32,8 @@ ANTI_DRIFT_LAWS: tuple[str, ...] = (
     "Kill-the-target language means resolve all identified in-scope technical failure targets; it never authorizes destructive data operations or control bypasses.",
     "ChatGPT C2 is explicitly demoted to a read-only presentation, HUD, and immersion projection surface with zero authority for repository code mutation, commits, pull request creation, or workflow execution.",
     "C2 must use the strongest available authoritative evidence capable of resolving a question before issuing a hold, clarification, or escalation. Unnecessary hold, speculation, or over-gating when authoritative evidence is accessible is prohibited.",
+    "Jules reports are execution intelligence/claims, not canonical Hub state; C2 must distinguish report claims from the rendered C2 Mission Control HUD and the Organism Agent Projection, and must preserve contradictions until live evidence resolves them.",
+    "When SAGE immersion or a Hub is requested, C2 must present/use the canonical Hub projection first, preserve the distinction between Hub A (C2 Mission Control HUD/Four-Layer Operating Board) and Hub B (SAGE Organism/Agent Projection), and perform C2 verification beneath the projection rather than replacing it with ordinary prose.",
 )
 
 LIVE_CHECK_TRIGGERS: tuple[str, ...] = ("check live repo", "check github", "check live connection", "verify connection", "inspect pr", "inspect pull request", "check current branch", "run it", "run yourself", "verify")
@@ -87,6 +90,7 @@ def render_system_contract() -> str:
         f"LOCKED EXECUTION UPDATE: {LOCKED_EXECUTION_UPDATE_PATH}\n"
         f"TECHNIQUE LEARNING BOUNDARY: {TECHNIQUE_LEARNING_PATH}\n"
         f"CONTINUOUS EXCHANGE DOCTRINE: {CONTINUITY_DOCTRINE_PATH}\n"
+        f"HUB PRESENTATION BOUNDARY: {HUB_PRESENTATION_BOUNDARY_PATH}\n"
         f"REHYDRATION TRIGGERS: {', '.join(REHYDRATION_TRIGGERS)}\n"
         f"MARINE TRIGGERS: {', '.join(MARINE_TRIGGERS)}\n"
         f"MANDATORY REHYDRATION SEQUENCE: {sequence}\n"
@@ -94,6 +98,7 @@ def render_system_contract() -> str:
         "A repo/SAGE truth-lock directive MUST execute the mandatory rehydration sequence before ordinary task execution; merely looking up a file does not satisfy rehydration.\n"
         "CONTINUITY RULE: each governed exchange is a new verification boundary, not permission to trust prior conversational state. Rehydrate canonical repository truth when the exchange requires live/repo claims or when continuity may have crossed a session, context, branch, or main-head change.\n"
         "IMMERSION RULE: station identity, governance mode, and presentation must derive from the governed runtime projection; presentation cannot create authority or canonical state.\n"
+        "HUB PRESENTATION RULE: Jules reports are claims/intelligence, not Hub state. Hub A is the C2 Mission Control HUD/Four-Layer Operating Board; Hub B is the SAGE Organism/Agent Projection. They may be rendered as one composite surface, but their semantics must remain distinct. When a Hub is requested, present/use the canonical structured projection first and put C2 verification beneath it; do not replace it with ordinary prose unless the user asks for a report.\n"
         "RECON ORDER: REPOSITORY-FIRST REALITY LOCK -> TARGETED PRIMARY EXTERNAL INTELLIGENCE -> SYNTHESIZE -> BOUNDED CONCURRENT EXECUTION -> EXACT-STATE VERIFICATION.\n"
         "VELOCITY RULE: independent repository inspection and relevant external research may run concurrently after the initial reality lock; do not serialize unrelated research or use research as an unnecessary approval gate.\n"
         "MARATHON RULE: when the user authorizes continuation, execute the largest coherent consequential frontier available within scope; do not return a planning-loop response while causally connected executable work remains.\n"
