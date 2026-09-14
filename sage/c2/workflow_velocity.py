@@ -174,7 +174,15 @@ class MultiSessionVelocityEngine:
             with tracker_lock:
                 tracker["active"] -= 1
 
-    def execute_velocity_wave(self, wave_id: str, session_id: str, flight_payloads: List[Dict[str, Any]], exact_git_head: str) -> MultiSessionVelocityReceipt:
+    def execute_velocity_wave(
+        self,
+        wave_id: str,
+        session_id: str,
+        flight_payloads: List[Dict[str, Any]],
+        exact_git_head: str,
+        require_progression_adjudication: bool = False,
+        manager: Optional[Any] = None,
+    ) -> MultiSessionVelocityReceipt:
         """Run all independent flights concurrently, then reconverge deterministically."""
         if not re.fullmatch(r"[0-9a-fA-F]{40}", exact_git_head):
             raise ValueError(f"Invalid exact git HEAD commit SHA: {exact_git_head}")
@@ -248,12 +256,17 @@ class MultiSessionVelocityEngine:
                 }
                 progression_reward = request_c2_reward_adjudication(
                     report_payload,
+                    manager=manager,
                     difficulty=3,
                     verification_quality=4,
                     impact=4,
                     reuse=4,
                 )
-            except Exception:
+            except Exception as exc:
+                import logging
+                logging.getLogger(__name__).warning("Progression reward adjudication failed for velocity wave %s: %s", wave_id, exc)
+                if require_progression_adjudication:
+                    raise RuntimeError(f"PROGRESSION_ADJUDICATION_FAILED: {exc}") from exc
                 progression_reward = None
 
         if organism_growth_dict is not None and progression_reward is not None:

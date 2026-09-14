@@ -11,7 +11,9 @@ Demonstrates actual state/information movement across organ seams and outputs on
 from __future__ import annotations
 
 import hashlib
+import importlib
 import json
+import logging
 import re
 import subprocess
 import time
@@ -19,6 +21,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+
+logger = logging.getLogger(__name__)
 
 from sage.c2.capability_graph import CapabilityGraphEngine
 from sage.c2.frontier_admission import FrontierAdmissionEngine, FrontierCandidate, FrontierState
@@ -82,6 +86,8 @@ class WholeOrganismLoopEngine:
         session_id: str,
         flight_payloads: List[Dict[str, Any]],
         exact_git_head: Optional[str] = None,
+        require_progression_adjudication: bool = False,
+        manager: Optional[Any] = None,
     ) -> WholeOrganismFlightReceipt:
         """Executes all 13 stages of the behavioral organism loop with full evidence binding."""
         head_sha = exact_git_head or self.get_current_head_sha()
@@ -170,9 +176,11 @@ class WholeOrganismLoopEngine:
         fleet_intel = FleetEvolutionIntelligence(commit_sha=head_sha)
         growth_eval = fleet_intel.evaluate_organism_growth_rate(
             velocity_score=velocity_receipt.successful_flights / velocity_receipt.total_flights,
+            prediction_accuracy_score=actual_quality,
             wave_completion_rate=len(velocity_receipt.advancement_matrix_20_cells) / 20.0,
             anti_drift_compliance_score=1.0 if velocity_receipt.rolls_royce_quality_passed else 0.0,
         )
+        evidence_hashes["organism_growth"] = growth_eval.provenance_hash
 
         # STAGE 12: LEARNING FEEDBACK & METACOGNITION
         meta_mod = importlib.import_module("sage.experimental.sagi.metacognition")
@@ -219,12 +227,16 @@ class WholeOrganismLoopEngine:
             }
             progression_reward = request_c2_reward_adjudication(
                 report_payload,
+                manager=manager,
                 difficulty=4,
                 verification_quality=5,
                 impact=5,
                 reuse=5,
             )
-        except Exception:
+        except Exception as exc:
+            logger.warning("Progression reward adjudication failed for mission %s: %s", mission_id, exc)
+            if require_progression_adjudication:
+                raise RuntimeError(f"PROGRESSION_ADJUDICATION_FAILED: {exc}") from exc
             progression_reward = None
 
         receipt_id = f"wo_rec_{hashlib.sha256(f'{mission_id}:{head_sha}:{time.time()}'.encode('utf-8')).hexdigest()[:12]}"

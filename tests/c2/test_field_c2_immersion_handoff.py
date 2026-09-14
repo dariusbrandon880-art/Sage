@@ -133,38 +133,48 @@ def test_rehydrate_c2_from_jules_report_full_path():
     rendered = response.render()
     # Prose report text preserved exactly
     assert "Completed Field-C2 to Tower-C2 structured handoff contract." in rendered
-    # Immersion surfaces full game-organism HUD
-    assert "01 — COMMAND BAND // SAGE MISSION CONTROL HUD" in rendered
+    # Immersion surfaces canonical renderer output with 5 established layers
+    assert "01 — COMMAND BAND" in rendered
     assert "02 — OPERATING PICTURE" in rendered
+    assert "03 — PROGRESSION / IMPACT" in rendered
+    assert "04 — STRIKE FEED" in rendered
+    assert "05 — ORGANISM PROGRESSION" in rendered
     assert "[SAGE::C2::CHATGPT]" in rendered
 
 
-def test_changed_hud_surfaces_and_unchanged_hud_suppresses():
+def test_changed_hud_surfaces_and_unchanged_hud_suppresses(tmp_path):
+    from sage.experimental.airspace.manager import AirspaceManager
+    from sage.experimental.airspace.models import StationID, XPCategory
+
+    ledger_file = tmp_path / "ledger.json"
+    mgr = AirspaceManager(ledger_file)
     runtime = FakeRuntime()
     report1 = make_report_with_hud()
 
     # First turn surfaces HUD (previous key is None)
     immersion_state1, response1, _ = rehydrate_c2_from_jules_report(
-        runtime, report1, canonical_git_sha=SHA, previous_hud_update_key=None
+        runtime, report1, canonical_git_sha=SHA, organism_manager=mgr, previous_hud_update_key=None
     )
     key1 = response1.hud_update_key
     assert response1.should_render_hud is True
 
     # Same HUD on next turn without force suppresses HUD
     response2_same = rehydrate_c2_from_jules_report(
-        runtime, report1, canonical_git_sha=SHA, previous_hud_update_key=key1, force_hud=False
+        runtime, report1, canonical_git_sha=SHA, organism_manager=mgr, previous_hud_update_key=key1, force_hud=False
     )[1]
     assert response2_same.should_render_hud is False
 
-    # Changed HUD on next turn surfaces HUD
-    hud_proj_changed = dict(report1.hud_projection)
-    hud_proj_changed["frontier"] = "new-changed-frontier"
-    report2_changed = make_report_with_hud(
-        hud_projection=hud_proj_changed,
-        hud_update_key=compute_hud_projection_key(hud_proj_changed),
+    # Changed HUD on next turn (e.g. state progression in manager) surfaces HUD
+    mgr.award_xp(
+        actor="C2",
+        station_id=StationID.MISSION_CONTROL,
+        category=XPCategory.MISSION_XP,
+        amount=10,
+        reason="Test progression change",
+        verified_event_ref="ref-change-1",
     )
     response3_changed = rehydrate_c2_from_jules_report(
-        runtime, report2_changed, canonical_git_sha=SHA, previous_hud_update_key=key1, force_hud=False
+        runtime, report1, canonical_git_sha=SHA, organism_manager=mgr, previous_hud_update_key=key1, force_hud=False
     )[1]
     assert response3_changed.should_render_hud is True
 
@@ -177,6 +187,29 @@ def test_invalid_git_sha_mismatch_fails_closed():
         rehydrate_c2_from_jules_report(runtime, report, canonical_git_sha=SHA)
 
     assert runtime.payloads == []
+
+
+def test_jules_report_rehydration_delegates_to_canonical_airspace_renderer():
+    runtime = FakeRuntime()
+    report = make_report_with_hud()
+
+    _, response, result = rehydrate_c2_from_jules_report(
+        runtime,
+        report,
+        canonical_git_sha=SHA,
+        force_hud=True,
+    )
+    rendered = response.render()
+
+    # Verify canonical AirspaceRenderer layers are present in order
+    idx1 = rendered.index("01 — COMMAND BAND")
+    idx2 = rendered.index("02 — OPERATING PICTURE")
+    idx3 = rendered.index("03 — PROGRESSION / IMPACT")
+    idx4 = rendered.index("04 — STRIKE FEED")
+    idx5 = rendered.index("05 — ORGANISM PROGRESSION")
+
+    assert idx1 < idx2 < idx3 < idx4 < idx5
+    assert "Human Director" in rendered or "Jules" in rendered
 
 
 def test_jules_prose_report_remains_untouched():
