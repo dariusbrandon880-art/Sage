@@ -15,6 +15,7 @@ from sage.c2.canonical_transition_bridge import CanonicalC2TransitionBridge
 from sage.c2.chatgpt_runtime import render_chatgpt_c2_response
 from sage.c2.immersion_rehydration import build_chatgpt_immersion_state
 from sage.c2.immersion_state import ImmersionState
+from sage.c2.response_envelope import validate_hud_presentation_structure
 from sage.runtime.model_gateway import ModelAdapter, ModelResponse, SAGERuntime, SAGEProtocolGovernor
 
 
@@ -130,6 +131,13 @@ class SAGEChatGPTBoundary:
             previous_hud_update_key=previous_hud_update_key,
             force_hud=force_hud,
         )
+
+        if (hud_visible or force_hud) and not validate_hud_presentation_structure(rendered):
+            self._reject(
+                "Failure Class P: rendered response violates Canonical HUD Presentation Contract - "
+                "missing canonical layer bands (COMMAND BAND, OPERATING PICTURE)"
+            )
+
         return rendered, response
 
 

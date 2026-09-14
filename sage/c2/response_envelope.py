@@ -12,6 +12,23 @@ from dataclasses import dataclass
 from hashlib import sha256
 from typing import Any
 
+REQUIRED_HUD_LAYER_BANDS = (
+    "COMMAND BAND",
+    "OPERATING PICTURE",
+)
+
+
+def validate_hud_presentation_structure(hud_text: str) -> bool:
+    """Validate that a HUD projection adheres strictly to canonical presentation bands.
+
+    Rejects generic prose, markdown tables, or reformatted substitutes that drop
+    required layer headers.
+    """
+    if not hud_text or not isinstance(hud_text, str):
+        return False
+    text = hud_text.upper()
+    return all(band in text for band in REQUIRED_HUD_LAYER_BANDS)
+
 
 @dataclass(frozen=True)
 class StationPresentation:
@@ -123,6 +140,11 @@ def hud_update_key(hud: object) -> str:
     text = str(rendered())
     if not text.strip():
         raise ValueError("HUD continuity requires non-empty HUD output")
+    if not validate_hud_presentation_structure(text):
+        raise ValueError(
+            "Failure Class P: HUD presentation structure violation - "
+            "projection missing canonical layer bands (COMMAND BAND, OPERATING PICTURE)"
+        )
     return sha256(text.encode("utf-8")).hexdigest()
 
 

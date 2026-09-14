@@ -2,9 +2,9 @@
   "blocker": null,
   "executed_head": "15a369b5035c50f25526738a25f11f3bcc55e0d3",
   "flight_id": "F2",
-  "frontier_name": "Current Wave Mission 2",
+  "frontier_name": "Information gain: intake lineage tracking",
   "status": "PASS",
-  "target_path": "sage/c2/current_wave_target_2.py",
-  "timestamp": 1789328189.2200463,
+  "target_path": "sage/mission_intake.py",
+  "timestamp": 1789361912.925882,
   "wave_id": "multi-frontier-dispatch"
 }

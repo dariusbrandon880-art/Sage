@@ -2,9 +2,9 @@
   "blocker": null,
   "executed_head": "15a369b5035c50f25526738a25f11f3bcc55e0d3",
   "flight_id": "F4",
-  "frontier_name": "Current Wave Mission 4",
+  "frontier_name": "Independent transfer: evidence receipt archiving",
   "status": "PASS",
-  "target_path": "sage/c2/current_wave_target_4.py",
-  "timestamp": 1789328189.2237022,
+  "target_path": "evidence_capture/adaptive_frontier_selection_evidence.json",
+  "timestamp": 1789361912.9282484,
   "wave_id": "multi-frontier-dispatch"
 }

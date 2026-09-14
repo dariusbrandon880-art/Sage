@@ -164,3 +164,17 @@ def test_boundary_forwards_organism_projection_inputs() -> None:
 
     assert "POINTS 25" in rendered
     assert rendered.index("POINTS 25") < rendered.index("C2 Mission Control")
+
+
+def test_chatgpt_boundary_enforces_canonical_hud_structure() -> None:
+    class GoodAdapter:
+        model_id = "fake"
+        station = "[SAGE::C2::CHATGPT]"
+        def invoke(self, envelope, task):
+            return _bound_response(_runtime(), _valid_output("status text"))
+
+    rendered, _ = SAGEChatGPTBoundary(_runtime(), GoodAdapter()).respond(
+        "status", model_role="chatgpt", immersion_state=_immersion_state(), force_hud=True
+    )
+    assert "01 — COMMAND BAND" in rendered
+    assert "02 — OPERATING PICTURE" in rendered
