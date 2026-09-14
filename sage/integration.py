@@ -180,7 +180,29 @@ class ChatGPTClient(BaseAIClient):
         from sage.c2.chatgpt_c2_contract import classify_directive
         adapter = OpenAIResponsesAdapter(client=provider_client, model_id="gpt-4o-mini")
         immersion_state = build_chatgpt_immersion_state(self.runtime, session_id=session_id, c2_context=c2_context, evidence_refs=referenced_ids)
-        force_hud = is_rehydrate_hud_command(request.prompt) or classify_directive(request.prompt).requires_rehydration
+
+        has_jules_report = False
+        memory_store = getattr(self.runtime, "memory", None)
+        if memory_store and hasattr(memory_store, "list_all"):
+            try:
+                reports = [
+                    m for m in memory_store.list_all()
+                    if getattr(m, "object_type", None) == "jules_execution_report"
+                ]
+                if reports:
+                    has_jules_report = any(
+                        getattr(r, "session_id", None) == session_id
+                        or (isinstance(getattr(r, "content", None), dict) and r.content.get("session_id") == session_id)
+                        for r in reports
+                    )
+            except Exception:
+                pass
+
+        force_hud = (
+            has_jules_report
+            or is_rehydrate_hud_command(request.prompt)
+            or classify_directive(request.prompt).requires_rehydration
+        )
         rendered_immersion, model_response = SAGEChatGPTBoundary(governed_runtime, adapter, operational_runtime=self.runtime).respond(request.prompt, model_role="chatgpt", immersion_state=immersion_state, session_id=session_id, force_hud=force_hud)
         from sage.models import ExternalSessionPayload
         payload = ExternalSessionPayload(session_id=session_id, objective=str(c2_context.get("active_objective") or self.runtime.current_state.current_objective or "SAGE Runtime Standby"), task=f"ChatGPT Query: {request.prompt[:50]}...", memories=[{"id": f"ai_chatgpt_{uuid.uuid4().hex[:8]}", "object_type": "ai_query_interaction", "content": {"prompt": request.prompt, "response": model_response.raw_output, "rendered_immersion": rendered_immersion, "referenced_memories": list(referenced_ids), "client": "ChatGPT", "state_digest": model_response.input_state_digest, "station": model_response.station, "policy_version": model_response.policy_version, "provenance_digest": model_response.provenance_digest}, "tags": ["ai_query", "chatgpt", "sage_governed_boundary"], "confidence": "validated"}], decisions=[])

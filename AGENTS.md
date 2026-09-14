@@ -258,6 +258,14 @@ Every agent MUST read this file in full before planning or executing any modific
 - **PRE-COMMIT CHECK:** Read and verify prerequisite steps before initializing a new task state.
 - **REGRESSION TEST OR ASSERTION, IF JUSTIFIED:** Step-by-step state controller transition assertions.
 
+### FAILURE P — MISSING C2 HUD REPORT PROJECTION
+- **FAILURE:** MISSING C2 HUD REPORT PROJECTION
+- **ROOT CAUSE:** Outputting narrative task summaries without embedding the canonical repo-defined HUD projection in report payloads.
+- **DETECTION:** Jules completion reports lacking the 4-layer Control Tower HUD (`render_four_layer_hud_from_manager()`) and Organism Agent Projection.
+- **PREVENTION RULE:** Every applicable Jules execution and status report MUST render and include the four-layer Control Tower HUD and SAGE Organism Agent Projection directly in the report body for Director paste into C2. Receiving C2 must ingest REPORT + HUD together, rehydrate, reconcile against authoritative repo/runtime evidence, distinguish reported vs verified state, and advance without requiring the Director to restate the protocol.
+- **PRE-COMMIT CHECK:** Inspect Jules execution reports for the presence of rendered HUD sections (`01 — COMMAND BAND`, `05 — ORGANISM PROGRESSION`).
+- **REGRESSION TEST OR ASSERTION, IF JUSTIFIED:** `tests/c2/test_field_c2_immersion_handoff.py` verifies report ingestion carries structured HUD payloads.
+
 ---
 
 ## Part 4: Mandatory Assembly-Line Preflight Checklist
