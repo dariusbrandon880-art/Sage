@@ -1,5 +1,5 @@
 {
-  "receipt_id": "aiet_rcpt_1789225310",
+  "receipt_id": "aiet_rcpt_1789362383",
   "mission_id": "aiet_frozen_trials_wave_2026",
   "trials_count": 10,
   "scenarios_evaluated": [
@@ -86,8 +86,8 @@
     "blind_scenario_01_recon_synthesis:BASELINE_DISCOVERY:INVARIANT_BELOW_THRESHOLD:score<0.85",
     "NON_EXTERNAL_EXECUTION:fixture"
   ],
-  "git_head_sha": "668332be44af6bfbd2e39691dac388fc326bf1b9",
-  "timestamp_utc": "2026-09-12T15:01:50Z",
-  "evidence_proof_hash": "d718cae782725aed700216cdb3f099f3ed841a2136de2dec095275eff11b6292",
-  "receipt_hash": "d718cae782725aed700216cdb3f099f3ed841a2136de2dec095275eff11b6292"
+  "git_head_sha": "c38b0445574fe280517dd54927a7655f3fa6372d",
+  "timestamp_utc": "2026-09-14T05:06:23Z",
+  "evidence_proof_hash": "09a479e768a33fb46e2567ccc1b016977c87f4cfbbd2326c881e063147e7a381",
+  "receipt_hash": "09a479e768a33fb46e2567ccc1b016977c87f4cfbbd2326c881e063147e7a381"
 }
