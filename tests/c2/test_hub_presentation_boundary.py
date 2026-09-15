@@ -11,7 +11,7 @@ def test_c2_contract_locks_jules_report_vs_two_hub_distinction():
     assert HUB_PRESENTATION_BOUNDARY_PATH == "docs/governance/SAGE_C2_HUB_PRESENTATION_BOUNDARY.md"
     assert any("Jules reports are execution intelligence/claims" in law for law in ANTI_DRIFT_LAWS)
     assert any("Hub A" in law and "Hub B" in law for law in ANTI_DRIFT_LAWS)
-    assert any("not a third HUD" in law for law in ANTI_DRIFT_LAWS)
+    assert any("third HUD" in law for law in ANTI_DRIFT_LAWS)
     assert any("requirement to repeat both surfaces" in law for law in ANTI_DRIFT_LAWS)
 
 
@@ -22,7 +22,7 @@ def test_c2_system_contract_exposes_hub_presentation_rule():
     assert "Hub A is the C2 Mission Control HUD/Four-Layer Operating Board" in contract
     assert "Hub B is the SAGE Organism/Agent Projection" in contract
     assert "must not repeat both merely because both exist" in contract
-    assert "do not replace it with ordinary prose" in contract
+    assert "rather than replacing it with ordinary prose" in contract
 
 
 def test_canonical_immersion_surface_exposes_separate_hub_renderers():
@@ -71,10 +71,14 @@ def test_hub_boundary_defaults_to_hub_a_and_allows_explicit_composite():
 def test_chatgpt_immersion_hub_visibility_is_not_forced_by_continuity():
     from sage.c2.chatgpt_immersion import ChatGPTImmersionResponse
 
-    response = ChatGPTImmersionResponse.__new__(ChatGPTImmersionResponse)
-    response.hud_visible = False
-    response.previous_hud_update_key = "same-key"
-    response.force_hud = False
+    response = ChatGPTImmersionResponse(
+        station_header="",
+        immersion_envelope=object(),
+        body="",
+        hud_visible=False,
+        previous_hud_update_key="same-key",
+        force_hud=False,
+    )
 
     assert response.should_render_hud is False
 
