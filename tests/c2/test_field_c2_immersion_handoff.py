@@ -142,7 +142,7 @@ def test_rehydrate_c2_from_jules_report_full_path():
     assert "[SAGE::C2::CHATGPT]" in rendered
 
 
-def test_changed_hud_surfaces_and_unchanged_hud_suppresses(tmp_path):
+def test_hud_presentation_is_persistent_across_rehydration_turns(tmp_path):
     from sage.experimental.airspace.manager import AirspaceManager
     from sage.experimental.airspace.models import StationID, XPCategory
 
@@ -158,13 +158,14 @@ def test_changed_hud_surfaces_and_unchanged_hud_suppresses(tmp_path):
     key1 = response1.hud_update_key
     assert response1.should_render_hud is True
 
-    # Same HUD on next turn without force suppresses HUD
+    # Same HUD on next turn retains HUD presentation (should_render_hud is unconditionally True)
     response2_same = rehydrate_c2_from_jules_report(
         runtime, report1, canonical_git_sha=SHA, organism_manager=mgr, previous_hud_update_key=key1, force_hud=False
     )[1]
-    assert response2_same.should_render_hud is False
+    assert response2_same.should_render_hud is True
+    assert response2_same.previous_hud_update_key == key1
 
-    # Changed HUD on next turn (e.g. state progression in manager) surfaces HUD
+    # Changed HUD on next turn (e.g. state progression in manager) surfaces updated HUD and key
     mgr.award_xp(
         actor="C2",
         station_id=StationID.MISSION_CONTROL,
@@ -177,6 +178,7 @@ def test_changed_hud_surfaces_and_unchanged_hud_suppresses(tmp_path):
         runtime, report1, canonical_git_sha=SHA, organism_manager=mgr, previous_hud_update_key=key1, force_hud=False
     )[1]
     assert response3_changed.should_render_hud is True
+    assert response3_changed.hud_update_key != key1
 
 
 def test_invalid_git_sha_mismatch_fails_closed():
