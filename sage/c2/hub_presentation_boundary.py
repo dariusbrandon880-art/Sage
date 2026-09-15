@@ -1,16 +1,19 @@
-"""Transport-independent recognition and canonical rendering for SAGE Hubs.
+"""Transport-independent recognition and contextual canonical Hub rendering.
 
 Pasted Markdown, fenced blocks, Jules reports, and archived text are transport
 representations only. This boundary recognizes their semantic Hub markers,
-then delegates presentation to the canonical Airspace renderer. It never
+then delegates presentation to canonical Airspace projections. It never
 constructs a replacement HUD and never treats transport formatting as state.
+
+Hub A and Hub B remain distinct canonical surfaces. They may be composed when
+context calls for the full organism/C2 view, but composition is not required
+on every turn and never creates a third HUD.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-import re
 from typing import Any
 
 
@@ -26,7 +29,10 @@ _HUB_A_LAYERS = (
     "03 — PROGRESSION / IMPACT",
     "04 — STRIKE FEED",
 )
-_HUB_B_LAYER = "05 — ORGANISM PROGRESSION"
+_HUB_B_MARKERS = (
+    "05 — ORGANISM PROGRESSION",
+    "SAGE ORGANISM // AGENT PROJECTION",
+)
 
 
 @dataclass(frozen=True)
@@ -53,18 +59,13 @@ def _transport_framing(text: str) -> str:
 
 
 def recognize_hub(text: str) -> CanonicalHubObject | None:
-    """Recognize Hub semantics without treating Markdown/code framing as meaning.
-
-    Hub A requires all four canonical layer headers. Hub B requires its canonical
-    organism header. A composite contains both. Arbitrary prose containing only
-    one layer is not promoted to Hub state.
-    """
+    """Recognize Hub semantics without trusting transport formatting."""
     if not isinstance(text, str) or not text.strip():
         return None
 
     normalized = text.replace("\\u2014", "—")
     has_hub_a = all(layer in normalized for layer in _HUB_A_LAYERS)
-    has_hub_b = _HUB_B_LAYER in normalized
+    has_hub_b = any(marker in normalized for marker in _HUB_B_MARKERS)
     if not (has_hub_a or has_hub_b):
         return None
 
@@ -83,30 +84,56 @@ def recognize_hub(text: str) -> CanonicalHubObject | None:
     )
 
 
-def render_canonical_hub(manager: Any, *, status: str = "READY") -> str:
-    """Render a recognized Hub through the canonical Airspace presentation path."""
+def render_canonical_hub(
+    manager: Any,
+    *,
+    surface: HubSurface = HubSurface.HUB_A,
+    status: str = "READY",
+) -> str:
+    """Render the requested canonical Hub surface from governed state.
+
+    Hub A is the normal operational surface. Hub B is rendered when organism /
+    XP / career context is relevant. The composite is explicit and contextual;
+    it is never an obligation to repeat both surfaces on every turn.
+    """
     if manager is None:
         raise ValueError("Canonical Hub rendering requires an Airspace manager")
 
-    from sage.experimental.airspace.immersion import render_four_layer_hud_from_manager
+    from sage.experimental.airspace.immersion import (
+        render_four_layer_hud_from_manager,
+        render_hub_a_from_manager,
+        render_hub_b_from_manager,
+    )
 
-    rendered = render_four_layer_hud_from_manager(manager, status=status)
+    renderers = {
+        HubSurface.HUB_A: render_hub_a_from_manager,
+        HubSurface.HUB_B: render_hub_b_from_manager,
+        HubSurface.COMPOSITE: render_four_layer_hud_from_manager,
+    }
+    rendered = renderers[surface](manager, status=status)
     if not rendered or not rendered.strip():
         raise ValueError("Canonical Hub renderer returned empty presentation")
     return rendered
 
 
-def normalize_hub_presentation(text: str, manager: Any, *, status: str = "READY") -> str | None:
-    """Convert Hub transport input into canonical presentation output.
+def normalize_hub_presentation(
+    text: str,
+    manager: Any,
+    *,
+    surface: HubSurface | None = None,
+    status: str = "READY",
+) -> str | None:
+    """Convert Hub transport input into contextual canonical presentation.
 
-    The input text is used only for semantic recognition. Its Markdown, code
-    fences, indentation, and surrounding report prose never become output
-    presentation authority.
+    If no explicit surface is supplied, the recognized transport surface is
+    preserved. A composite input remains composite; a Hub A or Hub B input is
+    not expanded merely because both surfaces exist in the system.
     """
     recognized = recognize_hub(text)
     if recognized is None:
         return None
-    return render_canonical_hub(manager, status=status)
+    selected_surface = surface or recognized.surface
+    return render_canonical_hub(manager, surface=selected_surface, status=status)
 
 
 __all__ = [
