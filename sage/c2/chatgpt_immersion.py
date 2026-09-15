@@ -117,8 +117,14 @@ class ChatGPTImmersionResponse:
 
     @property
     def should_render_hud(self) -> bool:
-        """Return whether the selected canonical Hub surface must be rendered."""
-        return bool(self.hud_visible or self.force_hud)
+        """Render only when visible and changed, unless explicitly forced."""
+        if self.force_hud:
+            return True
+        if not self.hud_visible:
+            return False
+        if self.previous_hud_update_key is None:
+            return True
+        return self.previous_hud_update_key != self.hud_update_key
 
     def render(self) -> str:
         """Render the selected canonical C2 immersion response."""
