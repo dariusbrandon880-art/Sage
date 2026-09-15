@@ -1,4 +1,5 @@
 from sage.c2.chatgpt_immersion import ChatGPTImmersionResponse, project_chatgpt_immersion_response
+from sage.c2.hub_presentation_boundary import HubSurface
 from sage.c2.immersion_projection import project_c2_response_contract
 from sage.c2.immersion_state import ExecutionPhase, FlightStatus, ImmersionState, TrustStatus
 
@@ -21,7 +22,11 @@ def _state() -> ImmersionState:
 
 def test_chatgpt_immersion_projects_canonical_state_without_mutation() -> None:
     state = _state()
-    rendered = project_chatgpt_immersion_response(state, "Mission update").render()
+    rendered = project_chatgpt_immersion_response(
+        state,
+        "Mission update",
+        hub_surface=HubSurface.COMPOSITE,
+    ).render()
 
     assert rendered.startswith("[SAGE::C2::CHATGPT]")
     assert "MISSION CONTROL" in rendered
