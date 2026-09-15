@@ -134,7 +134,7 @@ class ChatGPTImmersionResponse:
             manager = self.immersion_envelope.hud.organism_manager
             if manager is not None:
                 hud = render_canonical_hub(manager, surface=self.hub_surface)
-            elif self.hub_surface is HubSurface.COMPOSITE:
+            elif manager is None:
                 # The manager-backed renderer is unavailable, so preserve the
                 # canonical unverified projection rather than fabricating a Hub.
                 hud = hud.replace(
