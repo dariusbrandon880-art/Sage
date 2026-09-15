@@ -1,4 +1,4 @@
-from sage.agent_hud_projection import build_agent_hud_projection, render_agent_hud
+from sage.live_agent_hud import build_agent_hud_projection, render_agent_hud
 
 
 def _context():

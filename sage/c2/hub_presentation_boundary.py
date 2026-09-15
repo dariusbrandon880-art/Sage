@@ -88,9 +88,10 @@ def render_canonical_hub(manager: Any, *, status: str = "READY") -> str:
     if manager is None:
         raise ValueError("Canonical Hub rendering requires an Airspace manager")
 
-    from sage.experimental.airspace.immersion import render_four_layer_hud_from_manager
+    import importlib
 
-    rendered = render_four_layer_hud_from_manager(manager, status=status)
+    immersion_mod = importlib.import_module("sage.experimental.airspace.immersion")
+    rendered = immersion_mod.render_four_layer_hud_from_manager(manager, status=status)
     if not rendered or not rendered.strip():
         raise ValueError("Canonical Hub renderer returned empty presentation")
     return rendered
