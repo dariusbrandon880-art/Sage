@@ -59,34 +59,27 @@ def test_non_hub_transport_is_untouched():
     assert normalize_hub_presentation("ordinary SAGE task", manager=object()) is None
 
 
-def test_normalization_delegates_to_canonical_renderer(monkeypatch):
-    from sage.experimental.airspace import immersion
-
+def test_normalization_delegates_to_canonical_renderer():
     calls = []
 
-    def fake_renderer(manager, *, status="READY"):
-        calls.append((manager, status))
-        return "CANONICAL_RENDERER_OUTPUT"
+    class Manager:
+        def render_canonical_hub(self, *, surface, status="READY"):
+            calls.append((surface, status))
+            return "CANONICAL_RENDERER_OUTPUT"
 
-    monkeypatch.setattr(immersion, "render_four_layer_hud_from_manager", fake_renderer)
-    manager = object()
-
+    manager = Manager()
     rendered = normalize_hub_presentation(f"```\n{HUB}\n```", manager, status="LOCKED")
 
     assert rendered == "CANONICAL_RENDERER_OUTPUT"
-    assert calls == [(manager, "LOCKED")]
+    assert calls == [(HubSurface.COMPOSITE, "LOCKED")]
 
 
-def test_normalization_never_echoes_transport_representation(monkeypatch):
-    from sage.experimental.airspace import immersion
+def test_normalization_never_echoes_transport_representation():
+    class Manager:
+        def render_canonical_hub(self, *, surface, status="READY"):
+            return "01 — COMMAND BAND\n02 — OPERATING PICTURE\n03 — PROGRESSION / IMPACT\n04 — STRIKE FEED\n05 — ORGANISM PROGRESSION"
 
-    monkeypatch.setattr(
-        immersion,
-        "render_four_layer_hud_from_manager",
-        lambda manager, *, status="READY": "01 — COMMAND BAND\n02 — OPERATING PICTURE\n03 — PROGRESSION / IMPACT\n04 — STRIKE FEED\n05 — ORGANISM PROGRESSION",
-    )
-
-    rendered = normalize_hub_presentation(f"```markdown\n{HUB}\n```", object())
+    rendered = normalize_hub_presentation(f"```markdown\n{HUB}\n```", Manager())
     assert "```markdown" not in rendered
     assert "SAGE C2 HUD & Organism Agent Projection // LIVE" not in rendered
     assert "01 — COMMAND BAND" in rendered
