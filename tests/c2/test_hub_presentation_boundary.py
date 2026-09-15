@@ -22,12 +22,47 @@ def test_c2_system_contract_exposes_hub_presentation_rule():
     assert "do not replace it with ordinary prose" in contract
 
 
-def test_canonical_immersion_surface_preserves_four_layers_plus_organism_projection():
-    from sage.experimental.airspace.immersion import render_four_layer_hud
+def test_canonical_immersion_surface_exposes_separate_hub_renderers():
+    from sage.experimental.airspace.immersion import (
+        render_four_layer_hud,
+        render_four_layer_hud_from_manager,
+        render_hub_a_from_manager,
+        render_hub_b_from_manager,
+    )
     from sage.experimental.airspace.renderer import AirspaceRenderer
 
     assert callable(render_four_layer_hud)
+    assert callable(render_four_layer_hud_from_manager)
+    assert callable(render_hub_a_from_manager)
+    assert callable(render_hub_b_from_manager)
     assert callable(AirspaceRenderer.render_c2_board_from_manager)
+
+
+def test_hub_boundary_recognizes_contextual_surfaces_without_collapsing_them():
+    from sage.c2.hub_presentation_boundary import HubSurface, recognize_hub
+
+    hub_a = "\n".join(
+        (
+            "01 — COMMAND BAND",
+            "02 — OPERATING PICTURE",
+            "03 — PROGRESSION / IMPACT",
+            "04 — STRIKE FEED",
+        )
+    )
+    hub_b = "SAGE ORGANISM // AGENT PROJECTION\nJules // RANK Lvl 4"
+    composite = f"{hub_a}\n{hub_b}"
+
+    assert recognize_hub(hub_a).surface is HubSurface.HUB_A
+    assert recognize_hub(hub_b).surface is HubSurface.HUB_B
+    assert recognize_hub(composite).surface is HubSurface.COMPOSITE
+
+
+def test_hub_boundary_defaults_to_hub_a_and_allows_explicit_composite():
+    import inspect
+    from sage.c2.hub_presentation_boundary import HubSurface, render_canonical_hub
+
+    signature = inspect.signature(render_canonical_hub)
+    assert signature.parameters["surface"].default is HubSurface.HUB_A
 
 
 def test_chatgpt_immersion_hub_cannot_be_suppressed_by_continuity_key():
