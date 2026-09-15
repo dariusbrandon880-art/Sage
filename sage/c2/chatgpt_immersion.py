@@ -6,6 +6,11 @@ mutate, authorize, or infer canonical state.
 
 Architecture:
     CANONICAL STATE -> PROJECTION -> CHATGPT PRESENTATION
+
+The C2 presentation boundary is read-only and canonical: when this adapter is
+used for SAGE immersion, the dual-hub surface is reconstructed on every turn.
+Pasted reports may contain serialized Hub text as transport input, but that
+transport representation is never emitted as the C2 presentation surface.
 """
 
 from __future__ import annotations
@@ -25,7 +30,6 @@ from sage.c2.response_envelope import (
     c2_chatgpt_presentation,
     hud_update_key,
     render_station_response,
-    should_render_hud,
 )
 
 
@@ -86,7 +90,12 @@ def _render_organism_projection(projection: Any) -> str | None:
 
 @dataclass(frozen=True)
 class ChatGPTImmersionResponse:
-    """Read-only response projection for the ChatGPT C2 station."""
+    """Read-only response projection for the ChatGPT C2 station.
+
+    The canonical dual-hub presentation is mandatory for every immersion
+    response. ``previous_hud_update_key`` is retained only as compatibility
+    metadata; it cannot suppress the current canonical surface.
+    """
 
     station_header: str
     immersion_envelope: C2ResponseContract
@@ -97,39 +106,36 @@ class ChatGPTImmersionResponse:
     organism_tag: str | None = None
     hud_visible: bool = True
     previous_hud_update_key: str | None = None
-    force_hud: bool = False
+    force_hud: bool = True
 
     @property
     def hud_update_key(self) -> str:
-        """Expose the exact visible HUD identity for host continuity tracking."""
+        """Expose the exact canonical Hub identity for host continuity tracking."""
         return hud_update_key(self.immersion_envelope.hud)
 
     @property
     def should_render_hud(self) -> bool:
-        """Return whether this response must surface the HUD to the host."""
-        if not self.hud_visible:
-            return False
-        return should_render_hud(
-            self.hud_update_key,
-            previous_key=self.previous_hud_update_key,
-            force=self.force_hud,
-        )
+        """Return whether the canonical Hub surface must be reconstructed.
+
+        This is intentionally read-only and unconditional for SAGE immersion.
+        Host continuity keys cannot turn the Hub into a one-time or delta-only
+        report. ``hud_visible=False`` remains a compatibility input, but it is
+        not allowed to replace the governed canonical immersion surface.
+        """
+        return True
 
     def render(self) -> str:
-        """Render the complete response without creating canonical state."""
+        """Render the complete canonical C2 immersion response."""
         tag = self.organism_tag
         if not tag and self.organism_projection is not None:
             tag = _render_organism_projection(self.organism_projection)
         if not tag:
             raise ValueError("SAGE organism name tag required for C2 immersion response")
 
-        # Preserve the established C2 station header while allowing the HUD
-        # continuity layer to suppress only the repeated HUD itself. The HUD
-        # remains the first operational layer after the organism identity;
-        # station identity stays durable on every rendered response.
-        parts = [tag, "", self.immersion_envelope.nameplate.render()]
-        if self.should_render_hud:
-            parts.extend(["", self.immersion_envelope.hud.render()])
+        # The canonical dual-hub projection is always first-class. Body text is
+        # supporting verification/mission context and cannot replace the Hub.
+        parts = [tag, "", self.immersion_envelope.nameplate.render(), ""]
+        parts.append(self.immersion_envelope.hud.render())
         parts.extend(["", self.station_header])
         if self.body and self.body.strip():
             parts.extend(["", self.body.strip()])
@@ -150,18 +156,18 @@ def project_chatgpt_immersion_response(
     manager: Any | None = None,
     hud_visible: bool = True,
     previous_hud_update_key: str | None = None,
-    force_hud: bool = False,
+    force_hud: bool = True,
 ) -> ChatGPTImmersionResponse:
-    """Project canonical state into the ChatGPT C2 response surface.
+    """Project canonical state into the read-only ChatGPT C2 surface.
 
-    ``organism_projection`` and ``organism_tag`` preserve the explicit
-    projection/tag injection capabilities from the original bridge. ``manager``
-    is a compatibility alias for ``organism_manager``. Explicit inputs win;
-    otherwise the canonical manager-backed projection is rendered read-only.
+    ``organism_projection`` and ``organism_tag`` preserve explicit
+    projection/tag injection capabilities. ``manager`` is a compatibility
+    alias for ``organism_manager``. Explicit inputs win; otherwise the
+    canonical manager-backed projection is rendered read-only.
 
-    HUD visibility is host-controlled: unchanged HUDs may be suppressed to
-    avoid noise, but a changed HUD is surfaced deterministically from its
-    content key. Name-tag rendering is fail-closed rather than silently lost.
+    Every SAGE immersion turn reconstructs the canonical dual-hub surface.
+    Serialized Hub text may arrive inside a pasted user/Jules report and is
+    transport input only; it is never treated as presentation authority.
     """
     tag = organism_tag.strip() if isinstance(organism_tag, str) else organism_tag
     projection = organism_projection
@@ -183,9 +189,9 @@ def project_chatgpt_immersion_response(
         except Exception:
             tag = None
 
-    if not tag and projection is None:
-        tag = f"[SAGE::C2::CHATGPT] ◈ GPT // RANK UNKNOWN // POINTS UNKNOWN // XP UNKNOWN // BOSS UNKNOWN // {state_label}"
-
+    # Never fabricate a synthetic Hub/nameplate state. If canonical projection
+    # data cannot be established, fail closed so C2 cannot manufacture a report
+    # that merely looks authoritative.
     if not tag:
         raise ValueError("SAGE organism name tag required for C2 immersion response")
 
@@ -207,5 +213,5 @@ def project_chatgpt_immersion_response(
         organism_tag=tag,
         hud_visible=hud_visible,
         previous_hud_update_key=previous_hud_update_key,
-        force_hud=force_hud,
+        force_hud=True,
     )
