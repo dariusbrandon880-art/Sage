@@ -312,16 +312,16 @@ class MissionHUDProjection:
 
         prog = self.progression or C2ProgressionProjection(status="UNVERIFIED")
         lines = [
-            "==================================================",
-            "01 — COMMAND BAND // SAGE MISSION CONTROL HUD",
-            "==================================================",
-        ]
-        lines.extend(prog.render_lines())
-        lines.extend([
-            "--------------------------------------------------",
-            "02 — OPERATING PICTURE",
-            "--------------------------------------------------",
+            "01 — COMMAND BAND",
+            "━" * 42,
+            "[SAGE::C2::CHATGPT] ◈ C2 MISSION CONTROL",
+            f"STATUS   : {self.flight_status}",
+            f"QUAL     : CQL-{prog.rank_level} | SQL-{prog.total_badges}",
             f"MISSION  : {self.mission}",
+            f"THEATER  : {self.frontier}",
+            "",
+            "02 — OPERATING PICTURE",
+            "─" * 42,
             f"PHASE    : {self.phase}",
             f"FLIGHT   : {self.flight_id} ({self.flight_status})",
             f"TRUST    : {self.trust_status}",
@@ -329,10 +329,32 @@ class MissionHUDProjection:
             f"GATE     : {self.gate}",
             f"EVIDENCE : {self.evidence_summary}",
             f"NEXT MOVE: {self.next_move}",
-            "==================================================",
+            "",
+            "03 — PROGRESSION / IMPACT",
+            "─" * 42,
+        ]
+        lines.extend(prog.render_lines())
+        lines.extend([
+            "",
+            "04 — STRIKE FEED // HIGH-TEMPO EVENTS",
         ])
         if self.strike_feed and self.strike_feed.events:
-            lines.extend(["", "04 — STRIKE FEED", self.strike_feed.render()])
+            lines.append(self.strike_feed.render())
+        else:
+            lines.extend([
+                "━" * 42,
+                f"🎯 TARGET ACQUIRED // {self.frontier}",
+                f"✓ HIT CONFIRMED   // Evidence {self.evidence_summary}",
+                f"→ NEXT TARGET    // {self.next_move}",
+            ])
+        lines.extend([
+            "",
+            "05 — ORGANISM PROGRESSION",
+            "─" * 42,
+            "SAGE ORGANISM // AGENT PROJECTION",
+            "─" * 42,
+            f"Human Director // RANK Lvl {prog.rank_level} {prog.rank_title} // POINTS {prog.points} // XP {prog.career_xp}",
+        ])
         return "\n".join(lines)
 
 
