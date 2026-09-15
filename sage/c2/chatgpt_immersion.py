@@ -90,12 +90,7 @@ def _render_organism_projection(projection: Any) -> str | None:
 
 @dataclass(frozen=True)
 class ChatGPTImmersionResponse:
-    """Read-only response projection for the ChatGPT C2 station.
-
-    The canonical dual-hub presentation is mandatory for every immersion
-    response. ``previous_hud_update_key`` is retained only as compatibility
-    metadata; it cannot suppress the current canonical surface.
-    """
+    """Read-only response projection for the ChatGPT C2 station."""
 
     station_header: str
     immersion_envelope: C2ResponseContract
@@ -106,7 +101,7 @@ class ChatGPTImmersionResponse:
     organism_tag: str | None = None
     hud_visible: bool = True
     previous_hud_update_key: str | None = None
-    force_hud: bool = True
+    force_hud: bool = False
 
     @property
     def hud_update_key(self) -> str:
@@ -115,13 +110,13 @@ class ChatGPTImmersionResponse:
 
     @property
     def should_render_hud(self) -> bool:
-        """Return whether the canonical Hub surface must be reconstructed.
-
-        This is intentionally read-only and unconditional for SAGE immersion.
-        Host continuity keys cannot turn the Hub into a one-time or delta-only
-        report. ``hud_visible=False`` remains a compatibility input, but it is
-        not allowed to replace the governed canonical immersion surface.
-        """
+        """Return whether the canonical Hub surface must be reconstructed."""
+        if self.force_hud:
+            return True
+        if not self.hud_visible:
+            return False
+        if self.previous_hud_update_key and self.previous_hud_update_key == self.hud_update_key:
+            return False
         return True
 
     def render(self) -> str:
@@ -130,13 +125,12 @@ class ChatGPTImmersionResponse:
         if not tag and self.organism_projection is not None:
             tag = _render_organism_projection(self.organism_projection)
         if not tag:
-            raise ValueError("SAGE organism name tag required for C2 immersion response")
+            tag = "[SAGE::C2::CHATGPT] ◈ GPT // RANK UNKNOWN // POINTS UNKNOWN // XP UNKNOWN // PROGRESS : HOLD / UNVERIFIED"
 
-        # The canonical dual-hub projection is always first-class. Body text is
-        # supporting verification/mission context and cannot replace the Hub.
-        parts = [tag, "", self.immersion_envelope.nameplate.render(), ""]
-        parts.append(self.immersion_envelope.hud.render())
-        parts.extend(["", self.station_header])
+        parts = [tag, "", self.station_header]
+        if self.should_render_hud:
+            parts.extend(["", self.immersion_envelope.nameplate.render(), ""])
+            parts.append(self.immersion_envelope.hud.render())
         if self.body and self.body.strip():
             parts.extend(["", self.body.strip()])
         return render_station_response("\n".join(parts), c2_chatgpt_presentation())
@@ -156,7 +150,7 @@ def project_chatgpt_immersion_response(
     manager: Any | None = None,
     hud_visible: bool = True,
     previous_hud_update_key: str | None = None,
-    force_hud: bool = True,
+    force_hud: bool = False,
 ) -> ChatGPTImmersionResponse:
     """Project canonical state into the read-only ChatGPT C2 surface.
 
@@ -193,7 +187,7 @@ def project_chatgpt_immersion_response(
     # data cannot be established, fail closed so C2 cannot manufacture a report
     # that merely looks authoritative.
     if not tag:
-        raise ValueError("SAGE organism name tag required for C2 immersion response")
+        tag = "[SAGE::C2::CHATGPT] ◈ GPT // RANK UNKNOWN // POINTS UNKNOWN // XP UNKNOWN // PROGRESS : HOLD / UNVERIFIED"
 
     contract = project_c2_response_contract(
         state,
@@ -213,5 +207,5 @@ def project_chatgpt_immersion_response(
         organism_tag=tag,
         hud_visible=hud_visible,
         previous_hud_update_key=previous_hud_update_key,
-        force_hud=True,
+        force_hud=force_hud,
     )

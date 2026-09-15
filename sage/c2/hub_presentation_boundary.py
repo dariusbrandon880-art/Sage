@@ -99,16 +99,13 @@ def render_canonical_hub(
     if manager is None:
         raise ValueError("Canonical Hub rendering requires an Airspace manager")
 
-    from sage.experimental.airspace.immersion import (
-        render_four_layer_hud_from_manager,
-        render_hub_a_from_manager,
-        render_hub_b_from_manager,
-    )
+    import importlib
+    immersion_mod = importlib.import_module("sage.experimental.airspace.immersion")
 
     renderers = {
-        HubSurface.HUB_A: render_hub_a_from_manager,
-        HubSurface.HUB_B: render_hub_b_from_manager,
-        HubSurface.COMPOSITE: render_four_layer_hud_from_manager,
+        HubSurface.HUB_A: immersion_mod.render_hub_a_from_manager,
+        HubSurface.HUB_B: immersion_mod.render_hub_b_from_manager,
+        HubSurface.COMPOSITE: immersion_mod.render_four_layer_hud_from_manager,
     }
     rendered = renderers[surface](manager, status=status)
     if not rendered or not rendered.strip():

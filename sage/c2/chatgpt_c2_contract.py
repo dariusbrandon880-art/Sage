@@ -33,7 +33,7 @@ ANTI_DRIFT_LAWS: tuple[str, ...] = (
     "ChatGPT C2 is explicitly demoted to a read-only presentation, HUD, and immersion projection surface with zero authority for repository code mutation, commits, pull request creation, or workflow execution.",
     "C2 must use the strongest available authoritative evidence capable of resolving a question before issuing a hold, clarification, or escalation. Unnecessary hold, speculation, or over-gating when authoritative evidence is accessible is prohibited.",
     "Jules reports are execution intelligence/claims, not canonical Hub state; C2 must distinguish report claims from the rendered C2 Mission Control HUD and the Organism Agent Projection, and must preserve contradictions until live evidence resolves them.",
-    "Hub A and Hub B are distinct canonical presentation surfaces. They may be composed contextually, but composition is optional and must not become a third HUD or a requirement to repeat both surfaces on every turn.",
+    "Hub A and Hub B are distinct canonical presentation surfaces. They may be composed contextually, but composition is optional and is not a third HUD or a requirement to repeat both surfaces on every turn.",
     "When SAGE immersion or a Hub is requested, C2 must select the contextually relevant canonical projection first: Hub A for operational mission-control work, Hub B for organism/XP/career work, or the explicit composite when the full C2/organism picture is useful or requested. Verification follows beneath the selected projection rather than replacing it with ordinary prose.",
 )
 
