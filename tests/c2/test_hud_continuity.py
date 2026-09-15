@@ -43,7 +43,7 @@ def test_hud_update_key_changes_when_visible_hud_changes() -> None:
     assert second.should_render_hud is True
 
 
-def test_unchanged_hud_can_be_suppressed_after_first_render() -> None:
+def test_persistent_hud_reconstructs_unconditionally_even_with_previous_key() -> None:
     response = project_chatgpt_immersion_response(_state(), organism_tag=_tag())
     repeated = project_chatgpt_immersion_response(
         _state(),
@@ -52,8 +52,8 @@ def test_unchanged_hud_can_be_suppressed_after_first_render() -> None:
     )
 
     assert response.should_render_hud is True
-    assert repeated.should_render_hud is False
-    assert "01 — COMMAND BAND" not in repeated.render()
+    assert repeated.should_render_hud is True
+    assert "01 — COMMAND BAND" in repeated.render()
     assert "C2 Mission Control" in repeated.render()
     assert "◈ GPT" in repeated.render()
 
@@ -70,12 +70,13 @@ def test_force_hud_reopens_unchanged_hud() -> None:
     assert "01 — COMMAND BAND" in repeated.render()
 
 
-def test_hud_can_be_hidden_explicitly_without_dropping_name_tag() -> None:
+def test_persistent_hud_reconstructs_unconditionally_when_hud_visible_is_false() -> None:
     response = project_chatgpt_immersion_response(
         _state(), organism_tag=_tag(), hud_visible=False
     )
     rendered = response.render()
-    assert "01 — COMMAND BAND" not in rendered
+    assert response.should_render_hud is True
+    assert "01 — COMMAND BAND" in rendered
     assert "◈ GPT" in rendered
     assert "C2 Mission Control" in rendered
 
