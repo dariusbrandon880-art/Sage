@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" role="img" aria-labelledby="title desc">
+  <title id="title">Hub A — C2 Mission Control</title>
+  <desc id="desc">Locked visual interface reference for SAGE Hub A. Presentation reference only; runtime values come from governed state.</desc>
+  <rect width="1200" height="900" fill="#0b0f14"/>
+  <g fill="#e8edf2" font-family="monospace" font-size="24">
+    <text x="55" y="60" font-weight="700">01 — COMMAND BAND</text>
+    <line x1="55" y1="78" x2="1145" y2="78" stroke="#e8edf2" stroke-width="2"/>
+    <text x="55" y="120">[SAGE::C2::CHATGPT] ◈ C2 MISSION CONTROL</text>
+    <text x="55" y="158">STATUS   : OPERATIONAL</text>
+    <text x="55" y="196">QUAL     : CQL-4 | SQL-3</text>
+    <text x="55" y="234">MISSION  : NONE ACTIVE</text>
+    <text x="55" y="292" font-weight="700">02 — OPERATING PICTURE</text>
+    <line x1="55" y1="308" x2="1145" y2="308" stroke="#e8edf2" stroke-width="1"/>
+    <text x="55" y="350">ACTIVE SORTIES: NONE ACTIVE</text>
+    <text x="55" y="408" font-weight="700">03 — PROGRESSION / IMPACT</text>
+    <line x1="55" y1="424" x2="1145" y2="424" stroke="#e8edf2" stroke-width="1"/>
+    <text x="55" y="466">TOTAL SYSTEM XP : 616</text>
+    <text x="55" y="504">▪ MISSION_DIRECTOR XP 0     CQL ⚙️⚙️⚙️⚙️⚙️⚙️⚙️  SQL 🛰️🛰️🛰️🛰️🛰️🛰️🛰️</text>
+    <text x="55" y="542">▪ MISSION_CONTROL XP 0     CQL ⚙️⚙️⚙️⚙️        SQL 🛰️🛰️🛰️</text>
+    <text x="55" y="580">▪ INTEL_STATION XP 0       CQL ⚙️⚙️⚙️          SQL 🛰️🛰️🛰️</text>
+    <text x="55" y="618">▪ ENGINEERING_FLIGHT XP 616 CQL ⚙️⚙️⚙️⚙️       SQL 🛰️🛰️</text>
+    <line x1="55" y1="656" x2="1145" y2="656" stroke="#e8edf2" stroke-width="2"/>
+    <text x="55" y="700" font-weight="700">04 — STRIKE FEED // HIGH-TEMPO EVENTS</text>
+    <line x1="55" y1="716" x2="1145" y2="716" stroke="#e8edf2" stroke-width="2"/>
+    <text x="55" y="754">🎯 TARGET ACQUIRED // SYSTEM INITIALIZATION</text>
+    <text x="55" y="790">🛡️ EVIDENCE CAPTURED // settlement:4d162484f88b30d6b7e8001f8</text>
+    <text x="55" y="826">✓ HIT CONFIRMED     // Real evidence landed</text>
+    <text x="55" y="862">→ NEXT TARGET       // Execute Session 3 Airspace Build</text>
+  </g>
+</svg>
