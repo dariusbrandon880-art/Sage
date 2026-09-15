@@ -194,7 +194,10 @@ def test_jules_report_rehydration_delegates_to_canonical_airspace_renderer():
     report = make_report_with_hud()
 
     _, response, result = rehydrate_c2_from_jules_report(
-        runtime, report, canonical_git_sha=SHA, force_hud=True,
+        runtime,
+        report,
+        canonical_git_sha=SHA,
+        force_hud=True,
     )
     rendered = response.render()
 
