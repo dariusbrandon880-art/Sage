@@ -28,3 +28,25 @@ def test_canonical_immersion_surface_preserves_four_layers_plus_organism_project
 
     assert callable(render_four_layer_hud)
     assert callable(AirspaceRenderer.render_c2_board_from_manager)
+
+
+def test_chatgpt_immersion_hub_cannot_be_suppressed_by_continuity_key():
+    from sage.c2.chatgpt_immersion import ChatGPTImmersionResponse
+
+    response = ChatGPTImmersionResponse.__new__(ChatGPTImmersionResponse)
+    response.hud_visible = False
+    response.previous_hud_update_key = "same-key"
+    response.force_hud = False
+
+    assert response.should_render_hud is True
+
+
+def test_chatgpt_immersion_defaults_to_persistent_hub_reconstruction():
+    import inspect
+    from sage.c2.chatgpt_immersion import ChatGPTImmersionResponse, project_chatgpt_immersion_response
+
+    response_default = inspect.signature(ChatGPTImmersionResponse).parameters["force_hud"].default
+    projection_default = inspect.signature(project_chatgpt_immersion_response).parameters["force_hud"].default
+
+    assert response_default is True
+    assert projection_default is True
