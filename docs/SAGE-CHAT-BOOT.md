@@ -73,6 +73,14 @@ When the Director says “check this” after pasting a Jules/Gemini report, the
 
 Cross-station relays are input/evidence until C2 reconciles them. They do not become canonical truth merely because the Director relayed them. This boundary is deliberately transport-neutral because the repository cannot alter proprietary host-chat speaker metadata.
 
+### C2 Rehydration Handoff & Presentation-Normalization Mandate
+
+When the Director pastes a Jules execution report or Control Tower HUD text block into chat:
+1. **INPUT TRANSPORT != OUTPUT PRESENTATION**: The pasted text is transport input only. ChatGPT C2 MUST NOT echo the HUD inside Markdown code blocks (` ``` `) or as raw monospace text.
+2. **NATIVE C2 REHYDRATION**: C2 parses the ingested report/HUD payload into structured session state using `ingest_jules_report` and `rehydrate_c2_from_jules_report`.
+3. **LIVE VISUAL HUD PROJECTION**: C2 renders the active 4-layer / 5-layer visual Control Tower HUD surface natively on the output interface using `AirspaceRenderer.render_c2_board_from_manager()`.
+4. **SEPARATE STRATEGIC READ**: Strategic analysis, evidence reconciliation, and next-objective framing are presented immediately following the visual HUD under the explicit header `⚔️ C2 READ`.
+
 ## C2 live execution enforcement
 
 A new chat/window is not a reset of operating behavior. Before any SAGE execution, C2 must:

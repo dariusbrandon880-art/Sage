@@ -136,6 +136,14 @@ Every carried state item must be interpreted as one of:
 
 Current repository state supersedes older conversational state. A report remains evidence of what was observed at its execution point but does not automatically remain current after repository state changes.
 
+### 7.1 C2 Rehydration Handoff & Presentation-Normalization Mandate
+
+When an execution report or Control Tower HUD text block (such as a Jules report) is pasted into the chat interface:
+1. **INPUT TRANSPORT != OUTPUT PRESENTATION**: Pasted text is transport input only. ChatGPT C2 MUST NOT echo the HUD inside Markdown code blocks (` ``` `) or raw text containers.
+2. **NATIVE C2 REHYDRATION**: C2 parses the ingested report/HUD payload into structured session state using `ingest_jules_report` and `rehydrate_c2_from_jules_report`.
+3. **LIVE VISUAL HUD PROJECTION**: C2 renders the active 4-layer / 5-layer visual Control Tower HUD surface natively on the output interface using `AirspaceRenderer.render_c2_board_from_manager()`.
+4. **SEPARATE STRATEGIC READ**: Strategic analysis, evidence reconciliation, and next-objective framing are presented immediately following the visual HUD under the explicit header `⚔️ C2 READ`.
+
 ## 8. Cross-station provenance
 
 Jules and Gemini are separate stations. Their reports are execution evidence or external intelligence respectively, not canonical authority.
