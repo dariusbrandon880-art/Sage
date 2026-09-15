@@ -92,7 +92,6 @@ def test_live_check_directive_requires_live_verification():
     assert "check live repo" in decision.matched_triggers
     assert "inspect pr" in decision.matched_triggers
 
-
 def test_normal_directive_does_not_force_live_check(): assert classify_directive("Design five future research frontiers").requires_live_verification is False
 
 def test_false_live_claim_fails_closed_without_receipt():

@@ -2,8 +2,8 @@
 
 Pasted Markdown, fenced blocks, Jules reports, and archived text are transport
 representations only. This boundary recognizes their semantic Hub markers,
-then delegates presentation to canonical Airspace projections. It never
-constructs a replacement HUD and never treats transport formatting as state.
+then delegates presentation to the manager-owned canonical Airspace projection.
+It never constructs a replacement HUD and never treats transport formatting as state.
 
 Hub A and Hub B remain distinct canonical surfaces. They may be composed when
 context calls for the full organism/C2 view, but composition is not required
@@ -12,6 +12,7 @@ on every turn and never creates a third HUD.
 
 from __future__ import annotations
 
+import importlib
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any
@@ -90,25 +91,28 @@ def render_canonical_hub(
     surface: HubSurface = HubSurface.HUB_A,
     status: str = "READY",
 ) -> str:
-    """Render the requested canonical Hub surface from governed state.
+    """Render the requested canonical Hub surface through the Airspace manager.
 
-    Hub A is the normal operational surface. Hub B is rendered when organism /
-    XP / career context is relevant. The composite is explicit and contextual;
-    it is never an obligation to repeat both surfaces on every turn.
+    The C2 boundary owns semantic surface selection; the experimental Airspace
+    implementation owns the concrete projection. This preserves the one-way
+    dependency boundary.
     """
     if manager is None:
         raise ValueError("Canonical Hub rendering requires an Airspace manager")
 
-    import importlib
-    immersion_mod = importlib.import_module("sage.experimental.airspace.immersion")
+    renderer = getattr(manager, "render_canonical_hub", None)
+    if callable(renderer):
+        rendered = renderer(surface=surface, status=status)
+    else:
+        immersion_mod = importlib.import_module("sage.experimental.airspace.immersion")
+        renderers = {
+            HubSurface.HUB_A: immersion_mod.render_hub_a_from_manager,
+            HubSurface.HUB_B: immersion_mod.render_hub_b_from_manager,
+            HubSurface.COMPOSITE: immersion_mod.render_four_layer_hud_from_manager,
+        }
+        rendered = renderers[surface](manager, status=status)
 
-    renderers = {
-        HubSurface.HUB_A: immersion_mod.render_hub_a_from_manager,
-        HubSurface.HUB_B: immersion_mod.render_hub_b_from_manager,
-        HubSurface.COMPOSITE: immersion_mod.render_four_layer_hud_from_manager,
-    }
-    rendered = renderers[surface](manager, status=status)
-    if not rendered or not rendered.strip():
+    if not isinstance(rendered, str) or not rendered.strip():
         raise ValueError("Canonical Hub renderer returned empty presentation")
     return rendered
 

@@ -1,4 +1,5 @@
 from sage.c2.chatgpt_runtime import build_chatgpt_c2_response, render_chatgpt_c2_response
+from sage.c2.hub_presentation_boundary import HubSurface
 from sage.c2.immersion_state import ExecutionPhase, FlightStatus, ImmersionState, TrustStatus
 
 
@@ -19,7 +20,11 @@ def _state() -> ImmersionState:
 
 
 def test_runtime_renders_through_chatgpt_immersion_surface() -> None:
-    rendered = render_chatgpt_c2_response(_state(), "Mission update")
+    rendered = render_chatgpt_c2_response(
+        _state(),
+        "Mission update",
+        hub_surface=HubSurface.COMPOSITE,
+    )
 
     assert rendered.startswith("[SAGE::C2::CHATGPT]")
     assert "C2 Mission Control" in rendered

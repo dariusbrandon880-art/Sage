@@ -2,7 +2,7 @@
 
 This module is the integration boundary between canonical immersion state and a
 text-capable ChatGPT host. It deliberately contains no state invention or
-mutation: callers provide the canonical state and this module only renders the
+mutation: callers provide canonical state and this module only renders the
 already-governed projection.
 
 Architecture:
@@ -18,9 +18,43 @@ from sage.c2.chatgpt_immersion import (
     ChatGPTImmersionResponse,
     project_chatgpt_immersion_response,
 )
+from sage.c2.hub_presentation_boundary import HubSurface
 from sage.c2.immersion_projection import MilestoneStrike, StrikeFeedProjection
 from sage.c2.immersion_state import ImmersionState
-from sage.runtime.model_gateway import ModelResponse, SAGERuntime, SAGEStateSnapshot
+from sage.runtime.model_gateway import ModelResponse, SAGERuntime
+
+
+_ORGANISM_CONTEXT_TERMS = (
+    "organism", "agent projection", "career", "career xp", "xp", "points",
+    "rank", "badge", "boss", "promotion", "progression", "qualification",
+)
+_COMPOSITE_CONTEXT_TERMS = (
+    "full c2", "full picture", "organism state", "rehydrate", "reconvergence",
+    "mission briefing", "mission debrief", "complete hud", "both hubs",
+)
+
+
+def select_contextual_hub_surface(
+    task: str = "",
+    body: str = "",
+    *,
+    explicit: HubSurface | None = None,
+) -> HubSurface:
+    """Select the canonical visual surface without creating a new HUD.
+
+    Explicit selection always wins. Otherwise operational work defaults to Hub
+    A, organism/progression work selects Hub B, and full-state transitions use
+    the explicit composite. This is presentation routing only; canonical state
+    and authority remain elsewhere.
+    """
+    if explicit is not None:
+        return explicit
+    normalized = f"{task} {body}".lower()
+    if any(term in normalized for term in _COMPOSITE_CONTEXT_TERMS):
+        return HubSurface.COMPOSITE
+    if any(term in normalized for term in _ORGANISM_CONTEXT_TERMS):
+        return HubSurface.HUB_B
+    return HubSurface.HUB_A
 
 
 def render_chatgpt_c2_response(
@@ -38,8 +72,9 @@ def render_chatgpt_c2_response(
     hud_visible: bool = True,
     previous_hud_update_key: str | None = None,
     force_hud: bool = False,
+    hub_surface: HubSurface = HubSurface.HUB_A,
 ) -> str:
-    """Render one canonical C2 response through the ChatGPT immersion surface."""
+    """Render one canonical C2 response through the selected Hub surface."""
     response: ChatGPTImmersionResponse = project_chatgpt_immersion_response(
         state,
         body=body,
@@ -54,6 +89,7 @@ def render_chatgpt_c2_response(
         hud_visible=hud_visible,
         previous_hud_update_key=previous_hud_update_key,
         force_hud=force_hud,
+        hub_surface=hub_surface,
     )
     return response.render()
 
@@ -73,6 +109,7 @@ def build_chatgpt_c2_response(
     hud_visible: bool = True,
     previous_hud_update_key: str | None = None,
     force_hud: bool = False,
+    hub_surface: HubSurface = HubSurface.HUB_A,
 ) -> ChatGPTImmersionResponse:
     """Return the structured read-only ChatGPT immersion response."""
     return project_chatgpt_immersion_response(
@@ -89,6 +126,7 @@ def build_chatgpt_c2_response(
         hud_visible=hud_visible,
         previous_hud_update_key=previous_hud_update_key,
         force_hud=force_hud,
+        hub_surface=hub_surface,
     )
 
 
@@ -122,6 +160,7 @@ def render_governed_chatgpt_turn(
     hud_visible: bool = True,
     previous_hud_update_key: str | None = None,
     force_hud: bool = False,
+    hub_surface: HubSurface | None = None,
 ) -> tuple[str, ModelResponse]:
     """Execute GPT through SAGE and render only the reconciled result."""
     response = runtime.invoke(
@@ -129,6 +168,11 @@ def render_governed_chatgpt_turn(
         task,
         model_role=model_role,
         live_capability=live_capability,
+    )
+    selected_surface = select_contextual_hub_surface(
+        task,
+        _model_display_text(response),
+        explicit=hub_surface,
     )
     return render_chatgpt_c2_response(
         immersion_state,
@@ -142,6 +186,7 @@ def render_governed_chatgpt_turn(
         hud_visible=hud_visible,
         previous_hud_update_key=previous_hud_update_key,
         force_hud=force_hud,
+        hub_surface=selected_surface,
     ), response
 
 
@@ -153,24 +198,21 @@ def render_resolved_chatgpt_turn(
     station_id: Any,
     body: str = "",
     state_label: str = "READY",
+    hub_surface: HubSurface | None = None,
 ) -> str:
-    """Render a freshly reconciled HUD after SAGE closes a verified turn.
-
-    The runtime intentionally accepts a structural resolution object rather
-    than importing the experimental Turn Engine. This preserves the production
-    -> experimental one-way import boundary while still requiring a closed,
-    verified settlement before refreshing the presentation surface.
-    """
+    """Render a freshly reconciled Hub after SAGE closes a verified turn."""
     status = getattr(resolution, "status", None)
     status_value = getattr(status, "value", status)
     if status_value != "CLOSED" or not bool(getattr(resolution, "verified", False)):
         raise ValueError("Only verified closed turns may refresh the organism HUD.")
+    selected_surface = select_contextual_hub_surface(body, explicit=hub_surface)
     return render_chatgpt_c2_response(
         immersion_state,
         body=body,
         organism_manager=manager,
         station_id=station_id,
         state_label=state_label,
+        hub_surface=selected_surface,
     )
 
 
@@ -207,4 +249,5 @@ __all__ = [
     "render_governed_chatgpt_turn",
     "render_playable_organism_turn",
     "render_resolved_chatgpt_turn",
+    "select_contextual_hub_surface",
 ]

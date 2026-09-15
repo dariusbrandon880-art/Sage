@@ -12,7 +12,7 @@ from dataclasses import replace
 from typing import Any
 
 from sage.c2.canonical_transition_bridge import CanonicalC2TransitionBridge
-from sage.c2.chatgpt_runtime import render_chatgpt_c2_response
+from sage.c2.chatgpt_runtime import render_chatgpt_c2_response, select_contextual_hub_surface
 from sage.c2.immersion_rehydration import build_chatgpt_immersion_state
 from sage.c2.immersion_state import ImmersionState
 from sage.runtime.model_gateway import ModelAdapter, ModelResponse, SAGERuntime, SAGEProtocolGovernor
@@ -117,9 +117,11 @@ class SAGEChatGPTBoundary:
                 except Exception as exc:
                     self._reject(f"post-transition immersion rehydration failed: {exc}")
 
+        display_text = self._display_text(response)
+        hub_surface = select_contextual_hub_surface(task, display_text)
         rendered = render_chatgpt_c2_response(
             immersion_state,
-            body=self._display_text(response),
+            body=display_text,
             organism_manager=organism_manager,
             station_id=station_id,
             state_label=state_label,
@@ -129,6 +131,7 @@ class SAGEChatGPTBoundary:
             hud_visible=hud_visible,
             previous_hud_update_key=previous_hud_update_key,
             force_hud=force_hud,
+            hub_surface=hub_surface,
         )
         return rendered, response
 
