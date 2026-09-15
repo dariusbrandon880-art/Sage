@@ -14,6 +14,7 @@ import re
 import subprocess
 from typing import Any
 
+from sage.c2.hub_presentation_boundary import HubSurface
 from sage.c2.immersion_state import ExecutionPhase, FlightStatus, ImmersionState, TrustStatus
 
 
@@ -183,6 +184,7 @@ def rehydrate_chatgpt_c2_frame(
         body=body,
         organism_manager=mgr,
         force_hud=force_hud,
+        hub_surface=HubSurface.COMPOSITE,
     )
     return immersion_state, response
 

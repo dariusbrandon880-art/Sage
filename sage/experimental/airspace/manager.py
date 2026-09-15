@@ -217,6 +217,31 @@ class AirspaceManager:
         state.active_sorties = list(sorties_map.values())
         return state
 
+    def render_canonical_hub(self, *, surface: Any, status: str = "READY") -> str:
+        """Render a canonical Hub surface from reconstructed Airspace state.
+
+        Concrete presentation remains in the Airspace immersion layer; this
+        manager-owned seam keeps C2 presentation code independent of the
+        experimental package while preserving the canonical renderer.
+        """
+        from sage.experimental.airspace.immersion import (
+            render_four_layer_hud_from_manager,
+            render_hub_a_from_manager,
+            render_hub_b_from_manager,
+        )
+
+        surface_value = getattr(surface, "value", surface)
+        renderers = {
+            "HUB_A": render_hub_a_from_manager,
+            "HUB_B": render_hub_b_from_manager,
+            "COMPOSITE": render_four_layer_hud_from_manager,
+        }
+        try:
+            renderer = renderers[surface_value]
+        except KeyError as exc:
+            raise ValueError(f"Unknown canonical Hub surface: {surface_value}") from exc
+        return renderer(self, status=status)
+
     # Convenience operational methods
 
     def create_mission(self, actor: str, mission: Mission) -> AirspaceEvent:
@@ -248,13 +273,11 @@ class AirspaceManager:
         evidence: Optional[List[str]] = None,
         next_frontier: Optional[str] = None,
     ) -> AirspaceEvent:
-        # Dry run state reconstruction to verify state machine transition
         current_state = self.reconstruct_airspace_state()
         target_sortie = next((s for s in current_state.active_sorties if s.sortie_id == sortie_id), None)
         if not target_sortie:
             raise KeyError(f"Sortie '{sortie_id}' not found in current Airspace state.")
 
-        # Test transition validity (raises ValueError if illegal)
         temp_copy = Sortie(**target_sortie.model_dump())
         temp_copy.transition_to(target_state, reason=reason)
 
@@ -295,7 +318,6 @@ class AirspaceManager:
         test_refs: List[str],
         downstream_effect: Optional[str] = None,
     ) -> AirspaceEvent:
-        # Dry run against current state to ensure valid promotion rules
         current_state = self.reconstruct_airspace_state()
         current_state.qualification_registry.promote_station(
             station_id=station_id,

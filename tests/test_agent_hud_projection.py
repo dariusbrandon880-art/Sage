@@ -1,4 +1,4 @@
-from sage.agent_hud_projection import build_agent_hud_projection, render_agent_hud
+from sage.live_agent_hud import build_agent_hud_projection, render_agent_hud
 
 
 def _context():
@@ -56,7 +56,6 @@ def _context():
 
 def test_hud_projects_nameplates_progression_state_and_activity():
     projection = build_agent_hud_projection(context_view=_context())
-
     assert projection["presentation_only"] is True
     assert projection["self"]["nameplate"] == "[SAGE::C2::CHATGPT]"
     assert projection["self"]["cql"] == 1
@@ -72,11 +71,9 @@ def test_hud_projects_nameplates_progression_state_and_activity():
 def test_hud_isolation_prevents_context_mutation():
     context = _context()
     projection = build_agent_hud_projection(context_view=context)
-
     projection["self"]["xp"] = 999999
     projection["team"]["roster"][0]["state"] = "COMPROMISED"
     projection["coordination"]["pending"][0]["delivery_state"] = "DELIVERED"
-
     assert context["self"]["xp"] == 100
     assert context["team"]["stations"]["MISSION_CONTROL"]["state"] == "WORKING"
     assert context["coordination"]["pending"][0]["delivery_state"] == "PENDING"
@@ -84,7 +81,6 @@ def test_hud_isolation_prevents_context_mutation():
 
 def test_hud_rejects_unbounded_or_writable_sources():
     context = _context()
-
     context["bounded"] = False
     try:
         build_agent_hud_projection(context_view=context)
@@ -104,7 +100,6 @@ def test_hud_rejects_unbounded_or_writable_sources():
 def test_render_is_human_readable_and_provenance_preserving():
     projection = build_agent_hud_projection(context_view=_context())
     rendered = render_agent_hud(projection)
-
     assert "[SAGE::C2::CHATGPT]" in rendered
     assert "CQL-1/SQL-1 XP-100 STATE=WORKING" in rendered
     assert "[SAGE::INTEL::GEMINI]:RECON" in rendered
