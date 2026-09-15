@@ -134,6 +134,13 @@ class ChatGPTImmersionResponse:
             manager = self.immersion_envelope.hud.organism_manager
             if manager is not None:
                 hud = render_canonical_hub(manager, surface=self.hub_surface)
+            elif self.hub_surface is HubSurface.COMPOSITE:
+                # The manager-backed renderer is unavailable, so preserve the
+                # canonical unverified projection rather than fabricating a Hub.
+                hud = hud.replace(
+                    "Human Director // RANK Lvl UNKNOWN UNKNOWN // POINTS UNKNOWN // XP UNKNOWN",
+                    "Human Director // RANK UNKNOWN // POINTS UNKNOWN // XP UNKNOWN",
+                )
             parts.append(hud)
         parts.extend(["", self.station_header])
         if self.body and self.body.strip():
