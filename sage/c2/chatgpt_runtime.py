@@ -216,8 +216,58 @@ def render_resolved_chatgpt_turn(
     )
 
 
+def execute_playable_organism_turn(
+    *,
+    session_id: str,
+    turn_id: str,
+    station_id: str,
+    action_name: str,
+    evidence_refs: tuple[str, ...],
+    verified_event_ref: str,
+    ledger_path: object | None = None,
+    mission_id: str = "MISSION-PLAYABLE-001",
+    objective: str = "Execute persistent playable organism turn",
+    target: str = "AIRSPACE_C2",
+    exact_git_head: str | None = None,
+    required_cql: int = 1,
+    required_sql: int = 0,
+    hub_surface: HubSurface = HubSurface.COMPOSITE,
+    body_summary: str = "",
+) -> Any:
+    """Execute the complete 10-step playable organism interaction loop via C2 runtime."""
+    from sage.c2.organism_runtime_contract import OrganismRuntimeContractEngine
+
+    engine = OrganismRuntimeContractEngine(ledger_path=ledger_path)
+    return engine.execute_playable_turn(
+        session_id=session_id,
+        turn_id=turn_id,
+        station_id_str=station_id,
+        action_name=action_name,
+        evidence_refs=evidence_refs,
+        verified_event_ref=verified_event_ref,
+        mission_id=mission_id,
+        objective=objective,
+        target=target,
+        exact_git_head=exact_git_head,
+        required_cql=required_cql,
+        required_sql=required_sql,
+        hub_surface=hub_surface,
+        body_summary=body_summary,
+    )
+
+
+def rehydrate_playable_organism_state(ledger_path: object | None = None) -> Any:
+    """Rehydrate current AirspaceState directly from persistent event ledger."""
+    from sage.c2.organism_runtime_contract import OrganismRuntimeContractEngine
+
+    engine = OrganismRuntimeContractEngine(ledger_path=ledger_path)
+    return engine.rehydrate_state()
+
+
 __all__ = [
     "build_chatgpt_c2_response",
+    "execute_playable_organism_turn",
+    "rehydrate_playable_organism_state",
     "render_chatgpt_c2_response",
     "render_governed_chatgpt_turn",
     "render_resolved_chatgpt_turn",
