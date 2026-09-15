@@ -4,25 +4,10 @@ This module adds the first implementation layer for the Immersion Language
 Design Lab.  It deliberately consumes canonical AirspaceState and emits only
 presentation data: symbols, stacks, tags, and live mission-state glyphs.
 
-HUD PRESENCE CONTRACT
----------------------
-The locked visual references are:
-
-* docs/design/hud/HUB_A_C2_MISSION_CONTROL_VISUAL.svg
-* docs/design/hud/HUB_B_ORGANISM_PROGRESSION_VISUAL.svg
-
-Those SVGs define visual presence/layout only.  Their displayed values are
-reference examples, never runtime state.  Every live render in this module
-must derive current values from the supplied canonical AirspaceState (or the
-manager's current reconstructed AirspaceState).  The presence remains stable;
-the state is refreshed at render time.
-
 No function in this module awards XP, changes qualification, mutates missions,
 or creates a second source of truth.  The casino-machine references are only
 interaction-pattern inspiration; the rendered vocabulary remains SAGE
 mission-control / aerospace / military language.
-
-See docs/design/hud/LIVE_HUD_PRESENCE_CONTRACT.md for the locked invariant.
 """
 
 from __future__ import annotations
