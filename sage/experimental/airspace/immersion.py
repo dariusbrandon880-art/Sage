@@ -221,7 +221,7 @@ def render_strike_feed(state: AirspaceState) -> str:
 
 
 def render_four_layer_hud(state: AirspaceState) -> str:
-    """Render full Four-Layer HUD (Command Band, Operating Picture, Progression/Impact, Strike Feed)."""
+    """Render Hub A: C2 Mission Control's four-layer operating board."""
     lines = []
     # 01 — COMMAND BAND
     lines.append("01 — COMMAND BAND")
@@ -229,7 +229,7 @@ def render_four_layer_hud(state: AirspaceState) -> str:
     c2_station = state.stations.get(StationID.MISSION_CONTROL)
     c2_cql = c2_station.current_cql if c2_station else 0
     c2_sql = c2_station.current_sql if c2_station else 0
-    lines.append(f"[SAGE::C2::CHATGPT] ◈ C2 MISSION CONTROL")
+    lines.append("[SAGE::C2::CHATGPT] ◈ C2 MISSION CONTROL")
     lines.append(f"STATUS   : {state.mode}")
     lines.append(f"QUAL     : CQL-{c2_cql} | SQL-{c2_sql}")
     if state.active_mission:
@@ -264,12 +264,23 @@ def render_four_layer_hud(state: AirspaceState) -> str:
     return "\n".join(lines)
 
 
-def render_four_layer_hud_from_manager(manager, *, status: str = "READY") -> str:
-    """Render the Four-Layer HUD plus one organism-wide progression roster."""
+def render_hub_a_from_manager(manager, *, status: str = "READY") -> str:
+    """Render Hub A only from canonical reconstructed AirspaceState."""
+    del status  # Hub A status is derived from canonical state.mode.
+    return render_four_layer_hud(manager.reconstruct_airspace_state())
+
+
+def render_hub_b_from_manager(manager, *, status: str = "READY") -> str:
+    """Render Hub B only as the organism/agent progression projection."""
     state = manager.reconstruct_airspace_state()
+    return OrganismProjection.render_roster(manager, state, status=status)
+
+
+def render_four_layer_hud_from_manager(manager, *, status: str = "READY") -> str:
+    """Render the canonical composite of Hub A plus Hub B when explicitly requested."""
     return (
-        f"{render_four_layer_hud(state)}\n\n"
+        f"{render_hub_a_from_manager(manager, status=status)}\n\n"
         "05 — ORGANISM PROGRESSION\n"
         f"{'─' * 42}\n"
-        f"{OrganismProjection.render_roster(manager, state, status=status)}"
+        f"{render_hub_b_from_manager(manager, status=status)}"
     )
