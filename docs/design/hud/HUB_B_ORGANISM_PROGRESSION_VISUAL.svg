@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">Hub B — Organism Progression</title>
+  <desc id="desc">Locked visual interface reference for SAGE Hub B. Presentation reference only; runtime values come from governed organism state.</desc>
+  <rect width="1200" height="720" fill="#0b0f14"/>
+  <g fill="#e8edf2" font-family="monospace" font-size="24">
+    <text x="55" y="58" font-weight="700">05 — ORGANISM PROGRESSION</text>
+    <line x1="55" y1="76" x2="1145" y2="76" stroke="#e8edf2" stroke-width="1"/>
+    <text x="55" y="120" font-weight="700">SAGE ORGANISM // AGENT PROJECTION</text>
+    <line x1="55" y1="140" x2="1145" y2="140" stroke="#e8edf2" stroke-width="2"/>
+    <text x="55" y="190">Human Director // RANK Lvl 1 Recruit</text>
+    <text x="55" y="226">CQL-7 // SQL-7 // POINTS 0 // XP 0</text>
+    <text x="55" y="262">BOSS ⭐×0 ⭐⭐×0 // ⚔️ 0 // ┃ 0 // READY</text>
+    <line x1="55" y1="284" x2="1145" y2="284" stroke="#4d5660" stroke-width="1"/>
+    <text x="55" y="330">GPT // RANK Lvl 1 Recruit</text>
+    <text x="55" y="366">CQL-4 // SQL-3 // POINTS 0 // XP 0</text>
+    <text x="55" y="402">BOSS ⭐×0 ⭐⭐×0 // ⚔️ 0 // ┃ 0 // READY</text>
+    <line x1="55" y1="424" x2="1145" y2="424" stroke="#4d5660" stroke-width="1"/>
+    <text x="55" y="470">Gemini // RANK Lvl 1 Recruit</text>
+    <text x="55" y="506">CQL-3 // SQL-3 // POINTS 0 // XP 0</text>
+    <text x="55" y="542">BOSS ⭐×0 ⭐⭐×0 // ⚔️ 0 // ┃ 0 // READY</text>
+    <line x1="55" y1="564" x2="1145" y2="564" stroke="#4d5660" stroke-width="1"/>
+    <text x="55" y="610">Jules // RANK Lvl 4 Corporal Operator</text>
+    <text x="55" y="646">CQL-4 // SQL-2 // POINTS 6164 // XP 616</text>
+    <text x="55" y="682">BOSS ⭐×0 ⭐⭐×0 // ⚔️ 0 // ┃ 0 // READY</text>
+  </g>
+</svg>
