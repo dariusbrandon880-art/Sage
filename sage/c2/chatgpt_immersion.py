@@ -188,8 +188,12 @@ def project_chatgpt_immersion_response(
         except Exception:
             tag = None
 
+    # Fail closed to an unverified C2 projection when canonical progression
+    # state is unavailable. The station identity remains authoritative, while
+    # MissionHUDProjection renders progression as UNKNOWN / HOLD. Do not invent
+    # an organism tag or raise an avoidable presentation error at this boundary.
     if not tag:
-        raise ValueError("SAGE organism name tag required for C2 immersion response")
+        tag = state.station_identity
 
     contract = project_c2_response_contract(
         state,
