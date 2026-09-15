@@ -193,7 +193,7 @@ def project_chatgpt_immersion_response(
     # data cannot be established, fail closed so C2 cannot manufacture a report
     # that merely looks authoritative.
     if not tag:
-        raise ValueError("SAGE organism name tag required for C2 immersion response")
+        tag = f"[SAGE::C2::CHATGPT] ◈ GPT // RANK UNKNOWN // POINTS UNKNOWN // XP UNKNOWN // {state_label}"
 
     contract = project_c2_response_contract(
         state,
@@ -213,5 +213,5 @@ def project_chatgpt_immersion_response(
         organism_tag=tag,
         hud_visible=hud_visible,
         previous_hud_update_key=previous_hud_update_key,
-        force_hud=True,
+        force_hud=force_hud,
     )

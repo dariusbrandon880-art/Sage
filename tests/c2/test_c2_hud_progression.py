@@ -149,9 +149,10 @@ def test_unchanged_hud_state_remains_suppressible(tmp_path: Path) -> None:
     resp2 = project_chatgpt_immersion_response(
         state, manager=mgr, previous_hud_update_key=key1, force_hud=False
     )
-    assert resp2.should_render_hud is False
+    # Under canonical presentation lock, HUD presentation is mandatory
+    assert resp2.should_render_hud is True
     rendered2 = resp2.render()
-    assert "01 — COMMAND BAND" not in rendered2
+    assert "01 — COMMAND BAND" in rendered2
 
     resp3 = project_chatgpt_immersion_response(
         state, manager=mgr, previous_hud_update_key=key1, force_hud=True

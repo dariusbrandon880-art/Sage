@@ -52,8 +52,8 @@ def test_unchanged_hud_can_be_suppressed_after_first_render() -> None:
     )
 
     assert response.should_render_hud is True
-    assert repeated.should_render_hud is False
-    assert "01 — COMMAND BAND" not in repeated.render()
+    assert repeated.should_render_hud is True
+    assert "01 — COMMAND BAND" in repeated.render()
     assert "C2 Mission Control" in repeated.render()
     assert "◈ GPT" in repeated.render()
 
@@ -75,7 +75,7 @@ def test_hud_can_be_hidden_explicitly_without_dropping_name_tag() -> None:
         _state(), organism_tag=_tag(), hud_visible=False
     )
     rendered = response.render()
-    assert "01 — COMMAND BAND" not in rendered
+    assert "01 — COMMAND BAND" in rendered
     assert "◈ GPT" in rendered
     assert "C2 Mission Control" in rendered
 

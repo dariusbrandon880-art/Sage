@@ -31,12 +31,18 @@ def test_canonical_immersion_surface_preserves_four_layers_plus_organism_project
 
 
 def test_chatgpt_immersion_hub_cannot_be_suppressed_by_continuity_key():
+    from types import SimpleNamespace
     from sage.c2.chatgpt_immersion import ChatGPTImmersionResponse
 
-    response = ChatGPTImmersionResponse.__new__(ChatGPTImmersionResponse)
-    response.hud_visible = False
-    response.previous_hud_update_key = "same-key"
-    response.force_hud = False
+    response = ChatGPTImmersionResponse(
+        station_header="Header",
+        immersion_envelope=SimpleNamespace(hud=SimpleNamespace(render=lambda: "01 — COMMAND BAND\n02 — OPERATING PICTURE\n04 — STRIKE FEED")),
+        body="",
+        organism_tag="Tag",
+        hud_visible=False,
+        previous_hud_update_key="same-key",
+        force_hud=False,
+    )
 
     assert response.should_render_hud is True
 
