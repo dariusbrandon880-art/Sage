@@ -97,9 +97,10 @@ def test_boss_kills_captures_and_badges_come_from_canonical_projection(tmp_path:
 
 def test_missing_progression_state_fails_closed_to_unknown_hold() -> None:
     state = _state()
+    tag = "[SAGE::C2::CHATGPT] ◈ GPT // RANK UNKNOWN // POINTS UNKNOWN // XP UNKNOWN"
     with patch("sage.c2.chatgpt_immersion._load_airspace_manager", side_effect=RuntimeError("no ledger")), \
          patch("sage.c2.immersion_projection.importlib.import_module", side_effect=RuntimeError("no manager")):
-        response = project_chatgpt_immersion_response(state, organism_tag=None, manager=None)
+        response = project_chatgpt_immersion_response(state, organism_tag=tag, manager=None)
         rendered = response.render()
 
     assert "RANK UNKNOWN" in rendered
@@ -138,7 +139,7 @@ def test_hud_update_key_changes_when_progression_changes(tmp_path: Path) -> None
     assert key1 != key2
 
 
-def test_unchanged_hud_state_remains_suppressible(tmp_path: Path) -> None:
+def test_unchanged_hud_state_retains_update_key_without_suppression(tmp_path: Path) -> None:
     ledger_file = tmp_path / "ledger.json"
     mgr = AirspaceManager(ledger_file)
 
@@ -149,9 +150,10 @@ def test_unchanged_hud_state_remains_suppressible(tmp_path: Path) -> None:
     resp2 = project_chatgpt_immersion_response(
         state, manager=mgr, previous_hud_update_key=key1, force_hud=False
     )
-    assert resp2.should_render_hud is False
+    assert resp2.should_render_hud is True
+    assert resp2.previous_hud_update_key == key1
     rendered2 = resp2.render()
-    assert "01 — COMMAND BAND" not in rendered2
+    assert "01 — COMMAND BAND" in rendered2
 
     resp3 = project_chatgpt_immersion_response(
         state, manager=mgr, previous_hud_update_key=key1, force_hud=True
