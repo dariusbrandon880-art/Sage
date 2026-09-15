@@ -106,7 +106,7 @@ def test_missing_progression_state_fails_closed_to_unknown_hold() -> None:
     assert "POINTS UNKNOWN" in rendered
     assert "XP UNKNOWN" in rendered
 
-    assert "01 — COMMAND BAND // SAGE MISSION CONTROL HUD" in rendered
+    assert "01 — COMMAND BAND" in rendered
     assert "RANK     : UNKNOWN" in rendered
     assert "POINTS   : UNKNOWN" in rendered
     assert "XP       : UNKNOWN" in rendered

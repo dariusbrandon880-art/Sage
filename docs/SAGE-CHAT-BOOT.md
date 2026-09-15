@@ -78,8 +78,8 @@ Cross-station relays are input/evidence until C2 reconciles them. They do not be
 When the Director pastes a Jules execution report or Control Tower HUD text block into chat:
 1. **INPUT TRANSPORT != OUTPUT PRESENTATION**: The pasted text is transport input only. ChatGPT C2 MUST NOT echo the HUD inside Markdown code blocks (` ``` `) or as raw monospace text.
 2. **NATIVE C2 REHYDRATION**: C2 parses the ingested report/HUD payload into structured session state using `ingest_jules_report` and `rehydrate_c2_from_jules_report`.
-3. **LIVE VISUAL HUD PROJECTION**: C2 renders the active 4-layer / 5-layer visual Control Tower HUD surface natively on the output interface using `AirspaceRenderer.render_c2_board_from_manager()`.
-4. **HUD TEXT-ONLY MANDATE (NO IMAGE GENERATION)**: The Control Tower HUD is a formatted text layout (ASCII / Unicode glyphs and box lines), NOT an image file. ChatGPT C2 MUST render the HUD directly as standard text lines in its output response and MUST NEVER attempt to invoke DALL-E, image creation, canvas, or image generation tools to present the HUD.
+3. **LIVE VISUAL HUD PROJECTION**: C2 projects the active visual Control Tower HUD surface natively as C2's living interface surface at the top of the response using `AirspaceRenderer.render_c2_board_from_manager()`.
+4. **HUD INTERFACE PRESENTATION MANDATE (NO IMAGE GENERATION / NO CODE BLOCK WRAPPING)**: The Control Tower HUD is C2's living visual operating board projection (formatted ASCII / Unicode text lines with box characters and glyphs), NOT a report artifact or image file. ChatGPT C2 MUST present the HUD directly as standard text lines natively at the top of the message response and MUST NEVER wrap the HUD in Markdown code block containers (` ``` `) or attempt to invoke image generation tools/DALL-E.
 5. **SEPARATE STRATEGIC READ**: Strategic analysis, evidence reconciliation, and next-objective framing are presented immediately following the visual HUD under the explicit header `⚔️ C2 READ`.
 
 ## C2 live execution enforcement

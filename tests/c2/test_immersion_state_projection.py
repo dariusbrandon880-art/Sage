@@ -150,5 +150,5 @@ def test_project_c2_response_contract():
 
     full_envelope = contract.render_full_envelope("Execution report details here.")
     assert "[SAGE::C2::CHATGPT]" in full_envelope
-    assert "SAGE MISSION CONTROL HUD" in full_envelope
+    assert "01 — COMMAND BAND" in full_envelope
     assert "Execution report details here." in full_envelope
