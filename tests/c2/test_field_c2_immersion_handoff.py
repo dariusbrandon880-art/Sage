@@ -158,11 +158,11 @@ def test_changed_hud_surfaces_and_unchanged_hud_suppresses(tmp_path):
     key1 = response1.hud_update_key
     assert response1.should_render_hud is True
 
-    # Same HUD on next turn preserves canonical presentation
+    # Same HUD on next turn without force suppresses HUD
     response2_same = rehydrate_c2_from_jules_report(
         runtime, report1, canonical_git_sha=SHA, organism_manager=mgr, previous_hud_update_key=key1, force_hud=False
     )[1]
-    assert response2_same.should_render_hud is True
+    assert response2_same.should_render_hud is False
 
     # Changed HUD on next turn (e.g. state progression in manager) surfaces HUD
     mgr.award_xp(

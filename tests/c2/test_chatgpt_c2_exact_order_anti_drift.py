@@ -40,8 +40,8 @@ def structured_output(*, station="[SAGE::C2::CHATGPT]", claim="live repository v
 def test_contract_contains_all_laws_and_identity():
     rendered = render_system_contract()
     assert CONTRACT_ID in rendered
-    assert CONTRACT_VERSION == "1.8"
-    assert len(ANTI_DRIFT_LAWS) == 21
+    assert CONTRACT_VERSION == "1.9"
+    assert len(ANTI_DRIFT_LAWS) == 22
     for law in ANTI_DRIFT_LAWS: assert law in rendered
     assert "Five flights is concurrent mission ownership across independent vehicles" in rendered
     assert "PREFLIGHT -> EXECUTE -> TEST -> EVIDENCE -> VERIFY -> RECONCILE -> REPORT" in rendered
@@ -91,7 +91,6 @@ def test_live_check_directive_requires_live_verification():
     assert decision.requires_live_verification is True
     assert "check live repo" in decision.matched_triggers
     assert "inspect pr" in decision.matched_triggers
-
 
 def test_normal_directive_does_not_force_live_check(): assert classify_directive("Design five future research frontiers").requires_live_verification is False
 

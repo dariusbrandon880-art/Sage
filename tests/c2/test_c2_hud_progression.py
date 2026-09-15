@@ -2,6 +2,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from sage.c2.chatgpt_immersion import project_chatgpt_immersion_response
+from sage.c2.hub_presentation_boundary import HubSurface
 from sage.c2.immersion_projection import (
     C2ProgressionProjection,
     project_c2_progression,
@@ -56,7 +57,9 @@ def test_hud_renders_real_progression_from_canonical_ledger(tmp_path: Path) -> N
     )
 
     state = _state()
-    response = project_chatgpt_immersion_response(state, manager=mgr)
+    response = project_chatgpt_immersion_response(
+        state, manager=mgr, hub_surface=HubSurface.COMPOSITE
+    )
     rendered = response.render()
 
     assert "01 — COMMAND BAND" in rendered
@@ -86,7 +89,9 @@ def test_boss_kills_captures_and_badges_come_from_canonical_projection(tmp_path:
     )
 
     state = _state()
-    response = project_chatgpt_immersion_response(state, manager=mgr)
+    response = project_chatgpt_immersion_response(
+        state, manager=mgr, hub_surface=HubSurface.COMPOSITE
+    )
     rendered = response.render()
 
     assert "05 — ORGANISM PROGRESSION" in rendered
@@ -149,10 +154,9 @@ def test_unchanged_hud_state_remains_suppressible(tmp_path: Path) -> None:
     resp2 = project_chatgpt_immersion_response(
         state, manager=mgr, previous_hud_update_key=key1, force_hud=False
     )
-    # Under canonical presentation lock, HUD presentation is mandatory
-    assert resp2.should_render_hud is True
+    assert resp2.should_render_hud is False
     rendered2 = resp2.render()
-    assert "01 — COMMAND BAND" in rendered2
+    assert "01 — COMMAND BAND" not in rendered2
 
     resp3 = project_chatgpt_immersion_response(
         state, manager=mgr, previous_hud_update_key=key1, force_hud=True

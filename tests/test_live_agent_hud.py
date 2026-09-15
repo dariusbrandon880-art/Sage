@@ -8,18 +8,7 @@ def _awareness(agent_id):
         "read_only": True,
         "authority": "canonical_airspace_state_and_event_ledger",
         "self": {"nameplate": "[SAGE::C2::CHATGPT]", "cql": 2, "sql": 1, "xp": 120, "state": "WORKING"},
-        "team": {
-            "coordination": {"status": "ACTIVE"},
-            "stations": {
-                "MISSION_CONTROL": {
-                    "nameplate": "[SAGE::C2::CHATGPT]",
-                    "cql": 2,
-                    "sql": 1,
-                    "xp": 120,
-                    "state": "WORKING",
-                }
-            },
-        },
+        "team": {"coordination": {"status": "ACTIVE"}, "stations": {}},
         "coordination": {"pending": [], "delivery_semantics": "pull_projection_only"},
         "agent_id": agent_id,
     }
