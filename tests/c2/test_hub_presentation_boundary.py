@@ -31,12 +31,18 @@ def test_canonical_immersion_surface_preserves_four_layers_plus_organism_project
 
 
 def test_chatgpt_immersion_hub_cannot_be_suppressed_by_continuity_key():
+    from unittest.mock import MagicMock
     from sage.c2.chatgpt_immersion import ChatGPTImmersionResponse
 
-    response = ChatGPTImmersionResponse.__new__(ChatGPTImmersionResponse)
-    response.hud_visible = False
-    response.previous_hud_update_key = "same-key"
-    response.force_hud = False
+    mock_envelope = MagicMock()
+    response = ChatGPTImmersionResponse(
+        station_header="[SAGE::C2::CHATGPT]",
+        immersion_envelope=mock_envelope,
+        body="",
+        hud_visible=False,
+        previous_hud_update_key="same-key",
+        force_hud=False,
+    )
 
     assert response.should_render_hud is True
 
