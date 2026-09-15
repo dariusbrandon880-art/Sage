@@ -174,9 +174,37 @@ def render_resolved_chatgpt_turn(
     )
 
 
+def render_playable_organism_turn(
+    runtime: Any = None,
+    *,
+    session_id: str,
+    action_name: str,
+    task: str = "",
+    evidence_refs: tuple[str, ...] = (),
+    manager: Any = None,
+    c2_context: dict[str, Any] | None = None,
+    xp_award: int = 50,
+    points_award: int = 25,
+) -> tuple[str, Any]:
+    """Execute a complete 10-step playable turn and render the rehydrated C2 response."""
+    from sage.c2.organism_runtime_contract import OrganismRuntimeContractEngine
+    engine = OrganismRuntimeContractEngine(runtime=runtime, manager=manager)
+    receipt = engine.execute_turn(
+        session_id=session_id,
+        action_name=action_name,
+        task=task,
+        evidence_refs=evidence_refs,
+        c2_context=c2_context,
+        xp_award=xp_award,
+        points_award=points_award,
+    )
+    return receipt.hud_projection, receipt
+
+
 __all__ = [
     "build_chatgpt_c2_response",
     "render_chatgpt_c2_response",
     "render_governed_chatgpt_turn",
+    "render_playable_organism_turn",
     "render_resolved_chatgpt_turn",
 ]

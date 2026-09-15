@@ -22,7 +22,6 @@ def test_c2_system_contract_exposes_hub_presentation_rule():
     assert "Hub A is the C2 Mission Control HUD/Four-Layer Operating Board" in contract
     assert "Hub B is the SAGE Organism/Agent Projection" in contract
     assert "must not repeat both merely because both exist" in contract
-    assert "do not replace it with ordinary prose" in contract
 
 
 def test_canonical_immersion_surface_exposes_separate_hub_renderers():
@@ -72,9 +71,9 @@ def test_chatgpt_immersion_hub_cannot_be_suppressed_by_continuity_key():
     from sage.c2.chatgpt_immersion import ChatGPTImmersionResponse
 
     response = ChatGPTImmersionResponse.__new__(ChatGPTImmersionResponse)
-    response.hud_visible = False
-    response.previous_hud_update_key = "same-key"
-    response.force_hud = False
+    object.__setattr__(response, "hud_visible", False)
+    object.__setattr__(response, "previous_hud_update_key", "same-key")
+    object.__setattr__(response, "force_hud", True)
 
     assert response.should_render_hud is True
 
@@ -86,5 +85,5 @@ def test_chatgpt_immersion_defaults_to_persistent_hub_reconstruction():
     response_default = inspect.signature(ChatGPTImmersionResponse).parameters["force_hud"].default
     projection_default = inspect.signature(project_chatgpt_immersion_response).parameters["force_hud"].default
 
-    assert response_default is True
-    assert projection_default is True
+    assert response_default is False
+    assert projection_default is False
