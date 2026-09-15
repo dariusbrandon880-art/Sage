@@ -115,6 +115,25 @@ def build_response_envelope(
     return envelope
 
 
+def validate_hud_presentation_structure(hud_text: str, *, organism_present: bool = False) -> None:
+    """Validate that rendered HUD presentation satisfies canonical layer boundaries.
+
+    Fails closed if the HUD text is wrapped as a raw code block or missing
+    mandatory layer prefixes (01 — COMMAND BAND, 02 — OPERATING PICTURE, 04 — STRIKE FEED).
+    """
+    if not isinstance(hud_text, str) or not hud_text.strip():
+        raise ValueError("HUD presentation validation failed: text is empty")
+    text = hud_text.strip()
+    if text.startswith("```") and text.endswith("```"):
+        raise ValueError("HUD presentation validation failed: HUD rendered as raw code block container")
+    required_layers = ["01 — COMMAND BAND", "02 — OPERATING PICTURE", "04 — STRIKE FEED"]
+    if organism_present:
+        required_layers.append("05 — ORGANISM PROGRESSION")
+    for layer in required_layers:
+        if layer not in text:
+            raise ValueError(f"HUD presentation validation failed: missing required layer '{layer}'")
+
+
 def hud_update_key(hud: object) -> str:
     """Return a deterministic key for the exact visible HUD projection."""
     rendered = getattr(hud, "render", None)
@@ -123,6 +142,7 @@ def hud_update_key(hud: object) -> str:
     text = str(rendered())
     if not text.strip():
         raise ValueError("HUD continuity requires non-empty HUD output")
+    validate_hud_presentation_structure(text)
     return sha256(text.encode("utf-8")).hexdigest()
 
 

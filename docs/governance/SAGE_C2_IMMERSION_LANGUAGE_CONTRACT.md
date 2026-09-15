@@ -117,3 +117,9 @@ The native ChatGPT client remains outside repository control. This contract gove
 ## 12. Operating maxim
 
 **MAKE THE WORLD RESPOND TO REAL PROGRESS — NEVER MAKE THE WORLD PRETEND PROGRESS HAPPENED.**
+
+## 13. Presentation-normalization boundary (Input transport ≠ Output presentation)
+
+Any recognized SAGE Hub or execution report supplied through pasted text, Markdown code blocks, Jules reports, archived context, old-chat context, or new-chat context MUST be parsed into structured Hub state and presented through the canonical SAGE Hub presentation path (`render_four_layer_hud_from_manager()` / `AirspaceRenderer.render_c2_board_from_manager()`).
+
+Transport formatting (e.g. code blocks or raw text containers) MUST NOT dictate output presentation format. C2 MUST NOT echo or reproduce a recognized SAGE Hub as a code block or plain bulleted list; it MUST render the living SAGE visual surface natively and present analytical C2 governance separately below.

@@ -42,3 +42,22 @@ def test_envelope_attaches_field_c2_projection():
     assert envelope["field_c2_envelope"]["session_id"] == "session_001"
     assert envelope["field_c2_envelope"]["hud_update_key"] == "abc123key"
     assert envelope["field_c2_envelope"]["authority"] == "field_c2_jules_report"
+
+
+def test_hud_validation_rejects_pasted_code_block_echo():
+    import pytest
+    from sage.c2.response_envelope import validate_hud_presentation_structure
+
+    # Valid HUD text passes
+    valid_hud = "01 — COMMAND BAND\n02 — OPERATING PICTURE\n04 — STRIKE FEED"
+    validate_hud_presentation_structure(valid_hud)
+
+    # Raw code block container fails
+    code_block_hud = "```text\n01 — COMMAND BAND\n02 — OPERATING PICTURE\n04 — STRIKE FEED\n```"
+    with pytest.raises(ValueError, match="raw code block container"):
+        validate_hud_presentation_structure(code_block_hud)
+
+    # Missing required layer fails
+    incomplete_hud = "01 — COMMAND BAND\n02 — OPERATING PICTURE"
+    with pytest.raises(ValueError, match="missing required layer"):
+        validate_hud_presentation_structure(incomplete_hud)
