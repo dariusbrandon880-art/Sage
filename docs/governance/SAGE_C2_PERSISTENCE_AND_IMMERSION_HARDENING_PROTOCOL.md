@@ -142,7 +142,8 @@ When an execution report or Control Tower HUD text block (such as a Jules report
 1. **INPUT TRANSPORT != OUTPUT PRESENTATION**: Pasted text is transport input only. ChatGPT C2 MUST NOT echo the HUD inside Markdown code blocks (` ``` `) or raw text containers.
 2. **NATIVE C2 REHYDRATION**: C2 parses the ingested report/HUD payload into structured session state using `ingest_jules_report` and `rehydrate_c2_from_jules_report`.
 3. **LIVE VISUAL HUD PROJECTION**: C2 renders the active 4-layer / 5-layer visual Control Tower HUD surface natively on the output interface using `AirspaceRenderer.render_c2_board_from_manager()`.
-4. **SEPARATE STRATEGIC READ**: Strategic analysis, evidence reconciliation, and next-objective framing are presented immediately following the visual HUD under the explicit header `⚔️ C2 READ`.
+4. **HUD TEXT-ONLY MANDATE (NO IMAGE GENERATION)**: The Control Tower HUD is a formatted text layout (ASCII / Unicode glyphs and box lines), NOT an image file. ChatGPT C2 MUST render the HUD directly as standard text lines in its output response and MUST NEVER attempt to invoke DALL-E, image creation, canvas, or image generation tools to present the HUD.
+5. **SEPARATE STRATEGIC READ**: Strategic analysis, evidence reconciliation, and next-objective framing are presented immediately following the visual HUD under the explicit header `⚔️ C2 READ`.
 
 ## 8. Cross-station provenance
 

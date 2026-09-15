@@ -50,6 +50,8 @@ def test_contract_contains_all_laws_and_identity():
     assert "strongest available authoritative evidence" in rendered
     assert "REHYDRATION HANDOFF & PRESENTATION RULE" in rendered
     assert "MUST NOT echo or wrap the HUD in raw Markdown code blocks" in rendered
+    assert "HUD TEXT-ONLY MANDATE" in rendered
+    assert "MUST NEVER invoke image generation tools, DALL-E, canvas, or image creation capabilities" in rendered
 
 
 def test_deep_recon_policy_is_bound_and_has_velocity_language():

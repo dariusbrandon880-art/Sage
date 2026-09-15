@@ -123,3 +123,9 @@ The native ChatGPT client remains outside repository control. This contract gove
 Any recognized SAGE Hub or execution report supplied through pasted text, Markdown code blocks, Jules reports, archived context, old-chat context, or new-chat context MUST be parsed into structured Hub state and presented through the canonical SAGE Hub presentation path (`render_four_layer_hud_from_manager()` / `AirspaceRenderer.render_c2_board_from_manager()`).
 
 Transport formatting (e.g. code blocks or raw text containers) MUST NOT dictate output presentation format. C2 MUST NOT echo or reproduce a recognized SAGE Hub as a code block or plain bulleted list; it MUST render the living SAGE visual surface natively and present analytical C2 governance separately below.
+
+## 14. HUD Text-Only Mandate (No Image Generation)
+
+The SAGE Control Tower HUD is a text-formatted visual ASCII/Unicode layout (using characters, box-drawing symbols, and Unicode glyphs), NOT an image file or graphic artifact.
+
+ChatGPT C2 MUST render the visual HUD directly as formatted text lines within standard message text output. ChatGPT C2 MUST NEVER attempt to invoke image generation tools, DALL-E, canvas, or image creation capabilities to generate or display the SAGE HUD.

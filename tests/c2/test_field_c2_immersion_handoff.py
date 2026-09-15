@@ -244,3 +244,11 @@ def test_pasted_report_normalizes_transport_to_canonical_hud_presentation():
     assert "04 — STRIKE FEED" in rendered
     assert "[SAGE::C2::CHATGPT]" in rendered
     assert result.accepted is True
+
+
+def test_hud_mandate_text_only_prohibits_image_generation():
+    """Verify system contract explicitly prohibits image creation tools for HUD rendering."""
+    from sage.c2.chatgpt_c2_contract import render_system_contract
+    contract = render_system_contract()
+    assert "HUD TEXT-ONLY MANDATE" in contract
+    assert "DALL-E" in contract
