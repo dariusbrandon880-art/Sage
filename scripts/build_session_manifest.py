@@ -54,7 +54,7 @@ def materialize(mission: str, interfaces: list[str], output: Path) -> dict:
         "global_acceptance_state": "PENDING",
         "identity_contract": {
             "nameplate": "sage/experimental/airspace/nameplate.py",
-            "hud": "sage/agent_hud_projection.py",
+            "hud": "sage/experimental/airspace/immersion.py",
             "immersion_doctrine": "docs/SAGE-INVENTOR-AGENT-IMMERSION-DOCTRINE.md",
             "source_of_truth": "canonical_airspace_state",
         },
