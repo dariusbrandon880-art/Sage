@@ -3,34 +3,32 @@
 Operationalizes the 10-step interaction loop:
 1. SENSE: Identify the station.
 2. REHYDRATE: Load canonical organism state.
-3. IDENTITY LOCK: Verify Git HEAD provenance and lock station state.
+3. IDENTITY LOCK: Verify governed Git provenance and lock station state.
 4. MISSION RESOLUTION: Load current mission and flight state.
 5. CHALLENGE / MOVE AUTHORIZATION: Validate action against station qualification move set.
-6. ACTION: Execute authorized operational action.
-7. EVIDENCE: Record evidence and compute evidence digest.
-8. REWARD: Reconcile resulting state and award verified progression (XP/Points).
-9. STATE UPDATE: Refresh career rank level, title, and station progression.
-10. NEXT OBJECTIVE / REHYDRATED C2 HUD: Emit rehydrated C2 Mission Control feedback.
+6. ACTION: Record the authorized operational action.
+7. EVIDENCE: Persist evidence and compute evidence digest.
+8. REWARD: Persist verified progression (XP/Points).
+9. STATE UPDATE: Reconstruct post-settlement canonical progression.
+10. NEXT OBJECTIVE / REHYDRATED C2 HUD: Emit the canonical Hub projection.
 """
 
 from __future__ import annotations
 
 import importlib
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from hashlib import sha256
-import json
+import os
 import re
-import subprocess
 from typing import Any, Sequence
 
-from sage.c2.immersion_state import ExecutionPhase, FlightStatus, ImmersionState, TrustStatus
+from sage.c2.immersion_state import ImmersionState
 
 
 ORGANISM_ID_MAIN = "SAGE_ORGANISM_MAIN"
-DEFAULT_CHATGPT_STATION = "[SAGE::C2::CHATGPT]"
+DEFAULT_CHATGPT_STATION = "MISSION_CONTROL"
 CONTRACT_VERSION = "1.0"
 
-# Base capabilities unlocked by qualification levels
 CQL_MOVE_SETS: dict[int, tuple[str, ...]] = {
     0: ("RECON", "HUD_PROJECTION", "ANALYZE"),
     1: ("RECON", "HUD_PROJECTION", "ANALYZE", "DELEGATION", "STRIKE_FEED"),
@@ -51,22 +49,19 @@ def resolve_authorized_moves(cql: int, sql: int = 0) -> tuple[str, ...]:
 
 
 def _get_canonical_git_sha() -> str:
-    """Fetch current 40-character Git HEAD SHA."""
-    try:
-        res = subprocess.run(
-            ["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True
-        )
-        sha = res.stdout.strip()
+    """Return explicitly governed repository provenance; never invent it from local HEAD."""
+    for key in ("SAGE_CANONICAL_GIT_SHA", "GITHUB_SHA"):
+        sha = os.environ.get(key, "").strip()
         if re.fullmatch(r"[0-9a-fA-F]{40}", sha):
             return sha
-    except Exception:
-        pass
-    return ""
+    raise ValueError(
+        "Organism identity lock failed: governed SAGE_CANONICAL_GIT_SHA or GITHUB_SHA is required."
+    )
 
 
 @dataclass(frozen=True)
 class OrganismStationState:
-    """Stateful station identity derived from canonical SAGE organism state."""
+    """Stateful station identity derived only from reconstructed canonical state."""
 
     organism_id: str
     station_id: str
@@ -89,16 +84,14 @@ class OrganismStationState:
     hud_visibility: str = "HUB_A"
 
     def is_move_authorized(self, move_name: str) -> bool:
-        """Return True if move_name is authorized under station qualifications."""
         if not move_name or not move_name.strip():
             return False
-        normalized = move_name.strip().upper()
-        return normalized in self.authorized_moves
+        return move_name.strip().upper() in self.authorized_moves
 
 
 @dataclass(frozen=True)
 class OrganismTurnReceipt:
-    """Cryptographic flight receipt for a verified organism turn."""
+    """Cryptographic flight receipt for a fully reconciled organism turn."""
 
     turn_id: str
     session_id: str
@@ -114,7 +107,7 @@ class OrganismTurnReceipt:
     rank_title_after: str
     total_xp_after: int
     hud_projection: str
-    verified: bool = True
+    verified: bool
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -136,6 +129,14 @@ class OrganismTurnReceipt:
         }
 
 
+def _station_enum(station_id: str) -> Any:
+    models_mod = importlib.import_module("sage.experimental.airspace.models")
+    try:
+        return models_mod.StationID(station_id)
+    except ValueError as exc:
+        raise ValueError(f"Unknown canonical SAGE station: {station_id}") from exc
+
+
 def handshake_station_identity(
     runtime: Any = None,
     *,
@@ -144,69 +145,47 @@ def handshake_station_identity(
     station_id: str = DEFAULT_CHATGPT_STATION,
     c2_context: dict[str, Any] | None = None,
 ) -> OrganismStationState:
-    """Step 1 & 2: Handshake and resolve stateful station identity from canonical state."""
+    """Sense + rehydrate + identity-lock against reconstructed canonical state."""
     git_sha = _get_canonical_git_sha()
-    if not git_sha:
-        raise ValueError("Organism handshake failed: valid canonical Git HEAD SHA required")
-
-    # Load AirspaceManager if not passed
     mgr = manager
     if mgr is None:
-        try:
-            mgr_mod = importlib.import_module("sage.experimental.airspace.manager")
-            mgr = mgr_mod.AirspaceManager()
-        except Exception:
-            mgr = None
+        mgr_mod = importlib.import_module("sage.experimental.airspace.manager")
+        mgr = mgr_mod.AirspaceManager()
 
-    cql = 2
-    sql = 1
-    total_xp = 100
-    total_points = 50
-    active_mission = "SAGE_ORGANISM_CONTINUITY"
+    airspace = mgr.reconstruct_airspace_state()
+    station_enum = _station_enum(station_id)
+    station = airspace.stations.get(station_enum)
+    if station is None or not station.active_status:
+        raise ValueError(f"Canonical station state unavailable or inactive: {station_id}")
 
-    if mgr is not None and hasattr(mgr, "reconstruct_airspace_state"):
-        try:
-            airspace = mgr.reconstruct_airspace_state()
-            if airspace.active_mission:
-                active_mission = airspace.active_mission.mission_id
-            total_xp = airspace.game_progression.get_total_airspace_xp()
-            # Find station matching station_id or default C2 station
-            for st_id, st_obj in airspace.stations.items():
-                if st_id.value == station_id or st_obj.agent_name == "GPT":
-                    cql = st_obj.current_cql
-                    sql = st_obj.current_sql
-                    station_xp = airspace.game_progression.get_total_xp_for_station(st_id)
-                    if station_xp > 0:
-                        total_xp = station_xp
-                    break
-        except Exception:
-            pass
-
-    # Resolve rank for XP
     rank_mod = importlib.import_module("sage.experimental.airspace.rank_system")
-    rank_def = rank_mod.rank_for_xp(total_xp)
+    station_xp = airspace.game_progression.get_total_xp_for_station(station_enum)
+    rank_def = rank_mod.rank_for_xp(station_xp)
+    active_mission = airspace.active_mission
+    objective = (c2_context or {}).get("active_objective")
+    if active_mission is not None:
+        objective = objective or active_mission.mission_id
+    if not objective:
+        raise ValueError("Mission resolution failed: canonical active mission required.")
 
-    authorized_moves = resolve_authorized_moves(cql, sql)
-    context = dict(c2_context or {})
-    objective = context.get("active_objective") or active_mission
-
+    authorized_moves = resolve_authorized_moves(station.current_cql, station.current_sql)
     return OrganismStationState(
         organism_id=ORGANISM_ID_MAIN,
-        station_id=station_id,
-        station_name="GPT",
+        station_id=station_enum.value,
+        station_name=station.agent_name,
         rank_level=rank_def.level,
         rank_title=rank_def.title,
-        total_xp=total_xp,
-        total_points=total_points,
-        cql=cql,
-        sql=sql,
-        qualifications=(f"CQL-{cql}", f"SQL-{sql}"),
+        total_xp=station_xp,
+        total_points=0,
+        cql=station.current_cql,
+        sql=station.current_sql,
+        qualifications=(f"CQL-{station.current_cql}", f"SQL-{station.current_sql}"),
         active_mission=str(objective),
         current_flight=f"FLIGHT_{session_id}",
         current_phase="EXECUTE",
         active_objectives=(str(objective),),
-        unresolved_targets=(),
-        recent_verified_accomplishments=("HANDSHAKE_VERIFIED",),
+        unresolved_targets=tuple(airspace.current_frontiers),
+        recent_verified_accomplishments=tuple(airspace.recent_evidence[-10:]),
         authorized_moves=authorized_moves,
         provenance_sha=git_sha,
         hud_visibility="HUB_A",
@@ -214,7 +193,7 @@ def handshake_station_identity(
 
 
 class OrganismRuntimeContractEngine:
-    """Engine executing the 10-step Playable Organism turn interaction loop."""
+    """Engine executing the governed 10-step Playable Organism turn interaction loop."""
 
     def __init__(self, runtime: Any = None, manager: Any = None) -> None:
         self.runtime = runtime
@@ -232,8 +211,12 @@ class OrganismRuntimeContractEngine:
         xp_award: int = 50,
         points_award: int = 25,
     ) -> OrganismTurnReceipt:
-        """Execute one complete 10-step playable turn with verified progression."""
-        # Step 1: SENSE - Identify station & handshake
+        """Execute one turn; verification is earned only after durable reconciliation."""
+        if xp_award <= 0 or points_award <= 0:
+            raise ValueError("Reward reconciliation requires positive XP and Points awards.")
+        if not evidence_refs:
+            raise ValueError("Evidence capture requires at least one evidence reference.")
+
         station_state = handshake_station_identity(
             self.runtime,
             manager=self.manager,
@@ -241,85 +224,100 @@ class OrganismRuntimeContractEngine:
             station_id=station_id,
             c2_context=c2_context,
         )
-
-        # Step 2: REHYDRATE & IDENTITY LOCK
-        if not station_state.provenance_sha or len(station_state.provenance_sha) != 40:
+        if len(station_state.provenance_sha) != 40:
             raise ValueError("Identity lock failed: canonical 40-character provenance SHA required.")
-
-        # Step 3: MISSION RESOLUTION
-        if not station_state.active_mission:
-            raise ValueError("Mission resolution failed: active mission required.")
-
-        # Step 4 & 5: CHALLENGE / MOVE AUTHORIZATION
         requested_move = action_name.strip().upper()
         if not station_state.is_move_authorized(requested_move):
             raise ValueError(
-                f"SAGE move rejection: '{requested_move}' is not authorized for "
-                f"station '{station_state.station_id}' at qualification level CQL-{station_state.cql}. "
+                f"SAGE move rejection: '{requested_move}' is not authorized for station "
+                f"'{station_state.station_id}' at qualification level CQL-{station_state.cql}. "
                 f"Authorized move set: {station_state.authorized_moves}"
             )
 
-        # Step 6: ACTION EXECUTION
-        action_summary = task.strip() or f"Executed authorized move {requested_move}"
-
-        # Step 7: EVIDENCE CAPTURE
-        raw_evidence = f"{session_id}:{action_name}:{action_summary}:{','.join(sorted(evidence_refs))}"
-        evidence_digest = sha256(raw_evidence.encode("utf-8")).hexdigest()
-
-        # Step 8: REWARD RECONCILIATION
-        minted_xp = max(0, xp_award)
-        awarded_points = max(0, points_award)
-
-        # Award XP via AirspaceManager if available
         mgr = self.manager
         if mgr is None:
-            try:
-                mgr_mod = importlib.import_module("sage.experimental.airspace.manager")
-                mgr = mgr_mod.AirspaceManager()
-            except Exception:
-                mgr = None
+            mgr_mod = importlib.import_module("sage.experimental.airspace.manager")
+            mgr = mgr_mod.AirspaceManager()
 
-        if mgr is not None and hasattr(mgr, "award_xp") and minted_xp > 0:
-            try:
-                st_id_enum = importlib.import_module("sage.experimental.airspace.models").StationID.MISSION_CONTROL
-                cat_enum = importlib.import_module("sage.experimental.airspace.models").XPCategory.VERIFIED_STRIKE
-                mgr.award_xp(
-                    actor=station_id,
-                    station_id=st_id_enum,
-                    category=cat_enum,
-                    amount=minted_xp,
-                    reason=f"Playable turn verified action: {requested_move}",
-                    verified_event_ref=evidence_digest,
-                )
-            except Exception:
-                pass
+        action_summary = task.strip() or f"Executed authorized move {requested_move}"
+        raw_evidence = f"{session_id}:{station_state.station_id}:{requested_move}:{action_summary}:{','.join(sorted(evidence_refs))}"
+        evidence_digest = sha256(raw_evidence.encode("utf-8")).hexdigest()
 
-        # Step 9: STATE UPDATE & PROGRESSION
-        total_xp_after = station_state.total_xp + minted_xp
+        # Step 6: persist the authorized action before any reward is minted.
+        action_event = mgr.record_event(
+            event_type="ORGANISM_ACTION_EXECUTED",
+            actor=station_state.station_id,
+            mission_id=station_state.active_mission,
+            payload={
+                "turn_session_id": session_id,
+                "action": requested_move,
+                "summary": action_summary,
+                "provenance_sha": station_state.provenance_sha,
+            },
+            evidence_refs=list(evidence_refs),
+        )
+
+        # Step 7: persist the evidence digest as governed evidence.
+        evidence_event = mgr.record_event(
+            event_type="ORGANISM_EVIDENCE_CAPTURED",
+            actor=station_state.station_id,
+            mission_id=station_state.active_mission,
+            payload={
+                "turn_session_id": session_id,
+                "action_event_id": action_event.event_id,
+                "evidence_digest": evidence_digest,
+            },
+            evidence_refs=list(evidence_refs),
+        )
+
+        # Step 8: persist both progression awards against the evidence event.
+        models_mod = importlib.import_module("sage.experimental.airspace.models")
+        mgr.award_xp(
+            actor=station_state.station_id,
+            station_id=_station_enum(station_state.station_id),
+            category=models_mod.XPCategory.VERIFIED_STRIKE,
+            amount=xp_award,
+            reason=f"Playable turn verified action: {requested_move}",
+            verified_event_ref=evidence_event.event_id,
+        )
+        mgr.record_event(
+            event_type="POINTS_AWARDED",
+            actor=station_state.station_id,
+            mission_id=station_state.active_mission,
+            payload={
+                "station_id": station_state.station_id,
+                "amount": points_award,
+                "action": requested_move,
+                "verified_event_ref": evidence_event.event_id,
+                "evidence_digest": evidence_digest,
+            },
+            evidence_refs=[evidence_event.event_id, *evidence_refs],
+        )
+
+        # Step 9: reconstruct after settlement; never arithmetic-guess post-state.
+        post_state = mgr.reconstruct_airspace_state()
+        station_enum = _station_enum(station_state.station_id)
+        total_xp_after = post_state.game_progression.get_total_xp_for_station(station_enum)
         rank_mod = importlib.import_module("sage.experimental.airspace.rank_system")
         rank_after = rank_mod.rank_for_xp(total_xp_after)
 
-        # Step 10: REHYDRATED C2 HUD & GAME FEEDBACK
+        # Step 10: render only the canonical Hub; any rendering failure invalidates verification.
         immersion_mod = importlib.import_module("sage.experimental.airspace.immersion")
-        hud_projection = ""
-        if mgr is not None and hasattr(immersion_mod, "render_four_layer_hud_from_manager"):
-            try:
-                hud_projection = immersion_mod.render_four_layer_hud_from_manager(mgr)
-            except Exception:
-                hud_projection = f"[SAGE::C2::CHATGPT] C2 MISSION CONTROL // RANK {rank_after.title} // XP {total_xp_after}"
+        hud_projection = immersion_mod.render_hub_a_from_manager(mgr)
+        if not hud_projection.strip():
+            raise ValueError("Canonical Hub projection failed: empty projection.")
 
         turn_id = f"TURN_{session_id}_{evidence_digest[:8]}"
-
         return OrganismTurnReceipt(
             turn_id=turn_id,
             session_id=session_id,
-            station_id=station_id,
+            station_id=station_state.station_id,
             provenance_sha=station_state.provenance_sha,
             action_executed=requested_move,
             authorized_moves=station_state.authorized_moves,
             evidence_digest=evidence_digest,
-            xp_minted=minted_xp,
-            points_awarded=awarded_points,
+            xp_minted=xp_award,
+            points_awarded=points_award,
             rank_level_before=station_state.rank_level,
             rank_level_after=rank_after.level,
             rank_title_after=rank_after.title,
