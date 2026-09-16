@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
+<rect width="1200" height="900" fill="#05070a"/>
+<g fill="#f2f5f7" font-family="monospace" font-size="20" xml:space="preserve">
+<text x="40" y="55">01 — COMMAND BAND</text>
+<text x="40" y="82">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</text>
+<text x="40" y="115">[SAGE::C2::CHATGPT] ◈ C2 MISSION CONTROL</text>
+<text x="40" y="145">STATUS   : OPERATIONAL</text>
+<text x="40" y="175">QUAL     : CQL-4 | SQL-3</text>
+<text x="40" y="205">MISSION  : NONE ACTIVE</text>
+<text x="40" y="250">02 — OPERATING PICTURE</text>
+<text x="40" y="280">──────────────────────────────────────────</text>
+<text x="40" y="310">ACTIVE SORTIES: NONE ACTIVE</text>
+<text x="40" y="355">03 — PROGRESSION / IMPACT</text>
+<text x="40" y="385">──────────────────────────────────────────</text>
+<text x="40" y="415">TOTAL SYSTEM XP : 616</text>
+<text x="40" y="445"> ▪ MISSION_DIRECTOR XP 0     CQL ⚙️⚙️⚙️⚙️⚙️⚙️⚙️  SQL 🛰️🛰️🛰️🛰️🛰️🛰️🛰️</text>
+<text x="40" y="475"> ▪ MISSION_CONTROL XP 0     CQL ⚙️⚙️⚙️⚙️        SQL 🛰️🛰️🛰️</text>
+<text x="40" y="505"> ▪ INTEL_STATION XP 0       CQL ⚙️⚙️⚙️          SQL 🛰️🛰️🛰️</text>
+<text x="40" y="535"> ▪ ENGINEERING_FLIGHT XP 616 CQL ⚙️⚙️⚙️⚙️       SQL 🛰️🛰️</text>
+<text x="40" y="580">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</text>
+<text x="40" y="610">04 — STRIKE FEED // HIGH-TEMPO EVENTS</text>
+<text x="40" y="640">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</text>
+<text x="40" y="675">🎯 TARGET ACQUIRED // SYSTEM INITIALIZATION</text>
+<text x="40" y="710">🛡️ EVIDENCE CAPTURED // settlement:4d162484f88b30d6b7e8001f8</text>
+<text x="40" y="745">✓ HIT CONFIRMED     // Real evidence landed</text>
+<text x="40" y="780">→ NEXT TARGET       // Execute Session 3 Airspace Build</text>
+<text x="40" y="815">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</text>
+</g></svg>

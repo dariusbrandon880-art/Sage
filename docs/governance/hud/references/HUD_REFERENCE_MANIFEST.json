@@ -1,0 +1,14 @@
+{
+  "status": "LOCKED",
+  "purpose": "visual reference only",
+  "surfaces": {
+    "hub_a": "hub_a_c2_mission_control.svg",
+    "hub_b": "hub_b_sage_organism.svg"
+  },
+  "rules": [
+    "NO REDESIGN",
+    "NO SUBSTITUTION",
+    "NO FABRICATION",
+    "Runtime state and canonical rendering remain authoritative."
+  ]
+}

@@ -2590,5 +2590,491 @@
       "wo:idempotency_test_001:585f3351a9bc6f624949b88e6fb4a581f94a5301"
     ],
     "event_sha256": "dfd793e8d34a50553080408799cf8773aafff603667550a360e94e4468b2e440"
+  },
+  {
+    "event_id": "evt_airspace_0097_b5d698ff",
+    "event_type": "POINTS_AWARDED",
+    "timestamp": "2026-09-16T17:10:07.292595+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "event_id": "evt-settlement:20916aaceb2dce0dad8dbda370e564d39d046b214f77a4c6de0dba9a99b74b8a-ENGINEERING_FLIGHT",
+      "station_id": "ENGINEERING_FLIGHT",
+      "event_type": "BUILD",
+      "base_points": 94,
+      "difficulty": 1,
+      "verification_quality": 1,
+      "impact": 1,
+      "reuse": 1,
+      "momentum": 1.0,
+      "breakthrough_bonus": 0,
+      "verified_points": 94,
+      "verified_event_ref": "settlement:20916aaceb2dce0dad8dbda370e564d39d046b214f77a4c6de0dba9a99b74b8a:whole_organism_test_whole_organism_001:ENGINEERING_FLIGHT",
+      "reason": "Adjudicated reward under SAGE-RP-1.0 for mission whole_organism_test_whole_organism_001"
+    },
+    "evidence_refs": [
+      "vw:whole_organism_test_whole_organism_001:8078d2352f5f9ca4cd79fe130628f7b8f54a9d9b"
+    ],
+    "event_sha256": "e5e8bc8dbd4ff0bedcb44b458f31ad42b17336ecafce36ecc5915bcf5ef48e80"
+  },
+  {
+    "event_id": "evt_airspace_0098_d942d20d",
+    "event_type": "XP_AWARDED",
+    "timestamp": "2026-09-16T17:10:07.302541+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "station_id": "ENGINEERING_FLIGHT",
+      "category": "MISSION_XP",
+      "amount": 10,
+      "reason": "Career XP minted from 5262 verified Points (Adjudicated reward under SAGE-RP-1.0 for mission whole_organism_test_whole_organism_001)",
+      "verified_event_ref": "settlement:20916aaceb2dce0dad8dbda370e564d39d046b214f77a4c6de0dba9a99b74b8a:whole_organism_test_whole_organism_001:ENGINEERING_FLIGHT:xp:526"
+    },
+    "evidence_refs": [
+      "settlement:20916aaceb2dce0dad8dbda370e564d39d046b214f77a4c6de0dba9a99b74b8a:whole_organism_test_whole_organism_001:ENGINEERING_FLIGHT:xp:526"
+    ],
+    "event_sha256": "12ead21a9aaa0774b4fc96be634179abcd61655c1aa3cf939642a4d5d67cf3ec"
+  },
+  {
+    "event_id": "evt_airspace_0099_b0063c8f",
+    "event_type": "REWARD_SETTLED",
+    "timestamp": "2026-09-16T17:10:07.310746+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "protocol_version": "SAGE-RP-1.0",
+      "settlement_id": "settlement:20916aaceb2dce0dad8dbda370e564d39d046b214f77a4c6de0dba9a99b74b8a",
+      "mission_id": "whole_organism_test_whole_organism_001",
+      "primary_actor": "ENGINEERING_FLIGHT",
+      "outcome_type": "BUILD",
+      "base_points": 25,
+      "multiplier": 3.75,
+      "outcome_point_pool": 94,
+      "attributed_points": {
+        "ENGINEERING_FLIGHT": 94
+      },
+      "attribution_status": "ATTRIBUTION_INDETERMINATE",
+      "xp_before": 516,
+      "xp_minted": 10,
+      "xp_after": 526,
+      "badge_awards": [],
+      "rank": "CQL-4",
+      "promotion_eligibility": false,
+      "conservation_check_passed": true,
+      "idempotency_check_passed": true,
+      "evidence_digest": "5cfd62dc6b2c283675197976057a8e06129f6883dc3e0af25c1c4074ad04e813"
+    },
+    "evidence_refs": [
+      "vw:whole_organism_test_whole_organism_001:8078d2352f5f9ca4cd79fe130628f7b8f54a9d9b"
+    ],
+    "event_sha256": "1c73f1e273d7cccc54e637ab1ac0a994a2196bf0852d9d33d35b19bc130ca00a"
+  },
+  {
+    "event_id": "evt_airspace_0100_b0869eb3",
+    "event_type": "POINTS_AWARDED",
+    "timestamp": "2026-09-16T17:10:07.326683+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "event_id": "evt-settlement:11e1e40e4791f5ead118ef3cc7e83e68ae1fc62d4948a89735bbf4a5a63cfa23-ENGINEERING_FLIGHT",
+      "station_id": "ENGINEERING_FLIGHT",
+      "event_type": "BREAKTHROUGH",
+      "base_points": 238,
+      "difficulty": 1,
+      "verification_quality": 1,
+      "impact": 1,
+      "reuse": 1,
+      "momentum": 1.0,
+      "breakthrough_bonus": 0,
+      "verified_points": 238,
+      "verified_event_ref": "settlement:11e1e40e4791f5ead118ef3cc7e83e68ae1fc62d4948a89735bbf4a5a63cfa23:test_whole_organism_001:ENGINEERING_FLIGHT",
+      "reason": "Adjudicated reward under SAGE-RP-1.0 for mission test_whole_organism_001"
+    },
+    "evidence_refs": [
+      "wo:test_whole_organism_001:8078d2352f5f9ca4cd79fe130628f7b8f54a9d9b"
+    ],
+    "event_sha256": "92bc06e3a2b076b9499f3d6f875c8ebcbdac3b81a29a277330d798ef6815ff8e"
+  },
+  {
+    "event_id": "evt_airspace_0101_7e707022",
+    "event_type": "XP_AWARDED",
+    "timestamp": "2026-09-16T17:10:07.336448+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "station_id": "ENGINEERING_FLIGHT",
+      "category": "MISSION_XP",
+      "amount": 24,
+      "reason": "Career XP minted from 5500 verified Points (Adjudicated reward under SAGE-RP-1.0 for mission test_whole_organism_001)",
+      "verified_event_ref": "settlement:11e1e40e4791f5ead118ef3cc7e83e68ae1fc62d4948a89735bbf4a5a63cfa23:test_whole_organism_001:ENGINEERING_FLIGHT:xp:550"
+    },
+    "evidence_refs": [
+      "settlement:11e1e40e4791f5ead118ef3cc7e83e68ae1fc62d4948a89735bbf4a5a63cfa23:test_whole_organism_001:ENGINEERING_FLIGHT:xp:550"
+    ],
+    "event_sha256": "227f279db661b7045300bfdb984eed64d15cb634a3ebd2b7da98e3d7c1ce263b"
+  },
+  {
+    "event_id": "evt_airspace_0102_72dd7a69",
+    "event_type": "REWARD_SETTLED",
+    "timestamp": "2026-09-16T17:10:07.345132+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "protocol_version": "SAGE-RP-1.0",
+      "settlement_id": "settlement:11e1e40e4791f5ead118ef3cc7e83e68ae1fc62d4948a89735bbf4a5a63cfa23",
+      "mission_id": "test_whole_organism_001",
+      "primary_actor": "ENGINEERING_FLIGHT",
+      "outcome_type": "BREAKTHROUGH",
+      "base_points": 50,
+      "multiplier": 4.75,
+      "outcome_point_pool": 238,
+      "attributed_points": {
+        "ENGINEERING_FLIGHT": 238
+      },
+      "attribution_status": "ATTRIBUTION_INDETERMINATE",
+      "xp_before": 526,
+      "xp_minted": 24,
+      "xp_after": 550,
+      "badge_awards": [],
+      "rank": "CQL-4",
+      "promotion_eligibility": false,
+      "conservation_check_passed": true,
+      "idempotency_check_passed": true,
+      "evidence_digest": "870a5d63cf92c941b6c1617af4e4e8850119cf6aad68b018e3fec3c6531eef2f"
+    },
+    "evidence_refs": [
+      "wo:test_whole_organism_001:8078d2352f5f9ca4cd79fe130628f7b8f54a9d9b"
+    ],
+    "event_sha256": "67a38473d8d12e3038f67ba7d89933f09719753be07390c5da286b685d9b6ea7"
+  },
+  {
+    "event_id": "evt_airspace_0103_55a3cc32",
+    "event_type": "POINTS_AWARDED",
+    "timestamp": "2026-09-16T17:10:14.311850+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "event_id": "evt-settlement:82b4cb5d37e90b3e9ce24b062991dbccc23f9a501f84b52e3d4bc8ff1209f6e7-ENGINEERING_FLIGHT",
+      "station_id": "ENGINEERING_FLIGHT",
+      "event_type": "BUILD",
+      "base_points": 94,
+      "difficulty": 1,
+      "verification_quality": 1,
+      "impact": 1,
+      "reuse": 1,
+      "momentum": 1.0,
+      "breakthrough_bonus": 0,
+      "verified_points": 94,
+      "verified_event_ref": "settlement:82b4cb5d37e90b3e9ce24b062991dbccc23f9a501f84b52e3d4bc8ff1209f6e7:whole_organism_progression_integration_001:ENGINEERING_FLIGHT",
+      "reason": "Adjudicated reward under SAGE-RP-1.0 for mission whole_organism_progression_integration_001"
+    },
+    "evidence_refs": [
+      "vw:whole_organism_progression_integration_001:8078d2352f5f9ca4cd79fe130628f7b8f54a9d9b"
+    ],
+    "event_sha256": "20d208472cfe2b27cf10ee487f8fdce103dbf8886cc75d801358ddb2ad748c0d"
+  },
+  {
+    "event_id": "evt_airspace_0104_ef61a6e8",
+    "event_type": "XP_AWARDED",
+    "timestamp": "2026-09-16T17:10:14.321551+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "station_id": "ENGINEERING_FLIGHT",
+      "category": "MISSION_XP",
+      "amount": 9,
+      "reason": "Career XP minted from 5594 verified Points (Adjudicated reward under SAGE-RP-1.0 for mission whole_organism_progression_integration_001)",
+      "verified_event_ref": "settlement:82b4cb5d37e90b3e9ce24b062991dbccc23f9a501f84b52e3d4bc8ff1209f6e7:whole_organism_progression_integration_001:ENGINEERING_FLIGHT:xp:559"
+    },
+    "evidence_refs": [
+      "settlement:82b4cb5d37e90b3e9ce24b062991dbccc23f9a501f84b52e3d4bc8ff1209f6e7:whole_organism_progression_integration_001:ENGINEERING_FLIGHT:xp:559"
+    ],
+    "event_sha256": "aa7f131328177a6f3b5fd276beb38d8b9d45b03144ab023574556701b224f049"
+  },
+  {
+    "event_id": "evt_airspace_0105_ea4dd03f",
+    "event_type": "REWARD_SETTLED",
+    "timestamp": "2026-09-16T17:10:14.329878+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "protocol_version": "SAGE-RP-1.0",
+      "settlement_id": "settlement:82b4cb5d37e90b3e9ce24b062991dbccc23f9a501f84b52e3d4bc8ff1209f6e7",
+      "mission_id": "whole_organism_progression_integration_001",
+      "primary_actor": "ENGINEERING_FLIGHT",
+      "outcome_type": "BUILD",
+      "base_points": 25,
+      "multiplier": 3.75,
+      "outcome_point_pool": 94,
+      "attributed_points": {
+        "ENGINEERING_FLIGHT": 94
+      },
+      "attribution_status": "ATTRIBUTION_INDETERMINATE",
+      "xp_before": 550,
+      "xp_minted": 9,
+      "xp_after": 559,
+      "badge_awards": [],
+      "rank": "CQL-4",
+      "promotion_eligibility": false,
+      "conservation_check_passed": true,
+      "idempotency_check_passed": true,
+      "evidence_digest": "35440dadffa9578f1f70e24f381f6f56b46ce2aa800ea33a45b8415ff24e2ced"
+    },
+    "evidence_refs": [
+      "vw:whole_organism_progression_integration_001:8078d2352f5f9ca4cd79fe130628f7b8f54a9d9b"
+    ],
+    "event_sha256": "5172f6492599b94124e1569d7dfb5383cb35a2cca7a0c430dc03eb696cfcd7f5"
+  },
+  {
+    "event_id": "evt_airspace_0106_8eb85e6c",
+    "event_type": "POINTS_AWARDED",
+    "timestamp": "2026-09-16T17:10:14.345638+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "event_id": "evt-settlement:f12702a869ce7a2509ab6846e9c6cb975d762717fa68f892d02fd721a7563b85-ENGINEERING_FLIGHT",
+      "station_id": "ENGINEERING_FLIGHT",
+      "event_type": "BREAKTHROUGH",
+      "base_points": 238,
+      "difficulty": 1,
+      "verification_quality": 1,
+      "impact": 1,
+      "reuse": 1,
+      "momentum": 1.0,
+      "breakthrough_bonus": 0,
+      "verified_points": 238,
+      "verified_event_ref": "settlement:f12702a869ce7a2509ab6846e9c6cb975d762717fa68f892d02fd721a7563b85:progression_integration_001:ENGINEERING_FLIGHT",
+      "reason": "Adjudicated reward under SAGE-RP-1.0 for mission progression_integration_001"
+    },
+    "evidence_refs": [
+      "wo:progression_integration_001:8078d2352f5f9ca4cd79fe130628f7b8f54a9d9b"
+    ],
+    "event_sha256": "74ab2e7f72fe0d4860cc8eba9365587c552019fd9a8435820fe0c2536d85294b"
+  },
+  {
+    "event_id": "evt_airspace_0107_cbe43830",
+    "event_type": "XP_AWARDED",
+    "timestamp": "2026-09-16T17:10:14.355513+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "station_id": "ENGINEERING_FLIGHT",
+      "category": "MISSION_XP",
+      "amount": 24,
+      "reason": "Career XP minted from 5832 verified Points (Adjudicated reward under SAGE-RP-1.0 for mission progression_integration_001)",
+      "verified_event_ref": "settlement:f12702a869ce7a2509ab6846e9c6cb975d762717fa68f892d02fd721a7563b85:progression_integration_001:ENGINEERING_FLIGHT:xp:583"
+    },
+    "evidence_refs": [
+      "settlement:f12702a869ce7a2509ab6846e9c6cb975d762717fa68f892d02fd721a7563b85:progression_integration_001:ENGINEERING_FLIGHT:xp:583"
+    ],
+    "event_sha256": "bb2dc2c6ccdf411c5b0cb7430dae68b15ac0ddbc28006c3ca79227f6788323c0"
+  },
+  {
+    "event_id": "evt_airspace_0108_a22c9f18",
+    "event_type": "REWARD_SETTLED",
+    "timestamp": "2026-09-16T17:10:14.364268+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "protocol_version": "SAGE-RP-1.0",
+      "settlement_id": "settlement:f12702a869ce7a2509ab6846e9c6cb975d762717fa68f892d02fd721a7563b85",
+      "mission_id": "progression_integration_001",
+      "primary_actor": "ENGINEERING_FLIGHT",
+      "outcome_type": "BREAKTHROUGH",
+      "base_points": 50,
+      "multiplier": 4.75,
+      "outcome_point_pool": 238,
+      "attributed_points": {
+        "ENGINEERING_FLIGHT": 238
+      },
+      "attribution_status": "ATTRIBUTION_INDETERMINATE",
+      "xp_before": 559,
+      "xp_minted": 24,
+      "xp_after": 583,
+      "badge_awards": [],
+      "rank": "CQL-4",
+      "promotion_eligibility": false,
+      "conservation_check_passed": true,
+      "idempotency_check_passed": true,
+      "evidence_digest": "d3d6de19e27d831cefaa2b89267797b8cbc7bfdd02c75cc045d487d63d8e8b77"
+    },
+    "evidence_refs": [
+      "wo:progression_integration_001:8078d2352f5f9ca4cd79fe130628f7b8f54a9d9b"
+    ],
+    "event_sha256": "98e28b8e8dfb434bde011f1b94a343757e9c89c463a6a4584b6f1f28185750b5"
+  },
+  {
+    "event_id": "evt_airspace_0109_470fcc46",
+    "event_type": "POINTS_AWARDED",
+    "timestamp": "2026-09-16T17:10:17.737459+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "event_id": "evt-settlement:407752a0239c38f7bb8ea51540a842a2e78e84a21182f89ec5e8de8787b987f5-ENGINEERING_FLIGHT",
+      "station_id": "ENGINEERING_FLIGHT",
+      "event_type": "BUILD",
+      "base_points": 94,
+      "difficulty": 1,
+      "verification_quality": 1,
+      "impact": 1,
+      "reuse": 1,
+      "momentum": 1.0,
+      "breakthrough_bonus": 0,
+      "verified_points": 94,
+      "verified_event_ref": "settlement:407752a0239c38f7bb8ea51540a842a2e78e84a21182f89ec5e8de8787b987f5:whole_organism_idempotency_test_001:ENGINEERING_FLIGHT",
+      "reason": "Adjudicated reward under SAGE-RP-1.0 for mission whole_organism_idempotency_test_001"
+    },
+    "evidence_refs": [
+      "vw:whole_organism_idempotency_test_001:8078d2352f5f9ca4cd79fe130628f7b8f54a9d9b"
+    ],
+    "event_sha256": "973b7b42106d3c6f7bfef5c3db48098b6e525f61d57b559574346232bb50242c"
+  },
+  {
+    "event_id": "evt_airspace_0110_ad72cccf",
+    "event_type": "XP_AWARDED",
+    "timestamp": "2026-09-16T17:10:17.747758+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "station_id": "ENGINEERING_FLIGHT",
+      "category": "MISSION_XP",
+      "amount": 9,
+      "reason": "Career XP minted from 5926 verified Points (Adjudicated reward under SAGE-RP-1.0 for mission whole_organism_idempotency_test_001)",
+      "verified_event_ref": "settlement:407752a0239c38f7bb8ea51540a842a2e78e84a21182f89ec5e8de8787b987f5:whole_organism_idempotency_test_001:ENGINEERING_FLIGHT:xp:592"
+    },
+    "evidence_refs": [
+      "settlement:407752a0239c38f7bb8ea51540a842a2e78e84a21182f89ec5e8de8787b987f5:whole_organism_idempotency_test_001:ENGINEERING_FLIGHT:xp:592"
+    ],
+    "event_sha256": "0d1ec9b8f57543c54c2a39aceead21ac8c628bc022163ad21935f1a7e486e99b"
+  },
+  {
+    "event_id": "evt_airspace_0111_1e89f31a",
+    "event_type": "REWARD_SETTLED",
+    "timestamp": "2026-09-16T17:10:17.756434+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "protocol_version": "SAGE-RP-1.0",
+      "settlement_id": "settlement:407752a0239c38f7bb8ea51540a842a2e78e84a21182f89ec5e8de8787b987f5",
+      "mission_id": "whole_organism_idempotency_test_001",
+      "primary_actor": "ENGINEERING_FLIGHT",
+      "outcome_type": "BUILD",
+      "base_points": 25,
+      "multiplier": 3.75,
+      "outcome_point_pool": 94,
+      "attributed_points": {
+        "ENGINEERING_FLIGHT": 94
+      },
+      "attribution_status": "ATTRIBUTION_INDETERMINATE",
+      "xp_before": 583,
+      "xp_minted": 9,
+      "xp_after": 592,
+      "badge_awards": [],
+      "rank": "CQL-4",
+      "promotion_eligibility": false,
+      "conservation_check_passed": true,
+      "idempotency_check_passed": true,
+      "evidence_digest": "2016859e7e5aeca5733460573494518c76e12c43cc2e10a74141691a48bd9810"
+    },
+    "evidence_refs": [
+      "vw:whole_organism_idempotency_test_001:8078d2352f5f9ca4cd79fe130628f7b8f54a9d9b"
+    ],
+    "event_sha256": "9bfdb1a73cc536012496b8ff4f5a020e47e4308b320a999168f7416623aa31fa"
+  },
+  {
+    "event_id": "evt_airspace_0112_3a20ef49",
+    "event_type": "POINTS_AWARDED",
+    "timestamp": "2026-09-16T17:10:17.772136+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "event_id": "evt-settlement:e148baaf341476d2004d2c9c343e1ce2344eeb538bc834113b84ecce9027c701-ENGINEERING_FLIGHT",
+      "station_id": "ENGINEERING_FLIGHT",
+      "event_type": "BREAKTHROUGH",
+      "base_points": 238,
+      "difficulty": 1,
+      "verification_quality": 1,
+      "impact": 1,
+      "reuse": 1,
+      "momentum": 1.0,
+      "breakthrough_bonus": 0,
+      "verified_points": 238,
+      "verified_event_ref": "settlement:e148baaf341476d2004d2c9c343e1ce2344eeb538bc834113b84ecce9027c701:idempotency_test_001:ENGINEERING_FLIGHT",
+      "reason": "Adjudicated reward under SAGE-RP-1.0 for mission idempotency_test_001"
+    },
+    "evidence_refs": [
+      "wo:idempotency_test_001:8078d2352f5f9ca4cd79fe130628f7b8f54a9d9b"
+    ],
+    "event_sha256": "dbba18c565f899a097d91941673e52e24fe7fc659f6c23c77b028ab3afec522c"
+  },
+  {
+    "event_id": "evt_airspace_0113_a7b7e91d",
+    "event_type": "XP_AWARDED",
+    "timestamp": "2026-09-16T17:10:17.782534+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "station_id": "ENGINEERING_FLIGHT",
+      "category": "MISSION_XP",
+      "amount": 24,
+      "reason": "Career XP minted from 6164 verified Points (Adjudicated reward under SAGE-RP-1.0 for mission idempotency_test_001)",
+      "verified_event_ref": "settlement:e148baaf341476d2004d2c9c343e1ce2344eeb538bc834113b84ecce9027c701:idempotency_test_001:ENGINEERING_FLIGHT:xp:616"
+    },
+    "evidence_refs": [
+      "settlement:e148baaf341476d2004d2c9c343e1ce2344eeb538bc834113b84ecce9027c701:idempotency_test_001:ENGINEERING_FLIGHT:xp:616"
+    ],
+    "event_sha256": "9230efa83b77c9a6511e203e37f7e97f897e9eae017811e8ed00a3ba2ee25553"
+  },
+  {
+    "event_id": "evt_airspace_0114_76caf9ce",
+    "event_type": "REWARD_SETTLED",
+    "timestamp": "2026-09-16T17:10:17.791549+00:00",
+    "actor": "SAGE_REWARD_ADJUDICATOR",
+    "mission_id": null,
+    "sortie_id": null,
+    "payload": {
+      "protocol_version": "SAGE-RP-1.0",
+      "settlement_id": "settlement:e148baaf341476d2004d2c9c343e1ce2344eeb538bc834113b84ecce9027c701",
+      "mission_id": "idempotency_test_001",
+      "primary_actor": "ENGINEERING_FLIGHT",
+      "outcome_type": "BREAKTHROUGH",
+      "base_points": 50,
+      "multiplier": 4.75,
+      "outcome_point_pool": 238,
+      "attributed_points": {
+        "ENGINEERING_FLIGHT": 238
+      },
+      "attribution_status": "ATTRIBUTION_INDETERMINATE",
+      "xp_before": 592,
+      "xp_minted": 24,
+      "xp_after": 616,
+      "badge_awards": [],
+      "rank": "CQL-4",
+      "promotion_eligibility": false,
+      "conservation_check_passed": true,
+      "idempotency_check_passed": true,
+      "evidence_digest": "145958f9becdf37c31e1caa802257052195f2a64959bbf6251aaeaef91ae3779"
+    },
+    "evidence_refs": [
+      "wo:idempotency_test_001:8078d2352f5f9ca4cd79fe130628f7b8f54a9d9b"
+    ],
+    "event_sha256": "3f2fab7d64fda2971c854640cabfed7bd3fb1447d767c20dc576dab68fbd5927"
   }
 ]
