@@ -27,11 +27,7 @@ from sage.c2.immersion_projection import (
     project_c2_response_contract,
 )
 from sage.c2.immersion_state import ImmersionState
-from sage.c2.response_envelope import (
-    c2_chatgpt_presentation,
-    hud_update_key,
-    render_station_response,
-)
+from sage.c2.response_envelope import c2_chatgpt_presentation, hud_update_key, render_station_response
 
 
 def _load_airspace_manager() -> object:
@@ -75,9 +71,7 @@ def _render_organism_projection(projection: Any) -> str | None:
             except TypeError:
                 tag = str(renderer(projection))
         else:
-            projection_mod = importlib.import_module(
-                "sage.experimental.airspace.organism_projection"
-            )
+            projection_mod = importlib.import_module("sage.experimental.airspace.organism_projection")
             tag = str(projection_mod.OrganismProjection.render_agent_tag(projection))
     except Exception as exc:
         raise ValueError("SAGE organism name tag projection failed") from exc
@@ -88,12 +82,7 @@ def _render_organism_projection(projection: Any) -> str | None:
 
 @dataclass(frozen=True)
 class ChatGPTImmersionResponse:
-    """Read-only response projection for the ChatGPT C2 station.
-
-    Hub visibility is contextual, not sticky: continuity metadata cannot force
-    a composite surface, and callers can explicitly select Hub A, Hub B, or the
-    composite when the full organism/C2 picture is required.
-    """
+    """Read-only response projection for the ChatGPT C2 station."""
 
     station_header: str
     immersion_envelope: C2ResponseContract
@@ -109,12 +98,10 @@ class ChatGPTImmersionResponse:
 
     @property
     def hud_update_key(self) -> str:
-        """Expose the canonical Hub identity for host continuity tracking."""
         return hud_update_key(self.immersion_envelope.hud)
 
     @property
     def should_render_hud(self) -> bool:
-        """Render only when visible and changed, unless explicitly forced."""
         if self.force_hud:
             return True
         if not self.hud_visible:
@@ -124,7 +111,6 @@ class ChatGPTImmersionResponse:
         return self.previous_hud_update_key != self.hud_update_key
 
     def render(self) -> str:
-        """Render the selected canonical C2 immersion response."""
         tag = self.organism_tag
         if not tag and self.organism_projection is not None:
             tag = _render_organism_projection(self.organism_projection)
@@ -160,32 +146,22 @@ def project_chatgpt_immersion_response(
     force_hud: bool = False,
     hub_surface: HubSurface = HubSurface.HUB_A,
 ) -> ChatGPTImmersionResponse:
-    """Project canonical state into the read-only ChatGPT C2 surface.
-
-    ``organism_projection`` and ``organism_tag`` preserve explicit
-    projection/tag injection capabilities. ``manager`` is a compatibility
-    alias for ``organism_manager``. Explicit inputs win; otherwise the
-    canonical manager-backed projection is rendered read-only.
-
-    ``hub_surface`` is the presentation choice only; it never creates or
-    mutates canonical state.
-    """
+    """Project canonical state into the read-only ChatGPT C2 surface."""
     tag = organism_tag.strip() if isinstance(organism_tag, str) else organism_tag
     projection = organism_projection
     mgr = organism_manager if organism_manager is not None else manager
 
+    # The canonical Hub renderer requires the governed AirspaceManager even
+    # when an explicit organism projection/tag is supplied.
+    if mgr is None:
+        mgr = _load_airspace_manager()
+
     if not tag and projection is not None:
         tag = _render_organism_projection(projection)
 
-    if not tag and mgr is None and projection is None:
-        mgr = _load_airspace_manager()
-
-    if not tag and mgr is not None:
+    if not tag:
         target_station = _get_station_id(station_id)
         tag = _render_organism_tag(mgr, target_station, state_label)
-
-    if not tag:
-        raise ValueError("SAGE organism name tag required for C2 immersion response")
 
     contract = project_c2_response_contract(
         state,
