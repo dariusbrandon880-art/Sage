@@ -115,6 +115,9 @@ def test_10_step_playable_turn_execution_success(tmp_path, monkeypatch):
     assert "ORGANISM_EVIDENCE_CAPTURED" in event_types
     assert "XP_AWARDED" in event_types
     assert "POINTS_AWARDED" in event_types
+    points_event = next(event for event in events if event["event_type"] == "POINTS_AWARDED")
+    assert points_event["payload"]["verified_event_ref"]
+    assert points_event["evidence_refs"]
 
 
 def test_playable_turn_fails_closed_on_unauthorized_move(tmp_path, monkeypatch):
