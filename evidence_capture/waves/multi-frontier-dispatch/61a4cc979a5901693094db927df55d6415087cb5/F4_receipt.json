@@ -1,0 +1,10 @@
+{
+  "blocker": null,
+  "executed_head": "61a4cc979a5901693094db927df55d6415087cb5",
+  "flight_id": "F4",
+  "frontier_name": "Independent transfer: evidence receipt archiving",
+  "status": "PASS",
+  "target_path": "evidence_capture/adaptive_frontier_selection_evidence.json",
+  "timestamp": 1789097612.1042972,
+  "wave_id": "multi-frontier-dispatch"
+}

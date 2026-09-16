@@ -1,0 +1,10 @@
+{
+  "blocker": null,
+  "executed_head": "a60da445dec0e309df2ccb1d932b505cd90c6bc5",
+  "flight_id": "F3",
+  "frontier_name": "Recovery regression: fail-closed gate verification",
+  "status": "PASS",
+  "target_path": "sage/experimental/five_flight_reconvergence.py",
+  "timestamp": 1789093710.3899438,
+  "wave_id": "multi-frontier-dispatch"
+}

@@ -1,0 +1,109 @@
+{
+  "all_stages_completed": true,
+  "evidence_hashes": {
+    "F1": "0b070ff972b0947a31ecb1480aac2ca82dd8a5742ecae033c7a41406ae9979dd",
+    "F2": "53f70b01862f3b0d60d4cc64588fa027f9fdbc8b12ebd85c430fbaed8ca5afd5",
+    "F3": "d8a0b5651d533e00a0fd79b996b9f1b14a472a831f0631f33b4895043f2f71f2",
+    "F4": "2849792e74cc19007861ea7eeca049c32cacbd41da3568469690266561ca0434",
+    "F5": "e94b972229c557e6bf73d0ec5d1368da38977fce0b561d7d317691cc194a80b6"
+  },
+  "exact_git_head": "5af3386e314842bdb0956f6183b242f07fad8e6c",
+  "flight_receipts": [
+    {
+      "flight_id": "F1",
+      "hash": "0b070ff972b0947a31ecb1480aac2ca82dd8a5742ecae033c7a41406ae9979dd",
+      "passed": true,
+      "target": "Target Subsystem 1"
+    },
+    {
+      "flight_id": "F2",
+      "hash": "53f70b01862f3b0d60d4cc64588fa027f9fdbc8b12ebd85c430fbaed8ca5afd5",
+      "passed": true,
+      "target": "Target Subsystem 2"
+    },
+    {
+      "flight_id": "F3",
+      "hash": "d8a0b5651d533e00a0fd79b996b9f1b14a472a831f0631f33b4895043f2f71f2",
+      "passed": true,
+      "target": "Target Subsystem 3"
+    },
+    {
+      "flight_id": "F4",
+      "hash": "2849792e74cc19007861ea7eeca049c32cacbd41da3568469690266561ca0434",
+      "passed": true,
+      "target": "Target Subsystem 4"
+    },
+    {
+      "flight_id": "F5",
+      "hash": "e94b972229c557e6bf73d0ec5d1368da38977fce0b561d7d317691cc194a80b6",
+      "passed": true,
+      "target": "Target Subsystem 5"
+    }
+  ],
+  "frontier_plan": [
+    {
+      "flight_id": "F1",
+      "target": "Target Subsystem 1"
+    },
+    {
+      "flight_id": "F2",
+      "target": "Target Subsystem 2"
+    },
+    {
+      "flight_id": "F3",
+      "target": "Target Subsystem 3"
+    },
+    {
+      "flight_id": "F4",
+      "target": "Target Subsystem 4"
+    },
+    {
+      "flight_id": "F5",
+      "target": "Target Subsystem 5"
+    }
+  ],
+  "growth_verdict": "ACCELERATING",
+  "jigsaw_gates_passed": 10,
+  "jigsaw_total_gates": 10,
+  "learning_signal": {
+    "autopsy_classification": "WIN_GOOD_DECISION",
+    "calibration_error": 0.050000000000000044,
+    "outcome_confidence": 1.0,
+    "progression_reward": {
+      "attributed_points": {
+        "ENGINEERING_FLIGHT": 238
+      },
+      "attribution_status": "ATTRIBUTION_INDETERMINATE",
+      "badge_awards": [],
+      "base_points": 50,
+      "conservation_check_passed": true,
+      "evidence_digest": "ef48310fecc116ab44a06b414be69f6e9d37f1ed0ba0be8b90c8694dae592e32",
+      "idempotency_check_passed": true,
+      "mission_id": "test_whole_organism_001",
+      "multiplier": 4.75,
+      "outcome_point_pool": 238,
+      "outcome_type": "BREAKTHROUGH",
+      "primary_actor": "ENGINEERING_FLIGHT",
+      "promotion_eligibility": false,
+      "protocol_version": "SAGE-RP-1.0",
+      "rank": "CQL-4",
+      "settlement_id": "settlement:feb49a39d5ae4a0afc0ad2416332de84744c68efe4675db62b70208a33a3f4aa",
+      "timestamp": 1789425550.6464894,
+      "xp_after": 350,
+      "xp_before": 327,
+      "xp_minted": 0
+    },
+    "regret_score": 0.0
+  },
+  "metacognitive_delta": {
+    "calibration_error": 0.050000000000000044,
+    "confidence": 1.0
+  },
+  "mission_id": "test_whole_organism_001",
+  "next_frontier": "FRONTIER_NEXT_BD179D61",
+  "outcome_quality_score": 1.0,
+  "receipt_hash": "fe788683b7732e98c967e0aad5d50fc8fa50432bf3b5402fea6ad3b680e31bda",
+  "receipt_id": "wo_rec_be7e34809881",
+  "session_id": "jules_test_session",
+  "timestamp": 1789425550.6465838
+}
