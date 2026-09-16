@@ -46,10 +46,7 @@ def _get_station_id(station_id_val: Any) -> Any:
     if isinstance(station_id_val, models_mod.StationID):
         return station_id_val
     if isinstance(station_id_val, str):
-        try:
-            return models_mod.StationID(station_id_val)
-        except ValueError:
-            return models_mod.StationID.MISSION_CONTROL
+        return models_mod.StationID(station_id_val)
     return station_id_val
 
 
@@ -132,20 +129,14 @@ class ChatGPTImmersionResponse:
         if not tag and self.organism_projection is not None:
             tag = _render_organism_projection(self.organism_projection)
         if not tag:
-            tag = "[SAGE::C2::CHATGPT] ◈ GPT // RANK UNKNOWN // POINTS UNKNOWN // XP UNKNOWN // PROGRESS : HOLD / UNVERIFIED"
+            raise ValueError("SAGE organism name tag required for C2 immersion response")
 
         parts = [tag, "", self.immersion_envelope.nameplate.render(), ""]
         if self.should_render_hud:
-            hud = self.immersion_envelope.hud.render()
             manager = self.immersion_envelope.hud.organism_manager
-            if manager is not None:
-                hud = render_canonical_hub(manager, surface=self.hub_surface)
-            elif manager is None:
-                hud = hud.replace(
-                    "Human Director // RANK Lvl UNKNOWN UNKNOWN // POINTS UNKNOWN // XP UNKNOWN",
-                    "Human Director // RANK UNKNOWN // POINTS UNKNOWN // XP UNKNOWN",
-                )
-            parts.append(hud)
+            if manager is None:
+                raise ValueError("Canonical organism manager required for HUD projection")
+            parts.append(render_canonical_hub(manager, surface=self.hub_surface))
         parts.extend(["", self.station_header])
         if self.body and self.body.strip():
             parts.extend(["", self.body.strip()])
@@ -187,20 +178,14 @@ def project_chatgpt_immersion_response(
         tag = _render_organism_projection(projection)
 
     if not tag and mgr is None and projection is None:
-        try:
-            mgr = _load_airspace_manager()
-        except Exception:
-            mgr = None
+        mgr = _load_airspace_manager()
 
     if not tag and mgr is not None:
-        try:
-            target_station = _get_station_id(station_id)
-            tag = _render_organism_tag(mgr, target_station, state_label)
-        except Exception:
-            tag = None
+        target_station = _get_station_id(station_id)
+        tag = _render_organism_tag(mgr, target_station, state_label)
 
     if not tag:
-        tag = "[SAGE::C2::CHATGPT] ◈ GPT // RANK UNKNOWN // POINTS UNKNOWN // XP UNKNOWN // PROGRESS : HOLD / UNVERIFIED"
+        raise ValueError("SAGE organism name tag required for C2 immersion response")
 
     contract = project_c2_response_contract(
         state,
