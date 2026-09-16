@@ -1,4 +1,4 @@
-"""Unit tests for SAGE Organism Runtime Contract & Stateful Station Identity Handshake."""
+"""Unit tests for the governed SAGE Organism Runtime Contract."""
 
 from __future__ import annotations
 
@@ -13,7 +13,6 @@ from sage.c2.organism_runtime_contract import (
     handshake_station_identity,
     resolve_authorized_moves,
 )
-from sage.runtime.chatgpt_sage_boundary import SAGEChatGPTBoundary
 from sage.runtime.model_gateway import SAGERuntime, SAGEStateSnapshot
 
 
@@ -36,8 +35,30 @@ def _runtime() -> SAGERuntime:
     )
 
 
-def test_handshake_station_identity_resolves_canonical_state():
-    station_state = handshake_station_identity(session_id="fresh-session-101")
+def _prepare_manager(tmp_path, monkeypatch):
+    from sage.experimental.airspace.manager import AirspaceManager
+    from sage.experimental.airspace.models import Mission
+
+    monkeypatch.setenv("SAGE_CANONICAL_GIT_SHA", "a" * 40)
+    ledger_file = tmp_path / "test_ledger.json"
+    mgr = AirspaceManager(ledger_path=ledger_file)
+    mgr.create_mission(
+        actor="TEST",
+        mission=Mission(
+            mission_id="mission-test",
+            mission_name="Organism Test Mission",
+            theater="Airspace/C2",
+            objective="Validate governed playable-organism continuity",
+            assigned_stations=[],
+            current_frontier="test-frontier",
+        ),
+    )
+    return mgr
+
+
+def test_handshake_station_identity_resolves_canonical_state(tmp_path, monkeypatch):
+    mgr = _prepare_manager(tmp_path, monkeypatch)
+    station_state = handshake_station_identity(manager=mgr, session_id="fresh-session-101")
 
     assert isinstance(station_state, OrganismStationState)
     assert station_state.station_id == DEFAULT_CHATGPT_STATION
@@ -47,6 +68,8 @@ def test_handshake_station_identity_resolves_canonical_state():
     assert isinstance(station_state.rank_title, str)
     assert "RECON" in station_state.authorized_moves
     assert "HUD_PROJECTION" in station_state.authorized_moves
+    assert station_state.total_xp == 0
+    assert station_state.total_points == 0
 
 
 def test_qualification_conditioned_authorized_moves():
@@ -64,12 +87,8 @@ def test_qualification_conditioned_authorized_moves():
     assert "ADJUDICATE_PROGRESSION" in moves_cql3
 
 
-def test_10_step_playable_turn_execution_success(tmp_path):
-    from sage.experimental.airspace.manager import AirspaceManager
-
-    ledger_file = tmp_path / "test_ledger.json"
-    mgr = AirspaceManager(ledger_path=ledger_file)
-
+def test_10_step_playable_turn_execution_success(tmp_path, monkeypatch):
+    mgr = _prepare_manager(tmp_path, monkeypatch)
     engine = OrganismRuntimeContractEngine(manager=mgr)
     receipt = engine.execute_turn(
         session_id="session-turn-001",
@@ -87,15 +106,19 @@ def test_10_step_playable_turn_execution_success(tmp_path):
     assert receipt.points_awarded == 50
     assert len(receipt.evidence_digest) == 64
     assert len(receipt.provenance_sha) == 40
-    assert "COMMAND BAND" in receipt.hud_projection or "C2 MISSION CONTROL" in receipt.hud_projection
+    assert receipt.total_xp_after == 100
+    assert "COMMAND BAND" in receipt.hud_projection
+
+    events = mgr._load_raw_events()
+    event_types = [event["event_type"] for event in events]
+    assert "ORGANISM_ACTION_EXECUTED" in event_types
+    assert "ORGANISM_EVIDENCE_CAPTURED" in event_types
+    assert "XP_AWARDED" in event_types
+    assert "POINTS_AWARDED" in event_types
 
 
-def test_playable_turn_fails_closed_on_unauthorized_move(tmp_path):
-    from sage.experimental.airspace.manager import AirspaceManager
-
-    ledger_file = tmp_path / "test_ledger.json"
-    mgr = AirspaceManager(ledger_path=ledger_file)
-
+def test_playable_turn_fails_closed_on_unauthorized_move(tmp_path, monkeypatch):
+    mgr = _prepare_manager(tmp_path, monkeypatch)
     engine = OrganismRuntimeContractEngine(manager=mgr)
 
     with pytest.raises(ValueError, match="SAGE move rejection"):
@@ -103,19 +126,29 @@ def test_playable_turn_fails_closed_on_unauthorized_move(tmp_path):
             session_id="session-turn-002",
             action_name="UNAUTHORIZED_HYPER_MOVE",
             task="Attempt unauthorized move",
+            evidence_refs=("ev_unauthorized",),
         )
 
 
-def test_chatgpt_runtime_render_playable_turn_integration(tmp_path):
-    from sage.experimental.airspace.manager import AirspaceManager
+def test_playable_turn_fails_closed_without_evidence(tmp_path, monkeypatch):
+    mgr = _prepare_manager(tmp_path, monkeypatch)
+    engine = OrganismRuntimeContractEngine(manager=mgr)
 
-    ledger_file = tmp_path / "test_ledger.json"
-    mgr = AirspaceManager(ledger_path=ledger_file)
+    with pytest.raises(ValueError, match="Evidence capture requires"):
+        engine.execute_turn(
+            session_id="session-turn-003",
+            action_name="VERIFY",
+            task="No evidence",
+        )
 
+
+def test_chatgpt_runtime_render_playable_turn_integration(tmp_path, monkeypatch):
+    mgr = _prepare_manager(tmp_path, monkeypatch)
     hud_str, receipt = render_playable_organism_turn(
         session_id="session-gpt-001",
         action_name="ANALYZE",
         task="Reconnaissance analyze frontier",
+        evidence_refs=("ev_analyze",),
         manager=mgr,
     )
 
@@ -124,29 +157,20 @@ def test_chatgpt_runtime_render_playable_turn_integration(tmp_path):
     assert receipt.action_executed == "ANALYZE"
 
 
-def test_chatgpt_boundary_execute_playable_organism_turn(tmp_path):
+def test_handshake_fails_closed_without_git_sha(tmp_path, monkeypatch):
+    mgr = _prepare_manager(tmp_path, monkeypatch)
+    monkeypatch.delenv("SAGE_CANONICAL_GIT_SHA", raising=False)
+    monkeypatch.delenv("GITHUB_SHA", raising=False)
+
+    with pytest.raises(ValueError, match="governed SAGE_CANONICAL_GIT_SHA"):
+        handshake_station_identity(manager=mgr, session_id="no-git-sha")
+
+
+def test_handshake_fails_closed_without_active_mission(tmp_path, monkeypatch):
     from sage.experimental.airspace.manager import AirspaceManager
 
-    ledger_file = tmp_path / "test_ledger.json"
-    mgr = AirspaceManager(ledger_path=ledger_file)
+    monkeypatch.setenv("SAGE_CANONICAL_GIT_SHA", "b" * 40)
+    mgr = AirspaceManager(ledger_path=tmp_path / "empty.json")
 
-    hud_projection, receipt = render_playable_organism_turn(
-        session_id="boundary-session-01",
-        action_name="HANDSHAKE",
-        task="Stateful GPT handshake",
-        manager=mgr,
-    )
-
-    assert isinstance(hud_projection, str)
-    assert receipt.verified is True
-    assert receipt.session_id == "boundary-session-01"
-    assert receipt.action_executed == "HANDSHAKE"
-
-
-def test_handshake_fails_closed_without_git_sha(monkeypatch):
-    from sage.c2 import organism_runtime_contract
-
-    monkeypatch.setattr(organism_runtime_contract, "_get_canonical_git_sha", lambda: "")
-
-    with pytest.raises(ValueError, match="Organism handshake failed"):
-        handshake_station_identity(session_id="no-git-sha")
+    with pytest.raises(ValueError, match="active mission required"):
+        handshake_station_identity(manager=mgr, session_id="no-mission")
