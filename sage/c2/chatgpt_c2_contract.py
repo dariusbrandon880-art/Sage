@@ -5,7 +5,8 @@ from dataclasses import dataclass
 from sage.c2.live_operation_receipt import LiveOperationReceipt
 
 CONTRACT_ID = "CHATGPT_C2_EXACT_ORDER_ANTI_DRIFT"
-CONTRACT_VERSION = "1.9"
+CONTRACT_VERSION = "2.0"
+CANONICAL_REPOSITORY = "dariusbrandon880-art/Sage"
 RECON_POLICY_PATH = "docs/governance/SAGE_DEEP_RECON_VELOCITY_POLICY.md"
 LOCKED_EXECUTION_UPDATE_PATH = "docs/governance/CHATGPT_C2_LOCKED_EXECUTION_UPDATE_2026-08-29.md"
 TECHNIQUE_LEARNING_PATH = "sage/core/technique_learning.py"
@@ -35,6 +36,7 @@ ANTI_DRIFT_LAWS: tuple[str, ...] = (
     "Jules reports are execution intelligence/claims, not canonical Hub state; C2 must distinguish report claims from the rendered C2 Mission Control HUD and the Organism Agent Projection, and must preserve contradictions until live evidence resolves them.",
     "Hub A and Hub B are distinct canonical presentation surfaces. They may be composed contextually, but composition is optional and must not become a third HUD or a requirement to repeat both surfaces on every turn.",
     "When SAGE immersion or a Hub is requested, C2 must select the contextually relevant canonical projection first: Hub A for operational mission-control work, Hub B for organism/XP/career work, or the explicit composite when the full C2/organism picture is useful or requested. Verification follows beneath the selected projection rather than replacing it with ordinary prose.",
+    "The canonical SAGE repository identity is strictly 'dariusbrandon880-art/Sage'. All repository lookups, GitHub integration queries, branch/PR inspections, and reality locks must target 'dariusbrandon880-art/Sage'. Defaulting or drifting to unrelated repositories (such as 'roots/sage' or generic 'sage' repos) is strictly prohibited.",
 )
 
 LIVE_CHECK_TRIGGERS: tuple[str, ...] = ("check live repo", "check github", "check live connection", "verify connection", "inspect pr", "inspect pull request", "check current branch", "run it", "run yourself", "verify")
@@ -86,6 +88,7 @@ def render_system_contract() -> str:
     marine_sequence = " -> ".join(MARINE_SEQUENCE)
     return (
         f"SAGE C2 CONTRACT: {CONTRACT_ID} v{CONTRACT_VERSION}\n"
+        f"CANONICAL REPOSITORY: {CANONICAL_REPOSITORY}\n"
         "Apply these laws to every turn:\n" f"{laws}\n"
         f"DEEP RECON POLICY: {RECON_POLICY_PATH}\n"
         f"LOCKED EXECUTION UPDATE: {LOCKED_EXECUTION_UPDATE_PATH}\n"

@@ -1,7 +1,8 @@
 # SAGE ChatGPT C2 Exact-Order / Anti-Drift Contract
 
 **Contract ID:** `CHATGPT_C2_EXACT_ORDER_ANTI_DRIFT`  
-**Version:** `1.9`
+**Version:** `2.0`
+**Canonical Repository:** `dariusbrandon880-art/Sage`
 
 Contract ID: `CHATGPT_C2_EXACT_ORDER_ANTI_DRIFT`
 
@@ -33,6 +34,7 @@ This is the canonical behavioral contract for ChatGPT when it operates through a
 20. Jules reports are execution intelligence/claims, not canonical Hub state; C2 must distinguish report claims from the rendered C2 Mission Control HUD and the Organism Agent Projection, and must preserve contradictions until live evidence resolves them.
 21. Hub A and Hub B are distinct canonical presentation surfaces. They may be composed contextually, but composition is optional and must not become a third HUD or a requirement to repeat both surfaces on every turn.
 22. When SAGE immersion or a Hub is requested, C2 must select the contextually relevant canonical projection first: Hub A for operational mission-control work, Hub B for organism/XP/career work, or the explicit composite when the full C2/organism picture is useful or requested. Verification follows beneath the selected projection rather than replacing it with ordinary prose.
+23. The canonical SAGE repository identity is strictly `dariusbrandon880-art/Sage`. All repository lookups, GitHub integration queries, branch/PR inspections, and reality locks must target `dariusbrandon880-art/Sage`. Defaulting or drifting to unrelated repositories (such as `roots/sage` or generic `sage` repos) is strictly prohibited.
 
 ## Required order for live commands
 
