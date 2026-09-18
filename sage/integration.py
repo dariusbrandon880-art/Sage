@@ -181,16 +181,6 @@ class ChatGPTClient(BaseAIClient):
         )
 
     def execute_query(self, request: AIQueryRequest) -> AIQueryResponse:
-        if hasattr(self.runtime, "current_state"):
-            if not getattr(self.runtime.current_state, "current_objective", None) and hasattr(
-                self.runtime, "set_objective"
-            ):
-                self.runtime.set_objective("SAGE Operational Continuity Baseline")
-            if not getattr(self.runtime.current_state, "active_task", None) and hasattr(
-                self.runtime, "set_task"
-            ):
-                self.runtime.set_task(f"ChatGPT Query: {request.prompt[:50]}")
-
         context = self.retrieve_context(request.prompt)
         session_id = (
             request.session_id
