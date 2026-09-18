@@ -132,7 +132,7 @@ class ChatGPTImmersionResponse:
         if not tag and self.organism_projection is not None:
             tag = _render_organism_projection(self.organism_projection)
         if not tag:
-            tag = "[SAGE::C2::CHATGPT] ◈ GPT // RANK UNKNOWN // POINTS UNKNOWN // XP UNKNOWN // PROGRESS : HOLD / UNVERIFIED"
+            raise ValueError("SAGE organism name tag required for C2 immersion response")
 
         parts = [tag, "", self.immersion_envelope.nameplate.render(), ""]
         if self.should_render_hud:
@@ -141,6 +141,8 @@ class ChatGPTImmersionResponse:
             if manager is not None:
                 hud = render_canonical_hub(manager, surface=self.hub_surface)
             elif manager is None:
+                # The manager-backed renderer is unavailable, so preserve the
+                # canonical unverified projection rather than fabricating a Hub.
                 hud = hud.replace(
                     "Human Director // RANK Lvl UNKNOWN UNKNOWN // POINTS UNKNOWN // XP UNKNOWN",
                     "Human Director // RANK UNKNOWN // POINTS UNKNOWN // XP UNKNOWN",
@@ -199,8 +201,12 @@ def project_chatgpt_immersion_response(
         except Exception:
             tag = None
 
+    # Fail closed to an unverified C2 projection when canonical progression
+    # state is unavailable. The station identity remains authoritative, while
+    # MissionHUDProjection renders progression as UNKNOWN / HOLD. Do not invent
+    # an organism tag or raise an avoidable presentation error at this boundary.
     if not tag:
-        tag = "[SAGE::C2::CHATGPT] ◈ GPT // RANK UNKNOWN // POINTS UNKNOWN // XP UNKNOWN // PROGRESS : HOLD / UNVERIFIED"
+        tag = state.station_identity
 
     contract = project_c2_response_contract(
         state,
