@@ -5,6 +5,7 @@ adapter to the SAGE immersion renderer. It revalidates model output even when
 a custom adapter is supplied, then routes any state-changing proposal through
 the canonical C2 transition bridge before rendering the resulting state.
 """
+
 from __future__ import annotations
 
 import json
@@ -13,9 +14,15 @@ from typing import Any
 
 from sage.c2.canonical_transition_bridge import CanonicalC2TransitionBridge
 from sage.c2.chatgpt_runtime import render_chatgpt_c2_response, select_contextual_hub_surface
+from sage.c2.hub_presentation_boundary import HubSurface
 from sage.c2.immersion_rehydration import build_chatgpt_immersion_state
 from sage.c2.immersion_state import ImmersionState
-from sage.runtime.model_gateway import ModelAdapter, ModelResponse, SAGERuntime, SAGEProtocolGovernor
+from sage.runtime.model_gateway import (
+    ModelAdapter,
+    ModelResponse,
+    SAGERuntime,
+    SAGEProtocolGovernor,
+)
 
 
 class SAGEChatGPTBoundary:
@@ -93,13 +100,17 @@ class SAGEChatGPTBoundary:
             if self._operational_runtime is None:
                 self._reject("state transition proposal has no canonical operational runtime")
             try:
-                transition = CanonicalC2TransitionBridge(self._operational_runtime).apply(structured)
+                transition = CanonicalC2TransitionBridge(self._operational_runtime).apply(
+                    structured
+                )
             except Exception as exc:
                 self._reject(str(exc))
             if transition.accepted:
                 response = replace(
                     response,
-                    evidence_refs=tuple(dict.fromkeys((*response.evidence_refs, *transition.evidence_refs))),
+                    evidence_refs=tuple(
+                        dict.fromkeys((*response.evidence_refs, *transition.evidence_refs))
+                    ),
                     output_state_digest=transition.after_state_digest,
                 )
                 if not session_id:
@@ -119,6 +130,16 @@ class SAGEChatGPTBoundary:
 
         display_text = self._display_text(response)
         hub_surface = select_contextual_hub_surface(task, display_text)
+
+        # Force HUD materialization whenever rehydration / composite surface is selected
+        # or when previous_hud_update_key is None (fresh conversation)
+        effective_force_hud = (
+            force_hud
+            or (previous_hud_update_key is None)
+            or (hub_surface is HubSurface.COMPOSITE)
+            or ("rehydrate" in f"{task} {display_text}".lower())
+        )
+
         rendered = render_chatgpt_c2_response(
             immersion_state,
             body=display_text,
@@ -130,7 +151,7 @@ class SAGEChatGPTBoundary:
             manager=manager,
             hud_visible=hud_visible,
             previous_hud_update_key=previous_hud_update_key,
-            force_hud=force_hud,
+            force_hud=effective_force_hud,
             hub_surface=hub_surface,
         )
         return rendered, response
