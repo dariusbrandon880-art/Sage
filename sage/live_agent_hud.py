@@ -35,25 +35,21 @@ def build_agent_hud_projection(context_view: dict[str, Any]) -> dict[str, Any]:
 
     roster = []
     for st_id, st_data in team_info.get("stations", {}).items():
-        if isinstance(st_data, dict):
-            roster.append({
-                "station_id": st_id,
-                "nameplate": st_data.get("nameplate", f"[{st_id}]"),
-                "agent_name": st_data.get("agent_name", st_id),
-                "role": st_data.get("role", "Operator"),
-                "cql": st_data.get("cql", 0),
-                "sql": st_data.get("sql", 0),
-                "xp": st_data.get("xp", 0),
-                "state": st_data.get("state", "READY"),
-            })
-        else:
-            roster.append(st_data)
+        roster.append({
+            "station_id": st_id,
+            "nameplate": st_data.get("nameplate", f"[{st_id}]"),
+            "agent_name": st_data.get("agent_name", st_id),
+            "role": st_data.get("role", "Operator"),
+            "cql": st_data.get("cql", 0),
+            "sql": st_data.get("sql", 0),
+            "xp": st_data.get("xp", 0),
+            "state": st_data.get("state", "READY"),
+        })
 
     pending = coord_info.get("pending", [])
     return {
         "context_id": context_view.get("context_id", "hud-context"),
         "audience": context_view.get("audience", "SAGE::C2::CHATGPT"),
-        "purpose": context_view.get("purpose", "HUD"),
         "presentation_only": True,
         "read_only": True,
         "self": {
@@ -90,7 +86,7 @@ def render_agent_hud(hud_projection: dict[str, Any]) -> str:
     ]
     roster = team_info.get("roster", [])
     if roster:
-        lines.append("TEAM: " + " ".join(f"{item.get('nameplate') if isinstance(item, dict) else item}:{item.get('state') if isinstance(item, dict) else ''}" for item in roster))
+        lines.append("TEAM: " + " ".join(f"{item.get('nameplate')}:{item.get('state')}" for item in roster))
     lines.append(f"COORDINATION: PENDING={coord_info.get('pending_count', 0)}")
     return "\n".join(lines)
 
