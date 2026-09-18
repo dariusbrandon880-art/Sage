@@ -136,17 +136,14 @@ class ChatGPTImmersionResponse:
 
         parts = [tag, "", self.immersion_envelope.nameplate.render(), ""]
         if self.should_render_hud:
-            hud = self.immersion_envelope.hud.render()
             manager = self.immersion_envelope.hud.organism_manager
-            if manager is not None:
-                hud = render_canonical_hub(manager, surface=self.hub_surface)
-            elif manager is None:
-                # The manager-backed renderer is unavailable, so preserve the
-                # canonical unverified projection rather than fabricating a Hub.
-                hud = hud.replace(
-                    "Human Director // RANK Lvl UNKNOWN UNKNOWN // POINTS UNKNOWN // XP UNKNOWN",
-                    "Human Director // RANK UNKNOWN // POINTS UNKNOWN // XP UNKNOWN",
-                )
+            # A Hub is never rendered from the generic fallback HUD projection.
+            # The canonical boundary requires a live AirspaceManager so the
+            # presentation is reconstructed from governed state rather than
+            # sample/UNKNOWN values.
+            if manager is None:
+                raise ValueError("Canonical Hub rendering requires an Airspace manager")
+            hud = render_canonical_hub(manager, surface=self.hub_surface)
             parts.append(hud)
         parts.extend(["", self.station_header])
         if self.body and self.body.strip():
@@ -191,22 +188,21 @@ def project_chatgpt_immersion_response(
     if not tag and mgr is None and projection is None:
         try:
             mgr = _load_airspace_manager()
-        except Exception:
-            mgr = None
+        except Exception as exc:
+            raise ValueError("Canonical Airspace manager unavailable for C2 immersion") from exc
 
     if not tag and mgr is not None:
         try:
             target_station = _get_station_id(station_id)
             tag = _render_organism_tag(mgr, target_station, state_label)
-        except Exception:
-            tag = None
+        except Exception as exc:
+            raise ValueError("Canonical organism state unavailable for C2 immersion") from exc
 
-    # Fail closed to an unverified C2 projection when canonical progression
-    # state is unavailable. The station identity remains authoritative, while
-    # MissionHUDProjection renders progression as UNKNOWN / HOLD. Do not invent
-    # an organism tag or raise an avoidable presentation error at this boundary.
+    # Do not substitute station_identity or UNKNOWN/sample values when the
+    # canonical organism projection cannot be established. The C2 boundary is
+    # fail-closed: absence of governed state is an explicit presentation error.
     if not tag:
-        tag = state.station_identity
+        raise ValueError("Canonical organism nameplate unavailable for C2 immersion")
 
     contract = project_c2_response_contract(
         state,
