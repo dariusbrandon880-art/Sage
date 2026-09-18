@@ -1,6 +1,7 @@
 # SAGE Chat Boot Manifest
 
 **Purpose:** deterministic rehydration entry point for any model/chat surface that has access to the SAGE repository.
+**Canonical Repository Identity:** `dariusbrandon880-art/Sage` (strictly prohibit defaulting or drifting to unrelated repos such as `roots/sage`).
 
 ## Read first
 

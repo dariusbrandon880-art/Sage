@@ -5,7 +5,7 @@ from types import SimpleNamespace
 import pytest
 
 from sage.c2.chatgpt_c2_contract import (
-    ANTI_DRIFT_LAWS, CONTRACT_ID, CONTRACT_VERSION, DEEP_RECON_TRIGGERS,
+    ANTI_DRIFT_LAWS, CANONICAL_REPOSITORY, CONTRACT_ID, CONTRACT_VERSION, DEEP_RECON_TRIGGERS,
     RECON_POLICY_PATH, REHYDRATION_SEQUENCE, REHYDRATION_TRIGGERS,
     classify_directive, render_system_contract, validate_report_claims,
 )
@@ -40,14 +40,18 @@ def structured_output(*, station="[SAGE::C2::CHATGPT]", claim="live repository v
 def test_contract_contains_all_laws_and_identity():
     rendered = render_system_contract()
     assert CONTRACT_ID in rendered
-    assert CONTRACT_VERSION == "1.9"
-    assert len(ANTI_DRIFT_LAWS) == 22
+    assert CONTRACT_VERSION == "2.0"
+    assert CANONICAL_REPOSITORY == "dariusbrandon880-art/Sage"
+    assert "CANONICAL REPOSITORY: dariusbrandon880-art/Sage" in rendered
+    assert len(ANTI_DRIFT_LAWS) == 23
     for law in ANTI_DRIFT_LAWS: assert law in rendered
     assert "Five flights is concurrent mission ownership across independent vehicles" in rendered
     assert "PREFLIGHT -> EXECUTE -> TEST -> EVIDENCE -> VERIFY -> RECONCILE -> REPORT" in rendered
     assert "SAGE is one governed organism with modular organs" in rendered
     assert "demoted to a read-only presentation" in rendered
     assert "strongest available authoritative evidence" in rendered
+    assert "dariusbrandon880-art/Sage" in ANTI_DRIFT_LAWS[-1]
+    assert "roots/sage" in ANTI_DRIFT_LAWS[-1]
 
 
 def test_deep_recon_policy_is_bound_and_has_velocity_language():

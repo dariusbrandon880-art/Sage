@@ -7,7 +7,7 @@ from sage.c2.chatgpt_c2_contract import (
 
 
 def test_c2_contract_locks_jules_report_vs_two_hub_distinction():
-    assert CONTRACT_VERSION == "1.9"
+    assert CONTRACT_VERSION == "2.0"
     assert HUB_PRESENTATION_BOUNDARY_PATH == "docs/governance/SAGE_C2_HUB_PRESENTATION_BOUNDARY.md"
     assert any("Jules reports are execution intelligence/claims" in law for law in ANTI_DRIFT_LAWS)
     assert any("Hub A" in law and "Hub B" in law for law in ANTI_DRIFT_LAWS)
