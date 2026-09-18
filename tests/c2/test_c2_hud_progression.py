@@ -1,6 +1,8 @@
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
+
 from sage.c2.chatgpt_immersion import project_chatgpt_immersion_response
 from sage.c2.hub_presentation_boundary import HubSurface
 from sage.c2.immersion_projection import (
@@ -100,22 +102,20 @@ def test_boss_kills_captures_and_badges_come_from_canonical_projection(tmp_path:
     assert "┃ 0" in rendered
 
 
-def test_missing_progression_state_fails_closed_to_unknown_hold() -> None:
+def test_missing_progression_state_fails_closed() -> None:
     state = _state()
-    with patch("sage.c2.chatgpt_immersion._load_airspace_manager", side_effect=RuntimeError("no ledger")), \
-         patch("sage.c2.immersion_projection.importlib.import_module", side_effect=RuntimeError("no manager")):
-        response = project_chatgpt_immersion_response(state, organism_tag=None, manager=None)
-        rendered = response.render()
-
-    assert "RANK UNKNOWN" in rendered
-    assert "POINTS UNKNOWN" in rendered
-    assert "XP UNKNOWN" in rendered
-
-    assert "01 — COMMAND BAND" in rendered
-    assert "RANK     : UNKNOWN" in rendered
-    assert "POINTS   : UNKNOWN" in rendered
-    assert "XP       : UNKNOWN" in rendered
-    assert "PROGRESS : HOLD / UNVERIFIED" in rendered
+    with patch(
+        "sage.c2.chatgpt_immersion._load_airspace_manager",
+        side_effect=RuntimeError("no ledger"),
+    ), patch(
+        "sage.c2.immersion_projection.importlib.import_module",
+        side_effect=RuntimeError("no manager"),
+    ):
+        with pytest.raises(
+            ValueError,
+            match="Canonical Airspace manager unavailable for C2 immersion",
+        ):
+            project_chatgpt_immersion_response(state, organism_tag=None, manager=None)
 
 
 def test_hud_update_key_changes_when_progression_changes(tmp_path: Path) -> None:
