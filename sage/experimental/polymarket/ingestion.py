@@ -1,134 +1,136 @@
-"""Polymarket Read-Only Ingestion Boundary & Adapters.
+"""Polymarket Phase 1 read-only ingestion adapters.
 
-Implements read-only Gamma discovery & CLOB order-book observation adapters and normalization.
-Never authenticates, wagers, or executes transactions (wagering_executed = False).
+Discovery and order-book observation only. No authentication, wallet access,
+order placement, capital movement, or trading execution is permitted.
 """
+
+from __future__ import annotations
 
 import hashlib
 import json
-import urllib.request
 from datetime import datetime, timezone
 from typing import Any, Mapping, Sequence
+from urllib.request import Request, urlopen
 
-from .lane_spec import (
-    ExecutionGuardViolation,
-    LifecycleStage,
-    PolymarketEvidenceRecord,
-    PolymarketMarketSnapshot,
-    PolymarketObservation,
-)
+from .lane_spec import MarketObservation
 
 
 class PolymarketGammaAdapter:
-    """Read-only adapter for Polymarket Gamma API (market/event discovery)."""
+    """Parse Gamma discovery payloads into canonical market observations."""
 
     GAMMA_ENDPOINT = "https://gamma-api.polymarket.com/events"
 
     @classmethod
-    def parse_event_payload(cls, raw_event: Mapping[str, Any], retrieved_at_utc: str | None = None) -> tuple[PolymarketMarketSnapshot, ...]:
-        now_utc = retrieved_at_utc or datetime.now(timezone.utc).isoformat()
-        snapshots: list[PolymarketMarketSnapshot] = []
-
+    def parse_event_payload(
+        cls,
+        raw_event: Mapping[str, Any],
+        retrieved_at_utc: str | None = None,
+    ) -> tuple[MarketObservation, ...]:
+        timestamp = retrieved_at_utc or datetime.now(timezone.utc).isoformat()
         markets = raw_event.get("markets") or [raw_event]
-        for m in markets:
-            if not isinstance(m, dict):
+        observations: list[MarketObservation] = []
+        raw_hash = hashlib.sha256(
+            json.dumps(raw_event, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        ).hexdigest()
+
+        for market in markets:
+            if not isinstance(market, Mapping):
                 continue
-            condition_id = str(m.get("conditionId") or m.get("condition_id") or "")
-            question_id = str(m.get("questionID") or m.get("question_id") or condition_id)
-            question = str(m.get("question") or raw_event.get("title") or "")
-
-            raw_outcomes = m.get("outcomes") or ["Yes", "No"]
-            if isinstance(raw_outcomes, str):
+            market_id = str(
+                market.get("conditionId")
+                or market.get("condition_id")
+                or market.get("id")
+                or ""
+            )
+            event_id = str(raw_event.get("id") or raw_event.get("event_id") or market_id)
+            question = str(market.get("question") or raw_event.get("title") or "")
+            prices = market.get("outcomePrices") or market.get("outcome_prices") or []
+            if isinstance(prices, str):
                 try:
-                    raw_outcomes = json.loads(raw_outcomes)
-                except Exception:
-                    raw_outcomes = ["Yes", "No"]
-            outcomes = tuple(str(o) for o in raw_outcomes)
+                    prices = json.loads(prices)
+                except (TypeError, ValueError):
+                    prices = []
+            prices = list(prices)
+            if not market_id or not question or not prices:
+                continue
 
-            raw_prices = m.get("outcomePrices") or m.get("outcome_prices") or [0.5, 0.5]
-            if isinstance(raw_prices, str):
+            implied = float(prices[0])
+            outcomes = market.get("outcomes") or ["Yes", "No"]
+            if isinstance(outcomes, str):
                 try:
-                    raw_prices = json.loads(raw_prices)
-                except Exception:
-                    raw_prices = [0.5, 0.5]
+                    outcomes = json.loads(outcomes)
+                except (TypeError, ValueError):
+                    outcomes = ["Yes", "No"]
 
-            prices: dict[str, float] = {}
-            for idx, out in enumerate(outcomes):
-                p_val = float(raw_prices[idx]) if idx < len(raw_prices) else 0.5
-                prices[out] = min(max(p_val, 0.0), 1.0)
-
-            vol = float(m.get("volume24hr") or m.get("volume") or 0.0)
-            liq = float(m.get("liquidity") or 0.0)
-            active = bool(m.get("active", True))
-            closed = bool(m.get("closed", False))
-
-            if condition_id and question_id:
-                snapshots.append(
-                    PolymarketMarketSnapshot(
-                        condition_id=condition_id,
-                        question_id=question_id,
-                        question=question,
-                        outcomes=outcomes,
-                        outcome_prices=prices,
-                        observed_at_utc=now_utc,
-                        volume_24h=vol,
-                        liquidity=liq,
-                        active=active,
-                        closed=closed,
-                        source="Polymarket Gamma API",
-                        source_url=cls.GAMMA_ENDPOINT,
-                        metadata={"raw_event_id": str(raw_event.get("id") or "")},
-                    )
+            observations.append(
+                MarketObservation(
+                    market_id=market_id,
+                    event_id=event_id,
+                    question=question,
+                    timestamp_utc=timestamp,
+                    market_implied_probability=max(0.0, min(1.0, implied)),
+                    order_book_depth={"outcomes": list(outcomes)},
+                    spread=max(
+                        0.0,
+                        float(market.get("spread") or 0.0),
+                    ),
+                    raw_payload_hash=raw_hash,
+                    provenance_source="polymarket_gamma",
                 )
-
-        return tuple(snapshots)
+            )
+        return tuple(observations)
 
 
 class PolymarketCLOBAdapter:
-    """Read-only adapter for Polymarket CLOB API (order book & mid-market price observer)."""
+    """Parse CLOB order-book payloads without performing execution."""
 
     CLOB_ENDPOINT = "https://clob.polymarket.com/book"
 
     @classmethod
     def parse_book_payload(
         cls,
-        condition_id: str,
-        question_id: str,
+        market_id: str,
+        event_id: str,
         question: str,
         raw_book: Mapping[str, Any],
         retrieved_at_utc: str | None = None,
-    ) -> PolymarketMarketSnapshot:
-        now_utc = retrieved_at_utc or datetime.now(timezone.utc).isoformat()
+    ) -> MarketObservation:
+        timestamp = retrieved_at_utc or datetime.now(timezone.utc).isoformat()
         bids = raw_book.get("bids") or []
         asks = raw_book.get("asks") or []
 
-        best_bid = float(bids[0]["price"]) if bids and isinstance(bids[0], dict) else 0.5
-        best_ask = float(asks[0]["price"]) if asks and isinstance(asks[0], dict) else 0.5
-        mid_price = min(max((best_bid + best_ask) / 2.0, 0.0), 1.0)
+        def price(level: Any, default: float) -> float:
+            if isinstance(level, Mapping):
+                return float(level.get("price", default))
+            return float(default)
 
-        prices = {"Yes": round(mid_price, 6), "No": round(1.0 - mid_price, 6)}
+        best_bid = price(bids[0], 0.0) if bids else 0.0
+        best_ask = price(asks[0], 1.0) if asks else 1.0
+        best_bid = max(0.0, min(1.0, best_bid))
+        best_ask = max(0.0, min(1.0, best_ask))
+        implied = max(0.0, min(1.0, (best_bid + best_ask) / 2.0))
+        spread = max(0.0, best_ask - best_bid)
+        raw_hash = hashlib.sha256(
+            json.dumps(raw_book, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        ).hexdigest()
 
-        return PolymarketMarketSnapshot(
-            condition_id=condition_id,
-            question_id=question_id,
+        return MarketObservation(
+            market_id=market_id,
+            event_id=event_id,
             question=question,
-            outcomes=("Yes", "No"),
-            outcome_prices=prices,
-            observed_at_utc=now_utc,
-            volume_24h=0.0,
-            liquidity=0.0,
-            active=True,
-            closed=False,
-            source="Polymarket CLOB API",
-            source_url=cls.CLOB_ENDPOINT,
-            metadata={"best_bid": best_bid, "best_ask": best_ask},
+            timestamp_utc=timestamp,
+            market_implied_probability=implied,
+            order_book_depth={"bids": list(bids), "asks": list(asks)},
+            spread=spread,
+            raw_payload_hash=raw_hash,
+            provenance_source="polymarket_clob_v2",
         )
 
 
 class PolymarketIngestionEngine:
-    """Read-only market intelligence ingestion engine."""
+    """Normalize raw read-only feeds into canonical Phase 1 observations."""
 
-    ADAPTER_VERSION = "1.0.0"
+    ADAPTER_VERSION = "1.1.0"
 
     @staticmethod
     def compute_raw_hash(raw_data: str | bytes) -> str:
@@ -140,69 +142,29 @@ class PolymarketIngestionEngine:
         cls,
         raw_payload: str | bytes | Mapping[str, Any] | Sequence[Any],
         provider: str = "Polymarket Gamma/CLOB",
-        provenance_class: str = "fixture",
-        parent_hash: str = "GENESIS",
-    ) -> tuple[tuple[PolymarketObservation, ...], PolymarketEvidenceRecord]:
-        now_utc = datetime.now(timezone.utc).isoformat()
-
+    ) -> tuple[MarketObservation, ...]:
         if isinstance(raw_payload, (str, bytes)):
-            raw_str = raw_payload.decode("utf-8") if isinstance(raw_payload, bytes) else raw_payload
-            raw_hash = cls.compute_raw_hash(raw_str)
-            try:
-                parsed = json.loads(raw_str)
-            except Exception as e:
-                raise ValueError(f"POLYMARKET_RAW_FEED_PARSE_ERROR: invalid JSON: {e}")
+            raw = raw_payload.decode("utf-8") if isinstance(raw_payload, bytes) else raw_payload
+            parsed = json.loads(raw)
         else:
-            raw_str = json.dumps(raw_payload, sort_keys=True)
-            raw_hash = cls.compute_raw_hash(raw_str)
             parsed = raw_payload
 
-        events = parsed if isinstance(parsed, list) else [parsed]
-        all_snapshots: list[PolymarketMarketSnapshot] = []
-
-        for ev in events:
-            if isinstance(ev, dict):
-                snaps = PolymarketGammaAdapter.parse_event_payload(ev, retrieved_at_utc=now_utc)
-                all_snapshots.extend(snaps)
-
-        observations: list[PolymarketObservation] = []
-        for idx, snap in enumerate(all_snapshots):
-            obs_id = f"obs_{snap.condition_id}_{idx}"
-            norm_hash = snap.canonical_hash
-            observations.append(
-                PolymarketObservation(
-                    observation_id=obs_id,
-                    snapshot=snap,
-                    retrieved_at_utc=now_utc,
-                    raw_payload_hash=raw_hash,
-                    normalized_payload_hash=norm_hash,
-                    provenance_class=provenance_class,
-                    wagering_executed=False,
+        events = parsed if isinstance(parsed, Sequence) and not isinstance(parsed, (str, bytes, Mapping)) else [parsed]
+        observations: list[MarketObservation] = []
+        for event in events:
+            if isinstance(event, Mapping):
+                observations.extend(
+                    PolymarketGammaAdapter.parse_event_payload(event)
                 )
-            )
+        return tuple(observations)
 
-        obs_tuple = tuple(observations)
-        evidence_id = f"evi_{now_utc.replace(':', '').replace('-', '')}"
-        obs_summary_hash = hashlib.sha256(json.dumps([o.observation_id for o in obs_tuple]).encode("utf-8")).hexdigest()
-
-        rec_hash = PolymarketEvidenceRecord.compute_record_hash(
-            evidence_id=evidence_id,
-            stage=LifecycleStage.DISCOVER,
-            parent_hash=parent_hash,
-            timestamp_utc=now_utc,
-            obs_hash=obs_summary_hash,
-        )
-
-        evidence = PolymarketEvidenceRecord(
-            evidence_id=evidence_id,
-            stage=LifecycleStage.DISCOVER,
-            observation=obs_tuple[0] if obs_tuple else None,
-            forecast=None,
-            parent_hash=parent_hash,
-            current_hash=rec_hash,
-            timestamp_utc=now_utc,
-            provenance_metadata={"provider": provider, "observation_count": len(obs_tuple)},
-            wagering_executed=False,
-        )
-
-        return obs_tuple, evidence
+    @staticmethod
+    def fetch_read_only(
+        url: str,
+        *,
+        timeout: float = 10.0,
+    ) -> bytes:
+        """Fetch public market data only; never sends authentication or execution data."""
+        request = Request(url, method="GET", headers={"Accept": "application/json"})
+        with urlopen(request, timeout=timeout) as response:
+            return response.read()
