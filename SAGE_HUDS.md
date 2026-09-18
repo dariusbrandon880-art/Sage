@@ -9,7 +9,7 @@
 SAGE has exactly two canonical presentation surfaces:
 
 - **Hub A — C2 Mission Control**
-  - `docs/design/hud/HUB_A_C2_MISSION_CONTROL_VISUAL.svg`
+  - `docs/governance/hud/references/hub_a_c2_mission_control.svg` (Alias: `docs/design/hud/HUB_A_C2_MISSION_CONTROL_VISUAL.svg`)
   - Four-layer operational surface:
     1. `01 — COMMAND BAND`
     2. `02 — OPERATING PICTURE`
@@ -17,7 +17,7 @@ SAGE has exactly two canonical presentation surfaces:
     4. `04 — STRIKE FEED // HIGH-TEMPO EVENTS`
 
 - **Hub B — Organism Progression / XP Hub**
-  - `docs/design/hud/HUB_B_ORGANISM_PROGRESSION_VISUAL.svg`
+  - `docs/governance/hud/references/hub_b_sage_organism.svg` (Alias: `docs/design/hud/HUB_B_ORGANISM_PROGRESSION_VISUAL.svg`)
   - Organism projection surface:
     5. `05 — ORGANISM PROGRESSION`
     - `SAGE ORGANISM // AGENT PROJECTION`
@@ -59,8 +59,9 @@ When a new SAGE/C2 chat needs the HUD:
 
 ## Visual references
 
-- Hub A: `docs/design/hud/HUB_A_C2_MISSION_CONTROL_VISUAL.svg`
-- Hub B: `docs/design/hud/HUB_B_ORGANISM_PROGRESSION_VISUAL.svg`
+- Hub A: `docs/governance/hud/references/hub_a_c2_mission_control.svg` (Alias: `docs/design/hud/HUB_A_C2_MISSION_CONTROL_VISUAL.svg`)
+- Hub B: `docs/governance/hud/references/hub_b_sage_organism.svg` (Alias: `docs/design/hud/HUB_B_ORGANISM_PROGRESSION_VISUAL.svg`)
+- Manifest: `docs/governance/hud/references/HUD_REFERENCE_MANIFEST.json`
 
 ## Governing invariants
 
