@@ -114,6 +114,14 @@ class PolymarketEvidenceRecord(BaseModel):
     chain_hash: str = Field(default="", description="Cumulative SHA-256 linear hash chain")
     execution_attempted: bool = Field(default=False, description="Strict zero-execution sentinel flag")
 
+    @model_validator(mode="after")
+    def validate_execution_guard(self) -> PolymarketEvidenceRecord:
+        if self.execution_attempted:
+            raise ExecutionGuardViolation(
+                "GOVERNANCE VIOLATION: Execution / Capital Deployment is STRICTLY PROHIBITED in the Polymarket Evidence Lane"
+            )
+        return self
+
     def transition_to_snapshot(self, obs: MarketObservation) -> PolymarketEvidenceRecord:
         """Advance state: DISCOVER -> SNAPSHOT -> HASH."""
         if self.execution_attempted:
