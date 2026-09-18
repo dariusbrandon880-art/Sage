@@ -12,7 +12,6 @@ on every turn and never creates a third HUD.
 
 from __future__ import annotations
 
-import importlib
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any
@@ -95,23 +94,16 @@ def render_canonical_hub(
 
     The C2 boundary owns semantic surface selection; the experimental Airspace
     implementation owns the concrete projection. This preserves the one-way
-    dependency boundary.
+    dependency boundary without hiding an experimental import behind importlib.
     """
     if manager is None:
         raise ValueError("Canonical Hub rendering requires an Airspace manager")
 
     renderer = getattr(manager, "render_canonical_hub", None)
-    if callable(renderer):
-        rendered = renderer(surface=surface, status=status)
-    else:
-        immersion_mod = importlib.import_module("sage.experimental.airspace.immersion")
-        renderers = {
-            HubSurface.HUB_A: immersion_mod.render_hub_a_from_manager,
-            HubSurface.HUB_B: immersion_mod.render_hub_b_from_manager,
-            HubSurface.COMPOSITE: immersion_mod.render_four_layer_hud_from_manager,
-        }
-        rendered = renderers[surface](manager, status=status)
+    if not callable(renderer):
+        raise TypeError("Airspace manager does not expose canonical Hub rendering")
 
+    rendered = renderer(surface=surface, status=status)
     if not isinstance(rendered, str) or not rendered.strip():
         raise ValueError("Canonical Hub renderer returned empty presentation")
     return rendered
