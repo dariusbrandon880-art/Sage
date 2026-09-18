@@ -18,10 +18,34 @@ import subprocess
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from sage.c2.agent_identity import AgentBoundaryIdentity, CHATGPT_AGENT_NAMEPLATE, JULES_AGENT_NAMEPLATE
 from sage.c2.hub_presentation_boundary import HubSurface
+
+
+_STATION_MAP = {
+    "[SAGE::C2::CHATGPT]": "MISSION_CONTROL",
+    "[SAGE::ENGINEER::JULES]": "ENGINEERING_FLIGHT",
+    "[SAGE::INTEL::GEMINI]": "INTEL_STATION",
+    "[SAGE::DIRECTOR]": "MISSION_DIRECTOR",
+    "MISSION_CONTROL": "MISSION_CONTROL",
+    "ENGINEERING_FLIGHT": "ENGINEERING_FLIGHT",
+    "INTEL_STATION": "INTEL_STATION",
+    "MISSION_DIRECTOR": "MISSION_DIRECTOR",
+}
+
+
+def resolve_station_enum(station_id_str: str) -> Any:
+    """Resolve a canonical StationID from a nameplate or enum value; reject unknown identities."""
+    models = importlib.import_module("sage.experimental.airspace.models")
+    StationID = models.StationID
+    raw = str(station_id_str).strip()
+    canonical = _STATION_MAP.get(raw, raw)
+    try:
+        return StationID(canonical)
+    except ValueError as exc:
+        raise ValueError(f"Unknown or unverified station_id: '{station_id_str}'") from exc
 
 
 @dataclass(frozen=True)
@@ -48,8 +72,9 @@ class PlayableTurnResult:
 class OrganismRuntimeContractEngine:
     """Orchestrates the 10-step persistent playable organism interaction loop."""
 
-    def __init__(self, ledger_path: Optional[str | Path] = None):
+    def __init__(self, ledger_path: Optional[str | Path] = None, manager: Any = None):
         self.ledger_path = Path(ledger_path or "evidence_capture/airspace_ledger.json")
+        self.manager = manager
 
     # Dynamic imports for One-Way Import Law compliance
     @staticmethod
@@ -101,11 +126,14 @@ class OrganismRuntimeContractEngine:
         }
 
     # STAGE 2: REHYDRATE
+    def _get_manager(self) -> Any:
+        if self.manager is not None:
+            return self.manager
+        return self._get_airspace_manager_cls()(self.ledger_path)
+
     def rehydrate_state(self) -> Any:
         """Reconstructs current AirspaceState from historical event ledger."""
-        manager_cls = self._get_airspace_manager_cls()
-        manager = manager_cls(self.ledger_path)
-        return manager.reconstruct_airspace_state()
+        return self._get_manager().reconstruct_airspace_state()
 
     # STAGE 3: IDENTITY LOCK
     def lock_identity(self, station_id_str: str, session_id: str) -> Tuple[Any, AgentBoundaryIdentity]:
@@ -113,7 +141,7 @@ class OrganismRuntimeContractEngine:
         models = self._get_models_mod()
         StationID = models.StationID
         try:
-            st_enum = StationID(station_id_str)
+            st_enum = resolve_station_enum(station_id_str)
         except ValueError as exc:
             raise ValueError(f"Unknown or invalid StationID '{station_id_str}'") from exc
 
@@ -366,6 +394,7 @@ class OrganismRuntimeContractEngine:
         required_sql: int = 0,
         hub_surface: HubSurface = HubSurface.COMPOSITE,
         body_summary: str = "",
+        executor: Callable[[], Any] | None = None,
     ) -> PlayableTurnResult:
         """Executes the complete 10-step playable turn interaction loop end-to-end."""
         # 1. SENSE
@@ -373,8 +402,7 @@ class OrganismRuntimeContractEngine:
         git_head_sha = sensed["git_head_sha"]
 
         # 2. REHYDRATE
-        manager_cls = self._get_airspace_manager_cls()
-        manager = manager_cls(self.ledger_path)
+        manager = self._get_manager()
 
         # 3. IDENTITY LOCK
         station, identity = self.lock_identity(station_id_str, session_id)
@@ -407,6 +435,12 @@ class OrganismRuntimeContractEngine:
             SortieState.CLOSED: SortieState.CLOSED,
         }
         target_state_obj = next_state_map.get(sortie.status, SortieState.BRIEFED)
+
+        if executor is not None:
+            try:
+                executor()
+            except Exception as exc:
+                raise RuntimeError(f"Playable turn action execution failed: {exc}") from exc
 
         if sortie.status != target_state_obj:
             self.record_action(
@@ -463,7 +497,7 @@ class OrganismRuntimeContractEngine:
         projection_mod = self._get_projection_mod()
         rank_mod = self._get_rank_system_mod()
 
-        st_enum = models.StationID(station_id_str)
+        st_enum = resolve_station_enum(station_id_str)
         proj = projection_mod.OrganismProjection.project_station(
             manager, updated_state, st_enum
         )
@@ -492,4 +526,5 @@ class OrganismRuntimeContractEngine:
 __all__ = [
     "OrganismRuntimeContractEngine",
     "PlayableTurnResult",
+    "resolve_station_enum",
 ]
