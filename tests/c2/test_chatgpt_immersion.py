@@ -129,3 +129,19 @@ def test_chatgpt_legacy_manager_alias_is_preserved(tmp_path) -> None:
 
     assert response.organism_tag is not None
     assert "POINTS 0" in response.organism_tag
+
+
+def test_chatgpt_immersion_fails_closed_when_airspace_manager_is_unavailable(monkeypatch) -> None:
+    import sage.c2.chatgpt_immersion as immersion
+
+    def _unavailable() -> object:
+        raise RuntimeError("manager unavailable")
+
+    monkeypatch.setattr(immersion, "_load_airspace_manager", _unavailable)
+
+    try:
+        project_chatgpt_immersion_response(_state())
+    except ValueError as exc:
+        assert "Canonical Airspace manager unavailable" in str(exc)
+    else:
+        raise AssertionError("C2 immersion must fail closed without canonical Airspace state")
